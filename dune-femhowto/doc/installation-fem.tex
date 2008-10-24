@@ -1,0 +1,82 @@
+% Installationguide
+
+\documentclass[11pt,a4paper,headinclude,footinclude,
+%DIV16,
+normalheadings]{scrartcl}
+
+\usepackage[automark]{scrpage2}
+\usepackage[ansinew]{inputenc}
+%\usepackage{german}
+%\usepackage{bibgerm}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{theorem}
+\usepackage{color}
+\usepackage{listings}
+ \lstset{language=C++, basicstyle=\ttfamily\scriptsize,
+   keywordstyle=\color{black}\bfseries, tabsize=4,
+   stringstyle=\ttfamily, commentstyle=\it,
+   extendedchars=true, breaklines=true
+   }
+\usepackage{hyperref}
+\usepackage{psfrag}
+%\usepackage{makeidx}
+\usepackage{graphicx}
+\DeclareGraphicsExtensions{.eps, .jpg}
+
+\setlength{\parskip}{1.5ex plus0.5ex minus0.5ex}   % Abstand zwischen Absätzen
+\setlength{\parindent}{0pt}                        % keine Einrückung der ersten Absatzzeile
+
+% fuer Zitate
+\usepackage[round]{natbib}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Th}{\mathcal{T_h}}
+\newcommand{\Dune}{\texttt {DUNE}}
+\newcommand{\Grid}{\texttt {dune-grid}}
+\newcommand{\Fem}{\texttt {dune-fem}}
+\newcommand{\todo}{{\color{red}{\quad !Here is still something to do!}}}
+
+%The theorems
+\theorembodyfont{\upshape}
+\theoremheaderfont{\sffamily\bfseries}
+\newtheorem{exc}{Excercise}
+\newtheorem{rem}{Remark}
+\newtheorem{lst}{Listing}
+\newtheorem{warn}{Warning}
+
+\pagestyle{scrheadings}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% titlepage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\title{Installation guide for \Fem\\
+%\vspace{10mm}
+%\includegraphics{pics/dune-logo1}
+}
+
+\author{The Freiburg \Dune\ Group$^\ast$}
+
+%\date{\today}
+
+\publishers{
+{\normalsize $^\ast$Abteilung für Angewandte Mathematik, Universität Freiburg,\\
+Hermann-Herder-Str.~10, D-79104 Freiburg, Germany}\\
+%
+%\bigskip
+{\normalsize \url{http://www.mathematik.uni-freiburg.de/IAM/Research/projectskr/dune/}}
+}
+
+
+\begin{document}
+  \maketitle
+  \input{installation_body.tex}
+\end{document}

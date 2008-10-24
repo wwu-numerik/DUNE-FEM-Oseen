@@ -1,0 +1,29 @@
+femhowto.localdg.verbose: 6
+
+# Default parameter file for fem/localdg/advectdiffusion/dgtest.cc
+femhowto.localdg.diffusionTimeStep: 1
+femhowto.localdg.epsilon: 0.003
+femhowto.localdg.gridFile: ../macrogrids/unitcube2.dgf
+femhowto.localdg.eocSteps: 4
+femhowto.localdg.startLevel: 1
+femhowto.localdg.startTime: 0
+femhowto.localdg.endTime: 0.5
+femhowto.localdg.globalTimeStep: 1e4 
+femhowto.localdg.printCount: 10
+# femhowto.localdg.cfl: 0.15
+
+
+# Output parameters
+# OutputPath 	
+fem.prefix: ./grape
+# name for data set  
+fem.io.datafileprefix: solution
+# format of output: 0 = GRAPE, 1 = VTK, 2 = VTK vertex data, 3 = gnuplot
+fem.io.outputformat: 0
+# GrapeDisplay (0 = no, 1 = yes)
+fem.io.grapedisplay: 0
+# SaveStep (write data every `saveStep' time period, <=0 deactivates) 
+fem.io.savestep: 0.02
+# SaveCount (write data every saveCount time steps, <=0 deactivates)
+fem.io.savecount: -1
+

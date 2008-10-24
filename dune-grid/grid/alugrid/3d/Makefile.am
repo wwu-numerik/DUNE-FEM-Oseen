@@ -1,0 +1,19 @@
+libalu3d_la_CXXFLAGS = @AM_CPPFLAGS@ $(ALUGRID_CPPFLAGS) 
+libalu3d_la_LIBADD = 
+
+noinst_LTLIBRARIES = libalu3d.la
+if ALUGRID
+  libalu3d_la_SOURCES = mappings.cc topology.cc faceutility.cc 
+else 
+  libalu3d_la_SOURCES = topology.cc 
+endif
+
+alu3dgriddir = $(includedir)/dune/grid/alugrid/3d
+alu3dgrid_HEADERS = alu3dinclude.hh \
+  datahandle.hh memory.hh grid.hh grid_imp.cc \
+  mappings.hh mappings_imp.cc topology.hh entity.hh entity_imp.cc \
+  faceutility.hh faceutility_imp.cc geometry.hh geometry_imp.cc \
+  indexsets.hh iterator.hh iterator_imp.cc alu3diterators.hh \
+  alu3dutility.hh 
+
+include $(top_srcdir)/am/global-rules

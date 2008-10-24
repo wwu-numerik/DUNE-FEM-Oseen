@@ -1,0 +1,13 @@
+DGF
+Interval
+-0.5  -0.5     % first corner 
+ 0.5   0.5   % second corner
+40     40     % 10 cells in x and 1 in y direction
+#
+
+Simplex
+#
+
+BOUNDARYDOMAIN
+default 1     % default boundary id
+#BOUNDARYDOMAIN

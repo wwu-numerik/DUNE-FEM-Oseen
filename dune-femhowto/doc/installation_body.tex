@@ -1,0 +1,89 @@
+% This file is included by
+%    -  1_what_is_dune.tex and therefore by femhowto.tex
+%    -  installation-fem.tex to provide a nice installation guide for the internal website
+
+\section{Download and installation}
+This section describes how members of the Section of Applied Mathematics in Freiburg can create a local working installation of \Dune\ .
+
+These are only the basic steps, maybe you have to tune up some options. For non-Freiburg users, the steps are similiar.
+For more information, see \url{http://www.dune-project.org/doc/installation-notes.html}.
+
+\begin{itemize}
+\item Create a directory for your \Dune\ installation and change to it. For example:
+\begin{lstlisting}
+mkdir dune
+cd dune
+\end{lstlisting}
+
+% \item Download the latest (stable) core modules from the official \Dune\ homepage: \url{http://www.dune-project.org/download.html}.
+%    The module DUNE ISTL is usually not needed for Freiburg.
+%
+% \item Copy the tar.gz Archives to your \Dune\ directory and extract them. For example:
+% \begin{lstlisting}
+% tar -xzf dune-common-1.0.tar.gz
+% tar -xzf dune-grid-1.0.tar.gz
+% tar -xzf dune-grid-howto-1.0.tar.gz
+% \end{lstlisting}
+%
+% \item Rename the resulting directories:
+% \begin{lstlisting}
+% mv dune-common-1.0 dune-common
+% mv dune-grid-1.0 dune-grid
+% mv dune-grid-howto-1.0 dune-grid-howto
+% \end{lstlisting}
+%
+% \item Download \Dune\ \Fem\ via svn: Just type in your \Dune\ directory:
+% \begin{lstlisting}[language=csh]
+% svn checkout svn+ssh://morgoth/raid5/dune/src/svn-archive/
+%       dune-fem/release-0.9 dune-fem
+% svn checkout svn+ssh://morgoth/raid5/dune/src/svn-archive/dune-femhowto
+% \end{lstlisting}
+
+\item Checkout the necessary \Dune\ repositories via \lstinline!svn!. To do this, type the following commands in your \Dune\ directory:
+  \begin{lst}[File ./installation/checkout.sh] \label{checkout.sh} \mbox{}
+    \lstinputlisting[language=bash]{./installation/checkout.sh}
+  \end{lst}
+Alternatively, you can download the corresponding tar.gz archives from \url{http://www.dune-project.org/download.html} and \url{http://dune.mathematik.uni-freiburg.de} and extract them into your \Dune\ directory.
+
+
+\item Create a file named \lstinline!config.opts! with the following content in your \Dune\ directory. Consider this file as an example, that will work correctly only for members of the Section of Applied Mathematics in Freiburg! Other users have to adapt (or to comment out) at least the paths to the external modules.
+
+  \begin{lst}[File ./installation/config.opts] \label{config.opts} \mbox{}
+    \lstinputlisting{./installation/config.opts}
+  \end{lst}
+
+\item Finally, configure und compile \Dune\ using the \lstinline!dunecontrol! script: Type in your \Dune\ directory:
+\begin{lstlisting}
+       ./dune-common/bin/dunecontrol --opts=config.opts all
+\end{lstlisting}
+
+   The script needs some minutes to finish. After finishing, you can start working!
+\end{itemize}
+
+
+You can find the file \texttt{config.opts} and shell scripts with the commands described above under
+\url{http://www.mathematik.uni-freiburg.de/IAM/Research/projectskr/dune/freiburg_intern/tools.html}
+or in the subdirectory \texttt{doc/installation} of the \texttt{dune-femhowto} module.
+
+
+
+
+\section{Create your own project}
+You can create your own \Dune\ project by using the \lstinline!duneproject! script. Type in your \Dune\ directory
+\begin{lstlisting}
+           ./dune-common/bin/duneproject
+\end{lstlisting}
+and follow the instructions. After creating your project, you have to rerun the \lstinline!dunecontrol! script:
+\begin{lstlisting}
+       ./dune-common/bin/dunecontrol --opts=config.opts --module=YOUR_MODULE_NAME all
+\end{lstlisting}
+Take a look in your new \Dune\ project directory. The \lstinline!duneproject! script created a sample source code file, which was compiled by \lstinline!dunecontrol!.
+
+If you want to write your own code, replace the sample source code with your own code, and modify the file
+\lstinline!Makefile.am!, if necessary. You can also create your own subdirectories, but then you additionally have to
+modify the file \lstinline!configure.ac! and run again \lstinline!dunecontrol! in order to create the makefiles in the subdirectories.
+If you are unsure how to do these modifications, look how this is done in the core \Dune\ Modules,
+or read the \Dune\ Build System Howto on \url{http://www.dune-project.org/doc/buildsystem/buildsystem.pdf}.
+
+
+

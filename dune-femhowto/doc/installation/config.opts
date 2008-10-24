@@ -1,0 +1,31 @@
+#Standard flags. Used as default!
+STDFLAGS="-O3 -Wall -DNDEBUG -funroll-loops -finline-functions"
+
+#More optimizing flags. 
+#The last option (-march=opteron) has to be adapted to your processor type, or just leave it out.
+OPTIMFLAGS="-O3 -Wall -DNDEBUG -funroll-loops -finline-functions \
+--param max-inline-insns-single=4000 \
+--param large-function-growth=4500 \
+--param inline-unit-growth=4000 \
+-ffast-math -fomit-frame-pointer -msse3 -mfpmath=sse -march=opteron"
+  
+#Debugging flags.
+DEBUGFLAGS="-g -Wall"  
+
+#Paths to modules installed in Freiburg. Works only for internal users.
+MODDIR="/hosts/morgoth/raid5/dune/modules_$HOSTTYPE/"
+#MODDIR="/hosts/raid5/aragorn/robertk/DuneAdds/modules_x86_64"
+MODULEFLAGS="--with-alberta=$MODDIR/alberta \
+--with-alugrid=$MODDIR/alugrid \
+--with-ug=$MODDIR/ug \
+--disable-parallel \
+--x-includes=/usr/X11R6/include \
+--x-libraries=/usr/X11R6/lib \
+--with-grape=$MODDIR/grape"
+ 
+#Choose CXXFLAGS to one of the above flag options ($STDFLAGS or $DEBUGFLAGS or $OPTIMFLAGS)
+#Remove the option "--disable-documentation" if you want a local doxygen-documentation.
+CONFIGURE_FLAGS="--with-grid-dim=2 --disable-documentation CXX=g++ CXXFLAGS=\"$STDFLAGS\" $MODULEFLAGS"
+
+MAKE_FLAGS=
+

@@ -1,0 +1,49 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Problem implementation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+In this part we want to show how to work with \Dune\ \Fem. Use it as a introduction and step by step tutorial to \Fem.
+
+The \Fem\ interface was designed to translate mathematical formulations easily to computable algorithms. We will discuss several examples of classical mathematical problems like the poisson equation and how to implement different numerical schemes. 
+
+As mentioned abouve we will discuss the poisson equation in the first chapter of this quick guide. This equation can be treated with both finite element and finite volume methods. Another possibility is to use the Local Discontinuous Galerkin method.
+
+\Fem\ includes solvers for linear problems and for the solution of ODEs. They are discussed in chapter 7.
+
+At the end of this part we will look at the Input/Output methods of \Fem\ and how to visualize your data with Grape\index{Grape}.
+
+
+\section{Getting started}
+  \begin{lst}[File ../sources/gettingstarted.cc] \mbox{}
+    \lstinputlisting[basicstyle=\ttfamily\scriptsize,numbers=left, numberstyle=\tiny, numbersep=5pt]{../sources/gettingstarted.cc}
+  \end{lst}
+  In our first example, we will create a grid and a discrete function space that is defined on the grid. This program is very simple - well, it doesn't do anything. 
+
+  So, why all the typedefs? Remember, \Dune\ was designed to provide efficient implementations using generic programming techniques. Therefore, FunctionSpaces, Functions, Operators, etc. are represented by classes with several template arguments. In order to construct one these objects, you have to declare all the types needed in the beginning. 
+
+  \Fem\ helps you managing types. You can acces the most important types everywhere as they are public on every class. Use the types offered there and you will avoid mistakes and have less problems.
+
+
+\section{An application}
+In this section we present a simple application of some of the dune-fem basic concepts.We want to calcuate:
+\begin{equation}
+\int_\Omega \nabla\cdot F dx 
+\end{equation}\label{div}
+for a given discrete Function $F:\Omega\rightarrow\mathbb{R}^n$.
+This will be done in two ways:\\
+First we calculate the Volume Interal in an element by element manner :\\
+\begin{equation}
+\int_\Omega \nabla\cdot F dx =\sum_{e\in\mathcal{E}^0_{leaf}} \int_e \nabla\cdot F dx
+\end{equation}\\
+Then we use the divergence theorem:$\int_\Omega \nabla\cdot F dx= \int_{\partial\Omega}F\cdot \nu ds$ to write \ref{div}as a boundary integral: $\int_\Omega \nabla\cdot F dx =\sum_{e\in\mathcal{E}^1_{bnd}} \int_e  F\cdot\nu ds$
+  
+  
+  
+  
+  
+  
+
+
+

@@ -1,0 +1,43 @@
+\Dune, the Distributed and Unified Numerics Environment is a modular toolbox for solving partial differential equations with grid-based methods. It supports easy discretization using methods like Finite Elements, Finite Volumes, and also Finite Differences.
+
+\Dune\ is free software licensed under the GPL with a so called "runtime exception" (\url{http://www.dune-project.org/license.html}).
+
+The main intention is to create slim interfaces allowing an efficient use of legacy and/or new libraries. Using C++ techniques \Dune\ allows to use very different implementations of the same concept (i.e. grids, solvers, ...) using a common interface with a very low overhead. More: \url{http://www.dune-project.org/dune.html} \cite{duneweb}.
+
+
+
+\section{Core Modules}
+The framework consists of a number of modules which are downloadable as separate packages. The current core modules are:
+
+\begin{itemize}
+ \item \texttt{dune-common}\\
+    contains the basic classes used by all \Dune-modules. It provides some infrastructural classes for debugging and exception
+    handling as well as a library to handle dense matrices and vectors.
+ \item \Grid\\
+    is the most mature module. It defines nonconforming, hierarchically nested, multi-element-type, parallel grids in
+    arbitrary space dimensions. Graphical output with several packages is available, e.g. file output to IBM data explorer
+    and VTK (parallel XML format for unstructured grids). The graphics package Grape has been integrated in interactive mode.
+ \item \texttt{dune-istl} (Iterative Solver Template Library)\\
+    provides generic sparse matrix/vector classes and a variety of solvers based on these classes. A special feature is the use
+    of templates to exploit the recursive block structure of finite element matrices at compile time. Available solvers include
+    Krylov methods, (block-) incomplete decompositions and aggregation-based algebraic multigrid.
+\end{itemize}
+
+
+
+
+\section{Available Grid Implementations}\label{availablegrids}
+ So far six grid implementations are available through the \Grid interface. Each is geared towards a different purpose.
+\begin{itemize}
+    \item \texttt{ONEDGRID}: A sequential locally adaptive grid in one space dimension
+    \item \texttt{SGRID}: A structured grid in n space dimensions
+    \item \texttt{YASPGRID}: A structured parallel grid in n space dimensions (used as default grid)
+    \item \texttt{ALUGRID\_CUBE, ALUGRID\_SIMPLEX}: A parallel locally adaptive grid in 2 and 3 space dimensions
+    \item \texttt{ALBERTAGRID}: The grid manager of the Alberta toolbox
+    \item \texttt{UGGRID}: The grid manager of the UG toolbox (UG is not freely available)
+\end{itemize}
+More information about these grids: \url{http://www.dune-project.org/doc/devel/features.html}.
+
+
+
+\input{installation_body.tex}

@@ -1,0 +1,16 @@
+CXXFLAGS = -g
+POLORD=2
+GRIDTYPE = ALBERTAGRID
+GRIDDIM=2
+LDADD = $(ALL_PKG_LDFLAGS) $(ALL_PKG_LIBS) $(MPI_LDFLAGS)
+CPPFLAGS = $(ALL_PKG_CPPFLAGS) -DPOLORDER=$(POLORD) -D$(GRIDTYPE)
+#if ALBERTA
+#ADAPTPROG = l2pro adapt
+#endif
+L2PROJECTIONPROG = l2projection 
+
+noinst_PROGRAMS = $(L2PROJECTIONPROG)
+l2projection_SOURCES = main.cc
+
+# do everything in the subdirs
+SUBDIRS = poisson localdg
