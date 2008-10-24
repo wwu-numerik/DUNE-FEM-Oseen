@@ -1,2 +1,0 @@
-# IGNORE_HEADERS
-EXTRA_DIST = *.m
