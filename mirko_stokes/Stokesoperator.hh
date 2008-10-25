@@ -1,6 +1,10 @@
 #ifndef DUNE_STOKESPASS_HH
 #define DUNE_STOKESPASS_HH
 
+/** \file
+    \brief Stokesoperator.hh
+ */
+
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/pass/selection.hh>
 #include <dune/fem/pass/discretemodel.hh>

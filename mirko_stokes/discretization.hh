@@ -4,6 +4,10 @@
 #ifndef __STOKES_DISCRETIZATION_HH__
 #define __STOKES_DISCRETIZATION_HH__
 
+/** \file
+    \brief discretization.hh is the interface class used to define the discretization of the problem
+ */
+
 #define GLATT 1			
 #define SNG 0
 #define STEP 0

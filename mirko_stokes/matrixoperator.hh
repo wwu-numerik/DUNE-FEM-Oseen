@@ -1,6 +1,10 @@
 #ifndef DUNE_MATRIX_OPERATOR_HH
 #define DUNE_MATRIX_OPERATOR_HH
 
+/** \file
+    \brief matrixoperator.hh
+ */
+
 #include <dune/fem/function/common/discretefunction.hh>
 //#include "../discretefunction/common/discretefunction.hh"
 #include <dune/fem/operator/common/operator.hh>

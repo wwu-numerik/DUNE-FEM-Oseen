@@ -1,6 +1,9 @@
 #ifndef DUNE_SPINVERSE_OPERATORS_HH
 #define DUNE_SPINVERSE_OPERATORS_HH
 
+/** \file
+    \brief SPinverseoperator_symm.hh
+ */
 
 #include <dune/fem/function/common/discretefunction.hh>
 #include <dune/fem/operator/common/operator.hh>

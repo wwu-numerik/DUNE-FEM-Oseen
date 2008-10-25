@@ -1,7 +1,9 @@
 #ifndef __LDGEX_FLUX_CC__
 #define __LDGEX_FLUX_CC__
 
-
+/** \file
+    \brief fluxes.hh
+ */
 
 template<class ModelImp>
 class StokesFlux

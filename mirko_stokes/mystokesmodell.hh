@@ -14,6 +14,10 @@
 #ifndef DUNE_ELLIPTICMODEL_HH
 #define DUNE_ELLIPTICMODEL_HH
 
+/** \file
+    \brief mystokesmodell.hh implementation of default elliptic models
+ */
+
 #include <sstream>
 #include <dune/fem/operator/model/linearellipticmodel.hh>
 #include <dune/fem/space/common/functionspace.hh>

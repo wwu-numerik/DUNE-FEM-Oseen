@@ -1,6 +1,10 @@
 #ifndef DUNE_EXAMPLEDISCRETEMODELS_HH
 #define DUNE_EXAMPLEDISCRETEMODELS_HH
 
+/** \file
+    \brief discretemodels.hh
+ */
+
 // FR passes 
 // #include <dune/fem/pass/dgpass.hh>
 // #include <dune/fem/pass/discretemodel.hh>
