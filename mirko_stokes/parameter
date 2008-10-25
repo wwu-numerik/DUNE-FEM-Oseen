@@ -1,0 +1,26 @@
+#parameter der numerischen Fluesse
+c11: 1.
+c12: 0.0
+d11: 1 
+d12: 0.0
+
+
+%toogle display
+display: 1 
+
+% Calculates rom StartLevel to EndLevel
+StartLevel: 2
+
+Grid: 2dmacro.dgf
+%Ausgabe der Konvergenztabelle
+Output: out.txt 
+%Ausgabe f\"ur Gnu plot
+Plot:	plot.txt
+%Anzahl der Rechnungen
+Runs: 1
+. 
+
+ 
+
+
+

@@ -1,0 +1,5 @@
+level: 2
+\begin{tabular}{l|l|l|l|l}
+level & $||u-u_{h}||_2$ & EOC & $||p-p_{h}||_2$ & EOC  \\ 
+$128$ & $ 0$ & $nan$ & $0.0677181$ & $1.48169$  \\ 
+\end{tabular}

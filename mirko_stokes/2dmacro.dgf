@@ -1,0 +1,21 @@
+DGF
+Vertex
+-1.0 -1.0 %
+1.0 -1.0 %
+1.0 1.0 %
+-1.0 1.0 %
+#
+SIMPLEX
+2 0 1 %
+0 2 3 %
+#
+BOUNDARYSEGMENTS
+1  0 1
+#
+BOUNDARYDOMAIN
+default 1     % all other boundary segments have id 1
+#
+#2dmacro.dgf
+
+
+
