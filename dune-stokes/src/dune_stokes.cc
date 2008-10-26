@@ -9,17 +9,29 @@
 #include"dune/common/mpihelper.hh" // An initializer of MPI
 #include"dune/common/exceptions.hh" // We use exceptions
 
+#include"traits.hh"
+#include "parameterhandler.hh"
+
+/**
+ *  @brief main function
+ *
+ *  \c more main function
+ *
+ *  \attention attention
+ *
+ *  @param argc number of arguments from command line
+ *  @param argv array of arguments from command line
+ **/
 int main(int argc, char** argv)
 {
   try{
     //Maybe initialize Mpi
-    Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
-    std::cout << "Hello World! This is dune-stokes." << std::endl;
-    if(Dune::MPIHelper::isFake)
-      std::cout<< "This is a sequential program." << std::endl;
-    else
-      std::cout<<"I am rank "<<helper.rank()<<" of "<<helper.size()
-        <<" processes!"<<std::endl;
+//    Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
+
+    ParameterHandler pm ( "/usr/local/dune_felix-rene/dune-stokes/src/test.param") ;
+    pm.Print();
+    double tmp = pm.GetParameter<double>( "k_x" );
+    std::cout << tmp << std::endl;
     return 0;
   }
   catch (Dune::Exception &e){

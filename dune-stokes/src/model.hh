@@ -1,3 +1,4 @@
-/** \file traits.hh
+/** \file model.hh
     \brief  brief
  **/
+
