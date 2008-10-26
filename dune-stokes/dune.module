@@ -1,0 +1,10 @@
+
+#dune module information file#
+##############################
+
+#Name of the module
+Module:dune-stokes
+Version:0.0
+Maintainer:felix.albrecht@math.uni-muenster.de
+#depending on 
+Depends:dune-common dune-grid dune-istl dune-fem
