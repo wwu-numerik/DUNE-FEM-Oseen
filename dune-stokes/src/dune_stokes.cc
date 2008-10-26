@@ -1,5 +1,9 @@
+/** \file dune_stokes.cc
+    \brief  brief
+ **/
+
 #ifdef HAVE_CONFIG_H
-# include "config.h"     
+# include "config.h"
 #endif
 #include <iostream>
 #include"dune/common/mpihelper.hh" // An initializer of MPI

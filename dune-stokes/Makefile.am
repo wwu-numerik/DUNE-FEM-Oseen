@@ -7,15 +7,18 @@ EXTRA_DIST=dune.module
 #LDADD = $(UG_LDFLAGS) $(AMIRAMESH_LDFLAGS) $(UG_LIBS) $(AMIRAMESH_LIBS)
 #AM_CPPFLAGS = $(UG_CPPFLAGS) $(AMIRAMESH_CPPFLAGS)
 
-noinst_PROGRAMS = dune_stokes
-
-dune_stokes_SOURCES = dune_stokes.cc
-
-dune_stokes_CXXFLAGS = $(MPI_CPPFLAGS) $(UG_CPPFLAGS) $(AMIRAMESH_CPPFLAGS) $(ALBERTA_CPPFLAGS)
-dune_stokes_LDADD = $(MPI_LDFLAGS) $(ALBERTA_LDFLAGS) $(ALBERTA_LIBS) $(AMIRAMESH_LDFLAGS) $(AMIRAMESH_LIBS) $(UG_LDFLAGS) $(UG_LIBS) $(MPI_LDFLAGS) $(DUNE_LDFLAGS) $(DUNE_LIBS)
+# do everything in the subdirs
+DIST_SUBDIRS = doc src
+if BUILD_DOCS
+SUBDIRS = doc src
+else
+SUBDIRS = src
+endif
 
 # don't follow the full GNU-standard
 # we need automake 1.5
 AUTOMAKE_OPTIONS = foreign 1.5
 # pass most important options when "make distcheck" is used
 DISTCHECK_CONFIGURE_FLAGS = --with-dune=$(DUNEROOT) CXX="$(CXX)" CC="$(CC)"
+
+include $(top_srcdir)/am/global-rules

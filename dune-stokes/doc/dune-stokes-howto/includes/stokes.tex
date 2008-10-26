@@ -1,0 +1,259 @@
+\chapter{Stokes}
+\section{Problemdefinition}
+
+\begin{definition}\textbf{Stationäres Stokes Problem}
+	\label{def:stat_stokes_prob}
+	\index{Stokes}
+    Mit $\Omega \in  \subseteq \R^d , d = 2,3$ beschränkt:
+    \begin{align}\label{eq:stat_stokes_prob}
+        \nabla p - \mu \Delta u &= f & & \text{in } \Omega \notag \\
+        \nabla \cdot u &= 0 & & \text{in } \Omega \\
+        u &= g_D & & \text{auf } \partial \Omega \notag 
+    \end{align}
+\end{definition}
+
+\begin{bemerkung}
+    Mit \eqref{eq:stat_stokes_prob} gilt:
+    \begin{align*}
+        u,f,g_D &: \Omega \longrightarrow \R^d \\
+        p &: \Omega \longrightarrow \R \\
+        \mu &\in \R^{\geq 0} \\
+        \int_{\partial \Omega}{g_D \cdot n \ds} &= 0 \quad\text{n äussere Einheitsnormale}\\
+    \end{align*}
+
+\end{bemerkung}
+
+\begin{definition}\textbf{System mit Hilfsvariable}\label{def:stokes_system_hilfsv}
+    \begin{subequations}
+        \begin{align}\label{def:stokes_system_hilfsv|a}
+            \sigma &= \nabla u & & \text{in } \Omega \\
+            \label{def:stokes_system_hilfsv|b}
+            \nabla p - \mu \nabla \cdot \sigma &= f & & \text{in } \Omega \\
+            \label{def:stokes_system_hilfsv|c}
+            \nabla \cdot u &= 0 & & \text{in } \Omega \\
+            \label{def:stokes_system_hilfsv|d}
+            u &= g_D & & \text{auf } \partial \Omega 
+        \end{align}
+    \end{subequations}
+\end{definition}
+
+\begin{bemerkung}\textbf{dabei gilt:}
+    \begin{align*}
+        \sigma : \Omega \longrightarrow \R^{dxd}
+    \end{align*}
+
+\end{bemerkung}
+
+\section{Notation}\label{sec:notation}
+\begin{itemize}
+    \begin{item}$v \in \Rd : \nabla v \in \Rdd$
+        \begin{align*}
+         (\nabla v)_{ij} &= \partial_j v_i \\
+         \nabla v &=    \begin{pmatrix} 
+                            \cdots  & \nabla v_1    & \cdots    \\
+                                    & \vdots        &           \\ 
+                            \cdots  & \nabla v_d    & \cdots    \\
+                        \end{pmatrix}
+        \end{align*}
+    \end{item}
+    
+    \begin{item}$\sigma \in \Rdd  : \nabla \cdot \sigma \in \Rd$
+        \begin{align*}
+            (\nabla\cdot\sigma)_i &= \sum_{j=1}^{d} \partial_j\sigma_{ij} \\
+            \nabla \cdot \sigma &=    \begin{pmatrix} 
+                            \nabla \cdot \sigma_1   \\
+                            \vdots                  \\ 
+                            \nabla \cdot \sigma_d   \\
+                        \end{pmatrix} 
+        \end{align*}
+    \end{item}
+    
+    \begin{item}$v \in \Rd, u \in \Rd, v \otimes u \in \Rdd$
+        \begin{align*}
+            ( v \otimes u ) = v_i u_j \\
+        \end{align*}
+    \end{item}
+    
+    \begin{item}$\sigma,\tau \in \Rdd \quad \sigma : \tau \in \R $
+        \begin{align*}
+            \sigma : \tau = \sum_{i,j = 1}^d \sigma_{ij} \tau_{ij} \\
+        \end{align*}
+    \end{item}
+
+    \begin{item}$v,u \in \Rd , \quad \sigma \in \Rdd$
+        \begin{align*}
+            v \cdot \sigma \cdot n = \sum_{j,i=1}^d v_i \sigma_{ij} u_j = \sigma : ( v \otimes u ) \\
+        \end{align*}
+    \end{item}
+\end{itemize}
+
+\section{schwache Formulierung}\label{sec:schwache_form}
+Multiplikation mit testfkt, yadda yadda \\
+mit $ \omega \in \Omega, q \in D(\omega), v \in D(\omega)^d, \tau \in D(\omega)^{dxd}$
+
+
+\begin{itemize}
+    \begin{item} \eqref{def:stokes_system_hilfsv|a} :
+        \begin{align}
+            \int_\omega \sigma : \tau = \int_\omega \nabla u : \tau \dx &= 
+                \int_{\partial_\omega} \underbrace{u \cdot \tau \cdot n_\omega}_{\tau : ( u \otimes u_\omega )} \ds - \int_\omega u \cdot \nabla\cdot \tau \dx 
+        \end{align}
+    \end{item}
+    
+    \begin{item} \eqref{def:stokes_system_hilfsv|b} :
+        \begin{align}
+            \int_\omega \nabla p \cdot v \dx - \mu  \int_\omega v \cdot ( \nabla \cdot \sigma) \dx 
+                = \int_\omega f \cdot v \dx                 
+        \end{align}
+    \end{item}
+    
+    \begin{item} \eqref{def:stokes_system_hilfsv|c} :
+        \begin{align}
+            \int_\omega \sigma : \nabla v \dx - \mu  \int_\omega \sigma : (v \otimes n_\omega) \dx 
+                 & \notag \\
+            - \int_\omega p \cdot \nabla \cdot v \dx + \int_{\partial\omega } p \cdot v \cdot n \ds &= \int_\omega f \cdot v \dx                 
+        \end{align}
+    \end{item}
+    
+    \begin{item} \eqref{def:stokes_system_hilfsv|d} :
+        \begin{align}
+            0 = \int_\omega \nabla \cdot u \cdot q \dx = \int_\omega u \cdot n_\omega q \ds 
+                - \int_{\partial \omega} u \cdot q \dx 
+        \end{align}
+    \end{item}
+\end{itemize}
+
+\begin {definition}\textbf{Funktionenräume}\label{def:kont_funk_räume}
+    \begin{align}
+        \Sigma &:= \{\sigma \in L^2(\Omega)^{dxd} \,\lvert\; \sigma_{ij}|_T \in H^1(T), \forall T \in \mathcal{T} ,\forall i,j\} \\
+        V &:= \{v \in L^2(\Omega)^{d} \,\lvert\; v_{i} |_T \in H^1(T), \forall T \in \mathcal{T} ,\forall i\} \\
+        Q &:= \left\{ q \in L^2(\Omega) \,\lvert\; q |_T \in H^1(T), \forall T \in \mathcal{T} ,\int_\Omega q \dx = 0\right\} 
+    \end{align}    
+\end {definition}
+
+\begin {definition}\textbf{Diskrete Funktionenräume}\label{def:disk_funk_räume}
+    \begin{align}
+        \Sigma_N &:= \{\sigma \in L^2(\Omega)^{dxd} \,\lvert\; \sigma_{ij} |_T \in \delta(T), \forall T \in \mathcal{T} ,\forall i,j\} \\
+        V_N &:= \{v \in L^2(\Omega)^{d} \,\lvert\; v_{i} |_T \in \mathcal{V}(T), \forall T \in \mathcal{T} ,\forall i\} \\
+        Q_N &:= \left\{ q \in L^2(\Omega) \,\lvert\; q |_T \in \mathcal{Q}(T), \forall T \in \mathcal{T} ,\int_\Omega q \dx = 0\right\} 
+    \end{align}    
+\end {definition}
+
+\begin{definition}\textbf{diskrete schwache Lösung}\label{def:disk_schw_lsg}
+    $(\sigma_N,u_N,p_N) \in (\Sigma_N \times V_N \times Q_N ) \forall T \in \mathcal{T}$ :
+    \begin{align}
+        \int_T \sigma_N : \tau \dx = -\int_T u_N \cdot \nabla \cdot \tau \dx 
+            + \int_{\partial T} \hat{u}_{N,\sigma} \cdot \tau \cdot n_T \ds \\
+        \mu \int_T \sigma_N : \nabla v \dx - \mu \int_{\partial T} \hat{\sigma}_N : (v \otimes n_T ) \ds 
+            &- \int_T p_N\cdot \nabla \cdot v \dx \notag \\
+            + \int_{\partial T} \hat{p}_N \cdot v \cdot n_T \ds &= f \cdot v \dx \\
+        -\int_T u_N \cdot \nabla q \dx + \int_{\partial T} \hat{u}_{N,p} \cdot n_T q \ds = 0
+    \end{align}
+
+\end{definition}
+
+%inser normalen erkläruings bild thingy
+
+\begin{definition}\textbf{Mittelwert, Sprung}\label{def:mw_sprung}
+    \begin{align}
+        \ldc p \rdc &:= ( p^+ + p^- ) / 2 &\in\R \\
+        \ldc u\rdc &:= ( u^+ + u^- ) / 2 &\in\Rd \\
+        \ldc \sigma\rdc &:= ( \sigma^+ + \sigma^- ) / 2 &\in\Rdd \\
+        \lds p\rds &:= p^+ n^+ + p^- n^- &\in\Rd \\
+        \lds u\rds &:= u^+ \cdot n^+ + u^- \cdot n^- &\in\R \\
+        \ulusp &:= u^+ \otimes n^+ + u^- \otimes n^- &\in\Rdd \\
+        \lds \sigma\rds &:= \sigma^+ \cdot n^+ + \sigma^- \cdot n^- &\in\Rd \\
+    \end{align}
+
+\end{definition}
+
+\begin{definition}\textbf{Numerische Flüsse}\label{def:num_flusse}
+    $C_{11},D_{11} \in \R$ und $C_{12},D_{12} \in \Rd$
+    \begin{align}
+        \begin{bmatrix} \hat{\sigma} \\ \hat{u}_\sigma \end{bmatrix} &:= 
+            \begin{bmatrix} \ldc \sigma \rdc \\ \ldc u \rdc \end{bmatrix} 
+            - \begin{bmatrix} C_{11}\ulusp + \lds \sigma \rds \otimes C_{12} \\ -\ulusp \cdot C_{12}\end{bmatrix} \\
+        \begin{bmatrix} \hat{\sigma} \\ \hat{u}_\sigma \end{bmatrix} &:= 
+            \begin{bmatrix} \sigma^+ - C_{11}(u^+ -g_D) \otimes n^+ \\ g_D \end{bmatrix} \\
+        \begin{bmatrix} \hat{u}_p \\ \hat{p} \end{bmatrix} &:= 
+            \begin{bmatrix} \ldc u \rdc \\ \ldc p \rdc \end{bmatrix} 
+            - \begin{bmatrix} D_{11}\lds p \rds + D_{12}  \lds u \rds 
+                   \\ - D_{12} \cdot \lds p \rds  
+              \end{bmatrix} \\
+        \begin{bmatrix} \hat{u}_p \\ \hat{p} \end{bmatrix} &:= 
+            \begin{bmatrix} g_D \\ p^+ \end{bmatrix} \\            
+    \end{align}
+
+\end{definition}
+
+\section{gemischte Formulierung}\label{sec:gem_form}
+    \begin{align}
+        &\underbrace{\StinT \int_T \sigma_N : \tau \dx}_{a(\sigma_N,\tau)} \notag \\
+                &+ \underbrace{\StinT \int_T u_N \cdot \nabla \cdot \tau \dx 
+        - \SeinEI \int_e (\ldc u \rdc + \lds u \rds \cdot C_{12}) \cdot \tau \cdot n_e \ds }_{b(u_N,\tau)} \notag \\
+        &- \underbrace{\SeinED \int_e g_D \cdot \tau \cdot n_e \ds}_{f(\tau)} = 0
+    \end{align}
+    \begin{align}
+        \mu \StinT \int_T \sigma_N : \nabla v \dx
+            &- \mu \SeinEI \int_e \ldc \sigma \rdc - C_{11} \ulusp + \lds \sigma \rds \otimes C_{12}) : (v \otimes n_e) \ds \notag \\
+        &- \mu \SeinED \int_e \sigma^+ - C_{11} ( u^+ - g_D) \otimes) u^+ ) : ( v \otimes n_e ) \ds \notag \\
+        &- \StinT \int_T p_n \cdot \nabla \cdot v \dx - \mu \SeinED \int_e C_{11} (g_D \otimes n^+): (v \otimes n_e) \ds \notag \\
+           &+ \SeinEI \int_e ( \ldc p \rdc - D_{12} \cdot \lds p \rds) \cdot v \cdot n_e \ds \notag \\
+           &+ \SeinED \int_e p^+ \cdot v \cdot n_e \ds \notag \\
+           &- \StinT \int_T f \cdot v \dx = 0
+    \end{align}
+
+\section{keineAHunungwas}
+    Finde $( \sigma_N,u_N,p_N) \in \Sigma_n \times V_N \times Q_N$ sodass:
+    \begin{align*}
+        a(\sigma_N, \tau) &+ b(u_N,\tau) & &= f(\tau), \\
+        -b(v,\sigma_N) &+ c(u_N,v) &+ d(v,p_N) &=g(v), \\
+        & &- d(U_N,q) &+ e(p_N,q) &= h(q),
+    \end{align*}
+    $\forall(\tau,v,q) \in \Sigma_n \times V_N \times Q_N $
+    wobei:
+    \begin{subequations}
+        \begin{align}
+            a(\sigma,\tau) &:= \int_\Omega \sigma : \tau \dx \\
+            b(u,\tau) &:= \underbrace{\StinT \int_T u \cdot \nabla \cdot \tau \dx - 
+                                    \IeinEI{(\ldc u \rdc} + \ulusp \cdot C_{12}) \cdot \lds \tau \rds \ds }_{
+                            \StinT \int_T{ \nabla u : \tau \dx } + \IeinEI{(\ldc \tau \rdc - \lds \tau \rds \otimes
+                                           C_{12}):\ulusp \ds} + \IeinED{\tau : (u \otimes u ) \ds } } \\
+            c(u,v) &:= \mu \IeinEI{C_{11}\ulusp : \ulvsp \ds} + \mu \IeinED{C_{11}(u \otimes u ) : ( v \otimes u ) \ds} \\
+            d(v,p) &:= \underbrace{-\StinT{\int_T{p\nabla \cdot v \ds} + \IeinEI{\ldc p \rdc -
+                                                                        D_{12} \cdot \lds p\rds) \lds v \rds \ds }
+                              + \IeinED{pv\cdot n \ds} } }_{
+                          \StinT{\int_T{v\cdot \nabla p \dx} \IeinEI{(\ldc v \rdc + D_{12} \lds v \rds ) \cdot \lds p \rds} }} \\
+            e(p,q) &:= \IeinEI{D_{11} \lds p \rds \cdot \lds q \rds \ds} \\
+            f(\tau) &:= \IeinED{g_D \cdot \tau \cdot u \ds} \\
+            g(v) &:= \int_\Omega{f \cdot v \dx + \mu \IeinED{C_{11}(g_D \otimes u ) \cdot (v \otimes u ) \ds}}\\
+            h(q) &:= -\IeinED{g_D \cdot u q \ds}
+        \end{align}
+    \end{subequations}
+    
+\section{page 8}
+    \begin{definition}
+        \begin{align*}
+            \mathcal{T} &:= \{ T_i | i = 0,_,I-1\} \\
+            \Sigma_h &:= \textless \{ \tau_m| m=0,_,M-1\} \textgreater  \\
+            V_h &:= \textless \{ v_l| l=0,_,L-1\} \textgreater  \\
+            Q_h&:= \textless \{ q_k| k=0,_K-1\} \textgreater  \\
+        \end{align*}
+    \end{definition}
+
+\begin{definition}
+        \begin{align*}
+            \mathcal{T} &:= \{ T_i | i = 0,_,I-1\} \\
+            \sigma_h &\in \Sigma_h : \sigma_h = \sum_{m=0}^{M-1}{\sigma_m\tau_m}\\
+            u_h &\in V_h : u_h = \sum_{l=0}^{L-1}{u_l v_l} \\
+            p_h &\in Q_h : p_h = \sum_{k=0}^{K-1}{p_k q_k} 
+        \end{align*}
+    \end{definition}
+
+
+
+
+
+
+
+
