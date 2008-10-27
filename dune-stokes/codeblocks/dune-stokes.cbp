@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="dune-stokes" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/dune-stokes" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/dune-stokes" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+			<Add directory="../../dune-common/" />
+			<Add directory="../../dune-grid/" />
+			<Add directory="../../dune-istl/" />
+			<Add directory="../../dune-fem/" />
+			<Add directory="../../dune-stokes/" />
+		</Compiler>
+		<Unit filename="../src/discretemodel.hh" />
+		<Unit filename="../src/discretization.hh" />
+		<Unit filename="../src/dune_stokes.cc" />
+		<Unit filename="../src/fluxes.hh" />
+		<Unit filename="../src/model.hh" />
+		<Unit filename="../src/parameterhandler.hh" />
+		<Unit filename="../src/stuff.hh" />
+		<Unit filename="../src/traits.hh" />
+		<Unit filename="../stokes/spinverseoperator.hh" />
+		<Unit filename="../stokes/stokespass.hh" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
