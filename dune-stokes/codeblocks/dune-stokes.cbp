@@ -14,6 +14,8 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-DGRIDTYPE=ALUGRID_SIMPLEX" />
+					<Add option="-DGRIDDIM=3" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -24,6 +26,8 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add option="-DGRIDTYPE=ALUGRID_SIMPLEX" />
+					<Add option="-DGRIDDIM=3" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -33,12 +37,38 @@
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
+			<Add option="-DGRIDTYPE=ALUGRID_SIMPLEX" />
+			<Add option="-DGRIDDIM=3" />
+			<Add option="-DENABLE_ALBERTA" />
 			<Add directory="../../dune-common/" />
 			<Add directory="../../dune-grid/" />
 			<Add directory="../../dune-istl/" />
 			<Add directory="../../dune-fem/" />
 			<Add directory="../../dune-stokes/" />
+			<Add directory="/usr/local/alberta-1.2/include" />
 		</Compiler>
+		<Linker>
+			<Add library="ALBERTA33_0" />
+			<Add library="alberta_util" />
+			<Add library="libalugrid.a" />
+			<Add library="libALBERTA33_0.a" />
+			<Add library="libalberta_util.a" />
+			<Add library="SM" />
+			<Add library="ICE" />
+			<Add library="../../dune-fem/lib/.libs/libdunefem.a" />
+			<Add library="../../dune-grid/lib/.libs/libdunegrid.a" />
+			<Add library="../../dune-common/lib/.libs/libdunecommon.a" />
+			<Add library="m" />
+			<Add library="cblas" />
+			<Add library="f77blas" />
+			<Add library="atlas" />
+			<Add directory="../../dune-common/lib" />
+			<Add directory="../../dune-grid/lib" />
+			<Add directory="../../dune-fem/lib" />
+			<Add directory="/usr/local/alugrid-1.1/lib" />
+			<Add directory="/usr/local/alberta-1.2/lib" />
+			<Add directory="/usr/lib/X11/" />
+		</Linker>
 		<Unit filename="../src/discretemodel.hh" />
 		<Unit filename="../src/discretization.hh" />
 		<Unit filename="../src/dune_stokes.cc" />

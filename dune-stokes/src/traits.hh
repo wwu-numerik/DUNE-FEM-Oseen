@@ -4,6 +4,5 @@
 
 struct Traits
 {
-//    typedef
 
 };

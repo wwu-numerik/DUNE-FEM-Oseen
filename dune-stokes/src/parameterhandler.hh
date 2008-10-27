@@ -115,4 +115,25 @@ ParameterHandler& params()
     return param;
 }
 
+/**
+ *  \brief class containing global parameters
+ *
+ *  \c ParameterContainer contains all the needed global parameters
+ **/
+class ParameterContainer
+{
+    public:
+        /**
+         *  \brief std constuctor
+         *  \todo   implement + doc me
+         **/
+        ParameterContainer(){}
+
+        /**
+         *  \brief std destuctor
+         *  \todo   implement + doc me
+         **/
+        ~ParameterContainer(){}
+};
+
 #endif // end of PARAMETERHANDLER.HH
