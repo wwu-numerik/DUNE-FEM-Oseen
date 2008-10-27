@@ -41,6 +41,7 @@
 		<Unit filename="../src/discretization.hh" />
 		<Unit filename="../src/dune_stokes.cc" />
 		<Unit filename="../src/fluxes.hh" />
+		<Unit filename="../src/logging.hh" />
 		<Unit filename="../src/model.hh" />
 		<Unit filename="../src/parameterhandler.hh" />
 		<Unit filename="../src/stuff.hh" />

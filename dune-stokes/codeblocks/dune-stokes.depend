@@ -42,3 +42,48 @@
 	<sstream>
 	<ctime>
 
+1225115640 source:/u/r_milk01/projekte/uni/diplom/dune-code/dune-stokes/src/dune_stokes.cc
+	"config.h"
+	<iostream>
+	"dune/common/mpihelper.hh"
+	"dune/common/exceptions.hh"
+	"traits.hh"
+	"parameterhandler.hh"
+	"logging.hh"
+
+1225112054 /u/r_milk01/projekte/uni/diplom/dune-code/dune-common//config.h
+
+1225111377 /u/r_milk01/projekte/uni/diplom/dune-code/dune-common//dune/common/mpihelper.hh
+	<cassert>
+	"mpi.h"
+	"stdstreams.hh"
+
+1225111378 /u/r_milk01/projekte/uni/diplom/dune-code/dune-common//dune/common/stdstreams.hh
+	"debugstream.hh"
+
+1225111375 /u/r_milk01/projekte/uni/diplom/dune-code/dune-common//dune/common/debugstream.hh
+	<iostream>
+	<stack>
+	<dune/common/exceptions.hh>
+
+1225111376 /u/r_milk01/projekte/uni/diplom/dune-code/dune-common//dune/common/exceptions.hh
+	<string>
+	<sstream>
+	<dune/common/exceptions.hh>
+
+1225113465 /u/r_milk01/projekte/uni/diplom/dune-code/dune-stokes/src/traits.hh
+
+1225113444 /u/r_milk01/projekte/uni/diplom/dune-code/dune-stokes/src/parameterhandler.hh
+	<fstream>
+	<map>
+	"stuff.hh"
+
+1225115439 /u/r_milk01/projekte/uni/diplom/dune-code/dune-stokes/src/stuff.hh
+
+1225115512 /u/r_milk01/projekte/uni/diplom/dune-code/dune-stokes/src/logging.hh
+	<fstream>
+	<ostream>
+	<sstream>
+	<ctime>
+	"stuff.hh"
+
