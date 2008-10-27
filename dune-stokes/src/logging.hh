@@ -11,7 +11,7 @@
  #include <ctime>
  #include "stuff.hh"
 
-class LogStream : virtual public std::basic_ostream<std::string>
+class LogStream : virtual public std::ostream
 {
     public:
         enum LogLevel{
@@ -47,21 +47,21 @@ class LogStream : virtual public std::basic_ostream<std::string>
                 std::cout << input;
             }
 
-            //return *this;
+            return std::cout;
         }
 
 
-        std::ostream& operator << ( std::string& input )
+        std::ostream& operator<< (std::ostream& ( *pf )(std::ostream&))
         {
             if ( do_output ) {
                 if ( log_to_file_ ) {
-                    logfile_ << input;
+                    logfile_ << pf;
                 }
 
-                std::cout << input;
+                (this_loglevel_ == ERR ? std::cerr : std::cout ) << pf;
             }
 
-            //return *this;
+            return (this_loglevel_ == ERR ? std::cerr : std::cout ) ;
         }
 
     private:
