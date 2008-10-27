@@ -20,6 +20,7 @@
 			</Target>
 			<Target title="Release">
 				<Option output="bin/Release/dune-stokes" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../src/" />
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />

@@ -2,6 +2,8 @@
  *  \file stuff.hh
  *  \brief  contains some stuff
  **/
+#ifndef STUFF_HH_INCLUDED
+#define STUFF_HH_INCLUDED
 
 namespace Stuff
 {
@@ -28,4 +30,16 @@ std::string toString(const ReturnType& s)
     return r;
 }
 
+template < class T >
+void safe_delete ( T t )
+{
+    if (t){
+        delete t;
+        t=0;
+    }
 }
+
+} //end namepsace stuff
+
+
+#endif

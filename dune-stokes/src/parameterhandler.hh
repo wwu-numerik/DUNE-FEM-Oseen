@@ -8,6 +8,7 @@
 #include <fstream>
 #include <map>
 #include "stuff.hh"
+#include "logging.hh"
 
 /**
  *  \brief class processing parameter file
@@ -27,6 +28,18 @@ class ParameterHandler
          **/
         ParameterHandler( const std::string filename )
             :status_( false )
+        {
+            ParseParamFile( filename );
+        }
+
+        ParameterHandler(  )
+            :status_( false )
+        {
+        }
+
+        /** \brief function used for parametrized ctor and two-step creation
+        **/
+        bool ParseParamFile( const std::string filename )
         {
             std::ifstream parameter_file( filename.c_str() );
             if( parameter_file.is_open() )
@@ -55,11 +68,13 @@ class ParameterHandler
                 status_ = false;
                 std::cerr << "ERROR: file " << filename << " not found!\n";
             }
+            return Ok();
         }
 
         /** \todo Please doc me! */
         template < class ReturnType >
         ReturnType GetParameter(const std::string name) const{
+            assert( status_ );
             MapType::const_iterator it = parameter_map_.find( name ) ;
             if ( it != parameter_map_.end() ){
                 return Stuff::fromString<ReturnType>( it->second );
@@ -72,12 +87,13 @@ class ParameterHandler
         }
 
         /** \todo Please doc me! */
-        void Print( std::ostream &out ) const
+        void Print( LogStream &out ) const
         {
+            assert( status_ );
             for (MapType::const_iterator it = parameter_map_.begin(); parameter_map_.end() != it; ++it){
                 out << it->first << ":" << it->second << "\n" ;
             }
-            out << std::endl;
+            //out << std::endl;
         }
 
         /** \todo Please doc me! */
@@ -90,6 +106,14 @@ class ParameterHandler
         ~ParameterHandler(){}
 
 };
+
+/** \brief global singelton for paramhandler
+**/
+ParameterHandler& params()
+{
+    static ParameterHandler param;
+    return param;
+}
 
 /**
  *  \brief class containing global parameters

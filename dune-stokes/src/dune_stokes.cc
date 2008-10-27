@@ -12,7 +12,7 @@
 
 #include "traits.hh"
 #include "parameterhandler.hh"
-
+#include "logging.hh"
 /**
  *  \brief main function
  *
@@ -28,13 +28,15 @@ int main(int argc, char** argv)
   try{
     //Maybe initialize Mpi
     //Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
+    Logger().Create( LogStream::ALL );
 
     /*
         initialize all the stuff we need
     */
     ParameterHandler pm ( "test.param") ;
     if ( pm.Ok() ) {
-        pm.Print( std::cout );
+        //pm.Print( std::cout );
+        pm.Print( Logger().Min() );
     }
     else {
         return 1;
