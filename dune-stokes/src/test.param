@@ -1,0 +1,89 @@
+#######################################
+# Problem setting
+#######################################
+# choos problem number here
+# Benchmarks: 0 == Test 1.1
+# Benchmarks: 1 == Test 1.2
+# Benchmarks: 2 == Test 2
+# Benchmarks: 3 == Test 3
+# Benchmarks: 4 == Test 4
+# Benchmarks: 5 == Test 5
+# Benchmarks: 6 == Test 6
+# Benchmarks: 7 == Test 7
+# Benchmarks: 8 == Test 8
+# Benchmarks: 9 == Test 9
+# Benchmarks: 10 == Test 15
+# Problem 10 - 14 older problems
+# Problem: 0
+GlobalShift: 2.
+Factor: 1e5
+# 1 2 3 4 6
+# GridNumber: 4
+# initial refine level
+StartLevel: 4
+
+# do EOCSteps eoc steps
+EOCSteps: 1
+
+# epsilon for iterative solver
+InvSolverEps: 1e-8
+
+# cg output, 0 == no output, 1 == print output
+verbose: 1
+
+# use Preconditioning 0 == no, 1 == yes
+# when using istl matrices the following preconditioners are available:
+# 0 == no pre
+# 1 == SSOR
+# 2 == SOR
+# 3 == ILU-0
+# 4 == ILU-n
+# 5 == Gauss-Seidel
+# 6 == Jacobi
+Preconditioning: 4
+# number of iterations
+Pre-iteration: 8
+# relaxation factor
+Pre-relaxation: 1.1
+
+# display using Grape, 0 == no, 1 == yes
+InitialDisplay: 0
+display: 0
+DisplayAll: 0
+
+# only used by Primal Operator
+#######################################
+# available methods
+# Baumann-Oden:      B_{+,-} = 1, beta = 0,        CDG-BZ = 0,
+# Interior-Penalty:  B_{+,-} = 0, beta > 0.0(big), CDG-BZ = 0,
+# NIPG:              B_{+,-} = 1, beta > 0.0,      CDG-BZ = 0,
+# Babuska-Zlamal:    B_{+,-} = 1, beta > 0.0,      CDG-BZ = 1,
+# Compact LDG:       B_{+,-} = 0, beta > 0.0,      CDG-BZ = 1,
+
+B_{+,-}: 1
+beta: 10
+CDG-BZ: 0
+
+# only used by LDGFlux
+LDGbeta: 1.0
+power: 3.0
+eta: 1.5
+
+# OutputPath
+OutputPath: ./data
+
+# name for data set
+OutputPrefix: solution
+
+# format of output: 0 = GRAPE, 1 = VTK, 2 = VTK vertex data
+OutputFormat: 2
+
+# GrapeDisplay (0 = no, 1 = yes)
+GrapeDisplay: 0
+
+# Wellenzahlen kx, ky aus Z
+k_x: dew
+k_y: 3
+
+# Polynom Ordnund, 1-4 mgl.
+polOrder: 2
