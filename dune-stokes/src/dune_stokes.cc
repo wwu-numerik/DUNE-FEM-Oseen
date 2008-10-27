@@ -8,6 +8,7 @@
 #include <iostream>
 #include "dune/common/mpihelper.hh" // An initializer of MPI
 #include "dune/common/exceptions.hh" // We use exceptions
+#include "dune/grid/io/file/dgfparser/gridtype.hh" // for the grid
 
 #include "traits.hh"
 #include "parameterhandler.hh"
@@ -28,6 +29,9 @@ int main(int argc, char** argv)
     //Maybe initialize Mpi
     //Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
 
+    /*
+        initialize all the stuff we need
+    */
     ParameterHandler pm ( "test.param") ;
     if ( pm.Ok() ) {
         pm.Print( std::cout );
@@ -35,6 +39,15 @@ int main(int argc, char** argv)
     else {
         return 1;
     }
+
+    /*
+        initialize the grid
+    */
+    Dune::GridPtr<GridType> gridptr( filename );
+
+
+
+
     return 0;
   }
   catch (Dune::Exception &e){
