@@ -98,8 +98,6 @@ class ParameterHandler
  **/
 class ParameterContainer
 {
-    private:
-
     public:
         /**
          *  \brief std constuctor
