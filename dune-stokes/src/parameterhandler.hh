@@ -29,6 +29,18 @@ class ParameterHandler
         ParameterHandler( const std::string filename )
             :status_( false )
         {
+            ParseParamFile( filename );
+        }
+
+        ParameterHandler(  )
+            :status_( false )
+        {
+        }
+
+        /** \brief function used for parametrized ctor and two-step creation
+        **/
+        bool ParseParamFile( const std::string filename )
+        {
             std::ifstream parameter_file( filename.c_str() );
             if( parameter_file.is_open() )
             {
@@ -56,11 +68,13 @@ class ParameterHandler
                 status_ = false;
                 std::cerr << "ERROR: file " << filename << " not found!\n";
             }
+            return Ok();
         }
 
         /** \todo Please doc me! */
         template < class ReturnType >
         ReturnType GetParameter(const std::string name) const{
+            assert( status_ );
             MapType::const_iterator it = parameter_map_.find( name ) ;
             if ( it != parameter_map_.end() ){
                 return Stuff::fromString<ReturnType>( it->second );
@@ -91,5 +105,13 @@ class ParameterHandler
         ~ParameterHandler(){}
 
 };
+
+/** \brief global singelton for paramhandler
+**/
+ParameterHandler& params()
+{
+    static ParameterHandler param;
+    return param;
+}
 
 #endif // end of PARAMETERHANDLER.HH

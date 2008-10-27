@@ -1,1 +1,3 @@
 test: param
+loglevel: 4
+logfile: dune-stokes.log
