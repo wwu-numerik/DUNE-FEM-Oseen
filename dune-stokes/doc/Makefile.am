@@ -1,5 +1,5 @@
 # also build these sub directories
-SUBDIRS = doxygen dune-stokes-howto
+SUBDIRS = doxygen #dune-stokes-howto
 
 # automatically create these web pages
 all: $(PAGES)

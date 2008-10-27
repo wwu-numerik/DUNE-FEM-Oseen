@@ -8,7 +8,7 @@
 #include <iostream>
 #include "dune/common/mpihelper.hh" // An initializer of MPI
 #include "dune/common/exceptions.hh" // We use exceptions
-#include "dune/grid/io/file/dgfparser/gridtype.hh" // for the grid
+#include "dune/grid/io/file/dgfparser/dgfgridtype.hh" // for the grid
 
 #include "traits.hh"
 #include "parameterhandler.hh"
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     /*
         initialize the grid
     */
-    Dune::GridPtr<GridType> gridptr( filename );
+    Dune::GridPtr<GridType> gridptr( "grid.dgf" );
 
 
 
