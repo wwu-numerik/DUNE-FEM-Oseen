@@ -89,10 +89,11 @@ class ParameterHandler
         /** \todo Please doc me! */
         void Print( LogStream &out ) const
         {
+            assert( status_ );
             for (MapType::const_iterator it = parameter_map_.begin(); parameter_map_.end() != it; ++it){
                 out << it->first << ":" << it->second << "\n" ;
             }
-//            out << std::endl;
+            //out << std::endl;
         }
 
         /** \todo Please doc me! */
