@@ -1,5 +1,5 @@
 /** \file parameterhandler.hh
-    \brief  brief
+    \brief  containing class ParameterHandler
  **/
 
 #ifndef PARAMETERHANDLER_HH
@@ -9,7 +9,11 @@
 #include <map>
 #include "stuff.hh"
 
-/** \todo Please doc me! */
+/**
+ *  \brief class processing parameter file
+ *
+ *  \c ParameterHandler reads a parameter file once and stores all found values internally
+ **/
 class ParameterHandler
 {
     private:
@@ -18,8 +22,8 @@ class ParameterHandler
         bool status_;
 
     public:
-        /** \todo Please doc me!
-         *  private function has_worked() fehlt
+        /** \ Please doc me!
+         *
          **/
         ParameterHandler( const std::string filename )
             :status_( false )
@@ -68,12 +72,12 @@ class ParameterHandler
         }
 
         /** \todo Please doc me! */
-        void Print( ) const
+        void Print( std::ostream &out ) const
         {
             for (MapType::const_iterator it = parameter_map_.begin(); parameter_map_.end() != it; ++it){
-                std::cout << it->first << ":" << it->second << "\n" ;
+                out << it->first << ":" << it->second << "\n" ;
             }
-            std::cout << std::endl;
+            out << std::endl;
         }
 
         /** \todo Please doc me! */

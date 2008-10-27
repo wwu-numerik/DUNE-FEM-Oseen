@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1225048096 source:/usr/local/dune_felix-rene/dune-stokes/src/dune_stokes.cc
+1225111745 source:/usr/local/dune_felix-rene/dune-stokes/src/dune_stokes.cc
 	"config.h"
 	<iostream>
 	"dune/common/mpihelper.hh"
@@ -7,32 +7,38 @@
 	"traits.hh"
 	"parameterhandler.hh"
 
-1224875381 /usr/local/dune_felix-rene/dune-common//config.h
+1224881468 /usr/local/dune_felix-rene/dune-common//config.h
 
-1224875136 /usr/local/dune_felix-rene/dune-common//dune/common/mpihelper.hh
+1224877079 /usr/local/dune_felix-rene/dune-common//dune/common/mpihelper.hh
 	<cassert>
 	"mpi.h"
 	"stdstreams.hh"
 
-1224875136 /usr/local/dune_felix-rene/dune-common//dune/common/stdstreams.hh
+1224877079 /usr/local/dune_felix-rene/dune-common//dune/common/stdstreams.hh
 	"debugstream.hh"
 
-1224875136 /usr/local/dune_felix-rene/dune-common//dune/common/debugstream.hh
+1224877079 /usr/local/dune_felix-rene/dune-common//dune/common/debugstream.hh
 	<iostream>
 	<stack>
 	<dune/common/exceptions.hh>
 
-1224875136 /usr/local/dune_felix-rene/dune-common//dune/common/exceptions.hh
+1224877079 /usr/local/dune_felix-rene/dune-common//dune/common/exceptions.hh
 	<string>
 	<sstream>
 	<dune/common/exceptions.hh>
 
-1225043437 /usr/local/dune_felix-rene/dune-stokes/src/traits.hh
+1225111606 /usr/local/dune_felix-rene/dune-stokes/src/traits.hh
 
-1225050597 /usr/local/dune_felix-rene/dune-stokes/src/parameterhandler.hh
+1225111732 /usr/local/dune_felix-rene/dune-stokes/src/parameterhandler.hh
 	<fstream>
 	<map>
 	"stuff.hh"
 
-1225050560 /usr/local/dune_felix-rene/dune-stokes/src/stuff.hh
+1225102671 /usr/local/dune_felix-rene/dune-stokes/src/stuff.hh
+
+1225108413 /usr/local/dune_felix-rene/dune-stokes/src/logging.hh
+	<fstream>
+	<ostream>
+	<sstream>
+	<ctime>
 
