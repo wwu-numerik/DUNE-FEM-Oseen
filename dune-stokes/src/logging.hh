@@ -2,13 +2,16 @@
  *  \file logging.hh
  *  \brief  logging
  **/
+ #ifndef LOGGING_HH_INCLUDED
+ #define LOGGING_HH_INCLUDED
+
  #include <fstream>
  #include <ostream>
  #include <sstream>
  #include <ctime>
  #include "stuff.hh"
 
-class LogStream : public std::ostream
+class LogStream : virtual public std::basic_ostream<std::string>
 {
     public:
         enum LogLevel{
@@ -44,7 +47,21 @@ class LogStream : public std::ostream
                 std::cout << input;
             }
 
-            return *this;
+            //return *this;
+        }
+
+
+        std::ostream& operator << ( std::string& input )
+        {
+            if ( do_output ) {
+                if ( log_to_file_ ) {
+                    logfile_ << input;
+                }
+
+                std::cout << input;
+            }
+
+            //return *this;
         }
 
     private:
@@ -127,6 +144,4 @@ static Logging& Logger ()
     return log;
 }
 
-
-
-// function.print( Logging::Min )
+#endif

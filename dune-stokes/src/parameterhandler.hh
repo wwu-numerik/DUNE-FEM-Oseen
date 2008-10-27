@@ -8,6 +8,7 @@
 #include <fstream>
 #include <map>
 #include "stuff.hh"
+#include "logging.hh"
 
 /**
  *  \brief class processing parameter file
@@ -72,12 +73,12 @@ class ParameterHandler
         }
 
         /** \todo Please doc me! */
-        void Print( std::ostream &out ) const
+        void Print( LogStream &out ) const
         {
             for (MapType::const_iterator it = parameter_map_.begin(); parameter_map_.end() != it; ++it){
                 out << it->first << ":" << it->second << "\n" ;
             }
-            out << std::endl;
+//            out << std::endl;
         }
 
         /** \todo Please doc me! */
