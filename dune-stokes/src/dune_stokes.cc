@@ -11,6 +11,7 @@
 
 #include"traits.hh"
 #include "parameterhandler.hh"
+#include "logging.hh"
 
 /**
  *  @brief main function
@@ -28,10 +29,13 @@ int main(int argc, char** argv)
     //Maybe initialize Mpi
 //    Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
 
-    ParameterHandler pm ( "/usr/local/dune_felix-rene/dune-stokes/src/test.param") ;
-    pm.Print();
-    double tmp = pm.GetParameter<double>( "k_x" );
-    std::cout << tmp << std::endl;
+    ParameterHandler pm ( "test.param") ;
+    if ( pm.Ok() ) {
+        pm.Print();
+    }
+    else {
+        return 1;
+    }
     return 0;
   }
   catch (Dune::Exception &e){

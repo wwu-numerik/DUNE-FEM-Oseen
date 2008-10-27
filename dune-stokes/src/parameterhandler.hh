@@ -15,12 +15,14 @@ class ParameterHandler
     private:
         typedef std::map< std::string, std::string > MapType;
         MapType parameter_map_;
+        bool status_;
 
     public:
         /** \todo Please doc me!
          *  private function has_worked() fehlt
          **/
         ParameterHandler( const std::string filename )
+            :status_( false )
         {
             std::ifstream parameter_file( filename.c_str() );
             if( parameter_file.is_open() )
@@ -41,11 +43,13 @@ class ParameterHandler
                     }
 
                 }
+                status_ = true;
                 parameter_file.close();
             }
             else {
                 //LOGERROR
-
+                status_ = false;
+                std::cerr << "ERROR: file " << filename << " not found!\n";
             }
         }
 
@@ -70,6 +74,12 @@ class ParameterHandler
                 std::cout << it->first << ":" << it->second << "\n" ;
             }
             std::cout << std::endl;
+        }
+
+        /** \todo Please doc me! */
+        bool Ok()
+        {
+            return status_;
         }
 
         /** \todo Please doc me! */
