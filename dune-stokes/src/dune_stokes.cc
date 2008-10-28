@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     /*
         initialize all the stuff we need
     */
-    ParameterHandler pm ( "test.param") ;
+    ParameterHandler pm ( "test.param" ) ;
     if ( pm.Ok() ) {
         //pm.Print( std::cout );
         pm.Print( Logger().Min() );

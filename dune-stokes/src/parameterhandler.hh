@@ -124,13 +124,13 @@ class ParameterContainer
 {
     public:
         /**
-         *  \brief std constuctor
+         *  \brief  constuctor
          *  \todo   implement + doc me
          **/
         ParameterContainer(){}
 
         /**
-         *  \brief std destuctor
+         *  \brief  destuctor
          *  \todo   implement + doc me
          **/
         ~ParameterContainer(){}
