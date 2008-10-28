@@ -18,8 +18,7 @@ ldg_stokes_SOURCES = stokes.cc
 ldg_stokes_CXXFLAGS = $(MPI_CPPFLAGS) $(UG_CPPFLAGS) $(AMIRAMESH_CPPFLAGS) $(ALBERTA_CPPFLAGS) $(GRAPE_CPPFLAGS) \ 
 	-DALBERTAGRID -DGRIDDIM=2
 ldg_stokes_LDADD = $(MPI_LDFLAGS) $(ALBERTA_LDFLAGS) $(ALBERTA_LIBS) $(AMIRAMESH_LDFLAGS) $(GRAPE_LDFLAGS) $(ALL_PKG_LDFLAGS) \
-	$(AMIRAMESH_LIBS) $(UG_LDFLAGS) $(UG_LIBS) $(MPI_LDFLAGS) $(DUNE_LDFLAGS) $(DUNE_LIBS) -lgr -lglut -lGL -lGLU -lblas \
-	/usr/lib64/libgfortran.so.1.0.0
+	$(AMIRAMESH_LIBS) $(UG_LDFLAGS) $(UG_LIBS) $(MPI_LDFLAGS) $(DUNE_LDFLAGS) $(DUNE_LIBS) -lgr -lglut -lGL -lGLU -lblas
 
 # don't follow the full GNU-standard
 # we need automake 1.5
