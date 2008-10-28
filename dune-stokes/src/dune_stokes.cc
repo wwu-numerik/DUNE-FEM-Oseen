@@ -23,24 +23,28 @@
  *  \param argc number of arguments from command line
  *  \param argv array of arguments from command line
  **/
-int main(int argc, char** argv)
+int main( int argc, char** argv )
 {
   try{
     //Maybe initialize Mpi
     //Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
-    Logger().Create( LogStream::ALL );
 
     /*
         initialize all the stuff we need
     */
-    ParameterHandler pm ( "test.param" ) ;
-    if ( pm.Ok() ) {
-        //pm.Print( std::cout );
-        pm.Print( Logger().Min() );
-    }
-    else {
+    Logger().Create( LogStream::ALL );
+
+    ParameterContainer parameters;
+    if ( !( parameters.ReadCommandLine( argc, argv ) ) )
+    {
         return 1;
     }
+    else
+    {
+        parameters.Print( std::cout );
+    }
+
+
 
     /*
         initialize the grid

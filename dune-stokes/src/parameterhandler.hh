@@ -6,6 +6,7 @@
 #define PARAMETERHANDLER_HH
 
 #include <fstream>
+#include <ostream>
 #include <map>
 #include "stuff.hh"
 #include "logging.hh"
@@ -127,13 +128,57 @@ class ParameterContainer
          *  \brief  constuctor
          *  \todo   implement + doc me
          **/
-        ParameterContainer(){}
+        ParameterContainer()
+        {
+        }
 
         /**
          *  \brief  destuctor
          *  \todo   implement + doc me
          **/
         ~ParameterContainer(){}
+
+        /**
+         *  \brief  prints all parameters
+         *  \todo   implement me
+         *  \arg    std::ostream &out stream to print out
+         **/
+        void Print( std::ostream &out ) const
+        {
+        }
+
+         /**
+         *  \brief  checks command line parameters
+         *  \arg    int argc   number of command line arguments
+         *  \arg    char** argv array of command line arguments
+         *  \return bool returns true, if comman line arguments are valid
+         **/
+       bool ReadCommandLine( int argc, char** argv )
+        {
+            if ( argc == 2 )
+            {
+                parameter_filename_ = argv[1];
+                return true;
+            }
+            else
+            {
+                std::cerr << "\nUsage: " << argv[0] << " parameterfile\n" << std::endl;
+                return false;
+            }
+        }
+
+        /**
+         *  \brief  returns the filename of the parameterfile
+         *  \todo   doc me
+         *  \return std::string filename of the parameterfile
+         **/
+        std::string parameterFilename() const
+        {
+            return parameter_filename_;
+        }
+
+    private:
+        std::string parameter_filename_;
 };
 
 #endif // end of PARAMETERHANDLER.HH

@@ -30,6 +30,11 @@ std::string toString(const ReturnType& s)
     return r;
 }
 
+/**
+ *  \todo doc
+ *  \attention willst du hier nicht T &t damit du nicht nur lokal löscht?
+ **/
+
 template < class T >
 void safe_delete ( T t )
 {
