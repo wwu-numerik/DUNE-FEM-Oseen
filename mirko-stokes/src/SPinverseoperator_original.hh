@@ -59,10 +59,11 @@ namespace Dune {
 //     typedef typename OperatorType::BTOPType BTOPType;
 //     typedef typename OperatorType::COPType COPType;
   public:
-    /** \todo Please doc me! */
-    //!Constructor:
-    //!aufSolver is the InverseOperator for Solving the elliptic Problem A^-1
-    //!rhs1 is  stored as member,no better idea 
+    /** \todo Please doc me! 
+     * \brief Constructor:
+    * aufSolver is the InverseOperator for Solving the elliptic Problem A^-1
+    * rhs1 is  stored as member,no better idea 
+	  **/
     SPCGInverseOperator( const MappingType& op,
 			 double redEps,
 			 double absLimit,
