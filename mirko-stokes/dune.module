@@ -1,0 +1,10 @@
+
+#dune module information file#
+##############################
+
+#Name of the module
+Module:mirko-stokes
+Version:0.0000000001
+Maintainer:mirko@kraenkel
+#depending on 
+Depends:dune-common dune-grid dune-istl dune-fem

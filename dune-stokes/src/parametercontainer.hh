@@ -1,5 +1,5 @@
-/** \file parameterhandler.hh
-    \brief  containing class ParameterHandler
+/** \file parametercontainer.hh
+    \brief  containing class ParameterContainer
  **/
 
 #ifndef PARAMETERHANDLER_HH

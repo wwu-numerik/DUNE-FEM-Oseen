@@ -25,3 +25,5 @@ ldg_stokes_LDADD = $(MPI_LDFLAGS) $(ALBERTA_LDFLAGS) $(ALBERTA_LIBS) $(AMIRAMESH
 AUTOMAKE_OPTIONS = foreign 1.5
 # pass most important options when "make distcheck" is used
 DISTCHECK_CONFIGURE_FLAGS = --with-dune=$(DUNEROOT) CXX="$(CXX)" CC="$(CC)"
+
+include $(top_srcdir)/am/global-rules
