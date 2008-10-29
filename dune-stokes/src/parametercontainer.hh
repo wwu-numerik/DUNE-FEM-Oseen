@@ -6,11 +6,11 @@
 #define PARAMETERHANDLER_HH
 
 #include "dune/fem/io/parameter.hh"
-/*#include <fstream>*/
-/*#include <ostream>
-/*#include <map>*/
-/*#include "stuff.hh"*/
-/*#include "logging.hh"*/
+//#include <fstream>
+//#include <ostream>
+//#include <map>
+//#include "stuff.hh"
+//#include "logging.hh"
 
 ///**
 // *  \brief class processing parameter file
