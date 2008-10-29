@@ -1,4 +1,5 @@
-test: param
+dimension: 3
+polynomial_order: 1
 loglevel: 4
 logfile: dune-stokes.log
 

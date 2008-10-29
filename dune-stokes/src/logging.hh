@@ -10,7 +10,7 @@
  #include <sstream>
  #include <ctime>
  #include "stuff.hh"
- #include "parameterhandler.hh"
+ #include "parametercontainer.hh"
 
 class LogStream : virtual public std::ostream
 {

@@ -11,7 +11,7 @@
 #include "dune/grid/io/file/dgfparser/dgfgridtype.hh" // for the grid
 
 #include "traits.hh"
-#include "parameterhandler.hh"
+#include "parametercontainer.hh"
 #include "logging.hh"
 /**
  *  \brief main function
@@ -29,26 +29,28 @@ int main( int argc, char** argv )
     //Maybe initialize Mpi
     //Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
 
-    /*
-        initialize all the stuff we need
-    */
-    Logger().Create( LogStream::ALL );
+    /* ********************
+     * initialize all the stuff we need
+     * *******************/
 
-    ParameterContainer parameters;
-    if ( !( parameters.ReadCommandLine( argc, argv ) ) )
-    {
+    ParameterContainer parameters( argc, argv );
+    if ( !( parameters.ReadCommandLine() ) ) {
         return 1;
     }
-    else
-    {
+
+    if ( !( parameters.SetUp() ) ) {
+        return 1;
+    }
+    else {
         parameters.Print( std::cout );
     }
 
+    Logger().Create( LogStream::ALL );
 
 
-    /*
-        initialize the grid
-    */
+    /* ****************
+     * initialize the grid
+     * ****************/
     Dune::GridPtr<GridType> gridptr( "grid.dgf" );
 
 
