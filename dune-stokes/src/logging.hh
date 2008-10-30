@@ -38,7 +38,7 @@ class LogStream : virtual public std::ostream
         }
 
         template < typename T >
-        std::ostream& operator << ( T& input )
+        std::ostream& Op ( T& input )
         {
             if ( do_output ) {
                 if ( log_to_file_ ) {
@@ -50,6 +50,18 @@ class LogStream : virtual public std::ostream
 
             return std::cout;
         }
+
+        std::ostream& operator<< (bool& val ){return Op(val);}
+        std::ostream& operator<< (short& val ){return Op(val);}
+        std::ostream& operator<< (unsigned short& val ){return Op(val);}
+        std::ostream& operator<< (int& val ){return Op(val);}
+        std::ostream& operator<< (unsigned int& val ){return Op(val);}
+        std::ostream& operator<< (long& val ){return Op(val);}
+        std::ostream& operator<< (unsigned long& val ){return Op(val);}
+        std::ostream& operator<< (float& val ){return Op(val);}
+        std::ostream& operator<< (double& val ){return Op(val);}
+        std::ostream& operator<< (long double& val ){return Op(val);}
+        std::ostream& operator<< (void*& val ){return Op(val);}
 
 
         std::ostream& operator<< (std::ostream& ( *pf )(std::ostream&))
