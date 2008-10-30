@@ -18,6 +18,7 @@
 					<Add option="-DGRIDDIM=3" />
 				</Compiler>
 				<Linker>
+					<Add option="/usr/lib64/libgfortran.so.1.0.0" />
 					<Add library="blas" />
 				</Linker>
 			</Target>
@@ -75,6 +76,7 @@
 			<Add directory="/usr/lib/X11/" />
 			<Add directory="/share/dune/Modules/modules_x86_64/alberta-1.2/lib" />
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/lib" />
+			<Add directory="/usr/lib64" />
 		</Linker>
 		<Unit filename="../src/discretemodel.hh" />
 		<Unit filename="../src/discretization.hh" />
