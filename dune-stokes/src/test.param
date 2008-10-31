@@ -1,4 +1,4 @@
-dimension: 3
+grid_dimension: 2
 polynomial_order: 1
 loglevel: 4
 logfile: dune-stokes.log

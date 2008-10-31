@@ -11,10 +11,11 @@
 #include <dune/common/exceptions.hh> // We use exceptions
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
 
-#include "traits.hh"
+//#include "traits.hh"
 #include "parametercontainer.hh"
-#include "parameterhandler.hh"
 #include "logging.hh"
+#include "problem.hh"
+
 /**
  *  \brief main function
  *
@@ -51,6 +52,16 @@ int main( int argc, char** argv )
      * ********************************************************************** */
     Dune::GridPtr<GridType> gridptr( "grid.dgf" );
 
+    /* ********************************************************************** *
+     * initialize the analytical problem                                      *
+     * ********************************************************************** */
+    Velocity< GridType > velocity();
+    enum {
+        grid_dimension = GridType::dimensionworld
+    };
+    Dune::FieldVector< double, grid_dimension > x;
+    x[0] = 0.5;
+    x[1] = 0.5;
 
 
 

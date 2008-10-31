@@ -78,15 +78,15 @@ class ParameterContainer
             Dune::Parameter::append( parameterFilename() );
             Dune::Parameter::append( argc_, argv_ );
             bool has_not_worked = false;
-            if ( !( Dune::Parameter::exists( "dimension" ) ) ) {
+            if ( !( Dune::Parameter::exists( "grid_dimension" ) ) ) {
                 std::cerr << "\nError: not all parameters found in " << parameterFilename() << "!";
                 PrintParameterSpecs( std::cerr );
-                std::cerr << "missing parameters are: dimension" << std::endl;
+                std::cerr << "missing parameters are: grid_dimension" << std::endl;
                 has_not_worked = true;
 
             }
             else {
-                Dune::Parameter::get( "dimension", dimension_ );
+                Dune::Parameter::get( "grid_dimension", grid_dimension_ );
             }
             if ( !( Dune::Parameter::exists( "polynomial_order" ) ) ) {
                 if ( !( has_not_worked ) ) {
@@ -103,12 +103,9 @@ class ParameterContainer
                 Dune::Parameter::get( "polynomial_order", pol_order_ );
             }
             if ( has_not_worked ) {
-<<<<<<< HEAD:dune-stokes/src/parametercontainer.hh
                 std::cerr << "\nError: not all parameters found in " << parameterFilename() << "!";
                 PrintParameterSpecs( std::cerr );
-=======
                 std::cerr << std::endl;
->>>>>>> origin/master:dune-stokes/src/parametercontainer.hh
             }
             return !( has_not_worked );
         }
@@ -121,7 +118,7 @@ class ParameterContainer
         {
             out << "\na valid parameterfile should at least specify the following parameters:";
             out << "\n(copy this into your parameterfile)" << std::endl;
-            out << "dimension: " << std::endl;
+            out << "grid_dimension: " << std::endl;
             out << "polynomial_order: " << std::endl;
             out << std::endl;
         }
@@ -139,9 +136,9 @@ class ParameterContainer
          *  \brief  returns the dimension
          *  \return int dimension
          **/
-        int dimension() const
+        int gridDimension() const
         {
-            return dimension_;
+            return grid_dimension_;
         }
 
         /**
@@ -154,7 +151,7 @@ class ParameterContainer
         }
 
     private:
-        int dimension_;
+        int grid_dimension_;
         int pol_order_;
         double eps_;
         int argc_;
