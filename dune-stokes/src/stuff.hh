@@ -5,6 +5,9 @@
 #ifndef STUFF_HH_INCLUDED
 #define STUFF_HH_INCLUDED
 
+#define SEGFAULT int*i=0;*i=9;
+
+
 namespace Stuff
 {
 
@@ -31,8 +34,8 @@ std::string toString(const ReturnType& s)
 }
 
 /**
- *  \todo doc
- *  \attention willst du hier nicht T &t damit du nicht nur lokal löscht?
+ *  \brief Only free mem asc. to valid pointer, log warning otherwise
+ *
  **/
 
 template < class T >
@@ -42,6 +45,7 @@ void safe_delete ( T t )
         delete t;
         t=0;
     }
+    //else log warning
 }
 
 } //end namepsace stuff

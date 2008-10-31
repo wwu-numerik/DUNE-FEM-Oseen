@@ -6,12 +6,14 @@
 # include "config.h"
 #endif
 #include <iostream>
-#include "dune/common/mpihelper.hh" // An initializer of MPI
-#include "dune/common/exceptions.hh" // We use exceptions
-#include "dune/grid/io/file/dgfparser/dgfgridtype.hh" // for the grid
+#include <memory> //not including this gives error of undefined autopointer in dgfparser.hh
+#include <dune/common/mpihelper.hh> // An initializer of MPI
+#include <dune/common/exceptions.hh> // We use exceptions
+#include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
 
 #include "traits.hh"
 #include "parametercontainer.hh"
+#include "parameterhandler.hh"
 #include "logging.hh"
 /**
  *  \brief main function
@@ -32,8 +34,12 @@ int main( int argc, char** argv )
     /* ********************
      * initialize all the stuff we need
      * *******************/
+    Logger().Create( Logging::ALL, true );
+
 
     ParameterContainer parameters( argc, argv );
+
+    Logger().Log(&ParameterContainer::PrintParameterSpecs, parameters);
     if ( !( parameters.ReadCommandLine() ) ) {
         return 1;
     }
@@ -45,7 +51,7 @@ int main( int argc, char** argv )
         parameters.Print( std::cout );
     }
 
-    Logger().Create( LogStream::ALL );
+
 
 
     /* ****************
