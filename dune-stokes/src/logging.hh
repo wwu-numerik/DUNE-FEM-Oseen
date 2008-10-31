@@ -86,21 +86,21 @@ class Logging
          * \{
          */
         template < class Class >
-        void LogDebug( Class& c )
+        void LogDebug( Class c )
         {
             if ( ( logflags_ & LOG_DEBUG ) != 0 )
                 Log( c );
         }
 
         template < class Class >
-        void LogInfo( Class& c )
+        void LogInfo( Class c )
         {
             if ( ( logflags_ & LOG_INFO ) != 0 )
                 Log( c );
         }
 
         template < class Class >
-        void LogErr( Class& c )
+        void LogErr( Class c )
         {
             if ( ( logflags_ & LOG_ERR ) != 0 )
                 Log( c );
@@ -129,7 +129,7 @@ class Logging
         }
 
         template < class Class >
-        void Log( Class& c )
+        void Log( Class c )
         {
             if ( ( logflags_ & LOG_CONSOLE ) != 0 )
                 std::cout << c;
