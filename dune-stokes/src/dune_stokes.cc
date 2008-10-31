@@ -34,12 +34,14 @@ int main( int argc, char** argv )
     /* ********************
      * initialize all the stuff we need
      * *******************/
-    Logger().Create( Logging::ALL, true );
+    Logger().Create( Logging::LOG_CONSOLE | Logging::LOG_DEBUG | Logging::LOG_INFO );
 
 
     ParameterContainer parameters( argc, argv );
 
-    Logger().Log(&ParameterContainer::PrintParameterSpecs, parameters);
+    Logger().LogInfo(&ParameterContainer::PrintParameterSpecs, parameters);
+    Logger().LogInfo( "huhu" );
+
     if ( !( parameters.ReadCommandLine() ) ) {
         return 1;
     }

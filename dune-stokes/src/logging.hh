@@ -13,36 +13,36 @@
  #include "parametercontainer.hh"
 
 
-/** \brief handles three diff logstreams
+/** \brief handles all logging
 **/
 class Logging
 {
     public:
 
-        enum LogLevel{
-          MIN = 1,
-          ALL = 2,
-          ERR = 4
+        enum LogFlags{
+          LOG_ERR = 1,
+          LOG_INFO = 2,
+          LOG_DEBUG = 4,
+          LOG_CONSOLE = 8,
+          LOG_FILE = 16
         };
 
         Logging( )
         {
         }
 
-
         ~Logging()
         {
 
-            if ( log_to_file_ ) {
+            if ( ( loglevel_ & LOG_FILE ) != 0 ) {
                 logfile_ << TimeString() << ": LOG END" << std::endl;
                 logfile_.close();
             }
         }
 
-        void Create (LogLevel l, bool log_to_file = 0, std::string logfile = "log" )
+        void Create (unsigned int l = LOG_CONSOLE | LOG_ERR, std::string logfile = "log" )
         {
             loglevel_ = l;
-            log_to_file_ = log_to_file;
             filename_ = logfile;
             if ( log_to_file_ ) {
                 logfile_.open ( filename_.c_str() );
@@ -50,24 +50,77 @@ class Logging
 
         }
 
+
         template < class Class >
-        void Log( void ( Class::*pf )(std::ostream&) , Class& c)
+        void LogDebug( void ( Class::*pf )(std::ostream&) , Class& c )
         {
-            //if ( SHOULD I INDEED OUTPUT ANYTHING )
-            (c.*pf)( std::cout );
-            (c.*pf)( logfile_ );
+            if ( ( loglevel_ & LOG_DEBUG ) != 0 )
+                Log( pf, c );
+        }
+
+        template < class Class >
+        void LogInfo( void ( Class::*pf )(std::ostream&) , Class& c )
+        {
+            if ( ( loglevel_ & LOG_INFO ) != 0 )
+                Log( pf, c );
+        }
+
+        template < class Class >
+        void LogErr( void ( Class::*pf )(std::ostream&) , Class& c )
+        {
+            if ( ( loglevel_ & LOG_ERR ) != 0 )
+                Log( pf, c );
+        }
+
+        template < class Class >
+        void LogDebug( Class& c )
+        {
+            if ( ( loglevel_ & LOG_DEBUG ) != 0 )
+                Log( c );
+        }
+
+        template < class Class >
+        void LogInfo( Class& c )
+        {
+            if ( ( loglevel_ & LOG_INFO ) != 0 )
+                Log( c );
+        }
+
+        template < class Class >
+        void LogErr( Class& c )
+        {
+            if ( ( loglevel_ & LOG_ERR ) != 0 )
+                Log( c );
         }
 
     private:
         bool log_to_file_;
         std::string filename_;
         std::ofstream logfile_;
-        LogLevel loglevel_;
+        unsigned int loglevel_;
 
         std::string TimeString()
         {
             const time_t cur_time = time( NULL );
             return ctime ( &cur_time );
+        }
+
+        template < class Class >
+        void Log( void ( Class::*pf )(std::ostream&) , Class& c)
+        {
+            if ( ( loglevel_ & LOG_CONSOLE ) != 0 )
+                (c.*pf)( std::cout );
+            if ( ( loglevel_ & LOG_FILE ) != 0 )
+                (c.*pf)( logfile_ );
+        }
+
+        template < class Class >
+        void Log( Class& c )
+        {
+            if ( ( loglevel_ & LOG_CONSOLE ) != 0 )
+                std::cout << c;
+            if ( ( loglevel_ & LOG_FILE ) != 0 )
+                logfile_ << c;
         }
 };
 
