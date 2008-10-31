@@ -31,34 +31,24 @@ int main( int argc, char** argv )
     //Maybe initialize Mpi
     //Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
 
-    /* ********************
-     * initialize all the stuff we need
-     * *******************/
-    Logger().Create( Logging::LOG_CONSOLE | Logging::LOG_DEBUG | Logging::LOG_INFO );
-
-
+    /* ********************************************************************** *
+     * initialize all the stuff we need                                       *
+     * ********************************************************************** */
     ParameterContainer parameters( argc, argv );
-
-    Logger().LogInfo(&ParameterContainer::PrintParameterSpecs, parameters);
-    Logger().LogInfo( "huhu" );
-
     if ( !( parameters.ReadCommandLine() ) ) {
         return 1;
     }
-
     if ( !( parameters.SetUp() ) ) {
         return 1;
     }
     else {
         parameters.Print( std::cout );
     }
+    //Logger().Create( Logging::LOG_CONSOLE | Logging::LOG_DEBUG | Logging::LOG_INFO );
 
-
-
-
-    /* ****************
-     * initialize the grid
-     * ****************/
+    /* ********************************************************************** *
+     * initialize the grid                                                    *
+     * ********************************************************************** */
     Dune::GridPtr<GridType> gridptr( "grid.dgf" );
 
 

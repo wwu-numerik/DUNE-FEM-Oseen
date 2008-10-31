@@ -1,5 +1,5 @@
 /** \file model.hh
-    \brief contains a model class with analytical funstions
+    \brief contains a model class
  **/
 
 #ifndef MODEL_HH
@@ -13,22 +13,6 @@ class Model
         }
 
         ~Model()
-        {
-        }
-
-        Velocity()
-        {
-        }
-
-        Pressure()
-        {
-        }
-
-        RightHandSide()
-        {
-        }
-
-        DirichletData()
         {
         }
 
