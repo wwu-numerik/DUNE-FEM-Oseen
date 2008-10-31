@@ -8,7 +8,9 @@
 namespace Stuff
 {
 
-/** \todo Please doc me! */
+/**
+ *  \todo doc me
+ **/
 template < class ReturnType >
 ReturnType fromString(const std::string& s)
 {
@@ -19,7 +21,9 @@ ReturnType fromString(const std::string& s)
     return r;
 }
 
-/** \todo Please doc me! */
+/**
+ *  \todo doc
+ **/
 template < class ReturnType >
 std::string toString(const ReturnType& s)
 {
@@ -31,8 +35,7 @@ std::string toString(const ReturnType& s)
 }
 
 /**
- *  \todo doc
- *  \attention willst du hier nicht T &t damit du nicht nur lokal löscht?
+ *  \todo doc me
  **/
 
 template < class T >
