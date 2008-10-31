@@ -100,7 +100,7 @@
 		<Unit filename="../src/fluxes.hh" />
 		<Unit filename="../src/logging.hh" />
 		<Unit filename="../src/model.hh" />
-		<Unit filename="../src/parameterhandler.hh" />
+		<Unit filename="../src/parametercontainer.hh" />
 		<Unit filename="../src/stuff.hh" />
 		<Unit filename="../src/traits.hh" />
 		<Unit filename="../stokes/spinverseoperator.hh" />

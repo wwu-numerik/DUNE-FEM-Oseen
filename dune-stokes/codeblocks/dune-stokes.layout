@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
-	<ActiveTarget name="Debug" />
+	<ActiveTarget name="felix" />
 	<File name="../src/discretemodel.hh" open="0" top="0" tabpos="0">
 		<Cursor position="26" topLine="0" />
 	</File>
@@ -16,17 +16,14 @@
 	<File name="../src/logging.hh" open="0" top="0" tabpos="0">
 		<Cursor position="1037" topLine="89" />
 	</File>
-	<File name="../src/model.hh" open="0" top="0" tabpos="0">
+	<File name="../src/model.hh" open="1" top="1" tabpos="0">
 		<Cursor position="18" topLine="0" />
 	</File>
-	<File name="../src/parametercontainer.hh" open="1" top="1" tabpos="4">
-		<Cursor position="5767" topLine="172" />
+	<File name="../src/parametercontainer.hh" open="0" top="0" tabpos="0">
+		<Cursor position="3766" topLine="93" />
 	</File>
-	<File name="../src/parameterhandler.hh" open="1" top="0" tabpos="3">
-		<Cursor position="3674" topLine="121" />
-	</File>
-	<File name="../src/stuff.hh" open="1" top="0" tabpos="3">
-		<Cursor position="131" topLine="0" />
+	<File name="../src/stuff.hh" open="0" top="0" tabpos="3">
+		<Cursor position="155" topLine="0" />
 	</File>
 	<File name="../src/traits.hh" open="1" top="0" tabpos="2">
 		<Cursor position="59" topLine="0" />
