@@ -34,70 +34,84 @@ class Logging
         ~Logging()
         {
 
-            if ( ( loglevel_ & LOG_FILE ) != 0 ) {
+            if ( ( logflags_ & LOG_FILE ) != 0 ) {
                 logfile_ << TimeString() << ": LOG END" << std::endl;
                 logfile_.close();
             }
         }
 
-        void Create (unsigned int l = LOG_CONSOLE | LOG_ERR, std::string logfile = "log" )
+
+        /** \brief setup loglevel, logfilename
+            \param logflags any OR'd combination of flags
+            \param logfile filename for log, can contain paths, but creation will fail if dir is non-existant
+        **/
+        void Create (unsigned int logflags = LOG_CONSOLE | LOG_ERR, std::string logfile = "log" )
         {
-            loglevel_ = l;
+            logflags_ = logflags;
             filename_ = logfile;
-            if ( log_to_file_ ) {
+            if ( ( logflags_ & LOG_FILE ) != 0 ) {
                 logfile_.open ( filename_.c_str() );
+                assert( logfile_.is_open() );
             }
 
         }
 
-
+         /** \name Log funcs for member-function pointers
+         * \{
+         */
         template < class Class >
         void LogDebug( void ( Class::*pf )(std::ostream&) , Class& c )
         {
-            if ( ( loglevel_ & LOG_DEBUG ) != 0 )
+            if ( ( logflags_ & LOG_DEBUG ) != 0 )
                 Log( pf, c );
         }
 
         template < class Class >
         void LogInfo( void ( Class::*pf )(std::ostream&) , Class& c )
         {
-            if ( ( loglevel_ & LOG_INFO ) != 0 )
+            if ( ( logflags_ & LOG_INFO ) != 0 )
                 Log( pf, c );
         }
 
         template < class Class >
         void LogErr( void ( Class::*pf )(std::ostream&) , Class& c )
         {
-            if ( ( loglevel_ & LOG_ERR ) != 0 )
+            if ( ( logflags_ & LOG_ERR ) != 0 )
                 Log( pf, c );
         }
+        /** \}
+        */
 
+         /** \name Log funcs for basic types/classes
+         * \{
+         */
         template < class Class >
         void LogDebug( Class& c )
         {
-            if ( ( loglevel_ & LOG_DEBUG ) != 0 )
+            if ( ( logflags_ & LOG_DEBUG ) != 0 )
                 Log( c );
         }
 
         template < class Class >
         void LogInfo( Class& c )
         {
-            if ( ( loglevel_ & LOG_INFO ) != 0 )
+            if ( ( logflags_ & LOG_INFO ) != 0 )
                 Log( c );
         }
 
         template < class Class >
         void LogErr( Class& c )
         {
-            if ( ( loglevel_ & LOG_ERR ) != 0 )
+            if ( ( logflags_ & LOG_ERR ) != 0 )
                 Log( c );
         }
+        /** \}
+        */
 
     private:
-        bool log_to_file_;
         std::string filename_;
         std::ofstream logfile_;
-        unsigned int loglevel_;
+        unsigned int logflags_;
 
         std::string TimeString()
         {
@@ -108,18 +122,18 @@ class Logging
         template < class Class >
         void Log( void ( Class::*pf )(std::ostream&) , Class& c)
         {
-            if ( ( loglevel_ & LOG_CONSOLE ) != 0 )
+            if ( ( logflags_ & LOG_CONSOLE ) != 0 )
                 (c.*pf)( std::cout );
-            if ( ( loglevel_ & LOG_FILE ) != 0 )
+            if ( ( logflags_ & LOG_FILE ) != 0 )
                 (c.*pf)( logfile_ );
         }
 
         template < class Class >
         void Log( Class& c )
         {
-            if ( ( loglevel_ & LOG_CONSOLE ) != 0 )
+            if ( ( logflags_ & LOG_CONSOLE ) != 0 )
                 std::cout << c;
-            if ( ( loglevel_ & LOG_FILE ) != 0 )
+            if ( ( logflags_ & LOG_FILE ) != 0 )
                 logfile_ << c;
         }
 };
