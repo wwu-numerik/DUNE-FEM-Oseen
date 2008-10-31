@@ -6,7 +6,6 @@
 #define PARAMETERCONTAINER_HH_INCLUDED
 
 #include "dune/fem/io/parameter.hh"
-
 #include "stuff.hh"
 #include "logging.hh"
 
@@ -64,7 +63,8 @@ class ParameterContainer
             }
             else
             {
-                std::cerr << "\nUsage: " << argv_[0] << " parameterfile\n" << std::endl;
+                std::cerr << "\nUsage: " << argv_[0] << " parameterfile" << std::endl;
+                PrintParameterSpecs( std::cerr );
                 return false;
             }
         }
@@ -78,23 +78,37 @@ class ParameterContainer
             Dune::Parameter::append( parameterFilename() );
             Dune::Parameter::append( argc_, argv_ );
             bool has_not_worked = false;
-            if ( !( Dune::Parameter::exists( "dimension" ) ) )
-            {
-                has_not_worked = ( has_not_worked || true );
+            if ( !( Dune::Parameter::exists( "dimension" ) ) ) {
+                std::cerr << "\nError: not all parameters found in " << parameterFilename() << "!";
+                PrintParameterSpecs( std::cerr );
+                std::cerr << "missing parameters are: dimension" << std::endl;
+                has_not_worked = true;
+
             }
             else {
                 Dune::Parameter::get( "dimension", dimension_ );
             }
-            if ( !( Dune::Parameter::exists( "polynomial_order" ) ) )
-            {
-                has_not_worked = ( has_not_worked || true );
+            if ( !( Dune::Parameter::exists( "polynomial_order" ) ) ) {
+                if ( !( has_not_worked ) ) {
+                    std::cerr << "\nError: not all parameters found in " << parameterFilename() << "!";
+                    PrintParameterSpecs( std::cerr );
+                    std::cerr << "missing parameters are: polynomial_order" << std::endl;
+                }
+                else {
+                    std::cerr << "                        polynomial_order" << std::endl;
+                }
+                has_not_worked = true;
             }
             else {
                 Dune::Parameter::get( "polynomial_order", pol_order_ );
             }
             if ( has_not_worked ) {
+<<<<<<< HEAD:dune-stokes/src/parametercontainer.hh
                 std::cerr << "\nError: not all parameters found in " << parameterFilename() << "!";
                 PrintParameterSpecs( std::cerr );
+=======
+                std::cerr << std::endl;
+>>>>>>> origin/master:dune-stokes/src/parametercontainer.hh
             }
             return !( has_not_worked );
         }
@@ -105,7 +119,8 @@ class ParameterContainer
          **/
         void PrintParameterSpecs( std::ostream& out )
         {
-            out << "\na valid parameterfile should at least specify the following parameters:" << std::endl;
+            out << "\na valid parameterfile should at least specify the following parameters:";
+            out << "\n(copy this into your parameterfile)" << std::endl;
             out << "dimension: " << std::endl;
             out << "polynomial_order: " << std::endl;
             out << std::endl;
@@ -118,6 +133,24 @@ class ParameterContainer
         std::string parameterFilename() const
         {
             return parameter_filename_;
+        }
+
+        /**
+         *  \brief  returns the dimension
+         *  \return int dimension
+         **/
+        int dimension() const
+        {
+            return dimension_;
+        }
+
+        /**
+         *  \brief  returns the polynomial order
+         *  \return int polynomial order
+         **/
+        int polOrder() const
+        {
+            return pol_order_;
         }
 
     private:

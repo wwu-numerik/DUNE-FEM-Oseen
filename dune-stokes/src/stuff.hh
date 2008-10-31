@@ -11,7 +11,9 @@
 namespace Stuff
 {
 
-/** \todo Please doc me! */
+/**
+ *  \todo doc me
+ **/
 template < class ReturnType >
 ReturnType fromString(const std::string& s)
 {
@@ -22,7 +24,9 @@ ReturnType fromString(const std::string& s)
     return r;
 }
 
-/** \todo Please doc me! */
+/**
+ *  \todo doc
+ **/
 template < class ReturnType >
 std::string toString(const ReturnType& s)
 {
