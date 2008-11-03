@@ -161,6 +161,8 @@ class Logging
         }
 
         LogStream& Err() { assert( stream_err ); return *stream_err; }
+        LogStream& Info() { assert( stream_info ); return *stream_info; }
+        LogStream& Dbg() { assert( stream_dbg ); return *stream_dbg; }
         /** \}
         */
 
