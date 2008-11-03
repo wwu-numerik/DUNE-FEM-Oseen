@@ -44,32 +44,37 @@ class Logging
                 template < typename T >
                 LogStream& operator << ( T in )
                 {
-                    buffer_ << in;
+                    if ( logflags_ & loglevel_ )
+                        buffer_ << in;
                     return *this;
                 }
 
                 //template < class Class >
                 LogStream& operator << ( LogStream& ( *pf )(LogStream&) )
                 {
-                    buffer_ << pf;
+                    if ( logflags_ & loglevel_ )
+                        buffer_ << pf;
                     return *this;
                 }
 
                 LogStream& operator << ( std::ostream& ( *pf )(std::ostream &) )
                 {
-                    if ( pf == (std::ostream& ( * )(std::ostream&))std::endl )
-                    { //flush buffer into stream
-                        if ( ( logflags_ & LOG_CONSOLE ) != 0 ) {
-                            std::cout << buffer_.str();
-                            std::cout.flush();
-                        }
-                        if ( ( logflags_ & LOG_FILE ) != 0 )
-                            logfile_ << "\n" << TimeString() << buffer_.str();
-                            logfile_.flush();
-                    }
-                    else
-                        buffer_ << pf;
+                    if ( logflags_ & loglevel_ ) {
+                        if ( pf == (std::ostream& ( * )(std::ostream&))std::endl )
+                        { //flush buffer into stream
+                            if ( ( logflags_ & LOG_CONSOLE ) != 0 ) {
+                                std::cout << buffer_.str() << std::endl;
+                            }
+                            if ( ( logflags_ & LOG_FILE ) != 0 ) {
+                                logfile_ << "\n" << TimeString()
+                                         << buffer_.str() << std::endl;
+                            }
+                            buffer_.str("");// clear the buffer
 
+                        }
+                        else
+                            buffer_ << pf;
+                    }
                     return *this;
                 }
         };
@@ -114,6 +119,7 @@ class Logging
         void SetStreamFlags( LogFlags stream, int flags )
         {
             assert( stream & ( LOG_ERR | LOG_INFO | LOG_DEBUG ) );
+            //this might result in logging to diff targtes, so we flush the current targets
             flagmap_[stream] = flags;
         }
 
@@ -123,21 +129,21 @@ class Logging
         template < class Class >
         void LogDebug( void ( Class::*pf )(std::ostream&) , Class& c )
         {
-            if ( ( logflags_ & LOG_DEBUG ) != 0 )
+            if ( ( logflags_ & LOG_DEBUG ) )
                 Log( pf, c, LOG_DEBUG );
         }
 
         template < class Class >
         void LogInfo( void ( Class::*pf )(std::ostream&) , Class& c )
         {
-            if ( ( logflags_ & LOG_INFO ) != 0 )
+            if ( ( logflags_ & LOG_INFO ) )
                 Log( pf, c, LOG_INFO );
         }
 
         template < class Class >
         void LogErr( void ( Class::*pf )(std::ostream&) , Class& c )
         {
-            if ( ( logflags_ & LOG_ERR ) != 0 )
+            if ( ( logflags_ & LOG_ERR ) )
                 Log( pf, c, LOG_ERR  );
         }
         /** \}
@@ -149,21 +155,21 @@ class Logging
         template < class Class >
         void LogDebug( Class c )
         {
-            if ( ( logflags_ & LOG_DEBUG ) != 0 )
+            if ( ( logflags_ & LOG_DEBUG ) )
                 Log( c, LOG_DEBUG );
         }
 
         template < class Class >
         void LogInfo( Class c )
         {
-            if ( ( logflags_ & LOG_INFO ) != 0 )
+            if ( ( logflags_ & LOG_INFO ) )
                 Log( c, LOG_INFO );
         }
 
         template < class Class >
         void LogErr( Class c )
         {
-            if ( ( logflags_ & LOG_ERR ) != 0 )
+            if ( ( logflags_ & LOG_ERR ) )
                 Log( c, LOG_ERR );
         }
 

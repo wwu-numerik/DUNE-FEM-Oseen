@@ -44,7 +44,7 @@ int main( int argc, char** argv )
     else {
         parameters.Print( std::cout );
     }
-    Logger().Create( Logging::LOG_CONSOLE | Logging::LOG_FILE | Logging::LOG_ERR | Logging::LOG_DEBUG | Logging::LOG_INFO );
+    Logger().Create( Logging::LOG_CONSOLE | Logging::LOG_FILE | Logging::LOG_ERR | Logging::LOG_INFO );
 
     /* ********************************************************************** *
      * initialize the grid                                                    *
@@ -56,6 +56,10 @@ int main( int argc, char** argv )
     myStream << std::endl ;
     myStream << std::setw(12) << std::setprecision(8) << 6.786968789659698697 ;
     myStream << std::endl ;
+    Logging::LogStream& myStream2 = Logger().Dbg();
+    myStream2 << "\ndebugout" << std::endl;
+    Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_DEBUG | Logging::LOG_FILE );
+    myStream2 << "\ndebugout22" << std::endl;
 
     return 0;
   }
