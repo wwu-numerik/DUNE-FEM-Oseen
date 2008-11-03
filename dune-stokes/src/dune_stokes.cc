@@ -13,7 +13,7 @@
 
 //#include "traits.hh"
 #include "parametercontainer.hh"
-#include "logging.hh"
+//#include "logging.hh"
 #include "problem.hh"
 
 /**
@@ -62,7 +62,7 @@ int main( int argc, char** argv )
     Dune::FieldVector< double, grid_dimension > x;
     x[0] = 0.5;
     x[1] = 0.5;
-
+    std::cout << "TEST";
 
 
     return 0;
