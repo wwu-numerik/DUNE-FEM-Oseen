@@ -44,7 +44,7 @@ int main( int argc, char** argv )
     else {
         parameters.Print( std::cout );
     }
-    Logger().Create( Logging::LOG_CONSOLE | Logging::LOG_FILE | Logging::LOG_DEBUG | Logging::LOG_INFO );
+    Logger().Create( Logging::LOG_CONSOLE | Logging::LOG_FILE | Logging::LOG_ERR | Logging::LOG_DEBUG | Logging::LOG_INFO );
 
     /* ********************************************************************** *
      * initialize the grid                                                    *

@@ -32,12 +32,12 @@ class Logging
         {
             protected:
                 LogFlags loglevel_;
-                int logflags_;
+                int& logflags_;
                 std::stringstream buffer_;
                 std::ofstream& logfile_;
 
             public:
-                LogStream( LogFlags loglevel, int logflags, std::ofstream& file )
+                LogStream( LogFlags loglevel, int& logflags, std::ofstream& file )
                     : loglevel_(loglevel), logflags_(logflags),
                       logfile_(file) {}
                 ~LogStream(){}
@@ -103,12 +103,18 @@ class Logging
                 logfile_.open ( filename_.c_str() );
                 assert( logfile_.is_open() );
             }
-            flagmap[LOG_ERR] = logflags & ( LOG_ERR | LOG_DEBUG | LOG_INFO );
-            flagmap[LOG_INFO] = logflags & ( LOG_ERR | LOG_DEBUG | LOG_INFO );
-            flagmap[LOG_DEBUG] = logflags & ( LOG_ERR | LOG_DEBUG | LOG_INFO );
-            stream_err = new LogStream( LOG_ERR, flagmap[LOG_ERR], logfile_ );
-            stream_dbg = new LogStream( LOG_DEBUG, flagmap[LOG_DEBUG], logfile_ );
-            stream_info = new LogStream( LOG_INFO, flagmap[LOG_INFO], logfile_ );
+            flagmap_[LOG_ERR] = logflags;
+            flagmap_[LOG_INFO] = logflags;
+            flagmap_[LOG_DEBUG] = logflags;
+            stream_err = new LogStream( LOG_ERR, flagmap_[LOG_ERR], logfile_ );
+            stream_dbg = new LogStream( LOG_DEBUG, flagmap_[LOG_DEBUG], logfile_ );
+            stream_info = new LogStream( LOG_INFO, flagmap_[LOG_INFO], logfile_ );
+        }
+
+        void SetStreamFlags( LogFlags stream, int flags )
+        {
+            assert( stream & ( LOG_ERR | LOG_INFO | LOG_DEBUG ) );
+            flagmap_[stream] = flags;
         }
 
          /** \name Log funcs for member-function pointers
@@ -118,21 +124,21 @@ class Logging
         void LogDebug( void ( Class::*pf )(std::ostream&) , Class& c )
         {
             if ( ( logflags_ & LOG_DEBUG ) != 0 )
-                Log( pf, c );
+                Log( pf, c, LOG_DEBUG );
         }
 
         template < class Class >
         void LogInfo( void ( Class::*pf )(std::ostream&) , Class& c )
         {
             if ( ( logflags_ & LOG_INFO ) != 0 )
-                Log( pf, c );
+                Log( pf, c, LOG_INFO );
         }
 
         template < class Class >
         void LogErr( void ( Class::*pf )(std::ostream&) , Class& c )
         {
             if ( ( logflags_ & LOG_ERR ) != 0 )
-                Log( pf, c );
+                Log( pf, c, LOG_ERR  );
         }
         /** \}
         */
@@ -144,21 +150,21 @@ class Logging
         void LogDebug( Class c )
         {
             if ( ( logflags_ & LOG_DEBUG ) != 0 )
-                Log( c );
+                Log( c, LOG_DEBUG );
         }
 
         template < class Class >
         void LogInfo( Class c )
         {
             if ( ( logflags_ & LOG_INFO ) != 0 )
-                Log( c );
+                Log( c, LOG_INFO );
         }
 
         template < class Class >
         void LogErr( Class c )
         {
             if ( ( logflags_ & LOG_ERR ) != 0 )
-                Log( c );
+                Log( c, LOG_ERR );
         }
 
         LogStream& Err() { assert( stream_err ); return *stream_err; }
@@ -184,20 +190,22 @@ class Logging
         LogStream* stream_info;
 
         template < class Class >
-        void Log( void ( Class::*pf )(std::ostream&) , Class& c)
+        void Log( void ( Class::*pf )(std::ostream&) , Class& c, LogFlags stream)
         {
-            if ( ( logflags_ & LOG_CONSOLE ) != 0 )
+            assert( stream & ( LOG_ERR | LOG_INFO | LOG_DEBUG ) );
+            if ( ( flagmap_[stream] & LOG_CONSOLE ) != 0 )
                 (c.*pf)( std::cout );
-            if ( ( logflags_ & LOG_FILE ) != 0 )
+            if ( ( flagmap_[stream] & LOG_FILE ) != 0 )
                 (c.*pf)( logfile_ );
         }
 
         template < class Class >
-        void Log( Class c )
+        void Log( Class c, LogFlags stream )
         {
-            if ( ( logflags_ & LOG_CONSOLE ) != 0 )
+            assert( stream & ( LOG_ERR | LOG_INFO | LOG_DEBUG ) );
+            if ( ( flagmap_[stream] & LOG_CONSOLE ) != 0 )
                 std::cout << c;
-            if ( ( logflags_ & LOG_FILE ) != 0 )
+            if ( ( flagmap_[stream] & LOG_FILE ) != 0 )
                 logfile_ << c;
         }
 };
