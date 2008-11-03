@@ -41,9 +41,27 @@ class Logging
                       logfile_(file) {}
                 ~LogStream(){}
                 template < typename T >
-                LogStream operator << ( T in )
+                LogStream& operator << ( T in )
                 {
                     buffer_ << in;
+                    return *this;
+                }
+
+                //template < class Class >
+                LogStream& operator << ( LogStream& ( *pf )(LogStream&) )
+                {
+
+//                    else {
+//
+//                    }
+                    return *this;
+                }
+
+                LogStream& operator << ( std::ostream& ( *pf )(std::ostream&) )
+                {
+                   if ( pf == std::endl ) { //flush buffer into stream
+
+                    }
                 }
 
         };
