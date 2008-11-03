@@ -44,14 +44,14 @@ int main( int argc, char** argv )
     else {
         parameters.Print( std::cout );
     }
-    //Logger().Create( Logging::LOG_CONSOLE | Logging::LOG_DEBUG | Logging::LOG_INFO );
+    Logger().Create( Logging::LOG_CONSOLE | Logging::LOG_DEBUG | Logging::LOG_INFO );
 
     /* ********************************************************************** *
      * initialize the grid                                                    *
      * ********************************************************************** */
     Dune::GridPtr<GridType> gridptr( "grid.dgf" );
 
-
+    Logger().Err() << "hgude" ;
 
 
     return 0;

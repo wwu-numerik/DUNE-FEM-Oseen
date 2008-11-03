@@ -12,10 +12,6 @@
  #include "stuff.hh"
  #include "parametercontainer.hh"
 
-class LogStream : virtual public std::ostream
-{
-
-};
 
 /** \brief handles all logging
 **/
@@ -31,6 +27,27 @@ class Logging
           LOG_FILE = 16
         };
 
+        class LogStream : virtual public std::ostream
+        {
+            protected:
+                LogFlags loglevel_;
+                int logflags_;
+                std::stringstream buffer_;
+                std::ofstream& logfile_;
+
+            public:
+                LogStream( LogFlags loglevel, int logflags, std::ofstream& file )
+                    : loglevel_(loglevel), logflags_(logflags),
+                      logfile_(file) {}
+                ~LogStream(){}
+                template < typename T >
+                LogStream operator << ( T in )
+                {
+                    buffer_ << in;
+                }
+
+        };
+
         Logging( )
         {
         }
@@ -42,6 +59,7 @@ class Logging
                 logfile_ << TimeString() << ": LOG END" << std::endl;
                 logfile_.close();
             }
+            Stuff::safe_delete( stream_err );
         }
 
 
@@ -57,6 +75,7 @@ class Logging
                 logfile_.open ( filename_.c_str() );
                 assert( logfile_.is_open() );
             }
+            stream_err = new LogStream( LOG_ERR, logflags, logfile_ );
 
         }
 
@@ -109,6 +128,8 @@ class Logging
             if ( ( logflags_ & LOG_ERR ) != 0 )
                 Log( c );
         }
+
+        LogStream& Err() { assert( stream_err ); return *stream_err; }
         /** \}
         */
 
@@ -116,6 +137,7 @@ class Logging
         std::string filename_;
         std::ofstream logfile_;
         unsigned int logflags_;
+        LogStream* stream_err;
 
         std::string TimeString()
         {
