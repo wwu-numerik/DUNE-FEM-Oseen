@@ -103,12 +103,9 @@ class ParameterContainer
                 Dune::Parameter::get( "polynomial_order", pol_order_ );
             }
             if ( has_not_worked ) {
-<<<<<<< HEAD:dune-stokes/src/parametercontainer.hh
                 std::cerr << "\nError: not all parameters found in " << parameterFilename() << "!";
                 PrintParameterSpecs( std::cerr );
-=======
                 std::cerr << std::endl;
->>>>>>> origin/master:dune-stokes/src/parametercontainer.hh
             }
             return !( has_not_worked );
         }

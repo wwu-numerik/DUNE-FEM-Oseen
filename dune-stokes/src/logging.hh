@@ -12,6 +12,10 @@
  #include "stuff.hh"
  #include "parametercontainer.hh"
 
+class LogStream : virtual public std::ostream
+{
+
+};
 
 /** \brief handles all logging
 **/
