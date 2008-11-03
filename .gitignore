@@ -74,3 +74,4 @@ dune-stokes.depend*
 dune_stokes
 *.orig
 *.backup
+*.layout
