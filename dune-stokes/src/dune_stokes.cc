@@ -61,6 +61,10 @@ int main( int argc, char** argv )
     Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_DEBUG | Logging::LOG_FILE );
     myStream2 << "\ndebugout22" << std::endl;
 
+    int newStreamID = Logger().AddStream( Logging::LOG_CONSOLE );
+    Logging::LogStream& blah = Logger().GetStream( newStreamID );
+    blah << "blah" << std::endl;
+
     return 0;
   }
   catch (Dune::Exception &e){

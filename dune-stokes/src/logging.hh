@@ -41,6 +41,7 @@ class Logging
                     : loglevel_(loglevel), logflags_(logflags),
                       logfile_(file) {}
                 ~LogStream(){}
+
                 template < typename T >
                 LogStream& operator << ( T in )
                 {
@@ -81,13 +82,17 @@ class Logging
 
         Logging( )
         {
+            streamIDs_.push_back( LOG_ERR );
+            streamIDs_.push_back( LOG_DEBUG );
+            streamIDs_.push_back( LOG_INFO );
         }
 
         ~Logging()
         {
-            Stuff::safe_delete( streammap_[LOG_INFO] );
-            Stuff::safe_delete( streammap_[LOG_DEBUG] );
-            Stuff::safe_delete( streammap_[LOG_ERR] );
+            IdVecCIter it = streamIDs_.end();
+            for ( ; it != streamIDs_.begin(); --it ) {
+                Stuff::safe_delete( streammap_[*it] );
+            }
 
             if ( ( logflags_ & LOG_FILE ) != 0 ) {
                 logfile_ << '\n' << TimeString() << ": LOG END" << std::endl;
@@ -108,12 +113,11 @@ class Logging
                 logfile_.open ( filename_.c_str() );
                 assert( logfile_.is_open() );
             }
-            flagmap_[LOG_ERR] = logflags;
-            flagmap_[LOG_INFO] = logflags;
-            flagmap_[LOG_DEBUG] = logflags;
-            streammap_[LOG_ERR] = new LogStream( LOG_ERR, flagmap_[LOG_ERR], logfile_ );
-            streammap_[LOG_DEBUG] = new LogStream( LOG_DEBUG, flagmap_[LOG_DEBUG], logfile_ );
-            streammap_[LOG_INFO] = new LogStream( LOG_INFO, flagmap_[LOG_INFO], logfile_ );
+            IdVecCIter it = streamIDs_.begin();
+            for ( ; it != streamIDs_.end(); ++it ) {
+                flagmap_[*it] = logflags;
+                streammap_[*it] = new LogStream( *it, flagmap_[*it], logfile_ );
+            }
         }
 
         void SetStreamFlags( LogFlags stream, int flags )
@@ -146,6 +150,16 @@ class Logging
             if ( ( logflags_ & LOG_ERR ) )
                 Log( pf, c, LOG_ERR  );
         }
+
+        template < class Class >
+        void Log( void ( Class::*pf )(std::ostream&) , Class& c, LogFlags stream)
+        {
+            assert( stream & ( LOG_ERR | LOG_INFO | LOG_DEBUG ) );
+            if ( ( flagmap_[stream] & LOG_CONSOLE ) != 0 )
+                (c.*pf)( std::cout );
+            if ( ( flagmap_[stream] & LOG_FILE ) != 0 )
+                (c.*pf)( logfile_ );
+        }
         /** \}
         */
 
@@ -173,37 +187,6 @@ class Logging
                 Log( c, LOG_ERR );
         }
 
-        LogStream& Err() { assert( streammap_[LOG_ERR] ); return *streammap_[LOG_ERR]; }
-        LogStream& Info() { assert( streammap_[LOG_INFO] ); return *streammap_[LOG_INFO]; }
-        LogStream& Dbg() { assert( streammap_[LOG_DEBUG] ); return *streammap_[LOG_DEBUG]; }
-        /** \}
-        */
-
-        static std::string TimeString()
-        {
-            const time_t cur_time = time( NULL );
-            return ctime ( &cur_time );
-        }
-
-    private:
-        std::string filename_;
-        std::ofstream logfile_;
-        typedef std::map<LogFlags,int> FlagMap;
-        FlagMap flagmap_;
-        typedef std::map<LogFlags,LogStream*> StreamMap;
-        StreamMap streammap_;
-        int logflags_;
-
-        template < class Class >
-        void Log( void ( Class::*pf )(std::ostream&) , Class& c, LogFlags stream)
-        {
-            assert( stream & ( LOG_ERR | LOG_INFO | LOG_DEBUG ) );
-            if ( ( flagmap_[stream] & LOG_CONSOLE ) != 0 )
-                (c.*pf)( std::cout );
-            if ( ( flagmap_[stream] & LOG_FILE ) != 0 )
-                (c.*pf)( logfile_ );
-        }
-
         template < class Class >
         void Log( Class c, LogFlags stream )
         {
@@ -213,6 +196,43 @@ class Logging
             if ( ( flagmap_[stream] & LOG_FILE ) != 0 )
                 logfile_ << c;
         }
+        /** \}
+        */
+
+        LogStream& GetStream(int stream) { assert( streammap_[(LogFlags)stream] ); return *streammap_[(LogFlags)stream]; }
+        LogStream& Err() { return GetStream( LOG_ERR ); }
+        LogStream& Info() { return GetStream( LOG_INFO ); }
+        LogStream& Dbg() { return GetStream( LOG_DEBUG ); }
+
+        static std::string TimeString()
+        {
+            const time_t cur_time = time( NULL );
+            return ctime ( &cur_time );
+        }
+
+        int AddStream( int flags )
+        {
+//            assert( streamIDs_.find( streamID ) == streamIDs_.end() );
+            static int streamID_int = 16;
+            streamID_int << 2;
+            LogFlags streamID = (LogFlags) streamID_int;
+            streamIDs_.push_back( streamID );
+            flagmap_[streamID] = flags | streamID;
+            streammap_[streamID] = new LogStream( streamID, flagmap_[streamID], logfile_ );
+            return streamID_int;
+        }
+
+    private:
+        std::string filename_;
+        std::ofstream logfile_;
+        typedef std::map<LogFlags,int> FlagMap;
+        FlagMap flagmap_;
+        typedef std::map<LogFlags,LogStream*> StreamMap;
+        StreamMap streammap_;
+        typedef std::vector<LogFlags> IdVec;
+        typedef std::vector<LogFlags>::const_iterator IdVecCIter;
+        IdVec streamIDs_;
+        int logflags_;
 };
 
 ///global Logging instance
