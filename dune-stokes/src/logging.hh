@@ -81,12 +81,14 @@ class Logging
 
         ~Logging()
         {
+            Stuff::safe_delete( stream_info );
+            Stuff::safe_delete( stream_dbg );
+            Stuff::safe_delete( stream_err );
 
             if ( ( logflags_ & LOG_FILE ) != 0 ) {
-                logfile_ << TimeString() << ": LOG END" << std::endl;
+                logfile_ << '\n' << TimeString() << ": LOG END" << std::endl;
                 logfile_.close();
             }
-            Stuff::safe_delete( stream_err );
         }
 
 
@@ -103,6 +105,8 @@ class Logging
                 assert( logfile_.is_open() );
             }
             stream_err = new LogStream( LOG_ERR, logflags, logfile_ );
+            stream_dbg = new LogStream( LOG_DEBUG, logflags, logfile_ );
+            stream_info = new LogStream( LOG_INFO, logflags, logfile_ );
 
         }
 
@@ -165,6 +169,8 @@ class Logging
         std::ofstream logfile_;
         unsigned int logflags_;
         LogStream* stream_err;
+        LogStream* stream_dbg;
+        LogStream* stream_info;
 
         std::string TimeString()
         {
