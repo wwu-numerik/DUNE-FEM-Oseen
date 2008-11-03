@@ -44,15 +44,18 @@ int main( int argc, char** argv )
     else {
         parameters.Print( std::cout );
     }
-    Logger().Create( Logging::LOG_CONSOLE | Logging::LOG_DEBUG | Logging::LOG_INFO );
+    Logger().Create( Logging::LOG_CONSOLE | Logging::LOG_FILE | Logging::LOG_DEBUG | Logging::LOG_INFO );
 
     /* ********************************************************************** *
      * initialize the grid                                                    *
      * ********************************************************************** */
     Dune::GridPtr<GridType> gridptr( "grid.dgf" );
 
-    Logger().Err() << "hgude" ;
-
+    Logging::LogStream& myStream = Logger().Err();
+    myStream << "hgude" << " pudge";
+    myStream << std::endl ;
+    myStream << std::setw(12) << std::setprecision(8) << 6.786968789659698697 ;
+    myStream << std::endl ;
 
     return 0;
   }

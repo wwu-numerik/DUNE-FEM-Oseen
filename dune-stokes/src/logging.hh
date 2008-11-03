@@ -9,6 +9,7 @@
  #include <ostream>
  #include <sstream>
  #include <ctime>
+ #include <iomanip>
  #include "stuff.hh"
  #include "parametercontainer.hh"
 
@@ -27,7 +28,7 @@ class Logging
           LOG_FILE = 16
         };
 
-        class LogStream : virtual public std::ostream
+        class LogStream //: virtual public std::ostream
         {
             protected:
                 LogFlags loglevel_;
@@ -50,18 +51,26 @@ class Logging
                 //template < class Class >
                 LogStream& operator << ( LogStream& ( *pf )(LogStream&) )
                 {
-
-//                    else {
-//
-//                    }
+                    buffer_ << pf;
                     return *this;
                 }
 
-                LogStream& operator << ( std::ostream& ( *pf )(std::ostream&) )
+                LogStream& operator << ( std::ostream& ( *pf )(std::ostream &) )
                 {
-                   if ( pf == std::endl ) { //flush buffer into stream
-
+                    if ( pf == (std::ostream& ( * )(std::ostream&))std::endl )
+                    { //flush buffer into stream
+                        if ( ( logflags_ & LOG_CONSOLE ) != 0 ) {
+                            std::cout << buffer_.str();
+                            std::cout.flush();
+                        }
+                        if ( ( logflags_ & LOG_FILE ) != 0 )
+                            logfile_ << buffer_.str();
+                            logfile_.flush();
                     }
+                    else
+                        buffer_ << pf;
+
+                    return *this;
                 }
 
         };
@@ -85,7 +94,7 @@ class Logging
             \param logflags any OR'd combination of flags
             \param logfile filename for log, can contain paths, but creation will fail if dir is non-existant
         **/
-        void Create (unsigned int logflags = LOG_CONSOLE | LOG_ERR, std::string logfile = "log" )
+        void Create (unsigned int logflags = LOG_CONSOLE | LOG_ERR, std::string logfile = "dune-stokes.log" )
         {
             logflags_ = logflags;
             filename_ = logfile;
