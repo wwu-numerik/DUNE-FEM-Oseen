@@ -85,9 +85,9 @@ class Logging
 
         ~Logging()
         {
-            Stuff::safe_delete( stream_info );
-            Stuff::safe_delete( stream_dbg );
-            Stuff::safe_delete( stream_err );
+            Stuff::safe_delete( streammap_[LOG_INFO] );
+            Stuff::safe_delete( streammap_[LOG_DEBUG] );
+            Stuff::safe_delete( streammap_[LOG_ERR] );
 
             if ( ( logflags_ & LOG_FILE ) != 0 ) {
                 logfile_ << '\n' << TimeString() << ": LOG END" << std::endl;
@@ -111,9 +111,9 @@ class Logging
             flagmap_[LOG_ERR] = logflags;
             flagmap_[LOG_INFO] = logflags;
             flagmap_[LOG_DEBUG] = logflags;
-            stream_err = new LogStream( LOG_ERR, flagmap_[LOG_ERR], logfile_ );
-            stream_dbg = new LogStream( LOG_DEBUG, flagmap_[LOG_DEBUG], logfile_ );
-            stream_info = new LogStream( LOG_INFO, flagmap_[LOG_INFO], logfile_ );
+            streammap_[LOG_ERR] = new LogStream( LOG_ERR, flagmap_[LOG_ERR], logfile_ );
+            streammap_[LOG_DEBUG] = new LogStream( LOG_DEBUG, flagmap_[LOG_DEBUG], logfile_ );
+            streammap_[LOG_INFO] = new LogStream( LOG_INFO, flagmap_[LOG_INFO], logfile_ );
         }
 
         void SetStreamFlags( LogFlags stream, int flags )
@@ -173,9 +173,9 @@ class Logging
                 Log( c, LOG_ERR );
         }
 
-        LogStream& Err() { assert( stream_err ); return *stream_err; }
-        LogStream& Info() { assert( stream_info ); return *stream_info; }
-        LogStream& Dbg() { assert( stream_dbg ); return *stream_dbg; }
+        LogStream& Err() { assert( streammap_[LOG_ERR] ); return *streammap_[LOG_ERR]; }
+        LogStream& Info() { assert( streammap_[LOG_INFO] ); return *streammap_[LOG_INFO]; }
+        LogStream& Dbg() { assert( streammap_[LOG_DEBUG] ); return *streammap_[LOG_DEBUG]; }
         /** \}
         */
 
@@ -190,10 +190,9 @@ class Logging
         std::ofstream logfile_;
         typedef std::map<LogFlags,int> FlagMap;
         FlagMap flagmap_;
+        typedef std::map<LogFlags,LogStream*> StreamMap;
+        StreamMap streammap_;
         int logflags_;
-        LogStream* stream_err;
-        LogStream* stream_dbg;
-        LogStream* stream_info;
 
         template < class Class >
         void Log( void ( Class::*pf )(std::ostream&) , Class& c, LogFlags stream)
