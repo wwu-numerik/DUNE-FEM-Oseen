@@ -45,13 +45,12 @@ int main( int argc, char** argv )
     else {
         parameters.Print( std::cout );
     }
-    //Logger().Create( Logging::LOG_CONSOLE | Logging::LOG_DEBUG | Logging::LOG_INFO );
+    Logger().Create( Logging::LOG_CONSOLE | Logging::LOG_FILE | Logging::LOG_ERR | Logging::LOG_INFO );
 
     /* ********************************************************************** *
      * initialize the grid                                                    *
      * ********************************************************************** */
     Dune::GridPtr<GridType> gridptr( "grid.dgf" );
-
     /* ********************************************************************** *
      * initialize the analytical problem                                      *
      * ********************************************************************** */
@@ -64,6 +63,19 @@ int main( int argc, char** argv )
     x[1] = 0.5;
     std::cout << "TEST";
 
+    Logging::LogStream& myStream = Logger().Err();
+    myStream << "hgude" << " pudge";
+    myStream << std::endl ;
+    myStream << std::setw(12) << std::setprecision(8) << 6.786968789659698697 ;
+    myStream << std::endl ;
+    Logging::LogStream& myStream2 = Logger().Dbg();
+    myStream2 << "\ndebugout" << std::endl;
+    Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_DEBUG | Logging::LOG_FILE );
+    myStream2 << "\ndebugout22" << std::endl;
+
+    int newStreamID = Logger().AddStream( Logging::LOG_CONSOLE );
+    Logging::LogStream& blah = Logger().GetStream( newStreamID );
+    blah << "blah" << std::endl;
 
     return 0;
   }
