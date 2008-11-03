@@ -64,7 +64,7 @@ class Logging
                             std::cout.flush();
                         }
                         if ( ( logflags_ & LOG_FILE ) != 0 )
-                            logfile_ << buffer_.str();
+                            logfile_ << "\n" << TimeString() << buffer_.str();
                             logfile_.flush();
                     }
                     else
@@ -72,7 +72,6 @@ class Logging
 
                     return *this;
                 }
-
         };
 
         Logging( )
@@ -96,7 +95,7 @@ class Logging
             \param logflags any OR'd combination of flags
             \param logfile filename for log, can contain paths, but creation will fail if dir is non-existant
         **/
-        void Create (unsigned int logflags = LOG_CONSOLE | LOG_ERR, std::string logfile = "dune-stokes.log" )
+        void Create (unsigned int logflags = LOG_FILE | LOG_CONSOLE | LOG_ERR, std::string logfile = "dune-stokes.log" )
         {
             logflags_ = logflags;
             filename_ = logfile;
@@ -104,10 +103,12 @@ class Logging
                 logfile_.open ( filename_.c_str() );
                 assert( logfile_.is_open() );
             }
-            stream_err = new LogStream( LOG_ERR, logflags, logfile_ );
-            stream_dbg = new LogStream( LOG_DEBUG, logflags, logfile_ );
-            stream_info = new LogStream( LOG_INFO, logflags, logfile_ );
-
+            flagmap[LOG_ERR] = logflags & ( LOG_ERR | LOG_DEBUG | LOG_INFO );
+            flagmap[LOG_INFO] = logflags & ( LOG_ERR | LOG_DEBUG | LOG_INFO );
+            flagmap[LOG_DEBUG] = logflags & ( LOG_ERR | LOG_DEBUG | LOG_INFO );
+            stream_err = new LogStream( LOG_ERR, flagmap[LOG_ERR], logfile_ );
+            stream_dbg = new LogStream( LOG_DEBUG, flagmap[LOG_DEBUG], logfile_ );
+            stream_info = new LogStream( LOG_INFO, flagmap[LOG_INFO], logfile_ );
         }
 
          /** \name Log funcs for member-function pointers
@@ -166,19 +167,21 @@ class Logging
         /** \}
         */
 
-    private:
-        std::string filename_;
-        std::ofstream logfile_;
-        unsigned int logflags_;
-        LogStream* stream_err;
-        LogStream* stream_dbg;
-        LogStream* stream_info;
-
-        std::string TimeString()
+        static std::string TimeString()
         {
             const time_t cur_time = time( NULL );
             return ctime ( &cur_time );
         }
+
+    private:
+        std::string filename_;
+        std::ofstream logfile_;
+        typedef std::map<LogFlags,int> FlagMap;
+        FlagMap flagmap_;
+        int logflags_;
+        LogStream* stream_err;
+        LogStream* stream_dbg;
+        LogStream* stream_info;
 
         template < class Class >
         void Log( void ( Class::*pf )(std::ostream&) , Class& c)
