@@ -214,7 +214,7 @@ class Logging
         {
 //            assert( streamIDs_.find( streamID ) == streamIDs_.end() );
             static int streamID_int = 16;
-            streamID_int << 2;
+            streamID_int <<= 2;
             LogFlags streamID = (LogFlags) streamID_int;
             streamIDs_.push_back( streamID );
             flagmap_[streamID] = flags | streamID;

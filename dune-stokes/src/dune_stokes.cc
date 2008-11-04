@@ -5,11 +5,14 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+//#define GRIDTYPE ALUGRID_SIMPLEX
 #include <iostream>
 #include <memory> //not including this gives error of undefined autopointer in dgfparser.hh
 #include <dune/common/mpihelper.hh> // An initializer of MPI
 #include <dune/common/exceptions.hh> // We use exceptions
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
+//#include <dune/grid/io/file/dgfparser/dgfparser.hh> // for the grid
+//#include <dune/grid/utility/gridtype.hh>
 
 #include "traits.hh"
 #include "parametercontainer.hh"
@@ -49,7 +52,8 @@ int main( int argc, char** argv )
     /* ********************************************************************** *
      * initialize the grid                                                    *
      * ********************************************************************** */
-    Dune::GridPtr<GridType> gridptr( "grid.dgf" );
+     using Dune::GridPtr;
+    GridPtr<GridType> gridptr( "grid.dgf" );
 
     Logging::LogStream& myStream = Logger().Err();
     myStream << "hgude" << " pudge";
