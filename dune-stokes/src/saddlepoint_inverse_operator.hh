@@ -25,7 +25,7 @@ namespace Dune {
    */
 
   template <class VelocityDiscreteFunctionType,class PressureDiscreteFunctionType,class OperatorType,class EllipticInverseOperatorType>
-  class SPCGInverseOperator : public Operator<
+  class SaddlepointInverseOperator : public Operator<
     typename PressureDiscreteFunctionType::DomainFieldType,
     typename PressureDiscreteFunctionType::RangeFieldType,
     PressureDiscreteFunctionType,PressureDiscreteFunctionType>
@@ -62,7 +62,7 @@ namespace Dune {
     * aufSolver is the InverseOperator for Solving the elliptic Problem A^-1
     * rhs1 is  stored as member,no better idea
 	  **/
-    SPCGInverseOperator( const MappingType& op,
+    SaddlepointInverseOperator( const MappingType& op,
 			 double redEps,
 			 double absLimit,
 			 int maxIter,
@@ -74,12 +74,12 @@ namespace Dune {
 			 )
       : op_(op), error_reduction_per_step_ ( redEps ), epsilon_ ( absLimit ) ,
         max_iterations_ (maxIter ) , verbosity_ ( verbose ),aufSolver_(aufSolver), b_op_(op_.getBOP()),
-	bT_op_(op_.getBTOP()),
-	c_op_(op_.getCOP()),
-	rhs1_(op_.rhs1()),
-	pressure_space_(pressurespc),
-	velocity_space_(spc),
-	velocity_("velocity",velocity_space_)
+        bT_op_(op_.getBTOP()),
+        c_op_(op_.getCOP()),
+        rhs1_(op_.rhs1()),
+        pressure_space_(pressurespc),
+        velocity_space_(spc),
+        velocity_("velocity",velocity_space_)
     {
 
     }
@@ -92,7 +92,7 @@ namespace Dune {
         typedef typename FunctionSpaceType::RangeFieldType RangeFieldType;
         typedef typename PressureDiscreteFunctionType::DiscreteFunctionSpaceType PressureFunctionSpaceType;
         int count = 0;
-        RangeFieldType spa=0, spn, q, quad;
+        RangeFieldType spa=0, spn, q, quad;//t init
 
         VelocityDiscreteFunctionType f("f",velocity_space_);
         f.assign(rhs1_);
