@@ -24,8 +24,8 @@ class ParameterContainer
          *  \attention  call ReadCommandLine to set up parameterContainer
          **/
         ParameterContainer()
+            : all_set_up_( false )
         {
-            all_set_up_ = false;
         }
 
         /**
@@ -39,7 +39,7 @@ class ParameterContainer
         /**
          *  \brief  prints all parameters
          *  \todo   implement me
-         *  \arg    std::ostream& out stream to print out
+         *  \arg    std::ostream& out stream to print to
          **/
         void Print( std::ostream& out ) const
         {
@@ -52,17 +52,17 @@ class ParameterContainer
          **/
        bool ReadCommandLine( int argc, char** argv )
         {
-            if ( argc_ == 2 )
+            if ( argc == 2 )
             {
                 argc_ = argc;
                 argv_ = argv;
                 eps_ = 1.0e20;
-                parameter_filename_ = argv_[1];
+                parameter_filename_ = argv[1];
                 return true;
             }
             else
             {
-                std::cerr << "\nUsage: " << argv_[0] << " parameterfile" << std::endl;
+                std::cerr << "\nUsage: " << argv[0] << " parameterfile" << std::endl;
                 PrintParameterSpecs( std::cerr );
                 return false;
             }
@@ -71,40 +71,35 @@ class ParameterContainer
         /**
          *  \brief  sets all needed parameters
          *  \return bool returns true, if all needed parameters are set up
+         *  \attention  SetGridDimension should be called next
          **/
         bool SetUp()
         {
-            Dune::Parameter::append( parameterFilename() );
-            //Dune::Parameter::append( argc_, argv_ );
+            Dune::Parameter::append( ParameterFilename() );
             bool has_not_worked = false;
-            if ( !( Dune::Parameter::exists( "grid_dimension" ) ) ) {
-                std::cerr << "\nError: not all parameters found in " << parameterFilename() << "!";
+            if ( !( Dune::Parameter::exists( "dgf_file_2d" ) ) ) {
+                std::cerr << "\nError: not all parameters found in " << ParameterFilename() << "!";
                 PrintParameterSpecs( std::cerr );
-                std::cerr << "missing parameters are: grid_dimension" << std::endl;
+                std::cerr << "\nmissing parameters are: dgf_file_2d" << std::endl;
                 has_not_worked = true;
 
             }
             else {
-                Dune::Parameter::get( "grid_dimension", grid_dimension_ );
+                Dune::Parameter::get( "dgf_file_2d", dgf_filenames_[1] );
             }
-            if ( !( Dune::Parameter::exists( "polynomial_order" ) ) ) {
+            if ( !( Dune::Parameter::exists( "dgf_file_3d" ) ) ) {
                 if ( !( has_not_worked ) ) {
-                    std::cerr << "\nError: not all parameters found in " << parameterFilename() << "!";
+                    std::cerr << "\nError: not all parameters found in " << ParameterFilename() << "!";
                     PrintParameterSpecs( std::cerr );
-                    std::cerr << "missing parameters are: polynomial_order" << std::endl;
+                    std::cerr << "\nmissing parameters are: dgf_file_3d" << std::endl;
                 }
                 else {
-                    std::cerr << "                        polynomial_order" << std::endl;
+                    std::cerr << "                        dgf_file_3d" << std::endl;
                 }
                 has_not_worked = true;
             }
             else {
-                Dune::Parameter::get( "polynomial_order", pol_order_ );
-            }
-            if ( has_not_worked ) {
-                std::cerr << "\nError: not all parameters found in " << parameterFilename() << "!";
-                PrintParameterSpecs( std::cerr );
-                std::cerr << std::endl;
+                Dune::Parameter::get( "dgf_file_3d", dgf_filenames_[2] );
             }
             return !( has_not_worked );
         }
@@ -116,27 +111,28 @@ class ParameterContainer
         void PrintParameterSpecs( std::ostream& out )
         {
             out << "\na valid parameterfile should at least specify the following parameters:";
+            out << "\nRemark: the correpondig files have to exist!" << std::endl;
             out << "\n(copy this into your parameterfile)" << std::endl;
-            //out << "grid_dimension: " << std::endl;
-            //out << "polynomial_order: " << std::endl;
-            out << std::endl;
+            out << "dgf_file_3d: " << std::endl;
+            out << "dgf_file_3d: " << std::endl;
         }
 
         /**
          *  \brief  returns the filename of the parameterfile
          *  \return std::string filename of the parameterfile
          **/
-        std::string parameterFilename() const
+        std::string ParameterFilename() const
         {
             return parameter_filename_;
         }
 
         /**
-         *  \brief  sets the filename of the parameterfile
+         *  \brief  returns the filename of the dgf file
+         *  \return std::string filename of the dgf file
          **/
-        void SetParameterFilename( const std::string param_filename )
+        std::string DgfFilename() const
         {
-            parameter_filename_ = param_filename;
+            return dgf_filenames_[ grid_dimension_ - 1 ];
         }
 
         /**
@@ -181,6 +177,7 @@ class ParameterContainer
         char** argv_;
         bool all_set_up_;
         std::string parameter_filename_;
+        std::string dgf_filenames_[3];
 };
 
 ///global ParameterContainer instance
