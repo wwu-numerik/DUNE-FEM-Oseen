@@ -38,8 +38,8 @@ int main( int argc, char** argv )
     /* ********************************************************************** *
      * initialize all the stuff we need                                       *
      * ********************************************************************** */
-    ParameterContainer parameters( argc, argv );
-    if ( !( parameters.ReadCommandLine() ) ) {
+    ParameterContainer& parameters = Parameters();
+    if ( !( parameters.ReadCommandLine( argc, argv ) ) ) {
         return 1;
     }
     if ( !( parameters.SetUp() ) ) {
@@ -66,7 +66,7 @@ int main( int argc, char** argv )
     /* ********************************************************************** *
      * initialize the analytical problem                                      *
      * ********************************************************************** */
-    Velocity< parameters.gridDimension() > velocity();
+    Velocity< GridType::dimensionworld > velocity();
 
     return 0;
   }
