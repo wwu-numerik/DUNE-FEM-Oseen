@@ -46,10 +46,12 @@ int main( int argc, char** argv )
         return 1;
     }
     else {
+        parameters.SetPolOrder( POLORDER );
         parameters.Print( std::cout );
     }
 
-    Logger().Create( Logging::LOG_CONSOLE |
+    Logger().Create(
+        Logging::LOG_CONSOLE |
         Logging::LOG_FILE |
         Logging::LOG_ERR |
         Logging::LOG_DEBUG |
@@ -58,18 +60,13 @@ int main( int argc, char** argv )
     /* ********************************************************************** *
      * initialize the grid                                                    *
      * ********************************************************************** */
-     using Dune::GridPtr;
-    GridPtr<GridType> gridptr( "grid.dgf" );
+    Dune::GridPtr<GridType> gridptr( "grid.dgf" );
+    parameters.SetGridDimension( GridType::dimensionworld );
 
     /* ********************************************************************** *
      * initialize the analytical problem                                      *
      * ********************************************************************** */
-    Velocity< GridType > velocity();
-    Dune::FieldVector< double, 2 > x;
-    x[0] = 0.5;
-    x[1] = 0.5;
-    std::cout << "TEST";
-
+    Velocity< parameters.gridDimension() > velocity();
 
     return 0;
   }
