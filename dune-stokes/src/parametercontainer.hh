@@ -6,6 +6,7 @@
 #define PARAMETERCONTAINER_HH_INCLUDED
 
 #include "dune/fem/io/parameter.hh"
+
 #include "stuff.hh"
 #include "logging.hh"
 
@@ -20,15 +21,10 @@ class ParameterContainer
     public:
         /**
          *  \brief  constuctor
-         *  \arg    int argc   number of command line arguments
-         *  \arg    char** argv array of command line arguments
+         *  \attention  call ReadCommandLine to set up parameterContainer
          **/
-        ParameterContainer( int argc, char** argv )
+        ParameterContainer()
         {
-            all_set_up_ = false;
-            argc_ = argc;
-            argv_ = argv;
-            eps_ = 1.0e20;
             all_set_up_ = false;
         }
 
@@ -54,10 +50,13 @@ class ParameterContainer
          *  \brief  checks command line parameters
          *  \return bool returns true, if comman line arguments are valid
          **/
-       bool ReadCommandLine()
+       bool ReadCommandLine( int argc, char** argv )
         {
             if ( argc_ == 2 )
             {
+                argc_ = argc;
+                argv_ = argv;
+                eps_ = 1.0e20;
                 parameter_filename_ = argv_[1];
                 return true;
             }
@@ -184,4 +183,10 @@ class ParameterContainer
         std::string parameter_filename_;
 };
 
+///global ParameterContainer instance
+ParameterContainer& Parameters()
+{
+    static ParameterContainer parameters;
+    return parameters;
+}
 #endif // end of PARAMETERHANDLER.HH

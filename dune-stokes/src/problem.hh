@@ -6,7 +6,11 @@
 #define PROBLEM_HH
 
 #include <cmath>
+//#include <assert>
+
 #include "dune/common/fvector.hh"
+
+#include "logging.hh"
 
 /**
  *  \brief describes the velocity
@@ -17,7 +21,7 @@
  *  as the solution of the stokes test problem
  *  \todo doc test problem
  **/
-template < int grid_dim >    // class C should be Dune::FieldVector
+template < int grid_dim >
 class Velocity
 {
     public:
@@ -25,10 +29,14 @@ class Velocity
         typedef Dune::FieldVector< double, grid_dim > RangeType;
         typedef Dune::FieldVector< RangeType, grid_dim > GradientRangeType;
         typedef Dune::FieldVector< double, 1 > DivergenceRangeType;
+
         /**
          *  \brief constructor
          **/
         Velocity()
+            : infoStream_( Logger().Info() ),
+            debugStream_( Logger().Dbg() ),
+            errorStream_( Logger().Err() )
         {
         }
 
@@ -41,95 +49,99 @@ class Velocity
 
         /**
          *  \brief evaluates the velocity
-         *  \arg const C& arg
-         *  \arg C& ret returns velocity at arg
-         *  \return true if has worked
+         *  \arg DomainType& arg
+         *  \arg RangeType& ret returns velocity at arg
          **/
-        bool evaluate( const DomainType& arg, DomainType& ret )
-        {
-            if ( grid_dim == 2 ) {
-                if ( arg.dim() == grid_dim ) {
-                    // some computations
-                    double x1 = arg[0];
-                    double x2 = arg[1];
-                    double exp_of_x1 = std::exp( x1 );
-                    double sin_of_x2 = std::sin( x2 );
-                    // return
-                    ret[0] = -1.0 * exp_of_x1 * ( x2 * std::cos( x2 ) + sin_of_x2 );
-                    ret[1] = exp_of_x1 * x2 * sin_of_x2;
-                    return true;
-                }
-                else {
-                    std::cerr << "\nError in Velocity.evaluate(): "
-                        << "dimension of argument does not match dimension "
-                        << "of grid!" << std::endl;
-                    return false;
-                }
-            }
-            else {
-                std::cerr << "\nError in Velocity.gradient(): "
-                    << "dimension of grid is not yet implemented!" << std::endl;
-                return false;
-            }
-        }
+        void Evaluate( const DomainType& arg, RangeType& ret );
+
 
         /**
          *  \brief evaluates the gradient of the velocity
          **/
-        bool gradient( const DomainType& arg, GradientRangeType& ret )
-        {
-            if ( grid_dim == 2 ) {
-                if ( arg.dim() == grid_dim ) {
-                    // some computations
-                    double x1 = arg[0];
-                    double x2 = arg[1];
-                    double exp_of_x1 = std::exp( x1 );
-                    double sin_of_x2 = std::sin( x2 );
-                    double cos_of_x2 = std::cos( x2 );
-                    // gradient of u_{1}
-                    double du1_over_dx1 = -1.0 * exp_of_x1 *
-                        ( x2 * cos_of_x2 + sin_of_x2 );
-                    double du1_over_dx2 = exp_of_x1 *
-                        ( x2 * sin_of_x2 - 2.0 * cos_of_x2 );
-                    RangeType grad_u1;
-                    grad_u1[0] = du1_over_dx1;
-                    grad_u1[1] = du1_over_dx2;
-                    // gradient of u_{2}
-                    double du2_over_dx1 = exp_of_x1 * x2 * sin_of_x2;
-                    double du2_over_dx2 = exp_of_x1 *
-                        ( x2 * cos_of_x2 + sin_of_x2 );
-                    RangeType grad_u2;
-                    grad_u2[0] = du2_over_dx1;
-                    grad_u2[1] = du2_over_dx2;
-                    // return
-                    ret[0] = grad_u1;
-                    ret[1] = grad_u2;
-                    return true;
-                }
-                else {
-                    std::cerr << "\nError in Velocity.gradient(): "
-                        << "dimension of argument "
-                        << arg.dim() << " does not match dimension "
-                        << "of grid " << grid_dim << "!"
-                        << std::endl;
-                    return false;
-                }
+        void Gradient( const DomainType& arg, GradientRangeType& ret );
 
-                return true;
-            }
-            else {
-                std::cerr << "\nError in Velocity.gradient(): "
-                    << "dimension "
-                    << grid_dim << " is not yet implemented!" << std::endl;
-                return false;
-            }
-        }
+        /**
+         *  \brief  evaluates the divergence of the velocity
+         **/
+        void Divergence( const DomainType& arg, DivergenceRangeType& ret );
+
+        /**
+         *  \brief  evaluates the laplacian of the velocity
+         **/
+        void Laplacian( const DomainType& arg, RangeType& ret );
 
     private:
-
-
-
+        Logging::LogStream& infoStream_;
+        Logging::LogStream& debugStream_;
+        Logging::LogStream& errorStream_;
 };
+
+template < >
+void Velocity< 2 >::Evaluate( const DomainType& arg, RangeType& ret )
+{
+    assert( arg.dim() == 2 );
+    // some computations
+    double x1 = arg[0];
+    double x2 = arg[1];
+    double exp_of_x1 = std::exp( x1 );
+    double sin_of_x2 = std::sin( x2 );
+    // return
+    ret[0] = -1.0 * exp_of_x1 * ( x2 * std::cos( x2 ) + sin_of_x2 );
+    ret[1] = exp_of_x1 * x2 * sin_of_x2;
+}
+
+template < >
+void Velocity< 2 >::Gradient( const DomainType& arg, GradientRangeType& ret )
+{
+    assert( arg.dim() == 2 );
+    // some computations
+    double x1 = arg[0];
+    double x2 = arg[1];
+    double exp_of_x1 = std::exp( x1 );
+    double sin_of_x2 = std::sin( x2 );
+    double cos_of_x2 = std::cos( x2 );
+    // gradient of u_{1}
+    double du1_over_dx1 = -1.0 * exp_of_x1 *
+        ( x2 * cos_of_x2 + sin_of_x2 );
+    double du1_over_dx2 = exp_of_x1 *
+        ( x2 * sin_of_x2 - 2.0 * cos_of_x2 );
+    RangeType grad_u1;
+    grad_u1[0] = du1_over_dx1;
+    grad_u1[1] = du1_over_dx2;
+    // gradient of u_{2}
+    double du2_over_dx1 = exp_of_x1 * x2 * sin_of_x2;
+    double du2_over_dx2 = exp_of_x1 *
+        ( x2 * cos_of_x2 + sin_of_x2 );
+    RangeType grad_u2;
+    grad_u2[0] = du2_over_dx1;
+    grad_u2[1] = du2_over_dx2;
+    // return
+    ret[0] = grad_u1;
+    ret[1] = grad_u2;
+};
+
+template < >
+void Velocity< 2 >::Divergence( const DomainType& arg, DivergenceRangeType& ret )
+{
+    assert( arg.dim() == 2 );
+    ret[0] = 0.0;
+    ret[1] = 0.0;
+}
+
+template < >
+void Velocity< 2 >::Laplacian( const DomainType& arg, RangeType& ret )
+{
+    // some computations
+    double x1 = arg[0];
+    double x2 = arg[1];
+    double exp_of_x1 = std::exp( x1 );
+    double cos_of_x2 = std::cos( x2 );
+    // return
+    ret[0] = -1.0 * exp_of_x1 *
+        ( ( 2.0 * x2 * cos_of_x2 ) - ( 2.0 * std::sin( x2 ) ) );
+    ret[1] = 2.0 * exp_of_x1 * cos_of_x2;
+};
+
 
 #endif  // end of problem.hh
 

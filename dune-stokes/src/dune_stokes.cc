@@ -16,7 +16,7 @@
 
 //#include "traits.hh"
 #include "parametercontainer.hh"
-//#include "logging.hh"
+#include "logging.hh"
 #include "problem.hh"
 
 /**
@@ -66,7 +66,7 @@ int main( int argc, char** argv )
     /* ********************************************************************** *
      * initialize the analytical problem                                      *
      * ********************************************************************** */
-    Velocity< GridType::dimensionworld > velocity();
+    Velocity< GridType::dimensionworld > velocity;
 
     return 0;
   }
