@@ -18,7 +18,14 @@
 #include "parametercontainer.hh"
 #include "parameterhandler.hh"
 #include "logging.hh"
+
 #include "saddlepoint_inverse_operator.hh"
+#include <stokes/stokespass.hh>
+#include <dune/fem/solver/oemsolver/oemsolver.hh>
+#include <dune/fem/space/dgspace.hh>
+#include <dune/fem/space/combinedspace.hh>
+#include <dune/fem/gridpart/gridpart.hh>
+
 /**
  *  \brief main function
  *
@@ -69,6 +76,35 @@ int main( int argc, char** argv )
     int newStreamID = Logger().AddStream( Logging::LOG_CONSOLE );
     Logging::LogStream& blah = Logger().GetStream( newStreamID );
     blah << "blah" << std::endl;
+
+    const int polOrd = 2;
+    const int dim = 2;
+
+    typedef Dune::StokesPass
+        PassType;
+    typedef Dune::FunctionSpace<double, double, dim, dim>
+        FunctionSpaceType;
+    typedef FunctionSpaceType::DomainFieldType
+        DomainFieldType;
+    typedef FunctionSpaceType::RangeFieldType
+        RangeFieldType;
+    typedef Dune::FunctionSpace<DomainFieldType,RangeFieldType,dim,dim>
+        PressureSpaceType;
+    typedef Dune::LeafGridPart<GridType>
+        GridPartType;
+    typedef Dune::DiscontinuousGalerkinSpace<FunctionSpaceType, GridPartType, polOrd >
+        DiscreteFunctionSpaceType;
+    typedef Dune::AdaptiveDiscreteFunction<DiscreteFunctionSpaceType>
+        DiscreteFunctionType;
+    typedef Dune::OEMCGOp <DiscreteFunctionType, Dune::StokesPass>
+        InverseOperatorType;
+    typedef Dune::SaddlepointInverseOperator< DiscreteFunctionType, DiscreteFunctionType, PassType, InverseOperatorType >
+        SaddlepointInverseOperatortype;
+
+    Dune::StokesPass pass;
+    InverseOperatorType aufSolver(pass,1e-10,1e-10,5000,false);
+    SaddlepointInverseOperatortype invOp(pass,1e-8,1e-8,5000,true,aufSolver,pressurespc_,space1_);
+
 
     return 0;
   }
