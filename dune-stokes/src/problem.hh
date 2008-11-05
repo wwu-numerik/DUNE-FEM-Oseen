@@ -21,9 +21,6 @@ template < int grid_dim >    // class C should be Dune::FieldVector
 class Velocity
 {
     public:
-        enum {
-            grid_dim = GridType::dimensionworld
-        };
         typedef Dune::FieldVector< double, grid_dim > DomainType;
         typedef Dune::FieldVector< double, grid_dim > RangeType;
         typedef Dune::FieldVector< RangeType, grid_dim > GradientRangeType;
