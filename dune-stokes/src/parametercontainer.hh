@@ -118,8 +118,8 @@ class ParameterContainer
         {
             out << "\na valid parameterfile should at least specify the following parameters:";
             out << "\n(copy this into your parameterfile)" << std::endl;
-            out << "grid_dimension: " << std::endl;
-            out << "polynomial_order: " << std::endl;
+            //out << "grid_dimension: " << std::endl;
+            //out << "polynomial_order: " << std::endl;
             out << std::endl;
         }
 
@@ -130,6 +130,22 @@ class ParameterContainer
         std::string parameterFilename() const
         {
             return parameter_filename_;
+        }
+
+        /**
+         *  \brief  sets the filename of the parameterfile
+         **/
+        void SetParameterFilename( const std::string param_filename )
+        {
+            parameter_filename_ = param_filename;
+        }
+
+        /**
+         *  \brief  sets the dimension
+         **/
+        void SetGridDimension( const int grid_dim )
+        {
+            grid_dimension_ = grid_dim;
         }
 
         /**
@@ -148,6 +164,14 @@ class ParameterContainer
         int polOrder() const
         {
             return pol_order_;
+        }
+
+        /**
+         *  \brief  sets the polynomial order
+         **/
+        void SetPolOrder( const int pol_order )
+        {
+            pol_order_ = pol_order;
         }
 
     private:
