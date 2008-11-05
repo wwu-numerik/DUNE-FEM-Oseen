@@ -7,7 +7,6 @@
 *.ind
 *.log
 *.out
-*.pdf
 *.dvi
 *.svn
 *.m4
