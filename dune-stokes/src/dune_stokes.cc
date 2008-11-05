@@ -71,14 +71,6 @@ int main( int argc, char** argv )
     Force< GridType::dimensionworld > force;
     DirichletData< GridType::dimensionworld > dirichletData;
 
-    Dune::FieldVector< double, 2 > x, y;
-    x[0] = 1.0;
-    x[1] = 1.0;
-    y = velocity( x );
-    std::cout << "\ny1: " << y[0]
-        << "\ny2: " << y[1] << std::endl;
-
-
     return 0;
   }
   catch (Dune::Exception &e){
