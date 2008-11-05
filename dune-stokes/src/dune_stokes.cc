@@ -18,6 +18,7 @@
 #include "parametercontainer.hh"
 #include "parameterhandler.hh"
 #include "logging.hh"
+#include "saddlepoint_inverse_operator.hh"
 /**
  *  \brief main function
  *

@@ -17,6 +17,7 @@
     #include "matrixoperator.hh"
 #endif
 
+#include "logging.hh"
 
 namespace Dune {
   //!CG Verfahren fuer Sattelpunkt Problem
@@ -46,9 +47,12 @@ namespace Dune {
 //        typedef typename OperatorType::B_OperatorType B_OperatorType;
 //        typedef typename OperatorType::B_Transposed_OperatorType B_Transposed_OperatorType;
 //        typedef typename OperatorType::C_OperatorType C_OperatorType;
-        typedef MatrixOperator<MatrixType,PressureDiscreteFunctionType,VelocityDiscreteFunctionType> B_OperatorType;
-        typedef MatrixOperator<MatrixType,VelocityDiscreteFunctionType ,PressureDiscreteFunctionType> B_Transposed_OperatorType;
-        typedef MatrixOperator<MatrixType,PressureDiscreteFunctionType,PressureDiscreteFunctionType> C_OperatorType;
+        typedef MatrixOperator<MatrixType,PressureDiscreteFunctionType,VelocityDiscreteFunctionType>
+            B_OperatorType;
+        typedef MatrixOperator<MatrixType,VelocityDiscreteFunctionType ,PressureDiscreteFunctionType>
+            B_Transposed_OperatorType;
+        typedef MatrixOperator<MatrixType,PressureDiscreteFunctionType,PressureDiscreteFunctionType>
+            C_OperatorType;
     #else
         typedef MatrixType B_OperatorType;
         typedef MatrixType B_Transposed_OperatorType;
@@ -72,8 +76,13 @@ namespace Dune {
 			 VelocitySpaceType& spc
 			 //const PressureDiscreteFunctionType rhs2
 			 )
-      : op_(op), error_reduction_per_step_ ( redEps ), epsilon_ ( absLimit ) ,
-        max_iterations_ (maxIter ) , verbosity_ ( verbose ),aufSolver_(aufSolver), b_op_(op_.getBOP()),
+      : op_(op),
+        error_reduction_per_step_ ( redEps ),
+        epsilon_ ( absLimit ),
+        max_iterations_ (maxIter ),
+        verbosity_ ( verbose ),
+        aufSolver_(aufSolver),
+        b_op_(op_.getBOP()),
         bT_op_(op_.getBTOP()),
         c_op_(op_.getCOP()),
         rhs1_(op_.rhs1()),
@@ -88,26 +97,34 @@ namespace Dune {
     virtual void operator()(const PressureDiscreteFunctionType& arg,
                             PressureDiscreteFunctionType& dest ) const
     {
-        typedef typename VelocityDiscreteFunctionType::DiscreteFunctionSpaceType FunctionSpaceType;
-        typedef typename FunctionSpaceType::RangeFieldType RangeFieldType;
-        typedef typename PressureDiscreteFunctionType::DiscreteFunctionSpaceType PressureFunctionSpaceType;
-        int count = 0;
-        RangeFieldType spa=0, spn, q, quad;//t init
+        Logging::LogStream& logDebug = Logger().Dbg();
+        Logging::LogStream& logError = Logger().Err();
+        Logging::LogStream& logInfo = Logger().Info();
+        logInfo << "Begin SaddlePointInverseOperator " << std::endl;
+
+        typedef typename VelocityDiscreteFunctionType::DiscreteFunctionSpaceType
+            FunctionSpaceType;
+        typedef typename FunctionSpaceType::RangeFieldType
+            RangeFieldType;
+        typedef typename PressureDiscreteFunctionType::DiscreteFunctionSpaceType
+            PressureFunctionSpaceType;
+
+        int iterations_count = 0;
+        RangeFieldType spa=0, residuum, q, quad;
 
         VelocityDiscreteFunctionType f("f",velocity_space_);
         f.assign(rhs1_);
         VelocityDiscreteFunctionType u("u",velocity_space_);
         u.clear();
-        VelocityDiscreteFunctionType tmp1("tmp1",velocity_space_);
+        VelocityDiscreteFunctionType tmp1("tmp1",velocity_space_);//part one of our pseedup loop ;-)
         tmp1.clear();
         VelocityDiscreteFunctionType xi("xi",velocity_space_);
         xi.clear();
-        PressureDiscreteFunctionType tmp2("tmp2",pressure_space_);
+
+        PressureDiscreteFunctionType tmp2("tmp2",pressure_space_);//part two
         //  tmp2.assign(arg);
         PressureDiscreteFunctionType r("r",pressure_space_);
         r.assign(arg);
-
-
         //p<->d
         PressureDiscreteFunctionType p("p",pressure_space_);
         PressureDiscreteFunctionType h("h",pressure_space_);
@@ -121,13 +138,12 @@ namespace Dune {
         //  std::cout<<"SPoperator dest (3.95a)\n";
         //       dest.print(std::cout);
 
-        //b_op_(dest,tmp1);
         b_op_.apply(dest,tmp1);
         //bT_op_.apply_t(dest,tmp1);
         //  std::cout<<"SPoperator bop(dest) (3.95a)\n";
         //       tmp1.print(std::cout);
 
-        f-=tmp1;
+        f-=tmp1; // f = - ( B * dest )
         //  std::cout<<"*********************************************************\n";
         // std::cout<<"SPoperator f (3.95a)\n";
         //  f.print(std::cout);
@@ -161,18 +177,18 @@ namespace Dune {
 
 
         //(3.95d)
-        spn = r.scalarProductDofs( r );
-        // std::cout<<"rho ="<<spn<<"\n";
+        residuum = r.scalarProductDofs( r );
+        // std::cout<<"rho ="<<residuum<<"\n";
         //	       int foo;
         //   std::cin>>foo;
         //   assert(foo==1);
-        while((spn > epsilon_) && (count++ < max_iterations_))
+        while((residuum > epsilon_) && (iterations_count++ < max_iterations_))
         {
             // fall ab der zweiten iteration *************
 
-            if(count > 1)
+            if(iterations_count > 1)
             {  //(3.95l)
-                const RangeFieldType e = spn / spa;
+                const RangeFieldType e = residuum / spa;
 
                 //(3.95m)
                 p *= e;
@@ -206,7 +222,7 @@ namespace Dune {
             //(3.95g)
             quad = p.scalarProductDofs( h );
             //   std::cout<<"quad ="<<quad<<"\n";
-            q    = spn / quad;
+            q    = residuum / quad;
 
             //  std::cout<<"q ="<<q<<"\n";
             //(3.95h)
@@ -218,21 +234,21 @@ namespace Dune {
             // std::cout<<"r=\n";
             // r.print(std::cout);
             //\ro_m merken
-            spa = spn;
+            spa = residuum;
 
             // residuum neu berechnen *********************
             //(3.95K)
             //\ro_{m+1} berechnen
-            spn = r.scalarProductDofs( r );
+            residuum = r.scalarProductDofs( r );
 
 
-            if(verbosity_ > 0)
-            std::cerr << count << " SPcg-Iterationen  " << count << " Residuum:" << spn << "        \r";
+            logInfo << " SPcg-Iteration Nr. " << std::setw(3) << iterations_count
+                    << " Residuum:" << residuum << "        \r";
         }
-        if(verbosity_ > 0)
-        std::cerr << "\n";
+
 
         velocity_.assign(u);
+        logInfo << "End SaddlePointInverseOperator " << std::endl;
     }
 
     VelocityDiscreteFunctionType& velocity() { return velocity_; }
