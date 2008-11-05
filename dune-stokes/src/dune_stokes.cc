@@ -58,18 +58,35 @@ int main( int argc, char** argv )
         Logging::LOG_DEBUG |
         Logging::LOG_INFO );
 
+    Logging::LogStream& infoStream = Logger().Info();
+    Logging::LogStream& debugStream = Logger().Dbg();
+    //Logging::LogStream& errorStream = Logger().Err();
+
     /* ********************************************************************** *
      * initialize the grid                                                    *
      * ********************************************************************** */
+    infoStream << "\n\ninitialising the grid..." << std::endl;
     Dune::GridPtr<GridType> gridptr( parameters.DgfFilename() );
+    infoStream << "...done." << std::endl;
 
     /* ********************************************************************** *
      * initialize the analytical problem                                      *
      * ********************************************************************** */
+    infoStream << "\ninitializing the analytical problem...";
     Velocity< GridType::dimensionworld > velocity;
     Pressure< GridType::dimensionworld > pressure;
     Force< GridType::dimensionworld > force;
     DirichletData< GridType::dimensionworld > dirichletData;
+    Velocity< GridType::dimensionworld >::DomainType x;
+    x[0] = 1.0;
+    x[1] = 1.0;
+    debugStream << "\nx: " << x[0] << std::endl;
+    debugStream << "   " << x[1] << std::endl;
+    Velocity< GridType::dimensionworld >::RangeType v;
+    v = velocity( x );
+
+
+    infoStream << "\n...done." << std::endl;
 
     return 0;
   }

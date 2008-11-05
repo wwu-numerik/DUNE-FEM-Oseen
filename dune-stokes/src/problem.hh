@@ -55,7 +55,7 @@ class Velocity
         /**
          *  \brief evaluates the velocity
          *  \arg DomainType& arg point to be evaluated at
-         *  \arg RangeType& ret value of velocity at point arg
+         *  \return RangeType ret value of velocity at point arg
          **/
         RangeType operator () ( const DomainType& arg)
         {
@@ -206,6 +206,18 @@ class Pressure
         inline void Evaluate( const DomainType& arg, RangeType& ret ) const;
 
         /**
+         *  \brief evaluates the pressure
+         *  \arg DomainType& arg point to be evaluated at
+         *  \return RangeType ret value of pressure at point arg
+         **/
+        RangeType operator () ( const DomainType& arg)
+        {
+            RangeType ret;
+            Evaluate( arg, ret );
+            return ret;
+        };
+
+        /**
          *  \brief  evaluates the gradient of the pressure
          *  \arg DomainType& arg point to be evaluated at
          *  \arg RangeType& ret value of gradient of the pressure at point arg
@@ -283,6 +295,18 @@ class Force
          **/
         inline void Evaluate( const DomainType& arg, RangeType& ret ) const;
 
+        /**
+         *  \brief evaluates the force
+         *  \arg DomainType& arg point to be evaluated at
+         *  \return RangeType ret value of force at point arg
+         **/
+        RangeType operator () ( const DomainType& arg)
+        {
+            RangeType ret;
+            Evaluate( arg, ret );
+            return ret;
+        };
+
     private:
 };
 
@@ -339,6 +363,20 @@ class DirichletData
          *  \arg RangeType& ret value of dirichlet boundary data at point arg
           **/
         inline void Evaluate( DomainType& arg, RangeType& ret ) const;
+
+        /**
+         *  \brief evaluates the dirichlet data
+         *  \arg DomainType& arg point to be evaluated at
+         *  \return RangeType ret value of dirichlet data at point arg
+         **/
+        RangeType operator () ( const DomainType& arg)
+        {
+            RangeType ret;
+            Evaluate( arg, ret );
+            return ret;
+        };
+
+        private:
 };
 
 template < >
