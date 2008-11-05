@@ -75,7 +75,7 @@ class ParameterContainer
         bool SetUp()
         {
             Dune::Parameter::append( parameterFilename() );
-            Dune::Parameter::append( argc_, argv_ );
+            //Dune::Parameter::append( argc_, argv_ );
             bool has_not_worked = false;
             if ( !( Dune::Parameter::exists( "grid_dimension" ) ) ) {
                 std::cerr << "\nError: not all parameters found in " << parameterFilename() << "!";

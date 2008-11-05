@@ -38,6 +38,13 @@ int main( int argc, char** argv )
     /* ********************************************************************** *
      * initialize all the stuff we need                                       *
      * ********************************************************************** */
+    Logger().Create(
+        Logging::LOG_CONSOLE |
+        Logging::LOG_FILE |
+        Logging::LOG_ERR |
+        Logging::LOG_DEBUG |
+        Logging::LOG_INFO );
+
     ParameterContainer& parameters = Parameters();
     if ( !( parameters.ReadCommandLine( argc, argv ) ) ) {
         return 1;
@@ -46,27 +53,35 @@ int main( int argc, char** argv )
         return 1;
     }
     else {
-        parameters.SetPolOrder( POLORDER );
+        //parameters.SetPolOrder( POLORDER );
         parameters.Print( std::cout );
     }
 
-    Logger().Create(
-        Logging::LOG_CONSOLE |
-        Logging::LOG_FILE |
-        Logging::LOG_ERR |
-        Logging::LOG_DEBUG |
-        Logging::LOG_INFO );
+
+
+
 
     /* ********************************************************************** *
      * initialize the grid                                                    *
      * ********************************************************************** */
-    Dune::GridPtr<GridType> gridptr( "grid.dgf" );
-    parameters.SetGridDimension( GridType::dimensionworld );
+//    Dune::GridPtr<GridType> gridptr( "grid.dgf" );
+//    parameters.SetGridDimension( GridType::dimensionworld );
+//
+//    /* ********************************************************************** *
+//     * initialize the analytical problem                                      *
+//     * ********************************************************************** */
+//    Velocity< GridType::dimensionworld > velocity;
+//    Pressure< GridType::dimensionworld > pressure;
+//    Force< GridType::dimensionworld > force;
+//    DirichletData< GridType::dimensionworld > dirichletData;
+//
+//    Dune::FieldVector< double, 2 > x, y;
+//    x[0] = 1.0;
+//    x[1] = 1.0;
+//    y = velocity( x );
+//    std::cout << "\ny1: " << y[0]
+//        << "\ny2: " << y[1] << std::endl;
 
-    /* ********************************************************************** *
-     * initialize the analytical problem                                      *
-     * ********************************************************************** */
-    Velocity< GridType::dimensionworld > velocity;
 
     return 0;
   }
