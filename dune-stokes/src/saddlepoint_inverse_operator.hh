@@ -22,43 +22,31 @@
 namespace Dune {
   //!CG Verfahren fuer Sattelpunkt Problem
   //!siehe NavSt Skript Siebert,Seite 36, Alg 3.34
-  /** \brief Inversion operator using CG algorithm
+  /**   \brief Inversion operator using CG algorithm
+        \tparam EllipticInverseOperatorType Operator type used to do the inner A^-1 inversion
    */
 
-  template <class VelocityDiscreteFunctionType,class PressureDiscreteFunctionType,class StokesPassImp,class EllipticInverseOperatorType>
-  class SaddlepointInverseOperator : public Operator<
-    typename PressureDiscreteFunctionType::DomainFieldType,
-    typename PressureDiscreteFunctionType::RangeFieldType,
-    PressureDiscreteFunctionType,PressureDiscreteFunctionType>
+  template <class VelocityDiscreteFunctionType,
+            class PressureDiscreteFunctionType,
+            class StokesPassImp,
+            class EllipticInverseOperatorType>
+    class SaddlepointInverseOperator
+        : public Operator< typename PressureDiscreteFunctionType::DomainFieldType,
+                            typename PressureDiscreteFunctionType::RangeFieldType,
+                            PressureDiscreteFunctionType,PressureDiscreteFunctionType>
 {
   private:
-
-    typedef SparseRowMatrix<double> MatrixType;
 
     typedef typename PressureDiscreteFunctionType::FunctionSpaceType PressureSpaceType;
     typedef typename VelocityDiscreteFunctionType::FunctionSpaceType VelocitySpaceType;
 
     typedef StokesPassImp StokesPassType;
 
-    #ifdef USE_ISTL //none of these result in successful compile /rene
-//        typedef typename StokesPassType::PressureGMType B_OperatorType;
-//        typedef typename StokesPassType::PressureDMType B_Transposed_OperatorType;
-//        typedef typename StokesPassType::PressureSMType C_OperatorType;
-//        typedef typename StokesPassType::B_OperatorType B_OperatorType;
-//        typedef typename StokesPassType::B_Transposed_OperatorType B_Transposed_OperatorType;
-//        typedef typename StokesPassType::C_OperatorType C_OperatorType;
-        typedef MatrixOperator<MatrixType,PressureDiscreteFunctionType,VelocityDiscreteFunctionType>
-            B_OperatorType;
-        typedef MatrixOperator<MatrixType,VelocityDiscreteFunctionType ,PressureDiscreteFunctionType>
-            B_Transposed_OperatorType;
-        typedef MatrixOperator<MatrixType,PressureDiscreteFunctionType,PressureDiscreteFunctionType>
-            C_OperatorType;
-    #else
-        typedef MatrixType B_OperatorType;
-        typedef MatrixType B_Transposed_OperatorType;
-        typedef MatrixType C_OperatorType;
-        /*****************************************/
-    #endif
+    typedef typename StokesPassType::MatrixType MatrixType;
+
+    typedef typename StokesPassType::B_OperatorType B_OperatorType;
+    typedef typename StokesPassType::B_Transposed_OperatorType B_Transposed_OperatorType;
+    typedef typename StokesPassType::C_OperatorType C_OperatorType;
 
   public:
     /** \todo Please doc me!
@@ -76,16 +64,16 @@ namespace Dune {
 			 VelocitySpaceType& spc
 			 //const PressureDiscreteFunctionType rhs2
 			 )
-      : op_(op),
+      : pass_(op),
         error_reduction_per_step_ ( redEps ),
         epsilon_ ( absLimit ),
         max_iterations_ (maxIter ),
         verbosity_ ( verbose ),
         aufSolver_(aufSolver),
-        b_op_(op_.getBOP()),
-        bT_op_(op_.getBTOP()),
-        c_op_(op_.getCOP()),
-        rhs1_(op_.rhs1()),
+        b_op_(pass_.Get_B_Operator()),
+        bT_op_(pass_.Get_B_Transposed_Operator()),
+        c_op_(pass_.Get_C_Operator()),
+        rhs1_(pass_.rhs1()),
         pressure_space_(pressurespc),
         velocity_space_(spc),
         velocity_("velocity",velocity_space_)
@@ -255,7 +243,7 @@ namespace Dune {
 
   private:
     // reference to operator which should be inverted
-    const StokesPassType & op_;
+    const StokesPassType & pass_;
 
     // reduce error each step by
     double error_reduction_per_step_;
