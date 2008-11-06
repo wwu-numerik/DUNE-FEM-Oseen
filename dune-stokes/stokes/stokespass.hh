@@ -34,7 +34,7 @@ namespace Dune
 
             MatrixType& systemMatrix(){}
 
-            const VelocityDiscreteFunctionType& rhs1(){}
+            const VelocityDiscreteFunctionType& rhs1() const {}
 
 
         private:
