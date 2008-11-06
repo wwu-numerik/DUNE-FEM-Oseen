@@ -199,7 +199,7 @@ void Velocity< 2 >::TestMe() const
     RangeType laplace_u;
     Laplacian( x, laplace_u );
     debugStream << "\n laplacian u(x): " << laplace_u[0] << std::endl;
-    debugStream <<   "            " << laplace_u[1] << std::endl << std::endl;
+    debugStream <<   "                 " << laplace_u[1] << std::endl << std::endl;
     infoStream << "...test passed!" << std::endl;
 };
 

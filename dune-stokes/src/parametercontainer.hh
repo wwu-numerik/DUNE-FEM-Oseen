@@ -66,6 +66,7 @@ class ParameterContainer
             {
                 std::cerr << "\nUsage: " << argv[0] << " parameterfile" << std::endl;
                 PrintParameterSpecs( std::cerr );
+                std::cerr << std::endl;
                 return false;
             }
         }
@@ -96,7 +97,7 @@ class ParameterContainer
                     std::cerr << "\nmissing parameters are: dgf_file_3d" << std::endl;
                 }
                 else {
-                    std::cerr << "                        dgf_file_3d" << std::endl;
+                    std::cerr << "                        dgf_file_3d\n" << std::endl;
                 }
                 has_not_worked = true;
             }
@@ -115,7 +116,7 @@ class ParameterContainer
             out << "\na valid parameterfile should at least specify the following parameters:";
             out << "\nRemark: the correpondig files have to exist!" << std::endl;
             out << "\n(copy this into your parameterfile)" << std::endl;
-            out << "dgf_file_3d: " << std::endl;
+            out << "dgf_file_2d: " << std::endl;
             out << "dgf_file_3d: " << std::endl;
         }
 
