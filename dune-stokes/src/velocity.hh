@@ -12,6 +12,23 @@
 #include "logging.hh"
 
 /**
+ *  \todo doc
+ **/
+template < int grid_dim >
+class VelocityTraits
+{
+    public:
+        typedef Dune::FieldVector< double, grid_dim >
+            DomainType;
+        typedef Dune::FieldVector< double, grid_dim >
+            RangeType;
+        typedef Dune::FieldVector< RangeType, grid_dim >
+            GradientRangeType;
+        typedef Dune::FieldVector< double, 1 >
+            DivergenceRangeType;
+};
+
+/**
  *  \brief describes the exact solution \f$u\f$ (velocity) of a stokes problem
  *
  *  in 2 dimensions: \f$u:\mathbb{R}^{2} \mapsto \Omega = \left[-1,1\right]^{2} \f$
@@ -39,13 +56,15 @@ template < int grid_dim >
 class Velocity
 {
     public:
-        typedef Dune::FieldVector< double, grid_dim >
+        typedef VelocityTraits< grid_dim >
+            Traits;
+        typedef typename Traits::DomainType
             DomainType;
-        typedef Dune::FieldVector< double, grid_dim >
+        typedef typename Traits::RangeType
             RangeType;
-        typedef Dune::FieldVector< RangeType, grid_dim >
+        typedef typename Traits::GradientRangeType
             GradientRangeType;
-        typedef Dune::FieldVector< double, 1 >
+        typedef typename Traits::DivergenceRangeType
             DivergenceRangeType;
 
         /**

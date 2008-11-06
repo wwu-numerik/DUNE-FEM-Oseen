@@ -17,11 +17,7 @@
 //#include "traits.hh"
 #include "parametercontainer.hh"
 #include "logging.hh"
-//#include "problem.hh"
-#include "velocity.hh"
-#include "pressure.hh"
-#include "force.hh"
-#include "dirichletdata.hh"
+#include "problem.hh"
 
 /**
  *  \brief main function
@@ -76,16 +72,16 @@ int main( int argc, char** argv )
     /* ********************************************************************** *
      * initialize the analytical problem                                      *
      * ********************************************************************** */
-    infoStream << "\ninitializing the analytical problem..." << std::endl;
-    Velocity< GridType::dimensionworld > velocity;
-    velocity.TestMe();
-    Pressure< GridType::dimensionworld > pressure;
-    pressure.TestMe();
-    Force< GridType::dimensionworld > force;
-    force.TestMe();
-    DirichletData< GridType::dimensionworld > dirichletData;
-    dirichletData.TestMe();
-    infoStream << "\n...done." << std::endl;
+//    infoStream << "\ninitializing the analytical problem..." << std::endl;
+//    Velocity< GridType::dimensionworld > velocity;
+//    velocity.TestMe();
+//    Pressure< GridType::dimensionworld > pressure;
+//    pressure.TestMe();
+//    Force< GridType::dimensionworld > force;
+//    force.TestMe();
+//    DirichletData< GridType::dimensionworld > dirichletData;
+//    dirichletData.TestMe();
+//    infoStream << "\n...done." << std::endl;
 
 
     return 0;
