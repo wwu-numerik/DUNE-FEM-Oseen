@@ -61,6 +61,7 @@ int main( int argc, char** argv )
     Logging::LogStream& infoStream = Logger().Info();
     //Logging::LogStream& debugStream = Logger().Dbg();
     //Logging::LogStream& errorStream = Logger().Err();
+    const int gridDim = GridType::dimensionworld;
 
     /* ********************************************************************** *
      * initialize the grid                                                    *
@@ -72,16 +73,9 @@ int main( int argc, char** argv )
     /* ********************************************************************** *
      * initialize the analytical problem                                      *
      * ********************************************************************** */
-//    infoStream << "\ninitializing the analytical problem..." << std::endl;
-//    Velocity< GridType::dimensionworld > velocity;
-//    velocity.TestMe();
-//    Pressure< GridType::dimensionworld > pressure;
-//    pressure.TestMe();
-//    Force< GridType::dimensionworld > force;
-//    force.TestMe();
-//    DirichletData< GridType::dimensionworld > dirichletData;
-//    dirichletData.TestMe();
-//    infoStream << "\n...done." << std::endl;
+    infoStream << "\ninitializing the analytical problem..." << std::endl;
+    Problem< gridDim > problem;
+
 
 
     return 0;

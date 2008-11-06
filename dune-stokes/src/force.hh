@@ -44,7 +44,6 @@ class Force
 
         /**
          *  \brief  constructor
-         *
          *  doing nothing
          **/
         Force()
@@ -53,7 +52,6 @@ class Force
 
         /**
          *  \brief  destructor
-         *
          *  doing nothing
          **/
         ~Force()

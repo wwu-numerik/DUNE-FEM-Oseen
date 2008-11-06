@@ -70,6 +70,7 @@ class Velocity
 
         /**
          *  \brief constructor
+         *  doing nothing
          **/
         Velocity()
         {
@@ -77,6 +78,7 @@ class Velocity
 
         /**
          *  \brief  destructor
+         *  doing nothing
          **/
         ~Velocity()
         {

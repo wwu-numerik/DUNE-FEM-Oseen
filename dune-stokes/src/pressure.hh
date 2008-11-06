@@ -48,6 +48,7 @@ class Pressure
 
         /**
          *  \brief  constructor
+         *  doing nothing
          **/
         Pressure()
         {
@@ -55,6 +56,7 @@ class Pressure
 
         /**
          *  \brief  destructor
+         *  doing nothing
          **/
         ~Pressure()
         {

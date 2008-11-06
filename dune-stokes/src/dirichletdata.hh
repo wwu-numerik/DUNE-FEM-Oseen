@@ -44,7 +44,6 @@ class DirichletData
 
         /**
          *  \brief  constructor
-         *
          *  doing nothing
          **/
         DirichletData()
@@ -53,7 +52,6 @@ class DirichletData
 
         /**
          *  \brief  destructor
-         *
          *  doing nothing
          **/
          ~DirichletData()
