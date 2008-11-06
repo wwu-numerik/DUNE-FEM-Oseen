@@ -15,6 +15,8 @@
  *  \brief class containing global parameters
  *
  *  \c ParameterContainer contains all the needed global parameters getting them via Dune::Parameter
+ *
+ *  \todo needs reorganizing!
  **/
 class ParameterContainer
 {
@@ -147,7 +149,7 @@ class ParameterContainer
          *  \brief  returns the dimension
          *  \return int dimension
          **/
-        int gridDimension() const
+        int GridDimension() const
         {
             return grid_dimension_;
         }

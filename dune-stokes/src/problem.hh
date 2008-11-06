@@ -6,9 +6,10 @@
 #define PROBLEM_HH
 
 #include <cmath>
-//#include <assert>
 
-#include "dune/common/fvector.hh"
+#include <dune/common/fvector.hh>
+
+#include "logging.hh"
 
 /**
  *  \brief describes the velocity
@@ -85,6 +86,12 @@ class Velocity
          **/
         inline void Laplacian( const DomainType& arg, RangeType& ret ) const;
 
+        /**
+         *  \brief  a simple test of all class' functionalities
+         *  \arg  Logging::LogStream& stream where to print
+         **/
+        void TestMe() const;
+
     private:
 };
 
@@ -143,10 +150,9 @@ inline void Velocity< 2 >::Divergence( const DomainType& arg, DivergenceRangeTyp
 {
     // play safe
     assert( arg.dim() == 2 );
-    assert( ret.dim() == 2 );
+    assert( ret.dim() == 1 );
     // return
     ret[0] = 0.0;
-    ret[1] = 0.0;
 }
 
 template < >
@@ -164,6 +170,37 @@ inline void Velocity< 2 >::Laplacian( const DomainType& arg, RangeType& ret ) co
     ret[0] = -1.0 * exp_of_x1 *
         ( ( 2.0 * x2 * cos_of_x2 ) - ( 2.0 * std::sin( x2 ) ) );
     ret[1] = 2.0 * exp_of_x1 * cos_of_x2;
+};
+
+template < >
+void Velocity< 2 >::TestMe() const
+{
+    // some logstreams
+    Logging::LogStream& infoStream = Logger().Info();
+    Logging::LogStream& debugStream = Logger().Dbg();
+    infoStream << "\nnow testing class Velocity..." << std::endl;
+    //tests
+    DomainType x;
+    x[0] = 1.0;
+    x[1] = 1.0;
+    debugStream << "\n x: " << x[0] << std::endl;
+    debugStream <<   "    " << x[1] << std::endl;
+    RangeType u;
+    Evaluate( x, u );
+    debugStream << "\n u(x): " << u[0] << std::endl;
+    debugStream <<   "       " << u[1] << std::endl;
+    GradientRangeType grad_u;
+    Gradient( x, grad_u );
+    debugStream << "\n grad u(x): " << grad_u[0] << std::endl;
+    debugStream <<   "            " << grad_u[1] << std::endl;
+    DivergenceRangeType div_u;
+    Divergence( x, div_u );
+    debugStream << "\n div u(x): " << div_u[0] << std::endl;
+    RangeType laplace_u;
+    Laplacian( x, laplace_u );
+    debugStream << "\n laplacian u(x): " << laplace_u[0] << std::endl;
+    debugStream <<   "            " << laplace_u[1] << std::endl << std::endl;
+    infoStream << "...test passed!" << std::endl;
 };
 
 /**
@@ -224,6 +261,12 @@ class Pressure
          **/
         inline void Gradient( const DomainType& arg, GradientRangeType& ret ) const;
 
+        /**
+         *  \brief  a simple test of all class' functionalities
+         *  \arg  Logging::LogStream& stream where to print
+         **/
+        void TestMe() const;
+
     private:
  };
 
@@ -232,7 +275,7 @@ inline void Pressure< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) con
 {
     // play save
     assert( arg.dim() == 2 );
-    assert( ret.dim() == 2 );
+    assert( ret.dim() == 1 );
     // some computations
     double x1 = arg[0];
     double x2 = arg[1];
@@ -253,6 +296,29 @@ inline void Pressure< 2 >::Gradient( const DomainType& arg, GradientRangeType& r
     //return
     ret[0] = 2.0 * exp_of_x1 * std::sin( x2 );
     ret[1] = 2.0 * exp_of_x1 * std::cos( x2 );
+};
+
+template < >
+void Pressure< 2 >::TestMe() const
+{
+    // some logstreams
+    Logging::LogStream& infoStream = Logger().Info();
+    Logging::LogStream& debugStream = Logger().Dbg();
+    infoStream << "\nnow testing class Pressure..." << std::endl;
+    //tests
+    DomainType x;
+    x[0] = 1.0;
+    x[1] = 1.0;
+    debugStream << "\n x: " << x[0] << std::endl;
+    debugStream <<   "    " << x[1] << std::endl;
+    RangeType p;
+    Evaluate( x, p );
+    debugStream << "\n p(x): " << p[0] << std::endl;
+    GradientRangeType grad_p;
+    Gradient( x, grad_p );
+    debugStream << "\n grad p(x): " << grad_p[0] << std::endl;
+    debugStream <<   "            " << grad_p[1] << std::endl << std::endl;
+    infoStream << "...test passed!" << std::endl;
 };
 
 /**
@@ -307,6 +373,12 @@ class Force
             return ret;
         };
 
+        /**
+         *  \brief  a simple test of all class' functionalities
+         *  \arg  Logging::LogStream& stream where to print
+         **/
+        void TestMe() const;
+
     private:
 };
 
@@ -322,6 +394,26 @@ inline void Force< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) const
     //return
     ret[0] = 2.0 * std::exp( x1 ) * std::cos( x2 );
     ret[1] = 0.0;
+};
+
+template < >
+void Force< 2 >::TestMe() const
+{
+    // some logstreams
+    Logging::LogStream& infoStream = Logger().Info();
+    Logging::LogStream& debugStream = Logger().Dbg();
+    infoStream << "\nnow testing class Force..." << std::endl;
+    //tests
+    DomainType x;
+    x[0] = 1.0;
+    x[1] = 1.0;
+    debugStream << "\n x: " << x[0] << std::endl;
+    debugStream <<   "    " << x[1] << std::endl;
+    RangeType f;
+    Evaluate( x, f );
+    debugStream << "\n f(x): " << f[0] << std::endl;
+    debugStream <<  "        " << f[1] << std::endl << std::endl;
+    infoStream << "...test passed!" << std::endl;
 };
 
 /**
@@ -376,6 +468,12 @@ class DirichletData
             return ret;
         };
 
+        /**
+         *  \brief  a simple test of all class' functionalities
+         *  \arg  Logging::LogStream& stream where to print
+         **/
+        void TestMe() const;
+
         private:
 };
 
@@ -394,6 +492,26 @@ inline void DirichletData< 2 >::Evaluate( DomainType& arg, RangeType& ret ) cons
     ret[0] = -1.0 * exp_of_x1 *
         ( ( x2 * std::cos( x2 ) ) + sin_of_x2 );
     ret[1] = exp_of_x1 * x2 * sin_of_x2;
+};
+
+template < >
+void DirichletData< 2 >::TestMe() const
+{
+    // some logstreams
+    Logging::LogStream& infoStream = Logger().Info();
+    Logging::LogStream& debugStream = Logger().Dbg();
+    infoStream << "\nnow testing class DirichletData..." << std::endl;
+    //tests
+    DomainType x;
+    x[0] = 1.0;
+    x[1] = 1.0;
+    debugStream << "\n x: " << x[0] << std::endl;
+    debugStream <<   "    " << x[1] << std::endl;
+    RangeType gd;
+    Evaluate( x, gd );
+    debugStream << "\n gd(x): " << gd[0] << std::endl;
+    debugStream <<  "         " << gd[1] << std::endl << std::endl;
+    infoStream << "...test passed!" << std::endl;
 };
 
 #endif  // end of problem.hh
