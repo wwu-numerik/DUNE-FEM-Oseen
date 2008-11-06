@@ -1,5 +1,5 @@
 /** \file force.hh
-    \brief contains a class Force
+    \brief contains a class Force with traitsclass ForceTraits
  **/
 
 #ifndef FORCE_HH
@@ -13,29 +13,29 @@
 
 /**
  *  \brief  containing typedefs needed by Force
- *  \tparam int grid_dim dimension of the grid
+ *  \tparam int gridDim dimension of the grid
  **/
-template < int grid_dim >
+template < int gridDim >
 class ForceTraits
 {
     public:
-        typedef Dune::FieldVector< double, grid_dim >
+        typedef Dune::FieldVector< double, gridDim >
             DomainType;
-        typedef Dune::FieldVector< double, grid_dim >
+        typedef Dune::FieldVector< double, gridDim >
             RangeType;
 };
 
 /**
  *  \brief  describes the force
- *  \tparam int grid_dim dimension of the grid
+ *  \tparam int gridDim dimension of the grid
  *
  *  \todo doc
  **/
-template < int grid_dim >
+template < int gridDim >
 class Force
 {
     public:
-        typedef ForceTraits< grid_dim >
+        typedef ForceTraits< gridDim >
             Traits;
         typedef typename Traits::DomainType
             DomainType;
@@ -87,7 +87,7 @@ class Force
 };
 
 /**
- *  \brief specialization for grid_dim = 2
+ *  \brief specialization for gridDim = 2
  **/
 template < >
 inline void Force< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) const
@@ -104,7 +104,7 @@ inline void Force< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) const
 };
 
 /**
- *  \brief specialization for grid_dim = 2
+ *  \brief specialization for gridDim = 2
  **/
 template < >
 void Force< 2 >::TestMe() const

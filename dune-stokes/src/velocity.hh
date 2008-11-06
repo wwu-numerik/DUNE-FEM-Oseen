@@ -1,5 +1,5 @@
 /** \file velocity.hh
-    \brief contains a class Velocity
+    \brief contains a class Velocity with traitsclass VelocityTraits
  **/
 
 #ifndef VELOCITY_HH
@@ -13,17 +13,17 @@
 
 /**
  *  \brief  containing typedefs needed by Velicity
- *  \tparam int grid_dim dimension of the grid
+ *  \tparam int gridDim dimension of the grid
  **/
-template < int grid_dim >
+template < int gridDim >
 class VelocityTraits
 {
     public:
-        typedef Dune::FieldVector< double, grid_dim >
+        typedef Dune::FieldVector< double, gridDim >
             DomainType;
-        typedef Dune::FieldVector< double, grid_dim >
+        typedef Dune::FieldVector< double, gridDim >
             RangeType;
-        typedef Dune::FieldVector< RangeType, grid_dim >
+        typedef Dune::FieldVector< RangeType, gridDim >
             GradientRangeType;
         typedef Dune::FieldVector< double, 1 >
             DivergenceRangeType;
@@ -49,15 +49,15 @@ class VelocityTraits
  *      u_{2}(x_{1},x_{2}) := e^{x_{1}}x_{2}sin(x_{2}).
  *  \f]
  *
- *  \tparam int grid_dim dimension of the grid
+ *  \tparam int gridDim dimension of the grid
  *
  *  \todo doc test problem
  **/
-template < int grid_dim >
+template < int gridDim >
 class Velocity
 {
     public:
-        typedef VelocityTraits< grid_dim >
+        typedef VelocityTraits< gridDim >
             Traits;
         typedef typename Traits::DomainType
             DomainType;
@@ -130,7 +130,7 @@ class Velocity
 };
 
 /**
- *  \brief specialization for grid_dim = 2
+ *  \brief specialization for gridDim = 2
  **/
 template < >
 inline void Velocity< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) const
@@ -149,7 +149,7 @@ inline void Velocity< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) con
 }
 
 /**
- *  \brief specialization for grid_dim = 2
+ *  \brief specialization for gridDim = 2
  **/
 template < >
 inline void Velocity< 2 >::Gradient( const DomainType& arg, GradientRangeType& ret ) const
@@ -186,7 +186,7 @@ inline void Velocity< 2 >::Gradient( const DomainType& arg, GradientRangeType& r
 };
 
 /**
- *  \brief specialization for grid_dim = 2
+ *  \brief specialization for gridDim = 2
  **/
 template < >
 inline void Velocity< 2 >::Divergence( const DomainType& arg, DivergenceRangeType& ret ) const
@@ -199,7 +199,7 @@ inline void Velocity< 2 >::Divergence( const DomainType& arg, DivergenceRangeTyp
 }
 
 /**
- *  \brief specialization for grid_dim = 2
+ *  \brief specialization for gridDim = 2
  **/
 template < >
 inline void Velocity< 2 >::Laplacian( const DomainType& arg, RangeType& ret ) const
@@ -219,7 +219,7 @@ inline void Velocity< 2 >::Laplacian( const DomainType& arg, RangeType& ret ) co
 };
 
 /**
- *  \brief specialization for grid_dim = 2
+ *  \brief specialization for gridDim = 2
  **/
 template < >
 void Velocity< 2 >::TestMe() const

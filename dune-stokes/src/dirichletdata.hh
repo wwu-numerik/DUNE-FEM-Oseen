@@ -1,5 +1,5 @@
 /** \file dirichletdata.hh
-    \brief contains a class DirichletData
+    \brief contains a class DirichletData with traitsclass DirichletDataTraits
  **/
 
 #ifndef DIRICHLETDATA_HH
@@ -13,29 +13,29 @@
 
 /**
  *  \brief  containing typedefs needed by DirichletData
- *  \tparam int grid_dim dimension of the grid
+ *  \tparam int gridDim dimension of the grid
  **/
-template < int grid_dim >
+template < int gridDim >
 class DirichletDataTraits
 {
     public:
-        typedef Dune::FieldVector< double, grid_dim >
+        typedef Dune::FieldVector< double, gridDim >
             DomainType;
-        typedef Dune::FieldVector< double, grid_dim >
+        typedef Dune::FieldVector< double, gridDim >
             RangeType;
 };
 
 /**
  *  \brief  describes the dirichlet boundary data
- *  \tparam int grid_dim dimension of the grid
+ *  \tparam int gridDim dimension of the grid
  *
  *  \todo doc
  **/
-template < int grid_dim >
+template < int gridDim >
 class DirichletData
 {
     public:
-        typedef DirichletDataTraits< grid_dim >
+        typedef DirichletDataTraits< gridDim >
             Traits;
         typedef typename Traits::DomainType
             DomainType;
@@ -87,7 +87,7 @@ class DirichletData
 };
 
 /**
- *  \brief specialization for grid_dim = 2
+ *  \brief specialization for gridDim = 2
  **/
 template < >
 inline void DirichletData< 2 >::Evaluate( DomainType& arg, RangeType& ret ) const
@@ -107,7 +107,7 @@ inline void DirichletData< 2 >::Evaluate( DomainType& arg, RangeType& ret ) cons
 };
 
 /**
- *  \brief specialization for grid_dim = 2
+ *  \brief specialization for gridDim = 2
  **/
 template < >
 void DirichletData< 2 >::TestMe() const

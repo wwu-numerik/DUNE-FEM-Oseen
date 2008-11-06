@@ -1,5 +1,5 @@
 /** \file pressure.hh
-    \brief contains a class Pressure
+    \brief contains a class Pressure with traitsclass PressureTraits
  **/
 
 #ifndef PRESSURE_HH
@@ -13,31 +13,31 @@
 
 /**
  *  \brief  containing typedefs needed by Pressure
- *  \tparam int grid_dim dimension of the grid
+ *  \tparam int gridDim dimension of the grid
  **/
-template < int grid_dim >
+template < int gridDim >
 class PressureTraits
 {
     public:
-        typedef Dune::FieldVector< double, grid_dim >
+        typedef Dune::FieldVector< double, gridDim >
             DomainType;
         typedef Dune::FieldVector< double, 1 >
             RangeType;
-        typedef Dune::FieldVector< double, grid_dim >
+        typedef Dune::FieldVector< double, gridDim >
             GradientRangeType;
 };
 
 /**
  *  \brief  describes the presure
- *  \tparam int grid_dim dimension of the grid
+ *  \tparam int gridDim dimension of the grid
  *
  *  \todo   doc
  **/
-template < int grid_dim >
+template < int gridDim >
 class Pressure
 {
     public:
-        typedef PressureTraits< grid_dim >
+        typedef PressureTraits< gridDim >
             Traits;
         typedef typename Traits::DomainType
             DomainType;
@@ -94,7 +94,7 @@ class Pressure
  };
 
 /**
- *  \brief specialization for grid_dim = 2
+ *  \brief specialization for gridDim = 2
  **/
 template < >
 inline void Pressure< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) const
@@ -110,7 +110,7 @@ inline void Pressure< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) con
 };
 
 /**
- *  \brief specialization for grid_dim = 2
+ *  \brief specialization for gridDim = 2
  **/
 template < >
 inline void Pressure< 2 >::Gradient( const DomainType& arg, GradientRangeType& ret ) const
@@ -128,7 +128,7 @@ inline void Pressure< 2 >::Gradient( const DomainType& arg, GradientRangeType& r
 };
 
 /**
- *  \brief specialization for grid_dim = 2
+ *  \brief specialization for gridDim = 2
  **/
 template < >
 void Pressure< 2 >::TestMe() const
