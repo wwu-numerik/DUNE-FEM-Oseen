@@ -29,7 +29,7 @@ class DirichletDataTraits
  *  \brief  describes the dirichlet boundary data
  *  \tparam int gridDim dimension of the grid
  *
- *  \todo doc
+ *  \todo   extensive docu with latex
  **/
 template < int gridDim >
 class DirichletData

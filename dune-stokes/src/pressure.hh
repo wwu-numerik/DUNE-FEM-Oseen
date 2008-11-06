@@ -31,7 +31,7 @@ class PressureTraits
  *  \brief  describes the presure
  *  \tparam int gridDim dimension of the grid
  *
- *  \todo   doc
+ *  \todo   extensive docu with latex
  **/
 template < int gridDim >
 class Pressure

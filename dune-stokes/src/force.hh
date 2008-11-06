@@ -29,7 +29,7 @@ class ForceTraits
  *  \brief  describes the force
  *  \tparam int gridDim dimension of the grid
  *
- *  \todo doc
+ *  \todo   extensive docu with latex
  **/
 template < int gridDim >
 class Force

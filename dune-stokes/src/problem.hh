@@ -36,6 +36,7 @@ class ProblemTraits
 /**
  *  \brief  a collection of some analytical functions solving a stokes problem
  *  namely velocity, pressure, force term and dirichlet boundary data
+ *  \todo   extensive docu with latex
  **/
 template < int gridDim >
 class Problem

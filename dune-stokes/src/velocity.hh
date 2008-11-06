@@ -51,7 +51,7 @@ class VelocityTraits
  *
  *  \tparam int gridDim dimension of the grid
  *
- *  \todo doc test problem
+ *  \todo   extensive docu with latex
  **/
 template < int gridDim >
 class Velocity
