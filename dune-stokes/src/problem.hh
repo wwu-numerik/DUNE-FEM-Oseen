@@ -12,11 +12,26 @@
 #include "logging.hh"
 
 /**
- *  \brief describes the velocity
+ *  \brief describes the exact solution \f$u\f$ (velocity) of a 2d stokes problem
+ *
  *  \tparam int grid_dim dimension of the grid
  *
- *  \f[u(x_{1},x_{2}):=-e^{x_{1}}\Big( x_{2} cos(x_{2}) + sin(x_{2}) \Big)\f]
- *
+ *  in 2 dimensions: \f$u:\mathbb{R}^{2} \mapsto \Omega = \left[-1,1\right]^{2} \f$
+ *  \f[
+ *      u(x) = \left(
+ *          \begin{array}{c}
+ *              u_{1}(x)\\
+ *              u_{2}(x)
+ *          \end{array}
+ *      \right),
+ *  \f]
+ *  where
+ *  \f[
+ *      u_{1}(x_{1},x_{2}) := -e^{x_{1}}\Big( x_{2} cos(x_{2}) + sin(x_{2}) \Big),
+ *  \f]
+ *  \f[
+ *      u_{2}(x_{1},x_{2}) := e^{x_{1}}x_{2}sin(x_{2}).
+ *  \f]
  *  \todo doc test problem
  **/
 template < int grid_dim >
@@ -245,7 +260,7 @@ class Pressure
         /**
          *  \brief evaluates the pressure
          *  \arg DomainType& arg point to be evaluated at
-         *  \return RangeType ret value of pressure at point arg
+         *  \return RangeType value of pressure at point arg
          **/
         RangeType operator () ( const DomainType& arg)
         {
