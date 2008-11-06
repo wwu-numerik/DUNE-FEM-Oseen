@@ -10,6 +10,8 @@
 
 namespace Dune
 {
+    template <class VelocityDiscreteFunctionImp,
+            class PressureDiscreteFunctionImp >
     class StokesPass
     {
 
@@ -19,17 +21,30 @@ namespace Dune
             typedef MatrixType B_Transposed_OperatorType;
             typedef MatrixType C_OperatorType;
 
-            StokesPass(){}
+            typedef VelocityDiscreteFunctionImp VelocityDiscreteFunctionType;
+            typedef PressureDiscreteFunctionImp PressureDiscreteFunctionType;
 
-            B_OperatorType& Get_B_Operator() { return b_op_; }
-            B_Transposed_OperatorType& Get_B_Transposed_Operator() { return b_transp_op_; }
-            C_OperatorType& Get_C_Operator() { return c_op_; }
+            StokesPass()
+                //: rhs( "pass_rhs"
+            {}
+
+            const B_OperatorType& Get_B_Operator() const { return b_op_; }
+            const B_Transposed_OperatorType& Get_B_Transposed_Operator() const { return b_transp_op_; }
+            const C_OperatorType& Get_C_Operator() const { return c_op_; }
+
+            MatrixType& systemMatrix(){}
+
+            const VelocityDiscreteFunctionType& rhs1(){}
+
 
         private:
             //will prolly be generated on-the-fly, not stored as members
             B_OperatorType b_op_;
             B_Transposed_OperatorType b_transp_op_;
             C_OperatorType c_op_;
+
+            //more dummies
+           // VelocityDiscreteFunctionType& rhs;
 
     };
 }

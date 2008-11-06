@@ -26,23 +26,28 @@ namespace Dune {
         \tparam EllipticInverseOperatorType Operator type used to do the inner A^-1 inversion
    */
 
-  template <class VelocityDiscreteFunctionType,
-            class PressureDiscreteFunctionType,
-            class StokesPassImp,
+  template <class StokesPassImp,
             class EllipticInverseOperatorType>
     class SaddlepointInverseOperator
-        : public Operator< typename PressureDiscreteFunctionType::DomainFieldType,
-                            typename PressureDiscreteFunctionType::RangeFieldType,
-                            PressureDiscreteFunctionType,PressureDiscreteFunctionType>
+        : public Operator< typename StokesPassImp :: PressureDiscreteFunctionType::DomainFieldType,
+                           typename  StokesPassImp ::PressureDiscreteFunctionType::RangeFieldType,
+                            typename StokesPassImp ::PressureDiscreteFunctionType, typename StokesPassImp :: PressureDiscreteFunctionType>
 {
   private:
-
-    typedef typename PressureDiscreteFunctionType::FunctionSpaceType PressureSpaceType;
-    typedef typename VelocityDiscreteFunctionType::FunctionSpaceType VelocitySpaceType;
 
     typedef StokesPassImp StokesPassType;
 
     typedef typename StokesPassType::MatrixType MatrixType;
+
+    typedef typename StokesPassType::PressureDiscreteFunctionType::FunctionSpaceType
+        PressureSpaceType;
+    typedef typename StokesPassType::VelocityDiscreteFunctionType::FunctionSpaceType
+        VelocitySpaceType;
+    typedef typename StokesPassType::PressureDiscreteFunctionType
+        PressureDiscreteFunctionType;
+    typedef typename StokesPassType::VelocityDiscreteFunctionType
+        VelocityDiscreteFunctionType;
+
 
     typedef typename StokesPassType::B_OperatorType B_OperatorType;
     typedef typename StokesPassType::B_Transposed_OperatorType B_Transposed_OperatorType;
@@ -54,14 +59,14 @@ namespace Dune {
     * aufSolver is the InverseOperator for Solving the elliptic Problem A^-1
     * rhs1 is  stored as member,no better idea
 	  **/
-    SaddlepointInverseOperator( const StokesPassType& op,
+    SaddlepointInverseOperator( StokesPassType& op,
 			 double redEps,
 			 double absLimit,
 			 int maxIter,
 			 int verbose,
 			 const EllipticInverseOperatorType& aufSolver,
-			 PressureSpaceType& pressurespc,
-			 VelocitySpaceType& spc
+			 const PressureSpaceType& pressurespc,
+			 const VelocitySpaceType& spc
 			 //const PressureDiscreteFunctionType rhs2
 			 )
       : pass_(op),
@@ -260,14 +265,14 @@ namespace Dune {
     //the CGSolver for A^-1
     const EllipticInverseOperatorType& aufSolver_;
 
-    B_OperatorType& b_op_;
-    B_Transposed_OperatorType& bT_op_;
-    C_OperatorType& c_op_;
+    const B_OperatorType& b_op_;
+    const B_Transposed_OperatorType& bT_op_;
+    const C_OperatorType& c_op_;
 
-    mutable VelocityDiscreteFunctionType& rhs1_;
+    const VelocityDiscreteFunctionType& rhs1_;
     PressureSpaceType& pressure_space_;
-    VelocitySpaceType& velocity_space_;
-    mutable VelocityDiscreteFunctionType velocity_;
+    const VelocitySpaceType& velocity_space_;
+    VelocityDiscreteFunctionType velocity_;
     // PressureDiscreteFunctionType rhs2_;
   };
 

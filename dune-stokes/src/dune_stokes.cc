@@ -80,8 +80,7 @@ int main( int argc, char** argv )
     const int polOrd = 2;
     const int dim = 2;
 
-    typedef Dune::StokesPass
-        PassType;
+
     typedef Dune::FunctionSpace<double, double, dim, dim>
         FunctionSpaceType;
     typedef FunctionSpaceType::DomainFieldType
@@ -96,14 +95,19 @@ int main( int argc, char** argv )
         DiscreteFunctionSpaceType;
     typedef Dune::AdaptiveDiscreteFunction<DiscreteFunctionSpaceType>
         DiscreteFunctionType;
-    typedef Dune::OEMCGOp <DiscreteFunctionType, Dune::StokesPass>
+    typedef Dune::StokesPass< DiscreteFunctionType, DiscreteFunctionType >
+        PassType;
+    typedef Dune::OEMCGOp <DiscreteFunctionType, PassType >
         InverseOperatorType;
-    typedef Dune::SaddlepointInverseOperator< DiscreteFunctionType, DiscreteFunctionType, PassType, InverseOperatorType >
+    typedef Dune::SaddlepointInverseOperator< PassType, InverseOperatorType >
         SaddlepointInverseOperatortype;
 
-    Dune::StokesPass pass;
+    PassType pass;
     InverseOperatorType aufSolver(pass,1e-10,1e-10,5000,false);
-    SaddlepointInverseOperatortype invOp(pass,1e-8,1e-8,5000,true,aufSolver,pressurespc_,space1_);
+    GridPartType gridpart ( *gridptr );
+    DiscreteFunctionSpaceType pressurespc ( gridpart  );
+    DiscreteFunctionSpaceType velospace ( gridpart  );
+    SaddlepointInverseOperatortype invOp(pass,1e-8,1e-8,5000,1,aufSolver,pressurespc,velospace);
 
 
     return 0;
