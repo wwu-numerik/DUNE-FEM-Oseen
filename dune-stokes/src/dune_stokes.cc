@@ -18,6 +18,9 @@
 #include "parametercontainer.hh"
 #include "logging.hh"
 #include "problem.hh"
+#include "velocity.hh"
+#include "pressure.hh"
+
 
 /**
  *  \brief main function

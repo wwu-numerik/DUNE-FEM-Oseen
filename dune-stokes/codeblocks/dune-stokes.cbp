@@ -103,6 +103,7 @@
 		<Unit filename="../src/logging.hh" />
 		<Unit filename="../src/model.hh" />
 		<Unit filename="../src/parametercontainer.hh" />
+		<Unit filename="../src/pressure.hh" />
 		<Unit filename="../src/problem.hh" />
 		<Unit filename="../src/saddlepoint_inverse_operator.hh" />
 		<Unit filename="../src/stuff.hh" />
