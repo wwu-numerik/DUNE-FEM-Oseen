@@ -81,3 +81,9 @@ dune_stokes
 *.orig
 *.backup
 *.layout
+dune-istl/dune
+dune-stokes.depend*
+dune_stokes
+*.orig
+*.backup
+*.layout
