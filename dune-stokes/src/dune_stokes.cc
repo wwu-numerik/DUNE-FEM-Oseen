@@ -20,6 +20,7 @@
 #include "problem.hh"
 #include "velocity.hh"
 #include "pressure.hh"
+#include "force.hh"
 
 
 /**
