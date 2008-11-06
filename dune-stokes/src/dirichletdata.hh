@@ -63,7 +63,7 @@ class DirichletData
          *  \arg DomainType& arg point to be evaluated at
          *  \arg RangeType& ret value of dirichlet boundary data at point arg
           **/
-        inline void Evaluate( DomainType& arg, RangeType& ret ) const;
+        inline void evaluate( DomainType& arg, RangeType& ret ) const;
 
         /**
          *  \brief evaluates the dirichlet data
@@ -73,22 +73,21 @@ class DirichletData
         RangeType operator () ( const DomainType& arg)
         {
             RangeType ret;
-            Evaluate( arg, ret );
+            evaluate( arg, ret );
             return ret;
         }
 
         /**
          *  \brief  a simple test of all class' functionalities
-         *  \arg  Logging::LogStream& stream where to print
          **/
-        void TestMe() const;
+        void testMe() const;
 };
 
 /**
  *  \brief specialization for gridDim = 2
  **/
 template < >
-inline void DirichletData< 2 >::Evaluate( DomainType& arg, RangeType& ret ) const
+inline void DirichletData< 2 >::evaluate( DomainType& arg, RangeType& ret ) const
 {
     // play safe
     assert( arg.dim() == 2 );
@@ -108,23 +107,23 @@ inline void DirichletData< 2 >::Evaluate( DomainType& arg, RangeType& ret ) cons
  *  \brief specialization for gridDim = 2
  **/
 template < >
-void DirichletData< 2 >::TestMe() const
+void DirichletData< 2 >::testMe() const
 {
     // some logstreams
     Logging::LogStream& infoStream = Logger().Info();
     Logging::LogStream& debugStream = Logger().Dbg();
-    infoStream << "\nnow testing class DirichletData..." << std::endl;
+    infoStream << "- testing class DirichletData..." << std::endl;
     //tests
     DomainType x;
     x[0] = 1.0;
     x[1] = 1.0;
-    debugStream << "\n x: " << x[0] << std::endl;
-    debugStream <<   "    " << x[1] << std::endl;
+    debugStream << "  - x: " << x[0] << std::endl;
+    debugStream << "       " << x[1] << std::endl;
     RangeType gd;
-    Evaluate( x, gd );
-    debugStream << "\n gd(x): " << gd[0] << std::endl;
-    debugStream <<  "         " << gd[1] << std::endl << std::endl;
-    infoStream << "...test passed!" << std::endl;
+    evaluate( x, gd );
+    debugStream << "  - gd(x): " << gd[0] << std::endl;
+    debugStream << "           " << gd[1] << std::endl;
+    infoStream << "  ...test passed!" << std::endl;
 }
 
 #endif  // end of dirichletdata.hh

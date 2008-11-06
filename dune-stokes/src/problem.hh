@@ -102,6 +102,23 @@ class Problem
         return dirichletData_;
     }
 
+    /**
+     *  \brief a simple test of all class' functionalities
+     **/
+    void testMe()
+    {
+        // some logstreams
+        Logging::LogStream& infoStream = Logger().Info();
+        infoStream << "testing class Problem..." << std::endl;
+        //tests
+        velocity_.testMe();
+        pressure_.testMe();
+        force_.testMe();
+        dirichletData_.testMe();
+        // happy
+        infoStream << "...test passed!" << std::endl;
+    }
+
     private:
         VelocityType velocity_;
         PressureType pressure_;

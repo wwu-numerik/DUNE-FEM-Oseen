@@ -67,16 +67,17 @@ int main( int argc, char** argv )
      * initialize the grid                                                    *
      * ********************************************************************** */
     infoStream << "\ninitialising the grid..." << std::endl;
-    Dune::GridPtr<GridType> gridptr( parameters.DgfFilename() );
+    Dune::GridPtr< GridType > gridPtr( parameters.DgfFilename() );
     infoStream << "...done." << std::endl;
 
     /* ********************************************************************** *
      * initialize the analytical problem                                      *
      * ********************************************************************** */
-    infoStream << "\ninitializing the analytical problem..." << std::endl;
+    infoStream << "\ninitialising the analytical problem..." << std::endl;
     Problem< gridDim > problem;
+    problem.testMe();
 
-
+    infoStream << "...done." << std::endl;
 
     return 0;
   }

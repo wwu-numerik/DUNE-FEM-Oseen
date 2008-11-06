@@ -90,7 +90,6 @@ class Pressure
 
         /**
          *  \brief  a simple test of all class' functionalities
-         *  \arg  Logging::LogStream& stream where to print
          **/
         void testMe() const;
  };
@@ -138,21 +137,21 @@ void Pressure< 2 >::testMe() const
     // some logstreams
     Logging::LogStream& infoStream = Logger().Info();
     Logging::LogStream& debugStream = Logger().Dbg();
-    infoStream << "\nnow testing class Pressure..." << std::endl;
+    infoStream << "- testing class Pressure..." << std::endl;
     //tests
     DomainType x;
     x[0] = 1.0;
     x[1] = 1.0;
-    debugStream << "\n x: " << x[0] << std::endl;
-    debugStream <<   "    " << x[1] << std::endl;
+    debugStream << "  - x: " << x[0] << std::endl;
+    debugStream << "       " << x[1] << std::endl;
     RangeType p;
     evaluate( x, p );
-    debugStream << "\n p(x): " << p[0] << std::endl;
+    debugStream << "  - p(x): " << p[0] << std::endl;
     GradientRangeType grad_p;
     gradient( x, grad_p );
-    debugStream << "\n grad p(x): " << grad_p[0] << std::endl;
-    debugStream <<   "            " << grad_p[1] << std::endl << std::endl;
-    infoStream << "...test passed!" << std::endl;
+    debugStream << "  - grad p(x): " << grad_p[0] << std::endl;
+    debugStream << "               " << grad_p[1] << std::endl;
+    infoStream << "  ...test passed!" << std::endl;
 }
 
 #endif // end of pressure.hh

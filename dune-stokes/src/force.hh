@@ -79,7 +79,6 @@ class Force
 
         /**
          *  \brief  a simple test of all class' functionalities
-         *  \arg  Logging::LogStream& stream where to print
          **/
         void testMe() const;
 };
@@ -110,18 +109,18 @@ void Force< 2 >::testMe() const
     // some logstreams
     Logging::LogStream& infoStream = Logger().Info();
     Logging::LogStream& debugStream = Logger().Dbg();
-    infoStream << "\nnow testing class Force..." << std::endl;
+    infoStream << "- testing class Force..." << std::endl;
     //tests
     DomainType x;
     x[0] = 1.0;
     x[1] = 1.0;
-    debugStream << "\n x: " << x[0] << std::endl;
-    debugStream <<   "    " << x[1] << std::endl;
+    debugStream << "  - x: " << x[0] << std::endl;
+    debugStream << "       " << x[1] << std::endl;
     RangeType f;
     evaluate( x, f );
-    debugStream << "\n f(x): " << f[0] << std::endl;
-    debugStream <<  "        " << f[1] << std::endl << std::endl;
-    infoStream << "...test passed!" << std::endl;
+    debugStream << "  - f(x): " << f[0] << std::endl;
+    debugStream << "          " << f[1] << std::endl;
+    infoStream << "  ...test passed!" << std::endl;
 }
 
 #endif // end of force.hh

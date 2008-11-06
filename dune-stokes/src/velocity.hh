@@ -126,7 +126,6 @@ class Velocity
 
         /**
          *  \brief  a simple test of all class' functionalities
-         *  \arg  Logging::LogStream& stream where to print
          **/
         void testMe() const;
 };
@@ -229,29 +228,29 @@ void Velocity< 2 >::testMe() const
     // some logstreams
     Logging::LogStream& infoStream = Logger().Info();
     Logging::LogStream& debugStream = Logger().Dbg();
-    infoStream << "\nnow testing class Velocity..." << std::endl;
+    infoStream << "- testing class Velocity..." << std::endl;
     //tests
     DomainType x;
     x[0] = 1.0;
     x[1] = 1.0;
-    debugStream << "\n x: " << x[0] << std::endl;
-    debugStream <<   "    " << x[1] << std::endl;
+    debugStream << "  - x: " << x[0] << std::endl;
+    debugStream << "       " << x[1] << std::endl;
     RangeType u;
     evaluate( x, u );
-    debugStream << "\n u(x): " << u[0] << std::endl;
-    debugStream <<   "       " << u[1] << std::endl;
+    debugStream << "  - u(x): " << u[0] << std::endl;
+    debugStream << "          " << u[1] << std::endl;
     GradientRangeType grad_u;
     gradient( x, grad_u );
-    debugStream << "\n grad u(x): " << grad_u[0] << std::endl;
-    debugStream <<   "            " << grad_u[1] << std::endl;
+    debugStream << "  - grad u(x): " << grad_u[0] << std::endl;
+    debugStream << "               " << grad_u[1] << std::endl;
     DivergenceRangeType div_u;
     divergence( x, div_u );
-    debugStream << "\n div u(x): " << div_u[0] << std::endl;
+    debugStream << "  - div u(x): " << div_u[0] << std::endl;
     RangeType laplace_u;
     laplacian( x, laplace_u );
-    debugStream << "\n laplacian u(x): " << laplace_u[0] << std::endl;
-    debugStream <<   "                 " << laplace_u[1] << std::endl << std::endl;
-    infoStream << "...test passed!" << std::endl;
+    debugStream << "  - laplacian u(x): " << laplace_u[0] << std::endl;
+    debugStream <<  "                  " << laplace_u[1] << std::endl;
+    infoStream << "  ...test passed!" << std::endl;
 }
 
 #endif // end of velocity.hh
