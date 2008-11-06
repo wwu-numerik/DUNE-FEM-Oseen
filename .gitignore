@@ -29,6 +29,13 @@
 *.status
 *.sub
 *.Tpo
+*.bak
+*.ALUgrid
+ldg_stokes
+buildsystem.pdf
+grid-howto.pdf
+communication.pdf
+istl.pdf
 Makefile
 Makefile.in
 html
