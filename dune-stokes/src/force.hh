@@ -77,7 +77,7 @@ class Force
             RangeType ret;
             Evaluate( arg, ret );
             return ret;
-        };
+        }
 
         /**
          *  \brief  a simple test of all class' functionalities
@@ -101,7 +101,7 @@ inline void Force< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) const
     //return
     ret[0] = 2.0 * std::exp( x1 ) * std::cos( x2 );
     ret[1] = 0.0;
-};
+}
 
 /**
  *  \brief specialization for gridDim = 2
@@ -124,6 +124,6 @@ void Force< 2 >::TestMe() const
     debugStream << "\n f(x): " << f[0] << std::endl;
     debugStream <<  "        " << f[1] << std::endl << std::endl;
     infoStream << "...test passed!" << std::endl;
-};
+}
 
 #endif // end of force.hh

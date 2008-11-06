@@ -99,7 +99,7 @@ class Velocity
             RangeType ret;
             Evaluate( arg, ret );
             return ret;
-        };
+        }
 
         /**
          *  \brief evaluates the gradient of the velocity
@@ -183,7 +183,7 @@ inline void Velocity< 2 >::Gradient( const DomainType& arg, GradientRangeType& r
     // return
     ret[0] = grad_u1;
     ret[1] = grad_u2;
-};
+}
 
 /**
  *  \brief specialization for gridDim = 2
@@ -216,7 +216,7 @@ inline void Velocity< 2 >::Laplacian( const DomainType& arg, RangeType& ret ) co
     ret[0] = -1.0 * exp_of_x1 *
         ( ( 2.0 * x2 * cos_of_x2 ) - ( 2.0 * std::sin( x2 ) ) );
     ret[1] = 2.0 * exp_of_x1 * cos_of_x2;
-};
+}
 
 /**
  *  \brief specialization for gridDim = 2
@@ -250,6 +250,6 @@ void Velocity< 2 >::TestMe() const
     debugStream << "\n laplacian u(x): " << laplace_u[0] << std::endl;
     debugStream <<   "                 " << laplace_u[1] << std::endl << std::endl;
     infoStream << "...test passed!" << std::endl;
-};
+}
 
 #endif // end of velocity.hh

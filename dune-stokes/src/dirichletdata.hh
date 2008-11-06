@@ -77,7 +77,7 @@ class DirichletData
             RangeType ret;
             Evaluate( arg, ret );
             return ret;
-        };
+        }
 
         /**
          *  \brief  a simple test of all class' functionalities
@@ -104,7 +104,7 @@ inline void DirichletData< 2 >::Evaluate( DomainType& arg, RangeType& ret ) cons
     ret[0] = -1.0 * exp_of_x1 *
         ( ( x2 * std::cos( x2 ) ) + sin_of_x2 );
     ret[1] = exp_of_x1 * x2 * sin_of_x2;
-};
+}
 
 /**
  *  \brief specialization for gridDim = 2
@@ -127,7 +127,7 @@ void DirichletData< 2 >::TestMe() const
     debugStream << "\n gd(x): " << gd[0] << std::endl;
     debugStream <<  "         " << gd[1] << std::endl << std::endl;
     infoStream << "...test passed!" << std::endl;
-};
+}
 
 #endif  // end of dirichletdata.hh
 

@@ -77,7 +77,7 @@ class Pressure
             RangeType ret;
             Evaluate( arg, ret );
             return ret;
-        };
+        }
 
         /**
          *  \brief  evaluates the gradient of the pressure
@@ -107,7 +107,7 @@ inline void Pressure< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) con
     double x2 = arg[1];
     // return
     ret[0] = 2.0 * std::exp( x1 ) * std::sin( x2 );
-};
+}
 
 /**
  *  \brief specialization for gridDim = 2
@@ -125,7 +125,7 @@ inline void Pressure< 2 >::Gradient( const DomainType& arg, GradientRangeType& r
     //return
     ret[0] = 2.0 * exp_of_x1 * std::sin( x2 );
     ret[1] = 2.0 * exp_of_x1 * std::cos( x2 );
-};
+}
 
 /**
  *  \brief specialization for gridDim = 2
@@ -151,6 +151,6 @@ void Pressure< 2 >::TestMe() const
     debugStream << "\n grad p(x): " << grad_p[0] << std::endl;
     debugStream <<   "            " << grad_p[1] << std::endl << std::endl;
     infoStream << "...test passed!" << std::endl;
-};
+}
 
 #endif // end of pressure.hh
