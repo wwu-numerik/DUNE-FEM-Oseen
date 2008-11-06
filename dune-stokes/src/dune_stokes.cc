@@ -17,11 +17,11 @@
 //#include "traits.hh"
 #include "parametercontainer.hh"
 #include "logging.hh"
-#include "problem.hh"
+//#include "problem.hh"
 #include "velocity.hh"
 #include "pressure.hh"
 #include "force.hh"
-
+#include "dirichletdata.hh"
 
 /**
  *  \brief main function
