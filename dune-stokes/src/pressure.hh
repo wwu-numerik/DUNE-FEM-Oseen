@@ -12,7 +12,22 @@
 #include "logging.hh"
 
 /**
- *
+ *  \brief  containing typedefs needed by Pressure
+ *  \tparam int grid_dim dimension of the grid
+ **/
+template < int grid_dim >
+class PressureTraits
+{
+    public:
+        typedef Dune::FieldVector< double, grid_dim >
+            DomainType;
+        typedef Dune::FieldVector< double, 1 >
+            RangeType;
+        typedef Dune::FieldVector< double, grid_dim >
+            GradientRangeType;
+};
+
+/**
  *  \brief  describes the presure
  *  \tparam int grid_dim dimension of the grid
  *
@@ -22,11 +37,13 @@ template < int grid_dim >
 class Pressure
 {
     public:
-        typedef Dune::FieldVector< double, grid_dim >
+        typedef PressureTraits< grid_dim >
+            Traits;
+        typedef typename Traits::DomainType
             DomainType;
-        typedef Dune::FieldVector< double, 1 >
+        typedef typename Traits::RangeType
             RangeType;
-        typedef Dune::FieldVector< double, grid_dim >
+        typedef typename Traits::GradientRangeType
             GradientRangeType;
 
         /**
@@ -74,10 +91,11 @@ class Pressure
          *  \arg  Logging::LogStream& stream where to print
          **/
         void TestMe() const;
-
-    private:
  };
 
+/**
+ *  \brief specialization for grid_dim = 2
+ **/
 template < >
 inline void Pressure< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) const
 {
@@ -91,6 +109,9 @@ inline void Pressure< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) con
     ret[0] = 2.0 * std::exp( x1 ) * std::sin( x2 );
 };
 
+/**
+ *  \brief specialization for grid_dim = 2
+ **/
 template < >
 inline void Pressure< 2 >::Gradient( const DomainType& arg, GradientRangeType& ret ) const
 {
@@ -106,6 +127,9 @@ inline void Pressure< 2 >::Gradient( const DomainType& arg, GradientRangeType& r
     ret[1] = 2.0 * exp_of_x1 * std::cos( x2 );
 };
 
+/**
+ *  \brief specialization for grid_dim = 2
+ **/
 template < >
 void Pressure< 2 >::TestMe() const
 {

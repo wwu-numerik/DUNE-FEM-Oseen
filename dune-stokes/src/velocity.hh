@@ -12,7 +12,8 @@
 #include "logging.hh"
 
 /**
- *  \todo doc
+ *  \brief  containing typedefs needed by Velicity
+ *  \tparam int grid_dim dimension of the grid
  **/
 template < int grid_dim >
 class VelocityTraits
@@ -126,10 +127,11 @@ class Velocity
          *  \arg  Logging::LogStream& stream where to print
          **/
         void TestMe() const;
-
-    private:
 };
 
+/**
+ *  \brief specialization for grid_dim = 2
+ **/
 template < >
 inline void Velocity< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) const
 {
@@ -146,6 +148,9 @@ inline void Velocity< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) con
     ret[1] = exp_of_x1 * x2 * sin_of_x2;
 }
 
+/**
+ *  \brief specialization for grid_dim = 2
+ **/
 template < >
 inline void Velocity< 2 >::Gradient( const DomainType& arg, GradientRangeType& ret ) const
 {
@@ -180,6 +185,9 @@ inline void Velocity< 2 >::Gradient( const DomainType& arg, GradientRangeType& r
     ret[1] = grad_u2;
 };
 
+/**
+ *  \brief specialization for grid_dim = 2
+ **/
 template < >
 inline void Velocity< 2 >::Divergence( const DomainType& arg, DivergenceRangeType& ret ) const
 {
@@ -190,6 +198,9 @@ inline void Velocity< 2 >::Divergence( const DomainType& arg, DivergenceRangeTyp
     ret[0] = 0.0;
 }
 
+/**
+ *  \brief specialization for grid_dim = 2
+ **/
 template < >
 inline void Velocity< 2 >::Laplacian( const DomainType& arg, RangeType& ret ) const
 {
@@ -207,6 +218,9 @@ inline void Velocity< 2 >::Laplacian( const DomainType& arg, RangeType& ret ) co
     ret[1] = 2.0 * exp_of_x1 * cos_of_x2;
 };
 
+/**
+ *  \brief specialization for grid_dim = 2
+ **/
 template < >
 void Velocity< 2 >::TestMe() const
 {
