@@ -107,6 +107,7 @@
 		<Unit filename="../src/saddlepoint_inverse_operator.hh" />
 		<Unit filename="../src/stuff.hh" />
 		<Unit filename="../src/traits.hh" />
+		<Unit filename="../src/velocity.hh" />
 		<Unit filename="../stokes/spinverseoperator.hh" />
 		<Unit filename="../stokes/stokespass.hh" />
 		<Extensions>
