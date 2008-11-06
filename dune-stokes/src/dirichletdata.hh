@@ -12,6 +12,20 @@
 #include "logging.hh"
 
 /**
+ *  \brief  containing typedefs needed by DirichletData
+ *  \tparam int grid_dim dimension of the grid
+ **/
+template < int grid_dim >
+class DirichletDataTraits
+{
+    public:
+        typedef Dune::FieldVector< double, grid_dim >
+            DomainType;
+        typedef Dune::FieldVector< double, grid_dim >
+            RangeType;
+};
+
+/**
  *  \brief  describes the dirichlet boundary data
  *  \tparam int grid_dim dimension of the grid
  *
@@ -21,9 +35,11 @@ template < int grid_dim >
 class DirichletData
 {
     public:
-        typedef Dune::FieldVector< double, grid_dim >
+        typedef DirichletDataTraits< grid_dim >
+            Traits;
+        typedef typename Traits::DomainType
             DomainType;
-        typedef Dune::FieldVector< double, grid_dim >
+        typedef typename Traits::RangeType
             RangeType;
 
         /**
@@ -68,8 +84,6 @@ class DirichletData
          *  \arg  Logging::LogStream& stream where to print
          **/
         void TestMe() const;
-
-        private:
 };
 
 /**
