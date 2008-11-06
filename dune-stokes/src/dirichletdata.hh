@@ -72,6 +72,9 @@ class DirichletData
         private:
 };
 
+/**
+ *  \brief specialization for grid_dim = 2
+ **/
 template < >
 inline void DirichletData< 2 >::Evaluate( DomainType& arg, RangeType& ret ) const
 {
@@ -89,6 +92,9 @@ inline void DirichletData< 2 >::Evaluate( DomainType& arg, RangeType& ret ) cons
     ret[1] = exp_of_x1 * x2 * sin_of_x2;
 };
 
+/**
+ *  \brief specialization for grid_dim = 2
+ **/
 template < >
 void DirichletData< 2 >::TestMe() const
 {

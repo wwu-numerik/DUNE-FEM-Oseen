@@ -12,6 +12,20 @@
 #include "logging.hh"
 
 /**
+ *  \brief  containing typedefs needed by Force
+ *  \tparam int grid_dim dimension of the grid
+ **/
+template < int grid_dim >
+class ForceTraits
+{
+    public:
+        typedef Dune::FieldVector< double, grid_dim >
+            DomainType;
+        typedef Dune::FieldVector< double, grid_dim >
+            RangeType;
+};
+
+/**
  *  \brief  describes the force
  *  \tparam int grid_dim dimension of the grid
  *
@@ -21,9 +35,11 @@ template < int grid_dim >
 class Force
 {
     public:
-        typedef Dune::FieldVector< double, grid_dim >
+        typedef ForceTraits< grid_dim >
+            Traits;
+        typedef typename Traits::DomainType
             DomainType;
-        typedef Dune::FieldVector< double, grid_dim >
+        typedef typename Traits::RangeType
             RangeType;
 
         /**
@@ -68,10 +84,11 @@ class Force
          *  \arg  Logging::LogStream& stream where to print
          **/
         void TestMe() const;
-
-    private:
 };
 
+/**
+ *  \brief specialization for grid_dim = 2
+ **/
 template < >
 inline void Force< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) const
 {
@@ -86,6 +103,9 @@ inline void Force< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) const
     ret[1] = 0.0;
 };
 
+/**
+ *  \brief specialization for grid_dim = 2
+ **/
 template < >
 void Force< 2 >::TestMe() const
 {
