@@ -5,6 +5,7 @@
 #ifndef STOKESPASS_HH
 #define STOKESPASS_HH
 
+#include <dune/fem/pass/pass.hh>
 #include<dune/fem/operator/matrix/spmatrix.hh>
 
 
@@ -12,7 +13,7 @@ namespace Dune
 {
     template <class VelocityDiscreteFunctionImp,
             class PressureDiscreteFunctionImp >
-    class StokesPass
+    class StokesPass : public LocalPass < >
     {
 
         public:
