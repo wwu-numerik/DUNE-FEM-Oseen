@@ -89,7 +89,7 @@ class Velocity
          *  \arg DomainType& arg point to be evaluated at
          *  \arg RangeType& ret value of velocity at point arg
          **/
-        inline void Evaluate( const DomainType& arg, RangeType& ret ) const;
+        inline void evaluate( const DomainType& arg, RangeType& ret ) const;
 
         /**
          *  \brief evaluates the velocity
@@ -99,7 +99,7 @@ class Velocity
         RangeType operator () ( const DomainType& arg)
         {
             RangeType ret;
-            Evaluate( arg, ret );
+            evaluate( arg, ret );
             return ret;
         }
 
@@ -108,34 +108,34 @@ class Velocity
          *  \arg DomainType& arg point to be evaluated at
          *  \arg RangeType& ret value of the gradient of the velocity at point arg
          **/
-        inline void Gradient( const DomainType& arg, GradientRangeType& ret ) const;
+        inline void gradient( const DomainType& arg, GradientRangeType& ret ) const;
 
         /**
          *  \brief  evaluates the divergence of the velocity
          *  \arg DomainType& arg point to be evaluated at
          *  \arg RangeType& ret value of the divergence of the velocity at point arg
          **/
-        inline void Divergence( const DomainType& arg, DivergenceRangeType& ret ) const;
+        inline void divergence( const DomainType& arg, DivergenceRangeType& ret ) const;
 
         /**
          *  \brief  evaluates the laplacian of the velocity
          *  \arg DomainType& arg point to be evaluated at
          *  \arg RangeType& ret value of the laplacian of the velocity at point arg
          **/
-        inline void Laplacian( const DomainType& arg, RangeType& ret ) const;
+        inline void laplacian( const DomainType& arg, RangeType& ret ) const;
 
         /**
          *  \brief  a simple test of all class' functionalities
          *  \arg  Logging::LogStream& stream where to print
          **/
-        void TestMe() const;
+        void testMe() const;
 };
 
 /**
  *  \brief specialization for gridDim = 2
  **/
 template < >
-inline void Velocity< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) const
+inline void Velocity< 2 >::evaluate( const DomainType& arg, RangeType& ret ) const
 {
     // play safe
     assert( arg.dim() == 2 );
@@ -154,7 +154,7 @@ inline void Velocity< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) con
  *  \brief specialization for gridDim = 2
  **/
 template < >
-inline void Velocity< 2 >::Gradient( const DomainType& arg, GradientRangeType& ret ) const
+inline void Velocity< 2 >::gradient( const DomainType& arg, GradientRangeType& ret ) const
 {
     // play safe
     assert( arg.dim() == 2 );
@@ -191,7 +191,7 @@ inline void Velocity< 2 >::Gradient( const DomainType& arg, GradientRangeType& r
  *  \brief specialization for gridDim = 2
  **/
 template < >
-inline void Velocity< 2 >::Divergence( const DomainType& arg, DivergenceRangeType& ret ) const
+inline void Velocity< 2 >::divergence( const DomainType& arg, DivergenceRangeType& ret ) const
 {
     // play safe
     assert( arg.dim() == 2 );
@@ -204,7 +204,7 @@ inline void Velocity< 2 >::Divergence( const DomainType& arg, DivergenceRangeTyp
  *  \brief specialization for gridDim = 2
  **/
 template < >
-inline void Velocity< 2 >::Laplacian( const DomainType& arg, RangeType& ret ) const
+inline void Velocity< 2 >::laplacian( const DomainType& arg, RangeType& ret ) const
 {
     // play safe
     assert( arg.dim() == 2 );
@@ -224,7 +224,7 @@ inline void Velocity< 2 >::Laplacian( const DomainType& arg, RangeType& ret ) co
  *  \brief specialization for gridDim = 2
  **/
 template < >
-void Velocity< 2 >::TestMe() const
+void Velocity< 2 >::testMe() const
 {
     // some logstreams
     Logging::LogStream& infoStream = Logger().Info();
@@ -237,18 +237,18 @@ void Velocity< 2 >::TestMe() const
     debugStream << "\n x: " << x[0] << std::endl;
     debugStream <<   "    " << x[1] << std::endl;
     RangeType u;
-    Evaluate( x, u );
+    evaluate( x, u );
     debugStream << "\n u(x): " << u[0] << std::endl;
     debugStream <<   "       " << u[1] << std::endl;
     GradientRangeType grad_u;
-    Gradient( x, grad_u );
+    gradient( x, grad_u );
     debugStream << "\n grad u(x): " << grad_u[0] << std::endl;
     debugStream <<   "            " << grad_u[1] << std::endl;
     DivergenceRangeType div_u;
-    Divergence( x, div_u );
+    divergence( x, div_u );
     debugStream << "\n div u(x): " << div_u[0] << std::endl;
     RangeType laplace_u;
-    Laplacian( x, laplace_u );
+    laplacian( x, laplace_u );
     debugStream << "\n laplacian u(x): " << laplace_u[0] << std::endl;
     debugStream <<   "                 " << laplace_u[1] << std::endl << std::endl;
     infoStream << "...test passed!" << std::endl;

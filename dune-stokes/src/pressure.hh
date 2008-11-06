@@ -67,7 +67,7 @@ class Pressure
          *  \arg DomainType& arg point to be evaluated at
          *  \arg RangeType& ret value of pressure at point arg
          **/
-        inline void Evaluate( const DomainType& arg, RangeType& ret ) const;
+        inline void evaluate( const DomainType& arg, RangeType& ret ) const;
 
         /**
          *  \brief evaluates the pressure
@@ -77,7 +77,7 @@ class Pressure
         RangeType operator () ( const DomainType& arg)
         {
             RangeType ret;
-            Evaluate( arg, ret );
+            evaluate( arg, ret );
             return ret;
         }
 
@@ -86,20 +86,20 @@ class Pressure
          *  \arg DomainType& arg point to be evaluated at
          *  \arg RangeType& ret value of gradient of the pressure at point arg
          **/
-        inline void Gradient( const DomainType& arg, GradientRangeType& ret ) const;
+        inline void gradient(const DomainType& arg, GradientRangeType& ret ) const;
 
         /**
          *  \brief  a simple test of all class' functionalities
          *  \arg  Logging::LogStream& stream where to print
          **/
-        void TestMe() const;
+        void testMe() const;
  };
 
 /**
  *  \brief specialization for gridDim = 2
  **/
 template < >
-inline void Pressure< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) const
+inline void Pressure< 2 >::evaluate( const DomainType& arg, RangeType& ret ) const
 {
     // play save
     assert( arg.dim() == 2 );
@@ -115,7 +115,7 @@ inline void Pressure< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) con
  *  \brief specialization for gridDim = 2
  **/
 template < >
-inline void Pressure< 2 >::Gradient( const DomainType& arg, GradientRangeType& ret ) const
+inline void Pressure< 2 >::gradient( const DomainType& arg, GradientRangeType& ret ) const
 {
     // play safe
     assert( arg.dim() == 2 );
@@ -133,7 +133,7 @@ inline void Pressure< 2 >::Gradient( const DomainType& arg, GradientRangeType& r
  *  \brief specialization for gridDim = 2
  **/
 template < >
-void Pressure< 2 >::TestMe() const
+void Pressure< 2 >::testMe() const
 {
     // some logstreams
     Logging::LogStream& infoStream = Logger().Info();
@@ -146,10 +146,10 @@ void Pressure< 2 >::TestMe() const
     debugStream << "\n x: " << x[0] << std::endl;
     debugStream <<   "    " << x[1] << std::endl;
     RangeType p;
-    Evaluate( x, p );
+    evaluate( x, p );
     debugStream << "\n p(x): " << p[0] << std::endl;
     GradientRangeType grad_p;
-    Gradient( x, grad_p );
+    gradient( x, grad_p );
     debugStream << "\n grad p(x): " << grad_p[0] << std::endl;
     debugStream <<   "            " << grad_p[1] << std::endl << std::endl;
     infoStream << "...test passed!" << std::endl;

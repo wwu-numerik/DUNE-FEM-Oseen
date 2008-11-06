@@ -63,7 +63,7 @@ class Force
          *  \arg DomainType& arg point to be evaluated at
          *  \arg RangeType& ret value of force at point arg
          **/
-        inline void Evaluate( const DomainType& arg, RangeType& ret ) const;
+        inline void evaluate( const DomainType& arg, RangeType& ret ) const;
 
         /**
          *  \brief evaluates the force
@@ -73,7 +73,7 @@ class Force
         RangeType operator () ( const DomainType& arg)
         {
             RangeType ret;
-            Evaluate( arg, ret );
+            evaluate( arg, ret );
             return ret;
         }
 
@@ -81,14 +81,14 @@ class Force
          *  \brief  a simple test of all class' functionalities
          *  \arg  Logging::LogStream& stream where to print
          **/
-        void TestMe() const;
+        void testMe() const;
 };
 
 /**
  *  \brief specialization for gridDim = 2
  **/
 template < >
-inline void Force< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) const
+inline void Force< 2 >::evaluate( const DomainType& arg, RangeType& ret ) const
 {
     // play safe
     assert( arg.dim() == 2 );
@@ -105,7 +105,7 @@ inline void Force< 2 >::Evaluate( const DomainType& arg, RangeType& ret ) const
  *  \brief specialization for gridDim = 2
  **/
 template < >
-void Force< 2 >::TestMe() const
+void Force< 2 >::testMe() const
 {
     // some logstreams
     Logging::LogStream& infoStream = Logger().Info();
@@ -118,7 +118,7 @@ void Force< 2 >::TestMe() const
     debugStream << "\n x: " << x[0] << std::endl;
     debugStream <<   "    " << x[1] << std::endl;
     RangeType f;
-    Evaluate( x, f );
+    evaluate( x, f );
     debugStream << "\n f(x): " << f[0] << std::endl;
     debugStream <<  "        " << f[1] << std::endl << std::endl;
     infoStream << "...test passed!" << std::endl;
