@@ -20,14 +20,12 @@
 #include "problem.hh"
 
 /**
- *  \brief main function
+ *  @brief main function
  *
- *  \c more main function
+ *  @attention attention
  *
- *  \attention attention
- *
- *  \param argc number of arguments from command line
- *  \param argv array of arguments from command line
+ *  @param argc number of arguments from command line
+ *  @param argv array of arguments from command line
  **/
 int main( int argc, char** argv )
 {
@@ -76,7 +74,6 @@ int main( int argc, char** argv )
     infoStream << "\ninitialising the analytical problem..." << std::endl;
     Problem< gridDim > problem;
     problem.testMe();
-
     infoStream << "...done." << std::endl;
 
     return 0;

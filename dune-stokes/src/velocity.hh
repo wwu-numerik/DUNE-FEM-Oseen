@@ -1,5 +1,6 @@
-/** \file velocity.hh
-    \brief contains a class Velocity with traitsclass VelocityTraits
+/** \file   velocity.hh
+ *
+ *  \brief  contains a class Velocity with traitsclass VelocityTraits
  **/
 
 #ifndef VELOCITY_HH
@@ -13,6 +14,7 @@
 
 /**
  *  \brief  containing typedefs needed by Velicity
+ *
  *  \tparam int gridDim dimension of the grid
  **/
 template < int gridDim >
@@ -70,6 +72,7 @@ class Velocity
 
         /**
          *  \brief constructor
+         *
          *  doing nothing
          **/
         Velocity()
@@ -78,6 +81,7 @@ class Velocity
 
         /**
          *  \brief  destructor
+         *
          *  doing nothing
          **/
         ~Velocity()
@@ -85,16 +89,20 @@ class Velocity
         }
 
         /**
-         *  \brief evaluates the velocity
-         *  \arg DomainType& arg point to be evaluated at
-         *  \arg RangeType& ret value of velocity at point arg
+         *  \brief  evaluates the velocity
+         *
+         *  \arg    arg point to be evaluated at
+         *
+         *  \arg    ret value of velocity at point arg
          **/
         inline void evaluate( const DomainType& arg, RangeType& ret ) const;
 
         /**
          *  \brief evaluates the velocity
-         *  \arg DomainType& arg point to be evaluated at
-         *  \return RangeType ret value of velocity at point arg
+         *
+         *  \arg arg point to be evaluated at
+         *
+         *  \return ret value of velocity at point arg
          **/
         RangeType operator () ( const DomainType& arg)
         {
