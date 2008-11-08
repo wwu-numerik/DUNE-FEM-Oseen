@@ -49,9 +49,10 @@ class Force
         /**
          *  \brief  constructor
          *
-         *  doing nothing
+         *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
          **/
-        Force()
+        Force( const double viscosity )
+            : viscosity_( viscosity )
         {
         }
 
@@ -92,6 +93,9 @@ class Force
          *  \brief  a simple test of all class' functionalities
          **/
         void testMe() const;
+
+    private:
+        double viscosity_;
 };
 
 /**
@@ -106,9 +110,13 @@ inline void Force< 2 >::evaluate( const DomainType& arg, RangeType& ret ) const
     // some computations
     double x1 = arg[0];
     double x2 = arg[1];
+    double exp_of_x1 = std::exp( x1 );
+    double cos_of_x2 = std::cos( x2 );
     //return
-    ret[0] = 2.0 * std::exp( x1 ) * std::cos( x2 );
-    ret[1] = 0.0;
+    ret[0] = 2.0 * exp_of_x1 *
+        ( ( 1.0 - viscosity_ ) * std::sin( x2 )
+            + viscosity_ * cos_of_x2 );
+    ret[1] = 2.0 * ( 1.0 - viscosity_ ) * exp_of_x1 * cos_of_x2;
 }
 
 /**

@@ -76,7 +76,7 @@ int main( int argc, char** argv )
      * initialize the analytical problem                                      *
      * ********************************************************************** */
     infoStream << "\ninitialising the analytical problem..." << std::endl;
-    Problem< gridDim > problem;
+    Problem< gridDim > problem( 1.0 );
     problem.testMe();
     infoStream << "...done." << std::endl;
 

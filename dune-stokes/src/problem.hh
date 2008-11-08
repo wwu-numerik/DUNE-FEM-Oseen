@@ -65,10 +65,18 @@ class Problem
     /**
      *  \brief  constructor
      *
-     *  doing nothing
+     *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
      **/
-    Problem()
+    Problem( const double viscosity )
     {
+        VelocityType velocity;
+        velocity_ = &velocity;
+        PressureType pressure;
+        pressure_ = &pressure;
+        ForceType force( viscosity );
+        force_ = &force;
+        DirichletDataType dirichletData;
+        dirichletData_ = & dirichletData;
     }
 
     /**
@@ -83,9 +91,9 @@ class Problem
     /**
      *  \brief  to get the velocity
      *
-     *  \return velocity
+     *  \return pointer to velocity
      **/
-    VelocityType velocity()
+    VelocityType* velocity()
     {
         return velocity_;
     }
@@ -93,27 +101,27 @@ class Problem
     /**
      *  \brief  to get the pressure
      *
-     *  \return pressure
+     *  \return pointer to pressure
      **/
-    PressureType pressure()
+    PressureType* pressure()
     {
         return pressure_;
     }
     /**
      *  \brief  to get the force term
      *
-     *  \return force
+     *  \return pointer to force
      **/
-    ForceType force()
+    ForceType* force()
     {
         return force_;
     }
     /**
      *  \brief  to get the dirichlet boundary data
      *
-     *  \return dirichlet boundary data
+     *  \return pointer to dirichlet boundary data
      **/
-    DirichletDataType dirichletData()
+    DirichletDataType* dirichletData()
     {
         return dirichletData_;
     }
@@ -127,19 +135,19 @@ class Problem
         Logging::LogStream& infoStream = Logger().Info();
         infoStream << "testing class Problem..." << std::endl;
         //tests
-        velocity_.testMe();
-        pressure_.testMe();
-        force_.testMe();
-        dirichletData_.testMe();
+        (velocity_)->testMe();
+        (pressure_)->testMe();
+        (force_)->testMe();
+        (dirichletData_)->testMe();
         // happy
         infoStream << "...test passed!" << std::endl;
     }
 
     private:
-        VelocityType velocity_;
-        PressureType pressure_;
-        ForceType force_;
-        DirichletDataType dirichletData_;
+        VelocityType* velocity_;
+        PressureType* pressure_;
+        ForceType* force_;
+        DirichletDataType* dirichletData_;
 };
 
 #endif  // end of problem.hh
