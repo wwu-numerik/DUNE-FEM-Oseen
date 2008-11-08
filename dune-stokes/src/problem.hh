@@ -1,7 +1,7 @@
 /**
- *  @file   problem.hh
+ *  \file   problem.hh
  *
- *  @brief  contains a class Problem with traitsclass ProblemTraits
+ *  \brief  contains a class Problem with traitsclass ProblemTraits
  **/
 
 #ifndef PROBLEM_HH
@@ -18,9 +18,10 @@
 #include "dirichletdata.hh"
 
 /**
- *  @brief  containing typedefs needed by Problem
+ *  \brief  containing typedefs needed by Problem
  *
- *  @tparam int gridDim dimension of the grid
+ *  \tparam gridDim
+ *          dimension of the grid
  **/
 template < int gridDim >
 class ProblemTraits
@@ -37,13 +38,14 @@ class ProblemTraits
 };
 
 /**
- *  @brief  a collection of some analytical functions solving a stokes problem
+ *  \brief  a collection of some analytical functions solving a stokes problem
  *
  *  namely velocity, pressure, force term and dirichlet boundary data
  *
- *  @tparam gridDim dimension of the grid
+ *  \tparam gridDim
+ *          dimension of the grid
  *
- *  @todo   extensive docu with latex
+ *  \todo   extensive docu with latex
  **/
 template < int gridDim >
 class Problem
@@ -61,7 +63,7 @@ class Problem
             DirichletDataType;
 
     /**
-     *  @brief  constructor
+     *  \brief  constructor
      *
      *  doing nothing
      **/
@@ -70,7 +72,7 @@ class Problem
     }
 
     /**
-     *  @brief  destructor
+     *  \brief  destructor
      *
      *  doing nothing
      **/
@@ -79,9 +81,9 @@ class Problem
     }
 
     /**
-     *  @brief  to get the velocity
+     *  \brief  to get the velocity
      *
-     *  @return velocity
+     *  \return velocity
      **/
     VelocityType velocity()
     {
@@ -89,27 +91,27 @@ class Problem
     }
 
     /**
-     *  @brief  to get the pressure
+     *  \brief  to get the pressure
      *
-     *  @return pressure
+     *  \return pressure
      **/
     PressureType pressure()
     {
         return pressure_;
     }
     /**
-     *  @brief  to get the force term
+     *  \brief  to get the force term
      *
-     *  @return force
+     *  \return force
      **/
     ForceType force()
     {
         return force_;
     }
     /**
-     *  @brief  to get the dirichlet boundary data
+     *  \brief  to get the dirichlet boundary data
      *
-     *  @return dirichlet boundary data
+     *  \return dirichlet boundary data
      **/
     DirichletDataType dirichletData()
     {
@@ -117,7 +119,7 @@ class Problem
     }
 
     /**
-     *  @brief  a simple test of all class' functionalities
+     *  \brief  a simple test of all class' functionalities
      **/
     void testMe()
     {

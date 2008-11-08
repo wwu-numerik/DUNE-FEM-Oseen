@@ -1,7 +1,7 @@
 /**
- *  @file   velocity.hh
+ *  \file   velocity.hh
  *
- *  @brief  contains a class Velocity with traitsclass VelocityTraits
+ *  \brief  contains a class Velocity with traitsclass VelocityTraits
  **/
 
 #ifndef VELOCITY_HH
@@ -14,9 +14,10 @@
 #include "logging.hh"
 
 /**
- *  @brief  containing typedefs needed by Velicity
+ *  \brief  containing typedefs needed by Velicity
  *
- *  @tparam int gridDim dimension of the grid
+ *  \tparam gridDim
+ *          dimension of the grid
  **/
 template < int gridDim >
 class VelocityTraits
@@ -33,7 +34,7 @@ class VelocityTraits
 };
 
 /**
- *  @brief describes the velocity \f$u\f$ as an exact solution of a stokes
+ *  \brief describes the velocity \f$u\f$ as an exact solution of a stokes
  *  problem
  *
  *  in 2 dimensions: \f$u:\mathbb{R}^{2}\mapsto\Omega =\left[-1,1\right]^{2} \f$
@@ -53,9 +54,10 @@ class VelocityTraits
  *      u_{2}(x_{1},x_{2}) := e^{x_{1}}x_{2}sin(x_{2}).
  *  \f]
  *
- *  @tparam int gridDim dimension of the grid
+ *  \tparam gridDim
+ *          dimension of the grid
  *
- *  @todo   extensive docu with latex
+ *  \todo   extensive docu with latex
  **/
 template < int gridDim >
 class Velocity
@@ -73,7 +75,7 @@ class Velocity
             DivergenceRangeType;
 
         /**
-         *  @brief constructor
+         *  \brief constructor
          *
          *  doing nothing
          **/
@@ -82,7 +84,7 @@ class Velocity
         }
 
         /**
-         *  @brief  destructor
+         *  \brief  destructor
          *
          *  doing nothing
          **/
@@ -91,19 +93,22 @@ class Velocity
         }
 
         /**
-         *  @brief  evaluates the velocity
+         *  \brief  evaluates the velocity
          *
-         *  @arg    arg point to be evaluated at
-         *  @arg    ret value of velocity at point arg
+         *  \param  arg
+         *          point to evaluate at
+         *  \param  ret
+         *          value of velocity at given point
          **/
         inline void evaluate( const DomainType& arg, RangeType& ret ) const;
 
         /**
-         *  @brief evaluates the velocity
+         *  \brief  evaluates the velocity
          *
-         *  @arg arg point to be evaluated at
+         *  \param  arg
+         *          point to evaluate at
          *
-         *  @return ret value of velocity at point arg
+         *  \return value of velocity at given point
          **/
         RangeType operator () ( const DomainType& arg)
         {
@@ -113,37 +118,43 @@ class Velocity
         }
 
         /**
-         *  @brief evaluates the gradient of the velocity
+         *  \brief  evaluates the gradient of the velocity
          *
-         *  @arg arg point to be evaluated at
-         *  @arg ret value of the gradient of the velocity at point arg
+         *  \param  arg
+         *          point to evaluate at
+         *  \param  ret
+         *          value of the gradient of the velocity at given point
          **/
         inline void gradient( const DomainType& arg, GradientRangeType& ret ) const;
 
         /**
-         *  @brief  evaluates the divergence of the velocity
+         *  \brief  evaluates the divergence of the velocity
          *
-         *  @arg arg point to be evaluated at
-         *  @arg ret value of the divergence of the velocity at point arg
+         *  \param  arg
+         *          point to evaluated at
+         *  \param  ret
+         *          value of the divergence of the velocity at given point
          **/
         inline void divergence( const DomainType& arg, DivergenceRangeType& ret ) const;
 
         /**
-         *  @brief  evaluates the laplacian of the velocity
+         *  \brief  evaluates the laplacian of the velocity
          *
-         *  @arg arg point to be evaluated at
-         *  @arg ret value of the laplacian of the velocity at point arg
+         *  \param  arg
+         *          point to evaluated at
+         *  \param  ret
+         *          value of the laplacian of the velocity at given point
          **/
         inline void laplacian( const DomainType& arg, RangeType& ret ) const;
 
         /**
-         *  @brief  a simple test of all class' functionalities
+         *  \brief  a simple test of all class' functionalities
          **/
         void testMe() const;
 };
 
 /**
- *  @brief specialization for gridDim = 2
+ *  \brief  specialization for gridDim = 2
  **/
 template < >
 inline void Velocity< 2 >::evaluate( const DomainType& arg, RangeType& ret ) const
@@ -162,7 +173,7 @@ inline void Velocity< 2 >::evaluate( const DomainType& arg, RangeType& ret ) con
 }
 
 /**
- *  @brief specialization for gridDim = 2
+ *  \brief  specialization for gridDim = 2
  **/
 template < >
 inline void Velocity< 2 >::gradient( const DomainType& arg, GradientRangeType& ret ) const
@@ -199,7 +210,7 @@ inline void Velocity< 2 >::gradient( const DomainType& arg, GradientRangeType& r
 }
 
 /**
- *  @brief specialization for gridDim = 2
+ *  \brief  specialization for gridDim = 2
  **/
 template < >
 inline void Velocity< 2 >::divergence( const DomainType& arg, DivergenceRangeType& ret ) const
@@ -212,7 +223,7 @@ inline void Velocity< 2 >::divergence( const DomainType& arg, DivergenceRangeTyp
 }
 
 /**
- *  @brief specialization for gridDim = 2
+ *  \brief  specialization for gridDim = 2
  **/
 template < >
 inline void Velocity< 2 >::laplacian( const DomainType& arg, RangeType& ret ) const
@@ -232,7 +243,7 @@ inline void Velocity< 2 >::laplacian( const DomainType& arg, RangeType& ret ) co
 }
 
 /**
- *  @brief specialization for gridDim = 2
+ *  \brief  specialization for gridDim = 2
  **/
 template < >
 void Velocity< 2 >::testMe() const

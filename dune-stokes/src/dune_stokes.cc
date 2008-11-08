@@ -1,7 +1,7 @@
 /**
- *  @file   dune_stokes.cc
+ *  \file   dune_stokes.cc
  *
- *  @brief  brief
+ *  \brief  brief
  **/
 
 #ifdef HAVE_CONFIG_H
@@ -22,12 +22,14 @@
 #include "problem.hh"
 
 /**
- *  @brief main function
+ *  \brief  main function
  *
- *  @attention attention
+ *  \attention  attention
  *
- *  @param argc number of arguments from command line
- *  @param argv array of arguments from command line
+ *  \param  argc
+ *          number of arguments from command line
+ *  \param  argv
+ *          array of arguments from command line
  **/
 int main( int argc, char** argv )
 {

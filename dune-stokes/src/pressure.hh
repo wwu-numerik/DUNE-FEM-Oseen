@@ -1,5 +1,7 @@
-/** \file pressure.hh
-    \brief contains a class Pressure with traitsclass PressureTraits
+/**
+ *  \file   pressure.hh
+ *
+ *  \brief  contains a class Pressure with traitsclass PressureTraits
  **/
 
 #ifndef PRESSURE_HH
@@ -13,7 +15,9 @@
 
 /**
  *  \brief  containing typedefs needed by Pressure
- *  \tparam int gridDim dimension of the grid
+ *
+ *  \tparam gridDim
+ *          dimension of the grid
  **/
 template < int gridDim >
 class PressureTraits
@@ -29,7 +33,9 @@ class PressureTraits
 
 /**
  *  \brief  describes the presure
- *  \tparam int gridDim dimension of the grid
+ *
+ *  \tparam gridDim
+ *          dimension of the grid
  *
  *  \todo   extensive docu with latex
  **/
@@ -48,6 +54,7 @@ class Pressure
 
         /**
          *  \brief  constructor
+         *
          *  doing nothing
          **/
         Pressure()
@@ -56,6 +63,7 @@ class Pressure
 
         /**
          *  \brief  destructor
+         *
          *  doing nothing
          **/
         ~Pressure()
@@ -63,16 +71,22 @@ class Pressure
         }
 
         /**
-         *  \brief evaluates the pressure
-         *  \arg DomainType& arg point to be evaluated at
-         *  \arg RangeType& ret value of pressure at point arg
+         *  \brief  evaluates the pressure
+         *
+         *  \param  arg
+         *          point to evaluate at
+         *  \param  ret
+         *          value of pressure at given point
          **/
         inline void evaluate( const DomainType& arg, RangeType& ret ) const;
 
         /**
-         *  \brief evaluates the pressure
-         *  \arg DomainType& arg point to be evaluated at
-         *  \return RangeType value of pressure at point arg
+         *  \brief  evaluates the pressure
+         *
+         *  \param  arg
+         *          point to evaluate at
+         *
+         *  \return value of pressure at given point
          **/
         RangeType operator () ( const DomainType& arg)
         {
@@ -83,8 +97,11 @@ class Pressure
 
         /**
          *  \brief  evaluates the gradient of the pressure
-         *  \arg DomainType& arg point to be evaluated at
-         *  \arg RangeType& ret value of gradient of the pressure at point arg
+         *
+         *  \param  arg
+         *          point to evaluate at
+         *  \param  ret
+         *          value of gradient of the pressure at given point
          **/
         inline void gradient(const DomainType& arg, GradientRangeType& ret ) const;
 
@@ -95,7 +112,7 @@ class Pressure
  };
 
 /**
- *  \brief specialization for gridDim = 2
+ *  \brief  specialization for gridDim = 2
  **/
 template < >
 inline void Pressure< 2 >::evaluate( const DomainType& arg, RangeType& ret ) const
@@ -111,7 +128,7 @@ inline void Pressure< 2 >::evaluate( const DomainType& arg, RangeType& ret ) con
 }
 
 /**
- *  \brief specialization for gridDim = 2
+ *  \brief  specialization for gridDim = 2
  **/
 template < >
 inline void Pressure< 2 >::gradient( const DomainType& arg, GradientRangeType& ret ) const
@@ -129,7 +146,7 @@ inline void Pressure< 2 >::gradient( const DomainType& arg, GradientRangeType& r
 }
 
 /**
- *  \brief specialization for gridDim = 2
+ *  \brief  specialization for gridDim = 2
  **/
 template < >
 void Pressure< 2 >::testMe() const
