@@ -1,5 +1,6 @@
-/** \file force.hh
-    \brief contains a class Force with traitsclass ForceTraits
+/**
+ *  \file   force.hh
+ *  \brief  contains a class Force with traitsclass ForceTraits
  **/
 
 #ifndef FORCE_HH
@@ -13,7 +14,9 @@
 
 /**
  *  \brief  containing typedefs needed by Force
- *  \tparam int gridDim dimension of the grid
+ *
+ *  \tparam gridDim
+ *          dimension of the grid
  **/
 template < int gridDim >
 class ForceTraits
@@ -27,7 +30,8 @@ class ForceTraits
 
 /**
  *  \brief  describes the force
- *  \tparam int gridDim dimension of the grid
+ *  \tparam gridDim
+ *          dimension of the grid
  *
  *  \todo   extensive docu with latex
  **/
@@ -44,6 +48,7 @@ class Force
 
         /**
          *  \brief  constructor
+         *
          *  doing nothing
          **/
         Force()
@@ -60,15 +65,21 @@ class Force
 
         /**
          *  \brief  evaluates the force
-         *  \arg DomainType& arg point to be evaluated at
-         *  \arg RangeType& ret value of force at point arg
+         *
+         *  \param  arg
+         *          point to evaluate at
+         *  \param  ret
+         *          value of force at given point
          **/
         inline void evaluate( const DomainType& arg, RangeType& ret ) const;
 
         /**
-         *  \brief evaluates the force
-         *  \arg DomainType& arg point to be evaluated at
-         *  \return RangeType ret value of force at point arg
+         *  \brief  evaluates the force
+         *
+         *  \param  arg
+         *          point to evaluate at
+         *
+         *  \return value of force at given point
          **/
         RangeType operator () ( const DomainType& arg)
         {
@@ -84,7 +95,7 @@ class Force
 };
 
 /**
- *  \brief specialization for gridDim = 2
+ *  \brief  specialization for gridDim = 2
  **/
 template < >
 inline void Force< 2 >::evaluate( const DomainType& arg, RangeType& ret ) const
@@ -101,7 +112,7 @@ inline void Force< 2 >::evaluate( const DomainType& arg, RangeType& ret ) const
 }
 
 /**
- *  \brief specialization for gridDim = 2
+ *  \brief  specialization for gridDim = 2
  **/
 template < >
 void Force< 2 >::testMe() const
