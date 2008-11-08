@@ -14,7 +14,7 @@
 #include "logging.hh"
 
 /**
- *  \brief  containing typedefs needed by Velicity
+ *  \brief  containing typedefs needed by Velocity
  *
  *  \tparam gridDim
  *          dimension of the grid
