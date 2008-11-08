@@ -1,5 +1,7 @@
-/** \file dirichletdata.hh
-    \brief contains a class DirichletData with traitsclass DirichletDataTraits
+/**
+ *  \file   dirichletdata.hh
+ *
+ *  \brief  contains a class DirichletData with traitsclass DirichletDataTraits
  **/
 
 #ifndef DIRICHLETDATA_HH
@@ -13,7 +15,9 @@
 
 /**
  *  \brief  containing typedefs needed by DirichletData
- *  \tparam int gridDim dimension of the grid
+ *
+ *  \tparam gridDim
+ *          dimension of the grid
  **/
 template < int gridDim >
 class DirichletDataTraits
@@ -27,7 +31,9 @@ class DirichletDataTraits
 
 /**
  *  \brief  describes the dirichlet boundary data
- *  \tparam int gridDim dimension of the grid
+ *
+ *  \tparam gridDim
+ *          dimension of the grid
  *
  *  \todo   extensive docu with latex
  **/
@@ -44,6 +50,7 @@ class DirichletData
 
         /**
          *  \brief  constructor
+         *
          *  doing nothing
          **/
         DirichletData()
@@ -52,6 +59,7 @@ class DirichletData
 
         /**
          *  \brief  destructor
+         *
          *  doing nothing
          **/
          ~DirichletData()
@@ -60,15 +68,21 @@ class DirichletData
 
          /**
           * \brief  evaluates the dirichlet data
-         *  \arg DomainType& arg point to be evaluated at
-         *  \arg RangeType& ret value of dirichlet boundary data at point arg
+          *
+          * \param  arg
+          *         point to evaluate at
+          * \param  ret
+          *         value of dirichlet boundary data at given point
           **/
         inline void evaluate( DomainType& arg, RangeType& ret ) const;
 
         /**
-         *  \brief evaluates the dirichlet data
-         *  \arg DomainType& arg point to be evaluated at
-         *  \return RangeType ret value of dirichlet data at point arg
+         *  \brief  evaluates the dirichlet data
+         *
+         *  \param  arg
+         *          point to evaluate at
+         *
+         *  \return value of dirichlet data at given point
          **/
         RangeType operator () ( const DomainType& arg)
         {
@@ -84,7 +98,7 @@ class DirichletData
 };
 
 /**
- *  \brief specialization for gridDim = 2
+ *  \brief  specialization for gridDim = 2
  **/
 template < >
 inline void DirichletData< 2 >::evaluate( DomainType& arg, RangeType& ret ) const
@@ -104,7 +118,7 @@ inline void DirichletData< 2 >::evaluate( DomainType& arg, RangeType& ret ) cons
 }
 
 /**
- *  \brief specialization for gridDim = 2
+ *  \brief  specialization for gridDim = 2
  **/
 template < >
 void DirichletData< 2 >::testMe() const
