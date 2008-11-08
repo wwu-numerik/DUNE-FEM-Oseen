@@ -1,4 +1,5 @@
-/** @file   dune_stokes.cc
+/**
+ *  @file   dune_stokes.cc
  *
  *  @brief  brief
  **/
