@@ -1,5 +1,6 @@
-/** \file dune_stokes.cc
-    \brief  brief
+/** @file   dune_stokes.cc
+ *
+ *  @brief  brief
  **/
 
 #ifdef HAVE_CONFIG_H
