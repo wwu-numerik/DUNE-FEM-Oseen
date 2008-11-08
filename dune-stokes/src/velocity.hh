@@ -113,6 +113,7 @@ class Velocity
 
         /**
          *  \brief evaluates the gradient of the velocity
+         *
          *  \arg DomainType& arg point to be evaluated at
          *  \arg RangeType& ret value of the gradient of the velocity at point arg
          **/
@@ -120,6 +121,7 @@ class Velocity
 
         /**
          *  \brief  evaluates the divergence of the velocity
+         *
          *  \arg DomainType& arg point to be evaluated at
          *  \arg RangeType& ret value of the divergence of the velocity at point arg
          **/
@@ -127,6 +129,7 @@ class Velocity
 
         /**
          *  \brief  evaluates the laplacian of the velocity
+         *
          *  \arg DomainType& arg point to be evaluated at
          *  \arg RangeType& ret value of the laplacian of the velocity at point arg
          **/
