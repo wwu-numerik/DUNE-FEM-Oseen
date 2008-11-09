@@ -76,7 +76,7 @@ int main( int argc, char** argv )
      * initialize the analytical problem                                      *
      * ********************************************************************** */
     infoStream << "\ninitialising the analytical problem..." << std::endl;
-    Problem< gridDim > problem( 1.0 );
+    Problem< gridDim > problem( parameters.viscosity() );
     problem.testMe();
     infoStream << "...done." << std::endl;
 
