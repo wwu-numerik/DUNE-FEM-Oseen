@@ -12,8 +12,8 @@
 namespace Dune
 {
     template <class VelocityDiscreteFunctionImp,
-            class PressureDiscreteFunctionImp >
-    class StokesPass : public LocalPass < >
+            class PressureDiscreteFunctionImp, class DiscreteModelImp, class PreviousPassImp, int PassID = 0 >
+    class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID >
     {
 
         public:

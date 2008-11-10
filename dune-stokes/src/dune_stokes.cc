@@ -25,6 +25,7 @@
 #include <dune/fem/space/dgspace.hh>
 #include <dune/fem/space/combinedspace.hh>
 #include <dune/fem/gridpart/gridpart.hh>
+#include <dune/fem/pass/pass.hh>
 
 /**
  *  \brief main function
@@ -95,7 +96,7 @@ int main( int argc, char** argv )
         DiscreteFunctionSpaceType;
     typedef Dune::AdaptiveDiscreteFunction<DiscreteFunctionSpaceType>
         DiscreteFunctionType;
-    typedef Dune::StokesPass< DiscreteFunctionType, DiscreteFunctionType >
+    typedef Dune::StokesPass< DiscreteFunctionType, DiscreteFunctionType, ,Dune::StartPass< double >,  >
         PassType;
     typedef Dune::OEMCGOp <DiscreteFunctionType, PassType >
         InverseOperatorType;
