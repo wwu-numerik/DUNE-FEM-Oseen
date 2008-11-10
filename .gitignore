@@ -7,7 +7,6 @@
 *.ind
 *.log
 *.out
-*.pdf
 *.dvi
 *.svn
 *.m4
@@ -30,6 +29,13 @@
 *.status
 *.sub
 *.Tpo
+*.bak
+*.ALUgrid
+ldg_stokes
+buildsystem.pdf
+grid-howto.pdf
+communication.pdf
+istl.pdf
 Makefile
 Makefile.in
 html
@@ -69,6 +75,12 @@ dune-grid/dune
 example
 dune-stokes/codeblocks/bin
 dune-fem-howto/dune
+dune-istl/dune
+dune-stokes.depend*
+dune_stokes
+*.orig
+*.backup
+*.layout
 dune-istl/dune
 dune-stokes.depend*
 dune_stokes

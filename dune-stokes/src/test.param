@@ -1,5 +1,5 @@
-dimension: 3
-polynomial_order: 1
+dgf_file_2d: grid_2d.dgf
+dgf_file_3d: grid_3d.dgf
 loglevel: 4
 logfile: dune-stokes.log
 

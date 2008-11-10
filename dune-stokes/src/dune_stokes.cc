@@ -1,5 +1,7 @@
-/** \file dune_stokes.cc
-    \brief  brief
+/**
+ *  \file   dune_stokes.cc
+ *
+ *  \brief  brief
  **/
 
 #ifdef HAVE_CONFIG_H
@@ -14,11 +16,9 @@
 //#include <dune/grid/io/file/dgfparser/dgfparser.hh> // for the grid
 //#include <dune/grid/utility/gridtype.hh>
 
-#include "traits.hh"
+//#include "traits.hh"
 #include "parametercontainer.hh"
-#include "parameterhandler.hh"
 #include "logging.hh"
-
 #include "saddlepoint_inverse_operator.hh"
 #include <stokes/stokespass.hh>
 #include <dune/fem/solver/oemsolver/oemsolver.hh>
@@ -26,16 +26,17 @@
 #include <dune/fem/space/combinedspace.hh>
 #include <dune/fem/gridpart/gridpart.hh>
 #include <dune/fem/pass/pass.hh>
+#include "problem.hh"
 
 /**
- *  \brief main function
+ *  \brief  main function
  *
- *  \c more main function
+ *  \attention  attention
  *
- *  \attention attention
- *
- *  \param argc number of arguments from command line
- *  \param argv array of arguments from command line
+ *  \param  argc
+ *          number of arguments from command line
+ *  \param  argv
+ *          array of arguments from command line
  **/
 int main( int argc, char** argv )
 {
@@ -46,37 +47,45 @@ int main( int argc, char** argv )
     /* ********************************************************************** *
      * initialize all the stuff we need                                       *
      * ********************************************************************** */
-    ParameterContainer parameters( argc, argv );
-    if ( !( parameters.ReadCommandLine() ) ) {
+    ParameterContainer& parameters = Parameters();
+    if ( !( parameters.ReadCommandLine( argc, argv ) ) ) {
         return 1;
     }
     if ( !( parameters.SetUp() ) ) {
         return 1;
     }
     else {
+        parameters.SetGridDimension( GridType::dimensionworld );
+        parameters.SetPolOrder( POLORDER );
         parameters.Print( std::cout );
     }
-    Logger().Create( Logging::LOG_CONSOLE | Logging::LOG_FILE | Logging::LOG_ERR | Logging::LOG_INFO );
+
+    Logger().Create(
+        Logging::LOG_CONSOLE |
+        Logging::LOG_FILE |
+        Logging::LOG_ERR |
+        Logging::LOG_DEBUG |
+        Logging::LOG_INFO );
+
+    Logging::LogStream& infoStream = Logger().Info();
+    //Logging::LogStream& debugStream = Logger().Dbg();
+    //Logging::LogStream& errorStream = Logger().Err();
+    const int gridDim = GridType::dimensionworld;
 
     /* ********************************************************************** *
      * initialize the grid                                                    *
      * ********************************************************************** */
-     using Dune::GridPtr;
-    GridPtr<GridType> gridptr( "grid.dgf" );
+    infoStream << "\ninitialising the grid..." << std::endl;
+    Dune::GridPtr< GridType > gridPtr( parameters.DgfFilename() );
+    infoStream << "...done." << std::endl;
 
-    Logging::LogStream& myStream = Logger().Err();
-    myStream << "hgude" << " pudge";
-    myStream << std::endl ;
-    myStream << std::setw(12) << std::setprecision(8) << 6.786968789659698697 ;
-    myStream << std::endl ;
-    Logging::LogStream& myStream2 = Logger().Dbg();
-    myStream2 << "\ndebugout" << std::endl;
-    Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_DEBUG | Logging::LOG_FILE );
-    myStream2 << "\ndebugout22" << std::endl;
-
-    int newStreamID = Logger().AddStream( Logging::LOG_CONSOLE );
-    Logging::LogStream& blah = Logger().GetStream( newStreamID );
-    blah << "blah" << std::endl;
+    /* ********************************************************************** *
+     * initialize the analytical problem                                      *
+     * ********************************************************************** */
+    infoStream << "\ninitialising the analytical problem..." << std::endl;
+    Problem< gridDim > problem;
+    problem.testMe();
+    infoStream << "...done." << std::endl;
 
     const int polOrd = 2;
     const int dim = 2;
