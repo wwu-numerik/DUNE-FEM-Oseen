@@ -17,16 +17,27 @@ namespace Dune
     {
 
         public:
+
+            //! tempalte repetions etc
+            typedef LocalPass < DiscreteModelImp, PreviousPassImp, PassID > BaseType;
+            typedef PreviousPassImp PreviousPassType;
+            typedef VelocityDiscreteFunctionImp VelocityDiscreteFunctionType;
+            typedef PressureDiscreteFunctionImp PressureDiscreteFunctionType;
+            typedef typename PressureDiscreteFunctionType::DiscreteFunctionSpaceType DiscreteFuntionSpaceType;
+
             typedef SparseRowMatrix<double> MatrixType;
             typedef MatrixType B_OperatorType;
             typedef MatrixType B_Transposed_OperatorType;
             typedef MatrixType C_OperatorType;
 
-            typedef VelocityDiscreteFunctionImp VelocityDiscreteFunctionType;
-            typedef PressureDiscreteFunctionImp PressureDiscreteFunctionType;
+            //typedefs for interaface complaince, not definite
+            typedef typename BaseType::ArgumentType ArgumentType;
+            typedef typename BaseType::DestinationType DestinationType;
+            typedef typename BaseType::Entity EntityType;
 
-            StokesPass()
-                //: rhs( "pass_rhs"
+            StokesPass(PreviousPassType& prev_pass, const DiscreteFuntionSpaceType& disc_space)
+                : BaseType( prev_pass, disc_space )
+                //rhs( "pass_rhs"
             {}
 
             const B_OperatorType& Get_B_Operator() const { return b_op_; }
@@ -36,6 +47,16 @@ namespace Dune
             MatrixType& systemMatrix(){}
 
             const VelocityDiscreteFunctionType& rhs1() const {}
+
+            virtual void prepare( const ArgumentType& arg,
+                                    DestinationType& dest) const;
+
+            virtual void finalize(const ArgumentType& arg,
+                                    DestinationType& dest) const;
+
+            virtual void applyLocal(EntityType& en) const;
+
+
 
 
         private:

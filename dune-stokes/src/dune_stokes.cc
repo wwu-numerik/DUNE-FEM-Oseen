@@ -13,6 +13,16 @@
 #include <dune/common/mpihelper.hh> // An initializer of MPI
 #include <dune/common/exceptions.hh> // We use exceptions
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
+//#include <dune/grid/io/file/dgfparser/dgfparser.hh> // for the grid
+//#include <dune/grid/utility/gridtype.hh>
+
+//#include "traits.hh"
+#include "parametercontainer.hh"
+#include "logging.hh"
+#include "saddlepoint_inverse_operator.hh"
+#include <stokes/stokespass.hh>
+#include <stokes/discretestokesmodelinterface.hh>
+#include <dune/fem/solver/oemsolver/oemsolver.hh>
 #include <dune/fem/space/dgspace.hh>
 #include <dune/fem/space/combinedspace.hh>
 #include <dune/fem/gridpart/gridpart.hh>
@@ -134,10 +144,8 @@ int main( int argc, char** argv )
                                                 velocitySpace );
     dirichletData.clear();
 
-
-
-
     infoStream << "...done." << std::endl;
+
 
     /* ********************************************************************** *
      * initialize model                                                       *
@@ -151,6 +159,42 @@ int main( int argc, char** argv )
         PostProcessorType;
     PostProcessorType postProcessor( problem, gridPart, velocitySpace, pressureSpace );
     infoStream << "...done." << std::endl;
+
+    typedef Dune::FunctionSpace<double, double, dim, dim>
+        FunctionSpaceType;
+    typedef FunctionSpaceType::DomainFieldType
+        DomainFieldType;
+    typedef FunctionSpaceType::RangeFieldType
+        RangeFieldType;
+    typedef Dune::FunctionSpace<DomainFieldType,RangeFieldType,dim,dim>
+        PressureSpaceType;
+    typedef Dune::LeafGridPart<GridType>
+        GridPartType;
+    typedef Dune::DiscontinuousGalerkinSpace<FunctionSpaceType, GridPartType, polOrd >
+        DiscreteFunctionSpaceType;
+    typedef Dune::AdaptiveDiscreteFunction<DiscreteFunctionSpaceType>
+        DiscreteFunctionType;
+    typedef Dune::StartPass< DiscreteFunctionType, -1 >
+        StartPassType;
+    typedef Dune::StokesTraits < DiscreteFunctionType, DiscreteFunctionSpaceType >
+        StokesTraits;
+    typedef Dune::DiscreteStokesModelInterface< StokesTraits >
+        DiscreteModelType;
+    typedef Dune::StokesPass< DiscreteFunctionType, DiscreteFunctionType, DiscreteModelType, StartPassType, -1 >
+        PassType;
+    typedef Dune::OEMCGOp <DiscreteFunctionType, PassType >
+        InverseOperatorType;
+    typedef Dune::SaddlepointInverseOperator< PassType, InverseOperatorType >
+        SaddlepointInverseOperatortype;
+
+    GridPartType gridpart ( *gridPtr );
+    DiscreteFunctionSpaceType pressurespc ( gridpart  );
+    DiscreteFunctionSpaceType velospace ( gridpart  );
+    StartPassType startPass;
+    PassType pass (startPass , pressurespc);
+    InverseOperatorType aufSolver(pass,1e-10,1e-10,5000,false);
+    SaddlepointInverseOperatortype invOp(pass,1e-8,1e-8,5000,1,aufSolver,pressurespc,velospace);
+
 
 
     return 0;
