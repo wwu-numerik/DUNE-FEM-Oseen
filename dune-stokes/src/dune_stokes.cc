@@ -20,6 +20,7 @@
 #include "parametercontainer.hh"
 #include "logging.hh"
 #include "problem.hh"
+#include "model.hh"
 
 /**
  *  \brief  main function
