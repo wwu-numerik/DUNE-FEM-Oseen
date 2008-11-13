@@ -33,8 +33,10 @@ class DiscreteStokesModelInterface
         typedef typename Traits::DiscreteModelType
             DiscreteModelType;
 
-        //! (volume) quadrature type used in pass
-        typedef typename Traits::QuadratureType QuadratureType;
+        //! volume quadrature type used in pass
+        typedef typename Traits::VolumeQuadratureType VolumeQuadratureType;
+        //! face quadrature type used in pass
+        typedef typename Traits::FaceQuadratureType FaceQuadratureType;
         /**
          *  \brief  Velocity function space
          **/
