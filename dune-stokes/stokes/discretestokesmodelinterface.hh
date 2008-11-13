@@ -25,7 +25,7 @@ class DiscreteStokesModelInterface
         /**
          *  \brief  Traits class defined by the user
          **/
-        typedef DiscreteModelTraits
+        typedef DiscreteStokesModelTraits
             Traits;
         /**
          *  \brief  Implementation type for Barton-Nackman trick
@@ -77,13 +77,6 @@ class DiscreteStokesModelInterface
          **/
         typedef typename GridType::template Codim<0>::Entity
             EntitiType;
-
-        /**
-         *  \brief  dimRange
-         **/
-        enum {
-            dimRange = DiscreteFunctionSpaceType::DimRange
-        };
 
         /**
          *  \brief  Returns true if problem has a flux contribution of type

@@ -20,6 +20,7 @@
 #include "parametercontainer.hh"
 #include "logging.hh"
 #include "problem.hh"
+#include "dune/stokes/discretestokesmodelinterface.hh"
 
 /**
  *  \brief  main function
