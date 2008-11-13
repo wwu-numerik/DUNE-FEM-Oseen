@@ -44,9 +44,11 @@ namespace Dune
             const B_Transposed_OperatorType& Get_B_Transposed_Operator() const { return b_transp_op_; }
             const C_OperatorType& Get_C_Operator() const { return c_op_; }
 
-            MatrixType& systemMatrix(){}
+            MatrixType& systemMatrix()
+            {}
 
-            const VelocityDiscreteFunctionType& rhs1() const {}
+            const VelocityDiscreteFunctionType& rhs1() const
+            {}
 
             virtual void prepare( const ArgumentType& arg,
                                     DestinationType& dest) const

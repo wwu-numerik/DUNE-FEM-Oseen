@@ -57,7 +57,7 @@ namespace Dune {
     /** \todo Please doc me!
      * \brief Constructor:
     * aufSolver is the InverseOperator for Solving the elliptic Problem A^-1
-    * rhs1 is  stored as member,no better idea
+    * velocity,rhs1 is  stored as member,no better idea
 	  **/
     SaddlepointInverseOperator( const StokesPassType& op,
 			 double redEps,
