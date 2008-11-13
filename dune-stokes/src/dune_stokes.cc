@@ -18,11 +18,9 @@
 #include <dune/fem/gridpart/gridpart.hh>
 #include <dune/fem/pass/pass.hh>
 
-//#include "traits.hh"
 #include "parametercontainer.hh"
 #include "logging.hh"
 #include "problem.hh"
-#include "dune/stokes/discretestokesmodelinterface.hh"
 
 /**
  *  \brief  main function
@@ -106,11 +104,9 @@ int main( int argc, char** argv )
      * initialize model                                                       *
      * ********************************************************************** */
     infoStream << "\ninitialising model..." << std::endl;
-    Problem< gridDim > problem;
+    Problem< gridDim > problem( parameters.viscosity() );
     problem.testMe();
     infoStream << "...done." << std::endl;
-
-
 
 
     return 0;
