@@ -137,10 +137,14 @@ class Problem
     }
 
     private:
-        VelocityType* velocity_;
-        PressureType* pressure_;
-        ForceType* force_;
+        VelocityType velocity_;
+        PressureType pressure_;
+        ForceType force_;
         VelocityType velocity_;
         PressureType pressure_;
         ForceType force_;
         DirichletDataType dirichletData_;
+
+};
+
+#endif // end of problem.hh
