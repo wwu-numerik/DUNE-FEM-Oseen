@@ -238,8 +238,15 @@ class DiscreteStokesModelInterface
             return asImp().Force();
         }
 
-    private:
-
+    protected:
+        DiscreteModelType& asImp()
+        {
+            return static_cast<DiscreteModelType&>(*this);
+        }
+        const DiscreteModelType& asImp() const
+        {
+            return static_cast<const DiscreteModelType&>(*this);
+        }
 };
 
 }; // end of namespace Dune
