@@ -104,7 +104,7 @@ int main( int argc, char** argv )
      * initialize model                                                       *
      * ********************************************************************** */
     infoStream << "\ninitialising model..." << std::endl;
-    Problem< gridDim > problem;
+    Problem< gridDim > problem( 1.0 );
     problem.testMe();
     infoStream << "...done." << std::endl;
 
