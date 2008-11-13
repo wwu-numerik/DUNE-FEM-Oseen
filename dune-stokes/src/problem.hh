@@ -65,9 +65,10 @@ class Problem
     /**
      *  \brief  constructor
      *
-     *  doing nothing
+     *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
      **/
-    Problem()
+    Problem( const double viscosity )
+        :force_( viscosity )
     {
     }
 
@@ -85,7 +86,7 @@ class Problem
      *
      *  \return velocity
      **/
-    VelocityType velocity()
+    VelocityType& velocity()
     {
         return velocity_;
     }
@@ -95,7 +96,7 @@ class Problem
      *
      *  \return pressure
      **/
-    PressureType pressure()
+    PressureType& pressure()
     {
         return pressure_;
     }
@@ -104,7 +105,7 @@ class Problem
      *
      *  \return force
      **/
-    ForceType force()
+    ForceType& force()
     {
         return force_;
     }
@@ -113,7 +114,7 @@ class Problem
      *
      *  \return dirichlet boundary data
      **/
-    DirichletDataType dirichletData()
+    DirichletDataType& dirichletData()
     {
         return dirichletData_;
     }
