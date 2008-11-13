@@ -49,12 +49,16 @@ namespace Dune
             const VelocityDiscreteFunctionType& rhs1() const {}
 
             virtual void prepare( const ArgumentType& arg,
-                                    DestinationType& dest) const;
+                                    DestinationType& dest) const
+            {}
 
             virtual void finalize(const ArgumentType& arg,
-                                    DestinationType& dest) const;
+                                    DestinationType& dest) const
+            {}
 
-            virtual void applyLocal(EntityType& en) const;
+            virtual void applyLocal(EntityType& en) const
+            {}
+
 
 
 

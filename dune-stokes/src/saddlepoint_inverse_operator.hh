@@ -90,160 +90,162 @@ namespace Dune {
     virtual void operator()(const PressureDiscreteFunctionType& arg,
                             PressureDiscreteFunctionType& dest ) const
     {
-//        Logging::LogStream& logDebug = Logger().Dbg();
-//        Logging::LogStream& logError = Logger().Err();
-//        Logging::LogStream& logInfo = Logger().Info();
-//        logInfo << "Begin SaddlePointInverseOperator " << std::endl;
-//
-//        typedef typename VelocityDiscreteFunctionType::DiscreteFunctionSpaceType
-//            FunctionSpaceType;
-//        typedef typename FunctionSpaceType::RangeFieldType
-//            RangeFieldType;
-//        typedef typename PressureDiscreteFunctionType::DiscreteFunctionSpaceType
-//            PressureFunctionSpaceType;
-//
-//        int iterations_count = 0;
-//        RangeFieldType spa=0, residuum, q, quad;
-//
-//        VelocityDiscreteFunctionType f("f",velocity_space_);
-//        f.assign(rhs1_);
-//        VelocityDiscreteFunctionType u("u",velocity_space_);
-//        u.clear();
-//        VelocityDiscreteFunctionType tmp1("tmp1",velocity_space_);//part one of our pseedup loop ;-)
-//        tmp1.clear();
-//        VelocityDiscreteFunctionType xi("xi",velocity_space_);
-//        xi.clear();
-//
-//        PressureDiscreteFunctionType tmp2("tmp2",pressure_space_);//part two
-//        //  tmp2.assign(arg);
-//        PressureDiscreteFunctionType r("r",pressure_space_);
-//        r.assign(arg);
-//        //p<->d
-//        PressureDiscreteFunctionType p("p",pressure_space_);
-//        PressureDiscreteFunctionType h("h",pressure_space_);
-//        PressureDiscreteFunctionType g("g",pressure_space_);
-//
-//        //   double bla=r.scalarProductDofs(r);
-//        //  std::cout<<"arg dot arg="<< bla <<"\n";
-//
-//
-//        //(3.95a)
-//        //  std::cout<<"SPoperator dest (3.95a)\n";
-//        //       dest.print(std::cout);
-//
-//        b_op_.apply(dest,tmp1);
-//        //bT_op_.apply_t(dest,tmp1);
-//        //  std::cout<<"SPoperator bop(dest) (3.95a)\n";
-//        //       tmp1.print(std::cout);
-//
-//        f-=tmp1; // f = - ( B * dest )
-//        //  std::cout<<"*********************************************************\n";
-//        // std::cout<<"SPoperator f (3.95a)\n";
-//        //  f.print(std::cout);
-//        //      std::cout<<"*********************************************************\n";
-//
-//        aufSolver_(f,u);
-//        //  std::cout<<"*********************************************************\n";
-//        //    std::cout<<"SPoperator Result auf solver (3.95a)\n";
-//        //   u.print(std::cout);
-//        // std::cout<<"*********************************************************\n";
-//        //(3.95b)
-//
-//        //  bT_op_(u,tmp2);
-//        bT_op_.apply(u,tmp2);
-//        //b_op_.apply_t(u,tmp2);
-//        r-=tmp2;
-//
-//
-//        tmp2.clear();
-//
-//        // c_op_(dest,tmp2);
-//        c_op_.apply(dest,tmp2);
-//
-//
-//        r+=tmp2;
-//
-//        //   std::cout<<"r=\n";
-//
-//        //(3.95c)
-//        p.assign(r);
-//
-//
-//        //(3.95d)
-//        residuum = r.scalarProductDofs( r );
-//        // std::cout<<"rho ="<<residuum<<"\n";
-//        //	       int foo;
-//        //   std::cin>>foo;
-//        //   assert(foo==1);
-//        while((residuum > epsilon_) && (iterations_count++ < max_iterations_))
-//        {
-//            // fall ab der zweiten iteration *************
-//
-//            if(iterations_count > 1)
-//            {  //(3.95l)
-//                const RangeFieldType e = residuum / spa;
-//
-//                //(3.95m)
-//                p *= e;
-//                p += r;
-//            }
-//
-//            // grund - iterations - schritt **************
-//            //(3.95e)
-//            tmp1.clear();
-//            // b_op_(p,tmp1);
-//            b_op_.apply(p,tmp1);
-//            //bT_op_.apply_t(p,tmp1);
-//
-//            aufSolver_(tmp1,xi);
-//
-//
-//            //(3.95f)
-//
-//            //b_op_.apply_t(xi,h);
-//            bT_op_.apply(xi,h);
-//            tmp2.clear();
-//
-//
-//            //   c_op_(p,tmp2);
-//
-//            c_op_.apply(p,tmp2);
-//
-//            h+=tmp2;
-//
-//
-//            //(3.95g)
-//            quad = p.scalarProductDofs( h );
-//            //   std::cout<<"quad ="<<quad<<"\n";
-//            q    = residuum / quad;
-//
-//            //  std::cout<<"q ="<<q<<"\n";
-//            //(3.95h)
-//            dest.addScaled( p, -q );
-//            //(3.95i)
-//            u.addScaled(xi,+q);
-//            //(3.95j)
-//            r.addScaled( h, -q );
-//            // std::cout<<"r=\n";
-//            // r.print(std::cout);
-//            //\ro_m merken
-//            spa = residuum;
-//
-//            // residuum neu berechnen *********************
-//            //(3.95K)
-//            //\ro_{m+1} berechnen
-//            residuum = r.scalarProductDofs( r );
-//
-//
-//            logInfo << " SPcg-Iteration Nr. " << std::setw(3) << iterations_count
-//                    << " Residuum:" << residuum << "        \r";
-//        }
-//
-//
-//        velocity_.assign(u);
-//        logInfo << "End SaddlePointInverseOperator " << std::endl;
+        Logging::LogStream& logDebug = Logger().Dbg();
+        Logging::LogStream& logError = Logger().Err();
+        Logging::LogStream& logInfo = Logger().Info();
+        logInfo << "Begin SaddlePointInverseOperator " << std::endl;
+
+        typedef typename VelocityDiscreteFunctionType::DiscreteFunctionSpaceType
+            FunctionSpaceType;
+        typedef typename FunctionSpaceType::RangeFieldType
+            RangeFieldType;
+        typedef typename PressureDiscreteFunctionType::DiscreteFunctionSpaceType
+            PressureFunctionSpaceType;
+
+        int iterations_count = 0;
+        RangeFieldType spa=0, residuum, q, quad;
+
+        VelocityDiscreteFunctionType f("f",velocity_space_);
+        f.assign(rhs1_);
+        VelocityDiscreteFunctionType u("u",velocity_space_);
+        u.clear();
+        VelocityDiscreteFunctionType tmp1("tmp1",velocity_space_);//part one of our pseedup loop ;-)
+        tmp1.clear();
+        VelocityDiscreteFunctionType xi("xi",velocity_space_);
+        xi.clear();
+
+        PressureDiscreteFunctionType tmp2("tmp2",pressure_space_);//part two
+        //  tmp2.assign(arg);
+        PressureDiscreteFunctionType r("r",pressure_space_);
+        r.assign(arg);
+        //p<->d
+        PressureDiscreteFunctionType p("p",pressure_space_);
+        PressureDiscreteFunctionType h("h",pressure_space_);
+        PressureDiscreteFunctionType g("g",pressure_space_);
+
+        //   double bla=r.scalarProductDofs(r);
+        //  std::cout<<"arg dot arg="<< bla <<"\n";
+
+
+        //(3.95a)
+        //  std::cout<<"SPoperator dest (3.95a)\n";
+        //       dest.print(std::cout);
+
+        b_op_.apply(dest,tmp1);
+        //bT_op_.apply_t(dest,tmp1);
+        //  std::cout<<"SPoperator bop(dest) (3.95a)\n";
+        //       tmp1.print(std::cout);
+
+        f-=tmp1; // f = - ( B * dest )
+        //  std::cout<<"*********************************************************\n";
+        // std::cout<<"SPoperator f (3.95a)\n";
+        //  f.print(std::cout);
+        //      std::cout<<"*********************************************************\n";
+
+        aufSolver_(f,u);
+        //  std::cout<<"*********************************************************\n";
+        //    std::cout<<"SPoperator Result auf solver (3.95a)\n";
+        //   u.print(std::cout);
+        // std::cout<<"*********************************************************\n";
+        //(3.95b)
+
+        //  bT_op_(u,tmp2);
+        bT_op_.apply(u,tmp2);
+        //b_op_.apply_t(u,tmp2);
+        r-=tmp2;
+
+
+        tmp2.clear();
+
+        // c_op_(dest,tmp2);
+        c_op_.apply(dest,tmp2);
+
+
+        r+=tmp2;
+
+        //   std::cout<<"r=\n";
+
+        //(3.95c)
+        p.assign(r);
+
+
+        //(3.95d)
+        residuum = r.scalarProductDofs( r );
+        // std::cout<<"rho ="<<residuum<<"\n";
+        //	       int foo;
+        //   std::cin>>foo;
+        //   assert(foo==1);
+        while((residuum > epsilon_) && (iterations_count++ < max_iterations_))
+        {
+            // fall ab der zweiten iteration *************
+
+            if(iterations_count > 1)
+            {  //(3.95l)
+                const RangeFieldType e = residuum / spa;
+
+                //(3.95m)
+                p *= e;
+                p += r;
+            }
+
+            // grund - iterations - schritt **************
+            //(3.95e)
+            tmp1.clear();
+            // b_op_(p,tmp1);
+            b_op_.apply(p,tmp1);
+            //bT_op_.apply_t(p,tmp1);
+
+            aufSolver_(tmp1,xi);
+
+
+            //(3.95f)
+
+            //b_op_.apply_t(xi,h);
+            bT_op_.apply(xi,h);
+            tmp2.clear();
+
+
+            //   c_op_(p,tmp2);
+
+            c_op_.apply(p,tmp2);
+
+            h+=tmp2;
+
+
+            //(3.95g)
+            quad = p.scalarProductDofs( h );
+            //   std::cout<<"quad ="<<quad<<"\n";
+            q    = residuum / quad;
+
+            //  std::cout<<"q ="<<q<<"\n";
+            //(3.95h)
+            dest.addScaled( p, -q );
+            //(3.95i)
+            u.addScaled(xi,+q);
+            //(3.95j)
+            r.addScaled( h, -q );
+            // std::cout<<"r=\n";
+            // r.print(std::cout);
+            //\ro_m merken
+            spa = residuum;
+
+            // residuum neu berechnen *********************
+            //(3.95K)
+            //\ro_{m+1} berechnen
+            residuum = r.scalarProductDofs( r );
+
+
+            logInfo << " SPcg-Iteration Nr. " << std::setw(3) << iterations_count
+                    << " Residuum:" << residuum << "        \r";
+        }
+
+        //only here to be able to call velocity() later on, wth?
+        //velocity_.assign(u);
+
+        logInfo << "End SaddlePointInverseOperator " << std::endl;
     }
 
+//  where do i need this?
 //    VelocityDiscreteFunctionType& velocity() { return velocity_; }
 
   private:
