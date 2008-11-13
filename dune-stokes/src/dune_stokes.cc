@@ -13,19 +13,13 @@
 #include <dune/common/mpihelper.hh> // An initializer of MPI
 #include <dune/common/exceptions.hh> // We use exceptions
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
-//#include <dune/grid/io/file/dgfparser/dgfparser.hh> // for the grid
-//#include <dune/grid/utility/gridtype.hh>
-
-//#include "traits.hh"
-#include "parametercontainer.hh"
-#include "logging.hh"
-#include "saddlepoint_inverse_operator.hh"
-#include <stokes/stokespass.hh>
-#include <dune/fem/solver/oemsolver/oemsolver.hh>
 #include <dune/fem/space/dgspace.hh>
 #include <dune/fem/space/combinedspace.hh>
 #include <dune/fem/gridpart/gridpart.hh>
 #include <dune/fem/pass/pass.hh>
+
+#include "parametercontainer.hh"
+#include "logging.hh"
 #include "problem.hh"
 
 /**
@@ -60,6 +54,9 @@ int main( int argc, char** argv )
         parameters.Print( std::cout );
     }
 
+    const int gridDim = GridType::dimensionworld;
+    const int polOrder = POLORDER;
+
     Logger().Create(
         Logging::LOG_CONSOLE |
         Logging::LOG_FILE |
@@ -70,54 +67,46 @@ int main( int argc, char** argv )
     Logging::LogStream& infoStream = Logger().Info();
     //Logging::LogStream& debugStream = Logger().Dbg();
     //Logging::LogStream& errorStream = Logger().Err();
-    const int gridDim = GridType::dimensionworld;
 
     /* ********************************************************************** *
      * initialize the grid                                                    *
      * ********************************************************************** */
-    infoStream << "\ninitialising the grid..." << std::endl;
+    infoStream << "\ninitialising grid..." << std::endl;
+    typedef Dune::LeafGridPart< GridType >
+        GridPartType;
     Dune::GridPtr< GridType > gridPtr( parameters.DgfFilename() );
+    GridPartType gridPart( *gridPtr );
     infoStream << "...done." << std::endl;
 
     /* ********************************************************************** *
-     * initialize the analytical problem                                      *
+     * initialize function spaces and functions                               *
      * ********************************************************************** */
-    infoStream << "\ninitialising the analytical problem..." << std::endl;
+    infoStream << "\ninitialising function spaces and functions..." << std::endl;
+    // velocity
+    typedef Dune::FunctionSpace< double, double, gridDim, gridDim >
+        VelocityFunctionSpaceType;
+    typedef Dune::DiscontinuousGalerkinSpace<   VelocityFunctionSpaceType,
+                                                GridPartType,
+                                                polOrder >
+        DiscreteVelocityFunctionSpaceType;
+    DiscreteVelocityFunctionSpaceType velocitySpace( gridPart );
+    // pressure
+    typedef Dune::FunctionSpace< double, double, gridDim, 1 >
+        PressureFunctionSpaceType;
+    typedef Dune::DiscontinuousGalerkinSpace<   PressureFunctionSpaceType,
+                                                GridPartType,
+                                                polOrder >
+        DiscretePressureFunctionSpaceType;
+    DiscretePressureFunctionSpaceType pressureSpace( gridPart );
+    infoStream << "...done." << std::endl;
+
+    /* ********************************************************************** *
+     * initialize model                                                       *
+     * ********************************************************************** */
+    infoStream << "\ninitialising model..." << std::endl;
     Problem< gridDim > problem;
     problem.testMe();
     infoStream << "...done." << std::endl;
-
-    const int polOrd = 2;
-    const int dim = 2;
-
-
-    typedef Dune::FunctionSpace<double, double, dim, dim>
-        FunctionSpaceType;
-    typedef FunctionSpaceType::DomainFieldType
-        DomainFieldType;
-    typedef FunctionSpaceType::RangeFieldType
-        RangeFieldType;
-    typedef Dune::FunctionSpace<DomainFieldType,RangeFieldType,dim,dim>
-        PressureSpaceType;
-    typedef Dune::LeafGridPart<GridType>
-        GridPartType;
-    typedef Dune::DiscontinuousGalerkinSpace<FunctionSpaceType, GridPartType, polOrd >
-        DiscreteFunctionSpaceType;
-    typedef Dune::AdaptiveDiscreteFunction<DiscreteFunctionSpaceType>
-        DiscreteFunctionType;
-    typedef Dune::StokesPass< DiscreteFunctionType, DiscreteFunctionType, ,Dune::StartPass< double >,  >
-        PassType;
-    typedef Dune::OEMCGOp <DiscreteFunctionType, PassType >
-        InverseOperatorType;
-    typedef Dune::SaddlepointInverseOperator< PassType, InverseOperatorType >
-        SaddlepointInverseOperatortype;
-
-    PassType pass;
-    InverseOperatorType aufSolver(pass,1e-10,1e-10,5000,false);
-    GridPartType gridpart ( *gridptr );
-    DiscreteFunctionSpaceType pressurespc ( gridpart  );
-    DiscreteFunctionSpaceType velospace ( gridpart  );
-    SaddlepointInverseOperatortype invOp(pass,1e-8,1e-8,5000,1,aufSolver,pressurespc,velospace);
 
 
     return 0;

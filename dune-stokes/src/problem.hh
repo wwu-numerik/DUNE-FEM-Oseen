@@ -70,6 +70,10 @@ class Problem
     Problem( const double viscosity )
         :force_( viscosity )
     {
+        if ( !( gridDim == 2 ) )
+        {
+
+        }
     }
 
     /**
