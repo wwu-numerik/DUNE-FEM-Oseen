@@ -19,7 +19,7 @@
 //#include "traits.hh"
 #include "parametercontainer.hh"
 #include "logging.hh"
-#include "saddlepoint_inverse_operator.hh"
+#include <dune/stokes/saddlepoint_inverse_operator.hh>
 #include <dune/stokes/stokespass.hh>
 #include <dune/stokes/discretestokesmodelinterface.hh>
 #include <dune/fem/solver/oemsolver/oemsolver.hh>

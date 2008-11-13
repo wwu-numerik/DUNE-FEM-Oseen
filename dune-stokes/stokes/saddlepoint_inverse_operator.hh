@@ -17,7 +17,7 @@
     #include "matrixoperator.hh"
 #endif
 
-#include "logging.hh"
+#include "../src/logging.hh"
 
 namespace Dune {
   //!CG Verfahren fuer Sattelpunkt Problem
