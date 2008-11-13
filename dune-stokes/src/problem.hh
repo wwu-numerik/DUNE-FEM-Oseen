@@ -69,10 +69,6 @@ class Problem
      **/
     Problem()
     {
-        if ( !( gridDim == 2 ) )
-        {
-
-        }
     }
 
     /**
