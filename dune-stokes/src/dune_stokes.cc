@@ -20,8 +20,8 @@
 #include "parametercontainer.hh"
 #include "logging.hh"
 #include "saddlepoint_inverse_operator.hh"
-#include <stokes/stokespass.hh>
-#include <stokes/discretestokesmodelinterface.hh>
+#include <dune/stokes/stokespass.hh>
+#include <dune/stokes/discretestokesmodelinterface.hh>
 #include <dune/fem/solver/oemsolver/oemsolver.hh>
 #include <dune/fem/space/dgspace.hh>
 #include <dune/fem/space/combinedspace.hh>
