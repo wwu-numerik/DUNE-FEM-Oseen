@@ -190,10 +190,11 @@ int main( int argc, char** argv )
     GridPartType gridpart ( *gridPtr );
     DiscreteFunctionSpaceType pressurespc ( gridpart  );
     DiscreteFunctionSpaceType velospace ( gridpart  );
+    DiscreteModelType disc_model;
     StartPassType startPass;
-    PassType pass (startPass , pressurespc);
-    InverseOperatorType aufSolver(pass,1e-10,1e-10,5000,false);
-    SaddlepointInverseOperatortype invOp(pass,1e-8,1e-8,5000,1,aufSolver,pressurespc,velospace);
+    PassType pass ( startPass, velospace, pressurespc );
+    InverseOperatorType aufSolver( pass, 1e-10 ,1e-10 ,5000 ,false );
+    SaddlepointInverseOperatortype invOp( pass, 1e-8, 1e-8, 5000, 1, aufSolver, pressurespc, velospace);
 
 
 
