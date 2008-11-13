@@ -76,7 +76,7 @@ class DiscreteStokesModelInterface
          *  \brief  Element (codim 0 entity) of the grid
          **/
         typedef typename GridType::template Codim<0>::Entity
-            EntitiType;
+            EntityType;
 
         /**
          *  \brief  Returns true if problem has a flux contribution of type
