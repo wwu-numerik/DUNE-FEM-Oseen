@@ -1,5 +1,7 @@
-/** \file parametercontainer.hh
-    \brief  containing class ParameterContainer
+/**
+ *  \file   parametercontainer.hh
+ *
+ *  \brief  containing class ParameterContainer
  **/
 
 #ifndef PARAMETERCONTAINER_HH_INCLUDED
@@ -12,18 +14,19 @@
 
 
 /**
- *  \brief class containing global parameters
+ *  \brief  class containing global parameters
  *
- *  \c ParameterContainer contains all the needed global parameters getting them via Dune::Parameter
+ *  ParameterContainer contains all the needed global parameters getting them via Dune::Parameter
  *
- *  \todo needs reorganizing!
+ *  \todo   needs reorganizing!
  **/
 class ParameterContainer
 {
     public:
         /**
          *  \brief  constuctor
-         *  \attention  call ReadCommandLine to set up parameterContainer
+         *
+         *  \attention  call ReadCommandLine() to set up parameterContainer
          **/
         ParameterContainer()
             : all_set_up_( false )
@@ -32,7 +35,8 @@ class ParameterContainer
 
         /**
          *  \brief  destuctor
-         *  \todo   implement + doc me
+         *
+         *  doing nothing
          **/
         ~ParameterContainer()
         {
@@ -40,17 +44,20 @@ class ParameterContainer
 
         /**
          *  \brief  prints all parameters
+         *
          *  \todo   implement me
-         *  \arg    std::ostream& out stream to print to
+         *
+         *  \param  out stream to print to
          **/
         void Print( std::ostream& out ) const
         {
             out << "\nthis is the ParameterContainer.Print() function" << std::endl;
         }
 
-         /**
+        /**
          *  \brief  checks command line parameters
-         *  \return bool returns true, if comman line arguments are valid
+         *
+         *  \return true, if comman line arguments are valid
          **/
        bool ReadCommandLine( int argc, char** argv )
         {
@@ -73,8 +80,10 @@ class ParameterContainer
 
         /**
          *  \brief  sets all needed parameters
-         *  \return bool returns true, if all needed parameters are set up
-         *  \attention  SetGridDimension should be called next
+         *
+         *  \return true, if all needed parameters are set up
+         *
+         *  \attention  SetGridDimension() should be called next
          **/
         bool SetUp()
         {
@@ -104,12 +113,27 @@ class ParameterContainer
             else {
                 Dune::Parameter::get( "dgf_file_3d", dgf_filenames_[2] );
             }
+            if ( !( Dune::Parameter::exists( "viscosity" ) ) ) {
+                if ( !( has_not_worked ) ) {
+                    std::cerr << "\nError: not all parameters found in " << ParameterFilename() << "!";
+                    PrintParameterSpecs( std::cerr );
+                    std::cerr << "\nmissing parameters are: viscosity" << std::endl;
+                }
+                else {
+                    std::cerr << "                        viscosity\n" << std::endl;
+                }
+                has_not_worked = true;
+            }
+            else {
+                Dune::Parameter::get( "viscosity", viscosity_ );
+            }
             return !( has_not_worked );
         }
 
         /**
-         *  \brief prints on a given stream, how a parameterfile schould look like
-         *  \arg std::ostream& out where to print
+         *  \brief  prints, how a parameterfile schould look like
+         *
+         *  \param out stream to print
          **/
         void PrintParameterSpecs( std::ostream& out )
         {
@@ -118,11 +142,13 @@ class ParameterContainer
             out << "\n(copy this into your parameterfile)" << std::endl;
             out << "dgf_file_2d: " << std::endl;
             out << "dgf_file_3d: " << std::endl;
+            out << "viscosity: " << std::endl;
         }
 
         /**
          *  \brief  returns the filename of the parameterfile
-         *  \return std::string filename of the parameterfile
+         *
+         *  \return filename of the parameterfile
          **/
         std::string ParameterFilename() const
         {
@@ -131,7 +157,8 @@ class ParameterContainer
 
         /**
          *  \brief  returns the filename of the dgf file
-         *  \return std::string filename of the dgf file
+         *
+         *  \return filename of the dgf file
          **/
         std::string DgfFilename() const
         {
@@ -148,7 +175,8 @@ class ParameterContainer
 
         /**
          *  \brief  returns the dimension
-         *  \return int dimension
+         *
+         *  \return dimension
          **/
         int GridDimension() const
         {
@@ -157,7 +185,8 @@ class ParameterContainer
 
         /**
          *  \brief  returns the polynomial order
-         *  \return int polynomial order
+         *
+         *  \return polynomial order
          **/
         int polOrder() const
         {
@@ -172,6 +201,24 @@ class ParameterContainer
             pol_order_ = pol_order;
         }
 
+        /**
+         *  \brief  set the viscosity
+         **/
+        void setViscosity( const double viscosity )
+        {
+            viscosity_ = viscosity;
+        }
+
+        /**
+         *  \brief  get the viscosity
+         *
+         *  \return viscosity
+         **/
+        double viscosity() const
+        {
+            return viscosity_;
+        }
+
     private:
         int grid_dimension_;
         int pol_order_;
@@ -181,6 +228,7 @@ class ParameterContainer
         bool all_set_up_;
         std::string parameter_filename_;
         std::string dgf_filenames_[3];
+        double viscosity_;
 };
 
 ///global ParameterContainer instance

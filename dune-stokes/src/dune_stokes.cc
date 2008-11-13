@@ -103,8 +103,13 @@ int main( int argc, char** argv )
     /* ********************************************************************** *
      * initialize model                                                       *
      * ********************************************************************** */
+<<<<<<< HEAD:dune-stokes/src/dune_stokes.cc
     infoStream << "\ninitialising model..." << std::endl;
     Problem< gridDim > problem( 1.0 );
+=======
+    infoStream << "\ninitialising the analytical problem..." << std::endl;
+    Problem< gridDim > problem( parameters.viscosity() );
+>>>>>>> problem:dune-stokes/src/dune_stokes.cc
     problem.testMe();
     infoStream << "...done." << std::endl;
 
