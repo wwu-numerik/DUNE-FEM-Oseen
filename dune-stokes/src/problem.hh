@@ -100,6 +100,7 @@ class Problem
     {
         return pressure_;
     }
+
     /**
      *  \brief  to get the force term
      *
@@ -109,6 +110,7 @@ class Problem
     {
         return force_;
     }
+
     /**
      *  \brief  to get the dirichlet boundary data
      *
@@ -140,11 +142,7 @@ class Problem
         VelocityType velocity_;
         PressureType pressure_;
         ForceType force_;
-        VelocityType velocity_;
-        PressureType pressure_;
-        ForceType force_;
         DirichletDataType dirichletData_;
-
 };
 
 #endif // end of problem.hh
