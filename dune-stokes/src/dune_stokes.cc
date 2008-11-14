@@ -22,6 +22,7 @@
 #include "parametercontainer.hh"
 #include "logging.hh"
 #include "problem.hh"
+#include "postprocessing.hh"
 
 /**
  *  \brief  main function
@@ -93,7 +94,8 @@ int main( int argc, char** argv )
     DiscreteVelocityFunctionSpaceType velocitySpace( gridPart );
     typedef Dune::AdaptiveDiscreteFunction< DiscreteVelocityFunctionSpaceType >
         DiscreteVelocityFunctionType;
-    DiscreteVelocityFunctionType exactVelocity( "exact_velocity", velocitySpace );
+    DiscreteVelocityFunctionType exactVelocity( "exact_velocity",
+                                                velocitySpace );
     exactVelocity.clear();
     // pressure
     typedef Dune::FunctionSpace< double, double, gridDim, 1 >
@@ -105,13 +107,16 @@ int main( int argc, char** argv )
     DiscretePressureFunctionSpaceType pressureSpace( gridPart );
     typedef Dune::AdaptiveDiscreteFunction< DiscretePressureFunctionSpaceType >
         DiscretePressureFunctionType;
-    DiscretePressureFunctionType exactPressure( "exact_pressure", pressureSpace );
+    DiscretePressureFunctionType exactPressure( "exact_pressure",
+                                                pressureSpace );
     exactPressure.clear();
     // right hand side
-    DiscreteVelocityFunctionType righthandSide( "rhs", velocitySpace );
+    DiscreteVelocityFunctionType righthandSide( "rhs",
+                                                velocitySpace );
     righthandSide.clear();
     // dirichlet data
-    DiscreteVelocityFunctionType dirichletData( "g_D", velocitySpace );
+    DiscreteVelocityFunctionType dirichletData( "g_D",
+                                                velocitySpace );
     dirichletData.clear();
 
 
