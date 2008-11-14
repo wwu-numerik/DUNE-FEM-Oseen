@@ -3,24 +3,43 @@
  *  \brief  postprocessing.hh
  **/
 
+#ifndef POSTPROCESSING_HH
+#define POSTPROCESSING_HH
 
-template <  class GridPartImp,
+#include <dune/fem/operator/lagrangeinterpolation.hh>
+
+#include "logging.hh"
+#include "problem.hh"
+
+template <  class ProblemImp,
+            class GridPartImp,
+            class DiscreteVelocityFunctionSpaceImp,
             class DiscreteVelocityFunctionImp,
             class DiscretePressureFunctionImp >
 class PostProcessor
 {
     public:
+        typedef ProblemImp
+            ProblemType;
+        typedef typename ProblemType::VelocityType
+            ContinuousVelocityType;
         typedef GridPartImp
             GridPartType;
+        typedef DiscreteVelocityFunctionSpaceImp
+            DiscreteVelocityFunctionSpaceType;
         typedef DiscreteVelocityFunctionImp
             DiscreteVelocityFunctionType;
+
         typedef DiscretePressureFunctionImp
             DiscretePressureFunctionType;
-        PostProcessor( const GridPartType& gridPart )
-            : gridPart_( gridPart ),
-            exactVelocity_( "u_exact", gridPart ),
-            exactPressure_( "p_exact", gridPart )
+
+
+        PostProcessor( const ProblemType& problem, const GridPartType& gridPart )
+            : problem_( problem ),
+            gridPart_( gridPart ),
+            discreteExactVelocity_( "u_exact", gridPart )
         {
+            velocitySpace_ = discreteExactVelocity_.space();
         }
 
         ~PostProcessor()
@@ -29,37 +48,17 @@ class PostProcessor
 
         void assembleExactSolution()
         {
-            typedef typename GridPartType::Traits::template Codim< 0 >::IteratorType
-                EntityIteratorType;
-            EntityIteratorType itEnd = gridPart_.end();
-            for ( EntityIteratorType it = gridPart_.begin(); it != itEnd; ++it )
-            {
-                typedef typename GridPartType::EntityCodim0Type
-                    EntityType;
-                EntityType& entity = *it;
-                typedef typename GridPartType::template Codim< 0 >::Geometry
-                    GeometryType;
-                const GeometryType& geometry = entity->geometry();
-                typedef typename DiscreteVelocityFunctionType::LocalFunctionType
-                    LocalVelocityFunctionType;
-                LocalVelocityFunctionType localVelocity( entity );
-                const int numDofs = localVelocity.numDofs();
-                typedef typename LocalVelocityFunctionType::RangeFieldType
-                    RangeFieldType;
 
-                for ( int dof = 0; dof < numDofs; ++dof )
-                {
-                    RangeFieldType localCoord = localVelocity[dof];
-                }
+            //Dune::LagrangeInterpolation< Problem::VelocityType >::interpolateFunction( , exactVelocity_ );
 
-                typedef typename DiscretePressureFunctionType::LocalFunctionType
-                    LocalPressureFunctionType;
-
-            }
         }
 
     private:
-        GridPartType& gridPart_;
-        DiscreteVelocityFunctionType exactVelocity_;
-        DiscretePressureFunctionType exactPressure_;
+        const ProblemType& problem_;
+        //ContinuousVelocityType& continuousVelocity_;
+        const GridPartType& gridPart_;
+        const DiscreteVelocityFunctionSpaceType& velocitySpace_;
+        DiscreteVelocityFunctionType discreteExactVelocity_;
 };
+
+#endif // end of postprocessing.hh

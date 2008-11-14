@@ -129,7 +129,10 @@ int main( int argc, char** argv )
      * ********************************************************************** */
     infoStream << "\ninitialising model..." << std::endl;
     Problem< gridDim > problem( parameters.viscosity() );
-    problem.testMe();
+    //problem.testMe();
+    typedef PostProcessor< Problem< gridDim >, GridPartType, DiscreteVelocityFunctionType, DiscretePressureFunctionType >
+        PostProcessorType;
+    PostProcessorType postProcessor( problem, gridPart );
     infoStream << "...done." << std::endl;
 
 
