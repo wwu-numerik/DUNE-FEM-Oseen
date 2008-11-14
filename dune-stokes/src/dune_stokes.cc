@@ -17,6 +17,7 @@
 #include <dune/fem/space/combinedspace.hh>
 #include <dune/fem/gridpart/gridpart.hh>
 #include <dune/fem/pass/pass.hh>
+#include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
 
 #include "parametercontainer.hh"
 #include "logging.hh"
@@ -81,7 +82,7 @@ int main( int argc, char** argv )
     /* ********************************************************************** *
      * initialize function spaces and functions                               *
      * ********************************************************************** */
-    infoStream << "\ninitialising function spaces and functions..." << std::endl;
+    infoStream << "\ninitialising functions..." << std::endl;
     // velocity
     typedef Dune::FunctionSpace< double, double, gridDim, gridDim >
         VelocityFunctionSpaceType;
@@ -90,6 +91,10 @@ int main( int argc, char** argv )
                                                 polOrder >
         DiscreteVelocityFunctionSpaceType;
     DiscreteVelocityFunctionSpaceType velocitySpace( gridPart );
+    typedef Dune::AdaptiveDiscreteFunction< DiscreteVelocityFunctionSpaceType >
+        DiscreteVelocityFunctionType;
+    DiscreteVelocityFunctionType exactVelocity( "exact_velocity", velocitySpace );
+    exactVelocity.clear();
     // pressure
     typedef Dune::FunctionSpace< double, double, gridDim, 1 >
         PressureFunctionSpaceType;
@@ -98,6 +103,14 @@ int main( int argc, char** argv )
                                                 polOrder >
         DiscretePressureFunctionSpaceType;
     DiscretePressureFunctionSpaceType pressureSpace( gridPart );
+    typedef Dune::AdaptiveDiscreteFunction< DiscretePressureFunctionSpaceType >
+        DiscretePressureFunctionType;
+    DiscretePressureFunctionType exactPressure( "exact_pressure", pressureSpace );
+    exactPressure.clear();
+
+
+
+
     infoStream << "...done." << std::endl;
 
     /* ********************************************************************** *
