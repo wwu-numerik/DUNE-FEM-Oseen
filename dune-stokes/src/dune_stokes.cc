@@ -107,6 +107,12 @@ int main( int argc, char** argv )
         DiscretePressureFunctionType;
     DiscretePressureFunctionType exactPressure( "exact_pressure", pressureSpace );
     exactPressure.clear();
+    // right hand side
+    DiscreteVelocityFunctionType righthandSide( "rhs", velocitySpace );
+    righthandSide.clear();
+    // dirichlet data
+    DiscreteVelocityFunctionType dirichletData( "g_D", velocitySpace );
+    dirichletData.clear();
 
 
 
