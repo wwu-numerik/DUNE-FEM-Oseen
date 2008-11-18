@@ -38,14 +38,14 @@ class PostProcessor
 
 
         PostProcessor( const ProblemType& problem, const GridPartType& gridPart,
-                        const DiscreteVelocityFunctionSpaceType& velo_space,
+                        const DiscreteVelocityFunctionSpaceType& velocity_space,
                         const DiscretePressureFunctionSpaceType& press_space)
             : problem_( problem ),
             gridPart_( gridPart ),
-            velocitySpace_ ( velo_space ),
-            discreteExactVelocity_( "u_exact", velo_space ),
-            discreteExactForce_( "f_exact", velo_space ),
-            discreteExactDirichlet_( "gd_exact", velo_space ),
+            velocitySpace_ ( velocity_space ),
+            discreteExactVelocity_( "u_exact", velocity_space ),
+            discreteExactForce_( "f_exact", velocity_space ),
+            discreteExactDirichlet_( "gd_exact", velocity_space ),
             discreteExactPressure_( "p_exact", press_space )
         {
 

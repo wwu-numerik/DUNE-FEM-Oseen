@@ -78,11 +78,11 @@ class Problem
      *
      *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
      **/
-    Problem( const double viscosity, const VelocityFunctionSpaceType& velo_space, const PressureFunctionSpaceType& press_space )
-        : velocity_( velo_space ),
+    Problem( const double viscosity, const VelocityFunctionSpaceType& velocity_space, const PressureFunctionSpaceType& press_space )
+        : velocity_( velocity_space ),
           pressure_ ( press_space ),
-          force_( viscosity, velo_space ),
-          dirichletData_( velo_space )
+          force_( viscosity, velocity_space ),
+          dirichletData_( velocity_space )
 
     {
     }
