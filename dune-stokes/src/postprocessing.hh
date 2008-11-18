@@ -7,9 +7,11 @@
 #define POSTPROCESSING_HH
 
 #include <dune/fem/operator/lagrangeinterpolation.hh>
+#include <dune/fem/io/file/datawriter.hh>
 
 #include "logging.hh"
 #include "problem.hh"
+#include "parametercontainer.hh"
 
 template <  class ProblemImp,
             class GridPartImp,
@@ -22,8 +24,11 @@ class PostProcessor
             ProblemType;
         typedef typename ProblemType::VelocityType
             ContinuousVelocityType;
+
         typedef GridPartImp
             GridPartType;
+        typedef typename GridPartType::GridType
+            GridType;
 
         typedef DiscreteVelocityFunctionImp
             DiscreteVelocityFunctionType;
@@ -61,6 +66,23 @@ class PostProcessor
             Dune::LagrangeInterpolation< DiscreteVelocityFunctionType >::interpolateFunction( problem_.dirichletData(), discreteExactDirichlet_ );
             Dune::LagrangeInterpolation< DiscreteVelocityFunctionType >::interpolateFunction( problem_.force(), discreteExactForce_ );
             Dune::LagrangeInterpolation< DiscretePressureFunctionType >::interpolateFunction( problem_.velocity(), discreteExactPressure_ );
+        }
+
+        void save( const GridType& grid )
+        {
+            typedef Dune::Tuple<  DiscreteVelocityFunctionType*, DiscreteVelocityFunctionType*,
+                            DiscreteVelocityFunctionType*, DiscretePressureFunctionType*>
+                    IOTupleType;
+            IOTupleType dataTup (   &discreteExactVelocity_,
+                                    &discreteExactForce_,
+                                    &discreteExactDirichlet_,
+                                    &discreteExactPressure_     );
+
+            typedef Dune::DataWriter<GridType, IOTupleType> DataWriterType;
+            //DataWriterType dataWriter( *grid, filename, dataTup, startTime, endTime );
+            DataWriterType dataWriter( grid, Parameters().ParameterFilename(), dataTup, 0, 0 );
+
+            dataWriter.write(0.0, 0);
         }
 
     private:
