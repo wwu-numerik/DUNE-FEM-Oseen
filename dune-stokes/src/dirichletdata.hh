@@ -18,6 +18,8 @@
  *
  *  \tparam gridDim
  *          dimension of the grid
+ *  \tparam FunctionSpaceImp
+ *          (continuous) FunctionSpace
  **/
 template < int griddim, class FunctionSpaceImp >
 class DirichletDataTraits
@@ -35,8 +37,8 @@ class DirichletDataTraits
 /**
  *  \brief  describes the dirichlet boundary data
  *
- *  \tparam gridDim
- *          dimension of the grid
+ *  \tparam DirichletTraitsImp
+ *          types like functionspace, range type, etc
  *
  *  \todo   extensive docu with latex
  **/

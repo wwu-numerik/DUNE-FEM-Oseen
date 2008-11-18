@@ -18,7 +18,9 @@
  *  \brief  containing typedefs needed by Velocity
  *
  *  \tparam gridDim
- *          dimension of the grid
+ *          dimension of the grid (unused)
+ *  \tparam VelocityFunctionSpaceImp
+ *          (continuous) FunctionSpace
  **/
 template < int gridDim, class VelocityFunctionSpaceImp >
 class VelocityTraits
@@ -61,8 +63,8 @@ class VelocityTraits
  *      u_{2}(x_{1},x_{2}) := e^{x_{1}}x_{2}sin(x_{2}).
  *  \f]
  *
- *  \tparam gridDim
- *          dimension of the grid
+ *  \tparam TraitsImp
+ *          types like functionspace, range type, etc
  *
  *  \todo   extensive docu with latex
  **/

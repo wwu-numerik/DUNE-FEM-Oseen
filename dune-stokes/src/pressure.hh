@@ -16,8 +16,11 @@
 /**
  *  \brief  containing typedefs needed by Pressure
  *
- *  \tparam gridDim
+ *  \tparam gridDim (unused)
  *          dimension of the grid
+ *
+ *  \tparam PressureFunctionSpaceImp
+ *          (continuous) FunctionSpace
  **/
 template < int gridDim, class PressureFunctionSpaceImp >
 class PressureTraits
@@ -38,8 +41,8 @@ class PressureTraits
 /**
  *  \brief  describes the presure
  *
- *  \tparam gridDim
- *          dimension of the grid
+ *  \tparam PressureTraitsImp
+ *          types like functionspace, range type, etc
  *
  *  \todo   extensive docu with latex
  **/
