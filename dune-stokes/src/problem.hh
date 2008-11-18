@@ -79,9 +79,9 @@ class Problem
      *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
      **/
     Problem( const double viscosity, const VelocityFunctionSpaceType& velo_space, const PressureFunctionSpaceType& press_space )
-        :force_( viscosity ),
-        velocity_( velo_space ),
-        pressure_ ( press_space )
+        : velocity_( velo_space ),
+          pressure_ ( press_space ),
+          force_( viscosity )
     {
     }
 
