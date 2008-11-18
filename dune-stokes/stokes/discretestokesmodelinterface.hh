@@ -147,93 +147,118 @@ class DiscreteStokesModelInterface
         }
 
         /**
-         *  \brief  Empty implementation that fails if problem claims to have
-         *          a VelocitySigmaFlux contribution.
+         *  \brief
+         *  \param  it
+         *          faceiterator
+         *  \param  time
+         *          global time
+         *  \param  x
+         *          point to evaluate at
+         *  \param  uInner
+         *
          **/
-        void VelocitySigmaFlux()
+        template < class ArgumentTuple, class FaceDomainType >
+        void velocitySigmaFlux( const IntersectionIteratorType& it,
+                                const double time,
+                                const FaceDomainType& x,
+                                const ArgumentTuple& uInner,
+                                const ArgumentTuple& uOuter,
+                                VelocityRangeType& uContribInner,
+                                VelocityRangeType& uContribOuter,
+                                VelocityRangeType& emptyContribInner,
+                                VelocityRangeType& emptyContribOuter )
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().VelocitySigmaFlux() );
-            return asImp().VelocitySigmaFlux();
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().velocitySigmaFlux() );
+            return asImp().velocitySigmaFlux();
         }
 
         /**
          *  \brief  Empty implementation that fails if problem claims to have
          *          a VelocitySigmaFlux contribution.
          **/
-        void VelocitySigmaBoundaryFlux()
+        template < class ArgumentTuple, class FaceDomainType >
+        void velocitySigmaBoundaryFlux( const IntersectionIteratorType& it,
+                                        const double time,
+                                        const FaceDomainType& x,
+                                        const ArgumentTuple& uInner,
+                                        const ArgumentTuple& uOuter,
+                                        VelocityRangeType& uContribInner,
+                                        VelocityRangeType& uContribOuter,
+                                        VelocityRangeType& emptyContribInner,
+                                        VelocityRangeType& emptyContribOuter )
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().VelocitySigmaBoundaryFlux() );
-            return asImp().VelocitySigmaBoundaryFlux();
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().velocitySigmaBoundaryFlux() );
+            return asImp().velocitySigmaBoundaryFlux();
         }
 
         /**
          *  \brief  Empty implementation that fails if problem claims to have
          *          a VelocityPressureFlux contribution.
          **/
-        void VelocityPressureFlux()
+        void velocityPressureFlux()
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().VelocityPressureFlux() );
-            return asImp().VelocityPressureFlux();
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().velocityPressureFlux() );
+            return asImp().velocityPressureFlux();
         }
 
         /**
          *  \brief  Empty implementation that fails if problem claims to have
          *          a VelocityPressureFlux contribution.
          **/
-        void VelocityPressureBoundaryFlux()
+        void velocityPressureBoundaryFlux()
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().VelocityPressureBoundaryFlux() );
-            return asImp().VelocityPressureBoundaryFlux();
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().velocityPressureBoundaryFlux() );
+            return asImp().velocityPressureBoundaryFlux();
         }
 
         /**
          *  \brief  Empty implementation that fails if problem claims to have
          *          a PressureFlux contribution.
          **/
-        void PressureFlux()
+        void pressureFlux()
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().PressureFlux() );
-            return asImp().PressureFlux();
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().pressureFlux() );
+            return asImp().pressureFlux();
         }
 
         /**
          *  \brief  Empty implementation that fails if problem claims to have
          *          a PressureFlux contribution.
          **/
-        void PressureBoundaryFlux()
+        void pressureBoundaryFlux()
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().PressureBoundaryFlux() );
-            return asImp().PressureBoundaryFlux();
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().pressureBoundaryFlux() );
+            return asImp().pressureBoundaryFlux();
         }
 
         /**
          *  \brief  Empty implementation that fails if problem claims to have
          *          a SigmaFlux contribution.
          **/
-        void SigmaFlux()
+        void sigmaFlux()
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().SigmaFlux() );
-            return asImp().SigmaFlux();
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().sigmaFlux() );
+            return asImp().sigmaFlux();
         }
 
         /**
          *  \brief  Empty implementation that fails if problem claims to have
          *          a SigmaFlux contribution.
          **/
-        void SigmaBoundaryFlux()
+        void sigmaBoundaryFlux()
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().SigmaBoundaryFlux() );
-            return asImp().SigmaBoundaryFlux();
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().sigmaBoundaryFlux() );
+            return asImp().sigmaBoundaryFlux();
         }
 
         /**
          *  \brief  Empty implementation that fails if problem claims to have
          *          a VelocitySigmaFlux contribution.
          **/
-        void Force()
+        void force()
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().Force() );
-            return asImp().Force();
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().force() );
+            return asImp().force();
         }
 
     protected:

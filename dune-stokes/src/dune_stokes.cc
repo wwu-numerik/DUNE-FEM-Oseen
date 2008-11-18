@@ -19,6 +19,8 @@
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
 
+#include <dune/stokes/discretestokesmodelinterface.hh>
+
 #include "parametercontainer.hh"
 #include "logging.hh"
 #include "problem.hh"
