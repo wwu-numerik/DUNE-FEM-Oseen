@@ -20,7 +20,7 @@
  *  \tparam gridDim
  *          dimension of the grid
  **/
-template < int gridDim, class FunctionSpaceImp >
+template < int gridDim, class VelocityFunctionSpaceImp >
 class VelocityTraits
 {
     public:
@@ -32,7 +32,7 @@ class VelocityTraits
             GradientRangeType;
         typedef Dune::FieldVector< double, 1 >
             DivergenceRangeType;
-        typedef FunctionSpaceImp
+        typedef VelocityFunctionSpaceImp
             FunctionSpaceType;
 
 };

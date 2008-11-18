@@ -23,16 +23,18 @@
  *  \tparam gridDim
  *          dimension of the grid
  **/
-template < int griddim, class FunctionSpaceImp >
+template < int griddim, class VelocityFunctionSpaceImp, class PressureFunctionSpaceImp >
 class ProblemTraits
 {
     public:
         static const unsigned int gridDim = griddim;
-        typedef FunctionSpaceImp
-            FunctionSpaceType;
-        typedef Velocity< VelocityTraits < gridDim, FunctionSpaceType > >
+        typedef VelocityFunctionSpaceImp
+            VelocityFunctionSpaceType;
+        typedef Velocity< VelocityTraits < gridDim, VelocityFunctionSpaceType > >
             VelocityType;
-        typedef Pressure< gridDim >
+        typedef PressureFunctionSpaceImp
+            PressureFunctionSpaceType;
+        typedef Pressure< PressureTraits< gridDim, PressureFunctionSpaceType > >
             PressureType;
         typedef Force< gridDim >
             ForceType;
@@ -67,6 +69,8 @@ class Problem
             DirichletDataType;
         typedef typename VelocityType::FunctionSpaceType
             VelocityFunctionSpaceType;
+        typedef typename PressureType::FunctionSpaceType
+            PressureFunctionSpaceType;
 
         static const unsigned int gridDim = Traits::gridDim;
     /**
@@ -74,9 +78,10 @@ class Problem
      *
      *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
      **/
-    Problem( const double viscosity, const VelocityFunctionSpaceType& velo_space )
+    Problem( const double viscosity, const VelocityFunctionSpaceType& velo_space, const PressureFunctionSpaceType& press_space )
         :force_( viscosity ),
-        velocity_( velo_space )
+        velocity_( velo_space ),
+        pressure_ ( press_space )
     {
     }
 

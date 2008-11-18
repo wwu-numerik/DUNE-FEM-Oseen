@@ -128,9 +128,9 @@ int main( int argc, char** argv )
      * initialize model                                                       *
      * ********************************************************************** */
     infoStream << "\ninitialising model..." << std::endl;
-    typedef Problem< ProblemTraits< gridDim, VelocityFunctionSpaceType > >
+    typedef Problem< ProblemTraits< gridDim, VelocityFunctionSpaceType, PressureFunctionSpaceType > >
         Problemtype;
-    Problemtype problem( parameters.viscosity(), velocitySpace );
+    Problemtype problem( parameters.viscosity(), velocitySpace, pressureSpace );
     //problem.testMe();
     typedef PostProcessor< Problemtype, GridPartType, DiscreteVelocityFunctionSpaceType, DiscreteVelocityFunctionType, DiscretePressureFunctionType >
         PostProcessorType;
