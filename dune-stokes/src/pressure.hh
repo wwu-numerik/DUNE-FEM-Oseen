@@ -23,14 +23,16 @@ template < int gridDim, class PressureFunctionSpaceImp >
 class PressureTraits
 {
     public:
-        typedef Dune::FieldVector< double, gridDim >
-            DomainType;
-        typedef Dune::FieldVector< double, 1 >
-            RangeType;
-        typedef Dune::FieldVector< double, gridDim >
-            GradientRangeType;
         typedef PressureFunctionSpaceImp
             FunctionSpaceType;
+        typedef typename FunctionSpaceType::DomainType
+            DomainType;
+        typedef typename FunctionSpaceType::RangeType
+            RangeType;
+        typedef typename FunctionSpaceType::JacobianRangeType
+        //typedef Dune::FieldVector< double, gridDim >
+            GradientRangeType;
+
 };
 
 /**
@@ -60,7 +62,7 @@ class Pressure : public Dune::Function < typename PressureTraitsImp::FunctionSpa
         /**
          *  \brief  constructor
          *
-         *  doing nothing
+         *  doing nothing besides Base init
          **/
         Pressure( const PressureFunctionSpaceType& press_space )
             : BaseType( press_space )

@@ -24,16 +24,19 @@ template < int gridDim, class VelocityFunctionSpaceImp >
 class VelocityTraits
 {
     public:
-        typedef Dune::FieldVector< double, gridDim >
-            DomainType;
-        typedef Dune::FieldVector< double, gridDim >
-            RangeType;
-        typedef Dune::FieldVector< RangeType, gridDim >
-            GradientRangeType;
-        typedef Dune::FieldVector< double, 1 >
-            DivergenceRangeType;
         typedef VelocityFunctionSpaceImp
             FunctionSpaceType;
+        typedef typename FunctionSpaceType::DomainType
+            DomainType;
+        typedef typename FunctionSpaceType::RangeType
+            RangeType;
+        typedef typename FunctionSpaceType::JacobianRangeType
+//        typedef Dune::FieldVector< RangeType, gridDim >
+            GradientRangeType;
+        typedef typename FunctionSpaceType::HessianRangeType
+//        typedef Dune::FieldVector< double, 1 >
+            DivergenceRangeType;
+
 
 };
 
@@ -85,7 +88,7 @@ class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType ,
         /**
          *  \brief constructor
          *
-         *  doing nothing
+         *  doing nothing besides Base init
          **/
         Velocity( const FunctionSpaceType& f_space )
             : BaseType( f_space )
