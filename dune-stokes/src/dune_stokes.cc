@@ -132,9 +132,9 @@ int main( int argc, char** argv )
         Problemtype;
     Problemtype problem( parameters.viscosity(), velocitySpace, pressureSpace );
     //problem.testMe();
-    typedef PostProcessor< Problemtype, GridPartType, DiscreteVelocityFunctionSpaceType, DiscreteVelocityFunctionType, DiscretePressureFunctionType >
+    typedef PostProcessor< Problemtype, GridPartType, DiscreteVelocityFunctionType, DiscretePressureFunctionType >
         PostProcessorType;
-    PostProcessorType postProcessor( problem, gridPart, velocitySpace );
+    PostProcessorType postProcessor( problem, gridPart, velocitySpace, pressureSpace );
     infoStream << "...done." << std::endl;
 
 
