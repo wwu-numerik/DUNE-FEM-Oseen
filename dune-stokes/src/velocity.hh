@@ -11,6 +11,7 @@
 
 #include <dune/common/fvector.hh>
 
+
 #include "logging.hh"
 
 /**
@@ -19,7 +20,7 @@
  *  \tparam gridDim
  *          dimension of the grid
  **/
-template < int gridDim >
+template < int gridDim, class FunctionSpaceImp >
 class VelocityTraits
 {
     public:
@@ -31,6 +32,9 @@ class VelocityTraits
             GradientRangeType;
         typedef Dune::FieldVector< double, 1 >
             DivergenceRangeType;
+        typedef FunctionSpaceImp
+            FunctionSpaceType;
+
 };
 
 /**
@@ -59,11 +63,11 @@ class VelocityTraits
  *
  *  \todo   extensive docu with latex
  **/
-template < int gridDim >
-class Velocity
+template < class TraitsImp  >
+class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType , Velocity < TraitsImp > >
 {
     public:
-        typedef VelocityTraits< gridDim >
+        typedef TraitsImp
             Traits;
         typedef typename Traits::DomainType
             DomainType;
@@ -73,13 +77,18 @@ class Velocity
             GradientRangeType;
         typedef typename Traits::DivergenceRangeType
             DivergenceRangeType;
+        typedef typename Traits::FunctionSpaceType
+            FunctionSpaceType;
+        typedef Dune::Function < typename TraitsImp::FunctionSpaceType , Velocity < TraitsImp > >
+            BaseType;
 
         /**
          *  \brief constructor
          *
          *  doing nothing
          **/
-        Velocity()
+        Velocity( const FunctionSpaceType& f_space )
+            : BaseType( f_space )
         {
         }
 
@@ -156,8 +165,10 @@ class Velocity
 /**
  *  \brief  specialization for gridDim = 2
  **/
-template < >
-inline void Velocity< 2 >::evaluate( const DomainType& arg, RangeType& ret ) const
+template < class TraitsImp >
+inline void Velocity< TraitsImp >::evaluate(
+        const DomainType& arg,
+        RangeType& ret ) const
 {
     // play safe
     assert( arg.dim() == 2 );
@@ -175,8 +186,8 @@ inline void Velocity< 2 >::evaluate( const DomainType& arg, RangeType& ret ) con
 /**
  *  \brief  specialization for gridDim = 2
  **/
-template < >
-inline void Velocity< 2 >::gradient( const DomainType& arg, GradientRangeType& ret ) const
+template < class TraitsImp >
+inline void Velocity< TraitsImp >::gradient( const DomainType& arg, GradientRangeType& ret ) const
 {
     // play safe
     assert( arg.dim() == 2 );
@@ -212,8 +223,8 @@ inline void Velocity< 2 >::gradient( const DomainType& arg, GradientRangeType& r
 /**
  *  \brief  specialization for gridDim = 2
  **/
-template < >
-inline void Velocity< 2 >::divergence( const DomainType& arg, DivergenceRangeType& ret ) const
+template < class TraitsImp >
+inline void Velocity< TraitsImp >::divergence( const DomainType& arg, DivergenceRangeType& ret ) const
 {
     // play safe
     assert( arg.dim() == 2 );
@@ -225,8 +236,8 @@ inline void Velocity< 2 >::divergence( const DomainType& arg, DivergenceRangeTyp
 /**
  *  \brief  specialization for gridDim = 2
  **/
-template < >
-inline void Velocity< 2 >::laplacian( const DomainType& arg, RangeType& ret ) const
+template < class TraitsImp >
+inline void Velocity< TraitsImp >::laplacian( const DomainType& arg, RangeType& ret ) const
 {
     // play safe
     assert( arg.dim() == 2 );
@@ -245,8 +256,8 @@ inline void Velocity< 2 >::laplacian( const DomainType& arg, RangeType& ret ) co
 /**
  *  \brief  specialization for gridDim = 2
  **/
-template < >
-void Velocity< 2 >::testMe() const
+template < class TraitsImp >
+void Velocity< TraitsImp >::testMe() const
 {
     // some logstreams
     Logging::LogStream& infoStream = Logger().Info();

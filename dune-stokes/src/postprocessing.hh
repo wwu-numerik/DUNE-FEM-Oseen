@@ -34,12 +34,13 @@ class PostProcessor
             DiscretePressureFunctionType;
 
 
-        PostProcessor( const ProblemType& problem, const GridPartType& gridPart )
+        PostProcessor( const ProblemType& problem, const GridPartType& gridPart, const DiscreteVelocityFunctionSpaceType& velo_space )
             : problem_( problem ),
             gridPart_( gridPart ),
-            discreteExactVelocity_( "u_exact", gridPart )
+            discreteExactVelocity_( "u_exact", velo_space ),
+            velocitySpace_ ( velo_space )
         {
-            velocitySpace_ = discreteExactVelocity_.space();
+
         }
 
         ~PostProcessor()
