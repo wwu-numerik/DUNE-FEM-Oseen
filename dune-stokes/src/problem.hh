@@ -38,7 +38,7 @@ class ProblemTraits
             PressureType;
         typedef Force< gridDim >
             ForceType;
-        typedef DirichletData< gridDim >
+        typedef DirichletData< DirichletDataTraits< gridDim, VelocityFunctionSpaceType > >
             DirichletDataType;
 
 };
@@ -81,7 +81,9 @@ class Problem
     Problem( const double viscosity, const VelocityFunctionSpaceType& velo_space, const PressureFunctionSpaceType& press_space )
         : velocity_( velo_space ),
           pressure_ ( press_space ),
-          force_( viscosity )
+          force_( viscosity ),
+          dirichletData_( velo_space )
+
     {
     }
 
