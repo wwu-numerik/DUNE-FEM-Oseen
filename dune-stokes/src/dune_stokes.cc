@@ -135,6 +135,7 @@ int main( int argc, char** argv )
     typedef PostProcessor< Problemtype, GridPartType, DiscreteVelocityFunctionType, DiscretePressureFunctionType >
         PostProcessorType;
     PostProcessorType postProcessor( problem, gridPart, velocitySpace, pressureSpace );
+    postProcessor.save( *gridPtr );
     infoStream << "...done." << std::endl;
 
 
