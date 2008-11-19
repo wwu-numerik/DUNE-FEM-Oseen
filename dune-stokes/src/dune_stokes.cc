@@ -99,6 +99,19 @@ int main( int argc, char** argv )
     DiscreteVelocityFunctionType exactVelocity( "exact_velocity",
                                                 velocitySpace );
     exactVelocity.clear();
+    //sigma
+    typedef Dune::MatrixFunctionSpace< double, double, gridDim, gridDim, gridDim >
+        SigmaFunctionSpaceType;
+    typedef Dune::DiscontinuousGalerkinSpace<   SigmaFunctionSpaceType,
+                                                GridPartType,
+                                                polOrder >
+        DiscreteSigmaFunctionSpaceType;
+    DiscreteSigmaFunctionSpaceType sigmaSpace( gridPart );
+    typedef Dune::AdaptiveDiscreteFunction< DiscreteSigmaFunctionSpaceType >
+        DiscreteSigmaFunctionType;
+    DiscreteSigmaFunctionType exactSigma(   "exact_sigma",
+                                            sigmaSpace );
+    exactSigma.clear();
     // pressure
     typedef Dune::FunctionSpace< double, double, gridDim, 1 >
         PressureFunctionSpaceType;
