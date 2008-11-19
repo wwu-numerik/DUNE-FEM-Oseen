@@ -24,6 +24,12 @@ class PostProcessor
             ProblemType;
         typedef typename ProblemType::VelocityType
             ContinuousVelocityType;
+        typedef typename ProblemType::PressureType
+            ContinuousPressureType;
+        typedef typename ProblemType::ForceType
+            ForceType;
+        typedef typename ProblemType::DirichletDataType
+            DirichletDataType;
 
         typedef GridPartImp
             GridPartType;
@@ -62,31 +68,39 @@ class PostProcessor
 
         void assembleExactSolution()
         {
-            typedef Dune::L2Projection< double, double, ContinuousVelocityType, DiscreteVelocityFunctionType > Projection;
-            Projection projection;
-            projection( problem_.velocity(), discreteExactVelocity_ );
-//            Dune::LagrangeInterpolation< DiscreteVelocityFunctionType >::interpolateFunction( );
-//            Dune::LagrangeInterpolation< DiscreteVelocityFunctionType >::interpolateFunction( problem_.dirichletData(), discreteExactDirichlet_ );
-//            Dune::LagrangeInterpolation< DiscreteVelocityFunctionType >::interpolateFunction( problem_.force(), discreteExactForce_ );
-//            Dune::LagrangeInterpolation< DiscretePressureFunctionType >::interpolateFunction( problem_.velocity(), discreteExactPressure_ );
+            typedef Dune::L2Projection< double, double, ContinuousVelocityType, DiscreteVelocityFunctionType > ProjectionV;
+                ProjectionV projectionV;
+            projectionV( problem_.velocity(), discreteExactVelocity_ );
+
+            typedef Dune::L2Projection< double, double, DirichletDataType, DiscreteVelocityFunctionType > ProjectionD;
+                ProjectionD projectionD;
+            projectionD( problem_.dirichletData(), discreteExactDirichlet_ );
+
+            typedef Dune::L2Projection< double, double, ForceType, DiscreteVelocityFunctionType > ProjectionF;
+                ProjectionF projectionF;
+            projectionF( problem_.force(), discreteExactForce_ );
+
+            typedef Dune::L2Projection< double, double, ContinuousPressureType, DiscretePressureFunctionType > ProjectionP;
+                ProjectionP projectionP;
+            projectionP( problem_.pressure(), discreteExactPressure_ );
         }
 
         void save( const GridType& grid )
         {
             assembleExactSolution();
-            typedef Dune::Tuple<  DiscreteVelocityFunctionType* > //, DiscreteVelocityFunctionType*,
-                            //DiscreteVelocityFunctionType*, DiscretePressureFunctionType*>
+            typedef Dune::Tuple<  DiscreteVelocityFunctionType*, DiscreteVelocityFunctionType*,
+                            DiscreteVelocityFunctionType* , DiscretePressureFunctionType*>
                     IOTupleType;
-            IOTupleType dataTup (   &discreteExactVelocity_
-                                    //&discreteExactForce_,
-                                    //&discreteExactDirichlet_,
-                                    //&discreteExactPressure_
+            IOTupleType dataTup (   &discreteExactVelocity_,
+                                    &discreteExactForce_,
+                                    &discreteExactDirichlet_ ,
+                                    &discreteExactPressure_
                                     );
 
             typedef Dune::DataWriter<GridType, IOTupleType> DataWriterType;
             //DataWriterType dataWriter( *grid, filename, dataTup, startTime, endTime );
             DataWriterType dataWriter( grid, Parameters().ParameterFilename(), dataTup, 0, 0 );
-
+            Logger().LogInfo( DiscretePressureFunctionType::print ,discreteExactPressure_ );
             dataWriter.write(0.0, 0);
         }
 
