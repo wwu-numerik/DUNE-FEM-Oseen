@@ -101,7 +101,7 @@ class Problem
      *
      *  \return velocity
      **/
-    VelocityType& velocity() const
+    const VelocityType& velocity() const
     {
         return velocity_;
     }
