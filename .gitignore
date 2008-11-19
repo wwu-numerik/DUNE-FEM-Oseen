@@ -87,3 +87,6 @@ dune_stokes
 *.orig
 *.backup
 *.layout
+femhowto.pdf
+refinement.pdf
+
