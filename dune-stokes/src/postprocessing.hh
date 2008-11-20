@@ -100,7 +100,16 @@ class PostProcessor
             typedef Dune::DataWriter<GridType, IOTupleType> DataWriterType;
             //DataWriterType dataWriter( *grid, filename, dataTup, startTime, endTime );
             DataWriterType dataWriter( grid, Parameters().ParameterFilename(), dataTup, 0, 0 );
-            Logger().LogInfo( DiscretePressureFunctionType::print ,discreteExactPressure_ );
+            //discreteExactPressure_.print()
+            typedef void ( ParameterContainer::*PrintC )(std::ostream&) ;
+            typedef void ( DiscretePressureFunctionType::*PrintF )(std::ostream&) ;
+
+//            PrintC pf1 = &ParameterContainer::PrintParameterSpecs;;
+//            Logger().LogInfo<ParameterContainer>( pf1, Parameters() );
+            typedef Dune::DiscreteFunctionDefault< DiscretePressureFunctionType >
+                Def;
+            PrintF pf = (PrintF)(&DiscretePressureFunctionType::print);
+            Logger().LogInfo<DiscretePressureFunctionType,PrintF>( pf, discreteExactPressure_ );
             dataWriter.write(0.0, 0);
         }
 
