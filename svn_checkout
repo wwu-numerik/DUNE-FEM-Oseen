@@ -1,7 +1,0 @@
-#! /bin/bash
-svn co https://svn.dune-project.org/svn/dune-istl/releases/1.1/ -r 910 dune-istl_svn
-svn co https://svn.dune-project.org/svn/dune-common/releases/1.1/ -r 5224 dune-common_svn
-svn co https://svn.dune-project.org/svn/dune-grid/releases/1.1/ -r 4203 dune-grid_svn
-svn co https://dune.mathematik.uni-freiburg.de/svn/dune-fem/trunk/ -r 3821 dune-fem_svn
-svn co https://dune.mathematik.uni-freiburg.de/svn/dune-femhowto/ dune-femhowto_svn
-svn co https://svn.dune-project.org/svn/dune-grid-howto/releases/1.1/ dune-grid-howto_svn

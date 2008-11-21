@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN""http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>DUNE - Doxygen Best Practice</title>
+</head>
+<body>
+<h1 class="firstchild"> Doxygen Best Practice </h1>
+<div class="toc">
+<div class="ignore_first_ol">
+<ol type="A"><ol type="1"><li><a href="#ToC1"><strong> usefull tips when documenting your code</strong></a>
+<ol type="1"><li><a href="#ToC2"><strong>\copydoc &lt;link-object&gt;</strong></a>
+<li><a href="#ToC3"><strong>Ordering Modules</strong></a>
+</ol></ol></ol>
+</div>
+</div>
+<h2><a name="ToC1"> usefull tips when documenting your code </a></h2>
+<h3><a name="ToC2">\copydoc &lt;link-object&gt;</a></h3>
+<p>
+<em>
+Use \copydoc in your derived class to reuse the documentation from the
+interface class.</em>
+</p>
+<p>
+Copies a documentation block from the object
+specified by &lt;link-object&gt; and pastes it at the location of the
+command. This command can be useful to avoid cases where a
+documentation block would otherwise have to be duplicated or it can be
+used to extend the documentation of an inherited member.
+</p>
+<p>
+The link object can point to a member (of a class, file or group), a
+class, a namespace, a group, a page, or a file (checked in that
+order). Note that if the object pointed to is a member (function,
+variable, typedef, etc), the compound (class, file, or group)
+containing it should also be documented for the copying to work.
+</p>
+<p>
+To copy the documentation for a member of a class for instance one can
+put the following in the documentation
+</p>
+<h3><a name="ToC3">Ordering Modules</a></h3>
+<p><em>Use the file <tt>doxygen/modules</tt> to change the ordering of modules
+on the modules page</em></p>
+<p>Doxygen sorts the modules in the order it finds their
+definition. This is influenced by the order doxygen reads the
+source files and by the include statements in these source files.</p>
+<p>The <tt>modules</tt> file is read right after the mainpage, before any
+source files are parsed. Entering a <tt>@defgroup</tt> statement makes
+this module known to doxygen so that all modules mentioned in the
+<tt>modules</tt> file are listed first and in the order they are
+defined there.</p>
+</body>

@@ -74,7 +74,7 @@ int main (int argc, char **argv) {
   TestClassA* testAptr = new TestClassA[10]; 
   persistenceManager << b << test2;
 
-  typedef YaspGrid<2> GridType;
+  typedef YaspGrid<2,2> GridType;
   GridPtr<GridType> gridptr("2dgrid.dgf");
   GridType& grid=*gridptr;
   GridTimeProvider<GridType> timeProv(grid);

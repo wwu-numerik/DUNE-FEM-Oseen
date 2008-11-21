@@ -43,7 +43,8 @@ namespace Dune {
       mappers_(other.mappers_)
     {}
 
-    void addMapper(const MapperType& faceMapper, const MapperType& twistMapper,
+    void addMapper(const MapperType& faceMapper, 
+                   const MapperType& twistMapper,
                    int faceIndex, int faceTwist)
     {
       assert(twistMapper.size() == faceMapper.size());
@@ -60,6 +61,7 @@ namespace Dune {
 
     const MapperType& getMapper(int faceIndex, int faceTwist) const
     {
+      assert( faceTwist + Traits::twistOffset_ >= 0 );
       return mappers_[faceIndex][faceTwist + Traits::twistOffset_];
     }
 
@@ -137,6 +139,7 @@ namespace Dune {
   template <class GridImp>
   class CacheProvider<GridImp, 1>
   {
+  public:
   private:
     enum { codim = 1 };
     enum { dim = GridImp::dimension };
@@ -146,6 +149,7 @@ namespace Dune {
   public:
     typedef typename Traits::QuadratureType QuadratureType;
     typedef typename Traits::MapperType MapperType;
+    typedef typename Traits::QuadratureKeyType QuadratureKeyType;
 
   public:
     template <class QuadratureImpl>
@@ -156,9 +160,13 @@ namespace Dune {
     {
       // get quadrature implementation 
       const QuadratureType& quad = quadImpl.ipList();
-      MapperIteratorType it = mappers_.find(quad.id());
-
-      if (it == mappers_.end()) {
+      
+      QuadratureKeyType key (elementGeometry, quad.id() );
+      
+      MapperIteratorType it = mappers_.find( key );
+      
+      if (it == mappers_.end()) 
+      {
         Int2Type< Capabilities::IsUnstructured<GridImp>::v> i2t;
         it = CacheProvider<GridImp, 1>::createMapper(quad, 
                                                      elementGeometry, 
@@ -174,7 +182,7 @@ namespace Dune {
        Capabilities::IsUnstructured<GridImp>::v> 
         CacheStorageType; 
     typedef typename Traits::MapperVectorType MapperVectorType;
-    typedef std::map<size_t, CacheStorageType> MapperContainerType;
+    typedef std::map<const QuadratureKeyType, CacheStorageType> MapperContainerType;
     typedef typename MapperContainerType::iterator MapperIteratorType;
 
   private:

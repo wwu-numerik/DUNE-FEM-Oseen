@@ -6,7 +6,7 @@ AM_INIT_AUTOMAKE([foreign 1.9 tar-pax dist-bzip2])
 
 
 # check if we're in the right directory
-AC_CONFIG_SRCDIR([src_localdg/dgtest.cc])
+AC_CONFIG_SRCDIR([src_grid/dune_hello_world.cc])
 # which header-file is created
 AM_CONFIG_HEADER(config.h)
 
@@ -44,21 +44,9 @@ LIBS="$DUNE_LIBS $BLAS_LIBS"
 
 # generate Makefiles
 AC_CONFIG_FILES([Makefile
-	src_localdg/Makefile
-	src_localdg/doc/Makefile
-	src_localdg/doc/doxygen/Makefile
-	])
+     src_localdg/Makefile
+     sources/Makefile
+     sources/localdg/Makefile
+     sources/localdg/advectiondiffusion/Makefile
+     ])
 AC_OUTPUT
-#     src_grid/Makefile
-#     src_poisson/Makefile
-#     src_finitevolume/Makefile	
-#     src_localdg/Makefile
-#     sources/Makefile
-#     sources/poisson/Makefile
-#     sources/localdg/Makefile
-#     sources/localdg/advectiondiffusion/Makefile
-#     src_localdg/Makefile
-#     src_localdg/doc/Makefile
-#     src_localdg/doc/doxygen/Makefile
-#     ])
-#AC_OUTPUT

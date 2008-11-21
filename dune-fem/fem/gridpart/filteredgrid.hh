@@ -7,16 +7,19 @@
 
 //- Dune includes
 #include <dune/common/interfaces.hh>
+
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/common/referenceelements.hh>
 #include <dune/grid/common/defaultindexsets.hh>
 #include <dune/grid/common/sizecache.hh>
+
 #include <dune/fem/gridpart/gridpart.hh>
 #include <dune/grid/common/datahandleif.hh>
 #include <dune/common/bartonnackmanifcheck.hh>
 #include <dune/grid/utility/grapedataioformattypes.hh>
 
-namespace Dune {
+namespace Dune
+{
 
   // forward declarations
   template <class FilterImp, class GridImp>
@@ -27,7 +30,8 @@ namespace Dune {
   //class TrueFilter;
   template <class GridType>
   class RadialFilter;
-  template <class GridPartImp, class FilterImp, PartitionIteratorType pitype>
+
+  template< class GridPartImp, class FilterImp >
   class FilteredGridPart;
 
 //***************************************************************************
@@ -180,12 +184,14 @@ namespace Dune {
   */
   template <class GridPartType>
   class RadialFilter : 
-    public FilterDefaultImplementation<DefaultFilterTraits<RadialFilter<GridPartType>, GridPartType> >
+    public FilterDefaultImplementation<
+      DefaultFilterTraits<RadialFilter<GridPartType>, GridPartType> >
   {
   public:
     typedef typename GridPartType :: GridType GridType;
     typedef DefaultFilterTraits<RadialFilter<GridPartType>, GridType> Traits;
-    typedef FilterDefaultImplementation<DefaultFilterTraits<RadialFilter<GridPartType>,GridPartType> > BaseType;
+    typedef FilterDefaultImplementation<
+      DefaultFilterTraits<RadialFilter<GridPartType>,GridPartType> > BaseType;
     typedef typename BaseType::FilterType FilterType;
     typedef typename BaseType::EntityCodim0Type EntityCodim0Type;
     typedef typename BaseType::EntityPointerCodim0Type EntityPointerCodim0Type;
@@ -287,21 +293,18 @@ namespace Dune {
  A FilteredGridPart allows to extract a set of entities from a grid
  satisfying a given constrainted defined through a filter class.
 **/ 
-  template <class GridPartImp, class FilterImp, PartitionIteratorType pitype = Interior_Partition>
-  class FilteredGridPart :
-    public GridPartImp
+  template< class GridPartImp, class FilterImp >
+  class FilteredGridPart
+  : public GridPartImp
   {
+    typedef FilteredGridPart< GridPartImp, FilterImp > ThisType;
 
-  private:
     // forward declaration of IteratorWrappers
-    template <class GridPartType, int cd, class IteratorType>
+    template< class GridPart, int codim, class Iterator >
     struct IteratorWrapper;
-    template <class GridPartType, class IteratorType>
+    template< class GridPart, class Iterator >
     struct IntersectionIteratorWrapper;
-    // type of this
-    typedef FilteredGridPart<GridPartImp, FilterImp, pitype> ThisType;
-    // the codim 0 entities type
-    //typedef typename GridType::template Codim<0>::Entity EntityCodim0Type;
+
     // the original IntersectionIteratorType
     typedef typename GridPartImp::IntersectionIteratorType IntersectionIteratorImpType;
 
@@ -314,21 +317,33 @@ namespace Dune {
     typedef typename GridPartImp::GridType GridType;
 
     //! type of underlying grid part 
-    typedef FilteredGridPart<GridPartImp, FilterImp, pitype> GridPartType;
+    //typedef FilteredGridPart<GridPartImp, FilterImp > GridPartType;
 
     //! The index set of the gridpart implementation
     typedef typename GridPartImp::IndexSetType IndexSetType;
+    
     //! The corresponding IntersectionIterator 
     typedef IntersectionIteratorWrapper<GridPartImp, IntersectionIteratorImpType> IntersectionIteratorType;
     // the codim 0 entities type
     typedef typename GridType::template Codim<0>::Entity EntityCodim0Type;
+
     //! Struct providing types of the iterators on codimension cd
-    template <int cd>
-    struct Codim {
-    private:
-      typedef typename GridPartImp::template Codim<cd>::IteratorType IteratorImpType;
-    public:
-      typedef IteratorWrapper<GridPartImp, cd, IteratorImpType> IteratorType;
+    template< int codim >
+    struct Codim
+    {
+      template< PartitionIteratorType pitype >
+      struct Partition
+      {
+      private:
+        typedef typename GridPartImp :: template Codim< codim >
+          :: template Partition< pitype > :: IteratorType IteratorImpType;
+
+      public:
+        typedef IteratorWrapper< GridPartImp, codim, IteratorImpType > IteratorType;
+      };
+
+      typedef typename Partition< InteriorBorder_Partition > :: IteratorType
+        IteratorType;
     };
 
   public:
@@ -344,6 +359,14 @@ namespace Dune {
       updateStatus();
     }
 
+    //! Copy Constructor
+    FilteredGridPart(const FilteredGridPart& other) :
+      GridPartImp(other), 
+      filter_(other.filter_),
+      maxlevel_(other.maxlevel_)
+    {
+    }
+
     //! constructor only taking grid 
     FilteredGridPart(GridType& grid) :
       GridPartImp(grid),   // This is only legal for LeafGridPart and HierarchicGridParts!
@@ -355,37 +378,57 @@ namespace Dune {
       updateStatus();
     }
 
-    //! Begin iterator defined by the gridpart implementation
-    template <int cd>
-    typename ThisType::template Codim<cd>::IteratorType begin() const {
-      //typedef typename ThisType::template Codim<cd>::IteratorType IteratorType;
-      return typename ThisType::template Codim<cd>::IteratorType(this, filter_, false);
+    //! Begin iterator on the leaf level
+    template< int codim >
+    typename Codim< codim > :: IteratorType
+    begin () const
+    {
+      return begin< codim, InteriorBorder_Partition >();
     }
 
-    //! End iterator defined by the gridpart implementation
-    template <int cd>
-    typename ThisType::template Codim<cd>::IteratorType end() const {
-      //typedef typename ThisType::template Codim<cd>::IteratorType IteratorType;
-      return typename ThisType::template Codim<cd>::IteratorType(this, filter_, true);
+    //! Begin iterator on the leaf level
+    template< int codim, PartitionIteratorType pitype >
+    typename Codim< codim > :: template Partition< pitype > :: IteratorType
+    begin () const
+    {
+      typedef typename Codim< codim > :: template Partition< pitype > :: IteratorType IteratorType;
+      return IteratorType( this, &filter_, GridPartImp :: template begin< codim, pitype >() );
+    }
+
+    //! Begin iterator on the leaf level
+    template< int codim >
+    typename Codim< codim > :: IteratorType
+    end () const
+    {
+      return end< codim, InteriorBorder_Partition >();
+    }
+
+    //! End iterator on the leaf level
+    template< int codim, PartitionIteratorType pitype >
+    typename Codim< codim > :: template Partition< pitype > :: IteratorType
+    end () const
+    {
+      typedef typename Codim< codim > :: template Partition< pitype > :: IteratorType IteratorType;
+      return IteratorType( this, &filter_, GridPartImp :: template end< codim, pitype >() );
     }
 
     //! ibegin of corresponding intersection iterator for given entity
-    IntersectionIteratorType ibegin(const EntityCodim0Type & en) const 
+    inline IntersectionIteratorType ibegin(const EntityCodim0Type & en) const 
     {
-      return typename ThisType::IntersectionIteratorType(this, filter_, en, false);
+      return typename ThisType::IntersectionIteratorType(this, &filter_, en );
     }
     
     //! iend of corresponding intersection iterator for given entity
-    IntersectionIteratorType iend(const EntityCodim0Type & en) const 
+    inline IntersectionIteratorType iend(const EntityCodim0Type & en) const 
     {
-      return typename ThisType::IntersectionIteratorType(this, filter_, en, true);
+      return typename ThisType::IntersectionIteratorType(this, &filter_, GridPartImp::iend(en) );
     }
 
     //! Returns maxlevel of the grid
-    int level() const
-    {
-      DUNE_THROW(Dune::NotImplemented,"Method FilteredGridPart::level() not implemented");
-      return maxlevel_;
+    int level() const 
+    { 
+       DUNE_THROW(Dune::NotImplemented,"Method FilteredGridPart::level() not implemented");
+      return maxlevel_; 
     }
 
     //! corresponding communication method for this grid part
@@ -415,42 +458,6 @@ namespace Dune {
 
   private:
     //**********************************************************************
-    // IteratorWrapper
-    //**********************************************************************
-    template <class GridPartType, int cd, class IteratorType>
-    class IteratorWrapper : public IteratorType 
-    {
-    public:
-      inline IteratorWrapper(const GridPartType* gridPart, 
-                             const FilterType& filter,  
-                             bool endIter) :
-        IteratorType(endIter?gridPart->template end<cd>():gridPart->template begin<cd>()),
-        gridPart_(gridPart),
-        filter_(filter),          
-      	endIter_(gridPart->template end<cd>())
-      { 
-        if (!endIter)
-          if(! filter_.has0Entity(*this) )
-            operator++();           
-      }
-
-      //! overloaded increment 
-      inline IteratorWrapper & operator++()
-      {	  
-        do {
-          IteratorType::operator++();
-          if (*this==endIter_) break;
-        } while(!filter_.has0Entity(*this));
-        return *this;
-      }
-        
-    protected:
-      const GridPartType * gridPart_;        
-      const FilterType & filter_;
-      const IteratorType endIter_;
-    }; // end IteratorWrapper
-
-    //**********************************************************************
     // IntersectionIteratorWrapper
     //**********************************************************************
 
@@ -460,103 +467,214 @@ namespace Dune {
       // type of codim 0 entity      
       typedef typename GridPartType::GridType::template Codim<0>::EntityPointer EntityPointerCodim0Type;
       typedef typename GridPartType::GridType::template Codim<0>::Entity EntityCodim0Type;
-      typedef IntersectionIteratorWrapper<GridPartType,IteratorType>
-        ThisType;
-    private:
-      struct neighborInfo {   
+
+      typedef IntersectionIteratorWrapper<GridPartType,IteratorType>  ThisType;
+      
+    protected:
+      class neighborInfo 
+      {
         public:
-        neighborInfo() : boundary_(false), boundaryId_(-1), neighbor_(false) { }
-        neighborInfo(const neighborInfo & org) : boundary_(org.boundary_), 
-          boundaryId_(org.boundaryId_), neighbor_(org.neighbor_){ }
-        neighborInfo & operator = (const neighborInfo & org) {
-          boundary_ = org.boundary_;
+        inline neighborInfo() 
+          : boundaryId_(-1), boundary_(false), neighbor_(false) 
+        {}
+        
+        inline neighborInfo(const neighborInfo & org) 
+          : boundaryId_(org.boundaryId_), 
+            boundary_(org.boundary_), 
+            neighbor_(org.neighbor_)
+        {}
+        
+        inline neighborInfo & operator = (const neighborInfo & org) 
+        {
+          boundary_   = org.boundary_;
           boundaryId_ = org.boundaryId_; 
-          neighbor_ = org.neighbor_;        
+          neighbor_   = org.neighbor_;        
           return *this;
         }        
-        bool boundary_;
+
         int boundaryId_; 
+        bool boundary_;
         bool neighbor_;        
-      } nInfo;
+      } nInfo_;
 
      public:
       //! constructor 
-      inline IntersectionIteratorWrapper(const GridPartType * gridPart, 
-                                         const FilterType & filter, 
-                                         const EntityCodim0Type & en, 
-                                         bool endIter):
-        IteratorType(endIter ? gridPart->iend(en) : gridPart->ibegin(en)),
-        gridPart_(gridPart),
-        filter_(filter),          
-       	endIter_(gridPart->iend(en))
+      inline IntersectionIteratorWrapper(const GridPartType* gridPart, 
+                                         const FilterType* filter, 
+                                         const EntityCodim0Type & en)
+        : IteratorType(gridPart->ibegin(en)),
+          nInfo_(),
+          gridPart_(gridPart),
+          filter_(filter),          
+          endIter_(gridPart->iend(en))
         { 
-          if(!endIter) 
-            writeNeighborInfo();
+          assert( *this != endIter_ );
+          writeNeighborInfo();
         }
         
-      private:
+      //! constructor creating end iterator 
+      inline IntersectionIteratorWrapper(const GridPartType * gridPart, 
+                                         const FilterType* filter, 
+                                         const IteratorType& endIter)
+        : IteratorType(endIter),
+          nInfo_(),
+          gridPart_(gridPart),
+          filter_(filter),          
+          endIter_(endIter)
+      { 
+      }
+        
+      //! copy constructor 
+      inline IntersectionIteratorWrapper(const IntersectionIteratorWrapper& other) 
+        : IteratorType(other),
+          nInfo_(other.nInfo_),
+          gridPart_(other.gridPart_),
+          filter_(other.filter_),          
+          endIter_(other.endIter_)
+      { 
+      }
+        
+      //! assignment operator 
+      inline IntersectionIteratorWrapper& operator = (const IntersectionIteratorWrapper& other) 
+      {
+        IteratorType :: operator = (other);
+        nInfo_    = other.nInfo_; 
+        gridPart_ = other.gridPart_;
+        filter_   = other.filter_;
+        endIter_  = other.endIter_;
+        return *this;
+      }
+        
+      protected:
         //! write information for current intersection 
         inline void writeNeighborInfo() 
         {
-          if (IteratorType::neighbor())
-          {
-            // if hasEnttiy then this is an inside entity
-            if ( filter_.interiorIntersection( asBase() ) )
+          if ( IteratorType::neighbor() ) 
+          { 
+            if ( filter_->interiorIntersection( asBase() ) )
             {
-              nInfo.boundary_   = false;
-              nInfo.boundaryId_ = 0;
-              nInfo.neighbor_   = true;
+              nInfo_.boundary_   = false;
+              nInfo_.boundaryId_ = 0;
+              nInfo_.neighbor_   = true;
             }
-            else
+            else 
             {
-              // otherwise get boundary information from filter
-              nInfo.boundary_   = filter_.intersectionBoundary( asBase() );
-              nInfo.boundaryId_ = filter_.intersectionBoundaryId( asBase() );
-              nInfo.neighbor_   = filter_.intersectionNeighbor( asBase() );
+              // otherwise get boundary information from filter 
+              nInfo_.boundary_   = filter_->intersectionBoundary( asBase() );
+              nInfo_.boundaryId_ = filter_->intersectionBoundaryId( asBase() );
+              nInfo_.neighbor_   = filter_->intersectionNeighbor( asBase() );
             }
           }
-          else
+          else 
           {
-            // for real boundary get boundary from filter
-            nInfo.boundary_   = true;
-            nInfo.boundaryId_ = filter_.intersectionBoundaryId( asBase() );
-            nInfo.neighbor_   = false;
-          }
+            // for real boundary get boundary from filter 
+            nInfo_.boundary_   = true;
+            nInfo_.boundaryId_ = filter_->intersectionBoundaryId( asBase() );
+            nInfo_.neighbor_   = false;
+          }    
         }
-    
+
       public:
-        typedef ThisType Intersection;
         //! increment intersection iterator 
         inline IntersectionIteratorWrapper & operator++()
-        {         
-          // increment real iterator 
-          if (*this != endIter_)
-            IteratorType::operator++();
+        { 
+          // if iterator in-valid , od nothing 
+          if (*this == endIter_) return *this; 
           
-          if ( *this != endIter_)    
-            writeNeighborInfo();
+          // increment real iterator 
+          IteratorType::operator++();
+          if( *this == endIter_ ) return *this; 
+            
+          // write new infos 
+          writeNeighborInfo();
+
           return *this;
         }
           
         //! overloaded boundary method 
-        inline bool boundary() const  { return nInfo.boundary_; }
+        inline bool boundary() const  { return nInfo_.boundary_; }
         //! overloaded boundaryId method 
-        inline int boundaryId() const { return nInfo.boundaryId_; }
+        inline int boundaryId() const { return nInfo_.boundaryId_; }
         //! overloaded neighbor method 
-        inline bool neighbor() const { return nInfo.neighbor_; }
-        inline const Intersection& operator*() const { return *this; }
-        inline const Intersection* operator->() const { return this; }
+        inline bool neighbor() const { return nInfo_.neighbor_; }
 
+        //! type of Intersection 
+        typedef ThisType Intersection;
+        //! dereference operator 
+        inline const Intersection& operator *() const { return *this; }
+        //! de-pointer operator 
+        inline const Intersection* operator ->() const { return this; }
       protected:
         //! return reference to base class 
-        IteratorType & asBase() { return static_cast<IteratorType &>(*this); }
+        inline IteratorType & asBase() { return static_cast<IteratorType &>(*this); }
         
-        const GridPartType * gridPart_;        
-        const FilterType & filter_;
+        const GridPartType* gridPart_;        
+        const FilterType* filter_;
         const IteratorType endIter_;        
     }; // end IntersectionIteratorWrapper
-   
   }; // end FilteredGridPart
+
+
+
+  // FilteredGridPart :: IteratorWrapper
+  // -----------------------------------
+
+  template< class GridPartImp, class FilterImp >
+  template< class GridPart, int codim, class Iterator >
+  class FilteredGridPart< GridPartImp, FilterImp > :: IteratorWrapper
+  : public Iterator
+  {
+    typedef IteratorWrapper< GridPart, codim, Iterator > ThisType;
+    typedef Iterator BaseType;
+
+    const GridPart *gridPart_;        
+    const FilterType *filter_;
+    Iterator endIter_;
+
+  public:
+    IteratorWrapper( const GridPart *gridPart,
+                     const FilterType* filter,
+                     const Iterator &iterator,
+                     const Iterator &endIterator )
+    : BaseType( iterator ),
+      gridPart_( gridPart ),
+      filter_( filter ),
+      endIter_( endIterator )
+    {
+      while( (*this != endIter_) && (!filter_->has0Entity( *this )) )
+        BaseType :: operator++();
+    }
+
+#if 0
+    //! copy constructor 
+    IteratorWrapper( const ThisType &other )
+    : IteratorType( other ),
+      gridPart_( other.gridPart_ ),
+      filter_( other.filter_ ),
+      endIter_( other.endIter_ )
+    {}
+
+    //! assignment operator
+    ThisType &operator= ( const ThisType &other )
+    {
+      BaseType :: operator=( other );
+      gridPart_ = other.gridPart_;
+      filter_ = other.filter_;
+      endIter_ = other.endIter_;
+      return *this;
+    }
+#endif
+
+    //! overloaded increment 
+    ThisType &operator++ ()
+    {
+      do
+        BaseType :: operator++();
+      while( (*this != endIter_) && (!filter_->has0Entity( *this )) );
+      return *this;
+    }
+  }; // end IteratorWrapper
+
 }  // end namespace Dune
 
 #endif

@@ -1,4 +1,4 @@
-// $Id: interface.hh 762 2007-05-01 17:01:20Z mblatt $
+// $Id: interface.hh 954 2008-10-28 10:31:55Z robertk $
 #ifndef DUNE_INTERFACE_HH
 #define DUNE_INTERFACE_HH
 
@@ -38,7 +38,7 @@ namespace Dune
     /**
      * @brief Type of the underlying remote indices class.
      */
-    typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
+    typedef Dune :: RemoteIndices<ParallelIndexSet> RemoteIndices;
 
     /**
      * @brief The type of the global index.
@@ -225,7 +225,7 @@ namespace Dune
     /**
      * @brief Type of the underlying remote indices class.
      */
-    typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
+    typedef Dune :: RemoteIndices<ParallelIndexSet> RemoteIndices;
     
 
     /**

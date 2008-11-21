@@ -78,8 +78,9 @@ namespace Dune {
     //! Base class
     typedef LocalPass< DiscreteModelImp, PreviousPassImp, pId > BaseType;
 
-    typedef DGPrimalOperator<DiscreteModelImp,GradientPassImp,
-            PreviousPassImp,MatrixObjectTraits> ThisType;
+    typedef DGPrimalOperator
+      < DiscreteModelImp , GradientPassImp , PreviousPassImp , MatrixObjectTraits , pId > 
+            ThisType;
 
     typedef GradientPassImp GradientPassType; 
     typedef typename GradientPassType :: DiscreteModelType
@@ -87,8 +88,13 @@ namespace Dune {
 
     //! Repetition of template arguments
     typedef DiscreteModelImp DiscreteModelType;
+
     //! Repetition of template arguments
-    typedef PreviousPassImp PreviousPassType;
+
+    //! Slavko: 
+    //! I need to switch PreviousPassType
+    //! to be GradientPassImp instead PreviousPassImp
+    typedef GradientPassImp PreviousPassType;
 
     // Types from the base class
     typedef typename BaseType::Entity EntityType; 
@@ -132,8 +138,9 @@ namespace Dune {
     // Various other types
     typedef typename DestinationType::LocalFunctionType LocalFunctionType;
     typedef typename DiscreteModelType::SelectorType SelectorType;
+    typedef CombinedSelector< ThisType , SelectorType > CombinedSelectorType;
     typedef EllipticDiscreteModelCaller<
-      DiscreteModelType, ArgumentType, SelectorType> DiscreteModelCallerType;
+      DiscreteModelType, ArgumentType, CombinedSelectorType > DiscreteModelCallerType;
 
     typedef typename GridType :: ctype ctype;
     typedef FieldMatrix<ctype,dim,dim> JacobianInverseType;
@@ -322,41 +329,40 @@ namespace Dune {
     class CoefficientCaller<CallerType,true,false> 
       : public CoefficientCallerTrue<CallerType>
       , public CoefficientCallerNoRHS<CallerType>
-    {
-      public:
-    };
+    {};
 
     template <class CallerType> 
     class CoefficientCaller<CallerType,false,false> 
       : public CoefficientCallerFalse<CallerType>
       , public CoefficientCallerNoRHS<CallerType>
-    {
-      public:
-    };
+    {};
 
   public:
     //- Public methods
-    /**  \brief Constructor
-     \param problem Actual problem definition (see problem.hh)
-     \param[in]  gradPass  types and discrete model for the gradient pass
-     \param pass Previous pass
-     \param spc Space belonging to the discrete function local to this pass
-     \param paramFile parameter file to read necessary parameters, if empty 
-             default parameters will be applied 
-    
-     \note Available methods are (chosen by parameters B_{+,-}, beta, and CDG-BZ)
-          - Interior Penalty : B_{+,-}: 0 , beta: > 0 (big) , CDG-BZ: 0 
-          - Baumann-Oden     : B_{+,-}: 1 , beta: = 0       , CDG-BZ: 0 (needs polOrd > 1) 
-          - NIPG             : B_{+,-}: 1 , beta: > 0       , CDG-BZ: 0
-          - Babuska-Zlamal   : B_{+,-}: 1 , beta: > 0       , CDG-BZ: 1
-          - Compact LDG (CDG): B_{+,-}: 0 , beta: > 0       , CDG-BZ: 1
-    */         
-    DGPrimalOperator(DiscreteModelType& problem, 
-                GradientPassType & gradPass,
-                PreviousPassType& pass, 
-                const DiscreteFunctionSpaceType& spc,
-                const std::string paramFile = "")
-      : BaseType(pass, spc),
+    /** \brief Constructor
+     *
+     *  \param      problem    actual problem definition (see problem.hh)
+     *  \param[in]  gradPass   types and discrete model for the gradient pass
+     *  \param      spc        space containing the discrete function local
+     *                         to this pass
+     *  \param      paramFile  parameter file to read necessary parameters
+     *                         (if empty default parameters will be applied)
+     *
+     *  \note Available methods are (chosen by parameters B_{+,-}, beta, and
+     *        CDG-BZ):
+     *  - Interior Penalty : B_{+,-}: 0, beta: > 0 (big), CDG-BZ: 0 
+     *  - Baumann-Oden     : B_{+,-}: 1, beta: = 0      , CDG-BZ: 0
+     *    (needs polOrd > 1)
+     *  - NIPG             : B_{+,-}: 1, beta: > 0      , CDG-BZ: 0
+     *  - Babuska-Zlamal   : B_{+,-}: 1, beta: > 0      , CDG-BZ: 1
+     *  - Compact LDG (CDG): B_{+,-}: 0, beta: > 0      , CDG-BZ: 1
+     *  .
+     */         
+    DGPrimalOperator( DiscreteModelType &problem,
+                      GradientPassType &gradPass,
+                      const DiscreteFunctionSpaceType &spc,
+                      const std::string paramFile = "" )
+    : BaseType( gradPass.previousPass(), spc ),
       caller_(problem),
       problem_(problem),
       arg_(0),
@@ -365,7 +371,7 @@ namespace Dune {
       gridPart_(spc_.gridPart()),
       gradientSpace_(gridPart_),
       localIdSet_(gridPart_.grid().localIdSet()),
-      gridWidth_ ( GridWidthProviderType :: getObject( &spc_.grid())),
+      gridWidth_ ( GridWidthProviderType :: getObject( & spc_.grid())),
       time_(0),
       volumeQuadOrd_(2* spc_.order() ),
       faceQuadOrd_(2*spc_.order() + 2),

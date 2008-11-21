@@ -5,7 +5,8 @@
 #include <dune/common/deprecated.hh>
 
 #include <vector>
-#include <assert.h>
+#include <cassert>
+#include <cstring>
 #include <algorithm>
 
 /** @file
@@ -1346,10 +1347,10 @@ namespace Dune
 
 //#if HAVE_MPI 
       // use collective communciation with MPI
-//      typedef CollectiveCommunication<MPI_Comm> CollectiveCommunication;
+//      typedef Dune :: CollectiveCommunication<MPI_Comm> CollectiveCommunication;
 //#else 
       // use dummy collective communication 
-      typedef CollectiveCommunication<GridImp> CollectiveCommunication;
+      typedef Dune :: CollectiveCommunication<GridImp> CollectiveCommunication;
 //#endif
     };
   };

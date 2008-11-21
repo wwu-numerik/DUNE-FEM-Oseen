@@ -1,4 +1,4 @@
-// $Id: selection.hh 761 2007-05-01 10:48:34Z mblatt $
+// $Id: selection.hh 954 2008-10-28 10:31:55Z robertk $
 #ifndef DUNE_SELECTION_HH
 #define DUNE_SELECTION_HH
 
@@ -38,7 +38,7 @@ namespace Dune
     /**
      * @brief The type of the underlying index set.
      */
-    typedef ParallelIndexSet<TG,TL,N> ParallelIndexSet;
+    typedef Dune :: ParallelIndexSet<TG,TL,N> ParallelIndexSet;
     
     //typedef typename ParallelIndexSet::const_iterator ParallelIndexSetIterator;
 
@@ -119,7 +119,7 @@ namespace Dune
     /**
      * @brief The type of the underlying index set.
      */
-    typedef ParallelIndexSet<GlobalIndex,LocalIndex,N> ParallelIndexSet;
+    typedef Dune :: ParallelIndexSet<GlobalIndex,LocalIndex,N> ParallelIndexSet;
     
     /**
      * @brief The type of the iterator of the selected indices.
@@ -202,7 +202,7 @@ namespace Dune
     /**
      * @brief The type of the underlying index set.
      */
-    typedef ParallelIndexSet<GlobalIndex,LocalIndex,N> ParallelIndexSet;
+    typedef Dune :: ParallelIndexSet<GlobalIndex,LocalIndex,N> ParallelIndexSet;
     
     /**
      * @brief The type of the iterator of the selected indices.

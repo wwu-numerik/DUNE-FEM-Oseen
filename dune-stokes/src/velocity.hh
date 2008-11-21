@@ -145,7 +145,7 @@ class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType ,
          *  \brief  evaluates the divergence of the velocity
          *
          *  \param  arg
-         *          point to evaluated at
+         *          point to evaluate at
          *  \param  ret
          *          value of the divergence of the velocity at given point
          **/
@@ -155,7 +155,7 @@ class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType ,
          *  \brief  evaluates the laplacian of the velocity
          *
          *  \param  arg
-         *          point to evaluated at
+         *          point to evaluate at
          *  \param  ret
          *          value of the laplacian of the velocity at given point
          **/

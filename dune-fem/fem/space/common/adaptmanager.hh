@@ -8,8 +8,10 @@
 
 #include <dune/fem/space/common/communicationmanager.hh>
 #include <dune/fem/space/common/loadbalancer.hh>
+#include <dune/fem/storage/singletonlist.hh>
 
-namespace Dune{
+namespace Dune
+{
 
 /** @addtogroup Adaptation Adaptation 
     Here the interfaces and algorithms for adapatation of a grid are
@@ -147,6 +149,8 @@ public:
       am = Parameter::getValidValue<int>("fem.adaptation.method",am,
                       ValidateInterval<int,true,true>(0,2));
     }
+
+    // chose adaptation method 
     if(am == 2) adaptationMethod_ = callback;
     else if(am == 1) adaptationMethod_ = generic;
     else adaptationMethod_ = none;
@@ -206,7 +210,7 @@ protected:
  for data set where it is necessary to keep the data.
  */
 template <class GridType, class RestProlOperatorImp >
-class AdaptationManager 
+class AdaptationManagerBase
 : public Dune :: AdaptationMethod< GridType >,
   public ObjPointerStorage 
 {  
@@ -214,7 +218,7 @@ class AdaptationManager
   typedef typename BaseType :: AdaptationMethodType AdaptationMethodType; 
   
   template <class AdaptManager, class GridImp, bool isGoodGrid> 
-  struct AdaptationMethod
+  struct CallAdaptationMethod
   {
     template <class DofManagerImp, class RPOpImp>
     static void adapt(const AdaptManager& am, GridImp & grid, 
@@ -238,7 +242,7 @@ class AdaptationManager
   };
   
   template <class AdaptManager, class GridImp> 
-  struct AdaptationMethod<AdaptManager,GridImp,false>
+  struct CallAdaptationMethod<AdaptManager,GridImp,false>
   {
     template <class DofManagerImp, class RPOpImp>
     static void adapt(const AdaptManager& am, GridImp & grid, 
@@ -254,7 +258,7 @@ class AdaptationManager
     }
   };
   
-  typedef AdaptationManager<GridType,RestProlOperatorImp> ThisType;
+  typedef AdaptationManagerBase<GridType,RestProlOperatorImp> ThisType;
   typedef DofManager< GridType > DofManagerType; 
   typedef DofManagerFactory<DofManagerType> DofManagerFactoryType;
 
@@ -262,7 +266,7 @@ class AdaptationManager
 public:
   typedef typename GridType :: Traits :: LocalIdSet LocalIdSet;
 
-  /** \brief constructor of AdaptationManager 
+  /** \brief constructor of AdaptationManagerBase 
      \param grid Grid that adaptation is done for 
      \param rpOp restriction and prlongation operator that describes how the 
       user data is projected to other grid levels
@@ -271,7 +275,7 @@ public:
         # 0 == none, 1 == generic, 2 == call back (only AlbertaGrid and ALUGrid)  
         AdaptationMethod: 1 # default value 
   */   
-  AdaptationManager (GridType & grid, RestProlOperatorImp & rpOp,
+  AdaptationManagerBase (GridType & grid, RestProlOperatorImp & rpOp,
       std::string paramFile = "") 
     : BaseType(grid,paramFile)
     , grid_(grid) 
@@ -282,24 +286,24 @@ public:
   }
 
   //! destructor 
-  virtual ~AdaptationManager () {}
+  virtual ~AdaptationManagerBase () {}
 
   /*! 
    Add to AdaptationManagers means that the RestProlOperators will be combined.
    See DiscreteOperatorImp.
    */
   template <class RestProlOperatorType> 
-  AdaptationManager<GridType,
+  AdaptationManagerBase<GridType,
   CombinedRestProl <RestProlOperatorImp,RestProlOperatorType> > & 
-  operator + (const AdaptationManager<GridType,RestProlOperatorType> &op)
+  operator + (const AdaptationManagerBase<GridType,RestProlOperatorType> &op)
   {
     //std::cout << "Operator + of AdaptationManager\n";
-    typedef AdaptationManager<GridType,RestProlOperatorType> CopyType;
+    typedef AdaptationManagerBase<GridType,RestProlOperatorType> CopyType;
     typedef CombinedRestProl <RestProlOperatorImp,RestProlOperatorType> COType;
      
     COType *newRPOp = new COType ( rpOp_  , const_cast<CopyType &> (op).getRestProlOp() );
 
-    typedef AdaptationManager < GridType, COType > OPType;
+    typedef AdaptationManagerBase < GridType, COType > OPType;
    
     OPType *adaptOp = new OPType ( grid_ , *newRPOp );    
 
@@ -331,9 +335,9 @@ public:
     // get stopwatch 
     Timer timer; 
 
-    AdaptationMethod<ThisType,GridType,
-      Conversion<GridType,HasHierarchicIndexSet>::exists>::
-        adapt(*this,grid_,dm_,rpOp_,this->adaptationMethod_);
+    const bool supportsCallback = Conversion< GridType, HasHierarchicIndexSet > :: exists;
+    CallAdaptationMethod< ThisType, GridType, supportsCallback >
+      :: adapt(*this,grid_,dm_,rpOp_,this->adaptationMethod_);
     
     // take time 
     adaptTime_ = timer.elapsed();
@@ -454,7 +458,7 @@ private:
       
       // check all children first 
       {
-        HierarchicIterator endit  = en.hend  ( childLevel );
+        const HierarchicIterator endit = en.hend( childLevel );
         for(HierarchicIterator it = en.hbegin( childLevel ); it != endit; ++it)
         {
           doRestrict &= hierarchicRestrict( *it , restop );
@@ -466,7 +470,7 @@ private:
       {
         // true for first child, otherwise false 
         bool initialize = true;
-        HierarchicIterator endit  = en.hend  ( childLevel );
+        const HierarchicIterator endit = en.hend( childLevel );
         for(HierarchicIterator it = en.hbegin( childLevel ); it != endit; ++it)
         {
           restop.restrictLocal( en , *it , initialize);     
@@ -491,9 +495,9 @@ private:
     // first call on this element 
     bool initialize = true;
     
-    HierarchicIterator endit  = en.hend  ( grid_.maxLevel() );
-    for(HierarchicIterator it = en.hbegin( grid_.maxLevel() ); 
-        it != endit; ++it)
+    const int maxLevel = grid_.maxLevel();
+    const HierarchicIterator endit = en.hend( maxLevel );
+    for( HierarchicIterator it = en.hbegin( maxLevel ); it != endit; ++it )
     {
       // should only get here on non-leaf entities 
       assert( !en.isLeaf() );
@@ -525,30 +529,84 @@ protected:
   double adaptTime_;
 };
 
+//! factory class to create adaptation manager reference counter 
+template <class KeyType, class ObjectType>
+struct AdaptationManagerReferenceFactory
+{
+  static ObjectType* createObject(const KeyType& key)
+  {
+    return new ObjectType(0);
+  }
+  static void deleteObject(ObjectType* obj)
+  {
+    delete obj;
+  }
+};
+
 /*! \brief This class manages the adaptation process including a load
-  balancing after the adaptation step. 
+  balancing after the adaptation step. This class is created by the
+  AdaptationManager for each grid instance. See AdaptationManager for
+  details. 
 */
 template <class GridType, class RestProlOperatorImp >
-class AdaptationLoadBalanceManager :
-  public AdaptationManager<GridType,RestProlOperatorImp> ,
+class AdaptationManager :
+  public AdaptationManagerBase<GridType,RestProlOperatorImp> ,
   public LoadBalancer<GridType> 
 {  
-  typedef AdaptationManager<GridType,RestProlOperatorImp> BaseType; 
+  // type of key 
+  typedef const GridType* KeyType;
+  // object type 
+  typedef size_t ObjectType;
+  // type of factory 
+  typedef AdaptationManagerReferenceFactory<KeyType, ObjectType>  FactoryType;
+
+  // type of singleton list 
+  typedef SingletonList< KeyType, ObjectType, FactoryType > ProviderType;
+
+  typedef AdaptationManagerBase<GridType,RestProlOperatorImp> BaseType; 
   typedef LoadBalancer<GridType> Base2Type;
 
   mutable CommunicationManagerList commList_;
   double balanceTime_ ;
 
+  // reference counter to ensure only one instance per grid exists 
+  ObjectType& referenceCounter_;
+
   // do not copy 
-  AdaptationLoadBalanceManager(const AdaptationLoadBalanceManager&);
+  AdaptationManager(const AdaptationManager&);
+
 public:  
-  AdaptationLoadBalanceManager(
-      GridType & grid, RestProlOperatorImp & rpOp, std::string paramFile = "", 
-      int balanceCounter = 0 ) 
+  /** \brief constructor of AdaptationManager 
+     \param grid Grid that adaptation is done for 
+     \param rpOp restriction and prlongation operator that describes how the 
+      user data is projected to other grid levels
+     \param paramFile optional parameter file which contains 
+        the following two lines:
+        # 0 == none, 1 == generic, 2 == call back (only AlbertaGrid and ALUGrid)  
+        AdaptationMethod: 1 # default value 
+     \param balanceCounter start counter for balance cycle (default = 0)   
+  */   
+  AdaptationManager(GridType & grid, 
+                    RestProlOperatorImp & rpOp, 
+                    std::string paramFile = "", 
+                    int balanceCounter = 0 ) 
     : BaseType(grid,rpOp,paramFile) 
     , Base2Type( grid , rpOp , paramFile , balanceCounter )
     , commList_(rpOp)
+    , referenceCounter_( ProviderType :: getObject( &grid ) )
   {
+    ++ referenceCounter_;
+    if( referenceCounter_ > 1 )
+    {
+      DUNE_THROW(InvalidStateException,"Only one instance of AdaptationManager allowed per grid instance");
+    }
+  }
+
+  //! destructor decreasing reference counter 
+  ~AdaptationManager() 
+  {
+    -- referenceCounter_;
+    ProviderType :: removeObject( referenceCounter_ );
   }
 
   /** @copydoc LoadBalancerInterface::loadBalance */
@@ -586,6 +644,8 @@ public:
       loadBalance ();
 
       // exchange all modified data 
+      // this also rebuilds the dependecy cache of the 
+      // cached communication manager if used 
       commList_.exchange();
 
       // get time  
@@ -593,6 +653,21 @@ public:
     }
   }
 };
+
+template <class GridType, class RestProlOperatorImp >
+class AdaptationLoadBalanceManager :
+  public AdaptationManager<GridType,RestProlOperatorImp>
+{
+  typedef AdaptationManager<GridType,RestProlOperatorImp> BaseType;    
+public:
+  AdaptationLoadBalanceManager(
+      GridType & grid, RestProlOperatorImp & rpOp, 
+      std::string paramFile = "", int balanceCounter = 0 ) DUNE_DEPRECATED      
+    : BaseType(grid,rpOp,paramFile,balanceCounter)
+  {
+  }
+};
+
 /** @} end documentation group */
 
 } // end namespace Dune 

@@ -1,0 +1,150 @@
+\form#0:\[\int\limits_{\Omega_e} f(x) dx = \int\limits_{\Omega_{ref}} f(g(l)) A(l) dl \]
+\form#1:$g$
+\form#2:$A(l)$
+\form#3:$g(l)$
+\form#4:$d=2,w=3$
+\form#5:$d=w$
+\form#6:$\|dg/dl\|$
+\form#7:$d=1$
+\form#8:\[ g : D \to W\]
+\form#9:$D\subseteq\mathbf{R}^\textrm{mydim}$
+\form#10:$W\subseteq\mathbf{R}^\textrm{cdim}$
+\form#11:$D$
+\form#12:$\textrm{mydim}\leq\textrm{cdim}$
+\form#13:$ g\in \left( C^1(D) \right)^\textrm{cdim}$
+\form#14:$g(c_i)$
+\form#15:$c_i$
+\form#16:$ g$
+\form#17:$W$
+\form#18:$ g^{-1}$
+\form#19:$ g : D \to W$
+\form#20:$\textrm{cdim}\times\textrm{mydim}$
+\form#21:\[ J_g(x) = \left( \begin{array}{ccc} \frac{\partial g_0}{\partial x_0} & \cdots & \frac{\partial g_0}{\partial x_{n-1}} \\ \vdots & \ddots & \vdots \\ \frac{\partial g_{m-1}}{\partial x_0} & \cdots & \frac{\partial g_{m-1}}{\partial x_{n-1}} \end{array} \right).\]
+\form#22:$m=\textrm{cdim}$
+\form#23:$n=\textrm{mydim}$
+\form#24:$\mu(x)$
+\form#25:$x\in D$
+\form#26:\[ \mu(x) = \sqrt{|\det J_g^T(x)J_g(x)|}.\]
+\form#27:$h^\textrm{mydim}$
+\form#28:$J_g^{-T}(x)$
+\form#29:$ f : W \to \textbf{R} $
+\form#30:$y=g(x)$
+\form#31:$\hat{f}(x) = f(g(x))$
+\form#32:\[\nabla f (g(x)) = J_g^{-T}(x) \nabla \hat{f}(x). \]
+\form#33:$\textrm{cdim}=\textrm{mydim}$
+\form#34:$d$
+\form#35:$c$
+\form#36:$0 \leq c \leq d$
+\form#37:$ c$
+\form#38:$ d$
+\form#39:$d-c$
+\form#40:$d-1$
+\form#41:$ w$
+\form#42:$ w\geq d$
+\form#43:$ l$
+\form#44:\[ m : E \to \mathbf{N}\]
+\form#45:$E$
+\form#46:$\mathbf{N}$
+\form#47:\[ E_g^c = \{e\in E \ | \ \textrm{$e$ has codimension $c$ and geometry type $g$} \}.\]
+\form#48:$m$
+\form#49:$E_g^c$
+\form#50:$e,e^\prime\in E_g^c$
+\form#51:$e\neq e^\prime \rightarrow m(e)\neq m(e^\prime)$
+\form#52:$0\leq m(e) < |E_g^c|$
+\form#53:$e\in E_g^c$
+\form#54:\[ m : E \to \mathbf{I}\]
+\form#55:$\mathbf{I}$
+\form#56:$e,e^\prime\in E$
+\form#57:$e\neq e^\prime \Rightarrow m(e)\neq m(e^\prime)$
+\form#58:$e$
+\form#59:$i$
+\form#60:$e^\prime$
+\form#61:$e=e^\prime$
+\form#62:$ \mathbf{I} = \{i\ |\ \exists e\in E : m(e)=i\}$
+\form#63:$E^\prime\subseteq E$
+\form#64:$D(E^\prime)$
+\form#65:$E^\prime$
+\form#66:\[ a : I_{E^\prime} \to D(E^\prime) \]
+\form#67:$ I_{E^\prime} = \{0, \ldots, |E^\prime|-1\}$
+\form#68:\[ m : E^\prime \to I_{E^\prime} \]
+\form#69:$e\in E^\prime$
+\form#70:$d_e$
+\form#71:\[ a(m(e)) = d_e. \]
+\form#72:$O(1)$
+\form#73:$O(\log |E^\prime|)$
+\form#74:$|E^\prime|$
+\form#75:$\vec{p}=(0,\ldots,n-1)$
+\form#76:$\vec{x}_0,\ldots,\vec{x}_n$
+\form#77:$\vec{x}_0$
+\form#78:$\vec{x}_{d+1}:=\vec{x}_d+s\cdot\vec{e}_{p_d}$
+\form#79:$\vec{e}_i$
+\form#80:\[N(n+1,x)=\sum^x_{i=0}N(n,i)\]
+\form#81:\[N(n,x)=\left({n+x}\atop x\right)\]
+\form#82:$(x_0,x_1,x_2)=(2,2,2)$
+\form#83:$x_0-1=1$
+\form#84:$x_1-1=1$
+\form#85:$x_2-1=1$
+\form#86:$(x_0,x_1,x_2)=(2,1,1)$
+\form#87:$x_1-1=0$
+\form#88:$x_2-1=0$
+\form#89:$\vec{x}=(x_0,\ldots,x_{n-1})$
+\form#90:$x_d-1$
+\form#91:$I(n,\vec{x})$
+\form#92:$\vec{x}$
+\form#93:\[I(n,\vec{x})=\sum_{i=0}^{n-1}N(n-i,x_i-1)=\sum_{i=0}^{n-1}\left({n-i+x_i-1}\atop{n-i}\right)\]
+\form#94:$x_0\geq x_1\geq\ldots\geq x_{n-1}$
+\form#95:$P=T_0\cdots T_{n-1}$
+\form#96:$T_i$
+\form#97:$x_{t_i}$
+\form#98:$x_i$
+\form#99:$t_i\leq i$
+\form#100:$t_i$
+\form#101:$\vec{t}=(t_0,\cdots,t_{n-1})$
+\form#102:$0\leq t_i\leq i$
+\form#103:$\vec{t}$
+\form#104:\[p=\sum_{i=1}^{n-1}i!t_i\]
+\form#105:$\vec{x}=P\vec{x}$
+\form#106:\[I=\sum_{i=1}^{n-1}i!(i-t_i)\]
+\form#107:\[i-t_i=(I/i!)\%(i+1)\]
+\form#108:$x_d:=x_d+x_{d+1}$
+\form#109:$x_d:=x_d-x_{d+1}$
+\form#110:$\vec{p}=P(0,\ldots,n-1)$
+\form#111:$x_{p_d}:=x_{p_d}+x_{p_{d+1}}$
+\form#112:$x_{p_d}:=x_{p_d}-x_{p_{d+1}}$
+\form#113:$\left({upper}\atop{lower}\right)$
+\form#114:$N$
+\form#115:$N^d$
+\form#116:$(2N+1)^d$
+\form#117:$z$
+\form#118:$z_i\in\{0,\ldots,2N\}, 0\leq i < d$
+\form#119:$c(z)$
+\form#120:$2^d$
+\form#121:$b$
+\form#122:$(b_{d-1},\ldots,b_0)$
+\form#123:$z\in [0,2N]^d$
+\form#124:$z_i$
+\form#125:$b_i$
+\form#126:$\left ( \begin{array}{cc}d\\c\end{array} \right)$
+\form#127:$\mathbf{R}^w$
+\form#128:$w$
+\form#129:$\mathbf{R}^d$
+\form#130:$d\neq w$
+\form#131:\[ g(l) = s + \sum\limits_{i=0}^{d-1} l_ir^i\]
+\form#132:$s\in\mathbf{R}^w$
+\form#133:$r^i\in\mathbf{R}^w$
+\form#134:$l\in\mathbf{R}^d$
+\form#135:$\{ (x_0,\ldots,x_{d-1}) \ | \ x_i\in\{0,1\}\ \}$
+\form#136:$p$
+\form#137:$l$
+\form#138:$g(l)=p$
+\form#139:$d\leq w$
+\form#140:\[(s,r^k) + \sum\limits_{i=0}^{d-1} l_i (r^i,r^k) = (p,r^k) \ \ \ \forall k=0,\ldots,d-1. \]
+\form#141:\[ G = \{ (k_0,\ldots,k_{d-1}) | o_i \leq k_i < o_i+s_i \} \]
+\form#142:\[ t : G \to R^d, \ \ \ t(k)_i = k_i h_i + r_i \]
+\form#143:$ o=(o_0,\ldots,o_{d-1}) \in Z^d$
+\form#144:$ s=(s_0,\ldots,s_{d-1}) \in Z^d$
+\form#145:$ h=(h_0,\ldots,h_{d-1}) \in R^d$
+\form#146:$ r=(r_0,\ldots,r_{d-1}) \in R^d$
+\form#147:$3^d-1$
+\form#148:$ y_i = x_i h_i + s_i $
+\form#149:$ 3^d-1 $

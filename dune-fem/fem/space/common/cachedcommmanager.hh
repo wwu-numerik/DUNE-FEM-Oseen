@@ -9,6 +9,7 @@
 
 //- Dune includes  
 #include <dune/common/misc.hh>
+#include <dune/common/timer.hh>
 #include <dune/common/mpihelper.hh>
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/common/datahandleif.hh>
@@ -102,6 +103,11 @@ namespace Dune
     //! know grid sequence number 
     int sequence_; 
     
+    // exchange time 
+    double exchangeTime_;
+    // setup time 
+    double buildTime_;
+
   protected:
     template< class LinkStorage, class IndexMapVector, InterfaceType CommInterface >
     class LinkBuilder;
@@ -127,7 +133,9 @@ namespace Dune
       //    (new MPAccessImplType( MPIHelper::getCommunicator() )) : 0),
       mpAccess_( new MPAccessImplType( MPIHelper::getCommunicator() ) ),
       nLinks_( 0 ),
-      sequence_( -1 )
+      sequence_( -1 ),
+      exchangeTime_( 0.0 ),
+      buildTime_( 0.0 )
     {
     }
 
@@ -150,6 +158,23 @@ namespace Dune
     }
 
   public:
+    //! return communication interface 
+    InterfaceType communicationInterface() const {
+      return interface_;
+    }
+
+    //! return communcation direction 
+    CommunicationDirection communicationDirection() const
+    {
+      return dir_;
+    }
+
+    //! return time needed for last build 
+    double buildTime() const { return buildTime_; }
+
+    //! return time needed for last exchange  
+    double exchangeTime() const { return exchangeTime_; }
+
     // build linkage and index maps 
     inline void buildMaps ();
 
@@ -171,14 +196,31 @@ namespace Dune
     inline void rebuild () 
     {
       // only in parallel we have to do something 
-      if( mySize_ <= 1 )
-        return;
+      if( mySize_ <= 1 ) return;
+
+#ifndef NDEBUG
+      // make sure buildMaps is called on every process 
+      // otherwise the programs wait here until forever 
+      int willRebuild = (sequence_ != space_.sequence()) ? 1 : 0;
+      const int myRebuild = willRebuild;
+
+      // send willRebuild from rank 0 to all 
+      gridPart_.grid().comm().broadcast( &willRebuild, 1 , 0);
+
+      assert( willRebuild == myRebuild );
+#endif
 
       // check whether grid has changed.
       if( sequence_ != space_.sequence() )
       {
+        // take timer needed for rebuild 
+        Timer buildTime;
+
         buildMaps();
         sequence_ = space_.sequence();
+
+        // store time needed 
+        buildTime_ = buildTime.elapsed();
       }
     }
       
@@ -761,15 +803,26 @@ namespace Dune
     typedef ALU3DSPACE MpAccessLocal MPAccessInterfaceType; 
     
     // is singleton per space 
-    DependencyCacheType & cache_;
+    mutable DependencyCacheType &cache_;
     CommunicationManager(const ThisType& org);
   public:  
-    //! constructor taking space 
+    //! constructor taking space and communication interface/direction 
     CommunicationManager(const SpaceType & space,
-                         const InterfaceType interface = InteriorBorder_All_Interface,
-                         const CommunicationDirection dir = ForwardCommunication )
+                         const InterfaceType interface,
+                         const CommunicationDirection dir)
       : space_(space)
       , key_(space_,interface,dir)
+      , mySize_(space_.grid().comm().size())
+      , cache_(CommunicationProviderType::getObject(key_)) 
+    {
+    }
+
+    //! constructor taking space and communication interface/direction 
+    CommunicationManager(const SpaceType & space)
+      : space_(space)
+      , key_(space_,
+             space.communicationInterface(),
+             space.communicationDirection())
       , mySize_(space_.grid().comm().size())
       , cache_(CommunicationProviderType::getObject(key_)) 
     {
@@ -781,12 +834,29 @@ namespace Dune
       CommunicationProviderType::removeObject(cache_);
     }
 
+    //! return communication interface 
+    InterfaceType communicationInterface() const {
+      return cache_.communicationInterface();
+    }
+
+    //! return communcation direction 
+    CommunicationDirection communicationDirection() const
+    {
+      return cache_.communicationDirection();
+    }
+
+    //! return time needed for last build 
+    double buildTime() const { return cache_.buildTime(); }
+
+    //! return time needed for last exchange  
+    double exchangeTime() const { return cache_.exchangeTime(); }
+
     MPAccessInterfaceType& mpAccess() { return cache_.mpAccess(); }
 
     //! exchange discrete function to all procs we share data 
     //! using the copy operation 
     template <class DiscreteFunctionType> 
-    void exchange(DiscreteFunctionType & df) 
+    void exchange(DiscreteFunctionType & df) const
     {
       cache_.exchange( df, (DFCommunicationOperation :: Copy *) 0 );
     }
@@ -794,7 +864,7 @@ namespace Dune
     //! exchange discrete function to all procs we share data 
     //! using the given operation 
     template <class DiscreteFunctionType, class OperationImp> 
-    void exchange(DiscreteFunctionType & df, const OperationImp* ) 
+    void exchange(DiscreteFunctionType & df, const OperationImp* ) const
     {
       cache_.exchange( df, (OperationImp*) 0 );
     }
@@ -954,7 +1024,7 @@ namespace Dune
 
     //! exchange the list of discrete functions between processes 
     //! only one communication is done here 
-    void exchange() 
+    void exchange() const
     {
       // if only one process, do nothing 
       if( mySize_ <= 1 ) return ;
@@ -962,7 +1032,7 @@ namespace Dune
       // exchange data 
       if(objList_.size() > 0)
       {
-        typedef CommObjListType :: iterator iterator; 
+        typedef CommObjListType :: const_iterator iterator; 
         // rebuild cahce if grid has changed
         {
           iterator end = objList_.end();

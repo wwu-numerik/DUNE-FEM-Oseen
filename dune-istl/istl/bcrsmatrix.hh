@@ -538,13 +538,15 @@ namespace Dune {
 	  CreateIterator (BCRSMatrix& _Mat, size_type _i) 
 	    : Mat(_Mat), i(_i), nnz(0), current_row(Mat.a, Mat.j, 0)
 	  {
-		if (i==0 && Mat.ready)
-		  DUNE_THROW(ISTLError,"creation only allowed for uninitialized matrix");
-		if(Mat.build_mode!=row_wise)
-		  if(Mat.build_mode==unknown)
-		    Mat.build_mode=row_wise;
-		  else
-		    DUNE_THROW(ISTLError,"creation only allowed if row wise allocation was requested in the constructor");
+		  if (i==0 && Mat.ready)
+		    DUNE_THROW(ISTLError,"creation only allowed for uninitialized matrix");
+		  if(Mat.build_mode!=row_wise)
+      {
+		    if(Mat.build_mode==unknown)
+		      Mat.build_mode=row_wise;
+		    else
+		      DUNE_THROW(ISTLError,"creation only allowed if row wise allocation was requested in the constructor");
+      }
 	  }
 
 	  //! prefix increment
