@@ -18,42 +18,55 @@
  *
  *  \tparam gridDim
  *          dimension of the grid
+ *  \tparam FunctionSpaceImp
+ *          (continuous) FunctionSpace
  **/
-template < int gridDim >
+template < int griddim, class FunctionSpaceImp >
 class DirichletDataTraits
 {
     public:
-        typedef Dune::FieldVector< double, gridDim >
+        static const unsigned int gridDim = griddim;
+        typedef FunctionSpaceImp
+            FunctionSpaceType;
+        typedef typename FunctionSpaceType::DomainType
             DomainType;
-        typedef Dune::FieldVector< double, gridDim >
+        typedef typename FunctionSpaceType::RangeType
             RangeType;
 };
 
 /**
  *  \brief  describes the dirichlet boundary data
  *
- *  \tparam gridDim
- *          dimension of the grid
+ *  \tparam DirichletTraitsImp
+ *          types like functionspace, range type, etc
  *
  *  \todo   extensive docu with latex
  **/
-template < int gridDim >
-class DirichletData
+template < class DirichletTraitsImp >
+class DirichletData : public Dune::Function < typename DirichletTraitsImp::FunctionSpaceType, DirichletData < DirichletTraitsImp > >
 {
     public:
-        typedef DirichletDataTraits< gridDim >
+        typedef DirichletTraitsImp
             Traits;
         typedef typename Traits::DomainType
             DomainType;
         typedef typename Traits::RangeType
             RangeType;
+        typedef typename Traits::FunctionSpaceType
+            DirichletFunctionSpaceType;
+        typedef DirichletData < Traits >
+            ThisType;
+        typedef Dune::Function < DirichletFunctionSpaceType, ThisType >
+            BaseType;
 
+        static const unsigned int gridDim = Traits::gridDim;
         /**
          *  \brief  constructor
          *
-         *  doing nothing
+         *  doing nothing besides Base init
          **/
-        DirichletData()
+        DirichletData( const DirichletFunctionSpaceType& space )
+            : BaseType( space )
         {
         }
 
@@ -74,7 +87,7 @@ class DirichletData
           * \param  ret
           *         value of dirichlet boundary data at given point
           **/
-        inline void evaluate( DomainType& arg, RangeType& ret ) const;
+        inline void evaluate( const DomainType& arg, RangeType& ret ) const;
 
         /**
          *  \brief  evaluates the dirichlet data
@@ -100,8 +113,8 @@ class DirichletData
 /**
  *  \brief  specialization for gridDim = 2
  **/
-template < >
-inline void DirichletData< 2 >::evaluate( DomainType& arg, RangeType& ret ) const
+template < class DirichletTraitsImp >
+inline void DirichletData< DirichletTraitsImp >::evaluate( const DomainType& arg, RangeType& ret ) const
 {
     // play safe
     assert( arg.dim() == 2 );
@@ -120,8 +133,8 @@ inline void DirichletData< 2 >::evaluate( DomainType& arg, RangeType& ret ) cons
 /**
  *  \brief  specialization for gridDim = 2
  **/
-template < >
-void DirichletData< 2 >::testMe() const
+template < class DirichletTraitsImp >
+void DirichletData< DirichletTraitsImp >::testMe() const
 {
     // some logstreams
     Logging::LogStream& infoStream = Logger().Info();

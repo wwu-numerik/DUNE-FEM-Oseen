@@ -7,6 +7,7 @@
 #include <vector>
 
 //- Dune includes  
+#include <dune/common/timer.hh>
 #include <dune/common/mpihelper.hh>
 #include <dune/grid/common/datahandleif.hh>
 #include <dune/grid/common/grid.hh>
@@ -18,7 +19,12 @@
 #include <dune/grid/alugrid.hh>
 #endif
 
-#if ALU3DGRID_PARALLEL 
+// default is: enabled 
+#ifndef WANT_CACHED_COMM_MANAGER 
+#define WANT_CACHED_COMM_MANAGER 1
+#endif
+
+#if ALU3DGRID_PARALLEL && WANT_CACHED_COMM_MANAGER
 #define USE_CACHED_COMM_MANAGER 
 #else 
 #ifndef NDEBUG 
@@ -26,9 +32,13 @@
   #warning "HAVE_MPI == 0, therefore default CommunicationManager is used!"
 #elif !ALU3DGRID_PARALLEL 
   #warning "No Parallel ALUGrid found, using default CommunicationManager!"
+#elif ! WANT_CACHED_COMM_MANAGER 
+  #warning "CachedCommunication Manager disabled by WANT_CACHED_COMM_MANAGER=0!"
 #endif 
 #endif
 #endif
+
+#undef WANT_CACHED_COMM_MANAGER 
 
 #ifdef USE_CACHED_COMM_MANAGER
 #include "cachedcommmanager.hh"
@@ -58,24 +68,23 @@ namespace Dune
     typedef Space SpaceType; 
 
   protected:
-    typedef typename SpaceType :: GridPartType GridPartType;
-
-  protected:
-    const GridPartType &gridPart_;
+    const SpaceType& space_;
 
     const InterfaceType interface_;
     const CommunicationDirection dir_;
+
+    mutable double exchangeTime_;
     
   public:
-    //! constructor taking space, but here only storing gridPart for
-    //! communication
-    inline DefaultCommunicationManager
+    //! constructor taking space and communication interface/direction
+    explicit DefaultCommunicationManager
       ( const SpaceType &space,
-        const InterfaceType interface = InteriorBorder_All_Interface,
-        const CommunicationDirection dir = ForwardCommunication )
-    : gridPart_( space.gridPart() ),
+        const InterfaceType interface,
+        const CommunicationDirection dir)
+    : space_( space ),
       interface_( interface ),
-      dir_ ( dir )
+      dir_ ( dir ),
+      exchangeTime_(0.0)
     {}
 
   private:
@@ -83,14 +92,41 @@ namespace Dune
     DefaultCommunicationManager ( const DefaultCommunicationManager & );
     
   public:
+    /** \brief return communication interface */
+    InterfaceType communicationInterface() const {
+      return interface_;
+    }
+
+    /** \brief return communication direction */
+    CommunicationDirection communicationDirection() const
+    {
+      return dir_;
+    }
+
+    /** \brief return time needed for last build 
+
+        \return time needed for last build of caches (if needed)
+    */
+    double buildTime() const { return 0.0; }
+
+    /** \brief return time needed for last exchange of data  
+
+        \return time needed for last exchange of data 
+    */
+    double exchangeTime() const { return exchangeTime_; }
+
     /** \brief exchange data for a discrete function using the copy operation
      *  
      *  \param  discreteFunction  discrete function to communicate
      */
     template< class DiscreteFunction >
-    inline void exchange ( DiscreteFunction &discreteFunction )
+    inline void exchange ( DiscreteFunction &discreteFunction ) const
     {
-      exchange( discreteFunction, (DFCommunicationOperation :: Copy *) 0 );
+      // get type of default operation 
+      typedef typename DiscreteFunction :: DiscreteFunctionSpaceType :: 
+        template CommDataHandle< DiscreteFunction > :: OperationType DefaultOperationType;
+      
+      exchange( discreteFunction, (DefaultOperationType *) 0 );
     }
 
     /** \brief exchange data for a discrete function using the given operation
@@ -103,7 +139,7 @@ namespace Dune
      */
     template< class DiscreteFunction, class Operation >
     inline void exchange ( DiscreteFunction &discreteFunction,
-                           const Operation *operation )
+                           const Operation *operation ) const
     {
       // get type of data handle from the discrete function space
       typedef typename DiscreteFunction
@@ -111,12 +147,18 @@ namespace Dune
         DataHandleType;
       
       // on serial runs: do nothing
-      if( gridPart_.grid().comm().size() <= 1 )
+      if( space_.grid().comm().size() <= 1 )
         return;
+
+      // get stopwatch 
+      Timer exchangeT;
     
       // communicate data
       DataHandleType dataHandle = discreteFunction.dataHandle( operation );
-      gridPart_.communicate( dataHandle, interface_ , dir_ );
+      space_.gridPart().communicate( dataHandle, interface_ , dir_ );
+
+      // store time 
+      exchangeTime_ = exchangeT.elapsed();
     }
   };
 
@@ -132,12 +174,17 @@ namespace Dune
     typedef DefaultCommunicationManager<SpaceImp> BaseType;
     CommunicationManager(const CommunicationManager &);
   public:
-    //! constructor taking space, but here only storing gridPart for
-    //! communication
+    //! constructor taking space and communication interface/direction
     CommunicationManager(const SpaceImp & space,  
-        const InterfaceType interface = InteriorBorder_All_Interface,
-        const CommunicationDirection dir = ForwardCommunication )
+        const InterfaceType interface,
+        const CommunicationDirection dir)
       : BaseType(space,interface,dir) 
+    {}
+    //! constructor taking space
+    CommunicationManager(const SpaceImp & space)
+      : BaseType(space,
+                 space.communicationInterface(),
+                 space.communicationDirection() )
     {}
   };
 
@@ -153,7 +200,7 @@ namespace Dune
       DiscreteFunctionCommunicatorInterface () {}
     public:
       virtual ~DiscreteFunctionCommunicatorInterface () {}
-      virtual void exchange () = 0;
+      virtual void exchange () const = 0;
     };
     
     //! communicated object implementation  
@@ -176,7 +223,7 @@ namespace Dune
       }
 
       // exchange discrete function 
-      void exchange () 
+      void exchange () const
       {
         comm_.exchange(df_);
       }
@@ -218,9 +265,9 @@ namespace Dune
 
     //! exchange discrete function to all procs we share data with 
     //! by using given OperationImp when receiving data from other procs 
-    void exchange() 
+    void exchange() const
     {
-      typedef CommObjListType :: iterator iterator; 
+      typedef CommObjListType :: const_iterator iterator; 
       {
         iterator end = objList_.end();
         for(iterator it = objList_.begin(); it != end; ++it) 

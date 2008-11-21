@@ -1,4 +1,4 @@
-// $Id: indicessyncer.hh 726 2007-03-16 13:53:17Z mblatt $
+// $Id: indicessyncer.hh 954 2008-10-28 10:31:55Z robertk $
 #ifndef DUNE_INDICESSYNCER_HH
 #define DUNE_INDICESSYNCER_HH
 
@@ -52,7 +52,7 @@ namespace Dune
     /**
      * @brief Type of the remote indices. 
      */
-    typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
+    typedef Dune :: RemoteIndices<ParallelIndexSet> RemoteIndices;
     
     /**
      * @brief Constructor.
@@ -204,7 +204,7 @@ namespace Dune
     typedef typename RemoteIndexList::ModifyIterator RemoteIndexModifier;
     
     /** @brief The type of the remote inde. */
-    typedef RemoteIndex<GlobalIndex,Attribute> RemoteIndex;
+    typedef Dune :: RemoteIndex<GlobalIndex,Attribute> RemoteIndex;
     
     /** @brief The iterator of the remote index list. */
     typedef typename RemoteIndexList::iterator RemoteIndexIterator;

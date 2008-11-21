@@ -23,18 +23,24 @@
  *  \tparam gridDim
  *          dimension of the grid
  **/
-template < int gridDim >
+template < int griddim, class VelocityFunctionSpaceImp, class PressureFunctionSpaceImp >
 class ProblemTraits
 {
     public:
-        typedef Velocity< gridDim >
+        static const unsigned int gridDim = griddim;
+        typedef VelocityFunctionSpaceImp
+            VelocityFunctionSpaceType;
+        typedef Velocity< VelocityTraits < gridDim, VelocityFunctionSpaceType > >
             VelocityType;
-        typedef Pressure< gridDim >
+        typedef PressureFunctionSpaceImp
+            PressureFunctionSpaceType;
+        typedef Pressure< PressureTraits< gridDim, PressureFunctionSpaceType > >
             PressureType;
-        typedef Force< gridDim >
+        typedef Force< ForceTraits< gridDim, VelocityFunctionSpaceType > >
             ForceType;
-        typedef DirichletData< gridDim >
+        typedef DirichletData< DirichletDataTraits< gridDim, VelocityFunctionSpaceType > >
             DirichletDataType;
+
 };
 
 /**
@@ -47,11 +53,11 @@ class ProblemTraits
  *
  *  \todo   extensive docu with latex
  **/
-template < int gridDim >
+template < class TraitsImp >
 class Problem
 {
     public:
-        typedef ProblemTraits< gridDim >
+        typedef TraitsImp
             Traits;
         typedef typename Traits::VelocityType
             VelocityType;
@@ -61,13 +67,23 @@ class Problem
             ForceType;
         typedef typename Traits::DirichletDataType
             DirichletDataType;
+        typedef typename VelocityType::FunctionSpaceType
+            VelocityFunctionSpaceType;
+        typedef typename PressureType::FunctionSpaceType
+            PressureFunctionSpaceType;
 
+        static const unsigned int gridDim = Traits::gridDim;
     /**
      *  \brief  constructor
      *
-     *  doing nothing
+     *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
      **/
-    Problem()
+    Problem( const double viscosity, const VelocityFunctionSpaceType& velocity_space, const PressureFunctionSpaceType& press_space )
+        : velocity_( velocity_space ),
+          pressure_ ( press_space ),
+          force_( viscosity, velocity_space ),
+          dirichletData_( velocity_space )
+
     {
     }
 
@@ -85,7 +101,7 @@ class Problem
      *
      *  \return velocity
      **/
-    VelocityType velocity()
+    VelocityType& velocity() const
     {
         return velocity_;
     }
@@ -95,25 +111,27 @@ class Problem
      *
      *  \return pressure
      **/
-    PressureType pressure()
+    PressureType& pressure() const
     {
         return pressure_;
     }
+
     /**
      *  \brief  to get the force term
      *
      *  \return force
      **/
-    ForceType force()
+    ForceType& force() const
     {
         return force_;
     }
+
     /**
      *  \brief  to get the dirichlet boundary data
      *
      *  \return dirichlet boundary data
      **/
-    DirichletDataType dirichletData()
+    DirichletDataType& dirichletData() const
     {
         return dirichletData_;
     }
@@ -142,4 +160,4 @@ class Problem
         DirichletDataType dirichletData_;
 };
 
-#endif  // end of problem.hh
+#endif // end of problem.hh

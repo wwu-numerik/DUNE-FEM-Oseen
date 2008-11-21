@@ -18,7 +18,6 @@ AC_SUBST(AM_LDFLAGS, $DUNE_LDFLAGS)
 LIBS="$DUNE_LIBS"
 
 AC_CONFIG_FILES([Makefile
-	src/Makefile
 	doc/Makefile
 	doc/doxygen/Makefile])
 AC_OUTPUT

@@ -16,34 +16,41 @@
 /**
  *  \brief  containing typedefs needed by Pressure
  *
- *  \tparam gridDim
+ *  \tparam gridDim (unused)
  *          dimension of the grid
+ *
+ *  \tparam PressureFunctionSpaceImp
+ *          (continuous) FunctionSpace
  **/
-template < int gridDim >
+template < int gridDim, class PressureFunctionSpaceImp >
 class PressureTraits
 {
     public:
-        typedef Dune::FieldVector< double, gridDim >
+        typedef PressureFunctionSpaceImp
+            FunctionSpaceType;
+        typedef typename FunctionSpaceType::DomainType
             DomainType;
-        typedef Dune::FieldVector< double, 1 >
+        typedef typename FunctionSpaceType::RangeType
             RangeType;
-        typedef Dune::FieldVector< double, gridDim >
+        typedef typename FunctionSpaceType::JacobianRangeType
+        //typedef Dune::FieldVector< double, gridDim >
             GradientRangeType;
+
 };
 
 /**
  *  \brief  describes the presure
  *
- *  \tparam gridDim
- *          dimension of the grid
+ *  \tparam PressureTraitsImp
+ *          types like functionspace, range type, etc
  *
  *  \todo   extensive docu with latex
  **/
-template < int gridDim >
-class Pressure
+template < class PressureTraitsImp >
+class Pressure : public Dune::Function < typename PressureTraitsImp::FunctionSpaceType, Pressure < PressureTraitsImp > >
 {
     public:
-        typedef PressureTraits< gridDim >
+        typedef PressureTraitsImp
             Traits;
         typedef typename Traits::DomainType
             DomainType;
@@ -51,13 +58,17 @@ class Pressure
             RangeType;
         typedef typename Traits::GradientRangeType
             GradientRangeType;
-
+        typedef typename Traits::FunctionSpaceType
+            PressureFunctionSpaceType;
+        typedef Dune::Function < typename PressureTraitsImp::FunctionSpaceType , Pressure < PressureTraitsImp > >
+            BaseType;
         /**
          *  \brief  constructor
          *
-         *  doing nothing
+         *  doing nothing besides Base init
          **/
-        Pressure()
+        Pressure( const PressureFunctionSpaceType& press_space )
+            : BaseType( press_space )
         {
         }
 
@@ -114,8 +125,8 @@ class Pressure
 /**
  *  \brief  specialization for gridDim = 2
  **/
-template < >
-inline void Pressure< 2 >::evaluate( const DomainType& arg, RangeType& ret ) const
+template < class PressureTraitsImp  >
+inline void Pressure< PressureTraitsImp  >::evaluate( const DomainType& arg, RangeType& ret ) const
 {
     // play save
     assert( arg.dim() == 2 );
@@ -130,8 +141,8 @@ inline void Pressure< 2 >::evaluate( const DomainType& arg, RangeType& ret ) con
 /**
  *  \brief  specialization for gridDim = 2
  **/
-template < >
-inline void Pressure< 2 >::gradient( const DomainType& arg, GradientRangeType& ret ) const
+template < class PressureTraitsImp  >
+inline void Pressure< PressureTraitsImp >::gradient( const DomainType& arg, GradientRangeType& ret ) const
 {
     // play safe
     assert( arg.dim() == 2 );
@@ -148,8 +159,8 @@ inline void Pressure< 2 >::gradient( const DomainType& arg, GradientRangeType& r
 /**
  *  \brief  specialization for gridDim = 2
  **/
-template < >
-void Pressure< 2 >::testMe() const
+template < class PressureTraitsImp  >
+void Pressure< PressureTraitsImp >::testMe() const
 {
     // some logstreams
     Logging::LogStream& infoStream = Logger().Info();

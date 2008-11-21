@@ -6,8 +6,12 @@ gridpart_HEADERS = adaptiveleafgridpart.hh \
 		   emptyindexset.hh \
 		   filteredgrid.hh \
                    gridpart.hh \
+		   gridpartview.hh \
 		   gridpartutility.hh \
 		   idbasedleafgridpart.hh \
 		   idbasedleafindexset.hh \
 		   periodicgridpart.hh \
 		   periodicindexset.hh
+
+include $(top_srcdir)/am/global-rules
+

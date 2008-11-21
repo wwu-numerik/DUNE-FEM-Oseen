@@ -1,8 +1,3 @@
-/**
- *	\file	discretemodels.hh
- *	\brief	discretemodels.hh
- **/
-
 #ifndef DUNE_EXAMPLEDISCRETEMODELS_HH
 #define DUNE_EXAMPLEDISCRETEMODELS_HH
 

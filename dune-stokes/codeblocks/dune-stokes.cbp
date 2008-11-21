@@ -12,6 +12,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="test.param" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
@@ -105,6 +106,7 @@
 		<Unit filename="../src/logging.hh" />
 		<Unit filename="../src/model.hh" />
 		<Unit filename="../src/parametercontainer.hh" />
+		<Unit filename="../src/postprocessing.hh" />
 		<Unit filename="../src/pressure.hh" />
 		<Unit filename="../src/problem.hh" />
 		<Unit filename="../src/saddlepoint_inverse_operator.hh" />

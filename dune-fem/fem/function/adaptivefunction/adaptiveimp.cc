@@ -6,9 +6,8 @@ namespace Dune
     :: AdaptiveFunctionImplementation ( const std :: string &name,
                                         const DiscreteFunctionSpaceType &spc )
   : spc_(spc),
-    dm_(DofManagerFactory<DofManagerType>::getDofManager(spc.grid())),
-    memPair_(dm_.addDofSet((MutableDofStorageType *) 0, spc.mapper(), name)),
-    dofVec_(*memPair_.second)
+    memObject_( 0 ),
+    dofVec_( allocateDofStorage( name ) )
   {
   }
 
@@ -20,9 +19,8 @@ namespace Dune
                                         const DiscreteFunctionSpaceType &spc,
                                         VectorPointerType *vector )
   : spc_(spc),
-    dm_(DofManagerFactory<DofManagerType>::getDofManager(spc.grid())),
-    memPair_(dm_.addDummyDofSet((DofStorageType *) 0, spc.mapper(), name, vector )),
-    dofVec_(*memPair_.second)
+    memObject_( 0 ),
+    dofVec_( allocateDofStorageWrapper( spc_.mapper(), name, vector ) )
   {}
 
   template <class DiscreteFunctionSpaceImp>
@@ -31,8 +29,7 @@ namespace Dune
                                        const DiscreteFunctionSpaceType &spc,
                                        DofStorageType &dofVec)
   : spc_(spc),
-    dm_(DofManagerFactory<DofManagerType>::getDofManager(spc.grid())),
-    memPair_(std::pair<MemObjectInterface*, DofStorageType*>(0, 0)),
+    memObject_( 0 ),
     dofVec_(dofVec)
   {}
 
@@ -41,9 +38,8 @@ namespace Dune
   AdaptiveFunctionImplementation( const std :: string &name,
                                   const ThisType &other )
   : spc_( other.spc_ ),
-    dm_(other.dm_),
-    memPair_(dm_.addDofSet((MutableDofStorageType *) 0, other.spc_.mapper(), name)),
-    dofVec_(*memPair_.second)
+    memObject_( 0 ),
+    dofVec_( allocateDofStorage( name ) )
   {
     // copy values
     dofVec_ = other.dofVec_;
@@ -53,12 +49,9 @@ namespace Dune
   AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   ~AdaptiveFunctionImplementation() 
   {
-    if (memPair_.first) {
-#ifndef NDEBUG
-      bool removed = 
-#endif
-      dm_.removeDofSet(*memPair_.first);
-      assert(removed);
+    if( memObject_ ) 
+    {
+      delete memObject_;
     }
   }
  
@@ -121,7 +114,7 @@ namespace Dune
   AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   dbegin() 
   {
-    return dofVec_.begin();
+    return dofStorage().begin();
   }
 
   template <class DiscreteFunctionSpaceImp>
@@ -130,7 +123,7 @@ namespace Dune
   AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   dend() 
   {
-    return dofVec_.end();
+    return dofStorage().end();
   }
 
   template <class DiscreteFunctionSpaceImp>
@@ -139,7 +132,7 @@ namespace Dune
   AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   dbegin() const 
   {
-    return dofVec_.begin();
+    return dofStorage().begin();
   }
 
   template <class DiscreteFunctionSpaceImp>
@@ -148,7 +141,7 @@ namespace Dune
   AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   dend() const
   {
-    return dofVec_.end();
+    return dofStorage().end();
   }
 
 #if DUNE_FEM_COMPATIBILITY
@@ -238,6 +231,7 @@ namespace Dune
   }
 #endif
 
+#if 0
   template<class DiscreteFunctionSpaceImp>
   bool AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   write_pgm(const std::string fn) const
@@ -281,13 +275,14 @@ namespace Dune
     fclose( in );
     return true;
   }
+#endif
   
   template<class DiscreteFunctionSpaceImp>
   void AdaptiveFunctionImplementation<DiscreteFunctionSpaceImp>::
   enableDofCompression() 
   {
-    assert( memPair_.first );
-    memPair_.first->enableDofCompression();
+    if( memObject_ )
+      memObject_->enableDofCompression();
   }
   
 } // end namespace Dune

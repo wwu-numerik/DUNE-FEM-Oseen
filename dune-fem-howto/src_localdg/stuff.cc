@@ -1,8 +1,3 @@
-/**
- *	\file	stuff.cc
- *	\brief	stuff.cc
- **/
-
 #include  <fstream>
 /* Helper class for projecting an analytic function onto a discrete function space */
 template <class DiscreteFunctionType, class FunctionType, int polOrd>

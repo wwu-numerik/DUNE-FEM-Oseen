@@ -16,42 +16,55 @@
  *  \brief  containing typedefs needed by Force
  *
  *  \tparam gridDim
- *          dimension of the grid
+ *          dimension of the grid (unused)
+ *  \tparam ForceFunctionSpaceImp
+ *          (continuous) FunctionSpace
  **/
-template < int gridDim >
+template < int gridDim, class ForceFunctionSpaceImp  >
 class ForceTraits
 {
     public:
-        typedef Dune::FieldVector< double, gridDim >
+        typedef ForceFunctionSpaceImp
+            FunctionSpaceType;
+        typedef typename FunctionSpaceType::DomainType
             DomainType;
-        typedef Dune::FieldVector< double, gridDim >
+        typedef typename FunctionSpaceType::RangeType
             RangeType;
 };
 
 /**
  *  \brief  describes the force
- *  \tparam gridDim
- *          dimension of the grid
+ *  \tparam ForceTraitsImp
+ *          types like functionspace, range type, etc
  *
  *  \todo   extensive docu with latex
  **/
-template < int gridDim >
-class Force
+template < class ForceTraitsImp >
+class Force : public Dune::Function < typename ForceTraitsImp::FunctionSpaceType , Force < ForceTraitsImp > >
 {
     public:
-        typedef ForceTraits< gridDim >
+        typedef ForceTraitsImp
             Traits;
         typedef typename Traits::DomainType
             DomainType;
         typedef typename Traits::RangeType
             RangeType;
+        typedef typename Traits::FunctionSpaceType
+            FunctionSpaceType;
+        typedef Force < Traits >
+            ThisType;
+        typedef Dune::Function < FunctionSpaceType, ThisType >
+            BaseType;
+
 
         /**
          *  \brief  constructor
          *
-         *  doing nothing
+         *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
          **/
-        Force()
+        Force( const double viscosity, const FunctionSpaceType& space )
+            : BaseType ( space ),
+              viscosity_( viscosity )
         {
         }
 
@@ -92,13 +105,16 @@ class Force
          *  \brief  a simple test of all class' functionalities
          **/
         void testMe() const;
+
+    private:
+        double viscosity_;
 };
 
 /**
  *  \brief  specialization for gridDim = 2
  **/
-template < >
-inline void Force< 2 >::evaluate( const DomainType& arg, RangeType& ret ) const
+template < class ForceTraitsImp >
+inline void Force< ForceTraitsImp >::evaluate( const DomainType& arg, RangeType& ret ) const
 {
     // play safe
     assert( arg.dim() == 2 );
@@ -106,16 +122,20 @@ inline void Force< 2 >::evaluate( const DomainType& arg, RangeType& ret ) const
     // some computations
     double x1 = arg[0];
     double x2 = arg[1];
+    double exp_of_x1 = std::exp( x1 );
+    double cos_of_x2 = std::cos( x2 );
     //return
-    ret[0] = 2.0 * std::exp( x1 ) * std::cos( x2 );
-    ret[1] = 0.0;
+    ret[0] = 2.0 * exp_of_x1 *
+        ( ( 1.0 - viscosity_ ) * std::sin( x2 )
+            + viscosity_ * cos_of_x2 );
+    ret[1] = 2.0 * ( 1.0 - viscosity_ ) * exp_of_x1 * cos_of_x2;
 }
 
 /**
  *  \brief  specialization for gridDim = 2
  **/
-template < >
-void Force< 2 >::testMe() const
+template < class ForceTraitsImp >
+void Force< ForceTraitsImp >::testMe() const
 {
     // some logstreams
     Logging::LogStream& infoStream = Logger().Info();

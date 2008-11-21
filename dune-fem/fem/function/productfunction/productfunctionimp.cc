@@ -14,22 +14,18 @@ template<class DiscreteFunctionSpaceType, class DiscreteFunctionSpace2Type>
   ProductDiscreteFunction(const DiscreteFunctionSpaceType& f, const DiscreteFunctionSpace2Type& f2) :
     // DiscreteFunctionDefaultType ( f ), 
     name_ ("no name"),
-    dm_(DofManagerFactoryType::getDofManager(f.grid())),
-    memPair_(dm_.addDofSet(&dofVec_, f.mapper(), name_)),
-    dofVec_ ( *memPair_.second ),
     functionSpace_(f),
-    functionSpace2_ (f2)
+    functionSpace2_ (f2),
+    dofVec_ ( f.size() * f2.size() )
 {
-    std::cout << "Size old = " << dofVec_.size() << "  Size  f2 = " << functionSpace2_.size();
-    std::cout << " New size will be " << dofVec_.size() * functionSpace2_.size() << "\n";
-    dofVec_.resize ( dofVec_.size() * functionSpace2_.size() );
+   // std::cout << "Size old = " << dofVec_.size() << "  Size  f2 = " << functionSpace2_.size();
+   // std::cout << " New size will be " << dofVec_.size() * functionSpace2_.size() << "\n";
 }
 // Desctructor 
 template<class DiscreteFunctionSpaceType, class DiscreteFunctionSpace2Type>
 inline ProductDiscreteFunction< DiscreteFunctionSpaceType, DiscreteFunctionSpace2Type>::
 ~ProductDiscreteFunction()
 {
-  dm_.removeDofSet(*memPair_.first);
 }
 
 template<class DiscreteFunctionSpaceType, class DiscreteFunctionSpace2Type>
@@ -256,6 +252,7 @@ read_ascii(const std::string fn)
   return true;
 }
 
+#if 0
 template<class DiscreteFunctionSpaceType, class DiscreteFunctionSpace2Type>
 inline bool ProductDiscreteFunction< DiscreteFunctionSpaceType, DiscreteFunctionSpace2Type>::
 write_pgm(const std::string fn) const
@@ -301,6 +298,7 @@ read_pgm(const std::string fn)
   fclose( in );
   return true;
 }
+#endif
 
 template<class DiscreteFunctionSpaceType, class DiscreteFunctionSpace2Type>
 inline void ProductDiscreteFunction< DiscreteFunctionSpaceType, DiscreteFunctionSpace2Type>::

@@ -11,7 +11,7 @@ typedef void evalDof_t  (DUNE_ELEM *, DUNE_FDATA *, int , double *);
 typedef void evalCoord_t(DUNE_ELEM *, DUNE_FDATA *, const double *, double * );
 
 /* interface element */
-typedef struct dune_elem 
+struct dune_elem 
 {
 
   // default constructor 
@@ -80,7 +80,7 @@ typedef struct dune_elem
   void          * mesh; 
 };
 
-typedef struct dune_fdata 
+struct dune_fdata 
 {
   static std::set<DUNE_FDATA*>& dataList () 
   {

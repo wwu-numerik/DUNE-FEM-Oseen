@@ -13,13 +13,18 @@
 #include <dune/common/mpihelper.hh> // An initializer of MPI
 #include <dune/common/exceptions.hh> // We use exceptions
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
-//#include <dune/grid/io/file/dgfparser/dgfparser.hh> // for the grid
-//#include <dune/grid/utility/gridtype.hh>
+#include <dune/fem/space/dgspace.hh>
+#include <dune/fem/space/combinedspace.hh>
+#include <dune/fem/gridpart/gridpart.hh>
+#include <dune/fem/pass/pass.hh>
+#include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
 
-//#include "traits.hh"
+#include <dune/stokes/discretestokesmodelinterface.hh>
+
 #include "parametercontainer.hh"
 #include "logging.hh"
 #include "problem.hh"
+#include "postprocessing.hh"
 
 /**
  *  \brief  main function
@@ -53,6 +58,9 @@ int main( int argc, char** argv )
         parameters.Print( std::cout );
     }
 
+    const int gridDim = GridType::dimensionworld;
+    const int polOrder = POLORDER;
+
     Logger().Create(
         Logging::LOG_CONSOLE |
         Logging::LOG_FILE |
@@ -63,22 +71,87 @@ int main( int argc, char** argv )
     Logging::LogStream& infoStream = Logger().Info();
     //Logging::LogStream& debugStream = Logger().Dbg();
     //Logging::LogStream& errorStream = Logger().Err();
-    const int gridDim = GridType::dimensionworld;
 
     /* ********************************************************************** *
      * initialize the grid                                                    *
      * ********************************************************************** */
-    infoStream << "\ninitialising the grid..." << std::endl;
+    infoStream << "\ninitialising grid..." << std::endl;
+    typedef Dune::LeafGridPart< GridType >
+        GridPartType;
     Dune::GridPtr< GridType > gridPtr( parameters.DgfFilename() );
+    GridPartType gridPart( *gridPtr );
     infoStream << "...done." << std::endl;
 
     /* ********************************************************************** *
-     * initialize the analytical problem                                      *
+     * initialize function spaces and functions                               *
      * ********************************************************************** */
-    infoStream << "\ninitialising the analytical problem..." << std::endl;
-    Problem< gridDim > problem;
-    problem.testMe();
+    infoStream << "\ninitialising functions..." << std::endl;
+    // velocity
+    typedef Dune::FunctionSpace< double, double, gridDim, gridDim >
+        VelocityFunctionSpaceType;
+    typedef Dune::DiscontinuousGalerkinSpace<   VelocityFunctionSpaceType,
+                                                GridPartType,
+                                                polOrder >
+        DiscreteVelocityFunctionSpaceType;
+    DiscreteVelocityFunctionSpaceType velocitySpace( gridPart );
+    typedef Dune::AdaptiveDiscreteFunction< DiscreteVelocityFunctionSpaceType >
+        DiscreteVelocityFunctionType;
+    DiscreteVelocityFunctionType exactVelocity( "exact_velocity",
+                                                velocitySpace );
+    exactVelocity.clear();
+    //sigma
+    typedef Dune::MatrixFunctionSpace< double, double, gridDim, gridDim, gridDim >
+        SigmaFunctionSpaceType;
+    typedef Dune::DiscontinuousGalerkinSpace<   SigmaFunctionSpaceType,
+                                                GridPartType,
+                                                polOrder >
+        DiscreteSigmaFunctionSpaceType;
+    DiscreteSigmaFunctionSpaceType sigmaSpace( gridPart );
+    typedef Dune::AdaptiveDiscreteFunction< DiscreteSigmaFunctionSpaceType >
+        DiscreteSigmaFunctionType;
+    DiscreteSigmaFunctionType exactSigma(   "exact_sigma",
+                                            sigmaSpace );
+    exactSigma.clear();
+    // pressure
+    typedef Dune::FunctionSpace< double, double, gridDim, 1 >
+        PressureFunctionSpaceType;
+    typedef Dune::DiscontinuousGalerkinSpace<   PressureFunctionSpaceType,
+                                                GridPartType,
+                                                polOrder >
+        DiscretePressureFunctionSpaceType;
+    DiscretePressureFunctionSpaceType pressureSpace( gridPart );
+    typedef Dune::AdaptiveDiscreteFunction< DiscretePressureFunctionSpaceType >
+        DiscretePressureFunctionType;
+    DiscretePressureFunctionType exactPressure( "exact_pressure",
+                                                pressureSpace );
+    exactPressure.clear();
+    // right hand side
+    DiscreteVelocityFunctionType righthandSide( "rhs",
+                                                velocitySpace );
+    righthandSide.clear();
+    // dirichlet data
+    DiscreteVelocityFunctionType dirichletData( "g_D",
+                                                velocitySpace );
+    dirichletData.clear();
+
+
+
+
     infoStream << "...done." << std::endl;
+
+    /* ********************************************************************** *
+     * initialize model                                                       *
+     * ********************************************************************** */
+    infoStream << "\ninitialising model..." << std::endl;
+    typedef Problem< ProblemTraits< gridDim, VelocityFunctionSpaceType, PressureFunctionSpaceType > >
+        Problemtype;
+    Problemtype problem( parameters.viscosity(), velocitySpace, pressureSpace );
+    //problem.testMe();
+    typedef PostProcessor< Problemtype, GridPartType, DiscreteVelocityFunctionType, DiscretePressureFunctionType >
+        PostProcessorType;
+    PostProcessorType postProcessor( problem, gridPart, velocitySpace, pressureSpace );
+    infoStream << "...done." << std::endl;
+
 
     return 0;
   }

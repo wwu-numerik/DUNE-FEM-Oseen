@@ -1,8 +1,8 @@
 /**************************************************************************
 **       Title: poisson.cc
 **    $RCSfile$
-**   $Revision: 3774 $$Name$
-**       $Date: 2008-06-19 13:38:10 +0200 (Do, 19 Jun 2008) $
+**   $Revision: 3976 $$Name$
+**       $Date: 2008-09-16 15:24:56 +0200 (Di, 16 Sep 2008) $
 **   Copyright: GPL Author: robertk 
 ** Description: File demonstrating a simple numerics problem on arbitrary
 **              grids: poisson-problem with known solution is given
@@ -56,7 +56,7 @@
 #include <dune/grid/io/visual/grapedatadisplay.hh>
 #endif
 
-#include <dune/fem/space/common/adaptiveleafgridpart.hh>
+#include <dune/fem/gridpart/adaptiveleafgridpart.hh>
 #include <dune/fem/space/lagrangespace.hh>
 #include <dune/fem/function/adaptivefunction.hh>
 #include <dune/fem/function/blockvectorfunction.hh>
@@ -64,12 +64,16 @@
 #include <dune/fem/solver/oemsolver/oemsolver.hh>
 #include <dune/fem/operator/discreteoperatorimp.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
+#include <dune/fem/operator/matrix/blockmatrix.hh>
+#include <dune/fem/operator/matrix/ontheflymatrix.hh>
 #include <dune/fem/operator/matrix/istlmatrix.hh>
 #include <dune/fem/solver/inverseoperators.hh>
 #include <dune/fem/solver/istlsolver.hh>
 #include <dune/fem/misc/l2norm.hh>
 #include <dune/fem/misc/h1norm.hh>
 #include <dune/fem/io/visual/grape/datadisp/errordisplay.hh>
+
+#include <dune/fem/misc/mpimanager.hh>
 
 //- local inlcudes 
 #include "laplace.hh"
@@ -124,9 +128,9 @@ using namespace Dune;
  *        for example, is not. If you want to use OEM solvers, the index set
  *        must be continuous. In such a case use AdaptiveLeafGridPart.
  */
-typedef LeafGridPart< GridType > GridPartType;
+//typedef LeafGridPart< GridType > GridPartType;
 //typedef LevelGridPart< GridType > GridPartType;
-//typedef AdaptiveLeafGridPart< GridType > GridPartType;
+typedef AdaptiveLeafGridPart< GridType > GridPartType;
 
 //! define the function space, \f[ \R^n \rightarrow \R \f]
 // see dune/common/functionspace.hh
@@ -152,6 +156,8 @@ typedef AdaptiveDiscreteFunction< DiscreteFunctionSpaceType > DiscreteFunctionTy
 
 //! define the type of the system matrix object
 typedef SparseRowMatrixTraits < DiscreteFunctionSpaceType, DiscreteFunctionSpaceType > MatrixObjectTraits;
+//typedef BlockMatrixTraits < DiscreteFunctionSpaceType, DiscreteFunctionSpaceType > MatrixObjectTraits;
+//typedef OnTheFlyMatrixTraits< DiscreteFunctionSpaceType, DiscreteFunctionSpaceType > MatrixObjectTraits;
 //typedef ISTLMatrixTraits < DiscreteFunctionSpaceType, DiscreteFunctionSpaceType > MatrixObjectTraits;
 
 //! define the discrete laplace operator, see ./fem.cc
@@ -341,13 +347,15 @@ std :: string getMacroGridName( unsigned int dimension )
 // main programm, run algorithm twice to calc EOC 
 int main( int argc, char **argv )
 {
-  const MPIHelper &mpi = MPIHelper :: instance( argc, argv );
+  // initialize MPI 
+  MPIManager :: initialize( argc, argv );
+  const int rank = MPIManager :: rank ();
   
   try
   {
     if( argc < 2 )
     {
-      if( mpi.rank() == 0 )
+      if( rank == 0 )
         std :: cerr << "Usage: " << argv[ 0 ] << " <maxlevel> [macrogrid]"
                     << std :: endl;
       return 1;
@@ -358,14 +366,23 @@ int main( int argc, char **argv )
 
     std :: string macroGridName
       = (argc > 2 ? argv[ 2 ] : getMacroGridName( GridType :: dimension ));
-    if( mpi.rank() == 0 )
+    if( rank == 0 )
       std :: cout << "loading macro grid: " << macroGridName << std :: endl;
     
+    GridPtr< GridType > gridptr( macroGridName ); 
+  
+    gridptr->loadBalance();
+
     const int step = DGFGridInfo< GridType > :: refineStepsForHalf();
     level = (level > step ? level - step : 0);
     
+    gridptr->globalRefine( level * step );
+    
     for( int i = 0; i < 2; ++i )
-      error[ i ] = algorithm( macroGridName, level + i*step, i );
+    {
+      gridptr->globalRefine( step * i );
+      error[ i ] = algorithm( *gridptr, i );
+    }
 
     const double eoc = log( error[ 0 ] / error[ 1 ] ) / M_LN2;
     std :: cout << "EOC = " << eoc << std :: endl;
@@ -374,7 +391,7 @@ int main( int argc, char **argv )
   }
   catch( Exception &exception )
   {
-    if( mpi.rank() == 0 )
+    if( rank == 0 )
       std :: cerr << exception << std :: endl;
     return 1;
   }
