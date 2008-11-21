@@ -86,8 +86,14 @@ next_macro (DUNE_ELEM * he)
 {
   if( disp_ )
   {
+    void * gridPart = he->gridPart;
     he->display = (void *) disp_;
+
+    // set appropriate grid part 
+    if( partIter_ != partEnd_) he->gridPart = *partIter_;
+    
     int ret = disp_->nextMacro(he);
+    
     if(!ret) 
     {
       ++grditer_; 
@@ -98,7 +104,8 @@ next_macro (DUNE_ELEM * he)
     }
     else 
     {
-      he->display = (void *)this; 
+      he->display  = (void *)this; 
+      he->gridPart = gridPart;
       return ret;
     }
   }
@@ -263,11 +270,14 @@ setIterationMethods(DUNE_DAT * dat, DUNE_FDATA * func)
     {
       std::vector < DUNE_FDATA * > & vec = disp.getFdataVec(); 
       data = vec[func->mynum];
+      assert( data->gridPart );
       gridPartList_.push_back( data->gridPart );
     }
 
     disp.changeIterationMethods(iteratorType,partitionIteratorType,data);
   }
+
+  assert( (func) ? (gridPartList_.size() == dispList_.size()) : true );
 }   
 
 template<class DisplayType>
@@ -416,8 +426,8 @@ inline void * CombinedGrapeDisplay<DisplayType>::setupHmesh()
   {
     const GridType & grid = (*grditer_)->getGrid();
     maxlevel = std::max( maxlevel, grid.maxLevel());
-    noe += grid.leafIndexSet().size(0);
-    nov += grid.leafIndexSet().size(dim);
+    noe += grid.size(0);
+    nov += grid.size(dim);
   }
 
   // set display pointer 

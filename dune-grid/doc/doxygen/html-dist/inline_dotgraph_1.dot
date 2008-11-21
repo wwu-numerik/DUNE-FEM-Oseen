@@ -1,0 +1,20 @@
+ 
+      digraph entity {
+         rankdir=LR;
+         node [ shape=record, fontname=Helvetica, fontsize=10, height=0.25 ];
+         Entity [ label="Dune::Entity\<cd,dim,GridImp,EntityImp\>"
+                  style=filled, bgcolor=lightgrey
+                  shape=record, URL="\ref Dune::Entity"];
+         Element [ label="Dune::Entity\<0,dim,GridImp,EntityImp\>"
+                   URL="\ref Dune::Entity<0,dim,GridImp,EntityImp>"];
+         Vertex [ label="Dune::Entity\<dim,dim,GridImp,EntityImp\>"
+                  URL="\ref Dune::Entity<dim,dim,GridImp,EntityImp>"];
+         Entity -> Element [ dirType="back", arrowType="open",
+                             style="dashed"
+                             fontname=Helvetica, fontsize=8, 
+                             label="cd=0" ];
+         Entity -> Vertex [ dirType="back", arrowType="open", style="dashed"
+                             fontname=Helvetica, fontsize=8, 
+                             label="cd=dim" ];
+      }
+   

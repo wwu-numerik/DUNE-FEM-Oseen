@@ -1,7 +1,8 @@
-// $Id: smartpointertest.cc 4696 2006-08-22 10:01:36Z christi $
+// $Id: smartpointertest.cc 5328 2008-10-28 10:01:54Z robertk $
 #include "config.h"
 
 #include<dune/common/smartpointer.hh>
+#include<cstdlib>
 #include<iostream>
 #include<vector>
 

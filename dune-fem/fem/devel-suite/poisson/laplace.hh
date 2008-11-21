@@ -7,7 +7,6 @@
 
 #include <dune/fem/storage/array.hh>
 #include <dune/fem/quadrature/quadrature.hh>
-#include <dune/fem/space/common/communicationmanager.hh>
 #include <dune/fem/function/common/scalarproducts.hh>
 #include <dune/fem/operator/common/operator.hh>
 #include <dune/fem/operator/2order/lagrangematrixsetup.hh>
@@ -312,12 +311,9 @@ namespace Dune
   template< class DiscreteFunction, class MatrixObject, class Tensor >
   class LaplaceFEOp< DiscreteFunction, MatrixObject, Tensor > :: Assembler
   {
-    //static const unsigned int maxBaseFunctions = 100;
-    
   protected:
     const LaplaceFEOpType &feop_;
 
-    //mutable JacobianRangeType gradCache_[ maxBaseFunctions ];
     mutable DynamicArray< JacobianRangeType > gradCache_;
     mutable RangeFieldType weight_;
  
@@ -332,7 +328,7 @@ namespace Dune
       const unsigned int columns = localMatrix.columns();
       for( unsigned int i = 0; i < columns; ++i )
       {
-        localMatrix.add( i, i, weight_ * SQR( gradCache_[ i ][ 0 ] ) );
+        localMatrix.add( i, i, weight_ * (gradCache_[ i ][ 0 ] * gradCache_[ i ][ 0 ]  ) );
         for ( unsigned int j = 0; j < i; ++j )
         {
           const RangeFieldType value
@@ -403,9 +399,6 @@ namespace Dune
 
     enum { dimension = GridType :: dimension };
 
-    typedef CommunicationManager< DiscreteFunctionSpaceType >
-      CommunicationManagerType;
-  
   public:
     // discreteFunction is an output parameter (kind of return value)
     template< int polOrd, class FunctionType >
@@ -465,8 +458,8 @@ namespace Dune
         }
       }
 
-      CommunicationManagerType communicate( discreteFunctionSpace );
-      communicate.exchange( discreteFunction, (DFCommunicationOperation :: Add *) 0 );
+      // communicate data 
+      discreteFunctionSpace.communicate( discreteFunction );
     }
   };
 

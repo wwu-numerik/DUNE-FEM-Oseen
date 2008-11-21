@@ -14,7 +14,7 @@
 
 #include <dune/fem/version.hh>
 
-#if DUNE_GRID_VERSION_NEWER(1,2)
+#if DUNE_VERSION_NEWER(DUNE_GRID,1,2,0)
 #define DGFNAMESPACE dgf::
 #else
 #define DGFNAMESPACE
@@ -227,7 +227,7 @@ public:
   //! rank is added to output path 
   static std::string readPath()
   {
-    return Parameter::prefix();
+    return Parameter::commonOutputPath();
   }
 
   //! standard path reading and creation method 

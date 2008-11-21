@@ -127,11 +127,19 @@ namespace Dune {
             BlockMapperSingletonFactoryType > BlockMapperProviderType;
 
   public:
+    //! default communication interface 
+    static const InterfaceType defaultInterface = InteriorBorder_All_Interface;
+
+    //! default communication direction 
+    static const CommunicationDirection defaultDirection =  ForwardCommunication;
+
     //- Constructors and destructors
     /** \brief Constructor taking grid part */
     explicit DiscontinuousGalerkinSpaceBase( GridPartType &gridPart, 
-                                             const std::vector<GeometryType>& geomTypes)
-    : BaseType( gridPart ),
+                                             const std::vector<GeometryType>& geomTypes,
+                                             const InterfaceType commInterface,
+                                             const CommunicationDirection commDirection)
+    : BaseType( gridPart , commInterface, commDirection ),
       mapper_( 0 ),
       blockMapper_( BlockMapperProviderType::getObject(
             MapperSingletonKeyType (this->gridPart(),1) )),
@@ -423,14 +431,19 @@ namespace Dune {
             SingletonFactoryType > SingletonProviderType;
 
   protected:
+    typedef DiscontinuousGalerkinSpaceBase <Traits> BaseImpType;
+
     // set of geometry types 
     typedef AllGeomTypes<IndexSetType,typename Traits::GridType> GeometryTypes;
     
   public:
     //- Constructors and destructors
     /** Constructor */
-    DiscontinuousGalerkinSpace(GridPartImp& gridPart) :
-      DiscontinuousGalerkinSpaceBase <Traits> (gridPart, GeometryTypes(gridPart.indexSet()).geomTypes(codimension) )
+    DiscontinuousGalerkinSpace(GridPartImp& gridPart,
+                               const InterfaceType commInterface = BaseImpType :: defaultInterface,
+                               const CommunicationDirection commDirection = BaseImpType :: defaultDirection ) :
+      BaseImpType (gridPart, GeometryTypes(gridPart.indexSet()).geomTypes(codimension),
+                   commInterface, commDirection)
     {}
 
     /** \brief ! get object from singleton list 
@@ -580,11 +593,16 @@ namespace Dune {
     //! size of local blocks 
     enum { localBlockSize = Traits::localBlockSize };
 
+  protected:
+    typedef DiscontinuousGalerkinSpaceBase <Traits> BaseImpType;
   public:
     //- Constructors and destructors
     /** Constructor */
-    LegendreDiscontinuousGalerkinSpace(GridPartImp& gridPart) :
-      DiscontinuousGalerkinSpaceBase<Traits> (gridPart, gridPart.indexSet().geomTypes(codimension) ) 
+    LegendreDiscontinuousGalerkinSpace(GridPartImp& gridPart,
+                               const InterfaceType commInterface = BaseImpType :: defaultInterface ,
+                               const CommunicationDirection commDirection = BaseImpType :: defaultDirection ) :
+      BaseImpType (gridPart, gridPart.indexSet().geomTypes(codimension) ,  
+                   commInterface, commDirection ) 
     {
     }
 

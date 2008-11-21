@@ -1,4 +1,4 @@
-# $Id: Makefile.am 5024 2007-12-05 16:17:59Z robertk $
+# $Id: Makefile.am 5339 2008-11-05 13:37:44Z robertk $
 
 # also build these sub directories
 SUBDIRS = devel doxygen layout buildsystem
@@ -6,9 +6,7 @@ SUBDIRS = devel doxygen layout buildsystem
 # only build html pages, if documentation is enabled
 if BUILD_DOCS
 # only build html when wml is available 
-if WML
  PAGES = view-concept.html installation-notes.html contrib-software.html
-endif
 endif
 
 # automatically create these web pages

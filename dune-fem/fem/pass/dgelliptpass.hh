@@ -16,8 +16,6 @@
 #include <dune/fem/solver/timeprovider.hh>
 #include <dune/fem/solver/oemsolver/preconditioning.hh>
 
-#include <dune/fem/space/common/communicationmanager.hh>
-
 namespace Dune {
 /*! @addtogroup PassEllipt
  * Description: Solver for equations of the form
@@ -244,8 +242,6 @@ namespace Dune {
 
     mutable DestinationType rhs_;
 
-    typedef CommunicationManager<DiscreteFunctionSpaceType> CommunicationManagerType; 
-    mutable CommunicationManagerType comm_;
   public:
     //- Public methods
     //! Constructor
@@ -265,13 +261,12 @@ namespace Dune {
       , problem_(problem)
       , spc_(spc) 
       , verbose_(readVerbose(paramFile, spc_.grid().comm().rank() == 0))
-      , op_(problem,pass,pass.previousPass(),spc,paramFile)
+      , op_(problem,pass,spc,paramFile)
       , eps_(readEps(paramFile, verbose_ ))
       , maxIterFactor_(4) 
       , maxIter_( maxIterFactor_ * spc_.size() )
       , invOp_(op_,eps_,eps_,maxIter_,verbose_)
       , rhs_("FEPass::RHS",spc)
-      , comm_(spc_)
     {
       //assert( this->destination_ );
     }
@@ -294,13 +289,12 @@ namespace Dune {
       , problem_(problem)
       , spc_(dest.space()) 
       , verbose_(readVerbose(paramFile, spc_.grid().comm().rank() == 0))
-      , op_(problem,pass,pass.previousPass(),spc_,paramFile)
+      , op_(problem,pass,spc_,paramFile)
       , eps_(readEps(paramFile, verbose_ ))
       , maxIterFactor_(4) 
       , maxIter_( maxIterFactor_ * spc_.size() )
       , invOp_(op_,eps_,eps_,maxIter_,verbose_)
       , rhs_("FEPass::RHS",spc_)
-      , comm_(spc_)
     {
       assert( this->destination_ == 0 );
       this->destination_ = &dest;
@@ -348,7 +342,7 @@ namespace Dune {
       invOp_(rhs_,dest);
 
       // do data exchange 
-      comm_.exchange( dest );
+      spc_.communicate( dest );
     } 
 
     template <class FuncType, class GradType>
@@ -439,7 +433,6 @@ namespace Dune {
     typedef typename DiscreteFunctionSpaceType::DomainFieldType DomainFieldType;
     typedef typename DiscreteFunctionSpaceType::RangeFieldType RangeFieldType;
 
-    typedef CommunicationManager<DiscreteFunctionSpaceType> CommunicationManagerType; 
   public:
     //- Public methods
     //! Constructor
@@ -459,7 +452,6 @@ namespace Dune {
       problem_(problem),
       spc_(spc),
       prevPass_(pass),
-      comm_(spc_),
       factor_(factor),
       applyMassMatrix_(applyMassMatrix)
     {
@@ -504,7 +496,7 @@ namespace Dune {
       dest *= factor_;
 
       // exchange data 
-      comm_.exchange( dest );
+      spc_.communicate( dest );
     }
 
     //! nothing to do here
@@ -527,7 +519,6 @@ namespace Dune {
     DiscreteModelType& problem_; 
     const DiscreteFunctionSpaceType& spc_;
     mutable PreviousPassImp & prevPass_;
-    mutable CommunicationManagerType comm_;
     const double factor_;
     const bool applyMassMatrix_;
   };

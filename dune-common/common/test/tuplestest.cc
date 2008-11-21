@@ -1,4 +1,4 @@
-// $Id: tuplestest.cc 4956 2007-07-26 13:08:23Z mblatt $
+// $Id: tuplestest.cc 5328 2008-10-28 10:01:54Z robertk $
 #include "config.h"
 
 #include<dune/common/tuples.hh>
@@ -7,6 +7,7 @@
 #include<iostream>
 #include<vector>
 #include<cassert>
+#include<cstdlib>
 using namespace Dune;
 
 template<int i, int j>

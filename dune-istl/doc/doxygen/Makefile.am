@@ -1,4 +1,4 @@
-# $Id: Makefile.am 847 2008-01-06 11:00:11Z christi $
+# $Id: Makefile.am 958 2008-11-05 13:29:45Z robertk $
 
 if BUILD_DOCS
   DOXYGENTAG = doxygen-tag 
@@ -19,7 +19,6 @@ if BUILD_DOCS
 # EXTRAINSTALL in the html subdirectory
 DOXYGENINSTALL = *.html *.css *.png *.gif ../doxygen.log
 
-if WML
 # themeing doxygen
 DOXYGENHEADER = doxy-header.html
 DOXYGENHEADERBUILD = $(DOXYGENHEADER).build
@@ -30,8 +29,6 @@ DOYXFILE_OVERWRITE = echo "HTML_HEADER = $(DOXYGENHEADER)"; \
   echo "HTML_STYLESHEET = $(DOXYGENSTYLESHEET)";
 DOXYFILESHORT_OVERWRITE = $(DOYXFILE_OVERWRITE) \
   echo "SHORT_NAMES = YES";
-# end WML
-endif
 
 
 #we need this in the distribution

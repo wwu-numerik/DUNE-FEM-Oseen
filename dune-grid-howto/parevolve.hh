@@ -120,10 +120,12 @@ void parevolve (const G& grid, const M& mapper, V& c, double t, double& dt)
 
 		  // handle boundary face
 		  if (is.boundary())
-			if (factor<0) // inflow, apply boundary condition
-			  update[indexi] -= b(faceglobal,t)*factor; 			  
-			else // outflow
-			  update[indexi] -= c[indexi]*factor; 
+      {
+			  if (factor<0) // inflow, apply boundary condition
+			    update[indexi] -= b(faceglobal,t)*factor; 			  
+			  else // outflow
+			    update[indexi] -= c[indexi]*factor; 
+      }
 		} // end all intersections
 
 	  // compute dt restriction

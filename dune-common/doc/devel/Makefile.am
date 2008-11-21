@@ -1,11 +1,9 @@
-# $Id: Makefile.am 5022 2007-12-05 15:45:01Z robertk $
+# $Id: Makefile.am 5340 2008-11-05 13:51:19Z robertk $
 
 if BUILD_DOCS
 # only build html when wml is available 
-if WML
 PAGES = codingstyle.html portability.html \
   ugreader.html tests.html features.html indexidsets.html
-endif
 endif
 
 all: $(PAGES)
@@ -16,8 +14,8 @@ CURDIR=doc/devel
 
 # install the html pages
 if BUILD_DOCS
-docdir=$(datadir)/doc/dune-common/devel
-doc_DATA = $(PAGES)
+develdir=$(datadir)/doc/dune-common/devel
+devel_DATA = $(PAGES)
 EXTRA_DIST= $(PAGES)
 endif
 

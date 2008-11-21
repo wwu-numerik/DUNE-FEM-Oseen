@@ -77,7 +77,7 @@ class LoadBalancer
   // type of local data collector interface 
   typedef typename DataCollectorType :: LocalInterfaceType
     LocalDataCollectorInterfaceType;
-public:
+protected:
   /** \brief constructor of LoadBalancer  
      \param grid Grid that load balancing is done for 
      \param paramFile optional parameter file which contains 
@@ -143,6 +143,7 @@ public:
     }
   }
 
+public:  
   //! destructor 
   virtual ~LoadBalancer () 
   {
@@ -173,12 +174,33 @@ public:
     Timer timer ; 
     
     bool changed = false;
-    // if balance counter has readed balanceStep do load balance
-    if( (balanceCounter_ >= balanceStep_) && (balanceStep_ > 0) )
-    {
-      // call grids load balance, only implemented in ALUGrid right now
-      changed = grid_.loadBalance( dm_ ); 
 
+    // if balance counter has readed balanceStep do load balance
+    const bool callBalance = ( (balanceCounter_ >= balanceStep_) && (balanceStep_ > 0) );
+
+#ifndef NDEBUG
+    // make sure load balance is called on every process 
+    int willCall = (callBalance) ? 1 : 0;
+    const int iCall = willCall;
+
+    // send info from rank 0 to all other 
+    grid_.comm().broadcast(&willCall, 1 , 0);
+
+    assert( willCall == iCall );
+#endif
+    
+    // if balance counter has readed balanceStep do load balance
+    if( callBalance )
+    {
+      try {
+        // call grids load balance, only implemented in ALUGrid right now
+        changed = grid_.loadBalance( dm_ ); 
+      }
+      catch (...) 
+      {
+        std::cout << "P[" << grid_.comm().rank() << "] : Cought an exepction during load balance" << std::endl;
+        abort();
+      }
       // reset balance counter 
       balanceCounter_ = 0;
     }
