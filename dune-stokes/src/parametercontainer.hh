@@ -138,7 +138,7 @@ class ParameterContainer
         void PrintParameterSpecs( std::ostream& out )
         {
             out << "\na valid parameterfile should at least specify the following parameters:";
-            out << "\nRemark: the correpondig files have to exist!" << std::endl;
+            out << "\nRemark: the correspondig files have to exist!" << std::endl;
             out << "\n(copy this into your parameterfile)" << std::endl;
             out << "dgf_file_2d: " << std::endl;
             out << "dgf_file_3d: " << std::endl;

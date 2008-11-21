@@ -1,11 +1,9 @@
-# $Id: Makefile.am 5042 2008-01-06 11:00:07Z christi $
+# $Id: Makefile.am 5337 2008-11-05 13:36:57Z robertk $
 
 if BUILD_DOCS
   DOXYGENTAG = doxygen-tag 
 # only build html when wml is available 
-if WML
   WHAT = bestpractice.html
-endif
   DOXYGEN_HTML = html 
   DOXYGEN_DIST = html-dist
 endif
@@ -23,7 +21,6 @@ if BUILD_DOCS
 DOXYGENINSTALL = *.html *.css *.png *.gif ../doxygen.log
 endif
 
-if WML
 # themeing doxygen
 DOXYGENHEADER = doxy-header.html
 DOXYGENHEADERBUILD = $(DOXYGENHEADER).build
@@ -34,7 +31,6 @@ DOYXFILE_OVERWRITE = echo "HTML_HEADER = $(DOXYGENHEADER)"; \
   echo "HTML_STYLESHEET = $(DOXYGENSTYLESHEET)";
 DOXYFILESHORT_OVERWRITE = $(DOYXFILE_OVERWRITE) \
   echo "SHORT_NAMES = YES";
-endif
 
 #we need this in the distribution
 if BUILD_DOCS

@@ -1,8 +1,3 @@
-/**
- *	\file problem.hh
- *	\brief	problem.hh
- **/
-
 #ifndef  DUNE_PROBLEM_HH__
 #define  DUNE_PROBLEM_HH__
 

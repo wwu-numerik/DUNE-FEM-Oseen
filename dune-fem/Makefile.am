@@ -1,4 +1,4 @@
-# $Id: Makefile.am 3339 2008-03-18 17:55:25Z dedner $
+# $Id: Makefile.am 4191 2008-11-20 10:39:13Z nolte $
 
 # we need the module file to be able to build via dunecontrol
 EXTRA_DIST=dune.module
@@ -7,11 +7,11 @@ EXTRA_DIST=dune.module
 #AUTOMAKE_OPTIONS = foreign 1.5
 
 # do everything in the subdirs
-DIST_SUBDIRS = fem lib doc
+DIST_SUBDIRS = fem lib m4 doc
 if BUILD_DOCS
-SUBDIRS = fem lib doc
+SUBDIRS = fem lib m4 doc
 else
-SUBDIRS = fem lib
+SUBDIRS = fem lib m4
 endif
 
 pkgconfigdir = $(libdir)/pkgconfig

@@ -97,16 +97,17 @@ namespace Dune {
     {
       assert (dim == 2);
 
-      GeometryType geoType = quad.geometry();
-      if(geoType.isTriangle()) {
+      const GeometryType geoType = quad.geometry();
+      if(geoType.isTriangle()) 
+      {
         helper_ = 
-          AutoPtrType(new TriangleTwistMapperStrategy<ct, dim>(quad.geometry()));
+          AutoPtrType(new TriangleTwistMapperStrategy<ct, dim>( geoType ) );
         return ;
       }
       if( geoType.isQuadrilateral())
       {
         helper_ = 
-         AutoPtrType(new QuadrilateralTwistMapperStrategy<ct,dim>(quad.geometry()));
+         AutoPtrType(new QuadrilateralTwistMapperStrategy<ct,dim>( geoType ) );
         return ;
       }
       DUNE_THROW(NotImplemented, 
@@ -243,13 +244,11 @@ namespace Dune {
 
     for (int idx = 0; idx < dim+1; ++idx) 
     {
-      int aluIndex = FaceTopo::dune2aluVertex(idx);
-      int twistedDuneIndex = FaceTopo::alu2duneVertex(aluIndex, twist);
+      const int aluIndex = FaceTopo::dune2aluVertex(idx);
+      const int twistedDuneIndex = FaceTopo::alu2duneVertex(aluIndex, twist);
       mat_[idx] = refElem_.position(twistedDuneIndex, dim); // dim == codim here
     }
     
-    //std::cout << "Triangle with twist " << twist << ":\n";
-    //std::cout << mat_ << std::endl;
     return mat_;
   }
 
@@ -270,8 +269,8 @@ namespace Dune {
   {
     mat_ = 0.0;
     for (int idx = 0; idx < dim+1; ++idx) {
-      int aluIndex = FaceTopo::dune2aluVertex(idx);
-      int twistedDuneIndex = FaceTopo::alu2duneVertex(aluIndex, twist);
+      const int aluIndex = FaceTopo::dune2aluVertex(idx);
+      const int twistedDuneIndex = FaceTopo::alu2duneVertex(aluIndex, twist);
       mat_[idx] = refElem_.position(twistedDuneIndex, dim); // dim == codim here
     }
 

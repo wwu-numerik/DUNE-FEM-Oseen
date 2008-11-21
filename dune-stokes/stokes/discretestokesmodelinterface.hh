@@ -22,64 +22,79 @@ template < class DiscreteStokesModelTraits >
 class DiscreteStokesModelInterface
 {
     public:
-        /**
-         *  \brief  Traits class defined by the user
-         **/
+
+
+    typedef DiscreteStokesModelInterface<DiscreteStokesModelTraits>
+        ThisType;
+        //! Traits class defined by the user
         typedef DiscreteStokesModelTraits
             Traits;
-        /**
-         *  \brief  Implementation type for Barton-Nackman trick
-         **/
+
+        //! Implementation type for Barton-Nackman trick
         typedef typename Traits::DiscreteModelType
             DiscreteModelType;
 
         //! volume quadrature type used in pass
-        typedef typename Traits::VolumeQuadratureType VolumeQuadratureType;
+        typedef typename Traits::VolumeQuadratureType
+            VolumeQuadratureType;
+
         //! face quadrature type used in pass
-        typedef typename Traits::FaceQuadratureType FaceQuadratureType;
-        /**
-         *  \brief  Velocity function space
-         **/
+        typedef typename Traits::FaceQuadratureType
+            FaceQuadratureType;
+
+        //! Velocity function space
         typedef typename Traits::DiscreteVelocityFunctionSpaceType
             DiscreteVelocityFunctionSpaceType;
-        /**
-         *  \brief  Pressure function space
-         **/
+
+        //! Sigma function space
+        typedef typename Traits::DiscreteSigmaFucntionSpaceType
+            DiscreteSigmaFucntionSpaceType;
+
+        //! Pressure function space
         typedef typename Traits::DiscretePressureFunctionSpaceType
             DiscretePressureFunctionSpaceType;
-        /**
-         *  \brief  Coordinate type (world coordinates)
-         **/
+
+        //! Coordinate type (world coordinates)
         typedef typename DiscreteVelocityFunctionSpaceType::DomainType
             DomainType;
-        /**
-         *  \brief  Vector type of the velocity's discrete function space's range
-         **/
+
+        //! Vector type of the velocity's discrete function space's range
         typedef typename DiscreteVelocityFunctionSpaceType::RangeType
             VelocityRangeType;
-        /**
-         *  \brief  Vector type of the pressure's discrete function space's range
-         **/
+
+        //! vector type of sigmas' discrete functions space's range
+        typedef typename DiscreteSigmaFucntionSpaceType::RangeType
+            SigmaRangeType;
+
+        //! Vector type of the pressure's discrete function space's range
         typedef typename DiscretePressureFunctionSpaceType::RangeType
             PressureRangeType;
-        /**
-         *  \brief  Type of GridPart
-         **/
+
+        //! Local function of type Velocity
+        typedef typename Traits::LocalVelocityFunctionType
+            LocalVelocityFunctionType;
+
+        //! local function of type sigma
+        typedef typename Traits::LocalSigmaFunctionType
+            LocalSigmaFunctionType;
+
+        //! Local function of type pressure
+        typedef typename Traits::LocalPressureFunctionType
+            LocalPressureFunctionType;
+
+        //! Type of GridPart
         typedef typename DiscreteVelocityFunctionSpaceType::GridPartType
             GridPartType;
-        /**
-         *  \brief  Type of the grid
-         **/
+
+        //! Type of the grid
         typedef typename GridPartType::GridType
             GridType;
-        /**
-         *  \brief  Intersection iterator of the grid
-         **/
+
+        //! Intersection iterator of the grid
         typedef typename GridPartType::IntersectionIteratorType
             IntersectionIteratorType;
-        /**
-         *  \brief  Element (codim 0 entity) of the grid
-         **/
+
+        //! Element (codim 0 entity) of the grid
         typedef typename GridType::template Codim<0>::Entity
             EntityType;
 
@@ -147,93 +162,143 @@ class DiscreteStokesModelInterface
         }
 
         /**
-         *  \brief  Empty implementation that fails if problem claims to have
-         *          a VelocitySigmaFlux contribution.
+         *  \brief
+         *  \tparam FaceDomainType
+         *          domain type on given face
+         *  \tparam LocalVelocityFunctionType
+         *          type of local function (of type velocity)
+         *  \param  it
+         *          faceiterator
+         *  \param  time
+         *          global time
+         *  \param  x
+         *          point to evaluate at
+         *  \param  uInner
+         *          local function (of type velocity) on given entity
+         *  \param  uOuter
+         *          local function (of type velocity) on neighbour of
+         *          given entity
+         *  \todo   latex doc
          **/
-        void VelocitySigmaFlux()
+        template < class FaceDomainType, class LocalVelocityFunctionType >
+        void velocitySigmaFlux( const IntersectionIteratorType& it,
+                                const double time,
+                                const FaceDomainType& x,
+                                const LocalVelocityFunctionType& uInner,
+                                const LocalVelocityFunctionType& uOuter,
+                                VelocityRangeType& uContribInner,
+                                VelocityRangeType& uContribOuter,
+                                VelocityRangeType& emptyContribInner,
+                                VelocityRangeType& emptyContribOuter )
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().VelocitySigmaFlux() );
-            return asImp().VelocitySigmaFlux();
+            CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
+                asImp().velocitySigmaFlux(  it,
+                                            time,
+                                            x,
+                                            uInner,
+                                            uOuter,
+                                            uContribInner,
+                                            uContribOuter,
+                                            emptyContribInner,
+                                            emptyContribOuter )
+            );
+            asImp().velocitySigmaFlux(  it,
+                                        time,
+                                        x,
+                                        uInner,
+                                        uOuter,
+                                        uContribInner,
+                                        uContribOuter,
+                                        emptyContribInner,
+                                        emptyContribOuter );
         }
 
         /**
-         *  \brief  Empty implementation that fails if problem claims to have
-         *          a VelocitySigmaFlux contribution.
+         *  \brief
          **/
-        void VelocitySigmaBoundaryFlux()
+        template < class ArgumentTuple, class FaceDomainType >
+        void velocitySigmaBoundaryFlux( const IntersectionIteratorType& it,
+                                        const double time,
+                                        const FaceDomainType& x,
+                                        const LocalVelocityFunctionType& uInner,
+                                        const LocalVelocityFunctionType& uOuter,
+                                        VelocityRangeType& uContribInner,
+                                        VelocityRangeType& uContribOuter,
+                                        VelocityRangeType& emptyContribInner,
+                                        VelocityRangeType& emptyContribOuter )
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().VelocitySigmaBoundaryFlux() );
-            return asImp().VelocitySigmaBoundaryFlux();
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().velocitySigmaBoundaryFlux() );
+            asImp().velocitySigmaBoundaryFlux();
         }
 
         /**
          *  \brief  Empty implementation that fails if problem claims to have
          *          a VelocityPressureFlux contribution.
          **/
-        void VelocityPressureFlux()
+        void velocityPressureFlux()
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().VelocityPressureFlux() );
-            return asImp().VelocityPressureFlux();
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().velocityPressureFlux() );
+            asImp().velocityPressureFlux();
         }
 
         /**
          *  \brief  Empty implementation that fails if problem claims to have
          *          a VelocityPressureFlux contribution.
          **/
-        void VelocityPressureBoundaryFlux()
+        void velocityPressureBoundaryFlux()
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().VelocityPressureBoundaryFlux() );
-            return asImp().VelocityPressureBoundaryFlux();
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().velocityPressureBoundaryFlux() );
+            asImp().velocityPressureBoundaryFlux();
         }
 
         /**
          *  \brief  Empty implementation that fails if problem claims to have
          *          a PressureFlux contribution.
          **/
-        void PressureFlux()
+        void pressureFlux()
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().PressureFlux() );
-            return asImp().PressureFlux();
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().pressureFlux() );
+            asImp().pressureFlux();
         }
 
         /**
          *  \brief  Empty implementation that fails if problem claims to have
          *          a PressureFlux contribution.
          **/
-        void PressureBoundaryFlux()
+        void pressureBoundaryFlux()
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().PressureBoundaryFlux() );
-            return asImp().PressureBoundaryFlux();
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().pressureBoundaryFlux() );
+            asImp().pressureBoundaryFlux();
         }
 
         /**
          *  \brief  Empty implementation that fails if problem claims to have
          *          a SigmaFlux contribution.
          **/
-        void SigmaFlux()
+        void sigmaFlux()
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().SigmaFlux() );
-            return asImp().SigmaFlux();
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().sigmaFlux() );
+            asImp().sigmaFlux();
         }
 
         /**
          *  \brief  Empty implementation that fails if problem claims to have
          *          a SigmaFlux contribution.
          **/
-        void SigmaBoundaryFlux()
+        void sigmaBoundaryFlux()
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().SigmaBoundaryFlux() );
-            return asImp().SigmaBoundaryFlux();
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().sigmaBoundaryFlux() );
+            asImp().sigmaBoundaryFlux();
         }
 
         /**
          *  \brief  Empty implementation that fails if problem claims to have
          *          a VelocitySigmaFlux contribution.
          **/
-        void Force()
+        void force()
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().Force() );
-            return asImp().Force();
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().force() );
+            asImp().force();
         }
 
     protected:
@@ -245,8 +310,9 @@ class DiscreteStokesModelInterface
         {
             return static_cast<const DiscreteModelType&>(*this);
         }
+
 };
 
 }; // end of namespace Dune
 
-#endif // end of dixcretestokesmodelinterface.hh
+#endif // end of discretestokesmodelinterface.hh

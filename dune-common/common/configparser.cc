@@ -1,5 +1,6 @@
 #include "configparser.hh"
 
+#include <cstdlib>
 #include <string>
 #include <sstream>
 #include <fstream>

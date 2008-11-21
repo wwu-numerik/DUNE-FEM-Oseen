@@ -129,7 +129,8 @@ AC_CONFIG_FILES([Makefile
      fem/test/Makefile
      fem/gridpart/Makefile
      lib/Makefile
-     scripts/check-header.sh
-     fem/version.hh
+     fem/version.inc
+     m4/Makefile
+     make.inc
      dune-fem.pc])
 AC_OUTPUT

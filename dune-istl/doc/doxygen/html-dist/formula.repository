@@ -1,0 +1,48 @@
+\form#0:$V=K^n$
+\form#1:$K$
+\form#2:$n$
+\form#3:$V=W\times W \times W \times\cdots\times W$
+\form#4:$V=B^{n_1}\times B^{n_2}\times\ldots \times B^{n_m}$
+\form#5:$m$
+\form#6:$i=1,\ldots,m$
+\form#7:$A: V \mapsto W$
+\form#8:$V$
+\form#9:$W$
+\form#10:$M: V_1 \to V_2$
+\form#11:$V_1=K^n$
+\form#12:$V_2=K^m$
+\form#13:$V_1=W\times W \times W \times\cdots\times W$
+\form#14:$V_2=W\times W \times W \times\cdots\times W$
+\form#15:$x$
+\form#16:$x_p$
+\form#17:$p=0, \ldots, P-1$
+\form#18:$p$
+\form#19:$P$
+\form#20:$x: I \rightarrow K$
+\form#21:$I \subset N_0$
+\form#22:$I$
+\form#23:$x_p:I_p \rightarrow K$
+\form#24:$I_p \subset I$
+\form#25:$0$
+\form#26:$(g_i,l_i)_{i=0}^N $
+\form#27:$l_i < l_j$
+\form#28:$g_i < g_j$
+\form#29:$i \neq j$
+\form#30:$ y += \alpha A x $
+\form#31:$ A : X\to Y$
+\form#32:$ A(\alpha x) = \alpha A(x) $
+\form#33:$ A(x+y) = A(x)+A(y)$
+\form#34:$ A(x)$
+\form#35:$ y = A(x) $
+\form#36:$ y = y + \alpha A(x) $
+\form#37:$k$
+\form#38:$k>1$
+\form#39:$D=A_{ii}$
+\form#40:$k-1$
+\form#41:$k=1$
+\form#42:$ v = M^{-1} d $
+\form#43:$ M $
+\form#44:$ A $
+\form#45:$ A(x)=b$
+\form#46:$ A : X \to Y $
+\form#47:$ \|b-A(x^n)\|/\|b-A(x^0)\|$

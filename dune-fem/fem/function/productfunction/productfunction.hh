@@ -51,9 +51,6 @@ public:
  //! Type of the underlying grid
   typedef typename DiscreteFunctionSpaceType::GridType GridType;
 
-  typedef DofManager<GridType> DofManagerType;
-  typedef DofManagerFactory<DofManagerType> DofManagerFactoryType;
-
   typedef typename DiscreteFunctionSpaceType::Traits::MapperType MapperType;
   typedef typename DiscreteFunctionSpaceType::Traits::RangeFieldType DofType;
 //! Type of the dof iterator used in the discrete function implementation.
@@ -61,8 +58,6 @@ public:
  //! Type of the constant dof iterator used in the discrete function implementation
   typedef typename DofStorageType::ConstDofIteratorType ConstDofIteratorType;
 
-  typedef MemObjectInterface MemObjectInterfaceType;
-    
   //! Type of this class 
   typedef ProductDiscreteFunction <DiscreteFunctionSpaceType,DiscreteFunctionSpace2Type> DiscreteFunctionType;
   typedef DiscreteFunctionType ThisType;
@@ -195,18 +190,6 @@ public:
   */
   virtual bool read_ascii(const std::string filename);
 
-  /** \brief write discrete function to file with given filename using pgm encoding
-      \param[in] filename name of file to which discrete function should be written using pgm 
-      \return <b>true</b> if operation was successful 
-   */
-  virtual bool DUNE_DEPRECATED write_pgm(const std::string filename) const;
-
-  /** \brief read discrete function from file with given filename using pgm decoding
-      \param[in] filename name of file from which discrete function should be read using pgm 
-      \return <b>true</b> if operation was successful 
-  */
-  virtual bool DUNE_DEPRECATED read_pgm(const std::string filename); 
-
   /** \brief returns name of discrete function 
       \return string holding name of discrete function 
   */ 
@@ -216,8 +199,6 @@ public:
       \return total number of dofs 
   */ 
   int size() const { return dofVec_.size(); }
-  
-  
   
   //! return pointer to internal array for use of BLAS routines 
   DofType * leakPointer () { return dofVec_.leakPointer();  };
@@ -231,26 +212,19 @@ public:
 
 
 private:  
- 
   // name of this func
   std::string name_;
-
-  // DofManager
-  DofManager<GridType>& dm_;
-
-  // MemObject that manages the memory for the dofs of this function
-  std::pair<MemObjectInterface*, DofStorageType*> memPair_;
-  
-  //! array containing the dof of this function, see dofmanager.hh
-  //! the array is stored within the mem object 
-  DofStorageType & dofVec_;
 
   //! The related function space
   const DiscreteFunctionSpaceType & functionSpace_;
   //! The related function space2
   const DiscreteFunctionSpace2Type & functionSpace2_;
-}; // end class ProductDiscreteFunction 
 
+  //! array containing the dof of this function, see dofmanager.hh
+  //! the array is stored within the mem object 
+  mutable DofStorageType dofVec_;
+
+}; // end class ProductDiscreteFunction 
 
 
 } // end namespace Dune
