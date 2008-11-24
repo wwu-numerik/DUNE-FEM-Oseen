@@ -7,7 +7,7 @@ EXTRA_DIST=dune.module
 AUTOMAKE_OPTIONS = foreign 1.5
 
 # do everything in the subdirs
-SUBDIRS = doc src_localdg #sources #only compile things that compile without errors
+SUBDIRS = doc #src_localdg #src_grid src_poisson #sources #only compile things that compile without errors
 
 #pkgconfigdir = $(libdir)/pkgconfig
 #pkgconfig_DATA = dune-fem.pc
