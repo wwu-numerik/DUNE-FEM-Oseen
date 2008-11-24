@@ -44,13 +44,5 @@ LIBS="$DUNE_LIBS $BLAS_LIBS"
 
 # generate Makefiles
 AC_CONFIG_FILES([Makefile
-     src_grid/Makefile
-     src_poisson/Makefile
-     src_finitevolume/Makefile	
-     src_localdg/Makefile
-     sources/Makefile
-     sources/poisson/Makefile
-     sources/localdg/Makefile
-     sources/localdg/advectiondiffusion/Makefile
      ])
 AC_OUTPUT

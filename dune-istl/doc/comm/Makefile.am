@@ -1,4 +1,4 @@
-# $Id: Makefile.am 665 2006-10-30 13:15:50Z christi $
+# $Id: Makefile.am 780 2007-07-30 19:52:27Z mblatt $
 
 SUBDIRS = figures
 
@@ -7,11 +7,46 @@ if MPI
   MPIPROGRAMS = indexset
 endif
 
+SUFFIXES = .dvi .tex .pdf
+
+if BUILD_DOCS
+  DOCS = communication.pdf communication.ps
+endif
+
+
+# setting like in dune-web
+RELDIR=istl/comm
+CURDIR=doc/$(RELDIR)
+BASEDIR=../../..
 commdir=$(datadir)/doc/dune-istl/comm
 
-comm_DATA = communication.pdf
+# list of tests to run (indicestest is special case)
+TESTS = $(MPIPROGRAMS)
 
-CONFIG_CLEAN_FILES = *.dist
+# programs just to build when "make check" is used
+check_PROGRAMS = $(MPIPROGRAMS)
+
+indexset_SOURCES = indexset.cc buildindexset.hh reverse.hh
+indexset_CXXFLAGS = $(MPI_CPPFLAGS)
+indexset_LDADD = $(MPI_LDFLAGS)
+
+comm_DATA = $(DOCS) #$(indexset_SOURCES)
+
+EXTRA_DIST = communication.pdf Makefile.dist.in Makefile.dist.am
+
+communication.dvi : communication.tex buildindexset.hh reverse.hh
+
+
+CLEANFILES = *.aux *.bbl *.blg *.log *.out *.toc *.dvi *.pdf *.ps
+
+# files to clean only in svn tree but not in tarball
+SVNCLEANFILES =  *.pdf *.ps
+clean-local:
+	if test -e $(top_srcdir)/doc/doxygen/Doxydep; then rm -rf $(SVNCLEANFILES); fi
+
+dist-hook:
+	sed $(srcdir)/Makefile.dist.am -e 's/Makefile\.dist/Makefile/g' > $(distdir)/Makefile.am
+	sed $(srcdir)/Makefile.dist.in -e 's/Makefile\.dist/Makefile/g' > $(distdir)/Makefile.in
 
 include $(top_srcdir)/am/latex
 include $(top_srcdir)/am/webstuff
