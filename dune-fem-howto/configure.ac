@@ -44,14 +44,7 @@ LIBS="$DUNE_LIBS $BLAS_LIBS"
 
 # generate Makefiles
 AC_CONFIG_FILES([Makefile
-<<<<<<< HEAD:dune-fem-howto/configure.ac
      ])
-=======
-	src_localdg/Makefile
-	src_localdg/doc/Makefile
-	src_localdg/doc/doxygen/Makefile
-	])
->>>>>>> reverts all post 1.1.1 commits except adding a new build target for suse10.3:dune-fem-howto/configure.ac
 AC_OUTPUT
 #     src_grid/Makefile
 #     src_poisson/Makefile

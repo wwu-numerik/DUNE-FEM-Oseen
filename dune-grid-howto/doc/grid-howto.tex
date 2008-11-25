@@ -1043,7 +1043,6 @@ DFG grid type definition will not work. Nevertheless, the grid parser will work
 but the grid type has to be defined by the user and the appropriate DGF parser 
 specialization has to be included. 
 Assuming the \lstinline!--with-grid-dim! was provided the DGF grid type 
-<<<<<<< HEAD:dune-grid-howto/doc/grid-howto.tex
 definition works by first including \lstinline!dgfgridtype.hh!.
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh>
@@ -1051,15 +1050,6 @@ definition works by first including \lstinline!dgfgridtype.hh!.
 Depending on the pre-configured values of \lstinline!GRIDDIM! and
 \lstinline!GRIDTYPE! a typedef for the grid to use will be provided by
 including \lstinline!dgfgridtype.hh!. The follwoing example show how an 
-=======
-definition works by first including \lstinline!gridtype.hh!.
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-#include <dune/grid/io/file/dgfparser/gridtype.hh>
-\end{lstlisting}
-Depending on the pre-configured values of \lstinline!GRIDDIM! and
-\lstinline!GRIDTYPE! a typedef for the grid to use will be provided by
-including \lstinline!gridtype.hh!. The follwoing example show how an 
->>>>>>> reverts all post 1.1.1 commits except adding a new build target for suse10.3:dune-grid-howto/doc/grid-howto.tex
 instance of the defined grid is generated. Given a DGF file, for example 
 \lstinline!unitcube2.dgf!, a grid pointer is created as follows.
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
