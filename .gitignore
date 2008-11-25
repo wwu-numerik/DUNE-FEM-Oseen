@@ -47,7 +47,6 @@ dune-common/lib/.libs/
 dune-common/lib/Makefile
 dune-common/lib/Makefile.in
 dune-common/lib/libdunecommon.la
-dune-common/libtool
 dune-common/ltmain.sh
 dune-common/m4/Makefile
 dune-common/m4/Makefile.in
@@ -187,7 +186,6 @@ dune-grid/lib/.libs/
 dune-grid/lib/Makefile
 dune-grid/lib/Makefile.in
 dune-grid/lib/libdunegrid.la
-dune-grid/libtool
 dune-grid/ltmain.sh
 dune-grid/missing
 dune-grid/stamp-h1
@@ -401,7 +399,6 @@ dune-fem/lib/.libs/
 dune-fem/lib/Makefile
 dune-fem/lib/Makefile.in
 dune-fem/lib/libdunefem.la
-dune-fem/libtool
 dune-fem/ltmain.sh
 dune-fem/m4/Makefile
 dune-fem/m4/Makefile.in
@@ -454,7 +451,6 @@ dune-istl/istl/tutorial/Makefile
 dune-istl/istl/tutorial/Makefile.in
 dune-istl/istl/tutorial/example
 dune-istl/istl/tutorial/example.o
-dune-istl/libtool
 dune-istl/ltmain.sh
 dune-istl/missing
 dune-istl/stamp-h1
@@ -479,7 +475,6 @@ dune-fem-howto/doc/femhowto.out
 dune-fem-howto/doc/femhowto.toc
 dune-fem-howto/dune
 dune-fem-howto/install-sh
-dune-fem-howto/libtool
 dune-fem-howto/ltmain.sh
 dune-fem-howto/missing
 dune-fem-howto/stamp-h1
@@ -542,7 +537,6 @@ dune-grid-howto/grids/Makefile.in
 dune-grid-howto/install-sh
 dune-grid-howto/integration
 dune-grid-howto/integration-integration.o
-dune-grid-howto/libtool
 dune-grid-howto/ltmain.sh
 dune-grid-howto/missing
 dune-grid-howto/othergrids
@@ -575,7 +569,6 @@ dune-fem-howto/doc/femhowto.out
 dune-fem-howto/doc/femhowto.toc
 dune-fem-howto/dune
 dune-fem-howto/install-sh
-dune-fem-howto/libtool
 dune-fem-howto/ltmain.sh
 dune-fem-howto/missing
 dune-fem-howto/stamp-h1
@@ -596,7 +589,6 @@ mirko-stokes/doc/Makefile.in
 mirko-stokes/doc/doxygen/Makefile
 mirko-stokes/doc/doxygen/Makefile.in
 mirko-stokes/install-sh
-mirko-stokes/libtool
 mirko-stokes/ltmain.sh
 mirko-stokes/missing
 mirko-stokes/stamp-h1
@@ -618,7 +610,6 @@ dune-stokes/doc/Makefile.in
 dune-stokes/doc/doxygen/Makefile
 dune-stokes/doc/doxygen/Makefile.in
 dune-stokes/install-sh
-dune-stokes/libtool
 dune-stokes/ltmain.sh
 dune-stokes/missing
 dune-stokes/src/.deps/
