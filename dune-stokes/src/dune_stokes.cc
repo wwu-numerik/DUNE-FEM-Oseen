@@ -160,6 +160,9 @@ int main( int argc, char** argv )
     PostProcessorType postProcessor( problem, gridPart, velocitySpace, pressureSpace );
     infoStream << "...done." << std::endl;
 
+
+    const int dim = gridDim;
+    const int polOrd = 2;
     typedef Dune::FunctionSpace<double, double, dim, dim>
         FunctionSpaceType;
     typedef FunctionSpaceType::DomainFieldType
@@ -176,25 +179,25 @@ int main( int argc, char** argv )
         DiscreteFunctionType;
     typedef Dune::StartPass< DiscreteFunctionType, -1 >
         StartPassType;
-    typedef Dune::StokesTraits < DiscreteFunctionType, DiscreteFunctionSpaceType >
-        StokesTraits;
-    typedef Dune::DiscreteStokesModelInterface< StokesTraits >
-        DiscreteModelType;
-    typedef Dune::StokesPass< DiscreteFunctionType, DiscreteFunctionType, DiscreteModelType, StartPassType, -1 >
-        PassType;
-    typedef Dune::OEMCGOp <DiscreteFunctionType, PassType >
-        InverseOperatorType;
-    typedef Dune::SaddlepointInverseOperator< PassType, InverseOperatorType >
-        SaddlepointInverseOperatortype;
+//    typedef Dune::StokesTraits < DiscreteFunctionType, DiscreteFunctionSpaceType >
+//        StokesTraits;
+//    typedef Dune::DiscreteStokesModelInterface< StokesTraits >
+//        DiscreteModelType;
+//    typedef Dune::StokesPass< DiscreteFunctionType, DiscreteFunctionType, DiscreteModelType, StartPassType, -1 >
+//        PassType;
+//    typedef Dune::OEMCGOp <DiscreteFunctionType, PassType >
+//        InverseOperatorType;
+//    typedef Dune::SaddlepointInverseOperator< PassType, InverseOperatorType >
+//        SaddlepointInverseOperatortype;
 
     GridPartType gridpart ( *gridPtr );
     DiscreteFunctionSpaceType pressurespc ( gridpart  );
     DiscreteFunctionSpaceType velospace ( gridpart  );
-    DiscreteModelType disc_model;
-    StartPassType startPass;
-    PassType pass ( startPass, velospace, pressurespc );
-    InverseOperatorType aufSolver( pass, 1e-10 ,1e-10 ,5000 ,false );
-    SaddlepointInverseOperatortype invOp( pass, 1e-8, 1e-8, 5000, 1, aufSolver, pressurespc, velospace);
+//    DiscreteModelType disc_model;
+//    StartPassType startPass;
+//    PassType pass ( startPass, velospace, pressurespc );
+//    InverseOperatorType aufSolver( pass, 1e-10 ,1e-10 ,5000 ,false );
+//    SaddlepointInverseOperatortype invOp( pass, 1e-8, 1e-8, 5000, 1, aufSolver, pressurespc, velospace);
 
 
 

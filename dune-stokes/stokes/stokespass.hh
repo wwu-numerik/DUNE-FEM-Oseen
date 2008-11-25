@@ -144,29 +144,29 @@ namespace Dune
 
 
                 //compute volume integral contributions
-                for (int l = 0; l < quadNop ; ++l)
-                {
-                } // end volume integral contributions
+//                for (int l = 0; l < quadNop ; ++l)
+//                {
+//                } // end volume integral contributions
 
 
                 //compute surface integral contributions
-                IntersectionIterator endnit = entity.ileafend();
-                double dtLocal = 0.0;
-                double minvol = vol;
-                for (IntersectionIterator nit = entity.ileafbegin(); nit != endnit; ++nit)
-                {
-                    //	  int twistSelf = twistUtil_.twistInSelf(nit);
-                    FaceQuadratureType faceQuadInner(spc_.gridPart(),nit, faceQuadOrd_,
-                    FaceQuadratureType::INSIDE);
-
-                    if (nit.neighbor())
-                    {
-                    } //end if inner
-
-                    if (nit.boundary())
-                    {
-                    } // end if boundary
-                }
+//                IntersectionIterator endnit = entity.ileafend();
+//                double dtLocal = 0.0;
+//                double minvol = vol;
+//                for (IntersectionIterator nit = entity.ileafbegin(); nit != endnit; ++nit)
+//                {
+//                    //	  int twistSelf = twistUtil_.twistInSelf(nit);
+//                    FaceQuadratureType faceQuadInner(spc_.gridPart(),nit, faceQuadOrd_,
+//                    FaceQuadratureType::INSIDE);
+//
+//                    if (nit.neighbor())
+//                    {
+//                    } //end if inner
+//
+//                    if (nit.boundary())
+//                    {
+//                    } // end if boundary
+//                }
                 //end compute surface integral contributions
             }//end void applyLocal(EntityType& entity) const
 
