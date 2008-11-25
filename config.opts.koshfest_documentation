@@ -1,6 +1,6 @@
 # use these options for configure if no options a provided on the cmdline
 #AUTOGEN_FLAGS="--ac=2.59 --am=-1.8"
-CONFIGURE_FLAGS="CXX=g++-4.2 CC=gcc-4.2 CXXFLAGS='-O0 -DDEBUG' \
+CONFIGURE_FLAGS="CXX=/usr/bin/g++-4.2 CC=/usr/bin/gcc-4.2 CXXFLAGS='-O0 -DDEBUG' \
 	LDFLAGS=/usr/lib64/libgfortran.so.1.0.0 \
   --prefix=/share/dune/Dune/dune_felix-rene_x86_64 \
   --with-metis=/share/dune/Modules/modules_$HOSTTYPE/metis \
@@ -11,10 +11,7 @@ CONFIGURE_FLAGS="CXX=g++-4.2 CC=gcc-4.2 CXXFLAGS='-O0 -DDEBUG' \
   --x-libraries=/usr/X11R6/lib64 \
   --with-grape=/share/dune/Modules/modules_$HOSTTYPE/grape \
   --with-grid-dim=3 \
-  --with-grid-type=ALUGRID_CUBE \
-  --enable-mpi \
-  --enable-parallel \
-  --with-mpi=/usr/o0/openmpi-1.2.3/ix86_64-ibm-linux\lib "
+  --with-grid-type=ALUGRID_CUBE "
 MAKE_FLAGS=
 #  --enable-parallel \
 #  --with-metis=/share/dune/Modules/modules_$HOSTTYPE/metis \
