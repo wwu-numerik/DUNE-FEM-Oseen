@@ -10,21 +10,22 @@
 namespace Dune
 {
 
-  template< class Dof, class Grid, class Mapper >
+  template< class Dof, class DofManager, class Mapper >
   class AttachedDiscreteFunctionContainer
   {
-    typedef AttachedDiscreteFunctionContainer< Dof, Grid, Mapper >
+    typedef AttachedDiscreteFunctionContainer< Dof, DofManager, Mapper >
       ThisType;
 
     class SingletonKey;
 
     friend class DefaultSingletonFactory< SingletonKey, ThisType >;
+    //friend class SingletonList< SingletonKey, ThisType >;
 
     typedef SingletonList< SingletonKey, ThisType > SingletonProvider;
 
   public:
     typedef Dof DofType;
-    typedef Grid GridType;
+    typedef DofManager DofManagerType;
     typedef Mapper MapperType;
 
   private:
@@ -37,18 +38,18 @@ namespace Dune
       ConstSlotIteratorType;
 
   private:
-    DofStorageInterface *memObject_;
+    DofManagerType &dofManager_;
+
+    MemObjectInterface *memObject_;
     StorageType *storage_;
 
   private:
     inline explicit
     AttachedDiscreteFunctionContainer ( const SingletonKey &key )
+    : dofManager_( key.dofManager() )
     {
-      StorageType *const null = 0;
-      std :: pair< DofStorageInterface *, StorageType * > memPair
-        = allocateManagedDofStorage( key.grid(), key.mapper(), name(), null );
-
-      // store pointers 
+      std :: pair< MemObjectInterface *, StorageType * > memPair
+        = dofManager_.addDofSet( (StorageType *)0, key.mapper(), name() );
       memObject_ = memPair.first;
       storage_ = memPair.second;
     }
@@ -58,8 +59,8 @@ namespace Dune
 
     inline ~AttachedDiscreteFunctionContainer ()
     {
-      if ( memObject_ )
-        delete memObject_ ;
+      assert( memObject_ );
+      dofManager_.removeDofSet( *memObject_ );
     }
 
     // prohibit assignment
@@ -110,8 +111,8 @@ namespace Dune
 
     inline void enableDofCompression ()
     {
-      if( memObject_ ) 
-        memObject_->enableDofCompression();
+      assert( memObject_ );
+      memObject_->enableDofCompression();
     }
 
     inline const std :: string &name () const
@@ -139,10 +140,10 @@ namespace Dune
     }
 
   public:
-    inline static ThisType &attach ( const GridType &grid,
+    inline static ThisType &attach ( DofManagerType &dofManager,
                                      MapperType &mapper )
     {
-      SingletonKey key( grid, mapper );
+      SingletonKey key( dofManager, mapper );
       return SingletonProvider :: getObject( key );
     }
 
@@ -154,35 +155,35 @@ namespace Dune
 
 
 
-  template< class Dof, class Grid, class Mapper >
-  class AttachedDiscreteFunctionContainer< Dof, Grid, Mapper >
+  template< class Dof, class DofManager, class Mapper >
+  class AttachedDiscreteFunctionContainer< Dof, DofManager, Mapper >
     :: SingletonKey
   {
     typedef SingletonKey ThisType;
 
   public:
-    typedef Grid GridType;
+    typedef DofManager DofManagerType;
     typedef Mapper MapperType;
 
   protected:
-    const GridType *const grid_;
+    DofManager *const dofManager_;
     MapperType *const mapper_;
 
   public:
-    inline SingletonKey ( const GridType &grid,
+    inline SingletonKey ( DofManagerType &dofManager,
                           MapperType &mapper )
-    : grid_( &grid ),
+    : dofManager_( &dofManager ),
       mapper_( &mapper )
     {}
 
     inline bool operator== ( const ThisType &other ) const
     {
-      return ((grid_ == other.grid_) && (mapper_ == other.mapper_));
+      return ((dofManager_ == other.dofManager_) && (mapper_ == other.mapper_));
     }
 
-    inline const GridType &grid () const
+    inline DofManagerType &dofManager () const
     {
-      return *grid_;
+      return *dofManager_;
     }
 
     inline MapperType &mapper () const

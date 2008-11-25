@@ -9,8 +9,7 @@
 #include <dune/fem/misc/utility.hh>
 
 #include <dune/grid/common/grid.hh>
-#include <dune/grid/io/file/dgfparser/dgfparser.hh>
-//#include <dune/grid/io/file/dgfparser/entitykey.hh>
+#include <dune/grid/io/file/dgfparser/entitykey.hh>
 
 
 #include <dune/fem/pass/dgpass.hh>

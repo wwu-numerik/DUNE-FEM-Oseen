@@ -48,8 +48,6 @@ using namespace Dune;
 
 namespace LDGExample { 
 
-enum PassIdType{ startPass, gradientId , pressureId , velocityId };
-  
 template <class ModelImpType, int polOrd=0 >
 struct DiscrParam
 {
@@ -102,11 +100,11 @@ public:
   typedef typename GradientModelType::Traits::DiscreteFunctionSpaceType GradDiscreteFunctionSpaceType;
 
   typedef DiscreteFunctionSpaceType VeloSpaceType;
-  typedef StartPass<DiscreteFunctionType, startPass > Pass0Type;
+  typedef StartPass<DiscreteFunctionType> Pass0Type;
   // note, the destination type of the pass 0 is the argument type of pass 1
-  typedef LocalDGElliptGradientPass<GradientModelType , Pass0Type, gradientId > GradPassType;
-  typedef LocalDGElliptPass<LaplaceModelType, GradPassType, pressureId > LastPassType;
-  typedef LocalDGPass<VelocityModelType,LastPassType, velocityId > VeloPassType;
+  typedef LocalDGElliptGradientPass<GradientModelType , Pass0Type> GradPassType;
+  typedef LocalDGElliptPass<LaplaceModelType, GradPassType> LastPassType;
+  typedef LocalDGPass<VelocityModelType,LastPassType> VeloPassType;
 
   typedef GradDiscreteFunctionSpaceType GradSpaceType;
   
@@ -265,7 +263,7 @@ public:
         {
           grid_.globalRefine(DGFGridInfo<GridType>::refineStepsForHalf());
           dm_.resize();
-          dm_.compress();
+          dm_.dofCompress();
         }
       }
 
@@ -390,11 +388,10 @@ void simul(typename DiscrType::ModelType & model, std::string paramFile)
   typedef LDGFlux<ModelType> NumericalFluxType;
   typedef GradientFlux GradientFluxType;
   //typedef AverageFlux GradientFluxType;
-  
 
-  typedef LaplaceDiscreteModel < ModelType, NumericalFluxType, polOrd, gradientId > LaplaceModelType;
-  typedef GradientDiscreteModel < ModelType, NumericalFluxType, polOrd-1, startPass > GradientModelType;
-  typedef VelocityDiscreteModel < ModelType, GradientFluxType, polOrd-1 , pressureId > VelocityModelType;
+  typedef LaplaceDiscreteModel < ModelType, NumericalFluxType, polOrd > LaplaceModelType;
+  typedef GradientDiscreteModel < ModelType, NumericalFluxType, polOrd-1 > GradientModelType;
+  typedef VelocityDiscreteModel < ModelType, GradientFluxType, polOrd-1 > VelocityModelType;
   
   typedef MySpaceOperator <  GradientModelType, 
                              LaplaceModelType,

@@ -308,23 +308,12 @@ namespace Dune
     using BaseType :: gridPart;
 
   public:
-    //! default communication interface 
-    static const InterfaceType defaultInterface = InteriorBorder_InteriorBorder_Interface;
-
-    //! default communication direction 
-    static const CommunicationDirection defaultDirection = ForwardCommunication;
-
-    /** \brief constructor
-     *
-     *  \param[in]  gridPart       grid part for the Lagrange space
-     *  \param[in]  commInterface  communication interface to use (optional)
-     *  \param[in]  commDirection  communication direction to use (optional)
-     */
-    explicit LagrangeDiscreteFunctionSpace
-      ( GridPartType &gridPart,
-        const InterfaceType commInterface = defaultInterface,
-        const CommunicationDirection commDirection = defaultDirection )
-    : BaseType( gridPart, commInterface, commDirection ),
+    /** \brief Constructor generating a LagrangeBaseFunctionSet of the requested polynomial order for each element type of the grid 
+        \param[in] gridPart 
+        \return 
+    **/
+    inline explicit LagrangeDiscreteFunctionSpace ( GridPartType &gridPart )
+    : BaseType( gridPart ),
       baseFunctionSet_(),
       lagrangePointSet_(),
       mapper_( 0 ),
@@ -501,6 +490,4 @@ namespace Dune
   
 } // end Dune namespace  
 
-// include definition of RestrictProlongDefault for Lagrange Space.
-#include "adaptmanager.hh"
 #endif

@@ -79,7 +79,11 @@ namespace Dune {
 #include <string>
 
 #if HAVE_MPI == 1 
+<<<<<<< HEAD:dune-fem/fem/io/visual/grape/datadisp/datadisp.cc
 #warning "Visualization does not work in parallel" 
+=======
+#error "Visualization only works without MPI" 
+>>>>>>> reverts all post 1.1.1 commits except adding a new build target for suse10.3:dune-fem/fem/io/visual/grape/datadisp/datadisp.cc
 #endif 
 
 #include <dune/common/misc.hh>
@@ -99,11 +103,17 @@ using namespace Dune;
 #include <dune/fem/io/visual/grape/datadisp/readioparams.cc> 
 #include <dune/fem/io/parameter.hh>
 #include <dune/fem/function/common/discretefunctionadapter.hh>
+<<<<<<< HEAD:dune-fem/fem/io/visual/grape/datadisp/datadisp.cc
 #include <dune/fem/misc/mpimanager.hh>
 
 int main(int argc, char **argv)
 {
   MPIManager::initialize(argc,argv);
+=======
+
+int main(int argc, char **argv)
+{
+>>>>>>> reverts all post 1.1.1 commits except adding a new build target for suse10.3:dune-fem/fem/io/visual/grape/datadisp/datadisp.cc
   try {			         
     Parameter::append(argc,argv);
     if (argc < 2)

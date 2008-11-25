@@ -18,14 +18,14 @@
 #endif
 
 #ifndef DIMRANGE
-#  define DIMRANGE 4
+#  define DIMRANGE 2
 #endif
 
 
 namespace Dune
 {
 
-  typedef FunctionSpace< double, double, dimworld, DIMRANGE >
+  typedef FunctionSpace< double, Double, dimworld, DIMRANGE >
     TestFunctionSpace;
 
 

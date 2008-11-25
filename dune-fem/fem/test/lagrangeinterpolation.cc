@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include <dune/fem/gridpart/gridpart.hh>
-#include <dune/fem/gridpart/adaptiveleafgridpart.hh>
 
 #include <dune/fem/misc/double.hh>
 #include <dune/fem/space/lagrangespace.hh>
@@ -13,11 +12,9 @@
 #include <dune/fem/io/streams/xdrstreams.hh>
 #include <dune/fem/io/streams/asciistreams.hh>
 #include <dune/fem/io/streams/virtualstreams.hh>
-#include <dune/fem/io/file/vtkio.hh>
 
 #include "testgrid.hh"
 #include "exactsolution.hh"
-#include "dfspace.hh"
 
 using namespace Dune;
 
@@ -29,10 +26,9 @@ using namespace Dune;
   const int polOrder = 1;
 #endif
 
-typedef AdaptiveLeafGridPart< GridType > GridPartType;
+typedef LeafGridPart< GridType > GridPartType;
 
-// typedef FunctionSpace< double, Double, dimworld, 1 > FunctionSpaceType;
-typedef TestFunctionSpace FunctionSpaceType;
+typedef FunctionSpace< double, Double, dimworld, 1 > FunctionSpaceType;
 
 typedef LagrangeDiscreteFunctionSpace< FunctionSpaceType, GridPartType, polOrder >
   DiscreteFunctionSpaceType;
@@ -57,9 +53,8 @@ void readBack ( VirtualInStream in, DiscreteFunctionType &solution )
 
 
 
-int main(int argc, char ** argv) 
+int main ()
 {
-  MPIManager :: initialize( argc, argv );
   try
   {
     GridType &grid = TestGrid :: grid();
@@ -110,12 +105,6 @@ int main(int argc, char ** argv)
       return 1;
     }
 
-    // output to vtk file
-    VTKIO<GridPartType> vtkWriter(gridPart);
-    vtkWriter.addVertexData(solution);
-    vtkWriter.pwrite("vtxprojection",
-                      Parameter::commonOutputPath().c_str(),"",
-                      Dune::VTKOptions::ascii);
     return 0;
   }
   catch( Exception e )

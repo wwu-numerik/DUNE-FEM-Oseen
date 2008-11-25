@@ -1,4 +1,4 @@
-// $Id: communicator.hh 954 2008-10-28 10:31:55Z robertk $
+// $Id: communicator.hh 772 2007-05-08 08:56:30Z christi $
 #ifndef DUNE_COMMUNICATOR
 #define DUNE_COMMUNICATOR
 
@@ -213,7 +213,7 @@ namespace Dune
     /**
      * @brief Type of the underlying remote indices class.
      */
-    typedef Dune :: RemoteIndices<ParallelIndexSet> RemoteIndices;
+    typedef RemoteIndices<ParallelIndexSet> RemoteIndices;
 
     /**
      * @brief The type of the global index.
@@ -444,7 +444,7 @@ namespace Dune
     /**
      * @brief The type of the interface.
      */
-    typedef Dune :: Interface<T> Interface;
+    typedef Interface<T> Interface;
     
     /**
      * @brief The type of the global index.

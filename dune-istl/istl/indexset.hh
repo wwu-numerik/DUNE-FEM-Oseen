@@ -1,4 +1,4 @@
-// $Id: indexset.hh 954 2008-10-28 10:31:55Z robertk $
+// $Id: indexset.hh 771 2007-05-07 13:35:57Z mblatt $
 #ifndef DUNE_INDEXSET_HH
 #define DUNE_INDEXSET_HH
 
@@ -238,7 +238,7 @@ namespace Dune
     /**
      * @brief The type of the pair stored.
      */
-    typedef Dune::IndexPair<GlobalIndex,LocalIndex> IndexPair;
+    typedef IndexPair<GlobalIndex,LocalIndex> IndexPair;
     
     enum{
       /**
@@ -494,7 +494,7 @@ namespace Dune
      */
     typedef typename ParallelIndexSet::const_iterator const_iterator;
     
-    typedef Dune :: IndexPair<typename I::GlobalIndex, typename I::LocalIndex> IndexPair;
+    typedef IndexPair<typename I::GlobalIndex, typename I::LocalIndex> IndexPair;
     
     /**
      * @brief Constructor.

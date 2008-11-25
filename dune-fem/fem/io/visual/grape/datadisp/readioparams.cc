@@ -125,7 +125,11 @@ inline int readParameterList (int argc, char **argv, bool displayData = true )
 
   int    i_delta = 1;
   const  char *replay = 0;
+<<<<<<< HEAD:dune-fem/fem/io/visual/grape/datadisp/readioparams.cc
   double   timestep = 1.0e-3;
+=======
+  REAL   timestep = 1.0e-3;
+>>>>>>> reverts all post 1.1.1 commits except adding a new build target for suse10.3:dune-fem/fem/io/visual/grape/datadisp/readioparams.cc
   bool fixedMesh = false;
   
   info = (INFO *) malloc(n_info*sizeof(INFO));

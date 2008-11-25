@@ -1,15 +1,15 @@
-// $Id: tuples.hh 5331 2008-10-28 12:28:48Z robertk $
+// $Id: tuples.hh 5002 2007-10-04 09:56:37Z mblatt $
 #ifndef DUNE_TUPLES_HH
 #define DUNE_TUPLES_HH
 
 #include<ostream>
 #include"typetraits.hh"
-#include"static_assert.hh"
 #include"helpertemplates.hh"
 
 #ifdef HAVE_TUPLE
 #include <tuple>
-#elif defined HAVE_TR1_TUPLE
+#endif
+#ifdef HAVE_TR1_TUPLE
 #include <tr1/tuple>
 #endif
 
@@ -436,32 +436,42 @@ namespace Dune{
 #endif
 #define ElementType tuple_element
   
-#if defined HAVE_TUPLE || defined HAVE_TR1_TUPLE
-#ifdef HAVE_TUPLE
-  #define TUPLE_NS std
-  using std::get;
-#elif defined HAVE_TR1_TUPLE
-  #define TUPLE_NS std::tr1
+#ifdef HAVE_TR1_TUPLE
   using std::tr1::get;
-#endif
 
   // for backwards compatibility
-  template<int i>
+    template<int i>
   struct Element{
     template<typename T1>
     static typename TupleAccessTraits<typename tuple_element<i,T1>::type>::NonConstType get(T1& t)
     {
-      return TUPLE_NS::get<i>(t);
+      return std::tr1::get<i>(t);
     }
 
     template<typename T1>
     static typename TupleAccessTraits<typename tuple_element<i,T1>::type>::ConstType get(const T1& t)
     {
-      return TUPLE_NS::get<i>(t);
+      return std::tr1::get<i>(t);
     }
   };
-  #undef TUPLE_NS
-  
+#elif defined HAVE_TUPLE
+  using std::get;
+
+  // for backwards compatibility
+    template<int i>
+  struct Element{
+    template<typename T1>
+    static typename TupleAccessTraits<typename tuple_element<i,T1>::type>::NonConstType get(T1& t)
+    {
+      return std::get<i>(t);
+    }
+
+    template<typename T1>
+    static typename TupleAccessTraits<typename tuple_element<i,T1>::type>::ConstType get(const T1& t)
+    {
+      return std::get<i>(t);
+    }
+  };
 #else
   /**
    * @brief Get the N-th element of a tuple.
@@ -536,21 +546,12 @@ namespace Dune{
     return Element<i>::get(t);
   }
 
-  template<int i, typename T1, typename T2, typename T3, typename T4,
-	   typename T5, typename T6, typename T7, typename T8, typename T9>
-  typename TupleAccessTraits<typename tuple_element<i, tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >::type>
-  ::ConstType 
-  get(const tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>& t)
-  {
-    return Element<i>::get(t);
-  }
-
 #endif  
 
-#ifdef HAVE_TUPLE
-  using std::tuple_size;
-#elif defined HAVE_TR1_TUPLE
+#ifdef HAVE_TR1_TUPLE
   using std::tr1::tuple_size;
+#elif defined HAVE_TUPLE
+  using std::tuple_size;
 #else
   /**
    * @brief Template meta_programm to query the size of a tuple
@@ -589,12 +590,13 @@ namespace Dune{
 
 #define Size  tuple_size
 
+#ifdef HAVE_TR1_TUPLE    
+  using std::tr1::tie;
+  using std::tr1::make_tuple;
+#endif
 #ifdef HAVE_TUPLE    
   using std::tie;
   using std::make_tuple;
-#elif defined HAVE_TR1_TUPLE    
-  using std::tr1::tie;
-  using std::tr1::make_tuple;
 #endif
 
 #if defined HAVE_TUPLE || defined HAVE_TR1_TUPLE
@@ -621,79 +623,15 @@ namespace Dune{
   /** 
    * \brief Print a tuple.
    */
-  template<typename T1>
-  inline std::ostream& operator<<( std::ostream& os, const tuple<T1> & t)
-  {
-    typedef tuple<T1> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
-  }
-  
-  template<typename T1, typename T2>
-  inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2> & t)
-  {
-    typedef tuple<T1,T2> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
-  }
-  
-  template<typename T1, typename T2, typename T3>
-  inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2,T3> & t)
-  {
-    typedef tuple<T1,T2,T3> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
-  }
-  
-  template<typename T1, typename T2, typename T3, typename T4>
-  inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2,T3,T4> & t)
-  {
-    typedef tuple<T1,T2,T3,T4> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
-  }
-  
-  template<typename T1, typename T2, typename T3, typename T4, typename T5>
-  inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2,T3,T4,T5> & t)
-  {
-    typedef tuple<T1,T2,T3,T4,T5> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
-  }
-  
-  template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-  inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2,T3,T4,T5,T6> & t)
-  {
-    typedef tuple<T1,T2,T3,T4,T5,T6> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
-  }
-  
-  template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7>
-  inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2,T3,T4,T5,T6,T7> & t)
-  {
-    typedef tuple<T1,T2,T3,T4,T5,T6,T7> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
-  }
-  
-  template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7,
-	   typename T8>
-  inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2,T3,T4,T5,T6,T7,T8> & t)
-  {
-    typedef tuple<T1,T2,T3,T4,T5,T6,T7,T8> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
-  }
-  
   template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7,
 	   typename T8, typename T9>
-  inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> & t)
+  inline std::ostream& operator<<( std::ostream& os, tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> t)
   {
     typedef tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> Tuple;
     return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
   }
-  
-  template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7,
-           typename T8, typename T9, typename T10>
-  inline std::ostream& operator<<( std::ostream& os, const tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10> & t)
-  {
-    typedef tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10> Tuple;
-    return tuple_writer<tuple_size<Tuple>::value>::put(os, t);
-  }
 
+  
 #else
   /**
    * @brief Equality comparison operator for tuples.
@@ -748,8 +686,7 @@ namespace Dune{
   template<typename T1, typename U1>
   inline bool operator!=(const Pair<T1,Nil>& tuple1, const Pair<U1,Nil>& tuple2)
   {
-    dune_static_assert((IsInteroperable<T1,U1>::value), "T1 and U1 have to be interoperable, "<<
-			"i.e. either conversion from one to the other must exist!");
+    IsTrue<IsInteroperable<T1,U1>::value>::yes();
     return (tuple1.first()!=tuple2.first());
   }
 

@@ -19,6 +19,3 @@ quadrature_HEADERS = cachepointlist.hh \
 		     pyramidpoints.hh \
 		     quadprovider.hh \
 		     simplexpoints.hh
-
-include $(top_srcdir)/am/global-rules
-

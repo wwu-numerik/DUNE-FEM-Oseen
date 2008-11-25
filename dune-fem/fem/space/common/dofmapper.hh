@@ -317,43 +317,44 @@ template< class DofMapperTraits >
 class DofMapperDefault
 : public DofMapper< DofMapperTraits >
 {
-  typedef DofMapperDefault< DofMapperTraits > ThisType;
-  typedef DofMapper< DofMapperTraits > BaseType;
-
 public:
   typedef DofMapperTraits Traits;
 
   typedef typename Traits :: EntityType EntityType;
 
 private:
-  template< class IndexSetType, bool isFemIndexSet >
+  typedef DofMapperDefault< Traits > ThisType;
+  typedef DofMapper< Traits > BaseType;
+
+protected:
+  using BaseType :: asImp;
+
+  template <class IndexSetType, bool consecutive> 
   struct Consecutive
   {
-    static bool check ( const IndexSetType &indexSet )
+    static inline bool check(const IndexSetType& indexSet)
     {
       return indexSet.consecutive();
     }
   };
   
-  template< class IndexSetType >
-  struct Consecutive< IndexSetType, false >
+  template <class IndexSetType> 
+  struct Consecutive<IndexSetType,false>
   {
-    static bool check ( const IndexSetType &indexSet )
+    static inline bool check(const IndexSetType& indexSet)
     {
       return indexSet.needsCompress();
     }
   };
   
-protected:
-  using BaseType :: asImp;
-
   //! for index sets from dune call needsCompress 
   //! for dune-fem index set use new method consecutive
-  template< class IndexSetType >
-  bool checkConsecutive ( const IndexSetType &indexSet ) const
+  template <class IndexSetType> 
+  bool checkConsecutive(const IndexSetType& indexSet) const 
   {
-    const bool isFemIndexSet = Conversion< IndexSetType, EmptyIndexSet > :: exists;
-    return Consecutive< IndexSetType, isFemIndexSet > :: check( indexSet );
+    return Consecutive< IndexSetType, 
+                        Conversion<IndexSetType,EmptyIndexSet>::exists >
+             ::check(indexSet);
   }
 
 public:
@@ -392,7 +393,7 @@ public:
    *  \note This implementation just returns the maximal number of DoFs on an
    *        entity.
    */
-  int numDofs ( const EntityType &entity ) const
+  inline int numDofs ( const EntityType &entity ) const
   {
     return asImp().maxNumDofs();
   }
@@ -400,7 +401,7 @@ public:
   /** \copydoc Dune::DofMapper::numEntityDofs(const Entity &entity) const
    *  \note The default implementation associates all DoFs with codimension 0.
    */
-  int numEntityDofs ( const EntityType &entity ) const
+  inline int numEntityDofs ( const EntityType &entity ) const
   {
     return numDofs( entity );
   }
@@ -409,7 +410,7 @@ public:
    *  \note The default implementation associates all DoFs with codimension 0.
    */
   template< class Entity >
-  int numEntityDofs ( const Entity &entity ) const
+  inline int numEntityDofs ( const Entity &entity ) const
   {
     typedef CompileTimeChecker< (Entity :: codimension > 0) >
       __CHECK_ENTITY_CODIMENSION__;
@@ -417,8 +418,7 @@ public:
   }
 
   //! update mapper, default does nothing 
-  void update ()
-  {}
+  void update () {}
 
   //! return old offsets for block number, default returns zero 
   int oldOffSet(const int block) const { return 0; }

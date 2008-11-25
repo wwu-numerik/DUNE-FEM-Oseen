@@ -4,6 +4,7 @@ libdir=@libdir@
 includedir=@includedir@
 CXX=@CXX@
 CC=@CC@
+<<<<<<< HEAD:dune-fem/dune-fem.pc.in
 DEPENDENCIES=@REQUIRES@
 
 Name: @PACKAGE_NAME@
@@ -12,4 +13,13 @@ Description: The Dune FEM module
 URL: http://dune.mathematik.uni-freiburg.de/
 Requires: ${DEPENDENCIES}
 Libs: -L${libdir} -ldunefem
+=======
+
+Name: Dune-FEM
+Version: @VERSION@
+Description: the Dune-fem Module 
+URL: http://www.dune-project.org/
+Requires:
+Libs: 
+>>>>>>> reverts all post 1.1.1 commits except adding a new build target for suse10.3:dune-fem/dune-fem.pc.in
 Cflags: -I${includedir}

@@ -84,20 +84,27 @@ struct SpecialArrayFeatures
   }
 };
 
-///////////////////////////////////////////////////////////////////////
+//******************************************************************
 //
-//  ManagedIndexSetInterface 
-//
-///////////////////////////////////////////////////////////////////////
-/*! This class is the virtual interface for the index sets managed by
-  the DofManager. The derived classes are of the type ManagedIndexSet<IndexSet>.
+//  IndexSetObject
+/*! The idea of the IndexSetObject is that, every MemObject has an
+ *  IndexSetObject, but if two different MemObjects belong to the same
+ *  funtion space, then they have the same IndexSetObject. 
+ *  Furthermore the IndexSetObject is more or less a wrapper for the
+ *  IndexSetInterface, but here we can store aditional infomation, for
+ *  example if set has been compressed. 
+ */
+//******************************************************************
+
+/*! this class is the virtual interface for the index sets added to the
+  dofmanager. The derived classed are of the type IndexSetObj<IndexSet>.
   This means we don't have to inherit every index set we want to use with
   this DofManager. 
   */
-class ManagedIndexSetInterface
+class IndexSetObjectInterface 
 {
-  ManagedIndexSetInterface(const ManagedIndexSetInterface& org);
-protected:
+  IndexSetObjectInterface(const IndexSetObjectInterface& org);
+protected:  
   // use address of object as id 
   typedef const void * IdentifierType;
   // pointer to compare index sets 
@@ -106,16 +113,22 @@ protected:
   size_t referenceCounter_;
   
   template <class IndexSetType>
-  ManagedIndexSetInterface(const IndexSetType& set) 
+  IndexSetObjectInterface(const IndexSetType& set) 
     : setPtr_( getIdentifier(set) ) , referenceCounter_(1) 
   {}
 
 public:
-  virtual ~ManagedIndexSetInterface () {}
+  virtual ~IndexSetObjectInterface () {}
   //! resize of index set 
   virtual void resize () = 0; 
   //! compress of index set 
   virtual bool compress () = 0;
+  //! returns true if set generally needs a compress 
+  virtual bool consecutive () const = 0;
+
+  //! return type of set 
+  virtual int typeOfSet () const = 0;
+
   //! read and write method of index sets 
   virtual void read_xdr(const char * filename, int timestep) = 0;
   //! read and write method of index sets 
@@ -157,8 +170,8 @@ template <class IndexSetType, class EntityType> class RemoveIndicesFromSet;
 template <class IndexSetType, class EntityType> class InsertIndicesToSet;
 
 template <class IndexSetType, class EntityType>
-class ManagedIndexSet : public ManagedIndexSetInterface ,
-        public LocalInlinePlus < ManagedIndexSet<IndexSetType,EntityType> , EntityType >
+class IndexSetObject : public IndexSetObjectInterface ,
+        public LocalInlinePlus < IndexSetObject<IndexSetType,EntityType> , EntityType >
 {
   typedef LocalInterface<EntityType> LocalIndexSetObjectsType;
 protected: 
@@ -175,10 +188,10 @@ protected:
 
 public:  
   //! type of base class 
-  typedef ManagedIndexSetInterface BaseType;
+  typedef IndexSetObjectInterface BaseType;
   
   //! Constructor of MemObject, only to call from DofManager 
-  ManagedIndexSet ( const IndexSetType & iset 
+  IndexSetObject ( const IndexSetType & iset 
       , LocalIndexSetObjectsType & indexSetList
       , LocalIndexSetObjectsType & insertList 
       , LocalIndexSetObjectsType & removeList) 
@@ -200,7 +213,7 @@ public:
   } 
 
   //! desctructor 
-  ~ManagedIndexSet () 
+  ~IndexSetObject () 
   {
     indexSetList_.remove( *this );
     if( indexSet_.consecutive() ) 
@@ -222,6 +235,17 @@ public:
     return indexSet_.compress(); 
   }
 
+  //! returns whether the set needs a compress after adaptation 
+  bool consecutive () const 
+  {
+    return indexSet_.consecutive (); 
+  }
+
+  int typeOfSet() const 
+  { 
+    return indexSet_.type();
+  }
+
   //! call read_xdr of index set 
   virtual void read_xdr(const char * filename, int timestep)
   {
@@ -235,59 +259,46 @@ public:
   }
 };
 
-/////////////////////////////////////////////////////////////
+//****************************************************************
 //
-// DofStorageInterface 
+// MemObject 
+// --MemObject 
 //
-/////////////////////////////////////////////////////////////
-/** \brief Interface class for a dof storage object to be stored in
-    discrete functions */
-class DofStorageInterface
+//****************************************************************
+//! interface of MemObjects to store for DofManager 
+class MemObjectInterface 
 {
 protected:
   //! do not allow to create explicit instances 
-  DofStorageInterface() {}
-
+  MemObjectInterface () {}
+  
 public:
   //! destructor 
-  virtual ~DofStorageInterface() {};
-
-  //! enable dof compression for dof storage (default is empty)
-  virtual void enableDofCompression() { };
-
-  //! returns name of dof storage 
-  virtual const std::string& name () const  = 0;
-
-  //! size of space, i.e. mapper.size()
-  virtual int size () const = 0;
-};
-
-
-/** \brief Interface class for a dof storage object that can be managed
-    (resized and compressed) by the DofManager 
-*/
-class ManagedDofStorageInterface : public DofStorageInterface
-{
-protected:
-  //! do not allow to create explicit instances 
-  ManagedDofStorageInterface() {}
-
-public:
-  //! destructor 
-  virtual ~ManagedDofStorageInterface() {};
-
+  virtual ~MemObjectInterface() {};
+  
   //! resize memory 
   virtual void resize () = 0;
   //! resize memory 
   virtual void resize (int newSize) = 0;
-  //! resize memory 
-  virtual void reserve (int newSize) = 0;
+  //! size of space, i.e. mapper.size()
+  virtual int size () const = 0;
   //! new size of space, i.e. after grid adaptation
   virtual int newSize () const = 0;
+  //! returns name of obj
+  virtual const char * name () const  = 0;
   //! compressed the underlying dof vector 
   virtual void dofCompress () = 0;
+
+  //! returns true if resize ids needed 
+  virtual bool resizeNeeded () const = 0;
+  //! returns size of memory per element
+  virtual int  elementMemory() const = 0;
+
   //! return size of mem used by MemObject 
-  virtual size_t usedMemorySize() const = 0;
+  virtual int usedMemorySize() const = 0;
+
+  //! enable dof compression in MemObject
+  virtual void enableDofCompression() = 0;
 };
 
 
@@ -295,7 +306,7 @@ template <class MemObjectType> class ResizeMemoryObjects;
 template <class MemObjectType> class ReserveMemoryObjects;
 
 /*! 
-  A ManagedDofStorage holds the memory for one DiscreteFunction and the
+  A MemObject holds the memory for one DiscreteFunction and the
   corresponding DofArrayMemory. If a DiscreteFunction is signed in by a
   function space, then such a MemObject is created by the DofManager. 
   The MemObject also knows the DofMapper from the function space which the
@@ -304,21 +315,15 @@ template <class MemObjectType> class ReserveMemoryObjects;
   have to be virtual. This isnt a problem because this methods should only
   be called during memory reorganizing which is only once per timestep. 
 */
-template <class GridImp, class MapperType , class DofArrayType>
-class ManagedDofStorage : public ManagedDofStorageInterface
+template <class MapperType , class DofArrayType>
+class MemObject : public MemObjectInterface
 {
   // interface for MemObject lists
   typedef LocalInterface< int > MemObjectCheckType;
 private:
   // type of this class 
-  typedef ManagedDofStorage <GridImp, MapperType , DofArrayType> ThisType;
-
-  typedef DofManager<GridImp> DofManagerType;
-  typedef DofManagerFactory< DofManagerType > DofManagerFactoryType;
-
-  // reference to dof manager 
-  DofManagerType& dm_;
-
+  typedef MemObject <MapperType , DofArrayType> ThisType;
+  
   // the dof set stores number of dofs on entity for each codim
   mutable MapperType &mapper_;
 
@@ -328,52 +333,53 @@ private:
   // name of mem object, i.e. name of discrete function 
   std::string name_;
 
-  typedef ResizeMemoryObjects < ThisType > ResizeMemoryObjectType;
-  typedef ReserveMemoryObjects  < ThisType > ReserveMemoryObjectType;
-  ResizeMemoryObjectType  resizeMemObj_;
-  ReserveMemoryObjectType reserveMemObj_;
+  ResizeMemoryObjects < ThisType > resizeMemObj_; 
+  ReserveMemoryObjects  < ThisType > reserveMemObj_; 
+
+  MemObjectCheckType & memResizeList_; 
+  MemObjectCheckType & memReserveList_; 
 
   // true if data need to be compressed 
   bool dataNeedCompress_;
 
   // prohibit copying 
-  ManagedDofStorage(const ManagedDofStorage& );
-public:
-  //! Constructor of MemObject, only to call from DofManager 
-  ManagedDofStorage ( const GridImp& grid,
-                      const MapperType& mapper,
-                      const std::string& name
-                    )
-    : dm_( DofManagerFactoryType :: getDofManager( grid ) ),
-      mapper_ ( const_cast<MapperType& >(mapper)),
-      array_( mapper_.size() ),
-      name_ (name),
-      resizeMemObj_(*this),
-      reserveMemObj_(*this),
-      dataNeedCompress_(false)
+  MemObject(const MemObject& );
+public:  
+  // Constructor of MemObject, only to call from DofManager 
+  inline MemObject ( MapperType &mapper,
+                     const std :: string &name,
+                     MemObjectCheckType &memResizeList,
+                     MemObjectCheckType &memReserveList,
+                     const double memFactor )
+  : mapper_( mapper ),
+    array_( mapper.size() ),
+    name_( name ),
+    resizeMemObj_( *this ),
+    reserveMemObj_( *this ),
+    memResizeList_( memResizeList ),
+    memReserveList_( memReserveList ),
+    dataNeedCompress_( false )
   {
-    // add to dof manager 
-    dm_.addDofStorage( *this );
-
+    // add the special object to the memResize list object 
+    memResizeList_ += resizeMemObj_; 
+    
+    // the same for the reserve call  
+    memReserveList_ += reserveMemObj_; 
+    
     // set memory over estimate factor, only for DofArray 
-    SpecialArrayFeatures<DofArrayType>::setMemoryFactor(array_,dm_.memoryFactor());
-  }
+    SpecialArrayFeatures<DofArrayType>::setMemoryFactor(array_,memFactor);
+  } 
 
   //! \brief destructor deleting MemObject from resize and reserve List
-  ~ManagedDofStorage()
+  inline ~MemObject ()
   {
-    // remove from dof manager 
-    dm_.removeDofStorage( *this );
+    // remove from list 
+    memResizeList_.remove( resizeMemObj_ );
+    memReserveList_.remove( reserveMemObj_ );
   }
 
-  //! return object that calls resize of this memory object 
-  ResizeMemoryObjectType& resizeMemoryObject() { return resizeMemObj_; }
-
-  //! return object that calls reserve of this memory object 
-  ReserveMemoryObjectType& reserveMemoryObject() { return reserveMemObj_; }
-
   //! returns name of this vector 
-  const std::string& name () const { return name_; }
+  const char * name () const { return name_.c_str(); }
 
   //! if grid changed, then calulate new size of dofset 
   inline int newSize () const
@@ -383,6 +389,18 @@ public:
 
   //! return size of underlying array 
   int size () const { return array_.size(); }
+
+  //! return true if array needs resize 
+  bool resizeNeeded () const 
+  {
+    return (size() < newSize());  
+  }
+
+  //! return number of dofs on one element 
+  inline int elementMemory () const
+  {
+    return mapper().maxNumDofs();
+  }
 
   //! resize the memory with the new size 
   void resize () 
@@ -408,7 +426,7 @@ public:
     // if index set is compressible, then add requested size 
     if( mapper().consecutive() )
     {
-      const int nSize = size() + (needed * mapper().maxNumDofs());
+      const int nSize = size() + (needed * elementMemory());
       array_.reserve( nSize );
     }
     else 
@@ -452,10 +470,13 @@ public:
     array_.resize( nSize );
   }
  
+  //! return reference to array for DiscreteFunction 
+  DofArrayType & getArray() { return array_; } 
+
   //! return used memory size 
-  size_t usedMemorySize() const 
+  int usedMemorySize() const 
   {
-    return ((size_t) sizeof(ThisType) + SpecialArrayFeatures<DofArrayType>::used(array_)); 
+    return sizeof(ThisType) + SpecialArrayFeatures<DofArrayType>::used(array_); 
   }
 
   //! enable dof compression for this MemObject
@@ -463,9 +484,6 @@ public:
   {
     dataNeedCompress_ = true;
   }
-
-  //! return reference to array for DiscreteFunction 
-  DofArrayType & getArray() { return array_; } 
 
 protected:
   inline MapperType &mapper () const
@@ -528,34 +546,186 @@ protected:
   }
 };
 
-//! default implementation for creating a managed dof storage 
-template <class GridType, class MapperType, class DofStorageType>
-static inline std::pair< DofStorageInterface* , DofStorageType* >
-  allocateManagedDofStorage( const GridType& grid,
-                             const MapperType& mapper,
-                             const std::string& name,
-                             const DofStorageType* )
+
+/*! 
+ * Same as MemObject but doing nothing, because the memory comes from
+ * outside. This is for using packages like LAPACK and other with discrete
+ * functions. 
+*/
+template <class MapperType , class DofArrayType, class VectorPointerType>
+class DummyMemObject : public MemObjectInterface
 {
-  // create managed dof storage 
-  typedef ManagedDofStorage< GridType, MapperType,
-                             DofStorageType > ManagedDofStorageType;
-      
-  ManagedDofStorageType* mds =
-    new ManagedDofStorageType( grid, mapper, name );
-  assert( mds );
+private:
+  typedef DummyMemObject < MapperType , DofArrayType, VectorPointerType > MemObjectType;
+  typedef DummyMemObject < MapperType , DofArrayType, VectorPointerType > ThisType;
+  
+  // the dof set stores number of dofs on entity for each codim
+  const MapperType & mapper_;
 
-  // return pair with dof storage pointer and array pointer 
-  return std::pair< DofStorageInterface* , DofStorageType* >
-          ( mds , & mds->getArray () );
-}
+  // Array which the dofs are stored in 
+  DofArrayType array_;
 
+  // name of mem object, i.e. name of discrete function 
+  std::string name_;
 
+public:  
+  // Constructor of MemObject, only to call from DofManager 
+  DummyMemObject ( const MapperType & mapper, 
+                   std::string name , const VectorPointerType * vector ) 
+    : mapper_ (mapper) 
+    , array_( mapper_.size() , const_cast<VectorPointerType *> (vector) ), name_ (name) 
+    {
+    } 
 
-///////////////////////////////////////////////////////////////
-//
-//  RestrictPorlong for Index Sets 
-//
-///////////////////////////////////////////////////////////////
+  //! returns name of this vector 
+  const char * name () const { return name_.c_str(); }
+
+  //! if grid changed, then calulate new size of dofset 
+  int newSize () const { return mapper_.newSize(); }  
+
+  //! return size of underlying array 
+  int size () const { return array_.size(); }
+
+  //! return true if array needs resize 
+  bool resizeNeeded () const 
+  {
+    assert( (size() != newSize()) ? 
+        (std::cerr << "WARNING: DummyMemObject's vector is not up to date! \n" , 0) : 1);
+    return false; 
+  }
+
+  //! return number of dofs on one element 
+  int elementMemory () const 
+  {
+    return mapper_.maxNumDofs();
+  }
+
+  //! resize the memory with the new size 
+  void resize () 
+  {
+    assert( (size() != newSize()) ? 
+        (std::cerr << "WARNING: DummyMemObject's may not resize vectors! \n" , 1) : 1);
+  }
+
+  //! resize the memory with the new size 
+  void resize ( int nSize ) 
+  {
+    assert( (size() != newSize()) ? 
+        (std::cerr << "WARNING: DummyMemObject's may not resize vectors! \n" , 1) : 1);
+  }
+
+  //! copy the dof from the rear section of the vector to the holes 
+  void dofCompress () 
+  {
+    assert( (size() != newSize()) ? 
+        (std::cerr << "WARNING: DummyMemObject's may not compress vectors! \n" , 1) : 1);
+  }
+
+  //! return reference to array for DiscreteFunction 
+  DofArrayType & getArray() { return array_; } 
+  
+  //! return used memory size 
+  int usedMemorySize() const 
+  {
+    return sizeof(ThisType) + SpecialArrayFeatures<DofArrayType>::used(array_); 
+  }
+  
+  //! does nothing here
+  void enableDofCompression() 
+  {
+    assert( (true) ? 
+        (std::cerr << "WARNING: DummyMemObject's may not compress vectors! \n" , 1) : 1);
+  }
+};
+
+//! Dummy Object storing array, here pointer and array are of the same type 
+template <class MapperType,class VectorPointerType>
+class DummyMemObject<MapperType,VectorPointerType,VectorPointerType> : public MemObjectInterface
+{
+private:
+  typedef VectorPointerType DofArrayType;
+  typedef DummyMemObject < MapperType , DofArrayType, VectorPointerType > MemObjectType;
+  typedef DummyMemObject < MapperType , DofArrayType, VectorPointerType > ThisType;
+  
+  // the dof set stores number of dofs on entity for each codim
+  const MapperType & mapper_;
+
+  // Array which the dofs are stored in 
+  DofArrayType& array_;
+
+  // name of mem object, i.e. name of discrete function 
+  std::string name_;
+
+public:  
+  // Constructor of MemObject, only to call from DofManager 
+  DummyMemObject ( const MapperType & mapper, 
+                   std::string name , const VectorPointerType * vector ) 
+    : mapper_ (mapper) 
+    , array_(const_cast<VectorPointerType&> (*vector)), name_ (name) 
+  {
+    assert( vector );
+  } 
+
+  //! returns name of this vector 
+  const char * name () const { return name_.c_str(); }
+
+  //! if grid changed, then calulate new size of dofset 
+  int newSize () const { return mapper_.newSize(); }  
+
+  //! return size of underlying array 
+  int size () const { return array_.size(); }
+
+  //! return true if array needs resize 
+  bool resizeNeeded () const 
+  {
+    assert( (size() != newSize()) ? 
+        (std::cerr << "WARNING: DummyMemObject's vector is not up to date! \n" , 0) : 1);
+    return false; 
+  }
+
+  //! return number of dofs on one element 
+  int elementMemory () const 
+  {
+    return mapper_.maxNumDofs();
+  }
+
+  //! resize the memory with the new size 
+  void resize () 
+  {
+    assert( (size() != newSize()) ? 
+        (std::cerr << "WARNING: DummyMemObject's may not resize vectors! \n" , 1) : 1);
+  }
+
+  //! resize the memory with the new size 
+  void resize ( int nSize ) 
+  {
+    assert( (size() != newSize()) ? 
+        (std::cerr << "WARNING: DummyMemObject's may not resize vectors! \n" , 1) : 1);
+  }
+
+  //! copy the dof from the rear section of the vector to the holes 
+  void dofCompress () 
+  {
+    assert( (size() != newSize()) ? 
+        (std::cerr << "WARNING: DummyMemObject's may not compress vectors! \n" , 1) : 1);
+  }
+
+  //! return reference to array for DiscreteFunction 
+  DofArrayType & getArray() { return array_; } 
+  
+  //! return used memory size 
+  int usedMemorySize() const 
+  {
+    return sizeof(ThisType) + SpecialArrayFeatures<DofArrayType>::used(array_); 
+  }
+
+  //! does nothing here
+  void enableDofCompression() 
+  {
+    assert( (true) ? 
+        (std::cerr << "WARNING: DummyMemObject's may not compress vectors! \n" , 1) : 1);
+  }
+};
 
 template <class IndexSetType, class EntityType>
 class RemoveIndicesFromSet 
@@ -721,13 +891,13 @@ public:
   typedef DataCollectorInterface<GridType, ObjectStreamType> DataCollectorType;
 
 private:  
-  typedef std::list< ManagedDofStorageInterface* > ListType;
+  typedef std::list<MemObjectInterface*> ListType;
   typedef typename ListType::iterator ListIteratorType;
   typedef typename ListType::const_iterator ConstListIteratorType;
 
   typedef LocalInterface< int > MemObjectCheckType;
   
-  typedef std::list< ManagedIndexSetInterface * > IndexListType;
+  typedef std::list<IndexSetObjectInterface * > IndexListType;
   typedef typename IndexListType::iterator IndexListIteratorType;
   typedef typename IndexListType::const_iterator ConstIndexListIteratorType;
 
@@ -805,6 +975,13 @@ private:
   ~DofManager (); 
 
 public:
+  template <class MapperType , class DofStorageType >
+  struct Traits 
+  {
+    typedef MemObject< MapperType, DofStorageType > MemObjectType;
+  };
+  
+public:
   //! return factor to over estimate new memory allocation 
   double memoryFactor() const { return memoryFactor_; }
   
@@ -816,19 +993,23 @@ public:
   template <class IndexSetType>
   inline void removeIndexSet (const IndexSetType &iset); 
 
-  /** \brief add a managed dof storage to the dof manager. 
-      \param dofStorage  dof storage to add which must fulfill the 
-             ManagedDofStorageInterface 
-  */
-  template <class ManagedDofStorageImp>
-  void addDofStorage(ManagedDofStorageImp& dofStorage);
+  //! add dofset to dof manager 
+  //! this method should be called at signIn of DiscreteFucntion, and there
+  //! we know our DofStorage which is the actual DofArray  
+  template <class DofStorageType, class MapperType >
+  std::pair<MemObjectInterface*, DofStorageType*>
+  addDofSet(const DofStorageType* ds, MapperType& mapper, std::string name);
 
-  /** \brief remove a managed dof storage from the dof manager. 
-      \param dofStorage  dof storage to remove which must fulfill the 
-             ManagedDofStorageInterface 
-  */
-  template <class ManagedDofStorageImp>
-  void removeDofStorage(ManagedDofStorageImp& dofStorage);
+  //! add dofset to dof manager 
+  //! this method should be called at signIn of DiscreteFucntion, and there
+  //! we know our DofStorage which is the actual DofArray  
+  template <class DofStorageType, class MapperType , class VectorPointerType >
+  std::pair<MemObjectInterface*, DofStorageType*>
+  addDummyDofSet(const DofStorageType* ds, const MapperType& mapper, std::string name, const VectorPointerType * vec );
+
+  //! remove MemObject, is called from DiscreteFucntionSpace at sign out of
+  //! DiscreteFunction 
+  bool removeDofSet (const MemObjectInterface & obj);
 
   //! returns the index set restrinction and prolongation operator
   IndexSetRestrictProlongType & indexSetRPop () 
@@ -847,9 +1028,9 @@ public:
   }
    
   /** \brief return used memory size of all MemObjects in bytes. */
-  size_t usedMemorySize () const 
+  int usedMemorySize () const 
   {
-    size_t used = 0;
+    int used = 0;
     ConstListIteratorType endit = memList_.end();
     for(ConstListIteratorType it = memList_.begin(); it != endit ; ++it)
     {
@@ -1023,28 +1204,13 @@ private:
   //********************************************************
   // read-write Interface for index set 
   //********************************************************
-
   //! writes all underlying index sets to a file 
-  bool writeIndexSets(const std::string filename, int timestep);
+  bool write(const std::string filename, int timestep);
   //! reads all underlying index sets from a file 
-  bool readIndexSets(const std::string filename, int timestep);
+  bool read(const std::string filename, int timestep);
 
-  // generate index set filename 
-  std::string generateIndexSetName(const std::string& filename,
-                                   const int count) const
-  {
-    std::string newFilename (filename);
-    newFilename += "_";
-    // add number 
-    {
-      std::stringstream tmp;
-      tmp << count;
-      newFilename += tmp.str();
-    }
-
-    newFilename += "_";
-    return newFilename;
-  }
+  bool write_xdr(const std::string filename, int timestep);
+  bool read_xdr( const std::string filename, int timestep);
 }; // end class DofManager
 
 //***************************************************************************
@@ -1060,11 +1226,12 @@ inline DofManager<GridType>::~DofManager ()
   {
     while( memList_.rbegin() != memList_.rend())
     {
-      DofStorageInterface * mobj = (* memList_.rbegin() );
+      MemObjectInterface * mobj = (* memList_.rbegin() );
       memList_.pop_back();
       
       // alloc new mem an copy old mem 
       dverb << "Removing '" << mobj->name() << "' from DofManager!\n";  
+      if(mobj) delete mobj;
     }
   }
 
@@ -1072,7 +1239,7 @@ inline DofManager<GridType>::~DofManager ()
   {
     while ( indexList_.rbegin() != indexList_.rend()) 
     {
-      ManagedIndexSetInterface* iobj = (* indexList_.rbegin() );
+      IndexSetObjectInterface * iobj = (* indexList_.rbegin() );
       indexList_.pop_back();
       if(iobj) delete iobj;
     }
@@ -1080,14 +1247,40 @@ inline DofManager<GridType>::~DofManager ()
 }
 
 template <class GridType>
+inline bool DofManager<GridType>::
+removeDofSet (const MemObjectInterface & obj)
+{
+  // search list starting from tail  
+  ListIteratorType endit = memList_.end();
+  for( ListIteratorType it = memList_.begin();
+       it != endit ; ++it)
+  {
+    if(*it == &obj)
+    {
+      // alloc new mem and copy old mem 
+      MemObjectInterface * mobj = (*it);
+      memList_.erase( it );  
+     
+      assert(mobj);
+      dvverb << "Remove '" << obj.name() << "' from DofManager!\n";
+      delete mobj;
+      return true;
+    }
+  }
+  // object not found return false 
+  return false;
+}
+
+
+template <class GridType>
 template <class IndexSetType>
 inline void DofManager<GridType>::
 addIndexSet (const IndexSetType &iset)
 {
   typedef typename GridType::template Codim<0>::Entity EntityType;
-  typedef ManagedIndexSet< IndexSetType, EntityType > ManagedIndexSetType;
+  typedef IndexSetObject< IndexSetType, EntityType > IndexSetObjectType;
   
-  ManagedIndexSetType * indexSet = 0;
+  IndexSetObjectType * indexSet = 0;
   
   IndexListIteratorType endit = indexList_.end();
   for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
@@ -1096,16 +1289,16 @@ addIndexSet (const IndexSetType &iset)
     // and increase counter if equal
     if( (*it)->increaseReference(iset) )
     {
-      indexSet = static_cast<ManagedIndexSetType *> ((*it));
+      indexSet = static_cast<IndexSetObjectType *> ((*it));
       break;
     }
   }
   
   if(!indexSet) 
   { 
-    indexSet = new ManagedIndexSetType ( iset, indexSets_ , insertIndices_ , removeIndices_  );
+    indexSet = new IndexSetObjectType ( iset, indexSets_ , insertIndices_ , removeIndices_  );
       
-    ManagedIndexSetInterface* iobj = indexSet;
+    IndexSetObjectInterface * iobj = indexSet;
     // push to front to search latest index sets fast
     indexList_.push_front( iobj );
   }
@@ -1117,6 +1310,9 @@ template <class IndexSetType>
 inline void DofManager<GridType>::
 removeIndexSet (const IndexSetType &set)
 {
+  typedef typename GridType::template Codim<0>::Entity EntityType;
+  typedef IndexSetObject< IndexSetType, EntityType > IndexSetObjectType;
+  
   // search object in list an remove it
   IndexListIteratorType endit = indexList_.end();
   for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
@@ -1126,7 +1322,7 @@ removeIndexSet (const IndexSetType &set)
     if( (*it)->decreaseReference( set ) )
     {
       // get obj pointer  
-      ManagedIndexSetInterface* set = *it;
+      IndexSetObjectInterface* set = *it;
       // remove from list 
       indexList_.erase( it );
       // delete proxy 
@@ -1140,98 +1336,109 @@ removeIndexSet (const IndexSetType &set)
 }
 
 template <class GridType>
-template <class ManagedDofStorageImp>
-void
+template <class DofStorageType, class MapperType >
+std::pair<MemObjectInterface*, DofStorageType*>
 DofManager<GridType>::
-addDofStorage(ManagedDofStorageImp& dofStorage)
+addDofSet(const DofStorageType *, MapperType & mapper, std::string name)
 {
-  dverb << "Adding '" << dofStorage.name() << "' to DofManager! \n";
+  assert( name.c_str() != 0);
+  dverb << "Adding '" << name << "' to DofManager! \n";
 
-  // make sure we got an ManagedDofStorage
-  ManagedDofStorageInterface* obj = &dofStorage;
+  typedef MemObject<MapperType,DofStorageType> MemObjectType; 
+  MemObjectType * obj = 
+    new MemObjectType ( mapper, name , 
+                        resizeMemObjs_ , 
+                        reserveMemObjs_ ,
+                        memoryFactor_ ); 
+  
+  // push_front, makes search faster 
+  memList_.push_front( obj );    
+
+  return std::pair<
+    MemObjectInterface*, DofStorageType*>(obj, & (obj->getArray()) );
+}
+
+template <class GridType>
+template <class DofStorageType, class MapperType , class VectorPointerType >
+std::pair<MemObjectInterface*, DofStorageType*>
+DofManager<GridType>::
+addDummyDofSet(const DofStorageType *, const MapperType & mapper, 
+               std::string name, const VectorPointerType * vector )
+{
+  assert( name.c_str() != 0);
+  dverb << "Adding '" << name << "' to DofManager! \n";
+
+  typedef DummyMemObject<MapperType,DofStorageType,VectorPointerType> MemObjectType; 
+  MemObjectType * obj = new MemObjectType ( mapper, name , vector ); 
 
   // push_front, makes search faster 
-  memList_.push_front( obj );
+  memList_.push_front( obj );    
 
-  // add the special object to the memResize list object 
-  resizeMemObjs_  += dofStorage.resizeMemoryObject();
-
-  // the same for the reserve call  
-  reserveMemObjs_ += dofStorage.reserveMemoryObject();
+  // obj is not inserted in resize lists because mem is coming from outside 
+  return std::pair<
+    MemObjectInterface*, DofStorageType*>(obj, & (obj->getArray()) );
 }
 
 
 template <class GridType>
-template <class ManagedDofStorageImp>
-void
-DofManager<GridType>::
-removeDofStorage(ManagedDofStorageImp& dofStorage)
+inline bool DofManager<GridType>::
+write(const std::string filename, int timestep)
 {
-  // make sure we got an ManagedDofStorage
-  ManagedDofStorageInterface* obj = &dofStorage;
-
-  // search list starting from tail  
-  ListIteratorType endit = memList_.end();
-  for( ListIteratorType it = memList_.begin();
-       it != endit ; ++it)
-  {
-    if(*it == obj)
-    {
-      // alloc new mem and copy old mem 
-      memList_.erase( it );
-
-      dvverb << "Remove '" << dofStorage.name() << "' from DofManager!\n";
-
-      // remove from list 
-      resizeMemObjs_.remove( dofStorage.resizeMemoryObject() );
-      reserveMemObjs_.remove( dofStorage.reserveMemoryObject() );
-
-      return ;
-    }
-  }
+  return write_xdr(filename,timestep);
+}
+template <class GridType>
+inline bool DofManager<GridType>::
+read(const std::string filename , int timestep)
+{
+  return read_xdr(filename,timestep);  
 }
 
 template <class GridType>
 inline bool DofManager<GridType>::
-writeIndexSets(const std::string filename , int timestep )
+write_xdr(const std::string filename , int timestep)
 {
   int count = 0;
   IndexListIteratorType endit = indexList_.end();
   for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
   {
-    std::string newFilename = generateIndexSetName(filename, count);
+    std::string newFilename (filename);
+    newFilename += "_"; 
+    char tmp[256]; 
+    sprintf(tmp,"%d",count);
+    newFilename += tmp;
+    newFilename += "_"; 
     (*it)->write_xdr(newFilename.c_str(),timestep); 
-    ++ count;
+    count ++;
   }
   return true;
 }
 
 template <class GridType>
 inline bool DofManager<GridType>::
-readIndexSets(const std::string filename , int timestep )
+read_xdr(const std::string filename , int timestep)
 {
   int count = 0;
   IndexListIteratorType endit = indexList_.end();
   for(IndexListIteratorType it = indexList_.begin(); it != endit; ++it)
   {
-    // create filename 
-    std::string newFilename = generateIndexSetName(filename, count);
-    
-    // create filename that is used by index sets 
-    std::string fileToRead = genFilename("", newFilename.c_str(), timestep);
-      
-    // check if file exists, and skip if not 
-    FILE * testfile = fopen(fileToRead.c_str(),"r");
+    std::string newFilename (filename);
+    newFilename += "_"; 
+    char tmp[256]; 
+    sprintf(tmp,"%d",count);
+    newFilename += tmp;
+    newFilename += "_"; 
+    std::string fnstr = genFilename("",newFilename.c_str(), timestep);
+    FILE * testfile = fopen(fnstr.c_str(),"r");
     if( testfile )
     {
       fclose( testfile );
-      (*it)->read_xdr(newFilename.c_str(),timestep);
+      (*it)->read_xdr(newFilename.c_str(),timestep); 
+      ++count;
     }
-    else if( Parameter :: verbose() )
+    else 
     {
-      std::cout << "WARNING: Skipping " << newFilename << " in DofManager::read_xdr!" << std::endl;
+      std::cout << "WARNING: Skipping " << fnstr << " in DofManager::read_xdr! \n";
     }
-    ++count;
   }
   return true;
 }
@@ -1254,9 +1461,9 @@ readIndexSets(const std::string filename , int timestep )
 
   public:
     typedef DofManager DofManagerType;
-    typedef typename DofManagerType :: GridType GridType; 
 
   private:
+    typedef typename DofManagerType :: GridType GridType; 
     typedef const GridType *KeyType;
 
     typedef SingletonList< KeyType, DofManagerType > DMProviderType;
@@ -1290,7 +1497,7 @@ readIndexSets(const std::string filename , int timestep )
     {
       DofManagerType *dm = getDmFromList( grid );
       if( dm )
-        return dm->writeIndexSets( filename, timestep );
+        return dm->write( filename, timestep );
       return false;
     }
 
@@ -1302,7 +1509,7 @@ readIndexSets(const std::string filename , int timestep )
     {
       DofManagerType *dm = getDmFromList( grid );
       if( dm )
-        return dm->readIndexSets( filename, timestep );
+        return dm->read( filename, timestep );
       return false;
     }
 

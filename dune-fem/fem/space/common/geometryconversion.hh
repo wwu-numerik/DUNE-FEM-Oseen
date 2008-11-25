@@ -2,7 +2,6 @@
 #define DUNE_GEOMETRYCONVERSION_HH
 
 #include <cassert>
-#include <cstdlib>
 #include <iostream>
 
 #include <dune/common/geometrytype.hh>

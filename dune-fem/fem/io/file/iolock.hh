@@ -3,9 +3,7 @@
 #define DUNE_INPUTOUPUTLOCK_HH
 
 //- system includes 
-#include <cstdio>
-#include <cstdlib>
-
+#include <stdio.h>
 #include <iostream>
 #include <fstream>
 #include <string>

@@ -16,9 +16,7 @@
 //-      Kinderquadraturen
 //----------------------------------------------------------------------
 
-namespace Dune
-{
-
+namespace Dune{
 /** @ingroup RestrictProlongImpl
     @{
 **/
@@ -26,15 +24,18 @@ namespace Dune
 //***********************************************************************
 /** \brief This is a restriction/prolongation operator for combined DG data. 
  */
-template< class DiscreteFunctionImp, int polOrd >
+template <class DiscreteFunctionImp, int polOrd> 
 class RestrictProlongCombinedSpace
-: public RestrictProlongInterfaceDefault
-  < RestrictProlongTraits< RestrictProlongCombinedSpace< DiscreteFunctionImp,polOrd > > >
+: public RestrictProlongInterfaceDefault<RestrictProlongTraits< 
+         RestrictProlongCombinedSpace<DiscreteFunctionImp,polOrd> 
+         > >
 {
-  typedef RestrictProlongInterfaceDefault
-    < RestrictProlongTraits< RestrictProlongCombinedSpace< DiscreteFunctionImp, polOrd > > >
-    BaseType;
+  typedef RestrictProlongInterfaceDefault<RestrictProlongTraits< 
+         RestrictProlongCombinedSpace<DiscreteFunctionImp,polOrd> 
+         > > BaseType;
 
+  using BaseType :: checkPersistent;
+  
 public:
   typedef DiscreteFunctionImp DiscreteFunctionType;
   typedef typename DiscreteFunctionType::FunctionSpaceType FunctionSpaceType;
@@ -45,47 +46,42 @@ public:
   typedef typename DiscreteFunctionType::RangeFieldType RangeFieldType;
   typedef typename DiscreteFunctionType::DomainType DomainType;
   typedef CachingQuadrature<GridPartType,0> QuadratureType;
-  typedef typename GridType::template Codim<0>::Entity::LocalGeometry LocalGeometry;
+  typedef typename GridType::template Codim<0>::Entity::Geometry Geometry;
 
   enum { dimRange = FunctionSpaceType :: dimRange };
-
-protected:
-  using BaseType :: calcWeight;
-  using BaseType :: entitiesAreCopies;
-
 public:  
   //! Constructor
-  explicit RestrictProlongCombinedSpace( DiscreteFunctionType &df )
-  : df_( df ),
-    quadord_( 2*df.space().order() ),
-    weight_( -1.0 )
-  {}
-
-  /** \brief explicit set volume ratio of son and father
-   *
-   *  \param[in]  weight  volume of son / volume of father
-   *
-   *  \note If this ratio is set, it is assume to be constant.
-   */
-  void setFatherChildWeight ( const RangeFieldType &weight ) const
+  RestrictProlongCombinedSpace( DiscreteFunctionType & df ) 
+    : df_ (df)
+    , quadord_(2*df.space().order())
+    , weight_(-1.0)
   {
-    weight_ = weight;
+    // make sure that index set is used that can handle adaptivity 
+    assert( (Capabilities::IsUnstructured<GridType>::v) ? ( checkPersistent(df_.space().indexSet()) ) : true );
+  }
+  //! if weight is set, then ists assumend that we have always the same
+  //! proportion between fahter and son volume 
+  void setFatherChildWeight (const RangeFieldType& val) const
+  {
+    // volume of son / volume of father  
+    weight_ = val; 
   }
 
   //! restrict data to father 
-  template< class EntityType >
-  void restrictLocal ( const EntityType &father, const EntityType &son, bool initialize ) const
+  template <class EntityType>
+  void restrictLocal ( EntityType &father, EntityType &son, 
+           bool initialize ) const
   {
-    // if father and son are copies, do nothing 
-    if( entitiesAreCopies( df_.space().indexSet(), father, son ) )
-      return;
+    // make sure that index set is used that can handle adaptivity 
+    assert( checkPersistent(df_.space().indexSet()) );
     
     typedef typename FunctionSpaceType :: DomainFieldType DomainFieldType;
 
     typename FunctionSpaceType::RangeType ret (0.0);
     typename FunctionSpaceType::ContainedRangeType phi (0.0);
     assert( !father.isLeaf() );
-    const DomainFieldType weight = (weight_ < 0.0) ? calcWeight( father, son) : weight_;
+    const DomainFieldType weight = 
+      (weight_ < 0.0) ? (this->calcWeight(father,son)) : weight_; 
 
     LocalFunctionType vati_ = df_.localFunction( father);
     LocalFunctionType sohn_ = df_.localFunction( son   );
@@ -94,7 +90,7 @@ public:
     const typename FunctionSpaceType::BaseFunctionSetType & baseset =
       vati_.baseFunctionSet();
     const int nop=quad.nop();
-    const LocalGeometry& geometryInFather = son.geometryInFather();
+    const Geometry& geometryInFather = son.geometryInFather();
 
     const int diff_numDofs = vati_.baseFunctionSet().numDifferentBaseFunctions();
     const int vati_numDofs = vati_.numDofs(); 
@@ -130,9 +126,10 @@ public:
   template <class EntityType>
   void prolongLocal ( EntityType &father, EntityType &son, bool initialize ) const
   {
-    // if father and son are copies, do nothing 
-    if( this->entitiesAreCopies( df_.space().indexSet(), father, son ) ) return ; 
+    // make sure that index set is used that can handle adaptivity 
+    assert( checkPersistent(df_.space().indexSet()) );
     
+    //assert( son.state() == REFINED );
     typename FunctionSpaceType::RangeType ret (0.0);
     typename FunctionSpaceType::ContainedRangeType phi (0.0);
     // get local functions 
@@ -148,18 +145,16 @@ public:
     // get quadrature 
     QuadratureType quad(son,quadord_);
     // get base function set 
-    const typename FunctionSpaceType::BaseFunctionSetType& 
-        baseset = sohn_.baseFunctionSet();
-
+    const typename FunctionSpaceType::BaseFunctionSetType & baseset =
+      sohn_.baseFunctionSet();
     // get geometry 
-    const LocalGeometry& geometryInFather = son.geometryInFather();
-    
+    const Geometry& geometryInFather = son.geometryInFather();
     // get number of points 
     const int nop=quad.nop();
     for(int qP = 0; qP < nop; ++qP) 
     {
       // evaluate father 
-      vati_.evaluate(geometryInFather.global(quad.point(qP)), ret);
+      vati_.evaluate(geometryInFather.global(quad.point(qP)),ret);
       // make projection 
       for(int i=0; i<diff_numDofs; ++i) 
       {

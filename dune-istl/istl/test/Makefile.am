@@ -1,4 +1,4 @@
-# $Id: Makefile.am 953 2008-10-28 10:31:36Z robertk $
+# $Id: Makefile.am 861 2008-02-20 12:57:09Z mblatt $
 
 if MPI
   MPITESTS = indicestest syncertest vectorcommtest \
@@ -71,7 +71,7 @@ if MPI
 
   syncertest_SOURCES = syncertest.cc
   syncertest_CXXFLAGS = $(MPI_CPPFLAGS)
-  syncertest_LDFLAGS = $(AM_LDFLAGS) $(MPI_LDFLAGS) $(MPI_LIBS)
+  syncertest_LDFLAGS = $(MPI_LDFLAGS) $(MPI_LIBS)
 #syncertest_DEPENDENCIES = $(LOCAL_LIBS)
 
   vectorcommtest_SOURCES = vectorcommtest.cc

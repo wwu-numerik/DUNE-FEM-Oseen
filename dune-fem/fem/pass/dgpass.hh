@@ -18,6 +18,7 @@
 #include <dune/grid/common/referenceelements.hh>
 #include <dune/fem/quadrature/caching/twistutility.hh>
 
+#include <dune/fem/space/common/communicationmanager.hh>
 #include <dune/fem/space/common/allgeomtypes.hh> 
 #include <dune/fem/space/common/arrays.hh> 
 #include <dune/fem/function/localfunction/temporarylocalfunction.hh>
@@ -100,6 +101,9 @@ namespace Dune {
                                  , CombinedSelectorType
                                > DiscreteModelCallerType;
 
+    // type of Communication Manager 
+    typedef CommunicationManager< DiscreteFunctionSpaceType > CommunicationManagerType;
+    
     // Range of the destination
     enum { dimRange = DiscreteFunctionSpaceType::dimRange };
 
@@ -131,6 +135,7 @@ namespace Dune {
       gridPart_(spc_.gridPart()),
       indexSet_(gridPart_.indexSet()),
       visited_(0),
+      communicationManager_(spc_),
       refVolMap_ (),
       updEn_(spc_),
       updNeigh_(spc_),
@@ -204,7 +209,7 @@ namespace Dune {
     virtual void finalize(const ArgumentType& arg, DestinationType& dest) const
     {
       // communicate calculated function 
-      spc_.communicate( dest );
+      communicationManager_.exchange( dest );
       
       // call finalize 
       caller_.finalize();
@@ -260,8 +265,7 @@ namespace Dune {
         for (IntersectionIteratorType nit = gridPart_.ibegin(en); nit != endnit; ++nit) 
         {
           const IntersectionType& inter=*nit;
-          //double nbvol;
-          double nbvol = vol;
+          double nbvol;
           double wspeedS = 0.0;
           if (inter.neighbor()) 
           {
@@ -325,11 +329,12 @@ namespace Dune {
             } // end if do something 
               
           } // end if neighbor
-          else if( inter.boundary() )
+
+          if (inter.boundary()) 
           {
             FaceQuadratureType faceQuadInner(gridPart_, inter, faceQuadOrd_, 
                                              FaceQuadratureType::INSIDE);
-            //nbvol = vol;
+            nbvol = vol;
             caller_.setNeighbor(en);
             const int faceQuadInner_nop = faceQuadInner.nop();
             for (int l = 0; l < faceQuadInner_nop; ++l) 
@@ -351,9 +356,9 @@ namespace Dune {
             double minvolS = std::min(vol,nbvol);
             dtMin_ = std::min(dtMin_,minvolS/wspeedS);
           }
-        } // end intersection loop
+        } // end boundary  
 
-      } // end if problem_.hasFlux()
+      } // end intersection loop
 
       // this entity is finised by now 
       visited_[ indexSet_.index( en ) ] = true ;
@@ -504,6 +509,7 @@ namespace Dune {
     // indicator for grid walk 
     mutable MutableArray<bool> visited_;
 
+    mutable CommunicationManagerType communicationManager_;
     mutable RefVolumeMapType refVolMap_;
 
     mutable TemporaryLocalFunctionType updEn_;

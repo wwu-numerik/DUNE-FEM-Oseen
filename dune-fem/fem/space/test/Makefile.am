@@ -18,5 +18,3 @@ lagrangeinterpolation_SOURCES = lagrangeinterpolation.cc
 lagrangeadapt_SOURCES = lagrangeadapt.cc
 legendretest_SOURCES = legendretest.cc
 
-include $(top_srcdir)/am/global-rules
-

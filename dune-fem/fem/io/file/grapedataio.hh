@@ -74,16 +74,16 @@ public:
 
   //! get Grid from file with time and timestep , return true if ok 
   inline static bool readGrid (GridType & grid, 
-      const GrapeIOStringType & fnprefix , double & time , int timestep, bool verbose = true );
+      const GrapeIOStringType & fnprefix , double & time , int timestep);
   
   //! get Grid from file with time and timestep , return grid pointer if ok 
   inline static GridType * restoreGrid (
-      const GrapeIOStringType & fnprefix , double & time , int timestep, bool verbose = false )
+      const GrapeIOStringType & fnprefix , double & time , int timestep)
   {
     // todo MPI_Comm pass to grid type 
     GridType * grid = new GridType (); 
     assert( grid );  
-    readGrid(*grid,fnprefix,time,timestep, verbose);
+    readGrid(*grid,fnprefix,time,timestep);
     return grid;
   }
 };
@@ -153,7 +153,7 @@ public:
 
   //! get Grid from file with time and timestep , return true if ok 
   inline static bool readGrid (GridType & grid, 
-      const GrapeIOStringType & fnprefix , double & time , int timestep, bool verbose = true )
+      const GrapeIOStringType & fnprefix , double & time , int timestep)
   {
     std::string gridname;
 
@@ -199,7 +199,7 @@ public:
 
   //! get Grid from file with time and timestep , return true if ok 
   inline static GridType * restoreGrid (
-      const GrapeIOStringType & fnprefix , double & time , int timestep, bool verbose = false )
+      const GrapeIOStringType & fnprefix , double & time , int timestep)
   {
     std::string macroName (fnprefix);
 #if HAVE_MPI 
@@ -219,7 +219,7 @@ public:
       grid = gridptr.release();
     }
     assert( grid );
-    readGrid(*grid,fnprefix,time,timestep,verbose);
+    readGrid(*grid,fnprefix,time,timestep);
     return grid;
   }
 };
@@ -249,7 +249,7 @@ public:
 
   //! get Grid from file with time and timestep , return true if ok 
   inline bool readGrid (GridType & grid, 
-      const GrapeIOStringType fnprefix , double & time , int timestep, bool verbose = true )
+      const GrapeIOStringType fnprefix , double & time , int timestep)
   {
     const bool hasBackupRestore = Capabilities::hasBackupRestoreFacilities<GridType>::v;
     return GrapeDataIOImp<GridType::dimension,GridType::dimensionworld,GridType,hasBackupRestore>::
@@ -257,7 +257,7 @@ public:
   }
 
   //! get Grid from file with time and timestep , return true if ok 
-  inline GridType * restoreGrid(const GrapeIOStringType fnprefix , double & time , int timestep, bool verbose = false )
+  inline GridType * restoreGrid(const GrapeIOStringType fnprefix , double & time , int timestep)
   {
     const bool hasBackupRestore = Capabilities::hasBackupRestoreFacilities<GridType>::v;
     return GrapeDataIOImp<GridType::dimension,GridType::dimensionworld,GridType,hasBackupRestore>::
@@ -335,12 +335,12 @@ inline bool GrapeDataIOImp<dim,dimworld,GridImp,hasBackupRestore> :: writeGrid
 
 template <int dim, int dimworld, class GridImp, bool hasBackupRestore>
 inline bool GrapeDataIOImp<dim,dimworld,GridImp,hasBackupRestore> :: readGrid 
-(GridImp & grid, const GrapeIOStringType & fnprefix , double & time , int timestep, bool verbose )
+(GridImp & grid, const GrapeIOStringType & fnprefix , double & time , int timestep)
 {
   int helpType = (int) xdr;
   std::string gridname;
 
-  bool readGridName = readParameter(fnprefix,"Grid",gridname, verbose);
+  bool readGridName = readParameter(fnprefix,"Grid",gridname);
   if(! readGridName ) 
   {
     if(grid.comm().rank() == 0)
@@ -348,7 +348,7 @@ inline bool GrapeDataIOImp<dim,dimworld,GridImp,hasBackupRestore> :: readGrid
       std::cerr << "P["<< grid.comm().rank() << "] ERROR: Couldn't open file '"<<fnprefix<<"' !" << std::endl;
       abort();
     }
-    else if( verbose )
+    else 
     {
       // on all other procs on print warning
       std::cerr << "P["<< grid.comm().rank() << "] WARNING: Couldn't open file '"<<fnprefix<<"' !" << std::endl;
@@ -365,17 +365,14 @@ inline bool GrapeDataIOImp<dim,dimworld,GridImp,hasBackupRestore> :: readGrid
 
   int precision = 6;
   int hasDm = 0;
-  readParameter(fnprefix,"Format",    helpType, verbose);
-  readParameter(fnprefix,"Precision", precision,verbose);
-  readParameter(fnprefix,"DofManager",hasDm,    verbose);
+  readParameter(fnprefix,"Format",helpType);
+  readParameter(fnprefix,"Precision",precision);
+  readParameter(fnprefix,"DofManager",hasDm);
 
   GrapeIOFileFormatType ftype = (GrapeIOFileFormatType) helpType;
 
   GrapeIOStringType fn = generateFilename(fnprefix,timestep,precision);
-  if( verbose ) 
-  {
-    std::cout << "Read file: fnprefix = `" << fn << "' \n";
-  }
+  std::cout << "Read file: fnprefix = `" << fn << "' \n";
 
   bool succeded = false;
   switch (ftype)
@@ -392,7 +389,6 @@ inline bool GrapeDataIOImp<dim,dimworld,GridImp,hasBackupRestore> :: readGrid
   }
  
   // write dof manager, that corresponds to grid 
-  /*
   if(hasDm)
   {
     typedef DofManager<GridImp> DofManagerType; 
@@ -405,7 +401,6 @@ inline bool GrapeDataIOImp<dim,dimworld,GridImp,hasBackupRestore> :: readGrid
     DMFactoryType::getDofManager(grid);
     succeded = DMFactoryType::writeDofManager(grid,dmname,timestep);
   }
-  */
   return succeded;
 }
 
@@ -454,13 +449,9 @@ const GrapeIOFileFormatType ftype, const GrapeIOStringType filename, int timeste
     return df.write_xdr(fn);
   if(ftype == ascii)
     return df.write_ascii(fn);
-#if DUNE_FEM_COMPATIBILITY
   if(ftype == pgm)
     return df.write_pgm(fn);
-#endif
 
-  DUNE_THROW( NotImplemented, "GrapeIOFileFormatType " << ftype
-                               << " currently not supported." );
   return false;
 }
 
@@ -539,13 +530,12 @@ readData(DiscreteFunctionType & df, const GrapeIOStringType filename, int timest
     return df.read_xdr(fn);
   if(ftype == ascii)
     return df.read_ascii(fn);
-#if DUNE_FEM_COMPATIBILITY
   if(ftype == pgm)
     return df.read_pgm(fn);
-#endif
 
-  DUNE_THROW( NotImplemented, "GrapeIOFileFormatType " << ftype
-                               << " currently not supported." );
+  std::cerr << ftype << " GrapeIOFileFormatType not supported at the moment! in file " << __FILE__ << " line " << __LINE__ << "\n"; 
+  abort();
+
   return false;
 }
 

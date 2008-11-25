@@ -2,7 +2,6 @@
 #define MACROGRIDENTITYKEY_HH
 
 #include <vector>
-#include <algorithm>
 #include <dune/grid/alugrid/3d/topology.hh>
 namespace Dune {
 

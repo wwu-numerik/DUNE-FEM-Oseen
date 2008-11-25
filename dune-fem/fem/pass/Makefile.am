@@ -1,4 +1,4 @@
-# $Id: Makefile.am 3943 2008-09-10 07:34:48Z dedner $
+# $Id: Makefile.am 3769 2008-06-19 07:25:50Z nolte $
 
 #SUBDIRS = test
 
@@ -8,6 +8,3 @@ modelcaller.hh  typetraits.hh dgelliptpass.hh   ldgflux.hh\
 pass.hh	 utility.hh dgpass.hh	  selection.hh\
 discretemodel.hh  tuples.hh \
 ellipticdiscretemodel.hh ellipticmodelcaller.hh limitpass.hh
-
-include $(top_srcdir)/am/global-rules
-

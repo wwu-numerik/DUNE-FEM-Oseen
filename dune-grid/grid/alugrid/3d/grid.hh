@@ -155,12 +155,12 @@ namespace Dune {
 
 #if ALU3DGRID_PARALLEL
       typedef IdSet<GridImp,GlobalIdSetImp,GlobalIdType> GlobalIdSet;
-      typedef Dune :: CollectiveCommunication<MPI_Comm> CollectiveCommunication;
+      typedef CollectiveCommunication<MPI_Comm> CollectiveCommunication;
 #else 
       // in serial we use LocalIdSet as GlobalIdSet because it much faster
       // that global id set 
       typedef LocalIdSet GlobalIdSet;
-      typedef Dune :: CollectiveCommunication<Grid> CollectiveCommunication;
+      typedef CollectiveCommunication<Grid> CollectiveCommunication;
 #endif
     };
   };

@@ -1,11 +1,10 @@
-// $Id: bigunsignedint.hh 5328 2008-10-28 10:01:54Z robertk $
+// $Id: bigunsignedint.hh 4537 2006-05-04 13:40:34Z mblatt $
 
 #ifndef DUNE_BIGUNSIGNEDINT_HH
 #define DUNE_BIGUNSIGNEDINT_HH
 
 #include<iostream>
 #include<limits>
-#include<cstdlib>
 #include<dune/common/exceptions.hh>
 
 /**

@@ -42,10 +42,11 @@ namespace Dune
     typedef typename DiscreteFunctionSpaceType :: MapperType MapperType;
     typedef typename DiscreteFunctionSpaceType :: GridPartType GridPartType;
 
-    typedef typename GridPartType :: GridType GridType;
+    typedef DofManager< typename GridPartType :: GridType > DofManagerType;
 
     typedef RangeFieldType DofType;
-    typedef AttachedDiscreteFunctionContainer< DofType, GridType, MapperType >
+    typedef AttachedDiscreteFunctionContainer
+      < DofType, DofManagerType, MapperType >
       ContainerType;
 
     typedef typename ContainerType :: SlotIteratorType DofIteratorType;
@@ -90,12 +91,12 @@ namespace Dune
     typedef typename Traits :: LocalFunctionFactoryType
       LocalFunctionFactoryType;
 
+    typedef typename Traits :: DofManagerType DofManagerType;
     typedef typename Traits :: ContainerType ContainerType;
 
     typedef typename Traits :: DofIteratorType DofIteratorType;
     typedef typename Traits :: ConstDofIteratorType ConstDofIteratorType;
 
-    typedef typename Traits :: DofType DofType;
     typedef typename Traits :: DofBlockType DofBlockType;
     typedef typename Traits :: ConstDofBlockType ConstDofBlockType;
     typedef typename Traits :: DofBlockPtrType DofBlockPtrType;
@@ -112,7 +113,8 @@ namespace Dune
                                       const DiscreteFunctionSpaceType &dfSpace )
     : BaseType( name, dfSpace, lfFactory_ ),
       lfFactory_( *this ),
-      container_( ContainerType :: attach( dfSpace.grid(), dfSpace.mapper() ) ),
+      container_( ContainerType :: attach
+        ( dofManager( dfSpace ), dfSpace.mapper() ) ),
       slot_( container_.allocSlot() )
     {}
 
@@ -120,7 +122,7 @@ namespace Dune
     : BaseType( other.name(), other.space(), lfFactory_ ),
       lfFactory_( *this ),
       container_( ContainerType :: attach
-        ( other.space().grid(), other.space().mapper() ) ),
+        ( dofManager( other.space() ), other.space().mapper() ) ),
       slot_( container_.allocSlot() )
     {
       assign( other );
@@ -200,6 +202,14 @@ namespace Dune
     inline ContainerType &container ()
     {
       return container_;
+    }
+
+  protected:
+    inline static DofManagerType &
+    dofManager ( const DiscreteFunctionSpaceType &dfSpace )
+    {
+      return
+        DofManagerFactory< DofManagerType > :: getDofManager( dfSpace.grid() );
     }
   };
 

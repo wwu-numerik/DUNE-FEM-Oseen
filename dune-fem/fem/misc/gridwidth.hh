@@ -6,7 +6,7 @@
 #include <dune/grid/common/capabilities.hh>
 #include <dune/fem/storage/singletonlist.hh>
 #include <dune/fem/space/common/allgeomtypes.hh>
-#include <dune/fem/gridpart/adaptiveleafgridpart.hh>
+#include <dune/fem/space/common/adaptiveleafgridpart.hh>
 #include <dune/fem/space/common/dofmanager.hh>
 
 namespace Dune {
@@ -203,10 +203,10 @@ protected:
   GridWidthProvider( const ThisType& );
 public:
   //! constructor taking grid part 
-  GridWidthProvider(const GridType* grid) 
-    : grid_( *grid )
+  GridWidthProvider(const GridType& grid) 
+    : grid_( grid )
     , dm_( DMFactoryType::getDofManager( grid_ ))
-    , gridPart_( const_cast<GridType& > (grid_) )
+    , gridPart_( const_cast<GridType& > (grid) )
     , geoInfo_( gridPart_.indexSet() )
     , faceGeoInfo_( geoInfo_.geomTypes(1) ) 
     , width_(-1.0)

@@ -13,13 +13,11 @@ namespace Dune {
   void PointProvider<ct, dim, 0>::
   registerQuadrature(const QuadratureType& quad)
   {
-    QuadratureKeyType key( quad.geometry(), quad.id() );
-    
-    if (points_.find( key ) == points_.end()) 
+    if (points_.find(quad.id()) == points_.end()) 
     {
       PointIteratorType it =
         points_.insert(std::make_pair
-                       (key,
+                       (quad.id(),
                         GlobalPointVectorType(quad.nop()))
                        ).first;
       for (size_t i = 0; i < quad.nop(); ++i) {
@@ -31,12 +29,10 @@ namespace Dune {
 
   template <class ct, int dim>
   const typename PointProvider<ct, dim, 0>::GlobalPointVectorType&
-  PointProvider<ct, dim, 0>::getPoints(const size_t id, const GeometryType& elementGeo) 
+  PointProvider<ct, dim, 0>::getPoints(size_t id, GeometryType elementGeo) 
   {
-    QuadratureKeyType key( elementGeo, id );
-    
-    assert(points_.find(key) != points_.end());
-    return points_.find(key)->second;
+    assert(points_.find(id) != points_.end());
+    return points_.find(id)->second;
   }
 
   template <class ct, int dim>
@@ -50,11 +46,9 @@ namespace Dune {
   template <class ct, int dim>
   const typename PointProvider<ct, dim, 1>::MapperVectorType&
   PointProvider<ct, dim, 1>::getMappers(const QuadratureType& quad,
-                                        const GeometryType& elementGeo) 
+                                        GeometryType elementGeo) 
   {
-    QuadratureKeyType key( elementGeo , quad.id() );
-    
-    MapperIteratorType it = mappers_.find( key );
+    MapperIteratorType it = mappers_.find(quad.id());
     if (it == mappers_.end()) {
       std::vector<LocalPointType> pts(quad.nop());
       for (size_t i = 0; i < quad.nop(); ++i) {
@@ -70,11 +64,9 @@ namespace Dune {
   const typename PointProvider<ct, dim, 1>::MapperVectorType&
   PointProvider<ct, dim, 1>::getMappers(const QuadratureType& quad,
                                         const LocalPointVectorType& pts,
-                                        const GeometryType& elementGeo)
+                                        GeometryType elementGeo)
   {
-    QuadratureKeyType key( elementGeo, quad.id() );
-    
-    MapperIteratorType it = mappers_.find( key );
+    MapperIteratorType it = mappers_.find(quad.id());
     if (it == mappers_.end()) {
       it = addEntry(quad, pts, elementGeo);
     }
@@ -84,12 +76,10 @@ namespace Dune {
 
   template <class ct, int dim>
   const typename PointProvider<ct, dim, 1>::GlobalPointVectorType&
-  PointProvider<ct, dim, 1>::getPoints(const size_t id, const GeometryType& elementGeo)
+  PointProvider<ct, dim, 1>::getPoints(size_t id, GeometryType elementGeo)
   {
-    QuadratureKeyType key( elementGeo, id );
-    
-    assert(points_.find(key) != points_.end());
-    return points_.find(key)->second;
+    assert(points_.find(id) != points_.end());
+    return points_.find(id)->second;
   }
 
   template <class ct, int dim>
@@ -105,22 +95,18 @@ namespace Dune {
     const int numFaces = refElem.size(codim);
     const int numGlobalPoints = numFaces*numLocalPoints;
     
-    // generate key 
-    QuadratureKeyType key ( elementGeo, quad.id() );
-    
     PointIteratorType pit = 
-      points_.insert(std::make_pair(key, 
+      points_.insert(std::make_pair(quad.id(), 
                                     GlobalPointVectorType(numGlobalPoints))).first;
     MapperIteratorType mit =
-      mappers_.insert(std::make_pair(key,
+      mappers_.insert(std::make_pair(quad.id(),
                                      MapperVectorType(numFaces))).first;
 
     int globalNum = 0;
-    for (int face = 0; face < numFaces; ++face) 
-    {
+    for (int face = 0; face < numFaces; ++face) {
       // Assumption: all faces have the same type
       // (not true for pyramids and prisms)
-      //assert(sameGeometry(quad.geometry(), refElem.type(face, codim)));
+      assert(sameGeometry(quad.geometry(), refElem.type(face, codim)));
       MapperType pMap(numLocalPoints);
         
       for (int pt = 0; pt < numLocalPoints; ++pt, ++globalNum) {

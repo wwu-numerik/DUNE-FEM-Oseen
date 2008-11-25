@@ -9,6 +9,3 @@ file_HEADERS = asciiparser.hh \
 	       persistencemanager.hh \
 	       vtkio.hh \
 	       xdrio.hh
-
-include $(top_srcdir)/am/global-rules
-

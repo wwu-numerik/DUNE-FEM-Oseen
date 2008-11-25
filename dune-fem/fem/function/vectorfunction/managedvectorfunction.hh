@@ -25,9 +25,11 @@ namespace Dune
   protected:
     typedef typename DiscreteFunctionSpaceType :: GridPartType :: GridType
       GridType;
+    typedef DofManager< GridType > DofManagerType;
 
   protected:
-    DofStorageInterface *memObject_;
+    DofManagerType *dofManager_;
+    MemObjectInterface *memObject_;
 
   public:
     inline ManagedDiscreteFunction ( const std :: string &name,
@@ -51,14 +53,14 @@ namespace Dune
 
     inline ~ManagedDiscreteFunction ()
     {
-      if( memObject_ ) 
-        delete memObject_ ;
+      assert( memObject_ );
+      dofManager_->removeDofSet( *memObject_ );
     }
 
     inline void enableDofCompression ()
     {
-      if( memObject_ )
-        memObject_->enableDofCompression();
+      assert( memObject_ );
+      memObject_->enableDofCompression();
     }
 
   private:
@@ -66,10 +68,11 @@ namespace Dune
     allocDofVector ( const std :: string &name,
                      const DiscreteFunctionSpaceType &dfSpace )
     {
-      // allocate managed dof storage 
-      std :: pair< DofStorageInterface *, DofVectorType * > memPair
-        = allocateManagedDofStorage( dfSpace.grid(), dfSpace.mapper(), 
-                                     name , (DofVectorType *) 0);
+      dofManager_ = &DofManagerFactory< DofManagerType >
+                       :: getDofManager( dfSpace.grid() );
+
+      std :: pair< MemObjectInterface *, DofVectorType * > memPair
+        = dofManager_->addDofSet( (DofVector *)0, dfSpace.mapper(), name );
       memObject_ = memPair.first;
       return *(memPair.second);
     }

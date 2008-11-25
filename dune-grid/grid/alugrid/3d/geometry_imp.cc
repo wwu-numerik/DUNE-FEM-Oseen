@@ -711,10 +711,6 @@ buildGeomInFather(const GeometryType &fatherGeom , const GeometryType & myGeom)
 
   // delete old mapping and creats new mapping 
   buildMapping();
-
-  // my volume is a part of 1 
-  volume_ = myGeom.volume() / fatherGeom.volume();
-
   return true;
 }
 

@@ -112,22 +112,23 @@ typedef TestFunctionSpace FunctionSpaceType;
 typedef TestDiscreteFunctionSpace< GridPartType > DiscreteFunctionSpaceType;
 
 
-int main ( int argc, char *argv[] )
-try
+int main ()
 {
-  MPIManager :: initialize( argc, argv );
+  try
+  {
+    GridType &grid = TestGrid :: grid();
+    const int step = TestGrid :: refineStepsForHalf();
+    grid.globalRefine( 2*step );
 
-  GridType &grid = TestGrid :: grid();
-  const int step = TestGrid :: refineStepsForHalf();
-  grid.globalRefine( 2*step );
+    GridPartType gridPart( grid );
+    DiscreteFunctionSpaceType discreteFunctionSpace( gridPart );
 
-  GridPartType gridPart( grid );
-  DiscreteFunctionSpaceType discreteFunctionSpace( gridPart );
-
-  return (checkMappers( discreteFunctionSpace ) ? 0 : 1);
-}
-catch( Exception e )
-{
-  std :: cerr << e.what() << std :: endl;
-  return 1;
+    return (checkMappers( discreteFunctionSpace ) ? 0 : 1);
+  }
+  catch( Exception e )
+  {
+    std :: cerr << e.what() << std :: endl;
+    return 1;
+  }
+  return 0;
 }

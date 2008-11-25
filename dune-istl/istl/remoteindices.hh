@@ -1,4 +1,4 @@
-// $Id: remoteindices.hh 954 2008-10-28 10:31:55Z robertk $
+// $Id: remoteindices.hh 762 2007-05-01 17:01:20Z mblatt $
 #ifndef DUNE_REMOTEINDICES_HH
 #define DUNE_REMOTEINDICES_HH
 
@@ -187,16 +187,16 @@ namespace Dune{
     /**
      * @brief Type of the remote indices we manage.
      */
-    typedef Dune :: RemoteIndex<GlobalIndex,Attribute> RemoteIndex;
+    typedef RemoteIndex<GlobalIndex,Attribute> RemoteIndex;
 
     
     /**
      * @brief The type of the allocator for the remote index list.
      */
-    typedef Dune :: PoolAllocator<RemoteIndex,1> Allocator;
+    typedef PoolAllocator<RemoteIndex,1> Allocator;
 
     /** @brief The type of the remote index list. */
-    typedef Dune :: SLList<RemoteIndex,Allocator>
+    typedef SLList<RemoteIndex,Allocator>
     RemoteIndexList;
     
     /** @brief The type of the map from rank to remote index list. */
@@ -470,15 +470,15 @@ namespace Dune{
     /**
      * @brief Type of the remote indices we manage.
      */
-    typedef Dune :: RemoteIndex<GlobalIndex,Attribute> RemoteIndex;
+    typedef RemoteIndex<GlobalIndex,Attribute> RemoteIndex;
     
     /**
      * @brief The type of the allocator for the remote index list.
      */
-    typedef Dune :: PoolAllocator<RemoteIndex,1> Allocator;
+    typedef PoolAllocator<RemoteIndex,1> Allocator;
 
     /** @brief The type of the remote index list. */
-    typedef Dune :: SLList<RemoteIndex,Allocator>
+    typedef SLList<RemoteIndex,Allocator>
     RemoteIndexList;
 
     /**
@@ -601,13 +601,13 @@ namespace Dune{
     typedef typename LocalIndex::Attribute Attribute;
 
     /** @brief The remote index type */
-    typedef Dune :: RemoteIndex<GlobalIndex,Attribute> RemoteIndex;
+    typedef RemoteIndex<GlobalIndex,Attribute> RemoteIndex;
     
     /** @brief The allocator of the remote indices. */
-    typedef Dune :: PoolAllocator<RemoteIndex,1> Allocator;
+    typedef PoolAllocator<RemoteIndex,1> Allocator;
 
     /** @brief The type of the remote index list. */
-    typedef Dune :: SLList<RemoteIndex,Allocator> RemoteIndexList;    
+    typedef SLList<RemoteIndex,Allocator> RemoteIndexList;    
 
     /** @brief The of map for storing the iterators. */
     typedef std::map<int,std::pair<typename RemoteIndexList::const_iterator,
