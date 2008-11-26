@@ -91,12 +91,18 @@ class PostProcessor
             typedef Dune::VTKIO<GridPartType> VTKWriterType;
             VTKWriterType vtkWriter( gridPart_ );
 			vtkWriter.addVertexData( discreteExactVelocity_ );
-			vtkWriter.addVertexData( discreteExactPressure_ );
 			vtkWriter.write(( "data/discreteExactVelocity_" ) );
 			vtkWriter.clear();
 			vtkWriter.addVertexData( discreteExactPressure_ );
 			vtkWriter.write(( "data/discreteExactPressure_" ) );
 			vtkWriter.clear();
+			vtkWriter.addVertexData( discreteExactForce_ );
+			vtkWriter.write(( "data/discreteExactForce_" ) );
+			vtkWriter.clear();
+			vtkWriter.addVertexData( discreteExactDirichlet_ );
+			vtkWriter.write(( "data/discreteExactDirichlet_" ) );
+			vtkWriter.clear();
+
 //			vtkWriter.addVertexData( exactDF );
 //			vtkWriter.write(( "exact" ) );
 //			vtkWriter.clear();
