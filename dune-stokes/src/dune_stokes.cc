@@ -25,6 +25,7 @@
 #include "logging.hh"
 #include "problem.hh"
 #include "postprocessing.hh"
+#include "profiler.hh"
 
 /**
  *  \brief  main function
@@ -40,7 +41,13 @@ int main( int argc, char** argv )
 {
   try{
     //Maybe initialize Mpi
-    //Dune::MPIHelper& helper = Dune::MPIHelper::instance(argc, argv);
+    #if ENABLE_MPI
+        typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
+    #else
+        typedef Dune::CollectiveCommunication<double > CollectiveCommunication;
+    #endif
+    Dune::MPIHelper& mpihelper = Dune::MPIHelper::instance(argc, argv);
+    CollectiveCommunication mpicomm ( mpihelper.getCommunicator() );
 
     /* ********************************************************************** *
      * initialize all the stuff we need                                       *
@@ -140,9 +147,11 @@ int main( int argc, char** argv )
     infoStream << "...done." << std::endl;
 
     /* ********************************************************************** *
-     * initialize model                                                       *
+     * initialize model (and profiler example)                                *
      * ********************************************************************** */
     infoStream << "\ninitialising model..." << std::endl;
+    profiler().Reset( 1 ); //prepare for one single run of code
+    profiler().StartTiming( "Problem/Postprocessing" );
     typedef Problem< ProblemTraits< gridDim, VelocityFunctionSpaceType, PressureFunctionSpaceType > >
         Problemtype;
     Problemtype problem( parameters.viscosity(), velocitySpace, pressureSpace );
@@ -151,7 +160,8 @@ int main( int argc, char** argv )
         PostProcessorType;
     PostProcessorType postProcessor( problem, gridPart, velocitySpace, pressureSpace );
     infoStream << "...done." << std::endl;
-
+    profiler().StopTiming( "Problem/Postprocessing" );
+    profiler().Output( mpicomm, 0, exactPressure.size() );
 
     return 0;
   }
