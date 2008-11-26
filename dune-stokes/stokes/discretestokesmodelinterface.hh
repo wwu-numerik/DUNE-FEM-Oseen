@@ -15,7 +15,6 @@ namespace Dune
 
 /**
  *  \brief  Interface class for stokes problem definition in the LDG context.
- *
  *  \todo   doc with tex
  **/
 template < class DiscreteStokesModelTraits >
@@ -101,10 +100,9 @@ class DiscreteStokesModelInterface
         /**
          *  \brief  Returns true if problem has a flux contribution of type
          *          \f$\hat{u}_{\sigma}\f$
-         *
          *  \attention  If you let this method return true, make sure to
-         *              implement <b>both</b> VelocitySigmaFlux and
-         *              VelocitySigmaBoundaryFlux as well
+         *              implement <b>both</b> velocitySigmaFlux and
+         *              velocitySigmaBoundaryFlux as well
          **/
         bool hasVelocitySigmaFlux() const
         {
@@ -114,10 +112,9 @@ class DiscreteStokesModelInterface
         /**
          *  \brief  Returns true if problem has a flux contribution of type
          *          \f$\hat{u}_{p}\f$
-         *
          *  \attention  If you let this method return true, make sure to
-         *              implement <b>both</b> VelocityPressureFlux and
-         *              VelocityPressureBoundaryFlux as well.
+         *              implement <b>both</b> velocityPressureFlux and
+         *              velocityPressureBoundaryFlux as well.
          **/
         bool hasVelocityPressureFlux() const
         {
@@ -127,10 +124,9 @@ class DiscreteStokesModelInterface
         /**
          *  \brief  Returns true if problem has a flux contribution of type
          *          \f$\hat{p}\f$
-         *
          *  \attention  If you let this method return true, make sure to
-         *              implement <b>both</b> PressureFlux and
-         *              PressureBoundaryFlux as well.
+         *              implement <b>both</b> pressureFlux and
+         *              pressureBoundaryFlux as well.
          **/
         bool hasPressureFlux() const
         {
@@ -140,10 +136,9 @@ class DiscreteStokesModelInterface
         /**
          *  \brief  Returns true if problem has a flux contribution of type
          *          \f$\hat{\sigma}\f$
-         *
          *  \attention  If you let this method return true, make sure to
-         *              implement <b>both</b> SigmaFlux and
-         *              SigmaBoundaryFlux as well.
+         *              implement <b>both</b> sigmaFlux and
+         *              sigmaBoundaryFlux as well.
          **/
         bool hasSigmaFlux() const
         {
@@ -152,9 +147,8 @@ class DiscreteStokesModelInterface
 
         /**
          *  \brief  Returns true if problem has a force contribution \f$f\f$
-         *
          *  \attention  If you let this method return true, make sure to
-         *              implement Force as well.
+         *              implement force as well.
          **/
         bool hasForce() const
         {
@@ -180,16 +174,16 @@ class DiscreteStokesModelInterface
          *          given entity
          *  \todo   latex doc
          **/
-        template < class FaceDomainType, class LocalVelocityFunctionType >
-        void velocitySigmaFlux( const IntersectionIteratorType& it,
-                                const double time,
-                                const FaceDomainType& x,
-                                const LocalVelocityFunctionType& uInner,
-                                const LocalVelocityFunctionType& uOuter,
-                                VelocityRangeType& uContribInner,
-                                VelocityRangeType& uContribOuter,
-                                VelocityRangeType& emptyContribInner,
-                                VelocityRangeType& emptyContribOuter )
+        template < class FaceDomainType >
+        void velocitySigmaFlux(         const IntersectionIteratorType& it,
+                                        const double time,
+                                        const FaceDomainType& x,
+                                        const LocalVelocityFunctionType& uInner,
+                                        const LocalVelocityFunctionType& uOuter,
+                                        VelocityRangeType& uContribInner,
+                                        VelocityRangeType& uContribOuter,
+                                        VelocityRangeType& emptyContribInner,
+                                        VelocityRangeType& emptyContribOuter )
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
                 asImp().velocitySigmaFlux(  it,
@@ -200,23 +194,14 @@ class DiscreteStokesModelInterface
                                             uContribInner,
                                             uContribOuter,
                                             emptyContribInner,
-                                            emptyContribOuter )
-            );
-            asImp().velocitySigmaFlux(  it,
-                                        time,
-                                        x,
-                                        uInner,
-                                        uOuter,
-                                        uContribInner,
-                                        uContribOuter,
-                                        emptyContribInner,
-                                        emptyContribOuter );
+                                            emptyContribOuter ) );
         }
 
         /**
          *  \brief
+         *  \todo   doc like velocitySigmaFlux
          **/
-        template < class ArgumentTuple, class FaceDomainType >
+        template < class FaceDomainType >
         void velocitySigmaBoundaryFlux( const IntersectionIteratorType& it,
                                         const double time,
                                         const FaceDomainType& x,
@@ -227,85 +212,239 @@ class DiscreteStokesModelInterface
                                         VelocityRangeType& emptyContribInner,
                                         VelocityRangeType& emptyContribOuter )
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().velocitySigmaBoundaryFlux() );
-            asImp().velocitySigmaBoundaryFlux();
+            CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
+                asImp().velocitySigmaBoundaryFlux(
+                                        it,
+                                        time,
+                                        x,
+                                        uInner,
+                                        uOuter,
+                                        uContribInner,
+                                        uContribOuter,
+                                        emptyContribInner,
+                                        emptyContribOuter ) );
         }
 
         /**
-         *  \brief  Empty implementation that fails if problem claims to have
-         *          a VelocityPressureFlux contribution.
+         *  \brief
+         *  \todo   latex doc
          **/
-        void velocityPressureFlux()
+         template < class FaceDomainType >
+        void velocityPressureFlux(      const IntersectionIteratorType& it,
+                                        const double time,
+                                        const FaceDomainType& x,
+                                        const LocalVelocityFunctionType& uInner,
+                                        const LocalVelocityFunctionType& uOuter,
+                                        const LocalPressureFunctionType& pInner,
+                                        const LocalPressureFunctionType& pOuter,
+                                        VelocityRangeType& uContribInner,
+                                        VelocityRangeType& uContribOuter,
+                                        VelocityRangeType& pContribInner,
+                                        VelocityRangeType& pContribOuter,
+                                        VelocityRangeType& emptyContribInner,
+                                        VelocityRangeType& emptyContribOuter )
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().velocityPressureFlux() );
-            asImp().velocityPressureFlux();
+            CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
+                asImp().velocityPressureFlux(   it,
+                                                time,
+                                                x,
+                                                uInner,
+                                                uOuter,
+                                                pInner,
+                                                pOuter,
+                                                uContribInner,
+                                                uContribOuter,
+                                                pContribInner,
+                                                pContribOuter,
+                                                emptyContribInner,
+                                                emptyContribOuter) );
         }
 
         /**
-         *  \brief  Empty implementation that fails if problem claims to have
-         *          a VelocityPressureFlux contribution.
+         *  \brief
+         *  \todo   doc like velocityPressureFlux
          **/
-        void velocityPressureBoundaryFlux()
+         template < class FaceDomainType >
+        void velocityPressureBoundaryFlux(
+                                    const IntersectionIteratorType& it,
+                                    const double time,
+                                    const FaceDomainType& x,
+                                    const LocalVelocityFunctionType& uInner,
+                                    const LocalVelocityFunctionType& uOuter,
+                                    const LocalPressureFunctionType& pInner,
+                                    const LocalPressureFunctionType& pOuter,
+                                    VelocityRangeType& uContribInner,
+                                    VelocityRangeType& uContribOuter,
+                                    VelocityRangeType& pContribInner,
+                                    VelocityRangeType& pContribOuter,
+                                    VelocityRangeType& emptyContribInner,
+                                    VelocityRangeType& emptyContribOuter )
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().velocityPressureBoundaryFlux() );
-            asImp().velocityPressureBoundaryFlux();
+            CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
+                asImp().velocityPressureBoundaryFlux(
+                                    it,
+                                    time,
+                                    x,
+                                    uInner,
+                                    uOuter,
+                                    pInner,
+                                    pOuter,
+                                    uContribInner,
+                                    uContribOuter,
+                                    pContribInner,
+                                    pContribOuter,
+                                    emptyContribInner,
+                                    emptyContribOuter ) );
         }
 
         /**
-         *  \brief  Empty implementation that fails if problem claims to have
-         *          a PressureFlux contribution.
+         *  \brief
+         *  \todo latex doc
          **/
-        void pressureFlux()
+        template < class FaceDomainType >
+        void pressureFlux(  const IntersectionIteratorType& it,
+                            const double time,
+                            const FaceDomainType& x,
+                            const LocalPressureFunctionType& pInner,
+                            const LocalPressureFunctionType& pOuter,
+                            PressureRangeType& pContribInner,
+                            PressureRangeType& pContribOuter,
+                            PressureRangeType& emptyContribInner,
+                            PressureRangeType& emptyContribOuter )
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().pressureFlux() );
-            asImp().pressureFlux();
+            CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
+                asImp().pressureFlux(   it,
+                                        time,
+                                        x,
+                                        pInner,
+                                        pOuter,
+                                        pContribInner,
+                                        pContribOuter,
+                                        emptyContribInner,
+                                        emptyContribOuter ) );
         }
 
         /**
-         *  \brief  Empty implementation that fails if problem claims to have
-         *          a PressureFlux contribution.
+         *  \brief
+         *  \todo   doc like pressureFlux
          **/
-        void pressureBoundaryFlux()
+        template < class FaceDomainType >
+        void pressureBoundaryFlux(  const IntersectionIteratorType& it,
+                                    const double time,
+                                    const FaceDomainType& x,
+                                    const LocalPressureFunctionType& pInner,
+                                    const LocalPressureFunctionType& pOuter,
+                                    PressureRangeType& pContribInner,
+                                    PressureRangeType& pContribOuter,
+                                    PressureRangeType& emptyContribInner,
+                                    PressureRangeType& emptyContribOuter )
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().pressureBoundaryFlux() );
-            asImp().pressureBoundaryFlux();
+            CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
+                asImp().pressureBoundaryFlux(   it,
+                                                time,
+                                                x,
+                                                pInner,
+                                                pOuter,
+                                                pContribInner,
+                                                pContribOuter,
+                                                emptyContribInner,
+                                                emptyContribOuter) );
         }
 
         /**
-         *  \brief  Empty implementation that fails if problem claims to have
-         *          a SigmaFlux contribution.
+         *  \brief
+         *  \todo   latex doc
          **/
-        void sigmaFlux()
+        template < class FaceDomainType >
+        void sigmaFlux( const IntersectionIteratorType& it,
+                        const double time,
+                        const FaceDomainType& x,
+                        const LocalVelocityFunctionType& uInner,
+                        const LocalVelocityFunctionType& uOuter,
+                        const LocalSigmaFunctionType& sigmaInner,
+                        const LocalSigmaFunctionType& sigmaOuter,
+                        SigmaRangeType& sigmaContribInner,
+                        SigmaRangeType& sigmaContribOuter,
+                        SigmaRangeType& uContribInner,
+                        SigmaRangeType& uContribOuter,
+                        SigmaRangeType& emptyContribInner,
+                        SigmaRangeType& emptyContribOuter )
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().sigmaFlux() );
-            asImp().sigmaFlux();
+            CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
+                asImp().sigmaFlux(  it,
+                                    time,
+                                    x,
+                                    uInner,
+                                    uOuter,
+                                    sigmaInner,
+                                    sigmaOuter,
+                                    sigmaContribInner,
+                                    sigmaContribOuter,
+                                    uContribInner,
+                                    uContribOuter,
+                                    emptyContribInner,
+                                    emptyContribOuter ) );
         }
 
         /**
-         *  \brief  Empty implementation that fails if problem claims to have
-         *          a SigmaFlux contribution.
+         *  \brief
+         *  \todo   doc like sigmaFlux
          **/
-        void sigmaBoundaryFlux()
+        template < class FaceDomainType >
+        void sigmaBoundaryFlux( const IntersectionIteratorType& it,
+                                const double time,
+                                const FaceDomainType& x,
+                                const LocalVelocityFunctionType& uInner,
+                                const LocalVelocityFunctionType& uOuter,
+                                const LocalSigmaFunctionType& sigmaInner,
+                                const LocalSigmaFunctionType& sigmaOuter,
+                                SigmaRangeType& sigmaContribInner,
+                                SigmaRangeType& sigmaContribOuter,
+                                SigmaRangeType& uContribInner,
+                                SigmaRangeType& uContribOuter,
+                                SigmaRangeType& emptyContribInner,
+                                SigmaRangeType& emptyContribOuter)
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().sigmaBoundaryFlux() );
-            asImp().sigmaBoundaryFlux();
+            CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
+                asImp().sigmaBoundaryFlux(  it,
+                                            time,
+                                            x,
+                                            uInner,
+                                            uOuter,
+                                            sigmaInner,
+                                            sigmaOuter,
+                                            sigmaContribInner,
+                                            sigmaContribOuter,
+                                            uContribInner,
+                                            uContribOuter,
+                                            emptyContribInner,
+                                            emptyContribOuter) );
         }
 
         /**
-         *  \brief  Empty implementation that fails if problem claims to have
-         *          a VelocitySigmaFlux contribution.
+         *  \brief
+         *  \todo   latex doc
          **/
-        void force()
+        template < class FaceDomainType >
+        void force( const IntersectionIteratorType& it,
+                    const double time,
+                    const FaceDomainType& x,
+                    VelocityRangeType& forceContribInner,
+                    VelocityRangeType& forceContribOuter )
         {
-            CHECK_INTERFACE_IMPLEMENTATION( asImp().force() );
-            asImp().force();
+            CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
+                asImp().force(
+                ) );
         }
 
     protected:
+        //! for Barton-Nackmann trick
         DiscreteModelType& asImp()
         {
             return static_cast<DiscreteModelType&>(*this);
         }
+
+        //! for Barton-Nackmann trick
         const DiscreteModelType& asImp() const
         {
             return static_cast<const DiscreteModelType&>(*this);
