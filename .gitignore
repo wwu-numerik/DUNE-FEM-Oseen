@@ -665,4 +665,24 @@ mirko-stokes/doc/doxygen/man/
 mirko-stokes/src/.deps/
 mirko-stokes/src/Makefile
 mirko-stokes/src/Makefile.in
+dune-fem-howto/depcomp
+dune-fem-howto/src_localdg/.deps/
+dune-fem-howto/src_localdg/Makefile
+dune-fem-howto/src_localdg/Makefile.in
+dune-fem-howto/src_localdg/doc/Makefile
+dune-fem-howto/src_localdg/doc/Makefile.in
+dune-fem-howto/src_localdg/doc/doxygen/Makefile
+dune-fem-howto/src_localdg/doc/doxygen/Makefile.in
+dune-fem-howto/src_localdg/doc/doxygen/doxygen-tag
+dune-fem-howto/src_localdg/doc/doxygen/doxygen.log
+dune-fem-howto/src_localdg/doc/doxygen/doxygen.out
+dune-fem-howto/src_localdg/doc/doxygen/html/
+dune-fem-howto/src_localdg/doc/doxygen/man/
+dune-stokes/codeblocks/bin/
+dune-stokes/codeblocks/dune-stokes.depend
+dune-stokes/codeblocks/dune-stokes.layout
+dune-stokes/codeblocks/obj/
+dune-stokes/src/dgfparser.log
+dune-stokes/src/dune-stokes.log
+dune-stokes/src/grid_2d.dgf.ALUgrid
 
