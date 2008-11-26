@@ -16,12 +16,6 @@
 //#include <dune/grid/io/file/dgfparser/dgfparser.hh> // for the grid
 //#include <dune/grid/utility/gridtype.hh>
 
-//#include "traits.hh"
-#include "parametercontainer.hh"
-#include "logging.hh"
-#include <dune/stokes/saddlepoint_inverse_operator.hh>
-#include <dune/stokes/stokespass.hh>
-#include <dune/stokes/discretestokesmodelinterface.hh>
 #include <dune/fem/solver/oemsolver/oemsolver.hh>
 #include <dune/fem/space/dgspace.hh>
 #include <dune/fem/space/combinedspace.hh>
@@ -30,6 +24,8 @@
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
 
 #include <dune/stokes/discretestokesmodelinterface.hh>
+#include <dune/stokes/saddlepoint_inverse_operator.hh>
+#include <dune/stokes/stokespass.hh>
 
 #include "parametercontainer.hh"
 #include "logging.hh"
@@ -96,53 +92,62 @@ int main( int argc, char** argv )
      * initialize function spaces and functions                               *
      * ********************************************************************** */
     infoStream << "\ninitialising functions..." << std::endl;
-    // velocity
-    typedef Dune::FunctionSpace< double, double, gridDim, gridDim >
-        VelocityFunctionSpaceType;
-    typedef Dune::DiscontinuousGalerkinSpace<   VelocityFunctionSpaceType,
-                                                GridPartType,
-                                                polOrder >
-        DiscreteVelocityFunctionSpaceType;
-    DiscreteVelocityFunctionSpaceType velocitySpace( gridPart );
-    typedef Dune::AdaptiveDiscreteFunction< DiscreteVelocityFunctionSpaceType >
-        DiscreteVelocityFunctionType;
-    DiscreteVelocityFunctionType exactVelocity( "exact_velocity",
-                                                velocitySpace );
-    exactVelocity.clear();
-    //sigma
-    typedef Dune::MatrixFunctionSpace< double, double, gridDim, gridDim, gridDim >
-        SigmaFunctionSpaceType;
-    typedef Dune::DiscontinuousGalerkinSpace<   SigmaFunctionSpaceType,
-                                                GridPartType,
-                                                polOrder >
-        DiscreteSigmaFunctionSpaceType;
-    DiscreteSigmaFunctionSpaceType sigmaSpace( gridPart );
-    typedef Dune::AdaptiveDiscreteFunction< DiscreteSigmaFunctionSpaceType >
-        DiscreteSigmaFunctionType;
-    DiscreteSigmaFunctionType exactSigma(   "exact_sigma",
-                                            sigmaSpace );
-    exactSigma.clear();
-    // pressure
-    typedef Dune::FunctionSpace< double, double, gridDim, 1 >
-        PressureFunctionSpaceType;
-    typedef Dune::DiscontinuousGalerkinSpace<   PressureFunctionSpaceType,
-                                                GridPartType,
-                                                polOrder >
-        DiscretePressureFunctionSpaceType;
-    DiscretePressureFunctionSpaceType pressureSpace( gridPart );
-    typedef Dune::AdaptiveDiscreteFunction< DiscretePressureFunctionSpaceType >
-        DiscretePressureFunctionType;
-    DiscretePressureFunctionType exactPressure( "exact_pressure",
-                                                pressureSpace );
-    exactPressure.clear();
-    // right hand side
-    DiscreteVelocityFunctionType righthandSide( "rhs",
-                                                velocitySpace );
-    righthandSide.clear();
-    // dirichlet data
-    DiscreteVelocityFunctionType dirichletData( "g_D",
-                                                velocitySpace );
-    dirichletData.clear();
+//    // velocity
+//    typedef Dune::FunctionSpace< double, double, gridDim, gridDim >
+//        VelocityFunctionSpaceType;
+//    typedef Dune::DiscontinuousGalerkinSpace<   VelocityFunctionSpaceType,
+//                                                GridPartType,
+//                                                polOrder >
+//        DiscreteVelocityFunctionSpaceType;
+//    DiscreteVelocityFunctionSpaceType velocitySpace( gridPart );
+//    typedef Dune::AdaptiveDiscreteFunction< DiscreteVelocityFunctionSpaceType >
+//        DiscreteVelocityFunctionType;
+//    DiscreteVelocityFunctionType exactVelocity( "exact_velocity",
+//                                                velocitySpace );
+//    exactVelocity.clear();
+//    //sigma
+//    typedef Dune::MatrixFunctionSpace< double, double, gridDim, gridDim, gridDim >
+//        SigmaFunctionSpaceType;
+//    typedef Dune::DiscontinuousGalerkinSpace<   SigmaFunctionSpaceType,
+//                                                GridPartType,
+//                                                polOrder >
+//        DiscreteSigmaFunctionSpaceType;
+//    DiscreteSigmaFunctionSpaceType sigmaSpace( gridPart );
+//    typedef Dune::AdaptiveDiscreteFunction< DiscreteSigmaFunctionSpaceType >
+//        DiscreteSigmaFunctionType;
+//    DiscreteSigmaFunctionType exactSigma(   "exact_sigma",
+//                                            sigmaSpace );
+//    exactSigma.clear();
+//    // pressure
+//    typedef Dune::FunctionSpace< double, double, gridDim, 1 >
+//        PressureFunctionSpaceType;
+//    typedef Dune::DiscontinuousGalerkinSpace<   PressureFunctionSpaceType,
+//                                                GridPartType,
+//                                                polOrder >
+//        DiscretePressureFunctionSpaceType;
+//    DiscretePressureFunctionSpaceType pressureSpace( gridPart );
+//    typedef Dune::AdaptiveDiscreteFunction< DiscretePressureFunctionSpaceType >
+//        DiscretePressureFunctionType;
+//    DiscretePressureFunctionType exactPressure( "exact_pressure",
+//                                                pressureSpace );
+//    exactPressure.clear();
+//    // right hand side
+//    DiscreteVelocityFunctionType righthandSide( "rhs",
+//                                                velocitySpace );
+//    righthandSide.clear();
+//    // dirichlet data
+//    DiscreteVelocityFunctionType dirichletData( "g_D",
+//                                                velocitySpace );
+//    dirichletData.clear();
+
+
+    typedef Dune::DiscreteStokesModelDefault< Dune::DiscreteStokesModelDefaultTraits<
+                                            GridPartType,
+                                            gridDim,
+                                            polOrder >
+                                        >
+        ModelType;
+    ModelType model;
 
     infoStream << "...done." << std::endl;
 
@@ -151,34 +156,22 @@ int main( int argc, char** argv )
      * initialize model                                                       *
      * ********************************************************************** */
     infoStream << "\ninitialising model..." << std::endl;
-    typedef Problem< ProblemTraits< gridDim, VelocityFunctionSpaceType, PressureFunctionSpaceType > >
-        Problemtype;
-    Problemtype problem( parameters.viscosity(), velocitySpace, pressureSpace );
-    //problem.testMe();
-    typedef PostProcessor< Problemtype, GridPartType, DiscreteVelocityFunctionType, DiscretePressureFunctionType >
-        PostProcessorType;
-    PostProcessorType postProcessor( problem, gridPart, velocitySpace, pressureSpace );
+//    typedef Problem< ProblemTraits< gridDim, VelocityFunctionSpaceType, PressureFunctionSpaceType > >
+//        Problemtype;
+//    Problemtype problem( parameters.viscosity(), velocitySpace, pressureSpace );
+//    //problem.testMe();
+//    typedef PostProcessor< Problemtype, GridPartType, DiscreteVelocityFunctionType, DiscretePressureFunctionType >
+//        PostProcessorType;
+//    PostProcessorType postProcessor( problem, gridPart, velocitySpace, pressureSpace );
     infoStream << "...done." << std::endl;
 
+    /* ******
+     * init pass
+     * ******** */
 
-    const int dim = gridDim;
-    const int polOrd = 2;
-    typedef Dune::FunctionSpace<double, double, dim, dim>
-        FunctionSpaceType;
-    typedef FunctionSpaceType::DomainFieldType
-        DomainFieldType;
-    typedef FunctionSpaceType::RangeFieldType
-        RangeFieldType;
-    typedef Dune::FunctionSpace<DomainFieldType,RangeFieldType,dim,dim>
-        PressureSpaceType;
-    typedef Dune::LeafGridPart<GridType>
-        GridPartType;
-    typedef Dune::DiscontinuousGalerkinSpace<FunctionSpaceType, GridPartType, polOrd >
-        DiscreteFunctionSpaceType;
-    typedef Dune::AdaptiveDiscreteFunction<DiscreteFunctionSpaceType>
-        DiscreteFunctionType;
-    typedef Dune::StartPass< DiscreteFunctionType, -1 >
-        StartPassType;
+//    typedef Dune::StartPass< DiscreteVelocityFunctionType, -1 >
+//        StartPassType;
+//    StartPassType startPass;
 //    typedef Dune::StokesTraits < DiscreteFunctionType, DiscreteFunctionSpaceType >
 //        StokesTraits;
 //    typedef Dune::DiscreteStokesModelInterface< StokesTraits >
@@ -190,9 +183,8 @@ int main( int argc, char** argv )
 //    typedef Dune::SaddlepointInverseOperator< PassType, InverseOperatorType >
 //        SaddlepointInverseOperatortype;
 
-    GridPartType gridpart ( *gridPtr );
-    DiscreteFunctionSpaceType pressurespc ( gridpart  );
-    DiscreteFunctionSpaceType velospace ( gridpart  );
+//    DiscreteFunctionSpaceType pressurespc ( gridpart  );
+//    DiscreteFunctionSpaceType velospace ( gridpart  );
 //    DiscreteModelType disc_model;
 //    StartPassType startPass;
 //    PassType pass ( startPass, velospace, pressurespc );

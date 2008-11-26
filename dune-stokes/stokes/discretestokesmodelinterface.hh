@@ -22,8 +22,9 @@ class DiscreteStokesModelInterface
     public:
 
 
-    typedef DiscreteStokesModelInterface<DiscreteStokesModelTraits>
-        ThisType;
+        typedef DiscreteStokesModelInterface< DiscreteStokesModelTraits >
+            ThisType;
+
         //! Traits class defined by the user
         typedef DiscreteStokesModelTraits
             Traits;
@@ -45,8 +46,8 @@ class DiscreteStokesModelInterface
             DiscreteVelocityFunctionSpaceType;
 
         //! Sigma function space
-        typedef typename Traits::DiscreteSigmaFucntionSpaceType
-            DiscreteSigmaFucntionSpaceType;
+        typedef typename Traits::DiscreteSigmaFunctionSpaceType
+            DiscreteSigmaFunctionSpaceType;
 
         //! Pressure function space
         typedef typename Traits::DiscretePressureFunctionSpaceType
@@ -61,7 +62,7 @@ class DiscreteStokesModelInterface
             VelocityRangeType;
 
         //! vector type of sigmas' discrete functions space's range
-        typedef typename DiscreteSigmaFucntionSpaceType::RangeType
+        typedef typename DiscreteSigmaFunctionSpaceType::RangeType
             SigmaRangeType;
 
         //! Vector type of the pressure's discrete function space's range
@@ -449,6 +450,101 @@ class DiscreteStokesModelInterface
             return static_cast<const DiscreteModelType&>(*this);
         }
 
+};
+
+// forward declaration
+template < class DiscreteStokesModelDefaultTraits >
+class DiscreteStokesModelDefault;
+
+/**
+ *  \brief  traits class for DiscreteStokesModelDefault
+ *  \todo   doc
+ **/
+template < class GridPartImp, int gridDim, int polOrder >
+class DiscreteStokesModelDefaultTraits
+{
+    public:
+        //! for Barton-Nackmann trick
+        typedef DiscreteStokesModelDefault < DiscreteStokesModelDefaultTraits >
+            DiscreteModelType;
+
+        //! we use caching quadratures for the entities
+        typedef Dune::CachingQuadrature< GridPartImp, 0 >
+            VolumeQuadratureType;
+
+        //! and for the faces
+        typedef Dune::CachingQuadrature< GridPartImp, 1 >
+            FaceQuadratureType;
+
+        //! function space type for the velocity
+        typedef Dune::FunctionSpace< double, double, gridDim, gridDim >
+            VelocityFunctionSpaceType;
+
+        //! discrete function type space for the velocity
+        typedef Dune::DiscontinuousGalerkinSpace<   VelocityFunctionSpaceType,
+                                                    GridPartImp,
+                                                    polOrder >
+            DiscreteVelocityFunctionSpaceType;
+
+        //! discrete function type for the velocity
+        typedef Dune::AdaptiveDiscreteFunction< DiscreteVelocityFunctionSpaceType >
+            DiscreteVelocityFunctionType;
+
+        //! local function type (like a local base function) for velocity
+        typedef typename DiscreteVelocityFunctionType::LocalFunctionType
+            LocalVelocityFunctionType;
+
+        //! function space type for sigma
+        typedef Dune::MatrixFunctionSpace<  double,
+                                            double,
+                                            gridDim,
+                                            gridDim,
+                                            gridDim >
+            SigmaFunctionSpaceType;
+
+        //! discrete function space type for sigma
+        typedef Dune::DiscontinuousGalerkinSpace<   SigmaFunctionSpaceType,
+                                                    GridPartImp,
+                                                    polOrder >
+            DiscreteSigmaFunctionSpaceType;
+
+        //! discrete function type for sigma
+        typedef Dune::AdaptiveDiscreteFunction< DiscreteSigmaFunctionSpaceType >
+            DiscreteSigmaFunctionType;
+
+          //! local function type (like a local base function) for sigma
+        typedef typename DiscreteSigmaFunctionType::LocalFunctionType
+            LocalSigmaFunctionType;
+
+      //! function space type for the pressure
+        typedef Dune::FunctionSpace< double, double, gridDim, 1 >
+            PressureFunctionSpaceType;
+
+        //! discrete function space type for the pressure
+        typedef Dune::DiscontinuousGalerkinSpace<   PressureFunctionSpaceType,
+                                                    GridPartImp,
+                                                    polOrder >
+            DiscretePressureFunctionSpaceType;
+
+        //! discrete function type for the pressure
+        typedef Dune::AdaptiveDiscreteFunction< DiscretePressureFunctionSpaceType >
+            DiscretePressureFunctionType;
+
+        //! local function type (like a local base function) for sigma
+        typedef typename DiscretePressureFunctionType::LocalFunctionType
+            LocalPressureFunctionType;
+
+
+};
+
+
+/**
+ *  \brief  definition of an ldg method for a stokes problem
+ *  \todo   texdoc
+ **/
+template < class DiscreteStokesModelDefaultTraitsImp >
+class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< DiscreteStokesModelDefaultTraitsImp >
+{
 };
 
 }; // end of namespace Dune
