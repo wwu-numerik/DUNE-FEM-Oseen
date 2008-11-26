@@ -137,11 +137,11 @@ class Logging
                 Log( pf, c, LOG_DEBUG );
         }
 
-        template < typename Pointer, class Class >
-        {
-            if ( ( logflags_ & LOG_INFO ) )
-                Log( pf, c, LOG_INFO );
-        }
+//        template < typename Pointer, class Class >
+//        {
+//            if ( ( logflags_ & LOG_INFO ) )
+//                Log( pf, c, LOG_INFO );
+//        }
 
         template < class Class,typename Pointer >
         void LogInfo( Pointer pf , Class& c )

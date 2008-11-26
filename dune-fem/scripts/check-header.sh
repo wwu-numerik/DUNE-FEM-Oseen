@@ -5,7 +5,7 @@ if test $# -lt 1 ; then
   exit 1
 fi
 
-CXX="/usr/bin/g++-4.2"
+CXX="g++"
 
 WORKINGDIR=`pwd`
 cd `dirname $0`
@@ -25,11 +25,11 @@ MAKEFILE=$BASEFILE.make
 CCFILE=$BASEFILE.cc
 OFILE=$BASEFILE.o
 
-echo "GRIDTYPE=ALUGRID_CUBE" >> $MAKEFILE
-echo "GRIDDIM=3" >> $MAKEFILE
+echo "GRIDTYPE=ALUGRID_SIMPLEX" >> $MAKEFILE
+echo "GRIDDIM=2" >> $MAKEFILE
 echo ".cc.o:" >> $MAKEFILE
 echo -e -n "\t$CXX -c -I$FEMDIR" >> $MAKEFILE
-echo ' -I/share/projekte/uni/diplomarbeit/dune-code/dune-common -I/share/projekte/uni/diplomarbeit/dune-code/dune-grid -I/share/projekte/uni/diplomarbeit/dune-code/dune-istl   -I/share/projekte/uni/diplomarbeit/dune-code/dune-common -I/share/projekte/uni/diplomarbeit/dune-code/dune-grid -I/share/projekte/uni/diplomarbeit/dune-code/dune-istl -DGRIDDIM=$(GRIDDIM) -D$(GRIDTYPE) -I/share/dune/Modules/modules_x86_64/grape -I/usr/X11R6/include -pthread -I/share/dune/Modules/modules_x86_64/alberta/include -DENABLE_ALBERTA -I/share/dune/Modules/modules_x86_64/ug/include -DENABLE_UG -I/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include -I/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include/serial -I/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include/duneinterface -DENABLE_ALUGRID -I/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include/parallel -O0 -DDEBUG -o $@ $<' >> $MAKEFILE
+echo ' -I/data/dune_work/private/r_milk01/dune-code/dune-common -I/data/dune_work/private/r_milk01/dune-code/dune-grid -I/data/dune_work/private/r_milk01/dune-code/dune-istl   -I/data/dune_work/private/r_milk01/dune-code/dune-common -I/data/dune_work/private/r_milk01/dune-code/dune-grid -I/data/dune_work/private/r_milk01/dune-code/dune-istl -DGRIDDIM=$(GRIDDIM) -D$(GRIDTYPE) -I/share/dune/Modules/modules_x86_64/grape -I/usr/X11R6/include -pthread -I/share/dune/Modules/modules_x86_64/alberta/include -DENABLE_ALBERTA -I/share/dune/Modules/modules_x86_64/ug/include -DENABLE_UG -I/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include -I/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include/serial -I/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include/duneinterface -DENABLE_ALUGRID -O0 -DNDEBUG -o $@ $<' >> $MAKEFILE
 
 echo "#include <config.h>" >> $CCFILE
 echo "#include <${HEADER}>" >> $CCFILE

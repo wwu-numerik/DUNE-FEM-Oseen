@@ -7,7 +7,7 @@
 #define POSTPROCESSING_HH
 
 #include <dune/fem/operator/projection/l2projection.hh>
-#include <dune/fem/io/file/datawriter.hh>
+#include <dune/fem/io/file/vtkio.hh>
 
 #include "logging.hh"
 #include "problem.hh"
@@ -88,34 +88,25 @@ class PostProcessor
         void save( const GridType& grid )
         {
             assembleExactSolution();
-            typedef Dune::Tuple<  DiscreteVelocityFunctionType*, DiscreteVelocityFunctionType*,
-                            DiscreteVelocityFunctionType* , DiscretePressureFunctionType*>
-                typedef Dune::Tuple<  DiscretePressureFunctionType*>
-                    IOTupleType;
-            IOTupleType dataTup (   &discreteExactVelocity_,
-                                    &discreteExactForce_,
-                                    &discreteExactDirichlet_ ,
-                                    &discreteExactPressure_
-                                    );
+            typedef Dune::VTKIO<GridPartType> VTKWriterType;
+            VTKWriterType vtkWriter( gridPart_ );
+			vtkWriter.addVertexData( discreteExactVelocity_ );
+			vtkWriter.addVertexData( discreteExactPressure_ );
+			vtkWriter.write(( "data/discreteExactVelocity_" ) );
+			vtkWriter.clear();
+			vtkWriter.addVertexData( discreteExactPressure_ );
+			vtkWriter.write(( "data/discreteExactPressure_" ) );
+			vtkWriter.clear();
+//			vtkWriter.addVertexData( exactDF );
+//			vtkWriter.write(( "exact" ) );
+//			vtkWriter.clear();
+//			vtkWriter.addVertexData( errDF );
+//			vtkWriter.write(( "error" ) );
+//			vtkWriter.clear();
+//			vtkWriter.addVertexData( rank_df );
+//			vtkWriter.write(( "partition" ) );
 
-            typedef Dune::DataWriter<GridType, IOTupleType> DataWriterType;
-            //DataWriterType dataWriter( *grid, filename, dataTup, startTime, endTime );
-            DataWriterType dataWriter( grid, Parameters().ParameterFilename(), dataTup, 0, 0 );
-            //discreteExactPressure_.print()
-            typedef void ( ParameterContainer::*PrintC )(std::ostream&) ;
-            typedef void ( DiscretePressureFunctionType::*PrintF )(std::ostream&) ;
-                typedef Dune::Tuple<  DiscreteVelocityFunctionType*,DiscreteVelocityFunctionType*>
-                    IOTupleType;
-                IOTupleType dataTup ( &discreteExactVelocity_, &discreteExactForce_ );
 
-//            PrintC pf1 = &ParameterContainer::PrintParameterSpecs;;
-//            Logger().LogInfo<ParameterContainer>( pf1, Parameters() );
-            typedef Dune::DiscreteFunctionDefault< DiscretePressureFunctionType >
-                Def;
-            PrintF pf = (PrintF)(&DiscretePressureFunctionType::print);
-            Logger().LogInfo<DiscretePressureFunctionType,PrintF>( pf, discreteExactPressure_ );
-            dataWriter.write(0.0, 0);
-            }
         }
 
     private:
