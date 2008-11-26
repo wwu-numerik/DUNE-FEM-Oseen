@@ -3,7 +3,6 @@
  *
  *  \brief  containing a class DiscreteStokesModelInterface
  **/
-
 #ifndef DUNE_DISCRESTOKESTEMODELINTERFACE_HH
 #define DUNE_DISCRESTOKESTEMODELINTERFACE_HH
 

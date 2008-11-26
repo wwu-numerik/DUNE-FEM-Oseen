@@ -1,7 +1,7 @@
 # use these options for configure if no options a provided on the cmdline
 #AUTOGEN_FLAGS="--ac=2.59 --am=-1.8"
 CONFIGURE_FLAGS="CXX=/usr/bin/g++-4.2 CC=/usr/bin/gcc-4.2 CXXFLAGS='-O0 -DDEBUG' \
-  --prefix=/share/dune/Dune/dune_felix-rene_x86_64 \
+  --prefix=/share/projekte/uni/diplomarbeit/dune-code \
   --with-metis=/share/dune/Modules/modules_$HOSTTYPE/metis \
   --with-alugrid=/share/dune/Modules/modules_$HOSTTYPE/ALUGrid-1.1_Parallel \
   --with-alberta=/share/dune/Modules/modules_$HOSTTYPE/alberta \
@@ -14,3 +14,6 @@ CONFIGURE_FLAGS="CXX=/usr/bin/g++-4.2 CC=/usr/bin/gcc-4.2 CXXFLAGS='-O0 -DDEBUG'
 MAKE_FLAGS=
 #  --enable-parallel \
 #  --with-metis=/share/dune/Modules/modules_$HOSTTYPE/metis \
+#  --enable-mpi \
+#  --enable-parallel \
+#  --with-mpi=/usr/o0/openmpi-1.2.3/ix86_64-ibm-linux\lib "
