@@ -79,7 +79,7 @@
 			<Add option="-DPOLORDER=1" />
 			<Add option="-DENABLE_ALBERTA" />
 			<Add option="-DHAVE_CONFIG_H" />
-			<Add option="-DDUNE_FEM_COMPATIBILITY=1" />
+			<Add option="-DDUNE_FEM_COMPATIBILITY" />
 			<Add directory="../../dune-common/" />
 			<Add directory="../../dune-grid/" />
 			<Add directory="../../dune-istl/" />
@@ -131,6 +131,7 @@
 		<Unit filename="../src/postprocessing.hh" />
 		<Unit filename="../src/pressure.hh" />
 		<Unit filename="../src/problem.hh" />
+		<Unit filename="../src/profiler.hh" />
 		<Unit filename="../src/saddlepoint_inverse_operator.hh" />
 		<Unit filename="../src/stuff.hh" />
 		<Unit filename="../src/traits.hh" />
