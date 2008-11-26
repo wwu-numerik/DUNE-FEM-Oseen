@@ -263,101 +263,95 @@ namespace Dune
    * that matches the template-given id
    *
    */
-  template< class Pair, class Tuple, int id, bool match >
+  template< class Pair , class Tuple , int id , bool matched >
   struct MatchTuplesHelperForValue
   {};
   
-  template< class SelectorHead, class SelectorTail, 
-            class TupleHead, class TupleTail, int id >
-  struct MatchTuplesHelperForValue
-    < Pair< SelectorHead, SelectorTail >, Pair< TupleHead, TupleTail >, id, false >
+  template< class SelectorHead , class SelectorTail , 
+            class TupleHead , class TupleTail , int id >
+  struct MatchTuplesHelperForValue< Pair< SelectorHead , SelectorTail > , 
+                            Pair< TupleHead , TupleTail > , id , false >
   {
-    typedef Pair< SelectorHead, SelectorTail > Selector;
-    typedef Pair< TupleHead, TupleTail > Tuple;
-
-  private:
-    typedef typename MatchTuplesForType< Selector, Tuple, id > :: Type MatchedType;
-
-    static const bool matchTail = ((int)SelectorTail :: Type1 :: value == id);
-
-  public:
-    static typename TupleAccessTraits< MatchedType > :: ConstType
-    get( const Tuple &arg )
+    static inline typename TupleAccessTraits
+      < typename MatchTuplesForType< Pair< SelectorHead , SelectorTail>
+                   , Pair< TupleHead , TupleTail > , id > ::Type > 
+      :: ConstType
+      get( const Pair< TupleHead , TupleTail >& tuple )
     {
-      return MatchTuplesHelperForValue< SelectorTail, TupleTail, id, matchTail >
-        :: get( arg.second() );
+      return MatchTuplesHelperForValue
+        < SelectorTail , TupleTail , id
+          , (int)SelectorTail::Type1::value == id > :: get( tuple.second() );
     }
     
-    static typename TupleAccessTraits< MatchedType > :: NonConstType
-    get( Tuple &arg )
+    static inline typename TupleAccessTraits
+      < typename MatchTuplesForType< Pair< SelectorHead , SelectorTail>
+                   , Pair< TupleHead , TupleTail > , id > ::Type > 
+      :: NonConstType
+      get( Pair< TupleHead , TupleTail >& tuple )
     {
-      return MatchTuplesHelperForValue< SelectorTail , TupleTail, id, matchTail >
-        :: get( arg.second() );
+      return MatchTuplesHelperForValue
+        < SelectorTail , TupleTail , id
+          , (int)SelectorTail::Type1::value == id > :: get( tuple.second() );
     }
   };
   
-  template< class SelectorHead, class TupleHead, class TupleTail, int id >
-  struct MatchTuplesHelperForValue
-    < Pair< SelectorHead, Nil >, Pair< TupleHead, TupleTail >, id, false >
+  template< class SelectorHead ,  
+            class TupleHead , class TupleTail , int id >
+  struct MatchTuplesHelperForValue< Pair< SelectorHead , Nil > , 
+                                   Pair< TupleHead , TupleTail > , id , false >
   {
-    typedef Pair< SelectorHead, Nil > Selector;
-    typedef Pair< TupleHead, TupleTail > Tuple;
-
     // when unable to match selector values with template-given id
     // then return nulltype() as a value
-    static typename TupleAccessTraits< Nil > :: ConstType
-    get( const Tuple &arg )
+    static inline typename TupleAccessTraits< Nil > :: ConstType
+      get( const Pair< TupleHead , TupleTail >& tuple )
     {
       return Nil();
     }
     
-    static typename TupleAccessTraits< Nil > :: NonConstType
-    get( Tuple &arg )
+    static inline typename TupleAccessTraits< Nil > :: NonConstType
+      get( Pair< TupleHead , TupleTail >& tuple )
     {
       return Nil();
     }
   };
 
-  template< class SelectorHead, class SelectorTail,
-            class TupleHead, class TupleTail, int id >
-  struct MatchTuplesHelperForValue
-    < Pair< SelectorHead, SelectorTail >, Pair< TupleHead, TupleTail >, id, true >
+  template< class SelectorHead , class SelectorTail , 
+            class TupleHead , class TupleTail , int id >
+  struct MatchTuplesHelperForValue< Pair< SelectorHead , SelectorTail > , 
+                            Pair< TupleHead , TupleTail > , id , true >
   {
-    typedef Pair< SelectorHead, SelectorTail > Selector;
-    typedef Pair< TupleHead, TupleTail > Tuple;
-
-    static typename TupleAccessTraits< TupleHead > :: ConstType
-    get( const Tuple &arg )
+    static inline typename TupleAccessTraits< TupleHead > :: ConstType
+      get( const Pair< TupleHead , TupleTail >& tuple )
     {
-      return arg.first();
+      return tuple.first();
     }
     
-    static typename TupleAccessTraits< TupleHead > :: NonConstType
-    get( Tuple &arg )
+    static inline typename TupleAccessTraits< TupleHead > :: NonConstType
+      get( Pair< TupleHead , TupleTail >& tuple )
     {
-      return arg.first();
+      return tuple.first();
     }
   };
 
-  template< class SelectorBase, class Tuple, int id >
+  template< class SelectorBase , class Tuple , int id >
   struct MatchTuplesForValue
   {
-  private:
-    typedef typename MatchTuplesForType< SelectorBase, Tuple, id > :: Type MatchedType;
-
-    static const bool match = ((int)SelectorBase::Type1::value == id);
-
-  public:
-    static typename TupleAccessTraits< MatchedType > :: ConstType
-    get( const Tuple &arg )
+    static inline typename TupleAccessTraits
+      < typename MatchTuplesForType< SelectorBase , Tuple , id > :: Type > 
+      :: ConstType  get( const Tuple& tuple )
     {
-      return MatchTuplesHelperForValue< SelectorBase, Tuple, id, match > :: get( arg );
+      return MatchTuplesHelperForValue
+      < SelectorBase , Tuple , id , (int)SelectorBase::Type1::value == id >
+      ::get( tuple );
     }
     
-    static typename TupleAccessTraits< MatchedType > :: NonConstType
-    get( Tuple &arg )
+    static inline typename TupleAccessTraits
+      < typename MatchTuplesForType< SelectorBase , Tuple , id > :: Type > 
+      :: NonConstType  get( Tuple& tuple )
     {
-      return MatchTuplesHelperForValue< SelectorBase, Tuple, id, match > :: get( arg );
+      return MatchTuplesHelperForValue
+      < SelectorBase , Tuple , id , (int)SelectorBase::Type1::value == id >
+      ::get( tuple );
     }
   };
 

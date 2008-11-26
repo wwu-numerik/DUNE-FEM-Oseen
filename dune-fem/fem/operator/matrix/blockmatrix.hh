@@ -828,10 +828,10 @@ std::ostream& operator<< (std::ostream& s, const BlockMatrix<K> & matrix)
 template <class DomainSpace, class RangeSpace, class OperatorTraits >
 class BlockMatrixObject;
 
-template <class DomainSpaceImp, class ColSpaceImp = DomainSpaceImp>
+template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
 struct BlockMatrixTraits
 {
-  typedef DomainSpaceImp RowSpaceType;
+  typedef RowSpaceImp RowSpaceType;
   typedef ColSpaceImp ColumnSpaceType;
   typedef BlockMatrixTraits<RowSpaceType,ColumnSpaceType> ThisType;
 
@@ -844,24 +844,24 @@ struct BlockMatrixTraits
 
 
 //! matrix object holding a blockamtrix
-template <class DomainSpaceImp, class RangeSpaceImp, class OperatorTraits> 
+template <class RowSpaceImp, class ColumnSpaceImp, class OperatorTraits> 
 class BlockMatrixObject
 {
 public:  
-  typedef DomainSpaceImp DomainSpaceType;
-  typedef RangeSpaceImp RangeSpaceType ;
+  typedef RowSpaceImp RowSpaceType;
+  typedef ColumnSpaceImp ColumnSpaceType ;
 
   typedef typename OperatorTraits :: StencilType StencilType;
 
 
   //! number of rows of blocks 
-  enum { littleRows = DomainSpaceType :: localBlockSize };
+  enum { littleRows = RowSpaceType :: localBlockSize };
   //! number of columns of blocks 
-  enum { littleCols = RangeSpaceType :: localBlockSize };
+  enum { littleCols = ColumnSpaceType :: localBlockSize };
 
-  typedef typename DomainSpaceType::GridType::template Codim<0>::Entity EntityType;
+  typedef typename RowSpaceType::GridType::template Codim<0>::Entity EntityType;
 
-  typedef BlockMatrixObject<DomainSpaceType,RangeSpaceType,OperatorTraits> ThisType;
+  typedef BlockMatrixObject<RowSpaceType,ColumnSpaceType,OperatorTraits> ThisType;
 
   typedef BlockMatrix<double> MatrixType;
   typedef MatrixType PreconditionMatrixType;
@@ -871,9 +871,9 @@ public:
 
   struct LocalMatrixTraits
   {
-    typedef DomainSpaceImp DomainSpaceType ;
-    typedef RangeSpaceImp RangeSpaceType;
-    typedef typename DomainSpaceImp :: RangeFieldType RangeFieldType;
+    typedef RowSpaceImp DomainSpaceType ;
+    typedef ColumnSpaceImp RangeSpaceType;
+    typedef typename RowSpaceImp :: RangeFieldType RangeFieldType;
     typedef LocalMatrix<ThisType> LocalMatrixType;
     typedef DenseMatrix<RangeFieldType> LittleBlockType;
   };
@@ -890,7 +890,7 @@ public:
     //! type of matrix 
     typedef typename MatrixObjectImp :: MatrixType MatrixType;
     //! type of entries of little blocks 
-    typedef typename DomainSpaceType :: RangeFieldType DofType;
+    typedef typename RowSpaceType :: RangeFieldType DofType;
 
     //! type of little blocks 
     typedef DenseMatrix<DofType> LittleBlockType;
@@ -911,8 +911,8 @@ public:
 
   public:  
     LocalMatrix(const MatrixObjectType & mObj,
-                const DomainSpaceType & rowSpace,
-                const RangeSpaceType & colSpace,
+                const RowSpaceType & rowSpace,
+                const ColumnSpaceType & colSpace,
                 const RowMapperType & rowMapper,
                 const ColMapperType & colMapper)
       : BaseType(rowSpace,colSpace) 
@@ -1072,15 +1072,17 @@ public:
   //! type of local matrix 
   typedef LocalMatrixWrapper< LocalMatrixStackType > LocalMatrixType;
 
-  typedef typename DomainSpaceType :: BlockMapperType RowMapperType; 
-  typedef typename RangeSpaceType :: BlockMapperType ColMapperType; 
+  typedef typename RowSpaceType :: BlockMapperType RowMapperType; 
+  typedef typename ColumnSpaceType :: BlockMapperType ColMapperType; 
 
-  typedef AdaptiveDiscreteFunction<DomainSpaceType> DestinationType;
+  typedef AdaptiveDiscreteFunction<RowSpaceType> DestinationType;
+
+  typedef CommunicationManager<RowSpaceType> CommunicationManagerType;
 
   // row space 
-  const DomainSpaceType & domainSpace_; 
+  const RowSpaceType & rowSpace_; 
   // column space 
-  const RangeSpaceType & rangeSpace_;
+  const ColumnSpaceType & colSpace_;
 
   // sepcial row mapper 
   RowMapperType& rowMapper_;
@@ -1095,6 +1097,9 @@ public:
   // preconditioning flag 
   bool preconditioning_;
 
+  // communication manager 
+  mutable CommunicationManagerType communicate_;
+
   // local matrix stack 
   mutable LocalMatrixStackType localMatrixStack_;
 
@@ -1103,16 +1108,17 @@ public:
   //! \param colSpace space defining column structure 
   //! \param paramfile parameter file to read variables 
   //!         - Preconditioning: {0 == no, 1 == yes} used is SSOR 
-  BlockMatrixObject(const DomainSpaceType & rowSpace, 
-                    const RangeSpaceType & colSpace,
-                    const std::string paramfile = "" ) 
-    : domainSpace_(rowSpace)
-    , rangeSpace_(colSpace) 
+  BlockMatrixObject(const RowSpaceType & rowSpace, 
+                    const ColumnSpaceType & colSpace,
+                    const std::string& paramfile) 
+    : rowSpace_(rowSpace)
+    , colSpace_(colSpace) 
     , rowMapper_( rowSpace.blockMapper() )
     , colMapper_( colSpace.blockMapper() )
     , sequence_(-1)
     , matrix_(0)
     , preconditioning_(false)
+    , communicate_(rowSpace_)
     , localMatrixStack_(*this)
   {
     if( paramfile != "" )
@@ -1121,8 +1127,8 @@ public:
       readParameter(paramfile,"Preconditioning",precon);
       preconditioning_ = (precon > 0) ? true : false;
     } 
-    assert( domainSpace_.indexSet().size(0) == 
-            rangeSpace_.indexSet().size(0) ); 
+    assert( rowSpace_.indexSet().size(0) == 
+            colSpace_.indexSet().size(0) ); 
   }
 
   //! destructor 
@@ -1153,7 +1159,7 @@ public:
   //! reserve memory corresponnding to size of spaces 
   void reserve(bool verbose = false ) 
   {
-    if(sequence_ != domainSpace_.sequence() )
+    if(sequence_ != rowSpace_.sequence() )
     {
       if( matrix_ ) 
       {
@@ -1167,8 +1173,8 @@ public:
       }
 
       // if empty grid do nothing (can appear in parallel runs)
-      if( (domainSpace_.begin() != domainSpace_.end()) && 
-          (rangeSpace_.begin() != rangeSpace_.end()) )
+      if( (rowSpace_.begin() != rowSpace_.end()) && 
+          (colSpace_.begin() != colSpace_.end()) )
       {
         // get number of elements 
         int rowSize = rowMapper_.size();
@@ -1181,40 +1187,36 @@ public:
           std::cout << "Number of base functions = (" << littleRows << "," << littleCols << ")\n";
         }
 
-        // get number of non-zeros 
-        const int nonZerosBlocks = 
-          StencilType :: nonZerosEstimate( rangeSpace_ ) / RangeSpaceType :: localBlockSize ; 
+        StencilType stencil;
+        // get size of stencil  
+        const int stencilSize =
+          stencil.stencilSizeEstimate(rowSpace_.gridPart()); 
 
         // upper estimate for number of neighbors 
-        matrix().reserve(rowSize, colSize , littleRows , littleCols , nonZerosBlocks );
+        matrix().reserve(rowSize, colSize , littleRows , littleCols , stencilSize );
       }
       // set new sequence number 
-      sequence_ = domainSpace_.sequence();
+      sequence_ = rowSpace_.sequence();
     }
-  }
-
-  //! apply matrix to discrete function
-  template< class DomainFunction, class RangeFunction >
-  void apply ( const DomainFunction &arg, RangeFunction &dest ) const
-  {
-    // apply matrix vector multiplication 
-    matrix().multOEM( arg.leakPointer(), dest.leakPointer() );
-    
-    // communicate data 
-    rangeSpace_.communicate( dest );
   }
 
   //! mult method of matrix object used by oem solver
   void multOEM(const double * arg, double * dest) const 
   {
-    typedef AdaptiveDiscreteFunction< DomainSpaceType > DomainFunctionType;
-    typedef AdaptiveDiscreteFunction< RangeSpaceType > RangeFunctionType;
-
-    DomainFunctionType farg( "multOEM arg", domainSpace_, arg );
-    RangeFunctionType fdest( "multOEM dest", rangeSpace_, dest );
-
+    // communicate data 
+    communicate( arg );
+    
     // matrix multiplication 
-    apply(farg,fdest);
+    matrix().multOEM(arg,dest);
+  }
+
+  //! communicate data 
+  void communicate(const double * arg) const
+  {
+    if( rowSpace_.grid().comm().size() <= 1 ) return ;
+
+    DestinationType tmp("BlockMatrixObject::communicate_tmp",rowSpace_,arg);
+    communicate_.exchange( tmp );
   }
 
   //! resort row numbering in matrix to have ascending numbering 
@@ -1233,8 +1235,8 @@ public:
   ObjectType* newObject() const
   {
     return new ObjectType(*this,
-                          domainSpace_,
-                          rangeSpace_,
+                          rowSpace_,
+                          colSpace_,
                           rowMapper_,
                           colMapper_);
   }

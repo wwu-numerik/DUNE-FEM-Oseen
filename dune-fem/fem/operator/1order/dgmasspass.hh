@@ -26,12 +26,10 @@ namespace Dune
   /** \brief Implementation of operator to calculate gradient of 
       a given discrete function using the pass concept.
   */
-  template< class DiscreteModelImp, class PreviousPassImp >
-  class LocalDGMassPass
-  : public LocalDGPass< DiscreteModelImp, PreviousPassImp >
+  template <class DiscreteModelImp, class PreviousPassImp>
+  class LocalDGMassPass :
+    public LocalDGPass<DiscreteModelImp, PreviousPassImp> 
   {
-    typedef LocalDGMassPass< DiscreteModelImp, PreviousPassImp > ThisType;
-
   public:
     //- Typedefs and enums
     //! Base class
@@ -71,9 +69,8 @@ namespace Dune
     // Various other types
     typedef typename DestinationType::LocalFunctionType LocalFunctionType;
     typedef typename DiscreteModelType::SelectorType SelectorType;
-    typedef CombinedSelector< ThisType, SelectorType > CombinedSelectorType;
-    typedef DiscreteModelCaller< DiscreteModelType, ArgumentType, CombinedSelectorType >
-      DiscreteModelCallerType;
+    typedef DiscreteModelCaller<
+      DiscreteModelType, ArgumentType, SelectorType> DiscreteModelCallerType;
 
     // type of Communication Manager 
     typedef CommunicationManager<DiscreteFunctionSpaceType> CommunicationManagerType;

@@ -78,7 +78,7 @@ public:
   void sendData ( ObjectStreamType & str , HElementType & elem )
   {
     // make sure element is contained in communication interface
-    // assert( this->containsItem( elem ) );
+    assert( this->containsItem( elem ) );
     setElement(elem);
 
     // if varaible size, also send size 

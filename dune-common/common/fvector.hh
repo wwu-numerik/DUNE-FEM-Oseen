@@ -1,9 +1,8 @@
-// $Id: fvector.hh 5328 2008-10-28 10:01:54Z robertk $
+// $Id: fvector.hh 4929 2007-04-27 12:21:01Z christi $
 #ifndef DUNE_FVECTOR_HH
 #define DUNE_FVECTOR_HH
 
 #include<cmath>
-#include<cstdlib>
 #include<cstddef>
 #include<complex>
 

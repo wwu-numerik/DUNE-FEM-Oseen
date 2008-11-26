@@ -13,6 +13,7 @@
 
 //- Dune fem includes 
 #include <dune/fem/function/blockvectorfunction.hh>
+#include <dune/fem/space/common/communicationmanager.hh>
 #include <dune/fem/io/file/asciiparser.hh>
 #include <dune/fem/operator/common/localmatrix.hh>
 #include <dune/fem/operator/common/localmatrixwrapper.hh>
@@ -259,6 +260,7 @@ namespace Dune {
     // get preconditioner type from MatrixAdapterType
     typedef ThisType PreconditionMatrixType;
     typedef typename MatrixAdapterType :: ParallelScalarProductType ParallelScalarProductType;
+    typedef typename MatrixAdapterType :: CommunicationManagerType CommunicationManagerType;
    
     struct LocalMatrixTraits
     {
@@ -481,6 +483,7 @@ namespace Dune {
 
     mutable MatrixType* matrix_;
 
+    CommunicationManagerType comm_;
     ParallelScalarProductType scp_;
 
     int numIterations_; 
@@ -526,6 +529,7 @@ namespace Dune {
       , size_(-1)
       , sequence_(-1)
       , matrix_(0)
+      , comm_(rowSpace_)
       , scp_(colSpace_)
       , numIterations_(5)
       , relaxFactor_(1.1)

@@ -265,11 +265,7 @@ void timeloop (GridType& grid, int minLevel,int maxLevel, const double endTime)
     {
       typedef typename GridPartType :: IndexSetType IndexSetType;
       // create data handle 
-<<<<<<< .mine
       FVDataHandle<GridType,IndexSetType,std::vector<double> > dataHandle(gridPart.indexSet(),solution);  //FEM
-=======
-      FVDataHandle<GridType,IndexSetType,std::vector<double> >  dataHandle(gridPart.indexSet(),solution);
->>>>>>> .r9
 
       // communicate data 
       gridPart.communicate( dataHandle, InteriorBorder_All_Interface, ForwardCommunication );    //FEM

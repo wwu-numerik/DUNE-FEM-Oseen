@@ -1,0 +1,119 @@
+/* This file determines the order how things appear in the doxygen
+   documentation within the Grid group. It works like this:
+
+   @defgroup commands appear only in this file here which is
+   parsed before the other files (because it is mentioned first 
+   in the Doxyfile).
+
+   Only @addtogroup is used in the code documentation.
+*/
+
+  /**
+	 @defgroup GridInterface The Grid Interface
+	 @ingroup Grid
+        @brief Interfaces needed when working with a \ref Grid "Dune::Grid"
+  */
+  /** @defgroup GIRelatedTypes Enumerations 
+      @ingroup GridInterface */
+  /** @defgroup GIGrid Grid Abstract Base Class
+      @ingroup GridInterface */
+  /** @defgroup GIEntity Entity 
+      @ingroup GridInterface */
+  /** @defgroup GIGeometry Geometry
+      @ingroup GridInterface */
+  /** @defgroup GIEntityPointer EntityPointer and Iterators
+      @ingroup GridInterface */
+  /** @defgroup GIIntersectionIterator IntersectionIterator
+      @ingroup GridInterface */
+  /** @defgroup IndexIdSets IndexSet and IdSet
+	  @ingroup GridInterface */
+  /** @defgroup GICollectiveCommunication CollectiveCommunication
+      @ingroup GridInterface */
+  /** @defgroup GIMiscellaneous Miscellaneous
+	  @ingroup GridInterface */
+  /** @defgroup GICapabilities Capabilities
+	  @ingroup GridInterface */
+  
+  /**
+     @defgroup GridReferenceElements Reference Elements
+     @ingroup Grid
+  */
+     
+
+  /**
+     @defgroup Mapper Mappers
+     @ingroup Grid
+   */
+
+  /**
+	 @defgroup GridImplementations Grid Implementations
+	 @ingroup Grid
+        @brief A list of the different Implementations of the Dune Grid Interface
+  */
+  
+	/** @defgroup ALUCubeGrid
+		@ingroup GridImplementations */
+
+	/** @defgroup ALUSimplexGrid
+		@ingroup GridImplementations */
+
+	/** @defgroup ALUConformGrid
+		@ingroup GridImplementations */
+
+	/** @defgroup OneDGrid
+		@ingroup GridImplementations */
+
+	/** @defgroup SGrid
+		@ingroup GridImplementations */
+
+	/** @defgroup UGGrid
+		@ingroup GridImplementations */
+
+	/** @defgroup YaspGrid
+		@ingroup GridImplementations */
+
+	/** @defgroup AlbertaGrid
+		@ingroup GridImplementations */
+
+  /** @defgroup IO I/O
+      @ingroup Grid
+  */
+
+        /** @defgroup DuneGridFormatParser The Dune Grid Format (DGF)
+            @ingroup IO */
+
+        /** @defgroup AmiraMesh AmiraMesh
+            @ingroup IO */
+
+        /** @defgroup VTK Visualization ToolKit (VTK)
+            @ingroup IO */
+        
+        /** @defgroup Gnuplot
+            @ingroup IO */
+        
+        /** @defgroup Grape Grape
+            @ingroup IO */
+
+        /** @defgroup StarCD StarCD
+            @ingroup IO */
+
+  /**
+     @defgroup GridPart Grid Parts
+     @ingroup Grid
+  */
+  
+  /**
+	 @defgroup GridDevel Grid Developer API
+	 @ingroup Grid
+        @brief Interfaces needed to implement a new \ref Grid "Dune::Grid"
+  */
+
+  /**
+     @defgroup Refinement Refinement
+     @ingroup Grid
+   */
+
+  /**
+     @defgroup Quadrature Quadrature
+     @ingroup Grid
+   */

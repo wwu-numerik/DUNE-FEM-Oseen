@@ -276,11 +276,11 @@ namespace Dune
   {
 #if ! DUNE_FEM_COMPATIBILITY
     unsigned int versionId = in.readUnsignedInt();
-    if( versionId < DUNE_VERSION_ID(0,9,1) )
+    if( versionId < DuneFEM :: versionId( 0, 9, 1 ) )
       DUNE_THROW( IOError, "Trying to read outdated file." );
-    else if( versionId > DUNE_MODULE_VERSION_ID(DUNE_FEM) )
+    else if( versionId > DuneFEM :: versionId() )
       std :: cerr << "Warning: Reading discrete function from newer version: "
-                  << versionId << std :: endl;
+                  << DuneFEM :: version( versionId ) << std :: endl;
 
     in >> name_;
 #endif
@@ -301,7 +301,7 @@ namespace Dune
     :: write ( OutStreamInterface< StreamTraits > &out ) const
   {
 #if ! DUNE_FEM_COMPATIBILITY
-    out << DUNE_MODULE_VERSION_ID(DUNE_FEM);
+    out << DuneFEM :: versionId();
     out << name_;
 #endif
   
@@ -382,6 +382,23 @@ namespace Dune
       return false;
     }
   }
+
+
+  template< class Traits >
+  bool DiscreteFunctionDefault< Traits >
+    :: read_pgm ( const std :: string filename ) const
+  {
+    return true;
+  }
+
+
+  template< class Traits >
+  bool DiscreteFunctionDefault< Traits >
+    :: write_pgm ( const std :: string filename ) const
+  {
+    return true;
+  }
+
 
   template< class Traits >
   inline void DiscreteFunctionDefault< Traits >

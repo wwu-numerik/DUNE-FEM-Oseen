@@ -25,7 +25,6 @@ namespace Dune {
 
     void codim0Test();
     void codim1AlbertaTest();
-    void codim1PrismTest();
     void codim1UGTest();
     void codim1ALUHexaTest();
     void codim1ALUTetraTest();
@@ -39,7 +38,7 @@ namespace Dune {
     template <class EntityType, class LocalGeometryType>
     void checkLocalIntersectionConsistency(
               const EntityType& en, const LocalGeometryType& localGeom,
-              const int face, const bool neighbor, const bool output = false) const;
+              const int face, const bool output = false) const;
 
   private:
     std::string albertaGridFile_;

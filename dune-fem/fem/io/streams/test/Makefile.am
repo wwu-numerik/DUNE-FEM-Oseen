@@ -13,6 +13,3 @@ test_streams_SOURCES = test-streams.cc
 
 streamstestdir =  $(includedir)/dune/fem/io/streams/test
 streamstest_HEADERS = test-streams.cc 
-
-include $(top_srcdir)/am/global-rules
-

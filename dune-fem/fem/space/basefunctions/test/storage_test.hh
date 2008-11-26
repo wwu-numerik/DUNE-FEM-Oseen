@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include <dune/fem/misc/test.hh>
+#include "../../misc/test.hh"
 
 namespace Dune {
 

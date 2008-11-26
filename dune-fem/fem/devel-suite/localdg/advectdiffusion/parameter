@@ -1,5 +1,4 @@
-# fem.verbose: 1
-fem.verboserank: 0
+fem.verbose: 1
 
 # Default parameter file for fem/localdg/advectdiffusion/dgtest.cc
 fem.localdg.diffusion_timestep: 0
@@ -25,7 +24,7 @@ fem.prefix: ./
 # name for data set  
 fem.io.datafileprefix: solution
 # format of output: 0 = GRAPE, 1 = VTK, 2 = VTK vertex data
-fem.io.outputformat: 2
+fem.io.outputformat: 0
 # GrapeDisplay (0 = no, 1 = yes)
 fem.io.grapedisplay: 0
 # SaveStep (write data every `saveStep' time period, <=0 deactivates) 

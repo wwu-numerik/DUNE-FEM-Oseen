@@ -13,10 +13,8 @@ namespace Dune {
 
 template <class FunctionSpaceImp, class GridPartImp, int polOrd, template <class> class BaseFunctionStorageImp >
 inline FiniteVolumeSpace<FunctionSpaceImp, GridPartImp, polOrd, BaseFunctionStorageImp>::
-FiniteVolumeSpace (GridPartType & gridPart,
-        const InterfaceType commInterface,
-        const CommunicationDirection commDirection) :
-    DefaultType(gridPart, commInterface, commDirection),
+FiniteVolumeSpace (GridPartType & gridPart) :
+    DefaultType(gridPart),
     baseFuncSet_(),
     mapper_(0),
     blockMapper_(

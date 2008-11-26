@@ -155,22 +155,14 @@ namespace Dune
   template< class Space, class Mapper >
   inline void SlaveDofs< Space, Mapper > :: buildDiscontinuousMaps ()
   {
-#if 0
     typedef typename GridPartNewPartitionType< GridPartType, All_Partition >
       :: NewGridPartType NewGridPartType;
     typedef typename NewGridPartType :: template Codim<0> :: IteratorType IteratorType;
 
     NewGridPartType gridPart( const_cast< GridPartType & >( gridPart_ ).grid() );
-#endif
 
-    const PartitionIteratorType idxpitype = GridPartType :: indexSetPartitionType;
-
-    typedef typename GridPartType :: template Codim< 0 >
-      :: template Partition< idxpitype > :: IteratorType
-      IteratorType;
-
-    const IteratorType endit = gridPart_.template end< 0, idxpitype >();
-    for( IteratorType it = gridPart_.template begin< 0, idxpitype >(); it != endit; ++it )
+    IteratorType endit = gridPart.template end<0>();
+    for( IteratorType it = gridPart.template begin<0>(); it != endit; ++it )
     {
       typedef typename GridPartType :: GridType :: template Codim< 0 > :: Entity
         EntityType;
@@ -198,28 +190,12 @@ namespace Dune
   template< class Space, class Mapper >
   inline void SlaveDofs< Space, Mapper > :: buildCommunicatedMaps ()
   {
-    // we have to skip communication when parallel program is 
-    // executed only on one processor 
-    // otherwise YaspGrid and Lagrange polorder=2 fails :( 
-    if( space_.grid().comm().size() > 1 )
-    {
-      try
-      {
-        typedef LinkBuilder LinkBuilderHandleType;
-        LinkBuilderHandleType handle( *this, space_ , mapper_ );
+    typedef LinkBuilder LinkBuilderHandleType; 
+    LinkBuilderHandleType handle( *this, space_ , mapper_ );
 
-        gridPart_.communicate
-          ( handle, space_.communicationInterface(), space_.communicationDirection() );
-      }
-      // catch possible exceptions here to have a clue where it happend 
-      catch ( Exception& e )
-      {
-        std::cerr << e << std::endl;
-        std::cerr << "Exception thrown in: " << __FILE__ << " line:" << __LINE__ << std::endl;
-        abort();
-      }
-    }
-
+    gridPart_.communicate
+      ( handle, InteriorBorder_All_Interface, ForwardCommunication );
+    
     // insert overall size at the end
     insert( mapper_.size() );
   }

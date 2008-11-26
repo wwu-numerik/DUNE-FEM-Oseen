@@ -12,8 +12,9 @@ namespace Dune
   : BaseType( "no name ", f, lfFactory_ ), 
     lfFactory_( *this ),
     mapper_( f.blockMapper() ) ,
-    memObject_( 0 ), 
-    dofVec_( allocateDofStorage() ),
+    dm_(DofManagerFactoryType::getDofManager(f.grid())),
+    memPair_(dm_.addDofSet(&dofVec_, mapper_, BaseType :: name())),
+    dofVec_( *memPair_.second ),
     leakPtr_(dofVec_),
     localFunc_( *this )
   {}
@@ -26,8 +27,9 @@ namespace Dune
   : BaseType( name, f, lfFactory_ ),
     lfFactory_( *this ),
     mapper_( f.blockMapper() ),
-    memObject_( 0 ), 
-    dofVec_( allocateDofStorage() ),
+    dm_(DofManagerFactoryType::getDofManager(f.grid())),
+    memPair_(dm_.addDofSet(&dofVec_, mapper_, name)),
+    dofVec_( *memPair_.second ),
     leakPtr_(dofVec_),
     localFunc_( *this )
   {}
@@ -41,8 +43,9 @@ namespace Dune
   : BaseType( name, f , lfFactory_ ),
     lfFactory_( *this ),
     mapper_( f.blockMapper() ),
-    memObject_( 0 ),
-    dofVec_( data ),
+    dm_(DofManagerFactoryType::getDofManager(f.grid())),
+    memPair_(dm_.addDummyDofSet(&dofVec_, mapper_, name, &data)),
+    dofVec_( *memPair_.second ),
     leakPtr_(dofVec_),
     localFunc_( *this )
   {}
@@ -54,12 +57,13 @@ namespace Dune
   : BaseType( other.name(), other.functionSpace_, lfFactory_ ),
     lfFactory_( *this ),
     mapper_( other.functionSpace_.blockMapper() ),
-    memObject_( 0 ),
-    dofVec_( allocateDofStorage() ),
+    dm_( other.dm_ ),
+    memPair_( dm_.addDofSet( &dofVec_, mapper_, BaseType :: name() ) ),
+    dofVec_( *memPair_.second ),
     leakPtr_( dofVec_ ),
     localFunc_( *this )
   {
-    // copy values 
+    built_ = other.built_; 
     dofVec_ = other.dofVec_;
   } 
 
@@ -68,26 +72,9 @@ namespace Dune
   inline BlockVectorDiscreteFunction< DiscreteFunctionSpaceImp >
     :: ~BlockVectorDiscreteFunction ()
   {
-    if( memObject_ ) delete memObject_; 
+    dm_.removeDofSet( *memPair_.first );
   }
 
-template<class DiscreteFunctionSpaceType>
-inline typename BlockVectorDiscreteFunction<DiscreteFunctionSpaceType>::DofStorageType& 
-BlockVectorDiscreteFunction< DiscreteFunctionSpaceType > :: allocateDofStorage()
-{
-  if( memObject_ != 0 ) 
-    DUNE_THROW(InvalidStateException,"DofStorage already allocated!");
-  
-  std::pair< DofStorageInterface*, DofStorageType* > memPair
-    = allocateManagedDofStorage( this->functionSpace_.grid(),
-                                 mapper_ ,
-                                 this->name(),
-                                 (DofStorageType *) 0 );
-  // store memory 
-  memObject_ = memPair.first;
-
-  return *(memPair.second);
-}
 
 template<class DiscreteFunctionSpaceType>
 inline void BlockVectorDiscreteFunction<DiscreteFunctionSpaceType>::clear ()
@@ -250,7 +237,6 @@ read_ascii( const std::string filename )
 }
 #endif
 
-#if 0
 template<class DiscreteFunctionSpaceType>
 inline bool BlockVectorDiscreteFunction<DiscreteFunctionSpaceType>::
 write_pgm( const std::string filename ) const
@@ -295,7 +281,7 @@ read_pgm( const std::string filename )
   fclose( in );
   return true;
 }
-#endif 
+
 
 template< class DiscreteFunctionSpaceType >
 inline void BlockVectorDiscreteFunction< DiscreteFunctionSpaceType >
@@ -340,8 +326,8 @@ template<class DiscreteFunctionSpaceType>
 inline void BlockVectorDiscreteFunction<DiscreteFunctionSpaceType>::
 enableDofCompression()
 {
-  if( memObject_ ) 
-    memObject_->enableDofCompression();
+  assert( memPair_.first );
+  memPair_.first->enableDofCompression();
 }
 
 } // end namespace Dune 

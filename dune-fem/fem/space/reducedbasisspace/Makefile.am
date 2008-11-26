@@ -9,6 +9,3 @@ reducedbasisspace_HEADERS = basefunctionset.hh \
 			    mapper.hh \
 			    reducedbasisspace.hh \
 			    reducedbasisspace_inline.hh
-
-include $(top_srcdir)/am/global-rules
-

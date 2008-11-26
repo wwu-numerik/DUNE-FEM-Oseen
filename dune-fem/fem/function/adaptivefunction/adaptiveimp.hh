@@ -54,6 +54,7 @@ namespace Dune {
     // static dof array to be used by discrete function 
     typedef typename Traits::DofStorageType DofStorageType;
     typedef typename Traits::GridType GridType;
+    typedef DofManager<GridType> DofManagerType;
 
     typedef typename Traits::DiscreteFunctionType LeafType;
 
@@ -110,17 +111,16 @@ namespace Dune {
     virtual bool read_ascii(const std::string filename);
 #endif
 
+    //! write function data in pgm fromat file
+    virtual bool DUNE_DEPRECATED write_pgm(const std::string filename) const;
+    
+    //! read function data from pgm fromat file
+    virtual bool DUNE_DEPRECATED read_pgm(const std::string filename); 
+    
     //! return pointer to underlying array 
-    DofType *leakPointer ()
-    {
-      return dofStorage().leakPointer();
-    }
-
+    DofType       * leakPointer ()       { return dofVec_.leakPointer(); }
     //! return pointer to underlying array 
-    const DofType *leakPointer () const
-    {
-      return dofStorage().leakPointer();
-    }
+    const DofType * leakPointer () const { return dofVec_.leakPointer(); }
 
     inline ConstDofBlockPtrType block ( unsigned int index ) const
     {
@@ -136,16 +136,7 @@ namespace Dune {
     
   protected:
     //! return reference to dof storage 
-    const DofStorageType &dofStorage () const
-    {
-      return dofVec_;
-    }
-
-    //! return reference to dof storage 
-    DofStorageType &dofStorage ()
-    {
-      return dofVec_;
-    }
+    DofStorageType& dofStorage() { return dofVec_; }
 
     //! normal constructor creating discrete function 
     AdaptiveFunctionImplementation ( const std :: string &name,
@@ -172,74 +163,10 @@ namespace Dune {
     void enableDofCompression(); 
 
   protected:
-
-    //! wrapper class to create fake DofStorage from double* 
-    template <class VectorPointerType>
-    class DofStorageWrapper : public DofStorageInterface
-    {
-      const std::string name_;
-      DofStorageType array_;
-    public:
-      template <class MapperType>
-      DofStorageWrapper(const MapperType& mapper,
-                        const std::string& name,
-                        const VectorPointerType* v)
-        : name_(name),
-          array_( mapper.size() , const_cast<VectorPointerType *> (v))
-      {}
-
-      //! returns name of this vector 
-      const std::string& name () const { return name_; }
-
-      //! return array 
-      DofStorageType& getArray() { return array_; }
-
-      //! do nothing here 
-      void enableDofCompression () {}
-
-      //! return array's size 
-      int size() const { return array_.size(); }
-    };
-
-  protected:
-    // allocate unmanaged dof storage 
-    template <class MapperType, class VectorPointerType>
-    DofStorageType& 
-    allocateDofStorageWrapper(const MapperType& mapper,
-                              const std::string& name, 
-                              const VectorPointerType* v)
-    {                         
-      typedef DofStorageWrapper<VectorPointerType> DofStorageWrapperType;
-      DofStorageWrapperType* dsw = new DofStorageWrapperType(mapper,name,v);
-      assert( dsw );
-      
-      // save pointer to object 
-      memObject_ = dsw; 
-      // return array  
-      return dsw->getArray ();
-    } 
-    
-    // allocate managed dof storage 
-    DofStorageType& allocateDofStorage(const std::string& name)
-    {
-      if( memObject_ != 0)
-      {
-        DUNE_THROW(InvalidStateException,"DofStorage already allocated!");
-      } 
-      
-      // create memory object 
-      std::pair< DofStorageInterface* , DofStorageType* > memPair
-         = allocateManagedDofStorage( spc_.grid(), spc_.mapper(),
-                                      name, (MutableDofStorageType *) 0);
-                                      
-      // save pointer 
-      memObject_ = memPair.first;
-      return *(memPair.second);
-    }
- 
     virtual const LeafType& interface() const = 0;
     const DiscreteFunctionSpaceType& spc_;
-    DofStorageInterface* memObject_;
+    DofManagerType& dm_;
+    std::pair<MemObjectInterface*, DofStorageType*> memPair_; 
 
   protected:
     DofStorageType& dofVec_;

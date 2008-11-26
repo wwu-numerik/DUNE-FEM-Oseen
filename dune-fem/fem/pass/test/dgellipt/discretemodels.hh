@@ -29,7 +29,7 @@
 #include <dune/fem/solver/inverseoperators.hh>
 
 #include <dune/fem/space/dgspace/dgadaptiveleafgridpart.hh>
-#include <dune/fem/gridpart/adaptiveleafgridpart.hh>
+#include <dune/fem/space/common/adaptiveleafgridpart.hh>
 
 #include <dune/fem/operator/2order/dgprimaloperator.hh>
 
@@ -89,10 +89,10 @@ namespace LDGExample {
   //  --Gradient Traits 
   //
   ///////////////////////////////////////////////////////
-  template <class Model,class NumFlux,int polOrd, int passId = -1 >
+  template <class Model,class NumFlux,int polOrd>
   class GradientDiscreteModel ; 
     
-  template <class Model,class NumFlux,int polOrd, int passId = -1 >
+  template <class Model,class NumFlux,int polOrd>
   struct GradientTraits
   {
     typedef typename Model::Traits ModelTraits;
@@ -116,17 +116,18 @@ namespace LDGExample {
     typedef typename Traits::DiscreteFunctionType DiscreteFunctionType;
     typedef DiscreteFunctionType DestinationType;
 
-    typedef GradientDiscreteModel<Model,NumFlux,polOrd,passId> DiscreteModelType;
+    typedef GradientDiscreteModel<Model,NumFlux,polOrd> DiscreteModelType;
   };
 
-  template <class Model,class NumFlux,int polOrd, int passId>
+  template <class Model,class NumFlux,int polOrd>
   class GradientDiscreteModel : 
-    public  DiscreteModelDefault<GradientTraits<Model,NumFlux,polOrd,passId>, passId >
+    public DiscreteModelDefault<GradientTraits<Model,NumFlux,polOrd> >
   { 
   public:
     enum { polynomialOrder = polOrd };
 
-    typedef GradientTraits< Model , NumFlux , polOrd , passId > Traits;
+    typedef GradientTraits<Model,NumFlux,polOrd> Traits;
+    typedef Dune::Selector<0> SelectorType;
     typedef FieldVector<double, Traits::dimDomain> DomainType;
     typedef FieldVector<double, Traits::dimDomain-1> FaceDomainType;
 
@@ -290,10 +291,10 @@ namespace LDGExample {
   //  --Laplace Traits 
   //
   ///////////////////////////////////////////////////////////
-  template <class Model,class NumFlux,int polOrd, int passId = -1 >
+  template <class Model,class NumFlux,int polOrd>
   class LaplaceDiscreteModel;
 
-  template <class Model,class NumFlux,int polOrd, int passId = -1 >
+  template <class Model,class NumFlux,int polOrd>
   struct LaplaceTraits
   {
     typedef typename Model::Traits ModelTraits;
@@ -324,7 +325,7 @@ namespace LDGExample {
 #endif
     typedef DiscreteFunctionType DestinationType;
 
-    typedef LaplaceDiscreteModel<Model,NumFlux,polOrd,passId> DiscreteModelType;
+    typedef LaplaceDiscreteModel<Model,NumFlux,polOrd> DiscreteModelType;
     typedef DiscreteModelType ThisType;
 
     template <class PreviousPassType>
@@ -350,12 +351,8 @@ namespace LDGExample {
       typedef BlockMatrixTraits<DiscreteFunctionSpaceType,
                                 DiscreteFunctionSpaceType> MatrixObjectTraits; 
 #endif
-      //! The pass id for DGPrimalOperator-pass should be something different than, 
-      //! template-given passId, which is given for this template class.
-      //! Since this is the last pass, doesn't play role, 
-      //! but it's pass id can not be -1 or omitted
       typedef DGPrimalOperator<ThisType,PreviousPassType,
-                ElliptPrevPassType, MatrixObjectTraits, passId > LocalOperatorType;
+                ElliptPrevPassType, MatrixObjectTraits> LocalOperatorType;
 
 #if USE_DUNE_ISTL
       typedef ISTLBICGSTABOp <DiscreteFunctionType, LocalOperatorType> InverseOperatorType;
@@ -372,15 +369,15 @@ namespace LDGExample {
     };
   };
 
-  template <class Model,class NumFlux,int polOrd, int passId >
+  template <class Model,class NumFlux,int polOrd>
   class LaplaceDiscreteModel : 
-    public DiscreteModelDefaultWithInsideOutSide<
-      LaplaceTraits<Model,NumFlux,polOrd,passId> , passId >
+    public DiscreteModelDefaultWithInsideOutSide<LaplaceTraits<Model,NumFlux,polOrd> >
   { 
   public:
     enum { polynomialOrder = polOrd };
 
-    typedef LaplaceTraits< Model , NumFlux , polOrd , passId > Traits;
+    typedef LaplaceTraits<Model,NumFlux,polOrd> Traits;
+    typedef Dune::Selector<0> SelectorType;
     typedef FieldVector<double, Traits::dimDomain> DomainType;
     typedef FieldVector<double, Traits::dimDomain-1> FaceDomainType;
 
@@ -595,11 +592,11 @@ namespace LDGExample {
     const NumFlux& numflux_;
   };
 
-  template <class ModelImp, class NumFluxImp, int polOrd, int passId = -1 >
+  template <class ModelImp, class NumFluxImp, int polOrd>
   class VelocityDiscreteModel;
 
   // DiscreteModelTraits
-  template <class ModelImp,class NumFluxImp, int polOrd, int passId = -1 >
+  template <class ModelImp,class NumFluxImp, int polOrd >
   struct VelocityTraits
   {
     enum { myPolOrd = polOrd-1 };
@@ -640,21 +637,19 @@ namespace LDGExample {
     typedef DiscreteFunctionType DestinationType;
 
 
-    typedef VelocityDiscreteModel<ModelImp,NumFluxImp,polOrd,passId> DiscreteModelType;
+    typedef VelocityDiscreteModel<ModelImp,NumFluxImp,polOrd> DiscreteModelType;
   };
-
-
-  template <class ModelImp,class NumFluxImp,int polOrd, int passId >
+  template <class ModelImp,class NumFluxImp,int polOrd>
   class VelocityDiscreteModel :
-    public DiscreteModelDefaultWithInsideOutSide<
-      VelocityTraits<ModelImp,NumFluxImp,polOrd,passId>, passId >
+    public DiscreteModelDefaultWithInsideOutSide<VelocityTraits<ModelImp,NumFluxImp,polOrd> >
   {
     // do not copy this class 
     VelocityDiscreteModel(const VelocityDiscreteModel&);
   public:
-    typedef VelocityTraits< ModelImp , NumFluxImp , polOrd , passId > Traits;
-    
+    typedef VelocityTraits<ModelImp,NumFluxImp,polOrd> Traits;
+
     // select Pressure, which comes from pass before 
+    typedef Dune::Selector<1> SelectorType;
     typedef FieldVector<double, Traits::dimDomain> DomainType;
     typedef FieldVector<double, Traits::dimDomain-1> FaceDomainType;
     typedef typename Traits::RangeType RangeType;

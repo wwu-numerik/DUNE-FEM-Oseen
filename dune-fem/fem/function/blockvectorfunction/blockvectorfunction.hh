@@ -189,6 +189,11 @@ public:
   //! Type of the grid
   typedef typename DiscreteFunctionSpaceType::GridType GridType;
 
+  //! dof manager 
+  typedef DofManager<GridType> DofManagerType;
+  typedef DofManagerFactory<DofManagerType> DofManagerFactoryType;
+
+
   //! type of local function factory 
   typedef typename Traits :: LocalFunctionFactoryType LocalFunctionFactoryType;
 
@@ -320,6 +325,12 @@ public:
   virtual bool read_ascii( const std::string filename );
 #endif
 
+  /** \copydoc DiscreteFunctionDefault::write_pgm  */
+  virtual bool DUNE_DEPRECATED write_pgm(const std::string filename) const;
+
+  /** \copydoc DiscreteFunctionDefault::read_pgm  */
+  virtual bool DUNE_DEPRECATED read_pgm(const std::string filename); 
+
   /** \brief return reference to internal block vector 
       \return reference to blockVector */ 
   DofStorageType& blockVector () const { return dofVec_; }
@@ -336,9 +347,6 @@ public:
   void enableDofCompression();
 
 private:  
-  // allocates dof storage 
-  DofStorageType& allocateDofStorage();
-  
   LocalFunctionFactoryType lfFactory_;
 
   //! write/read data to/from xdr stream 
@@ -347,8 +355,14 @@ private:
   // single mapper for blocks 
   MapperType& mapper_;
 
-  // DofStorage that manages the memory for the dofs of this function
-  DofStorageInterface* memObject_;
+  // dof manager 
+  DofManagerType&  dm_;
+  
+  // MemObject that manages the memory for the dofs of this function
+  std::pair<MemObjectInterface*, DofStorageType*> memPair_;
+
+  //! true if memory was allocated
+  bool built_;
 
   //! the dofs stored in an array
   mutable DofStorageType& dofVec_;

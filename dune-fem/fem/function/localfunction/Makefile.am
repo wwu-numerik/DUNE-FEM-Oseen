@@ -7,6 +7,3 @@ localfunction_HEADERS = localfunction.hh \
                         standardlocalfunction_inline.hh \
 			temporarylocalfunction.hh \
 			temporarylocalfunction_inline.hh
-
-include $(top_srcdir)/am/global-rules
-

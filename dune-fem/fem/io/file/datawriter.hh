@@ -374,7 +374,7 @@ protected:
     // read verbose parameter 
     verbose_ = Parameter::verbose();
 
-    path_ = Parameter::commonOutputPath();
+    path_ = Parameter::prefix();
     // create path if not already exists 
     IOInterface :: createGlobalPath ( grid_.comm(), path_ );
 
@@ -501,7 +501,7 @@ public:
         GrapeDataIO<GridType> dataio;
         // call output of IOTuple 
         IOTuple<OutPutDataType>::output(dataio, 
-          grid_ ,time, writeStep_, timeStepPath , datapref_, data_ );
+          grid_ ,time, writeStep_, timeStepPath , datapref_, data_ , verbose_ );
       }
 #ifdef USE_VTKWRITER
       else if ( outputFormat_ == vtk || outputFormat_ == vtkvtx )
@@ -1093,18 +1093,11 @@ public:
     dm.dofCompress();
   }
 
-  /** \copydoc IOInterface::willWrite */  
-  virtual bool willWrite(double time, int timestep) const
-  {
-    return ( ((timestep % checkPointStep_) == 0) && timestep > 0 );
-  }
-
   /** \copydoc IOInterface::write */
   virtual void write(double time, int timestep) const 
   {
     // only write data time > saveTime  
-    // if( ((timestep % checkPointStep_) == 0) && timestep > 0 )
-    if( willWrite(time,timestep) )
+    if( ((timestep % checkPointStep_) == 0) && timestep > 0 )
     {
       // toggle between 0 and 1 
       checkPointNumber_ = (checkPointNumber_ == 0) ? 1 : 0;
@@ -1116,7 +1109,7 @@ public:
       GrapeDataIO<GridType> dataio;
       // call output of IOTuple 
       IOTuple<OutPutDataType>::output(dataio, this->grid_ ,
-          time, checkPointNumber_ , path, this->datapref_ , this->data_ );
+          time, checkPointNumber_ , path, this->datapref_ , this->data_ , false );
       
       writeCheckPoint(path,time,timestep,
                       checkPointNumber_, 

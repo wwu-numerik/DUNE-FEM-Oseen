@@ -8,9 +8,11 @@ EXTRA_DIST=dune.module
 #AM_CPPFLAGS = $(UG_CPPFLAGS) $(AMIRAMESH_CPPFLAGS)
 
 # do everything in the subdirs
-DIST_SUBDIRS = doc
+DIST_SUBDIRS = doc 
 if BUILD_DOCS
-SUBDIRS = doc
+SUBDIRS = doc 
+else
+SUBDIRS = 
 endif
 
 # don't follow the full GNU-standard

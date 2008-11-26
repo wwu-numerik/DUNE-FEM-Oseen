@@ -1,7 +1,7 @@
 #ifndef DUNE_DGMATRIXSETUP_HH
 #define DUNE_DGMATRIXSETUP_HH
 
-#include <dune/fem/gridpart/gridpartutility.hh>
+#include <dune/fem/space/common/gridpartutility.hh>
 #include <dune/fem/function/common/scalarproducts.hh>
 #include <dune/fem/space/common/commoperations.hh>
 
@@ -25,12 +25,11 @@ class ElementAndNeighbors
 {
 public:
   //! get number of entries per row for a block matrix, 
-  //! i.e. here number of (neighbors + 1) * maxNumDofs 
-  template <class Space> 
-  static inline int nonZerosEstimate(const Space& space) 
+  //! i.e. here number of neighbors + 1
+  template <class GridPartImp> 
+  static inline int stencilSizeEstimate(const GridPartImp& gridPart) 
   {
-    return ((Space :: GridType :: dimension * 2) + 1) 
-      * space.mapper().maxNumDofs(); 
+    return (GridPartImp :: GridType :: dimension * 2) + 1; 
   }
 
   //! create entries for element and neighbors 
@@ -219,6 +218,7 @@ protected:
     typedef typename MatrixType :: ColDiscreteFunctionType ColumnDiscreteFunctionType;
 
     typedef typename RowDiscreteFunctionType :: DiscreteFunctionSpaceType RowSpaceType;
+    typedef CommunicationManager<RowSpaceType> CommunicationManagerType;
 
     typedef typename ColumnDiscreteFunctionType :: DiscreteFunctionSpaceType ColSpaceType;
     typedef ParallelScalarProduct<ColumnDiscreteFunctionType> ParallelScalarProductType;
@@ -240,6 +240,7 @@ protected:
     const RowSpaceType& rowSpace_;
     const ColSpaceType& colSpace_;
 
+    mutable CommunicationManagerType comm_;
     ParallelScalarProductType scp_;
 
     PreconditionAdapterType preconditioner_;
@@ -250,6 +251,7 @@ protected:
       : matrix_(org.matrix_) 
       , rowSpace_(org.rowSpace_)
       , colSpace_(org.colSpace_)
+      , comm_(rowSpace_)
       , scp_(colSpace_)
       , preconditioner_(org.preconditioner_)
     {}
@@ -260,6 +262,7 @@ protected:
       : matrix_(A) 
       , rowSpace_(rowSpace)
       , colSpace_(colSpace)
+      , comm_(rowSpace_)
       , scp_(colSpace)
       , preconditioner_(matrix_)
     {}
@@ -273,6 +276,7 @@ protected:
       : matrix_(A) 
       , rowSpace_(rowSpace)
       , colSpace_(colSpace)
+      , comm_(rowSpace_)
       , scp_(colSpace_)
       , preconditioner_(matrix_,iter,relax,dummy)
     {}
@@ -286,6 +290,7 @@ protected:
       : matrix_(A) 
       , rowSpace_(rowSpace)
       , colSpace_(colSpace)
+      , comm_(rowSpace_)
       , scp_(colSpace_)
       , preconditioner_(matrix_,relax,dummy)
     {}
@@ -384,7 +389,7 @@ protected:
                                    rowSpace_, x );
 
       // exchange data by copying 
-      rowSpace_.communicate( tmp );
+      comm_.exchange( tmp, (DFCommunicationOperation :: Copy*) 0);
     }
   };
 #endif

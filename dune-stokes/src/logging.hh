@@ -138,7 +138,13 @@ class Logging
         }
 
         template < typename Pointer, class Class >
-        void LogInfo( Pointer pf, Class& c )
+        {
+            if ( ( logflags_ & LOG_INFO ) )
+                Log( pf, c, LOG_INFO );
+        }
+
+        template < class Class,typename Pointer >
+        void LogInfo( Pointer pf , Class& c )
         {
             if ( ( logflags_ & LOG_INFO ) )
                 Log( pf, c, LOG_INFO );
@@ -152,6 +158,16 @@ class Logging
         }
 
         template < typename Pointer, class Class >
+        void Log( void ( Class::*pf )(std::ostream&) const, Class& c, LogFlags stream)
+        {
+            assert( stream & ( LOG_ERR | LOG_INFO | LOG_DEBUG ) );
+            if ( ( flagmap_[stream] & LOG_CONSOLE ) != 0 )
+                (c.*pf)( std::cout );
+            if ( ( flagmap_[stream] & LOG_FILE ) != 0 )
+                (c.*pf)( logfile_ );
+        }
+
+        template < class Class,typename Pointer >
         void Log( Pointer pf, Class& c, LogFlags stream)
         {
             assert( stream & ( LOG_ERR | LOG_INFO | LOG_DEBUG ) );

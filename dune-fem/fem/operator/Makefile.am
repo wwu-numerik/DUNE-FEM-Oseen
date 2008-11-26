@@ -19,6 +19,3 @@ operator_HEADERS = artificialdiffusion.hh \
 		   matrixadapter.hh \
 		   minimizationoperator.hh \
 		   sourceprojection.hh
-
-include $(top_srcdir)/am/global-rules
-

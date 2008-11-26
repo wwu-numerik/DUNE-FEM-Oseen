@@ -23,7 +23,7 @@ const int polOrder = POLORDER;
 #include <dune/fem/gridpart/gridpart.hh>
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh>
 
-#include <dune/fem/gridpart/adaptiveleafgridpart.hh>
+#include <dune/fem/space/common/adaptiveleafgridpart.hh>
 #include <dune/fem/space/common/adaptmanager.hh>
 #include <dune/fem/space/lagrangespace.hh>
 #include <dune/fem/space/lagrangespace/adaptmanager.hh>
@@ -243,11 +243,7 @@ void adapt ( GridType &grid, DiscreteFunctionType &solution, int step )
     IteratorType it = discreteFunctionSpace.begin();
     const IteratorType endit = discreteFunctionSpace.end();
     for( ; it != endit; ++it )
-#if DUNE_VERSION_NEWER(DUNE_GRID,1,2,0)
-      grid.mark( mark, *it );
-#else
       grid.mark( mark, it );
-#endif
       
     #if GENERIC_ADAPT
       std :: cout << message << std::endl;
@@ -334,12 +330,8 @@ void algorithm ( GridPartType &gridPart,
 
 
 int Main ( int argc, char **argv )
-try
 {
-  MPIManager :: initialize( argc, argv );
-
-  if( argc != 2 )
-  {
+  if( argc != 2 ) {
     std :: cerr << "Usage: " << argv[ 0 ] << "<maxlevel>" << std :: endl;
     exit( 1 );
   }
@@ -366,9 +358,4 @@ try
     algorithm( gridPart, solution, -step, 1 );
 
   return 0;
-}
-catch( Dune :: Exception e )
-{
-  std :: cerr << e << std :: endl;
-  return 1;
 }

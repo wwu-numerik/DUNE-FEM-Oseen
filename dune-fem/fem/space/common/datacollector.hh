@@ -3,8 +3,6 @@
 
 //-System includes
 #include <cassert>
-#include <cstdlib>
-
 #include <vector>
 #include <utility>
 #include <iostream>

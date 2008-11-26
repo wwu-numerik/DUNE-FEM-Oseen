@@ -1,4 +1,4 @@
-# $Id: Makefile.am 5332 2008-10-30 09:33:44Z robertk $
+# $Id: Makefile.am 5070 2008-02-05 15:56:20Z robertk $
 
 SUBDIRS = . test exprtmpl
 
@@ -22,7 +22,7 @@ commoninclude_HEADERS = dlist.cc alignment.hh \
   collectivecommunication.hh mpihelper.hh singleton.hh \
   mpicollectivecommunication.hh geometrytype.hh utility.hh \
   bartonnackmanifcheck.hh binaryfunctions.hh lru.hh fassign.hh \
-  static_assert.hh version.hh
+  static_assert.hh
 
 if EXPRESSIONTEMPLATES
 commoninclude_HEADERS += exprtmpl.hh exprtmpl/scalar.inc exprtmpl/exprexpr.inc

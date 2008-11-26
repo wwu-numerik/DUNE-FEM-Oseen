@@ -1,9 +1,0 @@
-digraph G {
-  compound=true
-  node [ fontsize=10, fontname="FreeSans"];
-  edge [ labelfontsize=9, labelfontname="FreeSans"];
-  subgraph clusterdir_5edca94048dae04696b7e65d07cd8e9c {
-    graph [ bgcolor="#ddddee", pencolor="black", label="grid" fontname="FreeSans", fontsize=10, URL="dir_5edca94048dae04696b7e65d07cd8e9c.html"]
-  dir_09727f3ace395a524e63bfbd5be5cc3e [shape=box, label="albertagrid", style="filled", fillcolor="#eeeeff", pencolor="black", URL="dir_09727f3ace395a524e63bfbd5be5cc3e.html"];
-  }
-}

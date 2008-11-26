@@ -255,19 +255,14 @@ namespace Dune
     CompileTimeChecker<(Traits::ContainedDimRange == 1)>
       use_CombinedSpace_only_with_scalar_spaces;
   public:
-    //! default communication interface 
-    static const InterfaceType defaultInterface =
-          ContainedDiscreteFunctionSpaceType :: defaultInterface;
-
-    //! default communication direction 
-    static const CommunicationDirection defaultDirection =
-          ContainedDiscreteFunctionSpaceType :: defaultDirection;
-
     //- Public methods
     //! constructor
-    inline explicit CombinedSpace( GridPartType &gridpart,
-        const InterfaceType commInterface = defaultInterface ,
-        const CommunicationDirection commDirection = defaultDirection );
+    /*
+    inline
+    CombinedSpace(ContainedDiscreteFunctionSpaceType& spc);
+    */
+    //! constructor
+    inline explicit CombinedSpace( GridPartType &gridpart );
 
   private:
     // prohibit copying

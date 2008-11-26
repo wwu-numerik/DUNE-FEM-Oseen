@@ -43,9 +43,7 @@ namespace Dune
     typedef RestrictProlongInterfaceDefault< RestrictProlongTraits< ThisType > >
       BaseType;
 
-  protected:
-    using BaseType :: entitiesAreCopies;
-
+    using BaseType :: checkPersistent;
   public:
     //! field type of the discrete function's domain
     typedef typename DiscreteFunctionType :: DomainFieldType DomainFieldType;
@@ -79,32 +77,34 @@ namespace Dune
     
   public:
     //! constructor
-    explicit
-    RestrictProlongDefaultImplementation ( DiscreteFunctionType &discreteFunction )
+    inline explicit
+    RestrictProlongDefaultImplementation
+      ( DiscreteFunctionType &discreteFunction )
     : discreteFunction_( discreteFunction ),
       discreteFunctionSpace_( discreteFunction_.space() )
-    {}
+    {
+      // make sure the index set can handle adaptivity
+      assert( (Capabilities :: IsUnstructured< GridType > :: v) ?
+             ( checkPersistent(discreteFunction_.space().indexSet()) ) : true );
+    }
 
-    /** \brief explicit set volume ratio of son and father
-     *
-     *  \param[in]  weight  volume of son / volume of father
-     *
-     *  \note If this ratio is set, it is assume to be constant.
-     */
+    //! if weight is set, it is assumed that the proportion between father's
+    //! and son's volume is constant
     void setFatherChildWeight ( const RangeFieldType &weight ) const
     {
-      // we do not use this information
+      // We make no use of this information.
     }
 
     //! restrict data to the father
     template< class EntityType >
-    void restrictLocal ( const EntityType &father, const EntityType &son, bool initialize ) const
+    void restrictLocal ( EntityType &father, 
+                         EntityType &son,
+                         bool initialize ) const
     {
-      // if father and son are copies, do nothing
-      if( entitiesAreCopies( discreteFunctionSpace_.indexSet(), father, son ) )
-        return;
+      // make sure the index set can handle adaptivity
+      assert( checkPersistent(discreteFunction_.space().indexSet()) );
 
-      typedef typename EntityType :: LocalGeometry LocalGeometryType;
+      typedef typename EntityType :: Geometry GeometryType;
 
       LocalFunctionType fatherFunction = discreteFunction_.localFunction( father );
       LocalFunctionType sonFunction = discreteFunction_.localFunction( son );
@@ -112,17 +112,17 @@ namespace Dune
       const LagrangePointSetType &lagrangePointSet
         = discreteFunctionSpace_.lagrangePointSet( father );
 
-      const LocalGeometryType &geometryInFather = son.geometryInFather();
+      const GeometryType &geometryInFather = son.geometryInFather();
 
-      EntityDofIteratorType it = lagrangePointSet.template beginSubEntity< 0 >( 0 );
-      const EntityDofIteratorType endit = lagrangePointSet.template endSubEntity< 0 >( 0 );
-      for( ; it != endit; ++it )
-      {
+      EntityDofIteratorType it
+        = lagrangePointSet.template beginSubEntity< 0 >( 0 );
+      const EntityDofIteratorType endit
+        = lagrangePointSet.template endSubEntity< 0 >( 0 );
+      for( ; it != endit; ++it ) {
         const unsigned int dof = *it;
         const DomainType &pointInFather = lagrangePointSet.point( dof );
         const DomainType pointInSon = geometryInFather.local( pointInFather );
-        if( geometryInFather.checkInside( pointInSon ) )
-        {
+        if( geometryInFather.checkInside( pointInSon ) ) {
           RangeType phi;
           sonFunction.evaluate( pointInSon, phi );
           for( unsigned int coordinate = 0; coordinate < dimRange; ++coordinate )
@@ -135,11 +135,10 @@ namespace Dune
     template< class EntityType >
     void prolongLocal ( EntityType &father, EntityType &son, bool initialize ) const
     {
-      // if father and son are copies, do nothing
-      if( entitiesAreCopies( discreteFunctionSpace_.indexSet(), father, son ) )
-        return;
+      // make sure the index set can handle adaptivity
+      assert( checkPersistent(discreteFunction_.space().indexSet()) );
 
-      typedef typename EntityType :: LocalGeometry LocalGeometryType;
+      typedef typename EntityType :: Geometry GeometryType;
 
       LocalFunctionType fatherFunction = discreteFunction_.localFunction( father );
       LocalFunctionType sonFunction = discreteFunction_.localFunction( son );
@@ -147,12 +146,13 @@ namespace Dune
       const LagrangePointSetType &lagrangePointSet
         = discreteFunctionSpace_.lagrangePointSet( son );
 
-      const LocalGeometryType &geometryInFather = son.geometryInFather();
+      const GeometryType &geometryInFather = son.geometryInFather();
 
-      EntityDofIteratorType it = lagrangePointSet.template beginSubEntity< 0 >( 0 );
-      const EntityDofIteratorType endit = lagrangePointSet.template endSubEntity< 0 >( 0 );
-      for( ; it != endit; ++it )
-      {
+      EntityDofIteratorType it
+        = lagrangePointSet.template beginSubEntity< 0 >( 0 );
+      const EntityDofIteratorType endit
+        = lagrangePointSet.template endSubEntity< 0 >( 0 );
+      for( ; it != endit; ++it ) {
         const unsigned int dof = *it;
         const DomainType &pointInSon = lagrangePointSet.point( dof );
         const DomainType pointInFather = geometryInFather.global( pointInSon );
@@ -163,15 +163,6 @@ namespace Dune
           sonFunction[ dimRange * dof + coordinate ] = phi[ coordinate ];
       }
     }
-
-    //! add discrete function to communicator 
-    template< class CommunicatorImp >
-    void addToList ( CommunicatorImp &comm )
-    {
-      comm.addToList( discreteFunction_ );
-    }
   };
-
 }
-
 #endif

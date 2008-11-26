@@ -79,6 +79,7 @@
 			<Add option="-DPOLORDER=1" />
 			<Add option="-DENABLE_ALBERTA" />
 			<Add option="-DHAVE_CONFIG_H" />
+			<Add option="-DDUNE_FEM_COMPATIBILITY=1" />
 			<Add directory="../../dune-common/" />
 			<Add directory="../../dune-grid/" />
 			<Add directory="../../dune-istl/" />

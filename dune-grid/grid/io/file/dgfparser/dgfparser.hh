@@ -9,8 +9,7 @@
 #include <cstring>
 #include <vector>
 #include <map>
-#include <cassert>
-#include <memory>
+#include <assert.h>
 #include <cmath>
 
 //- Dune includes 

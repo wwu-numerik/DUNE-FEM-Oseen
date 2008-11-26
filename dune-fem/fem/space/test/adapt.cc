@@ -231,11 +231,7 @@ void adapt(GridType& grid,
     Iterator it = space.begin();  
     Iterator endit = space.end();
     for(; it != endit ; ++it) {
-#if DUNE_VERSION_NEWER(DUNE_GRID,1,2,0)
-      grid.mark(mark, *it);
-#else
-      grid.mark(mark, it);
-#endif
+      grid.mark(mark,it);
     } 
     adop.adapt();
     std::cout << message << std::endl;
@@ -246,10 +242,10 @@ void adapt(GridType& grid,
     Iterator it = space.begin();  
     Iterator endit = space.end();
     for(; it != endit ; ++it) {
-      grid.mark(mark, *it);
+      grid.mark(mark,it);
     } 
     grid.adapt(dm,rp);
-    std::cout << message << "NOT GENERIC!" << std::endl;
+    std::cout << message << "NOT GERNERIC!" << std::endl;
   }
 #endif
   /*
@@ -330,14 +326,12 @@ double algorithm (GridType& grid, DiscreteFunctionType& solution,
 //  main programm, run algorithm twice to calc EOC 
 //
 //**************************************************
-int main( int argc, char *argv[] )
-try {
-  MPIManager :: initialize( argc, argv );
-
+int main (int argc, char **argv)
+{
   if(argc != 2)
   {
-    std :: cerr << "Usage: " << argv[ 0 ] << " <maxlevel>" << std :: endl;
-    return 1;
+    fprintf(stderr,"usage: %s <maxlevel> \n",argv[0]);
+    exit(1);
   }
   int ml = atoi( argv[1] );
   std::vector<double> error(ml);
@@ -372,10 +366,5 @@ try {
     }
   }
   return 0;
-}
-catch( Dune :: Exception exception )
-{
-  std :: cerr << exception << std :: endl;
-  return 1;
 }
 

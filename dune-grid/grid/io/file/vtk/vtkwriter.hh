@@ -1,4 +1,4 @@
-// $Id: vtkwriter.hh 4506 2008-10-28 14:01:28Z robertk $
+// $Id: vtkwriter.hh 3963 2008-01-28 12:52:56Z christi $
 
 #ifndef DUNE_VTKWRITER_HH
 #define DUNE_VTKWRITER_HH
@@ -249,11 +249,7 @@ namespace Dune
             index = 0;
             ++git;
             if(git == gend) return;
-            while (git->partitionType()!=InteriorEntity) 
-            {
-              ++git;
-              if(git == gend) return;
-            }
+            while (git->partitionType()!=InteriorEntity) ++git;
           }
         }
     public:
@@ -351,11 +347,7 @@ namespace Dune
             index = 0;
             ++git;
             if (git == gend) return;
-            while (git->partitionType()!=InteriorEntity) 
-            {
-              ++git;
-              if (git == gend) return;
-            }
+            while (git->partitionType()!=InteriorEntity) ++git;
           }
         }
     public:
@@ -621,34 +613,9 @@ namespace Dune
     /**
      * @brief write output; interface might change later
      * @param name The name of the file to write to.
-     * @param ot The output type for the file (default value is ascii).
+     * @param ot The output type for the file.
      */
     void write (const char* name, VTKOptions::OutputType ot = VTKOptions::ascii)
-    {
-      write( name, ot, grid.comm().size(), grid.comm().rank() );
-    }
-
-    //! write parallel output; interface might change later
-    /**
-     * @brief write parallel output; interface might change later
-     * @param name The name of the file to write to.
-     * @param path path to write data to 
-     * @param extendpath path to write single processor data to 
-               (if extendpath = "" then no extra path is used) 
-     * @param ot The output type for the file (default value is ascii).
-     */
-    void pwrite (const char* name,  const char* path, const char* extendpath, 
-                 VTKOptions::OutputType ot = VTKOptions::ascii)
-    {
-      pwrite( name, path, extendpath, ot , grid.comm().size(), grid.comm().rank() );
-    }
-
-  protected:    
-    enum { MAX_CHAR_LENGTH = 4096 };
-    
-    // write data for size and rank  
-    void write (const char* name, VTKOptions::OutputType ot,
-                const int mySize, const int myRank)
       {
         // make data mode visible to private functions
         outputtype=ot;
@@ -656,14 +623,12 @@ namespace Dune
         // reset byte counter for binary appended output
         bytecount = 0;
 
-        if (mySize==1)
+        if (grid.comm().size()==1)
         {
           std::ofstream file;
-          char fullname[MAX_CHAR_LENGTH];
+          char fullname[128];
           if (n>1)
-          {
             sprintf(fullname,"%s.vtu",name);
-          }
           else
             sprintf(fullname,"%s.vtp",name);
           if (outputtype==VTKOptions::binaryappended)
@@ -676,11 +641,11 @@ namespace Dune
         else
         {
           std::ofstream file;
-          char fullname[MAX_CHAR_LENGTH];
+          char fullname[128];
           if (n>1)
-            sprintf(fullname,"s%04d:p%04d:%s.vtu",mySize,myRank,name);
+            sprintf(fullname,"s%04d:p%04d:%s.vtu",grid.comm().size(),grid.comm().rank(),name);
           else
-            sprintf(fullname,"s%04d:p%04d:%s.vtp",mySize,myRank,name);
+            sprintf(fullname,"s%04d:p%04d:%s.vtp",grid.comm().size(),grid.comm().rank(),name);
           if (outputtype==VTKOptions::binaryappended)
             file.open(fullname,std::ios::binary);
           else
@@ -688,14 +653,14 @@ namespace Dune
           writeDataFile(file);
           file.close();
           grid.comm().barrier();
-          if (myRank==0)
+          if (grid.comm().rank()==0)
           {
             if (n>1)
-              sprintf(fullname,"s%04d:%s.pvtu",mySize,name);
+              sprintf(fullname,"s%04d:%s.pvtu",grid.comm().size(),name);
             else
-              sprintf(fullname,"s%04d:%s.pvtp",mySize,name);
+              sprintf(fullname,"s%04d:%s.pvtp",grid.comm().size(),name);
             file.open(fullname);
-            writeParallelHeader(file,name,".",mySize);
+            writeParallelHeader(file,name,"");
             file.close();
           }
           grid.comm().barrier();
@@ -704,8 +669,7 @@ namespace Dune
 
     //! write output; interface might change later
     void pwrite (const char* name,  const char* path, const char* extendpath, 
-                 VTKOptions::OutputType ot,
-                 const int mySize, const int myRank)
+                 VTKOptions::OutputType ot = VTKOptions::ascii)
       {
         // make data mode visible to private functions
         outputtype=ot;
@@ -715,8 +679,8 @@ namespace Dune
 
         // do some magic because paraview can only cope with relative pathes to piece files
         std::ofstream file;
-        char piecepath[MAX_CHAR_LENGTH];
-        char relpiecepath[MAX_CHAR_LENGTH];
+        char piecepath[256];
+        char relpiecepath[256];
         int n=strlen(path);
         int m=strlen(extendpath);
         if (n>0 && path[0]=='/' && path[n-1]=='/')
@@ -799,11 +763,11 @@ namespace Dune
           // the pieces are relative to the pvtu files
           sprintf(relpiecepath,"%s",extendpath);
         }
-        char fullname[2*MAX_CHAR_LENGTH];
+        char fullname[256];
         if (n>1)
-          sprintf(fullname,"%s/s%04d:p%04d:%s.vtu",piecepath,mySize,myRank,name);
+          sprintf(fullname,"%s/s%04d:p%04d:%s.vtu",piecepath,grid.comm().size(),grid.comm().rank(),name);
         else
-          sprintf(fullname,"%s/s%04d:p%04d:%s.vtp",piecepath,mySize,myRank,name);
+          sprintf(fullname,"%s/s%04d:p%04d:%s.vtp",piecepath,grid.comm().size(),grid.comm().rank(),name);
         if (outputtype==VTKOptions::binaryappended)
           file.open(fullname,std::ios::binary);
         else
@@ -811,14 +775,14 @@ namespace Dune
         writeDataFile(file);
         file.close();
         grid.comm().barrier();
-        if (myRank==0)
+        if (grid.comm().rank()==0)
         {
           if (n>1)
-            sprintf(fullname,"%s/s%04d:%s.pvtu",path,mySize,name);
+            sprintf(fullname,"%s/s%04d:%s.pvtu",path,grid.comm().size(),name);
           else
-            sprintf(fullname,"%s/s%04d:%s.pvtp",path,mySize,name);
+            sprintf(fullname,"%s/s%04d:%s.pvtp",path,grid.comm().size(),name);
           file.open(fullname);
-          writeParallelHeader(file,name,relpiecepath,mySize);
+          writeParallelHeader(file,name,relpiecepath);
           file.close();
         }
         grid.comm().barrier();
@@ -858,11 +822,8 @@ namespace Dune
       }
 
     //! write header file in parallel case to stream
-    void writeParallelHeader (std::ostream& s, const char* piecename, const char* piecepath,
-                              int mySize = -1) 
+    void writeParallelHeader (std::ostream& s, const char* piecename, const char* piecepath)
       {
-        mySize = (mySize < 0) ? grid.comm().size() : mySize;
-
         // xml header
         s << "<?xml version=\"1.0\"?>" << std::endl;
 
@@ -955,13 +916,13 @@ namespace Dune
         indent(s); s << "</PPoints>" << std::endl;
 
         // Pieces
-        for (int i=0; i<mySize; i++)
+        for (int i=0; i<grid.comm().size(); i++)
         {
           char fullname[128];
           if (n>1)
-            sprintf(fullname,"%s/s%04d:p%04d:%s.vtu",piecepath,mySize,i,piecename);
+            sprintf(fullname,"%s/s%04d:p%0d:%s.vtu",piecepath,grid.comm().size(),i,piecename);
           else
-            sprintf(fullname,"%s/s%04d:p%04d:%s.vtp",piecepath,mySize,i,piecename);
+            sprintf(fullname,"%s/s%04d:p%0d:%s.vtp",piecepath,grid.comm().size(),i,piecename);
           indent(s); s << "<Piece Source=\"" << fullname << "\"/>" << std::endl;
         }
 

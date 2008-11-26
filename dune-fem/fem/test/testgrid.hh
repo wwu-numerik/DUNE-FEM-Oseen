@@ -18,25 +18,9 @@ namespace Dune
     GridPtr< GridType > gridptr_;
     
   protected:
-    TestGrid ()
+    inline TestGrid ()
     : gridptr_( macroGridName() )
     {
-      typedef GridType::Codim<0>::LeafIterator Iterator;
-      const Iterator end = gridptr_->leafend<0>();
-      int count = 0;
-      for (Iterator iter = gridptr_->leafbegin<0>();iter!=end;++iter) {
-        if (count % 5 == 0)
-#if DUNE_VERSION_NEWER(DUNE_GRID,1,2,0)
-          gridptr_->mark(1,*iter);
-#else
-          gridptr_->mark(1,iter);
-#endif
-        ++count;
-      }
-      gridptr_->preAdapt();
-      gridptr_->adapt();
-      gridptr_->postAdapt();
-      gridptr_->loadBalance();
     }
 
   private:
