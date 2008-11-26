@@ -5,47 +5,43 @@ if test $# -lt 1 ; then
   exit 1
 fi
 
-PROJECTDIR=`pwd`
+CXX="g++"
+
+WORKINGDIR=`pwd`
 cd `dirname $0`
 SCRIPTSDIR=`pwd`
+cd "$SCRIPTSDIR/.."
+FEMDIR=`pwd`
 HEADER=$1
 
-if test ! -f $PROJECTDIR/dune.module ; then
-  echo "This script can only be executed from a DUNE project directory."
-  exit 1
-fi
-
-if ! test -e $PROJECTDIR/$HEADER ; then
+if ! test -e $HEADER ; then
   echo "'$HEADER' does not exist."
   exit 1
 fi
 
-if test ! -f $PROJECTDIR/make.inc ; then
-  echo "'make.inc' missing from project directory. Did you forget to configure?"
-  exit 1
-fi
+cd $WORKINGDIR
+BASEFILE=`mktemp -p . tmp-header-XXXXXX`
+MAKEFILE=$BASEFILE.make
+CCFILE=$BASEFILE.cc
+OFILE=$BASEFILE.o
 
-TEMPDIR=`mktemp -d --tmpdir tmp-header-XXXXXX`
+echo "GRIDTYPE=ALUGRID_SIMPLEX" >> $MAKEFILE
+echo "GRIDDIM=2" >> $MAKEFILE
+echo ".cc.o:" >> $MAKEFILE
+echo -e -n "\t$CXX -c -I$FEMDIR" >> $MAKEFILE
+echo ' -I/data/dune_work/private/f_albr01/diplomarbeit_felix_rene/dune-common -I/data/dune_work/private/f_albr01/diplomarbeit_felix_rene/dune-grid -I/data/dune_work/private/f_albr01/diplomarbeit_felix_rene/dune-istl   -I/data/dune_work/private/f_albr01/diplomarbeit_felix_rene/dune-common -I/data/dune_work/private/f_albr01/diplomarbeit_felix_rene/dune-grid -I/data/dune_work/private/f_albr01/diplomarbeit_felix_rene/dune-istl -DGRIDDIM=$(GRIDDIM) -D$(GRIDTYPE) -I/share/dune/Modules/modules_x86_64/grape -I/usr/X11R6/include -pthread -I/share/dune/Modules/modules_x86_64/alberta/include -DENABLE_ALBERTA -I/share/dune/Modules/modules_x86_64/ug/include -DENABLE_UG -I/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include -I/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include/serial -I/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include/duneinterface -DENABLE_ALUGRID -O0 -DNDEBUG -o $@ $<' >> $MAKEFILE
 
-cd $TEMPDIR
-cp $PROJECTDIR/make.inc Makefile
-echo ".cc.o:" >> Makefile
-echo -e -n "\t\${CXX} -c -I$PROJECTDIR " >> Makefile
-echo '${AM_CPPFLAGS} ${AM_CXXFLAGS} -o $@ $<' >> Makefile
+echo "#include <config.h>" >> $CCFILE
+echo "#include <${HEADER}>" >> $CCFILE
+echo "#include <${HEADER}>" >> $CCFILE
+echo "int main () {}" >> $CCFILE
 
-echo "#include <config.h>" >> test.cc
-echo "#include <${HEADER}>" >> test.cc
-echo "#include <${HEADER}>" >> test.cc
-echo "int main () {}" >> test.cc
-
-make test.o 1>/dev/null
+make -f $MAKEFILE $OFILE 1>/dev/null
 SUCCESS=$?
 
-rm -f test.o
-rm -f test.cc
-rm -f Makefile
-
-cd $PROJECTDIR
-rmdir $TEMPDIR
+rm -f $OFILE
+rm -f $CCFILE
+rm -f $MAKEFILE
+rm -f $BASEFILE
 
 exit $SUCCESS
