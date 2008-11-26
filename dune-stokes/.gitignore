@@ -24,7 +24,9 @@ src/Makefile.in
 src/dune_stokes
 src/dune_stokes-dune_stokes.o
 stamp-h1
-src/data/
+src/data/*
+#this ensure we always have a data dir
+!src/data/.dummy
 codeblocks/*
 !codeblocks/*.cbp
 doxygen.out
