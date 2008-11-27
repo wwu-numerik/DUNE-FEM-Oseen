@@ -141,12 +141,15 @@ int main( int argc, char** argv )
 //    dirichletData.clear();
 
 
-    typedef Dune::DiscreteStokesModelDefault< Dune::DiscreteStokesModelDefaultTraits<
-                                            GridPartType,
-                                            gridDim,
-                                            polOrder >
-                                        >
+    typedef Dune::DiscreteStokesModelDefault<
+                        Dune::DiscreteStokesModelDefaultTraits<
+                                    GridPartType,
+                                    gridDim,
+                                    polOrder
+                        >
+            >
         ModelType;
+
     ModelType model;
 
     infoStream << "...done." << std::endl;

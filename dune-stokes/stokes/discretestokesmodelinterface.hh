@@ -21,7 +21,6 @@ class DiscreteStokesModelInterface
 {
     public:
 
-
         typedef DiscreteStokesModelInterface< DiscreteStokesModelTraits >
             ThisType;
 
@@ -69,18 +68,6 @@ class DiscreteStokesModelInterface
         typedef typename DiscretePressureFunctionSpaceType::RangeType
             PressureRangeType;
 
-        //! Local function of type Velocity
-        typedef typename Traits::LocalVelocityFunctionType
-            LocalVelocityFunctionType;
-
-        //! local function of type sigma
-        typedef typename Traits::LocalSigmaFunctionType
-            LocalSigmaFunctionType;
-
-        //! Local function of type pressure
-        typedef typename Traits::LocalPressureFunctionType
-            LocalPressureFunctionType;
-
         //! Type of GridPart
         typedef typename DiscreteVelocityFunctionSpaceType::GridPartType
             GridPartType;
@@ -96,6 +83,24 @@ class DiscreteStokesModelInterface
         //! Element (codim 0 entity) of the grid
         typedef typename GridType::template Codim<0>::Entity
             EntityType;
+
+        /**
+         *  \brief  constructor
+         *
+         *  doing nothing
+         **/
+        DiscreteStokesModelInterface()
+        {
+        }
+
+        /**
+         *  \brief  destructor
+         *
+         *  doing nothing
+         **/
+        ~DiscreteStokesModelInterface()
+        {
+        }
 
         /**
          *  \brief  Returns true if problem has a flux contribution of type
@@ -178,8 +183,8 @@ class DiscreteStokesModelInterface
         void velocitySigmaFlux(         const IntersectionIteratorType& it,
                                         const double time,
                                         const FaceDomainType& x,
-                                        const LocalVelocityFunctionType& uInner,
-                                        const LocalVelocityFunctionType& uOuter,
+                                        const VelocityRangeType& uInner,
+                                        const VelocityRangeType& uOuter,
                                         VelocityRangeType& uContribInner,
                                         VelocityRangeType& uContribOuter,
                                         VelocityRangeType& emptyContribInner,
@@ -205,8 +210,8 @@ class DiscreteStokesModelInterface
         void velocitySigmaBoundaryFlux( const IntersectionIteratorType& it,
                                         const double time,
                                         const FaceDomainType& x,
-                                        const LocalVelocityFunctionType& uInner,
-                                        const LocalVelocityFunctionType& uOuter,
+                                        const VelocityRangeType& uInner,
+                                        const VelocityRangeType& uOuter,
                                         VelocityRangeType& uContribInner,
                                         VelocityRangeType& uContribOuter,
                                         VelocityRangeType& emptyContribInner,
@@ -229,14 +234,14 @@ class DiscreteStokesModelInterface
          *  \brief
          *  \todo   latex doc
          **/
-         template < class FaceDomainType >
+        template < class FaceDomainType >
         void velocityPressureFlux(      const IntersectionIteratorType& it,
                                         const double time,
                                         const FaceDomainType& x,
-                                        const LocalVelocityFunctionType& uInner,
-                                        const LocalVelocityFunctionType& uOuter,
-                                        const LocalPressureFunctionType& pInner,
-                                        const LocalPressureFunctionType& pOuter,
+                                        const VelocityRangeType& uInner,
+                                        const VelocityRangeType& uOuter,
+                                        const PressureRangeType& pInner,
+                                        const PressureRangeType& pOuter,
                                         VelocityRangeType& uContribInner,
                                         VelocityRangeType& uContribOuter,
                                         VelocityRangeType& pContribInner,
@@ -264,15 +269,15 @@ class DiscreteStokesModelInterface
          *  \brief
          *  \todo   doc like velocityPressureFlux
          **/
-         template < class FaceDomainType >
+        template < class FaceDomainType >
         void velocityPressureBoundaryFlux(
                                     const IntersectionIteratorType& it,
                                     const double time,
                                     const FaceDomainType& x,
-                                    const LocalVelocityFunctionType& uInner,
-                                    const LocalVelocityFunctionType& uOuter,
-                                    const LocalPressureFunctionType& pInner,
-                                    const LocalPressureFunctionType& pOuter,
+                                    const VelocityRangeType& uInner,
+                                    const VelocityRangeType& uOuter,
+                                    const PressureRangeType& pInner,
+                                    const PressureRangeType& pOuter,
                                     VelocityRangeType& uContribInner,
                                     VelocityRangeType& uContribOuter,
                                     VelocityRangeType& pContribInner,
@@ -305,8 +310,8 @@ class DiscreteStokesModelInterface
         void pressureFlux(  const IntersectionIteratorType& it,
                             const double time,
                             const FaceDomainType& x,
-                            const LocalPressureFunctionType& pInner,
-                            const LocalPressureFunctionType& pOuter,
+                            const PressureRangeType& pInner,
+                            const PressureRangeType& pOuter,
                             PressureRangeType& pContribInner,
                             PressureRangeType& pContribOuter,
                             PressureRangeType& emptyContribInner,
@@ -332,8 +337,8 @@ class DiscreteStokesModelInterface
         void pressureBoundaryFlux(  const IntersectionIteratorType& it,
                                     const double time,
                                     const FaceDomainType& x,
-                                    const LocalPressureFunctionType& pInner,
-                                    const LocalPressureFunctionType& pOuter,
+                                    const PressureRangeType& pInner,
+                                    const PressureRangeType& pOuter,
                                     PressureRangeType& pContribInner,
                                     PressureRangeType& pContribOuter,
                                     PressureRangeType& emptyContribInner,
@@ -359,10 +364,10 @@ class DiscreteStokesModelInterface
         void sigmaFlux( const IntersectionIteratorType& it,
                         const double time,
                         const FaceDomainType& x,
-                        const LocalVelocityFunctionType& uInner,
-                        const LocalVelocityFunctionType& uOuter,
-                        const LocalSigmaFunctionType& sigmaInner,
-                        const LocalSigmaFunctionType& sigmaOuter,
+                        const VelocityRangeType& uInner,
+                        const VelocityRangeType& uOuter,
+                        const SigmaRangeType& sigmaInner,
+                        const SigmaRangeType& sigmaOuter,
                         SigmaRangeType& sigmaContribInner,
                         SigmaRangeType& sigmaContribOuter,
                         SigmaRangeType& uContribInner,
@@ -394,10 +399,10 @@ class DiscreteStokesModelInterface
         void sigmaBoundaryFlux( const IntersectionIteratorType& it,
                                 const double time,
                                 const FaceDomainType& x,
-                                const LocalVelocityFunctionType& uInner,
-                                const LocalVelocityFunctionType& uOuter,
-                                const LocalSigmaFunctionType& sigmaInner,
-                                const LocalSigmaFunctionType& sigmaOuter,
+                                const VelocityRangeType& uInner,
+                                const VelocityRangeType& uOuter,
+                                const SigmaRangeType& sigmaInner,
+                                const SigmaRangeType& sigmaOuter,
                                 SigmaRangeType& sigmaContribInner,
                                 SigmaRangeType& sigmaContribOuter,
                                 SigmaRangeType& uContribInner,
@@ -490,10 +495,6 @@ class DiscreteStokesModelDefaultTraits
         typedef Dune::AdaptiveDiscreteFunction< DiscreteVelocityFunctionSpaceType >
             DiscreteVelocityFunctionType;
 
-        //! local function type (like a local base function) for velocity
-        typedef typename DiscreteVelocityFunctionType::LocalFunctionType
-            LocalVelocityFunctionType;
-
         //! function space type for sigma
         typedef Dune::MatrixFunctionSpace<  double,
                                             double,
@@ -512,10 +513,6 @@ class DiscreteStokesModelDefaultTraits
         typedef Dune::AdaptiveDiscreteFunction< DiscreteSigmaFunctionSpaceType >
             DiscreteSigmaFunctionType;
 
-          //! local function type (like a local base function) for sigma
-        typedef typename DiscreteSigmaFunctionType::LocalFunctionType
-            LocalSigmaFunctionType;
-
       //! function space type for the pressure
         typedef Dune::FunctionSpace< double, double, gridDim, 1 >
             PressureFunctionSpaceType;
@@ -530,11 +527,6 @@ class DiscreteStokesModelDefaultTraits
         typedef Dune::AdaptiveDiscreteFunction< DiscretePressureFunctionSpaceType >
             DiscretePressureFunctionType;
 
-        //! local function type (like a local base function) for sigma
-        typedef typename DiscretePressureFunctionType::LocalFunctionType
-            LocalPressureFunctionType;
-
-
 };
 
 
@@ -545,6 +537,327 @@ class DiscreteStokesModelDefaultTraits
 template < class DiscreteStokesModelDefaultTraitsImp >
 class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< DiscreteStokesModelDefaultTraitsImp >
 {
+    public:
+
+        typedef DiscreteStokesModelInterface< DiscreteStokesModelDefaultTraitsImp >
+            BaseType;
+
+        typedef typename BaseType::IntersectionIteratorType
+            IntersectionIteratorType;
+
+        typedef typename BaseType::VelocityRangeType
+            VelocityRangeType;
+
+        typedef typename BaseType::SigmaRangeType
+            SigmaRangeType;
+
+        typedef typename BaseType::PressureRangeType
+            PressureRangeType;
+
+        /**
+         *  \brief  constructor
+         *
+         *  set \f$C_{11}\in R\f$, \f$C_{12}\in R\f$, \f$D_{11}\in R^{d}\f$,
+         *  \f$D_{12}\in R^{d}\f$
+         **/
+        DiscreteStokesModelDefault()
+            : C_12_( 1.0 ),
+            D_12_( 1.0 )
+        {
+            C_11_ = 1.0;
+            D_11_ = 1.0;
+
+
+        }
+
+        /**
+         *  \brief  destructor
+         *
+         *  doing nothing
+         **/
+        ~DiscreteStokesModelDefault()
+        {
+        }
+
+        /**
+         *  \brief
+         *  \todo   doc me
+         **/
+        bool hasVelocitySigmaFlux() const
+        {
+            return true;
+        }
+
+        /**
+         *  \brief
+         *  \todo   doc me
+         **/
+        bool hasVelocityPressureFlux() const
+        {
+            return true;
+        }
+
+        /**
+         *  \brief
+         *  \todo   doc me
+         **/
+        bool hasPressureFlux() const
+        {
+            return true;
+        }
+
+        /**
+         *  \brief
+         *  \todo   doc me
+         **/
+        bool hasSigmaFlux() const
+        {
+            return true;
+        }
+
+        /**
+         *  \brief
+         *  \todo   doc me
+         **/
+        bool hasForce() const
+        {
+            return true;
+        }
+
+        /**
+         *  \brief
+         *  \todo   doc me
+         **/
+        template < class FaceDomainType >
+        void velocitySigmaFlux(         const IntersectionIteratorType& it,
+                                        const double time,
+                                        const FaceDomainType& x,
+                                        const VelocityRangeType& uInner,
+                                        const VelocityRangeType& uOuter,
+                                        VelocityRangeType& uContribInner,
+                                        VelocityRangeType& uContribOuter,
+                                        VelocityRangeType& emptyContribInner,
+                                        VelocityRangeType& emptyContribOuter )
+        {
+            VelocityRangeType outerNormal = it->unitOuterNormal( x );
+
+        }
+
+        /**
+         *  \brief
+         *  \todo   doc like velocitySigmaFlux
+         **/
+        void velocitySigmaBoundaryFlux( const IntersectionIteratorType& it,
+                                        const double time,
+                                        const VelocityRangeType& uInner,
+                                        const VelocityRangeType& uOuter,
+                                        VelocityRangeType& uContribInner,
+                                        VelocityRangeType& uContribOuter,
+                                        VelocityRangeType& emptyContribInner,
+                                        VelocityRangeType& emptyContribOuter )
+        {
+        }
+
+        /**
+         *  \brief
+         *  \todo   doc me
+         **/
+        void velocityPressureFlux(      const IntersectionIteratorType& it,
+                                        const double time,
+                                        const VelocityRangeType& uInner,
+                                        const VelocityRangeType& uOuter,
+                                        const PressureRangeType& pInner,
+                                        const PressureRangeType& pOuter,
+                                        VelocityRangeType& uContribInner,
+                                        VelocityRangeType& uContribOuter,
+                                        VelocityRangeType& pContribInner,
+                                        VelocityRangeType& pContribOuter,
+                                        VelocityRangeType& emptyContribInner,
+                                        VelocityRangeType& emptyContribOuter )
+        {
+        }
+
+        /**
+         *  \brief
+         *  \todo   doc like velocityPressureFlux
+         **/
+        void velocityPressureBoundaryFlux(
+                                    const IntersectionIteratorType& it,
+                                    const double time,
+                                    const VelocityRangeType& uInner,
+                                    const VelocityRangeType& uOuter,
+                                    const PressureRangeType& pInner,
+                                    const PressureRangeType& pOuter,
+                                    VelocityRangeType& uContribInner,
+                                    VelocityRangeType& uContribOuter,
+                                    VelocityRangeType& pContribInner,
+                                    VelocityRangeType& pContribOuter,
+                                    VelocityRangeType& emptyContribInner,
+                                    VelocityRangeType& emptyContribOuter )
+        {
+        }
+
+        /**
+         *  \brief
+         *  \todo latex doc
+         **/
+        void pressureFlux(  const IntersectionIteratorType& it,
+                            const double time,
+                            const PressureRangeType& pInner,
+                            const PressureRangeType& pOuter,
+                            PressureRangeType& pContribInner,
+                            PressureRangeType& pContribOuter,
+                            PressureRangeType& emptyContribInner,
+                            PressureRangeType& emptyContribOuter )
+        {
+        }
+
+        /**
+         *  \brief
+         *  \todo   doc like pressureFlux
+         **/
+        void pressureBoundaryFlux(  const IntersectionIteratorType& it,
+                                    const double time,
+                                    const PressureRangeType& pInner,
+                                    const PressureRangeType& pOuter,
+                                    PressureRangeType& pContribInner,
+                                    PressureRangeType& pContribOuter,
+                                    PressureRangeType& emptyContribInner,
+                                    PressureRangeType& emptyContribOuter )
+        {
+        }
+
+        /**
+         *  \brief
+         *  \todo   latex doc
+         **/
+        void sigmaFlux( const IntersectionIteratorType& it,
+                        const double time,
+                        const VelocityRangeType& uInner,
+                        const VelocityRangeType& uOuter,
+                        const SigmaRangeType& sigmaInner,
+                        const SigmaRangeType& sigmaOuter,
+                        SigmaRangeType& sigmaContribInner,
+                        SigmaRangeType& sigmaContribOuter,
+                        SigmaRangeType& uContribInner,
+                        SigmaRangeType& uContribOuter,
+                        SigmaRangeType& emptyContribInner,
+                        SigmaRangeType& emptyContribOuter )
+        {
+        }
+
+        /**
+         *  \brief
+         *  \todo   doc like sigmaFlux
+         **/
+        void sigmaBoundaryFlux( const IntersectionIteratorType& it,
+                                const double time,
+                                const VelocityRangeType& uInner,
+                                const VelocityRangeType& uOuter,
+                                const SigmaRangeType& sigmaInner,
+                                const SigmaRangeType& sigmaOuter,
+                                SigmaRangeType& sigmaContribInner,
+                                SigmaRangeType& sigmaContribOuter,
+                                SigmaRangeType& uContribInner,
+                                SigmaRangeType& uContribOuter,
+                                SigmaRangeType& emptyContribInner,
+                                SigmaRangeType& emptyContribOuter)
+        {
+        }
+
+        /**
+         *  \brief
+         *  \todo   latex doc
+         **/
+        template < class FaceDomainType >
+        void force( const IntersectionIteratorType& it,
+                    const double time,
+                    const FaceDomainType& x,
+                    VelocityRangeType& forceContribInner,
+                    VelocityRangeType& forceContribOuter )
+        {
+        }
+
+    private:
+
+        double C_11_, D_11_;
+        VelocityRangeType C_12_, D_12_;
+
+        /**
+         *  \brief  jump for pressure-type functions
+         *
+         *  \f$\left[\left[\p\right]\right]:=\left(p^{+} + p^{-}\right)n^{+}\in R^{d}\f$,
+         *  where \f$n^{+}\f4 is the unit outer normal,
+         *  \f$p^{+}\f$ is the value of p on the inside and
+         *  \f$p^{-}\f$ the value of p at the outside
+         **/
+        VelocityRangeType pTypeJump(    const PressureRangeType& pInner,
+                                        const PressureRangeType& pOuter,
+                                        const VelocityRangeType& outerNormal )
+        {
+            VelocityRangeType ret( 0.0 );
+            ret += outerNormal;
+            ret *= ( pInner - pOuter );
+            return ret;
+        }
+
+        /**
+         *  \brief  jump for velocity-type functions
+         *  \todo doc like pTypeJump
+         **/
+        double uTypeJump(   const VelocityRangeType& uInner,
+                            const VelocityRangeType& uOuter,
+                            const VelocityRangeType& outerNormal )
+        {
+            return ( uInner - uOuter ) * outerNormal;
+        }
+
+        /**
+         *  \brief  matrix valued jump for velocity-type functions
+         *  \todo   doc like pTypeJump
+         **/
+        SigmaRangeType uTypeMatrixJump( const VelocityRangeType& uInner,
+                                        const VelocityRangeType& uOuter,
+                                        const VelocityRangeType& outerNormal )
+        {
+            SigmaRangeType ret( 0.0 );
+            VelocityRangeType uDiff = uInner - uOuter;
+            typedef typename SigmaRangeType::RowIterator
+                MatrixRowIteratorType;
+            typedef typename VelocityRangeType::Iterator
+                VectorIteratorType;
+            MatrixRowIteratorType rItEnd = ret.end();
+            VectorIteratorType uDiffIt = uDiff.begin();
+            for ( MatrixRowIteratorType rIt = ret.begin(); rIt != rItEnd; ++rIt ) {
+                VectorIteratorType outerNormalIt = outerNormal.begin();
+                VectorIteratorType vItEnd = rIt->end();
+                for (   VectorIteratorType vIt = rIt->begin();
+                        vIt != vItEnd;
+                        ++vIt ) {
+                    *vIt = *uDiffIt * *outerNormalIt;
+                    ++outerNormalIt;
+                }
+                ++uDiffIt;
+            }
+
+        }
+
+        /**
+         *  \brief  mean value of two functions (of same type)
+         *  \todo   texdoc example
+         **/
+        template < class DiscreteFunctionImp >
+        DiscreteFunctionImp meanValue( const DiscreteFunctionImp& funcInner,
+                                    const DiscreteFunctionImp& funcOuter )
+        {
+            DiscreteFunctionImp ret( 0.0 );
+            ret += funcInner;
+            ret += funcOuter;
+            ret *= 0.5;
+            return ret;
+        }
+
+
 };
 
 }; // end of namespace Dune
