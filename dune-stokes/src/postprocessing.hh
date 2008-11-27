@@ -57,7 +57,8 @@ class PostProcessor
             discreteExactVelocity_( "u_exact", velocity_space ),
             discreteExactForce_( "f_exact", velocity_space ),
             discreteExactDirichlet_( "gd_exact", velocity_space ),
-            discreteExactPressure_( "p_exact", press_space )
+            discreteExactPressure_( "p_exact", press_space ),
+            solutionAssembled_(false)
         {
 
         }
@@ -87,31 +88,25 @@ class PostProcessor
 
         void save( const GridType& grid )
         {
-            assembleExactSolution();
+            if ( !solutionAssembled_ )
+                assembleExactSolution();
+
             typedef Dune::VTKIO<GridPartType> VTKWriterType;
             VTKWriterType vtkWriter( gridPart_ );
 			vtkWriter.addVertexData( discreteExactVelocity_ );
-			vtkWriter.write(( "data/discreteExactVelocity_" ) );
-			vtkWriter.clear();
+//			vtkWriter.write(( "data/discreteExactVelocity_" ) );
+//			vtkWriter.clear();
 			vtkWriter.addVertexData( discreteExactPressure_ );
-			vtkWriter.write(( "data/discreteExactPressure_" ) );
-			vtkWriter.clear();
+//			vtkWriter.write(( "data/discreteExactPressure_" ) );
+//			vtkWriter.clear();
 			vtkWriter.addVertexData( discreteExactForce_ );
-			vtkWriter.write(( "data/discreteExactForce_" ) );
-			vtkWriter.clear();
+//			vtkWriter.write(( "data/discreteExactForce_" ) );
+//			vtkWriter.clear();
 			vtkWriter.addVertexData( discreteExactDirichlet_ );
-			vtkWriter.write(( "data/discreteExactDirichlet_" ) );
+			//vtkWriter.write(( "data/discreteExactDirichlet_" ) );
+			vtkWriter.pwrite( "funcs", "/share/projekte/uni/diplomarbeit/dune-code/dune-stokes/src/data" , "." );
+			vtkWriter.write( "data/funcs"  );
 			vtkWriter.clear();
-
-//			vtkWriter.addVertexData( exactDF );
-//			vtkWriter.write(( "exact" ) );
-//			vtkWriter.clear();
-//			vtkWriter.addVertexData( errDF );
-//			vtkWriter.write(( "error" ) );
-//			vtkWriter.clear();
-//			vtkWriter.addVertexData( rank_df );
-//			vtkWriter.write(( "partition" ) );
-
 
         }
 
@@ -124,6 +119,7 @@ class PostProcessor
         DiscreteVelocityFunctionType discreteExactForce_;
         DiscreteVelocityFunctionType discreteExactDirichlet_;
         DiscretePressureFunctionType discreteExactPressure_;
+        bool solutionAssembled_;
 };
 
 #endif // end of postprocessing.hh
