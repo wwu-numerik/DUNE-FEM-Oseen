@@ -1,4 +1,5 @@
 /**
+
  *  \file   postprocessing.hh
  *  \brief  postprocessing.hh
  **/
@@ -13,7 +14,7 @@
 #include "problem.hh"
 #include "parametercontainer.hh"
 
-#include <dune/fem/misc/l2error.hh>
+#include <dune/fem/misc/l2norm.hh>
 
 
 #define VTK_WRITE(z)    vtkWriter_.addVertexData(z); \
@@ -128,17 +129,12 @@ class PostProcessor
             errorFunc_velocity_.assign( discreteExactVelocity_ );
             errorFunc_velocity_ -= velocity;
 
-            {
-                Dune::L2Error< DiscretePressureFunctionType > l2_Error;
-                l2_error_pressure_ =
-                    l2_Error.template norm2< 4 > ( pressure, discreteExactPressure_ );
-            }
+            Dune::L2Norm< GridPartType > l2_Error( gridPart_ );
+            l2_error_pressure_ =
+                l2_Error.norm( errorFunc_pressure_ );
+            l2_error_velocity_ =
+                l2_Error.norm( errorFunc_velocity_ );
 
-            {
-                Dune::L2Error< DiscreteVelocityFunctionType > l2_Error;
-                l2_error_velocity_ =
-                    l2_Error.template norm2< 2 > ( velocity, discreteExactVelocity_ );
-            }
             Logger().Info()  << "L2-Error Pressure: " << std::setw(8) << l2_error_pressure_ << "\n"
                                 << "L2-Error Velocity: " << std::setw(8) << l2_error_velocity_ << std::endl;
         }
