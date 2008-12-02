@@ -159,8 +159,10 @@ int main( int argc, char** argv )
     typedef PostProcessor< Problemtype, GridPartType, DiscreteVelocityFunctionType, DiscretePressureFunctionType >
         PostProcessorType;
     PostProcessorType postProcessor( problem, gridPart, velocitySpace, pressureSpace );
-    postProcessor.save( *gridPtr );
+    postProcessor.save( *gridPtr, exactPressure, exactVelocity ); //dummy params, should be computed solutions );
+
     infoStream << "...done." << std::endl;
+
     profiler().StopTiming( "Problem/Postprocessing" );
     profiler().Output( mpicomm, 0, exactPressure.size() );
 

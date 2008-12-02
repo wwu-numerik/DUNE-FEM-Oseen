@@ -13,6 +13,14 @@
 #include "problem.hh"
 #include "parametercontainer.hh"
 
+#include <dune/fem/misc/l2error.hh>
+
+
+#define VTK_WRITE(z)    vtkWriter_.addVertexData(z); \
+                        vtkWriter_.write(( "data/z" ) ); \
+                        vtkWriter_.clear();
+
+
 template <  class ProblemImp,
             class GridPartImp,
             class DiscreteVelocityFunctionImp,
@@ -36,6 +44,9 @@ class PostProcessor
         typedef typename GridPartType::GridType
             GridType;
 
+        typedef Dune::VTKIO<GridPartType>
+            VTKWriterType;
+
         typedef DiscreteVelocityFunctionImp
             DiscreteVelocityFunctionType;
         typedef typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType
@@ -58,7 +69,12 @@ class PostProcessor
             discreteExactForce_( "f_exact", velocity_space ),
             discreteExactDirichlet_( "gd_exact", velocity_space ),
             discreteExactPressure_( "p_exact", press_space ),
-            solutionAssembled_(false)
+            errorFunc_velocity_( "err_velocity", velocity_space ),
+            errorFunc_pressure_( "err_pressure", press_space ),
+            solutionAssembled_(false),
+            l2_error_pressure_( - std::numeric_limits<double>::max() ),
+            l2_error_velocity_( - std::numeric_limits<double>::max() ),
+            vtkWriter_( gridPart )
         {
 
         }
@@ -86,28 +102,45 @@ class PostProcessor
             projectionP( problem_.pressure(), discreteExactPressure_ );
         }
 
-        void save( const GridType& grid )
+        void save( const GridType& grid, const DiscretePressureFunctionType& pressure, const DiscreteVelocityFunctionType& velocity )
         {
             if ( !solutionAssembled_ )
                 assembleExactSolution();
 
-            typedef Dune::VTKIO<GridPartType> VTKWriterType;
-            VTKWriterType vtkWriter( gridPart_ );
-			vtkWriter.addVertexData( discreteExactVelocity_ );
-//			vtkWriter.write(( "data/discreteExactVelocity_" ) );
-//			vtkWriter.clear();
-			vtkWriter.addVertexData( discreteExactPressure_ );
-//			vtkWriter.write(( "data/discreteExactPressure_" ) );
-//			vtkWriter.clear();
-			vtkWriter.addVertexData( discreteExactForce_ );
-//			vtkWriter.write(( "data/discreteExactForce_" ) );
-//			vtkWriter.clear();
-			vtkWriter.addVertexData( discreteExactDirichlet_ );
-			//vtkWriter.write(( "data/discreteExactDirichlet_" ) );
-			vtkWriter.pwrite( "funcs", "/share/projekte/uni/diplomarbeit/dune-code/dune-stokes/src/data" , "." );
-			vtkWriter.write( "data/funcs"  );
-			vtkWriter.clear();
+            calcError( pressure, velocity );
 
+            VTK_WRITE( discreteExactVelocity_ );
+			VTK_WRITE( discreteExactPressure_ );
+            VTK_WRITE( discreteExactForce_ );
+			VTK_WRITE( discreteExactDirichlet_ );
+			VTK_WRITE( errorFunc_pressure_ );
+			VTK_WRITE( errorFunc_velocity_ );
+
+        }
+
+        void calcError( const DiscretePressureFunctionType& pressure, const DiscreteVelocityFunctionType& velocity )
+        {
+            if ( !solutionAssembled_ )
+                assembleExactSolution();
+
+            errorFunc_pressure_.assign( discreteExactPressure_ );
+            errorFunc_pressure_ -= pressure;
+            errorFunc_velocity_.assign( discreteExactVelocity_ );
+            errorFunc_velocity_ -= velocity;
+
+            {
+                Dune::L2Error< DiscretePressureFunctionType > l2_Error;
+                l2_error_pressure_ =
+                    l2_Error.template norm2< 4 > ( pressure, discreteExactPressure_ );
+            }
+
+            {
+                Dune::L2Error< DiscreteVelocityFunctionType > l2_Error;
+                l2_error_velocity_ =
+                    l2_Error.template norm2< 2 > ( velocity, discreteExactVelocity_ );
+            }
+            Logger().Info()  << "L2-Error Pressure: " << std::setw(8) << l2_error_pressure_ << "\n"
+                                << "L2-Error Velocity: " << std::setw(8) << l2_error_velocity_ << std::endl;
         }
 
     private:
@@ -119,7 +152,15 @@ class PostProcessor
         DiscreteVelocityFunctionType discreteExactForce_;
         DiscreteVelocityFunctionType discreteExactDirichlet_;
         DiscretePressureFunctionType discreteExactPressure_;
+        DiscreteVelocityFunctionType errorFunc_velocity_;
+        DiscretePressureFunctionType errorFunc_pressure_;
         bool solutionAssembled_;
+        double l2_error_pressure_;
+        double l2_error_velocity_;
+        VTKWriterType vtkWriter_;
+
 };
+
+#undef VTK_WRITE
 
 #endif // end of postprocessing.hh
