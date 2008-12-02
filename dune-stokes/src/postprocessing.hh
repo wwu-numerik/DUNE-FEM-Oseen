@@ -141,7 +141,6 @@ class PostProcessor
 
     private:
         const ProblemType& problem_;
-        //ContinuousVelocityType& continuousVelocity_;
         const GridPartType& gridPart_;
         const DiscreteVelocityFunctionSpaceType& velocitySpace_;
         DiscreteVelocityFunctionType discreteExactVelocity_;
