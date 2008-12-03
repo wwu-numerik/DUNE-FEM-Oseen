@@ -120,7 +120,6 @@ int main( int argc, char** argv )
 
     typedef Dune::StokesPass< StokesModelType, StartPassType, 0 >
         StokesPassType;
-
     StokesPassType stokesPass(  startPass,
                                 velocitySpace,
                                 sigmaSpace,

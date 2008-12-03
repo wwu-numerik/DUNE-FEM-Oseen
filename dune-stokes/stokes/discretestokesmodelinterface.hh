@@ -628,8 +628,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *  doing nothing
          **/
         ~DiscreteStokesModelDefault()
-        {
-        }
+        {}
 
         /**
          *  \brief
@@ -679,18 +678,41 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         /**
          *  \brief
          *  \todo   doc me
+         *  \attention  assumption: \f$n_{inner}=-1*n_{outer}\f$
          **/
         template < class FaceDomainType >
-        void velocitySigmaFlux(         const IntersectionIteratorType& it,
-                                        const double time,
-                                        const FaceDomainType& x,
-                                        const VelocityRangeType& uInner,
-                                        const VelocityRangeType& uOuter,
-                                        VelocityRangeType& uContribInner,
-                                        VelocityRangeType& uContribOuter,
-                                        VelocityRangeType& emptyContribInner,
-                                        VelocityRangeType& emptyContribOuter ) const
+        void velocitySigmaFlux( const IntersectionIteratorType& it,
+                                const double time,
+                                const FaceDomainType& x,
+                                const VelocityRangeType& uInner,
+                                const VelocityRangeType& uOuter,
+                                VelocityRangeType& uContribInner,
+                                VelocityRangeType& uContribOuter,
+                                VelocityRangeType& emptyContribInner,
+                                VelocityRangeType& emptyContribOuter ) const
         {
+            // some preperations
+            VelocityRangeType outerNormal = it.unitOuterNormal( x );
+
+            // contribution to u vector ( from inside entity )
+            SigmaRangeType innerJump = uTypeMatrixJump( uContribInner,
+                                                        uContribOuter,
+                                                        outerNormal );
+            innerJump.mv( C_12_, uContribInner );
+            uContribInner += meanValue( uContribInner, uContribOuter );
+
+            // contribution to u vector ( from outside entity )
+            VelocityRangeType innerNormal = outerNormal;
+            innerNormal *= -1.0;
+            SigmaRangeType outerJump = uTypeMatrixJump( uContribOuter,
+                                                        uContribInner,
+                                                        innerNormal );
+
+            // contribution to rhs ( from inside entity )
+            emptyContribInner = 0.0;
+
+            // contribution to rhs  ( from outside entity )
+            emptyContribOuter = 0.0;
         }
 
         /**
@@ -840,11 +862,12 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *  where \f$n^{+}\f4 is the unit outer normal,
          *  \f$p^{+}\f$ is the value of p on the inside and
          *  \f$p^{-}\f$ the value of p at the outside
+         *  \attention  assumption: \f$n_{inner}=-1*n_{outer}\f$
          **/
         template < class NormalType >
         VelocityRangeType pTypeJump(    const PressureRangeType& pInner,
                                         const PressureRangeType& pOuter,
-                                        const NormalType& outerNormal )
+                                        const NormalType& outerNormal ) const
         {
             VelocityRangeType ret( 0.0 );
             //ret += outerNormal;
@@ -858,7 +881,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          **/
         double uTypeJump(   const VelocityRangeType& uInner,
                             const VelocityRangeType& uOuter,
-                            const VelocityRangeType& outerNormal )
+                            const VelocityRangeType& outerNormal ) const
         {
             return ( uInner - uOuter ) * outerNormal;
         }
@@ -869,18 +892,20 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          **/
         SigmaRangeType uTypeMatrixJump( const VelocityRangeType& uInner,
                                         const VelocityRangeType& uOuter,
-                                        const VelocityRangeType& outerNormal )
+                                        const VelocityRangeType& outerNormal ) const
         {
             SigmaRangeType ret( 0.0 );
             VelocityRangeType uDiff = uInner - uOuter;
             typedef typename SigmaRangeType::RowIterator
                 MatrixRowIteratorType;
+            typedef typename VelocityRangeType::ConstIterator
+                ConstVectorIteratorType;
             typedef typename VelocityRangeType::Iterator
                 VectorIteratorType;
             MatrixRowIteratorType rItEnd = ret.end();
             VectorIteratorType uDiffIt = uDiff.begin();
             for ( MatrixRowIteratorType rIt = ret.begin(); rIt != rItEnd; ++rIt ) {
-                VectorIteratorType outerNormalIt = outerNormal.begin();
+                ConstVectorIteratorType outerNormalIt = outerNormal.begin();
                 VectorIteratorType vItEnd = rIt->end();
                 for (   VectorIteratorType vIt = rIt->begin();
                         vIt != vItEnd;
@@ -890,7 +915,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 }
                 ++uDiffIt;
             }
-
+            return ret;
         }
 
         /**
@@ -899,7 +924,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          **/
         template < class DiscreteFunctionImp >
         DiscreteFunctionImp meanValue( const DiscreteFunctionImp& funcInner,
-                                    const DiscreteFunctionImp& funcOuter )
+                                    const DiscreteFunctionImp& funcOuter ) const
         {
             DiscreteFunctionImp ret( 0.0 );
             ret += funcInner;
