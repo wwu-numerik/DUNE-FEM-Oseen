@@ -139,9 +139,12 @@ class PostProcessor
                                 << "L2-Error Velocity: " << std::setw(8) << l2_error_velocity_ << std::endl;
         }
 
-        std::pair<double,double> getError()
+        std::vector<double> getError()
         {
-            return std::pair<double,double> ( l2_error_velocity_, l2_error_pressure_ );
+            std::vector<double> ret;
+            ret.push_back( l2_error_velocity_ );
+            ret.push_back( l2_error_pressure_ );
+            return ret;
         }
 
     private:
