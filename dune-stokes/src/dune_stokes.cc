@@ -89,109 +89,86 @@ int main( int argc, char** argv )
     infoStream << "...done." << std::endl;
 
     /* ********************************************************************** *
-     * initialize function spaces and functions                               *
+     * initialize problem                                                     *
      * ********************************************************************** */
-    infoStream << "\ninitialising functions..." << std::endl;
-//    // velocity
-//    typedef Dune::FunctionSpace< double, double, gridDim, gridDim >
-//        VelocityFunctionSpaceType;
-//    typedef Dune::DiscontinuousGalerkinSpace<   VelocityFunctionSpaceType,
-//                                                GridPartType,
-//                                                polOrder >
-//        DiscreteVelocityFunctionSpaceType;
-//    DiscreteVelocityFunctionSpaceType velocitySpace( gridPart );
-//    typedef Dune::AdaptiveDiscreteFunction< DiscreteVelocityFunctionSpaceType >
-//        DiscreteVelocityFunctionType;
-//    DiscreteVelocityFunctionType exactVelocity( "exact_velocity",
-//                                                velocitySpace );
-//    exactVelocity.clear();
-//    //sigma
-//    typedef Dune::MatrixFunctionSpace< double, double, gridDim, gridDim, gridDim >
-//        SigmaFunctionSpaceType;
-//    typedef Dune::DiscontinuousGalerkinSpace<   SigmaFunctionSpaceType,
-//                                                GridPartType,
-//                                                polOrder >
-//        DiscreteSigmaFunctionSpaceType;
-//    DiscreteSigmaFunctionSpaceType sigmaSpace( gridPart );
-//    typedef Dune::AdaptiveDiscreteFunction< DiscreteSigmaFunctionSpaceType >
-//        DiscreteSigmaFunctionType;
-//    DiscreteSigmaFunctionType exactSigma(   "exact_sigma",
-//                                            sigmaSpace );
-//    exactSigma.clear();
-//    // pressure
-//    typedef Dune::FunctionSpace< double, double, gridDim, 1 >
-//        PressureFunctionSpaceType;
-//    typedef Dune::DiscontinuousGalerkinSpace<   PressureFunctionSpaceType,
-//                                                GridPartType,
-//                                                polOrder >
-//        DiscretePressureFunctionSpaceType;
-//    DiscretePressureFunctionSpaceType pressureSpace( gridPart );
-//    typedef Dune::AdaptiveDiscreteFunction< DiscretePressureFunctionSpaceType >
-//        DiscretePressureFunctionType;
-//    DiscretePressureFunctionType exactPressure( "exact_pressure",
-//                                                pressureSpace );
-//    exactPressure.clear();
-//    // right hand side
-//    DiscreteVelocityFunctionType righthandSide( "rhs",
-//                                                velocitySpace );
-//    righthandSide.clear();
-//    // dirichlet data
-//    DiscreteVelocityFunctionType dirichletData( "g_D",
-//                                                velocitySpace );
-//    dirichletData.clear();
 
+    typedef Dune::FunctionSpace< double, double, gridDim, gridDim >
+        VelocityFunctionSpaceType;
 
-    typedef Dune::DiscreteStokesModelDefault< Dune::DiscreteStokesModelDefaultTraits<
-                                            GridPartType,
-                                            gridDim,
-                                            polOrder >
-                                        >
-        ModelType;
-    ModelType model;
+    VelocityFunctionSpaceType velocitySpace;
 
-    infoStream << "...done." << std::endl;
+    typedef Dune::FunctionSpace< double, double, gridDim, 1 >
+        PressureFunctionSpaceType;
 
+    PressureFunctionSpaceType pressureSpace;
+
+    typedef Problem<    gridDim,
+                        VelocityFunctionSpaceType,
+                        PressureFunctionSpaceType >
+        StokesProblemType;
+
+    StokesProblemType stokesProblem( 1.0, velocitySpace, pressureSpace );
+
+    typedef StokesProblemType::VelocityType
+        AnalyticalFunctionType;
+
+    const AnalyticalFunctionType& force = stokesProblem.force();
+//    const AnalyticalFunctionType& dirichletData = stokesProblem.dirichletData();
 
     /* ********************************************************************** *
      * initialize model                                                       *
      * ********************************************************************** */
     infoStream << "\ninitialising model..." << std::endl;
-//    typedef Problem< ProblemTraits< gridDim, VelocityFunctionSpaceType, PressureFunctionSpaceType > >
-//        Problemtype;
-//    Problemtype problem( parameters.viscosity(), velocitySpace, pressureSpace );
-//    //problem.testMe();
-//    typedef PostProcessor< Problemtype, GridPartType, DiscreteVelocityFunctionType, DiscretePressureFunctionType >
-//        PostProcessorType;
-//    PostProcessorType postProcessor( problem, gridPart, velocitySpace, pressureSpace );
+
+    typedef Dune::DiscreteStokesModelDefault<
+                Dune::DiscreteStokesModelDefaultTraits<
+                    GridPartType,
+                    AnalyticalFunctionType,
+                    gridDim,
+                    polOrder > >
+        StokesModelImpType;
+
+    StokesModelImpType stokesModel( , stokesProblem.dirichletData() );
+
+    typedef Dune::DiscreteStokesModelInterface<
+                Dune::DiscreteStokesModelDefaultTraits<
+                    GridPartType,
+                    AnalyticalFunctionType,
+                    gridDim,
+                    polOrder > >
+        StokesModelType;
+
+    StokesModelType::DiscreteVelocityFunctionSpaceType discreteVelocitySpace( gridPart );
+    StokesModelType::DiscreteSigmaFunctionSpaceType discreteSigmaSpace( gridPart );
+    StokesModelType::DiscretePressureFunctionSpaceType discretePressureSpace( gridPart );
+
     infoStream << "...done." << std::endl;
 
-    /* ******
-     * init pass
-     * ******** */
 
-//    typedef Dune::StartPass< DiscreteVelocityFunctionType, -1 >
-//        StartPassType;
-//    StartPassType startPass;
-//    typedef Dune::StokesTraits < DiscreteFunctionType, DiscreteFunctionSpaceType >
-//        StokesTraits;
-//    typedef Dune::DiscreteStokesModelInterface< StokesTraits >
-//        DiscreteModelType;
-//    typedef Dune::StokesPass< DiscreteFunctionType, DiscreteFunctionType, DiscreteModelType, StartPassType, -1 >
-//        PassType;
-//    typedef Dune::OEMCGOp <DiscreteFunctionType, PassType >
-//        InverseOperatorType;
-//    typedef Dune::SaddlepointInverseOperator< PassType, InverseOperatorType >
-//        SaddlepointInverseOperatortype;
+    /* ********************************************************************** *
+     * initialize passes                                                      *
+     * ********************************************************************** */
+    infoStream << "\ninitialising passes..." << std::endl;
 
-//    DiscreteFunctionSpaceType pressurespc ( gridpart  );
-//    DiscreteFunctionSpaceType velospace ( gridpart  );
-//    DiscreteModelType disc_model;
-//    StartPassType startPass;
-//    PassType pass ( startPass, velospace, pressurespc );
-//    InverseOperatorType aufSolver( pass, 1e-10 ,1e-10 ,5000 ,false );
-//    SaddlepointInverseOperatortype invOp( pass, 1e-8, 1e-8, 5000, 1, aufSolver, pressurespc, velospace);
+    typedef Dune::StartPass< StokesModelType::DiscreteVelocityFunctionType, -1 >
+        StartPassType;
+    StartPassType startPass;
+
+    typedef Dune::StokesPass< StokesModelType, StartPassType, 0 >
+        StokesPassType;
+    StokesPassType stokesPass(  startPass,
+                                discreteVelocitySpace,
+                                discreteSigmaSpace,
+                                discretePressureSpace,
+                                static_cast< StokesModelType >( stokesModel ),
+                                gridPart );
+
+    //StokesPassType::
+    StokesPassType::DomainType uDummy( "uDummy", discreteVelocitySpace );
+    stokesPass( uDummy, uDummy );
 
 
+    infoStream << "...done." << std::endl;
 
     return 0;
   }

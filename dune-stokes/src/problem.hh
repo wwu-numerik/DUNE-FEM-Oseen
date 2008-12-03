@@ -18,13 +18,17 @@
 #include "dirichletdata.hh"
 
 /**
- *  \brief  containing typedefs needed by Problem
+ *  \brief  a collection of some analytical functions solving a stokes problem
+ *
+ *  namely velocity, pressure, force term and dirichlet boundary data
  *
  *  \tparam gridDim
  *          dimension of the grid
+ *
+ *  \todo   extensive docu with latex
  **/
 template < int griddim, class VelocityFunctionSpaceImp, class PressureFunctionSpaceImp >
-class ProblemTraits
+class Problem
 {
     public:
         static const unsigned int gridDim = griddim;
@@ -38,41 +42,10 @@ class ProblemTraits
             PressureType;
         typedef Force< ForceTraits< gridDim, VelocityFunctionSpaceType > >
             ForceType;
+        typedef ForceType::BaseType
         typedef DirichletData< DirichletDataTraits< gridDim, VelocityFunctionSpaceType > >
             DirichletDataType;
 
-};
-
-/**
- *  \brief  a collection of some analytical functions solving a stokes problem
- *
- *  namely velocity, pressure, force term and dirichlet boundary data
- *
- *  \tparam gridDim
- *          dimension of the grid
- *
- *  \todo   extensive docu with latex
- **/
-template < class TraitsImp >
-class Problem
-{
-    public:
-        typedef TraitsImp
-            Traits;
-        typedef typename Traits::VelocityType
-            VelocityType;
-        typedef typename Traits::PressureType
-            PressureType;
-        typedef typename Traits::ForceType
-            ForceType;
-        typedef typename Traits::DirichletDataType
-            DirichletDataType;
-        typedef typename VelocityType::FunctionSpaceType
-            VelocityFunctionSpaceType;
-        typedef typename PressureType::FunctionSpaceType
-            PressureFunctionSpaceType;
-
-        static const unsigned int gridDim = Traits::gridDim;
     /**
      *  \brief  constructor
      *
@@ -101,7 +74,7 @@ class Problem
      *
      *  \return velocity
      **/
-    VelocityType& velocity() const
+    const VelocityType& velocity() const
     {
         return velocity_;
     }
@@ -111,7 +84,7 @@ class Problem
      *
      *  \return pressure
      **/
-    PressureType& pressure() const
+    const PressureType& pressure() const
     {
         return pressure_;
     }
@@ -121,7 +94,7 @@ class Problem
      *
      *  \return force
      **/
-    ForceType& force() const
+    const ForceType& force() const
     {
         return force_;
     }
@@ -131,7 +104,7 @@ class Problem
      *
      *  \return dirichlet boundary data
      **/
-    DirichletDataType& dirichletData() const
+    const DirichletDataType& dirichletData() const
     {
         return dirichletData_;
     }

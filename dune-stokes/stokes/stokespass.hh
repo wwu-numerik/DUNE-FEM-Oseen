@@ -9,10 +9,13 @@
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/fem/space/dgspace.hh>
 
+#include "../src/stuff.hh" // should be removed in the end
+
 namespace Dune
 {
-template <class VelocityDiscreteFunctionImp,
-        class PressureDiscreteFunctionImp, class DiscreteModelImp, class PreviousPassImp, int PassID = 0 >
+template <  class DiscreteModelImp,
+            class PreviousPassImp,
+            int PassID = 0 >
 class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID >
 {
     public:
@@ -29,23 +32,171 @@ class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID 
         typedef DiscreteModelImp
             DiscreteModelType;
 
+        //! volume quadrature type
+        typedef typename DiscreteModelType::VolumeQuadratureType
+            VolumeQuadratureType;
+
+        //! face quadrature type
+        typedef typename DiscreteModelType::FaceQuadratureType
+            FaceQuadratureType;
+
         //! discrete function type for the velocity
-//        typedef  VelocityDiscreteFunctionType;
-//            typedef PressureDiscreteFunctionImp PressureDiscreteFunctionType;
-//            typedef typename PressureDiscreteFunctionType::DiscreteFunctionSpaceType DiscreteFunctionSpaceType;
-//            typedef typename PressureDiscreteFunctionType::DiscreteFunctionSpaceType PressureDiscreteFunctionSpaceType;
-//            typedef typename VelocityDiscreteFunctionType::DiscreteFunctionSpaceType VelocityDiscreteFunctionSpaceType;
-//
+        typedef typename DiscreteModelType::DiscreteVelocityFunctionType
+            DiscreteVelocityFunctionType;
+
+        //! discrete function space type for the velocity
+        typedef typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType
+            DiscreteVelocityFunctionSpaceType;
+
+        //! discrete function type for sigma
+        typedef typename DiscreteModelType::DiscreteSigmaFunctionType
+            DiscreteSigmaFunctionType;
+
+        //! discrete function space type for sigma
+        typedef typename DiscreteSigmaFunctionType::DiscreteFunctionSpaceType
+            DiscreteSigmaFunctionSpaceType;
+
+        //! discrete fucntion type for the pressure
+        typedef typename DiscreteModelType::DiscretePressureFunctionType
+            DiscretePressureFunctionType;
+
+        //! discrete function space type for the pressure
+        typedef typename DiscretePressureFunctionType::DiscreteFunctionSpaceType
+            DiscretePressureFunctionSpaceType;
+
+        //! Coordinate type (world coordinates)
+        typedef typename DiscreteVelocityFunctionSpaceType::DomainType
+            WorldCoordinateType;
+
+        //! Vector type of the velocity's discrete function space's range
+        typedef typename DiscreteVelocityFunctionSpaceType::RangeType
+            VelocityRangeType;
+
+        //! vector type of sigmas' discrete functions space's range
+        typedef typename DiscreteSigmaFunctionSpaceType::RangeType
+            SigmaRangeType;
+
+        //! Vector type of the pressure's discrete function space's range
+        typedef typename DiscretePressureFunctionSpaceType::RangeType
+            PressureRangeType;
+
+        //! Type of GridPart
+        typedef typename DiscreteVelocityFunctionSpaceType::GridPartType
+            GridPartType;
+
+        //! Intersection iterator of the grid
+        typedef typename GridPartType::IntersectionIteratorType
+            IntersectionIteratorType;
+
+        //!typedefs for interface compliance, not definitive
+        typedef typename BaseType::ArgumentType
+            ArgumentType;
+
+        //!typedefs for interface compliance, not definitive
+        typedef typename BaseType::DestinationType
+            DestinationType;
+
+        //!typedefs for interface compliance, not definitive
+        typedef typename BaseType::Entity
+            EntityType;
+
+        /**
+         *  \brief  constructor
+         *  \todo   doc
+         **/
+        StokesPass( PreviousPassType& prevPass,
+                    const DiscreteVelocityFunctionSpaceType& velocitySpace,
+                    const DiscreteSigmaFunctionSpaceType& sigmaSpace,
+                    const DiscretePressureFunctionSpaceType& pressureSpace,
+                    const DiscreteModelType& discreteModel,
+                    const GridPartType& gridPart )
+                : BaseType( prevPass, velocitySpace ),
+                velocitySpace_( velocitySpace ),
+                sigmaSpace_( sigmaSpace ),
+                pressureSpace_( pressureSpace ),
+                discreteModel_( discreteModel ),
+                gridPart_( gridPart )
+        {
+        }
+        /**
+         *  \brief  empty constructor
+         **/
+        StokesPass()
+        {}
+
+
+
+    protected:
+
+        virtual void prepare(   const ArgumentType& arg,
+                                DestinationType& dest ) const
+        {
+            std::cout << "\n== prepare begin" << std::endl;
+            std::cout << "\n== prepare end" << std::endl;
+        }
+
+        virtual void finalize(  const ArgumentType& arg,
+                                DestinationType& dest ) const
+        {
+            std::cout << "\n== finalize begin" << std::endl;
+            std::cout << "\n== finalize end" << std::endl;
+        }
+
+        virtual void applyLocal( EntityType& entity ) const
+        {
+            std::cout << "\n== applyLocal begin" << std::endl;
+
+            VelocityRangeType uInner( 0.0 );
+            VelocityRangeType uOuter( 0.0 );
+            VelocityRangeType uReturn( 0.0 );
+            PressureRangeType pInner( 0.0 );
+            PressureRangeType pOuter( 0.0 );
+            PressureRangeType pReturn( 0.0 );
+            SigmaRangeType sInner( 0.0 );
+            SigmaRangeType sOuter( 0.0 );
+            SigmaRangeType sReturn( 0.0 );
+
+            for ( unsigned int i = 0; i < uInner.dim(); ++i) {
+                uInner[i] = ( i + 1.0 );
+                uOuter[i] = 2.0 * ( i + 1.0 );
+            }
+            Stuff::printFieldVector( uInner, "uInner" );
+
+            for ( unsigned int i = 0; i < pInner.dim(); ++i) {
+                pInner[i] = ( i + 1.0 );
+                pOuter[i] = 2.0 * ( i + 1.0 );
+            }
+            Stuff::printFieldVector( pInner, "pInner" );
+
+            for ( unsigned int i = 0; i < SigmaRangeType::dimension; ++i) {
+                sInner[i] = ( i + 1.0 );
+                sOuter[i] = 2.0 * ( i + 1.0 );
+            }
+            Stuff::printFieldMatrix( sInner, "sInner" );
+
+            IntersectionIteratorType it = entity.ileafbegin();
+            FaceQuadratureType faceQuad( gridPart_, it, 1, FaceQuadratureType::INSIDE );
+
+
+
+            std::cout << "\n== applyLocal end" << std::endl;
+        }
+
+    private:
+        const DiscreteVelocityFunctionSpaceType& velocitySpace_;
+        const DiscreteSigmaFunctionSpaceType& sigmaSpace_;
+        const DiscretePressureFunctionSpaceType& pressureSpace_;
+        const DiscreteModelType& discreteModel_;
+        const GridPartType& gridPart_;
+
+
+
 //            typedef SparseRowMatrix<double> MatrixType;
 //            typedef MatrixType B_OperatorType;
 //            typedef MatrixType B_Transposed_OperatorType;
 //            typedef MatrixType C_OperatorType;
 //
-//            //typedefs for interface compliance, not definitive
-//            typedef typename BaseType::ArgumentType ArgumentType;
-//            typedef typename BaseType::DestinationType DestinationType;
-//            typedef typename BaseType::Entity EntityType;
-//
+
 //        private:
 //            enum { VelocityDimDomain = VelocityDiscreteFunctionSpaceType::DimDomain };
 //            enum { VelocityDimRange = VelocityDiscreteFunctionSpaceType::DimRange };
@@ -107,13 +258,6 @@ class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID 
 //            const VelocityDiscreteFunctionType& rhs1() const
 //            {}
 //
-//            virtual void prepare( const ArgumentType& arg,
-//                                    DestinationType& dest) const
-//            {}
-//
-//            virtual void finalize(const ArgumentType& arg,
-//                                    DestinationType& dest) const
-//            {}
 //
 //            virtual void applyLocal(EntityType& entity) const
 //            {
@@ -188,9 +332,6 @@ class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID 
 //            //more dummies
 //            // VelocityDiscreteFunctionType& rhs;
 //
-//            VelocityDiscreteFunctionSpaceType& velo_space_;
-//            PressureDiscreteFunctionSpaceType& press_space_;
-//            DiscreteGradientSpaceType& grad_space_;
 //
 //            VelocityGradMatType gradMatrix_;
 //            VelocityDivMatType divMatrix_;
@@ -199,7 +340,6 @@ class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID 
 //            PressureDivMatType pressureDivMatrix_;
 //            PressureStabMatType pressureStabMatrix_;
 //
-//            const DiscreteModelType& disc_model_;
 
 };
 
