@@ -16,7 +16,7 @@
 
 #include <dune/fem/misc/l2norm.hh>
 
-
+//! simple macro that uses member vtkWriter instance to write file according to variable name
 #define VTK_WRITE(z)    vtkWriter_.addVertexData(z); \
                         vtkWriter_.write(( "data/z" ) ); \
                         vtkWriter_.clear();
@@ -137,6 +137,11 @@ class PostProcessor
 
             Logger().Info()  << "L2-Error Pressure: " << std::setw(8) << l2_error_pressure_ << "\n"
                                 << "L2-Error Velocity: " << std::setw(8) << l2_error_velocity_ << std::endl;
+        }
+
+        std::pair<double,double> getError()
+        {
+            return std::pair<double,double> ( l2_error_velocity_, l2_error_pressure_ );
         }
 
     private:
