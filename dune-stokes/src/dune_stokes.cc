@@ -89,6 +89,33 @@ int main( int argc, char** argv )
     infoStream << "...done." << std::endl;
 
     /* ********************************************************************** *
+     * initialize problem                                                     *
+     * ********************************************************************** */
+
+    typedef Dune::FunctionSpace< double, double, gridDim, gridDim >
+        VelocityFunctionSpaceType;
+
+    VelocityFunctionSpaceType velocitySpace;
+
+    typedef Dune::FunctionSpace< double, double, gridDim, 1 >
+        PressureFunctionSpaceType;
+
+    PressureFunctionSpaceType pressureSpace;
+
+    typedef Problem<    gridDim,
+                        VelocityFunctionSpaceType,
+                        PressureFunctionSpaceType >
+        StokesProblemType;
+
+    StokesProblemType stokesProblem( 1.0, velocitySpace, pressureSpace );
+
+    typedef StokesProblemType::VelocityType
+        AnalyticalFunctionType;
+
+    const AnalyticalFunctionType& force = stokesProblem.force();
+//    const AnalyticalFunctionType& dirichletData = stokesProblem.dirichletData();
+
+    /* ********************************************************************** *
      * initialize model                                                       *
      * ********************************************************************** */
     infoStream << "\ninitialising model..." << std::endl;
@@ -96,15 +123,24 @@ int main( int argc, char** argv )
     typedef Dune::DiscreteStokesModelDefault<
                 Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
+                    AnalyticalFunctionType,
+                    gridDim,
+                    polOrder > >
+        StokesModelImpType;
+
+    StokesModelImpType stokesModel( , stokesProblem.dirichletData() );
+
+    typedef Dune::DiscreteStokesModelInterface<
+                Dune::DiscreteStokesModelDefaultTraits<
+                    GridPartType,
+                    AnalyticalFunctionType,
                     gridDim,
                     polOrder > >
         StokesModelType;
 
-    StokesModelType stokesModel;
-
-    StokesModelType::DiscreteVelocityFunctionSpaceType velocitySpace( gridPart );
-    StokesModelType::DiscreteSigmaFunctionSpaceType sigmaSpace( gridPart );
-    StokesModelType::DiscretePressureFunctionSpaceType pressureSpace( gridPart );
+    StokesModelType::DiscreteVelocityFunctionSpaceType discreteVelocitySpace( gridPart );
+    StokesModelType::DiscreteSigmaFunctionSpaceType discreteSigmaSpace( gridPart );
+    StokesModelType::DiscretePressureFunctionSpaceType discretePressureSpace( gridPart );
 
     infoStream << "...done." << std::endl;
 
@@ -121,14 +157,14 @@ int main( int argc, char** argv )
     typedef Dune::StokesPass< StokesModelType, StartPassType, 0 >
         StokesPassType;
     StokesPassType stokesPass(  startPass,
-                                velocitySpace,
-                                sigmaSpace,
-                                pressureSpace,
-                                stokesModel,
+                                discreteVelocitySpace,
+                                discreteSigmaSpace,
+                                discretePressureSpace,
+                                static_cast< StokesModelType >( stokesModel ),
                                 gridPart );
 
     //StokesPassType::
-    StokesPassType::DomainType uDummy( "uDummy", velocitySpace );
+    StokesPassType::DomainType uDummy( "uDummy", discreteVelocitySpace );
     stokesPass( uDummy, uDummy );
 
 

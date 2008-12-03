@@ -9,6 +9,8 @@
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/fem/space/dgspace.hh>
 
+#include "../src/stuff.hh" // should be removed in the end
+
 namespace Dune
 {
 template <  class DiscreteModelImp,
@@ -129,39 +131,55 @@ class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID 
         virtual void prepare(   const ArgumentType& arg,
                                 DestinationType& dest ) const
         {
-            std::cout << "\npreparing StokesPass" << std::endl;
+            std::cout << "\n== prepare begin" << std::endl;
+            std::cout << "\n== prepare end" << std::endl;
         }
 
         virtual void finalize(  const ArgumentType& arg,
                                 DestinationType& dest ) const
         {
-            std::cout << "\nfinalizing StokesPass" << std::endl;
+            std::cout << "\n== finalize begin" << std::endl;
+            std::cout << "\n== finalize end" << std::endl;
         }
 
         virtual void applyLocal( EntityType& entity ) const
         {
+            std::cout << "\n== applyLocal begin" << std::endl;
+
             VelocityRangeType uInner( 0.0 );
             VelocityRangeType uOuter( 0.0 );
             VelocityRangeType uReturn( 0.0 );
+            PressureRangeType pInner( 0.0 );
+            PressureRangeType pOuter( 0.0 );
+            PressureRangeType pReturn( 0.0 );
+            SigmaRangeType sInner( 0.0 );
+            SigmaRangeType sOuter( 0.0 );
+            SigmaRangeType sReturn( 0.0 );
+
             for ( unsigned int i = 0; i < uInner.dim(); ++i) {
                 uInner[i] = ( i + 1.0 );
                 uOuter[i] = 2.0 * ( i + 1.0 );
             }
+            Stuff::printFieldVector( uInner, "uInner" );
+
+            for ( unsigned int i = 0; i < pInner.dim(); ++i) {
+                pInner[i] = ( i + 1.0 );
+                pOuter[i] = 2.0 * ( i + 1.0 );
+            }
+            Stuff::printFieldVector( pInner, "pInner" );
+
+            for ( unsigned int i = 0; i < SigmaRangeType::dimension; ++i) {
+                sInner[i] = ( i + 1.0 );
+                sOuter[i] = 2.0 * ( i + 1.0 );
+            }
+            Stuff::printFieldMatrix( sInner, "sInner" );
 
             IntersectionIteratorType it = entity.ileafbegin();
             FaceQuadratureType faceQuad( gridPart_, it, 1, FaceQuadratureType::INSIDE );
-            discreteModel_.velocitySigmaFlux(   it,
-                                                0.0,
-                                                faceQuad.localPoint( 0 ),
-                                                uInner,
-                                                uOuter,
-                                                uReturn,
-                                                uReturn,
-                                                uReturn,
-                                                uReturn );
 
-            std::cout << "\n================================" << std::endl;
 
+
+            std::cout << "\n== applyLocal end" << std::endl;
         }
 
     private:

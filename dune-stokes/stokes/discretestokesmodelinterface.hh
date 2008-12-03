@@ -62,7 +62,7 @@ class DiscreteStokesModelInterface
         typedef typename DiscreteSigmaFunctionType::DiscreteFunctionSpaceType
             DiscreteSigmaFunctionSpaceType;
 
-        //! fucntion space type for sigma
+        //! function space type for sigma
         typedef typename DiscreteSigmaFunctionSpaceType::FunctionSpaceType
             SigmaFunctionSpaceType;
 
@@ -77,6 +77,13 @@ class DiscreteStokesModelInterface
         //! function space type for the pressure
         typedef typename DiscretePressureFunctionSpaceType::FunctionSpaceType
             PressureFunctionSpaceType;
+
+        //! function type for analytical force
+        typedef typename Traits::AnalyticalForceType
+            AnalyticalForceType;
+
+        typedef typename Traits::AnalyticalDirichletDataType
+            AnalyticalDirichletDataType;
 
         //! Coordinate type (world coordinates)
         typedef typename DiscreteVelocityFunctionSpaceType::DomainType
@@ -221,15 +228,15 @@ class DiscreteStokesModelInterface
          *  \todo   latex doc
          **/
         template < class FaceDomainType >
-        void velocitySigmaFlux(         const IntersectionIteratorType& it,
-                                        const double time,
-                                        const FaceDomainType& x,
-                                        const VelocityRangeType& uInner,
-                                        const VelocityRangeType& uOuter,
-                                        VelocityRangeType& uContribInner,
-                                        VelocityRangeType& uContribOuter,
-                                        VelocityRangeType& emptyContribInner,
-                                        VelocityRangeType& emptyContribOuter ) const
+        void velocitySigmaFlux( const IntersectionIteratorType& it,
+                                const double time,
+                                const FaceDomainType& x,
+                                const VelocityRangeType& uInner,
+                                const VelocityRangeType& uOuter,
+                                VelocityRangeType& uContribInner,
+                                VelocityRangeType& uContribOuter,
+                                VelocityRangeType& emptyContribInner,
+                                VelocityRangeType& emptyContribOuter ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
                 asImp().velocitySigmaFlux(  it,
@@ -254,21 +261,16 @@ class DiscreteStokesModelInterface
                                         const VelocityRangeType& uInner,
                                         const VelocityRangeType& uOuter,
                                         VelocityRangeType& uContribInner,
-                                        VelocityRangeType& uContribOuter,
-                                        VelocityRangeType& emptyContribInner,
-                                        VelocityRangeType& emptyContribOuter ) const
+                                        VelocityRangeType& emptyContribInner ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
-                asImp().velocitySigmaBoundaryFlux(
-                                        it,
-                                        time,
-                                        x,
-                                        uInner,
-                                        uOuter,
-                                        uContribInner,
-                                        uContribOuter,
-                                        emptyContribInner,
-                                        emptyContribOuter ) );
+                asImp().velocitySigmaBoundaryFlux(  it,
+                                                    time,
+                                                    x,
+                                                    uInner,
+                                                    uOuter,
+                                                    uContribInner,
+                                                    emptyContribInner ) );
         }
 
         /**
@@ -276,19 +278,19 @@ class DiscreteStokesModelInterface
          *  \todo   latex doc
          **/
         template < class FaceDomainType >
-        void velocityPressureFlux(      const IntersectionIteratorType& it,
-                                        const double time,
-                                        const FaceDomainType& x,
-                                        const VelocityRangeType& uInner,
-                                        const VelocityRangeType& uOuter,
-                                        const PressureRangeType& pInner,
-                                        const PressureRangeType& pOuter,
-                                        VelocityRangeType& uContribInner,
-                                        VelocityRangeType& uContribOuter,
-                                        VelocityRangeType& pContribInner,
-                                        VelocityRangeType& pContribOuter,
-                                        VelocityRangeType& emptyContribInner,
-                                        VelocityRangeType& emptyContribOuter ) const
+        void velocityPressureFlux(  const IntersectionIteratorType& it,
+                                    const double time,
+                                    const FaceDomainType& x,
+                                    const VelocityRangeType& uInner,
+                                    const VelocityRangeType& uOuter,
+                                    const PressureRangeType& pInner,
+                                    const PressureRangeType& pOuter,
+                                    VelocityRangeType& uContribInner,
+                                    VelocityRangeType& uContribOuter,
+                                    VelocityRangeType& pContribInner,
+                                    VelocityRangeType& pContribOuter,
+                                    VelocityRangeType& emptyContribInner,
+                                    VelocityRangeType& emptyContribOuter ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
                 asImp().velocityPressureFlux(   it,
@@ -320,27 +322,20 @@ class DiscreteStokesModelInterface
                                     const PressureRangeType& pInner,
                                     const PressureRangeType& pOuter,
                                     VelocityRangeType& uContribInner,
-                                    VelocityRangeType& uContribOuter,
                                     VelocityRangeType& pContribInner,
-                                    VelocityRangeType& pContribOuter,
-                                    VelocityRangeType& emptyContribInner,
-                                    VelocityRangeType& emptyContribOuter ) const
+                                    VelocityRangeType& emptyContribInner ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
-                asImp().velocityPressureBoundaryFlux(
-                                    it,
-                                    time,
-                                    x,
-                                    uInner,
-                                    uOuter,
-                                    pInner,
-                                    pOuter,
-                                    uContribInner,
-                                    uContribOuter,
-                                    pContribInner,
-                                    pContribOuter,
-                                    emptyContribInner,
-                                    emptyContribOuter ) );
+                asImp().velocityPressureBoundaryFlux(   it,
+                                                        time,
+                                                        x,
+                                                        uInner,
+                                                        uOuter,
+                                                        pInner,
+                                                        pOuter,
+                                                        uContribInner,
+                                                        pContribInner,
+                                                        emptyContribInner ) );
         }
 
         /**
@@ -381,9 +376,7 @@ class DiscreteStokesModelInterface
                                     const PressureRangeType& pInner,
                                     const PressureRangeType& pOuter,
                                     PressureRangeType& pContribInner,
-                                    PressureRangeType& pContribOuter,
-                                    PressureRangeType& emptyContribInner,
-                                    PressureRangeType& emptyContribOuter ) const
+                                    PressureRangeType& emptyContribInner ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
                 asImp().pressureBoundaryFlux(   it,
@@ -392,9 +385,7 @@ class DiscreteStokesModelInterface
                                                 pInner,
                                                 pOuter,
                                                 pContribInner,
-                                                pContribOuter,
-                                                emptyContribInner,
-                                                emptyContribOuter) );
+                                                emptyContribInner) );
         }
 
         /**
@@ -445,11 +436,8 @@ class DiscreteStokesModelInterface
                                 const SigmaRangeType& sigmaInner,
                                 const SigmaRangeType& sigmaOuter,
                                 SigmaRangeType& sigmaContribInner,
-                                SigmaRangeType& sigmaContribOuter,
                                 SigmaRangeType& uContribInner,
-                                SigmaRangeType& uContribOuter,
-                                SigmaRangeType& emptyContribInner,
-                                SigmaRangeType& emptyContribOuter) const
+                                SigmaRangeType& emptyContribInner ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
                 asImp().sigmaBoundaryFlux(  it,
@@ -460,11 +448,8 @@ class DiscreteStokesModelInterface
                                             sigmaInner,
                                             sigmaOuter,
                                             sigmaContribInner,
-                                            sigmaContribOuter,
                                             uContribInner,
-                                            uContribOuter,
-                                            emptyContribInner,
-                                            emptyContribOuter) );
+                                            emptyContribInner ) );
         }
 
         /**
@@ -479,8 +464,11 @@ class DiscreteStokesModelInterface
                     VelocityRangeType& forceContribOuter ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
-                asImp().force(
-                ) );
+                asImp().force(  it,
+                                time,
+                                x,
+                                forceContribInner,
+                                forceContribOuter ) );
         }
 
     protected:
@@ -506,7 +494,7 @@ class DiscreteStokesModelDefault;
  *  \brief  traits class for DiscreteStokesModelDefault
  *  \todo   doc
  **/
-template < class GridPartImp, int gridDim, int polOrder >
+template < class GridPartImp, class AnalyticalForceImp, class AnalyticalDirichletDataImp, int gridDim, int polOrder >
 class DiscreteStokesModelDefaultTraits
 {
     public:
@@ -568,7 +556,15 @@ class DiscreteStokesModelDefaultTraits
         typedef Dune::AdaptiveDiscreteFunction< DiscretePressureFunctionSpaceType >
             DiscretePressureFunctionType;
 
-        /** \name Dummy types needed to comply to LocalPass
+        //!
+        typedef Dune::Function< VelocityFunctionSpaceType, AnalyticalForceImp >
+            AnalyticalForceType;
+
+        typedef Dune::Function< VelocityFunctionSpaceType, AnalyticalDirichletDataImp >
+            AnalyticalDirichletDataType;
+
+
+        /** \name Dummy types needed to comply with LocalPass
          *  \{
          */
         //! dummy return value of the pass
@@ -610,15 +606,24 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         typedef typename BaseType::PressureRangeType
             PressureRangeType;
 
+        typedef typename BaseType::AnalyticalForceType
+            AnalyticalForceType;
+
+        typedef typename BaseType::AnalyticalDirichletDataType
+            AnalyticalDirichletDataType;
+
         /**
          *  \brief  constructor
          *
          *  set \f$C_{11}\in R\f$, \f$C_{12}\in R\f$, \f$D_{11}\in R^{d}\f$,
          *  \f$D_{12}\in R^{d}\f$
          **/
-        DiscreteStokesModelDefault()
+        DiscreteStokesModelDefault( const AnalyticalForceType& force,
+                                    const AnalyticalDirichletDataType& dirichletData )
             : C_12_( 1.0 ),
-            D_12_( 1.0 )
+            D_12_( 1.0 ),
+            force_( force ),
+            dirichletData_( dirichletData )
         {
             C_11_ = 1.0;
             D_11_ = 1.0;
@@ -723,43 +728,33 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *  \brief
          *  \todo   doc like velocitySigmaFlux
          **/
+        template < class FaceDomainType >
         void velocitySigmaBoundaryFlux( const IntersectionIteratorType& it,
                                         const double time,
+                                        const FaceDomainType& x,
                                         const VelocityRangeType& uInner,
                                         const VelocityRangeType& uOuter,
                                         VelocityRangeType& uContribInner,
-                                        VelocityRangeType& uContribOuter,
-                                        VelocityRangeType& emptyContribInner,
-                                        VelocityRangeType& emptyContribOuter ) const
+                                        VelocityRangeType& emptyContribInner ) const
         {
+            // some preperations
+            VelocityRangeType outerNormal = it.unitOuterNormal( x );
+
+            // contribution to u vector ( from inside entity )
+            uContribInner = 0.0;
+
+            // contribution to rhs ( from inside entity )
+            emptyContribInner = 0.0;
         }
 
         /**
          *  \brief
          *  \todo   doc me
          **/
-        void velocityPressureFlux(      const IntersectionIteratorType& it,
-                                        const double time,
-                                        const VelocityRangeType& uInner,
-                                        const VelocityRangeType& uOuter,
-                                        const PressureRangeType& pInner,
-                                        const PressureRangeType& pOuter,
-                                        VelocityRangeType& uContribInner,
-                                        VelocityRangeType& uContribOuter,
-                                        VelocityRangeType& pContribInner,
-                                        VelocityRangeType& pContribOuter,
-                                        VelocityRangeType& emptyContribInner,
-                                        VelocityRangeType& emptyContribOuter ) const
-        {
-        }
-
-        /**
-         *  \brief
-         *  \todo   doc like velocityPressureFlux
-         **/
-        void velocityPressureBoundaryFlux(
-                                    const IntersectionIteratorType& it,
+        template < class FaceDomainType >
+        void velocityPressureFlux(  const IntersectionIteratorType& it,
                                     const double time,
+                                    const FaceDomainType& x,
                                     const VelocityRangeType& uInner,
                                     const VelocityRangeType& uOuter,
                                     const PressureRangeType& pInner,
@@ -775,10 +770,31 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
 
         /**
          *  \brief
+         *  \todo   doc like velocityPressureFlux
+         **/
+        template < class FaceDomainType >
+        void velocityPressureBoundaryFlux(
+                                    const IntersectionIteratorType& it,
+                                    const double time,
+                                    const FaceDomainType& x,
+                                    const VelocityRangeType& uInner,
+                                    const VelocityRangeType& uOuter,
+                                    const PressureRangeType& pInner,
+                                    const PressureRangeType& pOuter,
+                                    VelocityRangeType& uContribInner,
+                                    VelocityRangeType& pContribInner,
+                                    VelocityRangeType& emptyContribInner ) const
+        {
+        }
+
+        /**
+         *  \brief
          *  \todo latex doc
          **/
+        template < class FaceDomainType >
         void pressureFlux(  const IntersectionIteratorType& it,
                             const double time,
+                            const FaceDomainType& x,
                             const PressureRangeType& pInner,
                             const PressureRangeType& pOuter,
                             PressureRangeType& pContribInner,
@@ -792,14 +808,14 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *  \brief
          *  \todo   doc like pressureFlux
          **/
+        template < class FaceDomainType >
         void pressureBoundaryFlux(  const IntersectionIteratorType& it,
                                     const double time,
+                                    const FaceDomainType& x,
                                     const PressureRangeType& pInner,
                                     const PressureRangeType& pOuter,
                                     PressureRangeType& pContribInner,
-                                    PressureRangeType& pContribOuter,
-                                    PressureRangeType& emptyContribInner,
-                                    PressureRangeType& emptyContribOuter ) const
+                                    PressureRangeType& emptyContribInner ) const
         {
         }
 
@@ -807,8 +823,10 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *  \brief
          *  \todo   latex doc
          **/
+        template < class FaceDomainType >
         void sigmaFlux( const IntersectionIteratorType& it,
                         const double time,
+                        const FaceDomainType& x,
                         const VelocityRangeType& uInner,
                         const VelocityRangeType& uOuter,
                         const SigmaRangeType& sigmaInner,
@@ -826,18 +844,17 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *  \brief
          *  \todo   doc like sigmaFlux
          **/
+        template < class FaceDomainType >
         void sigmaBoundaryFlux( const IntersectionIteratorType& it,
                                 const double time,
+                                const FaceDomainType& x,
                                 const VelocityRangeType& uInner,
                                 const VelocityRangeType& uOuter,
                                 const SigmaRangeType& sigmaInner,
                                 const SigmaRangeType& sigmaOuter,
                                 SigmaRangeType& sigmaContribInner,
-                                SigmaRangeType& sigmaContribOuter,
                                 SigmaRangeType& uContribInner,
-                                SigmaRangeType& uContribOuter,
-                                SigmaRangeType& emptyContribInner,
-                                SigmaRangeType& emptyContribOuter) const
+                                SigmaRangeType& emptyContribInner ) const
         {
         }
 
@@ -858,6 +875,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
 
         double C_11_, D_11_;
         VelocityRangeType C_12_, D_12_;
+        AnalyticalFunctionType& force_, dirichletData_;
 
         /**
          *  \brief  jump for pressure-type functions
@@ -918,7 +936,6 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 }
                 ++uDiffIt;
             }
-std::cout << "\nuTypeMatrixJump end" << std::endl;
             return ret;
         }
 
