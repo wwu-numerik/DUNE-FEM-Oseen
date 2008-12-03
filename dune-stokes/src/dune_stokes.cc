@@ -13,6 +13,10 @@
 #include <dune/common/mpihelper.hh> // An initializer of MPI
 #include <dune/common/exceptions.hh> // We use exceptions
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
+//#include <dune/grid/io/file/dgfparser/dgfparser.hh> // for the grid
+//#include <dune/grid/utility/gridtype.hh>
+
+#include <dune/fem/solver/oemsolver/oemsolver.hh>
 #include <dune/fem/space/dgspace.hh>
 #include <dune/fem/space/combinedspace.hh>
 #include <dune/fem/gridpart/gridpart.hh>
@@ -20,6 +24,8 @@
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
 
 #include <dune/stokes/discretestokesmodelinterface.hh>
+#include <dune/stokes/saddlepoint_inverse_operator.hh>
+#include <dune/stokes/stokespass.hh>
 
 #include "parametercontainer.hh"
 #include "logging.hh"
@@ -90,81 +96,55 @@ int main( int argc, char** argv )
     infoStream << "...done." << std::endl;
 
     /* ********************************************************************** *
-     * initialize function spaces and functions                               *
+     * initialize model                                                       *
      * ********************************************************************** */
-    infoStream << "\ninitialising functions..." << std::endl;
-    // velocity
-    typedef Dune::FunctionSpace< double, double, gridDim, gridDim >
-        VelocityFunctionSpaceType;
-    typedef Dune::DiscontinuousGalerkinSpace<   VelocityFunctionSpaceType,
-                                                GridPartType,
-                                                polOrder >
-        DiscreteVelocityFunctionSpaceType;
-    DiscreteVelocityFunctionSpaceType velocitySpace( gridPart );
-    typedef Dune::AdaptiveDiscreteFunction< DiscreteVelocityFunctionSpaceType >
-        DiscreteVelocityFunctionType;
-    DiscreteVelocityFunctionType exactVelocity( "exact_velocity",
-                                                velocitySpace );
-    exactVelocity.clear();
-    //sigma
-    typedef Dune::MatrixFunctionSpace< double, double, gridDim, gridDim, gridDim >
-        SigmaFunctionSpaceType;
-    typedef Dune::DiscontinuousGalerkinSpace<   SigmaFunctionSpaceType,
-                                                GridPartType,
-                                                polOrder >
-        DiscreteSigmaFunctionSpaceType;
-    DiscreteSigmaFunctionSpaceType sigmaSpace( gridPart );
-    typedef Dune::AdaptiveDiscreteFunction< DiscreteSigmaFunctionSpaceType >
-        DiscreteSigmaFunctionType;
-    DiscreteSigmaFunctionType exactSigma(   "exact_sigma",
-                                            sigmaSpace );
-    exactSigma.clear();
-    // pressure
-    typedef Dune::FunctionSpace< double, double, gridDim, 1 >
-        PressureFunctionSpaceType;
-    typedef Dune::DiscontinuousGalerkinSpace<   PressureFunctionSpaceType,
-                                                GridPartType,
-                                                polOrder >
-        DiscretePressureFunctionSpaceType;
-    DiscretePressureFunctionSpaceType pressureSpace( gridPart );
-    typedef Dune::AdaptiveDiscreteFunction< DiscretePressureFunctionSpaceType >
-        DiscretePressureFunctionType;
-    DiscretePressureFunctionType exactPressure( "exact_pressure",
-                                                pressureSpace );
-    exactPressure.clear();
-    // right hand side
-    DiscreteVelocityFunctionType righthandSide( "rhs",
-                                                velocitySpace );
-    righthandSide.clear();
-    // dirichlet data
-    DiscreteVelocityFunctionType dirichletData( "g_D",
-                                                velocitySpace );
-    dirichletData.clear();
+    infoStream << "\ninitialising model..." << std::endl;
 
+    typedef Dune::DiscreteStokesModelDefault<
+                Dune::DiscreteStokesModelDefaultTraits<
+                    GridPartType,
+                    gridDim,
+                    polOrder > >
+        StokesModelType;
 
+    StokesModelType stokesModel;
 
+    StokesModelType::DiscreteVelocityFunctionSpaceType velocitySpace( gridPart );
+    StokesModelType::DiscreteSigmaFunctionSpaceType sigmaSpace( gridPart );
+    StokesModelType::DiscretePressureFunctionSpaceType pressureSpace( gridPart );
 
     infoStream << "...done." << std::endl;
+
 
     /* ********************************************************************** *
      * initialize model (and profiler example)                                *
      * ********************************************************************** */
-    infoStream << "\ninitialising model..." << std::endl;
+    infoStream << "\ninitialising passes..." << std::endl;
     profiler().Reset( 1 ); //prepare for one single run of code
     profiler().StartTiming( "Problem/Postprocessing" );
-    typedef Problem< ProblemTraits< gridDim, VelocityFunctionSpaceType, PressureFunctionSpaceType > >
-        Problemtype;
-    Problemtype problem( parameters.viscosity(), velocitySpace, pressureSpace );
-    //problem.testMe();
-    typedef PostProcessor< Problemtype, GridPartType, DiscreteVelocityFunctionType, DiscretePressureFunctionType >
-        PostProcessorType;
-    PostProcessorType postProcessor( problem, gridPart, velocitySpace, pressureSpace );
+        StartPassType;
+    StartPassType startPass;
     postProcessor.save( *gridPtr, exactPressure, exactVelocity ); //dummy params, should be computed solutions );
-
-    infoStream << "...done." << std::endl;
 
     profiler().StopTiming( "Problem/Postprocessing" );
     profiler().Output( mpicomm, 0, exactPressure.size() );
+
+    typedef Dune::StokesPass< StokesModelType, StartPassType, 0 >
+        StokesPassType;
+
+    StokesPassType stokesPass(  startPass,
+                                velocitySpace,
+                                sigmaSpace,
+                                pressureSpace,
+                                stokesModel,
+                                gridPart );
+
+    //StokesPassType::
+    StokesPassType::DomainType uDummy( "uDummy", velocitySpace );
+    stokesPass( uDummy, uDummy );
+
+
+    infoStream << "...done." << std::endl;
 
     return 0;
   }

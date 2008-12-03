@@ -132,11 +132,11 @@
 		<Unit filename="../src/pressure.hh" />
 		<Unit filename="../src/problem.hh" />
 		<Unit filename="../src/profiler.hh" />
-		<Unit filename="../src/saddlepoint_inverse_operator.hh" />
 		<Unit filename="../src/stuff.hh" />
 		<Unit filename="../src/traits.hh" />
 		<Unit filename="../src/velocity.hh" />
 		<Unit filename="../stokes/discretestokesmodelinterface.hh" />
+		<Unit filename="../stokes/saddlepoint_inverse_operator.hh" />
 		<Unit filename="../stokes/spinverseoperator.hh" />
 		<Unit filename="../stokes/stokespass.hh" />
 		<Extensions>
