@@ -7,7 +7,6 @@
 
 #define SEGFAULT int*i=0;*i=9;
 
-
 namespace Stuff
 {
 
@@ -49,10 +48,9 @@ void safe_delete ( T t )
         delete t;
         t=0;
     }
-    //else log warning
+    // else log warning
 }
 
-} //end namepsace stuff
+} // end namepsace stuff
 
-
-#endif
+#endif // end of stuff.hh
