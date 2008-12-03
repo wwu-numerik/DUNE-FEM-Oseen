@@ -18,6 +18,7 @@
 				</Compiler>
 				<Linker>
 					<Add library="blas" />
+					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
 				</Linker>
 			</Target>
 			<Target title="felix">
@@ -32,6 +33,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add directory="/usr/local/grape" />
 				</Linker>
 			</Target>
 			<Target title="rene">
@@ -47,6 +49,7 @@
 				<Linker>
 					<Add library="blas" />
 					<Add library="gfortran" />
+					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
 				</Linker>
 			</Target>
 			<Target title="uni_10.2">
@@ -90,6 +93,7 @@
 			<Add directory="/usr/local/alugrid-1.1/include" />
 			<Add directory="/usr/local/alugrid-1.1/include/parallel" />
 			<Add directory="/usr/local/alugrid-1.1/include/serial" />
+			<Add directory="/share/dune/Modules/modules_x86_64/grape/" />
 		</Compiler>
 		<Linker>
 			<Add library="ALBERTA33_0" />
@@ -103,6 +107,8 @@
 			<Add library="../../dune-grid/lib/.libs/libdunegrid.a" />
 			<Add library="../../dune-common/lib/.libs/libdunecommon.a" />
 			<Add library="m" />
+			<Add library="gr" />
+			<Add library="GL" />
 			<Add directory="../../dune-common/lib" />
 			<Add directory="../../dune-grid/lib" />
 			<Add directory="../../dune-fem/lib" />

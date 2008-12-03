@@ -101,7 +101,7 @@ class Problem
      *
      *  \return velocity
      **/
-    VelocityType& velocity() const
+    const VelocityType& velocity() const
     {
         return velocity_;
     }
@@ -111,7 +111,7 @@ class Problem
      *
      *  \return pressure
      **/
-    PressureType& pressure() const
+    const PressureType& pressure() const
     {
         return pressure_;
     }
@@ -121,7 +121,7 @@ class Problem
      *
      *  \return force
      **/
-    ForceType& force() const
+    const ForceType& force() const
     {
         return force_;
     }
@@ -131,7 +131,7 @@ class Problem
      *
      *  \return dirichlet boundary data
      **/
-    DirichletDataType& dirichletData() const
+    const DirichletDataType& dirichletData() const
     {
         return dirichletData_;
     }

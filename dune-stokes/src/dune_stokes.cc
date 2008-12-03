@@ -9,7 +9,7 @@
 #endif
 //#define GRIDTYPE ALUGRID_SIMPLEX
 #include <iostream>
-#include <memory> //not including this gives error of undefined autopointer in dgfparser.hh
+//#include <memory> //not including this gives error of undefined autopointer in dgfparser.hh
 #include <dune/common/mpihelper.hh> // An initializer of MPI
 #include <dune/common/exceptions.hh> // We use exceptions
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
@@ -159,7 +159,10 @@ int main( int argc, char** argv )
     typedef PostProcessor< Problemtype, GridPartType, DiscreteVelocityFunctionType, DiscretePressureFunctionType >
         PostProcessorType;
     PostProcessorType postProcessor( problem, gridPart, velocitySpace, pressureSpace );
+    postProcessor.save( *gridPtr, exactPressure, exactVelocity ); //dummy params, should be computed solutions );
+
     infoStream << "...done." << std::endl;
+
     profiler().StopTiming( "Problem/Postprocessing" );
     profiler().Output( mpicomm, 0, exactPressure.size() );
 
