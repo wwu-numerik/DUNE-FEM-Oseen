@@ -76,8 +76,8 @@ int main( int argc, char** argv )
         Logging::LOG_INFO );
 
     Logging::LogStream& infoStream = Logger().Info();
-    //Logging::LogStream& debugStream = Logger().Dbg();
-    //Logging::LogStream& errorStream = Logger().Err();
+    Logging::LogStream& debugStream = Logger().Dbg();
+    Logging::LogStream& errorStream = Logger().Err();
 
     /* ********************************************************************** *
      * initialize the grid                                                    *
@@ -141,9 +141,6 @@ int main( int argc, char** argv )
                                                 velocitySpace );
     dirichletData.clear();
 
-
-
-
     infoStream << "...done." << std::endl;
 
     /* ********************************************************************** *
@@ -167,11 +164,17 @@ int main( int argc, char** argv )
     profiler().Output( mpicomm, 0, exactPressure.size() );
 
     return 0;
-  }
+  } //end try
   catch (Dune::Exception &e){
-    std::cerr << "Dune reported error: " << e << std::endl;
+    std::cerr << "Dune reported error: " << e.what() << std::endl;
+    return -1;
+  }
+  catch (std::exception &f){
+    std::cerr << "stdlib reported error: " << f.what() << std::endl;
+    return -2;
   }
   catch (...){
     std::cerr << "Unknown exception thrown!" << std::endl;
-  }
+    return -3;
+  } //end main
 }
