@@ -9,6 +9,8 @@
 #include <dune/common/bartonnackmanifcheck.hh>
 #include <dune/common/fvector.hh>
 
+#include "../src/stuff.hh" // should be removed in the end
+
 namespace Dune
 {
 
@@ -693,17 +695,24 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         {
             // some preperations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            VelocityRangeType innerNormal = outerNormal;
+            innerNormal *= -1.0;
+
+        Stuff::printFieldVector( uInner );
+        Stuff::printFieldVector( uOuter );
+        Stuff::printFieldVector( outerNormal );
+        Stuff::printFieldVector( innerNormal );
 
             // contribution to u vector ( from inside entity )
             SigmaRangeType innerJump = uTypeMatrixJump( uContribInner,
                                                         uContribOuter,
                                                         outerNormal );
+        Stuff::printFieldMatrix( innerJump );
             innerJump.mv( C_12_, uContribInner );
+        Stuff::printFieldVector( uContribInner );
             uContribInner += meanValue( uContribInner, uContribOuter );
 
             // contribution to u vector ( from outside entity )
-            VelocityRangeType innerNormal = outerNormal;
-            innerNormal *= -1.0;
             SigmaRangeType outerJump = uTypeMatrixJump( uContribOuter,
                                                         uContribInner,
                                                         innerNormal );
@@ -869,9 +878,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                         const PressureRangeType& pOuter,
                                         const NormalType& outerNormal ) const
         {
-            VelocityRangeType ret( 0.0 );
-            //ret += outerNormal;
-            //ret *= ( pInner - pOuter );
+            VelocityRangeType ret = outerNormal;
+            ret *= ( pInner - pOuter );
             return ret;
         }
 

@@ -148,14 +148,6 @@ class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID 
                 uOuter[i] = 2.0 * ( i + 1.0 );
             }
 
-            for ( unsigned int i = 0; i < uInner.dim(); ++i ) {
-                std::cout << "\nuInner(" << (i+1) << ")= " << uInner[i] << std::endl;
-            }
-
-            for ( unsigned int i = 0; i < uOuter.dim(); ++i ) {
-                std::cout << "\nuOuter(" << (i+1) << ")= " << uOuter[i] << std::endl;
-            }
-
             IntersectionIteratorType it = entity.ileafbegin();
             FaceQuadratureType faceQuad( gridPart_, it, 1, FaceQuadratureType::INSIDE );
             discreteModel_.velocitySigmaFlux(   it,
@@ -168,40 +160,8 @@ class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID 
                                                 uReturn,
                                                 uReturn );
 
-            for ( unsigned int i = 0; i < uReturn.dim(); ++i ) {
-                std::cout << "\nmean(" << (i+1) << ")= " << uReturn[i] << std::endl;
-            }
-            std::cout << "================================" << std::endl;
+            std::cout << "\n================================" << std::endl;
 
-
-
-
-//            VelocityRangeType uInner( 0.0 );
-//            VelocityRangeType uOuter( 0.0 );
-//            VelocityRangeType uReturn( 0.0 );
-//            SigmaRangeType sigmaInner( 0.0 );
-//            SigmaRangeType sigmaOuter( 0.0 );
-//            SigmaRangeType sigmaReturn( 0.0 );
-//            PressureRangeType pInner( 0.0 );
-//            PressureRangeType pOuter( 0.0 );
-//            PressureRangeType pReturn( 0.0 );
-//
-//            WorldCoordinateType u_1( 0.0 );
-//            WorldCoordinateType u_2( 0.0 );
-//
-//            IntersectionIteratorType it = entity.ileafbegin();
-//            FaceQuadratureType faceQuad( gridPart_, it, 1, FaceQuadratureType::INSIDE );
-//
-//            VelocityRangeType outerNormal =
-//                it.unitOuterNormal( faceQuad.localPoint( 0 ) );
-//
-//            std::cout << "\n" << pInner.dim() << std::endl;
-//            for ( unsigned int i = 0; i < pInner.dim(); ++i) {
-//                pInner[i] = ( i + 1.0 );
-//                pOuter[i] = ( 2.0 * i + 1.0 );
-//            }
-//            uReturn = discreteModel_.pTypeJump( pInner, pOuter, outerNormal );
-//
         }
 
     private:
