@@ -698,24 +698,19 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             VelocityRangeType innerNormal = outerNormal;
             innerNormal *= -1.0;
 
-        Stuff::printFieldVector( uInner );
-        Stuff::printFieldVector( uOuter );
-        Stuff::printFieldVector( outerNormal );
-        Stuff::printFieldVector( innerNormal );
-
             // contribution to u vector ( from inside entity )
-            SigmaRangeType innerJump = uTypeMatrixJump( uContribInner,
-                                                        uContribOuter,
+            SigmaRangeType innerJump = uTypeMatrixJump( uInner,
+                                                        uOuter,
                                                         outerNormal );
-        Stuff::printFieldMatrix( innerJump );
             innerJump.mv( C_12_, uContribInner );
-        Stuff::printFieldVector( uContribInner );
-            uContribInner += meanValue( uContribInner, uContribOuter );
+            uContribInner += meanValue( uInner, uOuter );
 
             // contribution to u vector ( from outside entity )
-            SigmaRangeType outerJump = uTypeMatrixJump( uContribOuter,
-                                                        uContribInner,
+            SigmaRangeType outerJump = uTypeMatrixJump( uOuter,
+                                                        uInner,
                                                         innerNormal );
+            outerJump.mv( C_12_, uContribOuter );
+            uContribOuter += meanValue( uOuter, uInner );
 
             // contribution to rhs ( from inside entity )
             emptyContribInner = 0.0;
@@ -923,6 +918,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 }
                 ++uDiffIt;
             }
+std::cout << "\nuTypeMatrixJump end" << std::endl;
             return ret;
         }
 
