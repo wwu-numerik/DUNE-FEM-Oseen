@@ -67,6 +67,7 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-w" />
 			<Add option="-Wall" />
 			<Add option="-g" />
 			<Add option="-fexceptions" />
