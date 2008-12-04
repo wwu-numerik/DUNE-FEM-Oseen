@@ -54,32 +54,6 @@ void safe_delete ( T t )
     //else log warning
 }
 
-} // end namepsace stuff
-
-#endif // end of stuff.hh
-} // end namepsace stuff
-
-#endif // end of stuff.hh
-/**
- *  \brief prints a Dune::FieldVector
- *
- *  or anything compatible in terms of Iterators
- *  \tparam should be Dune::FieldVector or compatible
- *  \param  arg
- *          Vector to be printed
- **/
-template < class T >
-void printFieldVector( T& arg )
-{
-    std::cout << "\nprinting Dune::FieldVector" << std::endl;
-    typedef typename T::ConstIterator
-        IteratorType;
-    IteratorType itEnd = arg.end();
-    for ( IteratorType it = arg.begin(); it != itEnd; ++it ) {
-            std::cout << std::setw( 7 ) << std::setprecision( 3 ) << *it;
-    }
-}
-
 /**
  *  \brief prints a Dune::FieldVector
  *
@@ -91,42 +65,14 @@ void printFieldVector( T& arg )
  *          name to be printed along
  **/
 template < class T >
-void printFieldVector( T& arg, std::string name )
+void printFieldVector( T& arg, std::string name, std::ostream& out )
 {
-    std::cout << "\nprinting " << name << " (Dune::FieldVector)" << std::endl;
+    out << "\nprinting " << name << " (Dune::FieldVector)" << std::endl;
     typedef typename T::ConstIterator
         IteratorType;
     IteratorType itEnd = arg.end();
     for ( IteratorType it = arg.begin(); it != itEnd; ++it ) {
-            std::cout << std::setw( 7 ) << std::setprecision( 3 ) << *it;
-    }
-}
-
-/**
- *  \brief prints a Dune::FieldMatrix
- *
- *  or anything compatible in terms of Iterators
- *  \tparam should be Dune::FieldMatrix or compatible
- *  \param  arg
- *          Matrix to be printed
- **/
-template < class T >
-void printFieldMatrix( T& arg )
-{
-    std::cout << "\nprinting Dune::FieldMatrix";
-    typedef typename T::ConstRowIterator
-        RowIteratorType;
-    typedef typename T::row_type::ConstIterator
-        VectorInRowIteratorType;
-    unsigned int row = 1;
-    RowIteratorType rItEnd = arg.end();
-    for ( RowIteratorType rIt = arg.begin(); rIt != rItEnd; ++rIt ) {
-        std::cout << "\nrow " << row << ":";
-        VectorInRowIteratorType vItEnd = rIt->end();
-        for (   VectorInRowIteratorType vIt = rIt->begin(); vIt != vItEnd; ++vIt ) {
-            std::cout << std::setw( 7 ) << std::setprecision( 3 ) << *vIt;
-        }
-        row += 1;
+            out << std::setw( 7 ) << std::setprecision( 3 ) << *it;
     }
 }
 
@@ -141,9 +87,9 @@ void printFieldMatrix( T& arg )
  *          name to be printed along
  **/
 template < class T >
-void printFieldMatrix( T& arg, std::string name )
+void printFieldMatrix( T& arg, std::string name, std::ostream& out )
 {
-    std::cout << "\nprinting " << name << " (Dune::FieldMatrix)";
+    out << "\nprinting " << name << " (Dune::FieldMatrix)";
     typedef typename T::ConstRowIterator
         RowIteratorType;
     typedef typename T::row_type::ConstIterator
@@ -151,10 +97,10 @@ void printFieldMatrix( T& arg, std::string name )
     unsigned int row = 1;
     RowIteratorType rItEnd = arg.end();
     for ( RowIteratorType rIt = arg.begin(); rIt != rItEnd; ++rIt ) {
-        std::cout << "\nrow " << row << ":";
+        out << "\nrow " << row << ":";
         VectorInRowIteratorType vItEnd = rIt->end();
         for (   VectorInRowIteratorType vIt = rIt->begin(); vIt != vItEnd; ++vIt ) {
-            std::cout << std::setw( 7 ) << std::setprecision( 3 ) << *vIt;
+            out << std::setw( 7 ) << std::setprecision( 3 ) << *vIt;
         }
         row += 1;
     }
