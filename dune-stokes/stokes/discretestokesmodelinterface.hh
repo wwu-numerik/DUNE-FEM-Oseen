@@ -259,7 +259,6 @@ class DiscreteStokesModelInterface
                                         const double time,
                                         const FaceDomainType& x,
                                         const VelocityRangeType& uInner,
-                                        const VelocityRangeType& uOuter,
                                         VelocityRangeType& uContribInner,
                                         VelocityRangeType& rhsContribInner ) const
         {
@@ -268,7 +267,6 @@ class DiscreteStokesModelInterface
                                                     time,
                                                     x,
                                                     uInner,
-                                                    uOuter,
                                                     uContribInner,
                                                     rhsContribInner ) );
         }
@@ -318,9 +316,7 @@ class DiscreteStokesModelInterface
                                     const double time,
                                     const FaceDomainType& x,
                                     const VelocityRangeType& uInner,
-                                    const VelocityRangeType& uOuter,
                                     const PressureRangeType& pInner,
-                                    const PressureRangeType& pOuter,
                                     VelocityRangeType& uContribInner,
                                     VelocityRangeType& pContribInner,
                                     VelocityRangeType& rhsContribInner ) const
@@ -330,9 +326,7 @@ class DiscreteStokesModelInterface
                                                         time,
                                                         x,
                                                         uInner,
-                                                        uOuter,
                                                         pInner,
-                                                        pOuter,
                                                         uContribInner,
                                                         pContribInner,
                                                         rhsContribInner ) );
@@ -374,7 +368,6 @@ class DiscreteStokesModelInterface
                                     const double time,
                                     const FaceDomainType& x,
                                     const PressureRangeType& pInner,
-                                    const PressureRangeType& pOuter,
                                     PressureRangeType& pContribInner,
                                     PressureRangeType& rhsContribInner ) const
         {
@@ -383,7 +376,6 @@ class DiscreteStokesModelInterface
                                                 time,
                                                 x,
                                                 pInner,
-                                                pOuter,
                                                 pContribInner,
                                                 rhsContribInner) );
         }
@@ -432,9 +424,7 @@ class DiscreteStokesModelInterface
                                 const double time,
                                 const FaceDomainType& x,
                                 const VelocityRangeType& uInner,
-                                const VelocityRangeType& uOuter,
                                 const SigmaRangeType& sigmaInner,
-                                const SigmaRangeType& sigmaOuter,
                                 SigmaRangeType& sigmaContribInner,
                                 SigmaRangeType& uContribInner,
                                 SigmaRangeType& rhsContribInner ) const
@@ -444,9 +434,7 @@ class DiscreteStokesModelInterface
                                             time,
                                             x,
                                             uInner,
-                                            uOuter,
                                             sigmaInner,
-                                            sigmaOuter,
                                             sigmaContribInner,
                                             uContribInner,
                                             rhsContribInner ) );
@@ -731,7 +719,6 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                         const double time,
                                         const FaceDomainType& x,
                                         const VelocityRangeType& uInner,
-                                        const VelocityRangeType& uOuter,
                                         VelocityRangeType& uContribInner,
                                         VelocityRangeType& rhsContribInner ) const
         {
@@ -815,9 +802,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                     const double time,
                                     const FaceDomainType& x,
                                     const VelocityRangeType& uInner,
-                                    const VelocityRangeType& uOuter,
                                     const PressureRangeType& pInner,
-                                    const PressureRangeType& pOuter,
                                     VelocityRangeType& uContribInner,
                                     VelocityRangeType& pContribInner,
                                     VelocityRangeType& rhsContribInner ) const
@@ -851,6 +836,10 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                             PressureRangeType& rhsContribInner,
                             PressureRangeType& rhsContribOuter ) const
         {
+            //some preperations
+            VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            VelocityRangeType innerNormal = outerNormal;
+            innerNormal *= -1.0;
         }
 
         /**
@@ -862,7 +851,6 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                     const double time,
                                     const FaceDomainType& x,
                                     const PressureRangeType& pInner,
-                                    const PressureRangeType& pOuter,
                                     PressureRangeType& pContribInner,
                                     PressureRangeType& rhsContribInner ) const
         {
@@ -898,9 +886,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                 const double time,
                                 const FaceDomainType& x,
                                 const VelocityRangeType& uInner,
-                                const VelocityRangeType& uOuter,
                                 const SigmaRangeType& sigmaInner,
-                                const SigmaRangeType& sigmaOuter,
                                 SigmaRangeType& sigmaContribInner,
                                 SigmaRangeType& uContribInner,
                                 SigmaRangeType& rhsContribInner ) const
