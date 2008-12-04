@@ -948,6 +948,22 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                 SigmaRangeType& uContribInner,
                                 SigmaRangeType& rhsContribInner ) const
         {
+            //some preperations
+            VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            VelocityRangeType global = it->intersectionSelfLocal().global( x );
+
+            // contribution to sigma vector ( from inside entity )
+            sigmaContribInner = sigmaInner;
+
+            // contribution to u vector ( from inside entity )
+            uContribInner = dyadicProduct( uInner, outerNormal );
+            uContribInner *= ( -1.0 * C_11_ );
+
+            // contribution to rhs ( from inside entity )
+            VelocityRangeType gD( 0.0 );
+            dirichletData_.evaluate( global, gD );
+            rhsContribInner = dyadicProduct( gD, outerNormal );
+            rhsContribInner *= C_11_;
         }
 
         /**
