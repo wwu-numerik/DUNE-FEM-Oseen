@@ -577,8 +577,6 @@ class DiscreteStokesModelDefaultTraits
         /**
          *  \}
          **/
-
-
 };
 
 
@@ -739,12 +737,12 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         {
             // some preperations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            VelocityRangeType global = it->intersectionSelfLocal().global( x );
 
             // contribution to u vector ( from inside entity )
             uContribInner = 0.0;
 
             // contribution to rhs ( from inside entity )
-            VelocityRangeType global = it->intersectionSelfLocal().global( x );
             dirichletData_.evaluate( global,  rhsContribInner );
         }
 
@@ -767,6 +765,44 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                     VelocityRangeType& rhsContribInner,
                                     VelocityRangeType& rhsContribOuter ) const
         {
+            //some preperations
+            VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            VelocityRangeType innerNormal = outerNormal;
+            innerNormal *= -1.0;
+
+            // contribution to u vector ( from inside entity )
+            uContribInner = D_12_;
+            uContribInner *= uTypeJump( uInner,
+                                        uOuter,
+                                        outerNormal );
+            uContribInner += meanValue( uInner,
+                                        uOuter );
+
+            // contribution to u vector ( from outside entity )
+            uContribOuter = D_12_;
+            uContribOuter = uTypeJump(  uOuter,
+                                        uInner,
+                                        innerNormal );
+            uContribInner += meanValue( uOuter,
+                                        uInner );
+
+            // contribution to p vector ( from inside entity )
+            pContribInner = pTypeJump(  pInner,
+                                        pOuter,
+                                        outerNormal );
+            pContribInner *= D_11_;
+
+            // contribution to p vector ( from outside entity )
+            pContribOuter = pTypeJump(  pOuter,
+                                        pInner,
+                                        innerNormal );
+            pContribInner *= D_11_;
+
+            // contribution to rhs ( from inside entity )
+            rhsContribInner = 0.0;
+
+            // contribution to rhs ( from outside entity )
+            rhsContribInner = 0.0;
         }
 
         /**
@@ -875,7 +911,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
     private:
 
         double C_11_, D_11_;
-        VelocityRangeType C_12_, D_12_;
+        const VelocityRangeType C_12_, D_12_;
         const AnalyticalForceType& force_;
         const AnalyticalDirichletDataType& dirichletData_;
 
