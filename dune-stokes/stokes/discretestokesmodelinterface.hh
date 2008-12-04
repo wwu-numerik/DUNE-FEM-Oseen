@@ -235,8 +235,8 @@ class DiscreteStokesModelInterface
                                 const VelocityRangeType& uOuter,
                                 VelocityRangeType& uContribInner,
                                 VelocityRangeType& uContribOuter,
-                                VelocityRangeType& emptyContribInner,
-                                VelocityRangeType& emptyContribOuter ) const
+                                VelocityRangeType& rhsContribInner,
+                                VelocityRangeType& rhsContribOuter ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
                 asImp().velocitySigmaFlux(  it,
@@ -246,8 +246,8 @@ class DiscreteStokesModelInterface
                                             uOuter,
                                             uContribInner,
                                             uContribOuter,
-                                            emptyContribInner,
-                                            emptyContribOuter ) );
+                                            rhsContribInner,
+                                            rhsContribOuter ) );
         }
 
         /**
@@ -261,7 +261,7 @@ class DiscreteStokesModelInterface
                                         const VelocityRangeType& uInner,
                                         const VelocityRangeType& uOuter,
                                         VelocityRangeType& uContribInner,
-                                        VelocityRangeType& emptyContribInner ) const
+                                        VelocityRangeType& rhsContribInner ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
                 asImp().velocitySigmaBoundaryFlux(  it,
@@ -270,7 +270,7 @@ class DiscreteStokesModelInterface
                                                     uInner,
                                                     uOuter,
                                                     uContribInner,
-                                                    emptyContribInner ) );
+                                                    rhsContribInner ) );
         }
 
         /**
@@ -289,8 +289,8 @@ class DiscreteStokesModelInterface
                                     VelocityRangeType& uContribOuter,
                                     VelocityRangeType& pContribInner,
                                     VelocityRangeType& pContribOuter,
-                                    VelocityRangeType& emptyContribInner,
-                                    VelocityRangeType& emptyContribOuter ) const
+                                    VelocityRangeType& rhsContribInner,
+                                    VelocityRangeType& rhsContribOuter ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
                 asImp().velocityPressureFlux(   it,
@@ -304,8 +304,8 @@ class DiscreteStokesModelInterface
                                                 uContribOuter,
                                                 pContribInner,
                                                 pContribOuter,
-                                                emptyContribInner,
-                                                emptyContribOuter) );
+                                                rhsContribInner,
+                                                rhsContribOuter) );
         }
 
         /**
@@ -323,7 +323,7 @@ class DiscreteStokesModelInterface
                                     const PressureRangeType& pOuter,
                                     VelocityRangeType& uContribInner,
                                     VelocityRangeType& pContribInner,
-                                    VelocityRangeType& emptyContribInner ) const
+                                    VelocityRangeType& rhsContribInner ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
                 asImp().velocityPressureBoundaryFlux(   it,
@@ -335,7 +335,7 @@ class DiscreteStokesModelInterface
                                                         pOuter,
                                                         uContribInner,
                                                         pContribInner,
-                                                        emptyContribInner ) );
+                                                        rhsContribInner ) );
         }
 
         /**
@@ -350,8 +350,8 @@ class DiscreteStokesModelInterface
                             const PressureRangeType& pOuter,
                             PressureRangeType& pContribInner,
                             PressureRangeType& pContribOuter,
-                            PressureRangeType& emptyContribInner,
-                            PressureRangeType& emptyContribOuter ) const
+                            PressureRangeType& rhsContribInner,
+                            PressureRangeType& rhsContribOuter ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
                 asImp().pressureFlux(   it,
@@ -361,8 +361,8 @@ class DiscreteStokesModelInterface
                                         pOuter,
                                         pContribInner,
                                         pContribOuter,
-                                        emptyContribInner,
-                                        emptyContribOuter ) );
+                                        rhsContribInner,
+                                        rhsContribOuter ) );
         }
 
         /**
@@ -376,7 +376,7 @@ class DiscreteStokesModelInterface
                                     const PressureRangeType& pInner,
                                     const PressureRangeType& pOuter,
                                     PressureRangeType& pContribInner,
-                                    PressureRangeType& emptyContribInner ) const
+                                    PressureRangeType& rhsContribInner ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
                 asImp().pressureBoundaryFlux(   it,
@@ -385,7 +385,7 @@ class DiscreteStokesModelInterface
                                                 pInner,
                                                 pOuter,
                                                 pContribInner,
-                                                emptyContribInner) );
+                                                rhsContribInner) );
         }
 
         /**
@@ -404,8 +404,8 @@ class DiscreteStokesModelInterface
                         SigmaRangeType& sigmaContribOuter,
                         SigmaRangeType& uContribInner,
                         SigmaRangeType& uContribOuter,
-                        SigmaRangeType& emptyContribInner,
-                        SigmaRangeType& emptyContribOuter ) const
+                        SigmaRangeType& rhsContribInner,
+                        SigmaRangeType& rhsContribOuter ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
                 asImp().sigmaFlux(  it,
@@ -419,8 +419,8 @@ class DiscreteStokesModelInterface
                                     sigmaContribOuter,
                                     uContribInner,
                                     uContribOuter,
-                                    emptyContribInner,
-                                    emptyContribOuter ) );
+                                    rhsContribInner,
+                                    rhsContribOuter ) );
         }
 
         /**
@@ -437,7 +437,7 @@ class DiscreteStokesModelInterface
                                 const SigmaRangeType& sigmaOuter,
                                 SigmaRangeType& sigmaContribInner,
                                 SigmaRangeType& uContribInner,
-                                SigmaRangeType& emptyContribInner ) const
+                                SigmaRangeType& rhsContribInner ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
                 asImp().sigmaBoundaryFlux(  it,
@@ -449,7 +449,7 @@ class DiscreteStokesModelInterface
                                             sigmaOuter,
                                             sigmaContribInner,
                                             uContribInner,
-                                            emptyContribInner ) );
+                                            rhsContribInner ) );
         }
 
         /**
@@ -695,8 +695,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                 const VelocityRangeType& uOuter,
                                 VelocityRangeType& uContribInner,
                                 VelocityRangeType& uContribOuter,
-                                VelocityRangeType& emptyContribInner,
-                                VelocityRangeType& emptyContribOuter ) const
+                                VelocityRangeType& rhsContribInner,
+                                VelocityRangeType& rhsContribOuter ) const
         {
             // some preperations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
@@ -718,10 +718,10 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             uContribOuter += meanValue( uOuter, uInner );
 
             // contribution to rhs ( from inside entity )
-            emptyContribInner = 0.0;
+            rhsContribInner = 0.0;
 
             // contribution to rhs  ( from outside entity )
-            emptyContribOuter = 0.0;
+            rhsContribOuter = 0.0;
         }
 
         /**
@@ -735,7 +735,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                         const VelocityRangeType& uInner,
                                         const VelocityRangeType& uOuter,
                                         VelocityRangeType& uContribInner,
-                                        VelocityRangeType& emptyContribInner ) const
+                                        VelocityRangeType& rhsContribInner ) const
         {
             // some preperations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
@@ -744,7 +744,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             uContribInner = 0.0;
 
             // contribution to rhs ( from inside entity )
-            emptyContribInner = 0.0;
+            rhsContribInner = 0.0;
         }
 
         /**
@@ -763,8 +763,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                     VelocityRangeType& uContribOuter,
                                     VelocityRangeType& pContribInner,
                                     VelocityRangeType& pContribOuter,
-                                    VelocityRangeType& emptyContribInner,
-                                    VelocityRangeType& emptyContribOuter ) const
+                                    VelocityRangeType& rhsContribInner,
+                                    VelocityRangeType& rhsContribOuter ) const
         {
         }
 
@@ -783,7 +783,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                     const PressureRangeType& pOuter,
                                     VelocityRangeType& uContribInner,
                                     VelocityRangeType& pContribInner,
-                                    VelocityRangeType& emptyContribInner ) const
+                                    VelocityRangeType& rhsContribInner ) const
         {
         }
 
@@ -799,8 +799,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                             const PressureRangeType& pOuter,
                             PressureRangeType& pContribInner,
                             PressureRangeType& pContribOuter,
-                            PressureRangeType& emptyContribInner,
-                            PressureRangeType& emptyContribOuter ) const
+                            PressureRangeType& rhsContribInner,
+                            PressureRangeType& rhsContribOuter ) const
         {
         }
 
@@ -815,7 +815,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                     const PressureRangeType& pInner,
                                     const PressureRangeType& pOuter,
                                     PressureRangeType& pContribInner,
-                                    PressureRangeType& emptyContribInner ) const
+                                    PressureRangeType& rhsContribInner ) const
         {
         }
 
@@ -835,8 +835,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                         SigmaRangeType& sigmaContribOuter,
                         SigmaRangeType& uContribInner,
                         SigmaRangeType& uContribOuter,
-                        SigmaRangeType& emptyContribInner,
-                        SigmaRangeType& emptyContribOuter ) const
+                        SigmaRangeType& rhsContribInner,
+                        SigmaRangeType& rhsContribOuter ) const
         {
         }
 
@@ -854,7 +854,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                 const SigmaRangeType& sigmaOuter,
                                 SigmaRangeType& sigmaContribInner,
                                 SigmaRangeType& uContribInner,
-                                SigmaRangeType& emptyContribInner ) const
+                                SigmaRangeType& rhsContribInner ) const
         {
         }
 
