@@ -153,7 +153,7 @@ int main( int argc, char** argv )
                                 discreteVelocitySpace,
                                 discreteSigmaSpace,
                                 discretePressureSpace,
-                                static_cast< StokesModelType >( stokesModel ),
+                                stokesModel,
                                 gridPart );
 
     StokesPassType::DomainType uDummy( "uDummy", discreteVelocitySpace );
