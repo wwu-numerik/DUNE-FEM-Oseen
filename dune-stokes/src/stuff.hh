@@ -106,7 +106,7 @@ void printFieldMatrix( const T& arg, const std::string name )
     }
 }
 
-} //end namepspace stuff
+} // end namepspace stuff
 
 
-#endif
+#endif // end of stuff.hh

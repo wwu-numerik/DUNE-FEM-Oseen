@@ -1,9 +1,9 @@
 CONFIGURE_FLAGS="CXX=g++ CC=gcc CXXFLAGS='-O0' \
-  --prefix=/usr/local/dune_felix_rene \
+  --prefix=/usr/local/dune_diplomarbeit \
   --with-alugrid=/usr/local/alugrid-1.1 \
   --with-alberta=/usr/local/alberta-1.2 \
   --x-includes=/usr/include/X11 \
   --x-libraries=/usr/lib/X11 \
   --with-grape=/usr/local/grape \
-  --with-grid-dim=3 \
+  --with-grid-dim=2 \
   --with-grid-type=ALUGRID_SIMPLEX"
