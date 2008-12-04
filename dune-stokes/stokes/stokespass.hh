@@ -146,38 +146,45 @@ class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID 
         {
             std::cout << "\n== applyLocal begin" << std::endl;
 
-            VelocityRangeType uInner( 0.0 );
-            VelocityRangeType uOuter( 0.0 );
-            VelocityRangeType uReturn( 0.0 );
-            PressureRangeType pInner( 0.0 );
-            PressureRangeType pOuter( 0.0 );
-            PressureRangeType pReturn( 0.0 );
-            SigmaRangeType sInner( 0.0 );
-            SigmaRangeType sOuter( 0.0 );
-            SigmaRangeType sReturn( 0.0 );
-
-            for ( unsigned int i = 0; i < uInner.dim(); ++i) {
-                uInner[i] = ( i + 1.0 );
-                uOuter[i] = 2.0 * ( i + 1.0 );
-            }
-            Stuff::printFieldVector( uInner, "uInner" );
-
-            for ( unsigned int i = 0; i < pInner.dim(); ++i) {
-                pInner[i] = ( i + 1.0 );
-                pOuter[i] = 2.0 * ( i + 1.0 );
-            }
-            Stuff::printFieldVector( pInner, "pInner" );
-
-            for ( unsigned int i = 0; i < SigmaRangeType::dimension; ++i) {
-                sInner[i] = ( i + 1.0 );
-                sOuter[i] = 2.0 * ( i + 1.0 );
-            }
-            Stuff::printFieldMatrix( sInner, "sInner" );
-
-            IntersectionIteratorType it = entity.ileafbegin();
-            FaceQuadratureType faceQuad( gridPart_, it, 1, FaceQuadratureType::INSIDE );
-
-
+//            VelocityRangeType uInner( 0.0 );
+//            VelocityRangeType uOuter( 0.0 );
+//            VelocityRangeType uReturn( 0.0 );
+//            PressureRangeType pInner( 0.0 );
+//            PressureRangeType pOuter( 0.0 );
+//            PressureRangeType pReturn( 0.0 );
+//            SigmaRangeType sInner( 0.0 );
+//            SigmaRangeType sOuter( 0.0 );
+//            SigmaRangeType sReturn( 0.0 );
+//
+//            for ( unsigned int i = 0; i < uInner.dim(); ++i) {
+//                uInner[i] = ( i + 1.0 );
+//                uOuter[i] = 2.0 * ( i + 1.0 );
+//            }
+//            Stuff::printFieldVector( uInner, "uInner" );
+//
+//            for ( unsigned int i = 0; i < pInner.dim(); ++i) {
+//                pInner[i] = ( i + 1.0 );
+//                pOuter[i] = 2.0 * ( i + 1.0 );
+//            }
+//            Stuff::printFieldVector( uOuter, "uOuter" );
+//
+//            for ( unsigned int i = 0; i < SigmaRangeType::dimension; ++i) {
+//                sInner[i] = ( i + 1.0 );
+//                sOuter[i] = 2.0 * ( i + 1.0 );
+//            }
+//
+//            IntersectionIteratorType it = entity.ileafbegin();
+//            FaceQuadratureType faceQuad( gridPart_, it, 1, FaceQuadratureType::INSIDE );
+//            //faceQuad.localPoint( 0 )
+//            discreteModel_.sigmaBoundaryFlux(   it,
+//                                                0.0,
+//                                                faceQuad.localPoint( 0 ),
+//                                                uInner,
+//                                                sInner,
+//                                                sReturn,
+//                                                sReturn,
+//                                                sReturn);
+//            Stuff::printFieldMatrix( sReturn, "sReturn" );
 
             std::cout << "\n== applyLocal end" << std::endl;
         }

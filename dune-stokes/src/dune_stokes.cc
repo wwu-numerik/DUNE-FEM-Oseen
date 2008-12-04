@@ -7,14 +7,12 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
-//#define GRIDTYPE ALUGRID_SIMPLEX
+
 #include <iostream>
 #include <memory> //not including this gives error of undefined autopointer in dgfparser.hh
 #include <dune/common/mpihelper.hh> // An initializer of MPI
 #include <dune/common/exceptions.hh> // We use exceptions
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
-//#include <dune/grid/io/file/dgfparser/dgfparser.hh> // for the grid
-//#include <dune/grid/utility/gridtype.hh>
 
 #include <dune/fem/solver/oemsolver/oemsolver.hh>
 #include <dune/fem/space/dgspace.hh>
@@ -24,13 +22,14 @@
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
 
 #include <dune/stokes/discretestokesmodelinterface.hh>
-#include <dune/stokes/saddlepoint_inverse_operator.hh>
+//#include <dune/stokes/saddlepoint_inverse_operator.hh>
 #include <dune/stokes/stokespass.hh>
 
 #include "parametercontainer.hh"
 #include "logging.hh"
-#include "problem.hh"
-#include "postprocessing.hh"
+//#include "problem.hh"
+//#include "postprocessing.hh"
+#include "analyticaldata.hh"
 
 /**
  *  \brief  main function
@@ -51,6 +50,7 @@ int main( int argc, char** argv )
     /* ********************************************************************** *
      * initialize all the stuff we need                                       *
      * ********************************************************************** */
+
     ParameterContainer& parameters = Parameters();
     if ( !( parameters.ReadCommandLine( argc, argv ) ) ) {
         return 1;
@@ -82,39 +82,31 @@ int main( int argc, char** argv )
      * initialize the grid                                                    *
      * ********************************************************************** */
     infoStream << "\ninitialising grid..." << std::endl;
+
     typedef Dune::LeafGridPart< GridType >
         GridPartType;
     Dune::GridPtr< GridType > gridPtr( parameters.DgfFilename() );
     GridPartType gridPart( *gridPtr );
-    infoStream << "...done." << std::endl;
 
+    infoStream << "...done." << std::endl;
     /* ********************************************************************** *
      * initialize problem                                                     *
      * ********************************************************************** */
+    infoStream << "\ninitialising problem..." << std::endl;
 
     typedef Dune::FunctionSpace< double, double, gridDim, gridDim >
         VelocityFunctionSpaceType;
-
     VelocityFunctionSpaceType velocitySpace;
 
-    typedef Dune::FunctionSpace< double, double, gridDim, 1 >
-        PressureFunctionSpaceType;
+    typedef Force< VelocityFunctionSpaceType >
+        AnalyticalForceType;
+    AnalyticalForceType analyticalForce( 1.0, velocitySpace );
 
-    PressureFunctionSpaceType pressureSpace;
+    typedef DirichletData< VelocityFunctionSpaceType >
+        AnalyticalDirichletDataType;
+    AnalyticalDirichletDataType analyticalDirichletData( velocitySpace );
 
-    typedef Problem<    gridDim,
-                        VelocityFunctionSpaceType,
-                        PressureFunctionSpaceType >
-        StokesProblemType;
-
-    StokesProblemType stokesProblem( 1.0, velocitySpace, pressureSpace );
-
-    typedef StokesProblemType::VelocityType
-        AnalyticalFunctionType;
-
-    const AnalyticalFunctionType& force = stokesProblem.force();
-//    const AnalyticalFunctionType& dirichletData = stokesProblem.dirichletData();
-
+    infoStream << "...done." << std::endl;
     /* ********************************************************************** *
      * initialize model                                                       *
      * ********************************************************************** */
@@ -123,17 +115,20 @@ int main( int argc, char** argv )
     typedef Dune::DiscreteStokesModelDefault<
                 Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
-                    AnalyticalFunctionType,
+                    AnalyticalForceType,
+                    AnalyticalDirichletDataType,
                     gridDim,
                     polOrder > >
         StokesModelImpType;
 
-    StokesModelImpType stokesModel( , stokesProblem.dirichletData() );
+    StokesModelImpType stokesModel( analyticalForce,
+                                    analyticalDirichletData );
 
     typedef Dune::DiscreteStokesModelInterface<
                 Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
-                    AnalyticalFunctionType,
+                    AnalyticalForceType,
+                    AnalyticalDirichletDataType,
                     gridDim,
                     polOrder > >
         StokesModelType;
@@ -143,8 +138,6 @@ int main( int argc, char** argv )
     StokesModelType::DiscretePressureFunctionSpaceType discretePressureSpace( gridPart );
 
     infoStream << "...done." << std::endl;
-
-
     /* ********************************************************************** *
      * initialize passes                                                      *
      * ********************************************************************** */
@@ -160,13 +153,11 @@ int main( int argc, char** argv )
                                 discreteVelocitySpace,
                                 discreteSigmaSpace,
                                 discretePressureSpace,
-                                static_cast< StokesModelType >( stokesModel ),
+                                stokesModel,
                                 gridPart );
 
-    //StokesPassType::
     StokesPassType::DomainType uDummy( "uDummy", discreteVelocitySpace );
     stokesPass( uDummy, uDummy );
-
 
     infoStream << "...done." << std::endl;
 
