@@ -822,6 +822,18 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                     VelocityRangeType& pContribInner,
                                     VelocityRangeType& rhsContribInner ) const
         {
+            //some preperations
+            VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            VelocityRangeType global = it->intersectionSelfLocal().global( x );
+
+            // contribution to u vector ( from inside entity )
+            uContribInner = 0.0;
+
+            // contribution to p vector ( from inside entity )
+            pContribInner = 0.0;
+
+            // contribution to rhs ( from inside entity )
+            dirichletData_.evaluate( global, rhsContribInner );
         }
 
         /**
