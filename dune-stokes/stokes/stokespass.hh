@@ -166,23 +166,31 @@ class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID 
                 pInner[i] = ( i + 1.0 );
                 pOuter[i] = 2.0 * ( i + 1.0 );
             }
-            Stuff::printFieldVector( pInner, "pInner" );
+            Stuff::printFieldVector( uOuter, "uOuter" );
 
             for ( unsigned int i = 0; i < SigmaRangeType::dimension; ++i) {
                 sInner[i] = ( i + 1.0 );
                 sOuter[i] = 2.0 * ( i + 1.0 );
             }
-            Stuff::printFieldMatrix( sInner, "sInner" );
 
             IntersectionIteratorType it = entity.ileafbegin();
             FaceQuadratureType faceQuad( gridPart_, it, 1, FaceQuadratureType::INSIDE );
             //faceQuad.localPoint( 0 )
-            discreteModel_.pressureBoundaryFlux(    it,
-                                            0.0,
-                                            faceQuad.localPoint( 0 ),
-                                            pInner,
-                                            pReturn,
-                                            pReturn );
+            discreteModel_.sigmaFlux(   it,
+                                        0.0,
+                                        faceQuad.localPoint( 0 ),
+                                        uInner,
+                                        uOuter,
+                                        sInner,
+                                        sOuter,
+                                        sReturn,
+                                        sReturn,
+                                        sReturn,
+                                        sReturn,
+                                        sReturn,
+                                        sReturn);
+            Stuff::printFieldMatrix( sReturn, "sReturn" );
+
             std::cout << "\n== applyLocal end" << std::endl;
         }
 

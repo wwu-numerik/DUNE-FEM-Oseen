@@ -900,6 +900,38 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                         SigmaRangeType& rhsContribInner,
                         SigmaRangeType& rhsContribOuter ) const
         {
+            //some preperations
+            VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            VelocityRangeType innerNormal = outerNormal;
+            innerNormal *= -1.0;
+
+            // contribution to sigma vector ( from inside entity )
+            sigmaContribInner = dyadicProduct(
+                sigmaTypeJump(
+                    sigmaInner, sigmaOuter, outerNormal ),
+                C_12_ );
+            sigmaContribInner += meanValue( sigmaInner, sigmaOuter );
+
+            // contribution to sigma vector ( from outside entity )
+            sigmaContribInner = dyadicProduct(
+                sigmaTypeJump(
+                    sigmaOuter, sigmaInner, innerNormal ),
+                C_12_ );
+            sigmaContribInner += meanValue( sigmaOuter, sigmaInner );
+
+            // contribution to u vector ( from inside entity )
+            uContribInner = uTypeMatrixJump( uInner, uOuter, outerNormal );
+            uContribInner *= -1.0 * C_11_;
+
+            // contribution to u vector ( from outside entity )
+            uContribInner = uTypeMatrixJump( uOuter, uInner, innerNormal );
+            uContribInner *= -1.0 * C_11_;
+
+            // contribution to rhs ( from inside entity )
+            rhsContribInner = 0.0;
+
+            // contribution to rhs ( from outside entity )
+            rhsContribOuter = 0.0;
         }
 
         /**
@@ -978,6 +1010,18 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         {
             SigmaRangeType ret( 0.0 );
             VelocityRangeType uDiff = uInner - uOuter;
+            ret = dyadicProduct( uDiff, outerNormal );
+            return ret;
+        }
+
+        /**
+         *  \brief  dyadic product
+         *  \todo   doc
+         **/
+        SigmaRangeType dyadicProduct(   const VelocityRangeType& arg1,
+                                        const VelocityRangeType& arg2 ) const
+        {
+            SigmaRangeType ret( 0.0 );
             typedef typename SigmaRangeType::RowIterator
                 MatrixRowIteratorType;
             typedef typename VelocityRangeType::ConstIterator
@@ -985,18 +1029,33 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             typedef typename VelocityRangeType::Iterator
                 VectorIteratorType;
             MatrixRowIteratorType rItEnd = ret.end();
-            VectorIteratorType uDiffIt = uDiff.begin();
+            ConstVectorIteratorType arg1It = arg1.begin();
             for ( MatrixRowIteratorType rIt = ret.begin(); rIt != rItEnd; ++rIt ) {
-                ConstVectorIteratorType outerNormalIt = outerNormal.begin();
+                ConstVectorIteratorType arg2It = arg2.begin();
                 VectorIteratorType vItEnd = rIt->end();
                 for (   VectorIteratorType vIt = rIt->begin();
                         vIt != vItEnd;
                         ++vIt ) {
-                    *vIt = *uDiffIt * *outerNormalIt;
-                    ++outerNormalIt;
+                    *vIt = *arg1It * *arg2It;
+                    ++arg2It;
                 }
-                ++uDiffIt;
+                ++arg1It;
             }
+            return ret;
+        }
+
+        /**
+         *  \brief  jump for sigma-type functions
+         *  \todo   doc
+         **/
+        VelocityRangeType sigmaTypeJump(    const SigmaRangeType& sInner,
+                                            const SigmaRangeType& sOuter,
+                                            const VelocityRangeType& outerNormal ) const
+        {
+            VelocityRangeType ret( 0.0 );
+            SigmaRangeType sDiff = sInner;
+            sDiff -= sOuter;
+            sDiff.mv( outerNormal, ret );
             return ret;
         }
 
