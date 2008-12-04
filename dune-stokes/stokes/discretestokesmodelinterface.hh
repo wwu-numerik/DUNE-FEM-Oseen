@@ -840,6 +840,22 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType innerNormal = outerNormal;
             innerNormal *= -1.0;
+
+            // contribution to p vector ( from inside entity )
+            pContribInner = -1.0
+                * ( D_12_ * pTypeJump( pInner, pOuter, outerNormal ) );
+            pContribInner += meanValue( pInner, pOuter );
+
+            // contribution to p vector ( from outside entity )
+            pContribInner = -1.0
+                * ( D_12_ * pTypeJump( pOuter, pInner, innerNormal ) );
+            pContribInner += meanValue( pOuter, pInner );
+
+            // contribution to rhs ( from inside entity )
+            rhsContribInner = 0.0;
+
+            // contribution to rhs ( from outside entity )
+            rhsContribOuter = 0.0;
         }
 
         /**
@@ -854,6 +870,15 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                     PressureRangeType& pContribInner,
                                     PressureRangeType& rhsContribInner ) const
         {
+            //some preperations
+            VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            VelocityRangeType global = it->intersectionSelfLocal().global( x );
+
+            // contribution to p vector ( from inside entity )
+            pContribInner = pInner;
+
+            // contribution to rhs ( from inside entity )
+            rhsContribInner = 0.0;
         }
 
         /**
