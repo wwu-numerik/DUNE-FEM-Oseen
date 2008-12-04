@@ -875,7 +875,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
 
         double C_11_, D_11_;
         VelocityRangeType C_12_, D_12_;
-        AnalyticalFunctionType& force_, dirichletData_;
+        const AnalyticalForceType& force_;
+        const AnalyticalDirichletDataType& dirichletData_;
 
         /**
          *  \brief  jump for pressure-type functions

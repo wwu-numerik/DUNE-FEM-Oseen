@@ -112,6 +112,7 @@
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/lib" />
 			<Add directory="/usr/lib64" />
 		</Linker>
+		<Unit filename="../src/analyticaldata.hh" />
 		<Unit filename="../src/dirichletdata.hh" />
 		<Unit filename="../src/discretemodel.hh" />
 		<Unit filename="../src/discretization.hh" />
