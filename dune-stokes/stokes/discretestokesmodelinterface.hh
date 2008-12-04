@@ -744,7 +744,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             uContribInner = 0.0;
 
             // contribution to rhs ( from inside entity )
-            rhsContribInner = 0.0;
+            VelocityRangeType global = it->intersectionSelfLocal().global( x );
+            dirichletData_.evaluate( global,  rhsContribInner );
         }
 
         /**

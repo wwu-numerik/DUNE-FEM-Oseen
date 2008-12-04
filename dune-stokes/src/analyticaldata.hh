@@ -28,7 +28,6 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
 
         /**
          *  \brief  constructor
-         *
          *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
          **/
         Force( const double viscosity, const FunctionSpaceImp& space )
@@ -45,7 +44,6 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
 
         /**
          *  \brief  evaluates the force
-         *
          *  \param  arg
          *          point to evaluate at
          *  \param  ret
@@ -66,21 +64,6 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 ( ( 1.0 - viscosity_ ) * std::sin( x2 )
                 + viscosity_ * cos_of_x2 );
             ret[1] = 2.0 * ( 1.0 - viscosity_ ) * exp_of_x1 * cos_of_x2;
-        }
-
-        /**
-         *  \brief  evaluates the force
-         *
-         *  \param  arg
-         *          point to evaluate at
-         *
-         *  \return value of force at given point
-         **/
-        RangeType operator () ( const DomainType& arg )
-        {
-            RangeType ret;
-            evaluate( arg, ret );
-            return ret;
         }
 
     private:
@@ -115,8 +98,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
          **/
         DirichletData( const FunctionSpaceImp& space )
             : BaseType( space )
-        {
-        }
+        {}
 
         /**
          *  \brief  destructor
@@ -124,12 +106,10 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
          *  doing nothing
          **/
          ~DirichletData()
-         {
-         }
+         {}
 
          /**
           * \brief  evaluates the dirichlet data
-          *
           * \param  arg
           *         point to evaluate at
           * \param  ret
@@ -149,21 +129,6 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
             ret[0] = -1.0 * exp_of_x1 *
                 ( ( x2 * std::cos( x2 ) ) + sin_of_x2 );
             ret[1] = exp_of_x1 * x2 * sin_of_x2;
-        }
-
-        /**
-         *  \brief  evaluates the dirichlet data
-         *
-         *  \param  arg
-         *          point to evaluate at
-         *
-         *  \return value of dirichlet data at given point
-         **/
-        RangeType operator () ( const DomainType& arg)
-        {
-            RangeType ret;
-            evaluate( arg, ret );
-            return ret;
         }
 };
 

@@ -177,8 +177,13 @@ class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID 
             IntersectionIteratorType it = entity.ileafbegin();
             FaceQuadratureType faceQuad( gridPart_, it, 1, FaceQuadratureType::INSIDE );
 
-
-
+            discreteModel_.velocitySigmaBoundaryFlux(   it,
+                                                        0.0,
+                                                        faceQuad.localPoint( 0 ),
+                                                        uInner,
+                                                        uOuter,
+                                                        uReturn,
+                                                        uReturn );
             std::cout << "\n== applyLocal end" << std::endl;
         }
 
