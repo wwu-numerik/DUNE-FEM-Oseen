@@ -48,16 +48,22 @@ namespace Dune
  *          The fluxes \f$\hat{u}_{\sigma}\f$, \f$\hat{\sigma}\f$,
  *          \f$\hat{p}\f$, \f$\hat{u}_{p}\f$ in the corresponding surface
  *          integrals are implemented in the methods velocitySigmaFlux(),
- *          sigmaFlux(), pressureFlux(), velocityPressureFlux() and in the
- *          corresponding boundaryfluxes, if the face in consideration is on
- *          the boundary of \f$\Omega\f$ (velocitySigmaBoundaryFlux(),
- *          sigmaBoundaryFlux(), pressureBoundaryFlux(),
- *          velocityPressureBoundaryFlux() ).
+ *          sigmaFlux(), pressureFlux(), velocityPressureFlux().
+ *          If the face in consideration is on the boundary of \f$\Omega\f$, the
+ *          computation is done by velocitySigmaBoundaryFlux(),
+ *          sigmaBoundaryFlux(), pressureBoundaryFlux() and
+ *          velocityPressureBoundaryFlux().\n
+ *          The fluxes are designed to take values of functions on the
+ *          intersection, once seen from the inside (from the entity in
+ *          consideration) and once from the outside (the entities neighbour over
+ *          the given intersection). Accordingly the fluxes return all
+ *          contributions (to ceofficients and right hand side) seen from
+ *          both entities, thus saving  computational effort on half of the
+ *          entities.
  *
  *  \tparam DiscreteStokesModelTraits
  *          traits class defined by the user, should provide all types needed
  *          by this interface
- *  \todo   doc with tex
  **/
 template < class DiscreteStokesModelTraits >
 class DiscreteStokesModelInterface
@@ -179,8 +185,7 @@ class DiscreteStokesModelInterface
          *  doing nothing
          **/
         DiscreteStokesModelInterface()
-        {
-        }
+        {}
 
         /**
          *  \brief  destructor
@@ -188,8 +193,7 @@ class DiscreteStokesModelInterface
          *  doing nothing
          **/
         ~DiscreteStokesModelInterface()
-        {
-        }
+        {}
 
         /**
          *  \brief  Returns true if problem has a flux contribution of type
@@ -250,11 +254,23 @@ class DiscreteStokesModelInterface
         }
 
         /**
-         *  \brief
+         *  \brief  implementation of \f$\hat{u}_{\sigma}\f$
+         *
+         *          Implements
+         *          \f$
+         *              \hat{u}_{\sigma}(u):\Omega\rightarrow R
+         *          \f$ for faces, that are inside \f$\Omega\f$.\n
+         *          <b>Assumption:</b> the flux can be written as
+         *          \f$
+         *              \hat{u}_{\sigma}(u) = \hat{u}_{\sigma}^{U}(u)
+         *              + \hat{u}_{\sigma}^{RHS}(u)
+         *          \f$, where \f$\hat{u}_{\sigma}^{U}(u)\f$ is this fluxes
+         *          contribution to the coefficients of \f$U\f$ and
+         *          \f$\hat{u}_{\sigma}^{RHS}(u)\f$ the contribution
+         *          to the right hand side.
+         *
          *  \tparam FaceDomainType
          *          domain type on given face
-         *  \tparam LocalVelocityFunctionType
-         *          type of local function (of type velocity)
          *  \param  it
          *          faceiterator
          *  \param  time
@@ -262,11 +278,17 @@ class DiscreteStokesModelInterface
          *  \param  x
          *          point to evaluate at
          *  \param  uInner
-         *          local function (of type velocity) on given entity
+         *          value of \f$u\f$ on the face (seen from the inside)
          *  \param  uOuter
-         *          local function (of type velocity) on neighbour of
-         *          given entity
-         *  \todo   latex doc
+         *          value of \f$u\f$ on the face (seen from the outside)
+         *  \param  uContribInner
+         *          \f$\hat{u}_{\sigma}^{U}(u)\f$ (seen from the inside)
+         *  \param  uContribOuter
+         *          \f$\hat{u}_{\sigma}^{U}(u)\f$ (seen from the outside)
+         *  \param  rhsContribInner
+         *          \f$\hat{u}_{\sigma}^{RHS}(u)\f$ (seen from the inside)
+         *  \param  rhsContribOuter
+         *          \f$\hat{u}_{\sigma}^{RHS}(u)\f$ (seen from the outside)
          **/
         template < class FaceDomainType >
         void velocitySigmaFlux( const IntersectionIteratorType& it,
