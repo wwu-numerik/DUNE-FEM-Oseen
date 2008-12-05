@@ -1,7 +1,8 @@
 /**
  *  \file   discretestokesmodelinterface.hh
- *
  *  \brief  containing a class DiscreteStokesModelInterface
+ *          and a class DiscreteStokesModelDefault with traits class
+ *          DiscreteStokesModelDefaultTraits
  **/
 #ifndef DUNE_DISCRESTOKESTEMODELINTERFACE_HH
 #define DUNE_DISCRESTOKESTEMODELINTERFACE_HH
@@ -16,6 +17,46 @@ namespace Dune
 
 /**
  *  \brief  Interface class for stokes problem definition in the LDG context.
+ *
+ *          A discrete model implementation of the user should be derived from
+ *          this interface class to be compatible with the StokesPass.
+ *          In the LDG context a weak discrete formulation of a stokes problem
+ *          enforces
+ *          \f$
+ *              \forall T \in \mathcal{T}, \quad \forall \tau \in \Sigma,
+ *              v \in V, q \in Q
+ *          \f$
+ *          \f{eqnarray*}{
+ *              \int\limits_{T}{\sigma:\tau dx} &=&
+ *                  \int\limits_{\partial T}{
+ *                      \hat{u}_{\sigma} \cdot \tau \cdot n_{T} ds}
+ *                  -\int\limits_{T}{u\cdot\left(\nabla\cdot\tau\right)dx},\\
+ *              \mu\int\limits_{T}{\sigma :\nabla v dx}
+ *                  &-&\mu\int\limits_{\partial T}{
+ *                      v\cdot\hat{\sigma}\cdot n_{T} ds}
+ *                  -\int\limits_{T}{p\cdot\left(\nabla\cdot v\right)dx}\\
+ *              &+&\int\limits_{\partial T}{\hat{p}\cdot v\cdot n_{T}ds}
+ *                  = \int\limits_{T}{f\cdot v},\\
+ *              \int\limits_{\partial T}{\hat{u}_{p}\cdot n_{T}q ds}
+ *                  &-&\int\limits_{T}{u\cdot\nabla q dx}=0,
+ *          \f}
+ *          where \f$\mathcal{T}\f$ is a triangulation and \f$\Sigma\f$,
+ *          \f$V\f$, \f$Q\f$ are discrete function spaces.\n
+ *          (For a detailed description see B. Cockburn, G. Kanschat,
+ *          D. Schötzau, C. Schwab: <EM>Local Discontinuous Galerkin Methods
+ *          for the Stokes System</EM> (2000)\n
+ *          The fluxes \f$\hat{u}_{\sigma}\f$, \f$\hat{\sigma}\f$,
+ *          \f$\hat{p}\f$, \f$\hat{u}_{p}\f$ in the corresponding surface
+ *          integrals are implemented in the methods velocitySigmaFlux(),
+ *          sigmaFlux(), pressureFlux(), velocityPressureFlux() and in the
+ *          corresponding boundaryfluxes, if the face in consideration is on
+ *          the boundary of \f$\Omega\f$ (velocitySigmaBoundaryFlux(),
+ *          sigmaBoundaryFlux(), pressureBoundaryFlux(),
+ *          velocityPressureBoundaryFlux() ).
+ *
+ *  \tparam DiscreteStokesModelTraits
+ *          traits class defined by the user, should provide all types needed
+ *          by this interface
  *  \todo   doc with tex
  **/
 template < class DiscreteStokesModelTraits >
@@ -154,8 +195,8 @@ class DiscreteStokesModelInterface
          *  \brief  Returns true if problem has a flux contribution of type
          *          \f$\hat{u}_{\sigma}\f$
          *  \attention  If you let this method return true, make sure to
-         *              implement <b>both</b> velocitySigmaFlux and
-         *              velocitySigmaBoundaryFlux as well
+         *              implement <b>both</b> velocitySigmaFlux() and
+         *              velocitySigmaBoundaryFlux() as well
          **/
         bool hasVelocitySigmaFlux() const
         {
@@ -166,8 +207,8 @@ class DiscreteStokesModelInterface
          *  \brief  Returns true if problem has a flux contribution of type
          *          \f$\hat{u}_{p}\f$
          *  \attention  If you let this method return true, make sure to
-         *              implement <b>both</b> velocityPressureFlux and
-         *              velocityPressureBoundaryFlux as well.
+         *              implement <b>both</b> velocityPressureFlux() and
+         *              velocityPressureBoundaryFlux() as well.
          **/
         bool hasVelocityPressureFlux() const
         {
@@ -178,8 +219,8 @@ class DiscreteStokesModelInterface
          *  \brief  Returns true if problem has a flux contribution of type
          *          \f$\hat{p}\f$
          *  \attention  If you let this method return true, make sure to
-         *              implement <b>both</b> pressureFlux and
-         *              pressureBoundaryFlux as well.
+         *              implement <b>both</b> pressureFlux() and
+         *              pressureBoundaryFlux() as well.
          **/
         bool hasPressureFlux() const
         {
@@ -190,8 +231,8 @@ class DiscreteStokesModelInterface
          *  \brief  Returns true if problem has a flux contribution of type
          *          \f$\hat{\sigma}\f$
          *  \attention  If you let this method return true, make sure to
-         *              implement <b>both</b> sigmaFlux and
-         *              sigmaBoundaryFlux as well.
+         *              implement <b>both</b> sigmaFlux() and
+         *              sigmaBoundaryFlux() as well.
          **/
         bool hasSigmaFlux() const
         {
@@ -201,7 +242,7 @@ class DiscreteStokesModelInterface
         /**
          *  \brief  Returns true if problem has a force contribution \f$f\f$
          *  \attention  If you let this method return true, make sure to
-         *              implement force as well.
+         *              implement force() as well.
          **/
         bool hasForce() const
         {
