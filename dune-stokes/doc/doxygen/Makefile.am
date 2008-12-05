@@ -1,40 +1,45 @@
-# if documentation was enabled
+# $Id: Makefile.am 3941 2008-01-06 11:00:09Z christi $
 if BUILD_DOCS
-DOXYGEN_HTML = html
-DOXYGEN_DIST = html-dist
+  DOXYGENTAG = doxygen-tag 
+  WHAT = 
+  DOXYGEN_HTML = html
+  DOXYGEN_DIST = html-dist
+endif
 
-DISTCLEANFILES = doxygen.log doxygen-tag doxygen-dist-tag doxygen.out doxygen-dist.out
+DISTCLEANFILES = doxygen.log doxygen-tag
 
-all: $(DOXYGEN_HTML)
+all: $(WHAT) $(DOXYGEN_HTML)
 
 # setting like in dune-web
 BASEDIR=../..
 CURDIR=doc/doxygen
-EXTRAINSTALL = doxygen.log
 
+if BUILD_DOCS
 # EXTRAINSTALL in the html subdirectory
-DOXYGENINSTALL = *.html *.css *.png *.gif
+DOXYGENINSTALL = *.html *.css *.png *.gif ../doxygen.log
 
+if WML
+# themeing doxygen
+DOXYGENHEADER = doxy-header.html
+DOXYGENHEADERBUILD = $(DOXYGENHEADER).build
+DOXYGENFOOTER = doxy-footer.html
+DOXYGENSTYLESHEET = dune-doxy.css
+DOYXFILE_OVERWRITE = echo "HTML_HEADER = $(DOXYGENHEADER)"; \
+  echo "HTML_FOOTER = $(DOXYGENFOOTER)"; \
+  echo "HTML_STYLESHEET = $(DOXYGENSTYLESHEET)";
+DOXYFILESHORT_OVERWRITE = $(DOYXFILE_OVERWRITE) \
+  echo "SHORT_NAMES = YES";
+# end WML  
+endif
 
-DOXYFILE_OVERWRITE = echo "PROJECT_NAME = $(PACKAGE_NAME)"; \
-                     echo "PROJECT_NUMBER = $(PACKAGE_VERSION)";
-
-DOXYFILE_OVERWRITE_HTML = $(DOXYFILE_OVERWRITE) \
-                          echo "HTML_OUTPUT = $(DOXYGEN_HTML)"; \
-			  echo "WARN_LOGFILE = doxygen.out"; \
-			  echo "FILE_PATTERNS += *.dev";
-DOXYFILE_OVERWRITE_DIST = $(DOXYFILE_OVERWRITE) \
-                          echo "HTML_OUTPUT = $(DOXYGEN_DIST)"; \
-			  echo "WARN_LOGFILE = doxygen-dist.out"; \
-			  echo "INTERNAL_DOCS = NO";
 
 #we need this in the distribution
-EXTRA_DIST = $(DOXYGEN_DIST) $(PAGES)
+EXTRA_DIST = $(WHAT) $(DOXYGEN_DIST) $(DOXYGENHEADER) doxy-footer.html $(PAGES)
 
 doxygendir = $(datadir)/doc/dune-stokes/doxygen
+doxygen_DATA = $(WHAT)
 
-
-install-data-local: $(DOXYGEN_DIST)
+install-data-local: html-dist
 	$(mkinstalldirs) $(DESTDIR)/$(doxygendir); \
 	list="$(srcdir)/html-dist/*.html $(srcdir)/html-dist/*.css $(srcdir)/html-dist/*.png $(srcdir)/html-dist/*.gif"; \
 	for p in $$list; do \
@@ -42,12 +47,15 @@ install-data-local: $(DOXYGEN_DIST)
 	done
 
 uninstall-local:
-	rm -f $(DESTDIR)/$(doxygendir)/*.html $(DESTDIR)/$(doxygendir)/*.css \
-	$(DESTDIR)/$(doxygendir)/*.png $(DESTDIR)/$(doxygendir)/*.gif
+	rm -f $(DESTDIR)/$(doxygendir)/*.html
+	rm -f $(DESTDIR)/$(doxygendir)/*.css
+	rm -f $(DESTDIR)/$(doxygendir)/*.png
+	rm -f $(DESTDIR)/$(doxygendir)/*.gif
+# end BUILD_DOCS 
+endif
 
 # what files does the doxygen-generated stuff depend on (find-syntax)
 DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png
-ADDITIONALDOCS = -name Doxyfile -o -name modules -o -name \*.dist
 
 # as all doxygen files fill be installed in the html subdirectory
 # the BASEDIR has to be adjusted
@@ -56,35 +64,29 @@ ADDITIONALDOCS = -name Doxyfile -o -name modules -o -name \*.dist
 
 # check dependency ourself to be robust
 doxygen-tag: FORCE $(DOXYGENHEADERBUILD)
-	@set -e; \
+	set -e; \
 	if test -e Doxyfile; then \
-	  if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DEPENDON) \) -a -newer doxygen-tag -print`" != x || test x"`find . \( $(ADDITIONALDOCS) -o -name \*.dev \) -a -newer doxygen-tag -print`" != x ; then \
-	    echo "Creating documentation (running doxygen) ..." ; \
-	    ( cat Doxyfile; $(DOXYFILE_OVERWRITE_HTML) ) > Doxyfile.tmp; \
+	  if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DEPENDON) \) -a -newer doxygen-tag -print`" != x ; then \
+	    echo Running doxygen. This may take a while... ; \
+	    ( cat Doxyfile; $(DOYXFILE_OVERWRITE) ) > Doxyfile.tmp; \
 	    $(DOXYGEN) Doxyfile.tmp > doxygen.log 2>&1 <&- ; \
 	    rm -f Doxyfile.tmp; \
 	    touch doxygen-tag ; \
-	    cat doxygen.out ; \
 	  fi; \
-	fi
-
-
-doxygen-dist-tag: FORCE $(DOXYGENHEADERBUILD)
-	@set -e; \
-	if test -e Doxyfile; then \
-	  if test ! -e doxygen-dist-tag || test x"`find $(top_srcdir) \( $(DEPENDON) \) -a -newer doxygen-dist-tag -print`" != x || test x"`find . \( $(ADDITIONALDOCS) \) -a -newer doxygen-dist-tag -print`" != x ; then \
-	    echo "Creating distribution documentation (running doxygen) ..." ; \
-	    ( cat Doxyfile; $(DOXYFILE_OVERWRITE_DIST) ) > Doxyfile.tmp; \
-	    $(DOXYGEN) Doxyfile.tmp > doxygen.log 2>&1 <&- ; \
-	    rm -f Doxyfile.tmp; \
-	    touch doxygen-dist-tag ; \
-	    cat doxygen-dist.out ; \
-	  fi \
 	fi
 
 html: doxygen-tag
 
-html-dist: doxygen-dist-tag
+html-dist: $(DOXYGENHEADERBUILD)
+	rm -rf html
+	set -e; \
+	if test -e Doxyfile; then \
+	  ( cat Doxyfile; $(DOXYFILESHORT_OVERWRITE) ) > Doxyfile.tmp; \
+	  echo Running doxygen. This may take a while... ; \
+	  $(DOXYGEN) Doxyfile.tmp > doxygen.log 2>&1 <&- ; \
+	  rm -f Doxyfile.tmp; \
+	fi
+	if test -d html; then rm -rf html-dist; mv html html-dist; fi
 
 # how to install the doxygen documentation
 doxygen-install:
@@ -100,15 +102,15 @@ web-install: doxygen-install
 # nice trick from the GNU make infopage to force a rule to run
 FORCE:
 
-#include $(top_srcdir)/am/webstuff
+include $(top_srcdir)/am/webstuff
+
+# file to clean only in svn and not in tarball tree
+SVNCLEANFILES = html html-dist $(WHAT) $(DOXYGENHEADER)
 
 clean-local:
-	if test -e Doxydep; then rm -rf html html-dist; fi
+	if test -e $(top_srcdir)/doc/doxygen/Doxydep; then rm -rf $(SVNCLEANFILES);fi
 	rm -rf latex *~
 
-CLEANFILES = doxygen-tag doxygen-dist-tag
-
-# end BUILD_DOCS
-endif
+CLEANFILES = $(DOXYGENTAG) 
 
 include $(top_srcdir)/am/global-rules
