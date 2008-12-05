@@ -163,10 +163,10 @@ int main( int argc, char** argv )
 
     return 0;
   }
-  catch (Dune::Exception &e){
+  catch ( Dune::Exception &e ){
     std::cerr << "Dune reported error: " << e << std::endl;
   }
-  catch (...){
+  catch ( ... ){
     std::cerr << "Unknown exception thrown!" << std::endl;
   }
 }
