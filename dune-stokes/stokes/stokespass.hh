@@ -146,6 +146,12 @@ class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID 
         {
             std::cout << "\n== applyLocal begin" << std::endl;
 
+//            VolumeQuadratureType volumeQuad( entity, 1 );
+//            VelocityRangeType x( 1.0 );
+//            VelocityRangeType f( 0.0 );
+//            Stuff::printFieldVector( x, "x", std::cout );
+//            discreteModel_.force( 0.0, x, f );
+//            Stuff::printFieldVector( f, "f(x)", std::cout );
 //            VelocityRangeType uInner( 0.0 );
 //            VelocityRangeType uOuter( 0.0 );
 //            VelocityRangeType uReturn( 0.0 );

@@ -100,7 +100,7 @@ int main( int argc, char** argv )
 
     typedef Force< VelocityFunctionSpaceType >
         AnalyticalForceType;
-    AnalyticalForceType analyticalForce( 1.0, velocitySpace );
+    AnalyticalForceType analyticalForce( 0.5, velocitySpace );
 
     typedef DirichletData< VelocityFunctionSpaceType >
         AnalyticalDirichletDataType;
