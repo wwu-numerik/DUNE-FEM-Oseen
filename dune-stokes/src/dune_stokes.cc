@@ -121,7 +121,12 @@ int main( int argc, char** argv )
                     polOrder > >
         StokesModelImpType;
 
-    StokesModelImpType stokesModel( analyticalForce,
+    Dune::FieldVector< double, gridDim > ones( 1.0 );
+    StokesModelImpType stokesModel( 1.0,
+                                    ones,
+                                    1.0,
+                                    ones,
+                                    analyticalForce,
                                     analyticalDirichletData );
 
     typedef Dune::DiscreteStokesModelInterface<

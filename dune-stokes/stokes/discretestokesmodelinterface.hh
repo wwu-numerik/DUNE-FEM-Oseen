@@ -59,8 +59,8 @@ namespace Dune
  *          consideration) and once from the outside (the entities neighbour over
  *          the given intersection). Accordingly the fluxes return all
  *          contributions (to coefficients and right hand side) seen from
- *          both entities, thus saving  computational effort on half of the
- *          entities.
+ *          both entities, thus enabling the StokesPass to save computational
+ *          effort on half of the entities.
  *
  *  \tparam DiscreteStokesModelTraits
  *          traits class defined by the user, should provide all types needed
@@ -141,7 +141,7 @@ class DiscreteStokesModelInterface
         typedef typename DiscreteVelocityFunctionSpaceType::RangeType
             VelocityRangeType;
 
-        //! vector type of sigmas' discrete functions space's range
+        //! matrix type of sigmas' discrete functions space's range
         typedef typename DiscreteSigmaFunctionSpaceType::RangeType
             SigmaRangeType;
 
@@ -278,23 +278,23 @@ class DiscreteStokesModelInterface
          *
          *  \tparam FaceDomainType
          *          domain type on given face
-         *  \param  it
+         *  \param[in]  it
          *          faceiterator
-         *  \param  time
+         *  \param[in]  time
          *          global time
-         *  \param  x
+         *  \param[in]  x
          *          point to evaluate at (on the face)
-         *  \param  uInner
+         *  \param[in]  uInner
          *          value of \f$u\f$ in \f$x\f$ (seen from the inside)
-         *  \param  uOuter
+         *  \param[in]  uOuter
          *          value of \f$u\f$ in \f$x\f$ (seen from the outside)
-         *  \param  uContribInner
+         *  \param[out]  uContribInner
          *          \f$\hat{u}_{\sigma}^{U}\f$ (seen from the inside)
-         *  \param  uContribOuter
+         *  \param[out]  uContribOuter
          *          \f$\hat{u}_{\sigma}^{U}\f$ (seen from the outside)
-         *  \param  rhsContribInner
+         *  \param[out]  rhsContribInner
          *          \f$\hat{u}_{\sigma}^{RHS}\f$ (seen from the inside)
-         *  \param  rhsContribOuter
+         *  \param[out]  rhsContribOuter
          *          \f$\hat{u}_{\sigma}^{RHS}\f$ (seen from the outside)
          **/
         template < class FaceDomainType >
@@ -339,17 +339,17 @@ class DiscreteStokesModelInterface
          *
          *  \tparam FaceDomainType
          *          domain type on given face
-         *  \param  it
+         *  \param[in]  it
          *          faceiterator
-         *  \param  time
+         *  \param[in]  time
          *          global time
-         *  \param  x
+         *  \param[in]  x
          *          point to evaluate at (on the face)
-         *  \param  uInner
+         *  \param[in]  uInner
          *          value of \f$u\f$ in \f$x\f$
-         *  \param  uContribInner
+         *  \param[out]  uContribInner
          *          \f$\hat{u}_{\sigma}^{U}\f$
-         *  \param  rhsContribInner
+         *  \param[out]  rhsContribInner
          *          \f$\hat{u}_{\sigma}^{RHS}\f$
          **/
         template < class FaceDomainType >
@@ -390,31 +390,31 @@ class DiscreteStokesModelInterface
          *
          *  \tparam FaceDomainType
          *          domain type on given face
-         *  \param  it
+         *  \param[in]  it
          *          faceiterator
-         *  \param  time
+         *  \param[in]  time
          *          global time
-         *  \param  x
+         *  \param[in]  x
          *          point to evaluate at (on the face)
-         *  \param  uInner
+         *  \param[in]  uInner
          *          value of \f$u\f$ in \f$x\f$ (seen from the inside)
-         *  \param  uOuter
+         *  \param[in]  uOuter
          *          value of \f$u\f$ in \f$x\f$ (seen from the outside)
-         *  \param  pInner
+         *  \param[in]  pInner
          *          value of \f$p\f$ in \f$x\f$ (seen from the inside)
-         *  \param  pOuter
+         *  \param[in]  pOuter
          *          value of \f$p\f$ in \f$x\f$ (seen from the outside)
-         *  \param  uContribInner
+         *  \param[out]  uContribInner
          *          \f$\hat{u}_{p}^{U}\f$ (seen from the inside)
-         *  \param  uContribOuter
+         *  \param[out]  uContribOuter
          *          \f$\hat{u}_{p}^{U}\f$ (seen from the outside)
-         *  \param  pContribInner
+         *  \param[out]  pContribInner
          *          \f$\hat{u}_{p}^{P}\f$ (seen from the inside)
-         *  \param  pContribOuter
+         *  \param[out]  pContribOuter
          *          \f$\hat{u}_{p}^{P}\f$ (seen from the outside)
-         *  \param  rhsContribInner
+         *  \param[out]  rhsContribInner
          *          \f$\hat{u}_{p}^{RHS}\f$ (seen from the inside)
-         *  \param  rhsContribOuter
+         *  \param[out]  rhsContribOuter
          *          \f$\hat{u}_{p}^{RHS}\f$ (seen from the outside)
          **/
         template < class FaceDomainType >
@@ -469,21 +469,21 @@ class DiscreteStokesModelInterface
          *
          *  \tparam FaceDomainType
          *          domain type on given face
-         *  \param  it
+         *  \param[in]  it
          *          faceiterator
-         *  \param  time
+         *  \param[in]  time
          *          global time
-         *  \param  x
+         *  \param[in]  x
          *          point to evaluate at (on the face)
-         *  \param  uInner
+         *  \param[in]  uInner
          *          value of \f$u\f$ in \f$x\f$
-         *  \param  pInner
+         *  \param[in]  pInner
          *          value of \f$p\f$ in \f$x\f$
-         *  \param  uContribInner
+         *  \param[out]  uContribInner
          *          \f$\hat{u}_{p}^{U}\f$
-         *  \param  pContribInner
+         *  \param[out]  pContribInner
          *          \f$\hat{u}_{p}^{P}\f$
-         *  \param  rhsContribInner
+         *  \param[out]  rhsContribInner
          *          \f$\hat{u}_{p}^{RHS}\f$
          **/
         template < class FaceDomainType >
@@ -527,23 +527,23 @@ class DiscreteStokesModelInterface
          *
          *  \tparam FaceDomainType
          *          domain type on given face
-         *  \param  it
+         *  \param[in]  it
          *          faceiterator
-         *  \param  time
+         *  \param[in]  time
          *          global time
-         *  \param  x
+         *  \param[in]  x
          *          point to evaluate at (on the face)
-         *  \param  pInner
+         *  \param[in]  pInner
          *          value of \f$p\f$ in \f$x\f$ (seen from the inside)
-         *  \param  pOuter
+         *  \param[in]  pOuter
          *          value of \f$p\f$ in \f$x\f$ (seen from the outside)
-         *  \param  pContribInner
+         *  \param[out]  pContribInner
          *          \f$\hat{p}^{P}\f$ (seen from the inside)
-         *  \param  pContribOuter
+         *  \param[out]  pContribOuter
          *          \f$\hat{p}^{P}\f$ (seen from the outside)
-         *  \param  rhsContribInner
+         *  \param[out]  rhsContribInner
          *          \f$\hat{p}^{RHS}\f$ (seen from the inside)
-         *  \param  rhsContribOuter
+         *  \param[out]  rhsContribOuter
          *          \f$\hat{p}^{RHS}\f$ (seen from the outside)
          **/
         template < class FaceDomainType >
@@ -588,17 +588,17 @@ class DiscreteStokesModelInterface
          *
          *  \tparam FaceDomainType
          *          domain type on given face
-         *  \param  it
+         *  \param[in]  it
          *          faceiterator
-         *  \param  time
+         *  \param[in]  time
          *          global time
-         *  \param  x
+         *  \param[in]  x
          *          point to evaluate at (on the face)
-         *  \param  pInner
+         *  \param[in]  pInner
          *          value of \f$p\f$ in \f$x\f$ (seen from the inside)
-         *  \param  pContribInner
+         *  \param[out]  pContribInner
          *          \f$\hat{p}^{P}\f$
-         *  \param  rhsContribInner
+         *  \param[out]  rhsContribInner
          *          \f$\hat{p}^{RHS}\f$
          **/
         template < class FaceDomainType >
@@ -639,31 +639,31 @@ class DiscreteStokesModelInterface
          *
          *  \tparam FaceDomainType
          *          domain type on given face
-         *  \param  it
+         *  \param[in]  it
          *          faceiterator
-         *  \param  time
+         *  \param[in]  time
          *          global time
-         *  \param  x
+         *  \param[in]  x
          *          point to evaluate at (on the face)
-         *  \param  uInner
+         *  \param[in]  uInner
          *          value of \f$u\f$ in \f$x\f$ (seen from the inside)
-         *  \param  uOuter
+         *  \param[in]  uOuter
          *          value of \f$u\f$ in \f$x\f$ (seen from the outside)
-         *  \param  sigmaInner
+         *  \param[in]  sigmaInner
          *          value of \f$\sigma\f$ in \f$x\f$ (seen from the inside)
-         *  \param  sigmaOuter
+         *  \param[in]  sigmaOuter
          *          value of \f$\sigma\f$ in \f$x\f$ (seen from the outside)
-         *  \param  sigmaContribInner
+         *  \param[out]  sigmaContribInner
          *          \f$\hat{\sigma}^{\sigma}\f$ (seen from the inside)
-         *  \param  sigmaContribOuter
+         *  \param[out]  sigmaContribOuter
          *          \f$\hat{\sigma}^{\sigma}\f$ (seen from the outside)
-         *  \param  uContribInner
+         *  \param[out]  uContribInner
          *          \f$\hat{\sigma}^{U}\f$ (seen from the inside)
-         *  \param  uContribOuter
+         *  \param[out]  uContribOuter
          *          \f$\hat{\sigma}^{U}\f$ (seen from the outside)
-         *  \param  rhsContribInner
+         *  \param[out]  rhsContribInner
          *          \f$\hat{\sigma}^{RHS}\f$ (seen from the inside)
-         *  \param  rhsContribOuter
+         *  \param[out]  rhsContribOuter
          *          \f$\hat{\sigma}^{RHS}\f$ (seen from the outside)
          **/
         template < class FaceDomainType >
@@ -718,21 +718,21 @@ class DiscreteStokesModelInterface
          *
          *  \tparam FaceDomainType
          *          domain type on given face
-         *  \param  it
+         *  \param[in]  it
          *          faceiterator
-         *  \param  time
+         *  \param[in]  time
          *          global time
-         *  \param  x
+         *  \param[in]  x
          *          point to evaluate at (on the face)
-         *  \param  uInner
+         *  \param[in]  uInner
          *          value of \f$u\f$ in \f$x\f$ (seen from the inside)
-         *  \param  sigmaInner
+         *  \param[in]  sigmaInner
          *          value of \f$\sigma\f$ in \f$x\f$ (seen from the inside)
-         *  \param  sigmaContribInner
+         *  \param[out]  sigmaContribInner
          *          \f$\hat{\sigma}^{\sigma}\f$
-         *  \param  uContribInner
+         *  \param[out]  uContribInner
          *          \f$\hat{\sigma}^{U}\f$
-         *  \param  rhsContribInner
+         *  \param[out]  rhsContribInner
          *          \f$\hat{\sigma}^{RHS}\f$
          **/
         template < class FaceDomainType >
@@ -762,11 +762,11 @@ class DiscreteStokesModelInterface
          *
          *  \tparam DomainType
          *          domain type in entity
-         *  \param  time
+         *  \param[in]  time
          *          global time
-         *  \param  x
+         *  \param[in]  x
          *          point to evaluate at
-         *  \param  forceContrib
+         *  \param[out]  forceContrib
          *          value of \f$f\f$ in \f$x\f$
          **/
         template < class DomainType >
@@ -865,10 +865,11 @@ class DiscreteStokesModelDefaultTraits
         typedef Dune::AdaptiveDiscreteFunction< DiscretePressureFunctionSpaceType >
             DiscretePressureFunctionType;
 
-        //!
+        //! function type for the analytical force
         typedef Dune::Function< VelocityFunctionSpaceType, AnalyticalForceImp >
             AnalyticalForceType;
 
+        //! function type for the analytical boundary values
         typedef Dune::Function< VelocityFunctionSpaceType, AnalyticalDirichletDataImp >
             AnalyticalDirichletDataType;
 
@@ -890,51 +891,169 @@ class DiscreteStokesModelDefaultTraits
 
 
 /**
- *  \brief  definition of an ldg method for a stokes problem
- *  \todo   texdoc
+ *  \brief  A default implementation of a discrete stokes model.
+ *
+ *          Implements the fluxes needed for the ldg method
+ *          (see DiscreteStokesModelInterface).
+ *          The fluxes \f$\hat{u}_{\sigma}\f$, \f$\hat{\sigma}\f$,
+ *          \f$\hat{p}\f$ and \f$\hat{u}_{p}\f$ are implemented as proposed in
+ *          B. Cockburn, G. Kanschat, D. Schötzau, C. Schwab: <EM>Local
+ *          Discontinuous Galerkin Methodsfor the Stokes System</EM> (2000).\n\n
+ *          To use this model, a user has to implement the analytical force
+ *          \f$f\f$ and the dirichlet data \f$g_{D}\f$ as a Dune::Function
+ *          (only the method evaluate( arg, ret ) is needed) and specify the
+ *          types of this functions as template arguments for the traits class
+ *          DiscreteStokesModelDefaultTraits.\n\n
+ *          <b>Notation:</b> Given simplices \f$T_{+}\f$ and
+ *          \f$T_{-}\f$ and a face \f$\varepsilon\f$ between them, the values
+ *          of a function \f$u\f$ on the face \f$\varepsilon\f$ are denoted by \f$u^{+}\f$,
+ *          if seen from \f$T_{+}\f$ and \f$u^{-}\f$, if seen from \f$T_{-}\f$.
+ *          The outer normals of \f$T_{+,-}\f$ in a given point on
+ *          the face \f$\varepsilon\f$ are denoted by \f$n_{+,-}\f$,
+ *          accordingly.\n
+ *          We define\n
+ *          the <b>mean values</b>\n
+ *          - \f$\{\{p\}\}\in R\f$ for a \f$p\in R\f$ as
+ *              \f[
+ *                  \{\{p\}\}:=\frac{1}{2}\left(p^{+}+p^{-}\right),
+ *              \f]
+ *          - \f$\{\{u\}\}\in R^{d}\f$ for a \f$u\in R^{d}\f$ as
+ *              \f[
+ *                  \{\{u\}\}:=\frac{1}{2}\left(u^{+}+u^{-}\right),
+ *              \f]
+ *          - \f$\{\{\sigma\}\}\in R^{d\times d}\f$ for a \f$\sigma\in R^{d\times d}\f$ as
+ *              \f[
+ *                  \{\{\sigma\}\}:=\frac{1}{2}\left(\sigma^{+}+\sigma^{-}\right)
+ *              \f]
+ *
+ *          and the <b>jumps</b>\n
+ *          - \f$\left[\left[p\right]\right]\in R^{d}\f$ for a \f$p\in R\f$ as
+ *              \f[
+ *                  \left[\left[p\right]\right]:=p^{+}n^{+}+p^{-}n^{-},
+ *              \f]
+ *          - \f$\left[\left[u\right]\right]\in R\f$ for a \f$u\in R^{d}\f$ as
+ *              \f[
+ *                  \left[\left[u\right]\right]:=u^{+}\cdot n^{+}+u^{-}\cdot n^{-},
+ *              \f]
+ *          - \f$\underline{\left[\left[u\right]\right]}\in R^{d\times d}\f$ for a \f$u\in R^{d}\f$ as
+ *              \f[
+ *                  \underline{\left[\left[u\right]\right]}:=u^{+}\otimes n^{+}+u^{-}\otimes n^{-},
+ *              \f]
+ *          - \f$\left[\left[\sigma\right]\right]\in R^{d}\f$ for a \f$\sigma\in R^{d\times d}\f$ as
+ *              \f[
+ *                  \left[\left[\sigma\right]\right]:=\sigma^{+}\cdot n^{+}+\sigma^{-}\cdot n^{-}.
+ *              \f]
+ *
+ *          We also denote by \f$\mathcal{E}_{D}\f$ the set of those faces
+ *          \f$\varepsilon\f$ that lie on the boundary \f$\partial\Omega\f$ and
+ *          by \f$\mathcal{E}_{I}\f$ those which are inside \f$\Omega\f$.\n
+ *          For a detailed definition of this notation see B. Cockburn, G. Kanschat, D. Schötzau, C. Schwab: <EM>Local
+ *          Discontinuous Galerkin Methodsfor the Stokes System</EM> (2000), again.\n
+ *          <b>Attention:</b> For reasons of simplicity the assumtion \f$n^{-}=-1\cdot n^{+}\f$ is used.
+ *          This may be not true for nonconforming grids.\n\n
+ *          With this notation at hand the fluxes can de described as
+ *          - \f$\hat{u}_{\sigma}:\Omega\rightarrow R^{d}\f$ for an inner face (see velocitySigmaFlux() )
+ *              \f[
+ *                  \hat{u}_{\sigma}(u):=\{\{u\}\}+\underline{\left[\left[u\right]\right]}\cdot C_{12}\quad\quad\varepsilon\in\mathcal{E}_{I},
+ *              \f]
+ *          - \f$\hat{u}_{\sigma}:\Omega\rightarrow R^{d}\f$ for a boundary face (see velocitySigmaBoundaryFlux() )
+ *              \f[
+ *                  \hat{u}_{\sigma}(u):=g_{D}\quad\quad\varepsilon\in\mathcal{E}_{D},
+ *              \f]
+ *          - \f$\hat{\sigma}:\Omega\rightarrow R^{d\times d}\f$ for an inner face (see sigmaFlux() )
+ *              \f[
+ *                  \hat{\sigma}(u,\sigma):=\{\{\sigma\}\}-C_{11}\underline{\left[\left[u\right]\right]}+\left[\left[\sigma\right]\right]\otimes C_{12}\quad\quad\varepsilon\in\mathcal{E}_{I},
+ *              \f]
+ *          - \f$\hat{\sigma}:\Omega\rightarrow R^{d\times d}\f$ for a boundary face (see sigmaBoundaryFlux() )
+ *              \f[
+ *                  \hat{\sigma}(u,\sigma):=\sigma^{+}-C_{11}\left(u^{+}-g_{D}\right)\otimes n^{+}\quad\quad\varepsilon\in\mathcal{E}_{D},
+ *              \f]
+ *          - \f$\hat{p}:\Omega\rightarrow R\f$ for an inner face (see pressureFlux() )
+ *              \f[
+ *                  \hat{p}(p):=\{\{p\}\}-D_{12}\left[\left[p\right]\right]\quad\quad\varepsilon\in\mathcal{E}_{I},
+ *              \f]
+ *          - \f$\hat{p}:\Omega\rightarrow R\f$ for a boundary face (see pressureBoundaryFlux() )
+ *              \f[
+ *                  \hat{p}(p):=p^{+}\quad\quad\varepsilon\in\mathcal{E}_{D},
+ *              \f]
+ *          - \f$\hat{u}_{p}:\Omega\rightarrow R^{d}\f$ for an inner face (see velocityPressureFlux() )
+ *              \f[
+ *                  \hat{u}_{p}(u,p):=\{\{u\}\}+D_{11}\left[\left[p\right]\right]+D_{12}\left[\left[u\right]\right]\quad\quad\varepsilon\in\mathcal{E}_{I}
+ *              \f]
+ *
+ *          and
+ *          - \f$\hat{u}_{p}:\Omega\rightarrow R^{d}\f$ for a boundary face (see velocityPressureBoundaryFlux() )
+ *              \f[
+ *                  \hat{u}_{p}(u,p):=g_{D}\quad\quad\varepsilon\in\mathcal{E}_{D},
+ *              \f]
+ *
+ *          where \f$C_{11},\;\;D_{11}\in R\f$ are the stability coefficients
+ *          and \f$C_{12},\;\;D_{12}\in R^{d}\f$ are the coefficients
+ *          concerning efficiency and accuracy.
  **/
 template < class DiscreteStokesModelDefaultTraitsImp >
 class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< DiscreteStokesModelDefaultTraitsImp >
 {
     public:
 
+        //! interface class
         typedef DiscreteStokesModelInterface< DiscreteStokesModelDefaultTraitsImp >
             BaseType;
 
+        //! iterator over intersections
         typedef typename BaseType::IntersectionIteratorType
             IntersectionIteratorType;
 
+        //! Vector type of the velocity's discrete function space's range
         typedef typename BaseType::VelocityRangeType
             VelocityRangeType;
 
+        //! Matrix type of the sigma's discrete function space's range
         typedef typename BaseType::SigmaRangeType
             SigmaRangeType;
 
+        //! Vector type of the pressure's discrete function space's range
         typedef typename BaseType::PressureRangeType
             PressureRangeType;
 
+        //! type of analytical force (usually Dune::Function)
         typedef typename BaseType::AnalyticalForceType
             AnalyticalForceType;
 
+        //! type of analytical dirichlet data (usually Dune::Function)
         typedef typename BaseType::AnalyticalDirichletDataType
             AnalyticalDirichletDataType;
 
         /**
          *  \brief  constructor
          *
-         *  set \f$C_{11}\in R\f$, \f$C_{12}\in R\f$, \f$D_{11}\in R^{d}\f$,
-         *  \f$D_{12}\in R^{d}\f$
+         *  sets the coefficients
+         *  \param[in]  C_11
+         *          \f$C_{11}\in R\f$
+         *  \param[in]  C_12
+         *          \f$C_{12}\in R^{d}\f$
+         *  \param[in]  D_11
+         *          \f$D_{11}\in R\f$
+         *  \param[in]  D_12
+         *          \f$D_{12}\in R^{d}\f$
+         *  \param[in]  force
+         *          analytical force
+         *  \param[in]  dirichletData
+         *          analytical dirichlet data
          **/
-        DiscreteStokesModelDefault( const AnalyticalForceType& force,
+        DiscreteStokesModelDefault( const double C_11,
+                                    const VelocityRangeType& C_12,
+                                    const double D_11,
+                                    const VelocityRangeType& D_12,
+                                    const AnalyticalForceType& force,
                                     const AnalyticalDirichletDataType& dirichletData )
-            : C_12_( 1.0 ),
-            D_12_( 1.0 ),
+            : C_11_( C_11 ),
+            C_12_( C_12 ),
+            D_11_( D_11 ),
+            D_12_( D_12 ),
             force_( force ),
             dirichletData_( dirichletData )
-        {
-            C_11_ = 1.0;
-            D_11_ = 1.0;
-        }
+        {}
 
         /**
          *  \brief  destructor
@@ -945,8 +1064,10 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         {}
 
         /**
-         *  \brief
-         *  \todo   doc me
+         *  \brief  returns true
+         *
+         *  since problem has a \f$\hat{u}_{\sigma}\f$ contribution
+         *  \return true
          **/
         bool hasVelocitySigmaFlux() const
         {
@@ -954,8 +1075,10 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         }
 
         /**
-         *  \brief
-         *  \todo   doc me
+         *  \brief  returns true
+         *
+         *  since problem has a \f$\hat{u}_{p}\f$ contribution
+         *  \return true
          **/
         bool hasVelocityPressureFlux() const
         {
@@ -963,8 +1086,10 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         }
 
         /**
-         *  \brief
-         *  \todo   doc me
+         *  \brief  returns true
+         *
+         *  since problem has a \f$\hat{p}\f$ contribution
+         *  \return true
          **/
         bool hasPressureFlux() const
         {
@@ -972,8 +1097,10 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         }
 
         /**
-         *  \brief
-         *  \todo   doc me
+         *  \brief  returns true
+         *
+         *  since problem has a \f$\hat{\sigma}\f$ contribution
+         *  \return true
          **/
         bool hasSigmaFlux() const
         {
@@ -981,8 +1108,10 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         }
 
         /**
-         *  \brief
-         *  \todo   doc me
+         *  \brief  returns true
+         *
+         *  since problem has a \f$f\f$ contribution
+         *  \return true
          **/
         bool hasForce() const
         {
@@ -990,9 +1119,36 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         }
 
         /**
-         *  \brief
-         *  \todo   doc me
-         *  \attention  assumption: \f$n_{inner}=-1*n_{outer}\f$
+         *  \brief  implementation of \f$\hat{u}_{\sigma}\f$
+         *
+         *  Under the assumption of linearity (see DiscreteStokesModelInterface)
+         *  this flux returns
+         *  - \f$\hat{u}_{\sigma}^{U}:=\{\{u\}\}+\underline{\left[\left[u\right]\right]}\cdot C_{12}\f$
+         *
+         *  and
+         *  - \f$\hat{u}_{\sigma}^{RHS}:=0\f$.
+         *
+         *  \attention  Assumption: \f$n_{-}=-1\cdot n_{+}\f$
+         *  \tparam FaceDomainType
+         *          domain type on given face
+         *  \param[in]  it
+         *              faceiterator
+         *  \param[in]  time
+         *              global time
+         *  \param[in]  x
+         *              point to evaluate at (on the face)
+         *  \param[in]  uInner
+         *              value of \f$u\f$ in \f$x\f$ (seen from the inside)
+         *  \param[in]  uOuter
+         *              value of \f$u\f$ in \f$x\f$ (seen from the outside)
+         *  \param[out] uContribInner
+         *              \f$\hat{u}_{\sigma}^{U}\f$ (seen from the inside)
+         *  \param[out] uContribOuter
+         *              \f$\hat{u}_{\sigma}^{U}\f$ (seen from the outside)
+         *  \param[out] rhsContribInner
+         *              \f$\hat{u}_{\sigma}^{RHS}\f$ (seen from the inside)
+         *  \param[out] rhsContribOuter
+         *              \f$\hat{u}_{\sigma}^{RHS}\f$ (seen from the outside)
          **/
         template < class FaceDomainType >
         void velocitySigmaFlux( const IntersectionIteratorType& it,
@@ -1032,8 +1188,29 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         }
 
         /**
-         *  \brief
-         *  \todo   doc like velocitySigmaFlux
+         *  \brief  implementation of \f$\hat{u}_{\sigma}\f$
+         *
+         *  Under the assumption of linearity (see DiscreteStokesModelInterface)
+         *  this flux returns
+         *  - \f$\hat{u}_{\sigma}^{U}:=0\f$
+         *
+         *  and
+         *  - \f$\hat{u}_{\sigma}^{RHS}:=g_{D}\f$.
+         *
+         *  \tparam FaceDomainType
+         *          domain type on given face
+         *  \param[in]  it
+         *          faceiterator
+         *  \param[in]  time
+         *          global time
+         *  \param[in]  x
+         *          point to evaluate at (on the face)
+         *  \param[in]  uInner
+         *          value of \f$u\f$ in \f$x\f$
+         *  \param[out]  uContribInner
+         *          \f$\hat{u}_{\sigma}^{U}\f$
+         *  \param[out]  rhsContribInner
+         *          \f$\hat{u}_{\sigma}^{RHS}\f$
          **/
         template < class FaceDomainType >
         void velocitySigmaBoundaryFlux( const IntersectionIteratorType& it,
@@ -1055,8 +1232,45 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         }
 
         /**
-         *  \brief
-         *  \todo   doc me
+         *  \brief  implementation of \f$\hat{u}_{p}\f$
+         *
+         *  Under the assumption of linearity (see DiscreteStokesModelInterface)
+         *  this flux returns
+         *  - \f$\hat{u}_{p}^{U}:=\{\{u\}\}+D_{12}\cdot\underline{\left[\left[u\right]\right]}\f$,
+         *  - \f$\hat{u}_{p}^{P}:=D_{11}\left[\left[p\right]\right]\f$
+         *
+         *  and
+         *  - \f$\hat{u}_{p}^{RHS}:=0\f$.
+         *
+         *  \attention  Assumption: \f$n_{-}=-1\cdot n_{+}\f$
+         *  \tparam FaceDomainType
+         *          domain type on given face
+         *  \param[in]  it
+         *          faceiterator
+         *  \param[in]  time
+         *          global time
+         *  \param[in]  x
+         *          point to evaluate at (on the face)
+         *  \param[in]  uInner
+         *          value of \f$u\f$ in \f$x\f$ (seen from the inside)
+         *  \param[in]  uOuter
+         *          value of \f$u\f$ in \f$x\f$ (seen from the outside)
+         *  \param[in]  pInner
+         *          value of \f$p\f$ in \f$x\f$ (seen from the inside)
+         *  \param[in]  pOuter
+         *          value of \f$p\f$ in \f$x\f$ (seen from the outside)
+         *  \param[out]  uContribInner
+         *          \f$\hat{u}_{p}^{U}\f$ (seen from the inside)
+         *  \param[out]  uContribOuter
+         *          \f$\hat{u}_{p}^{U}\f$ (seen from the outside)
+         *  \param[out]  pContribInner
+         *          \f$\hat{u}_{p}^{P}\f$ (seen from the inside)
+         *  \param[out]  pContribOuter
+         *          \f$\hat{u}_{p}^{P}\f$ (seen from the outside)
+         *  \param[out]  rhsContribInner
+         *          \f$\hat{u}_{p}^{RHS}\f$ (seen from the inside)
+         *  \param[out]  rhsContribOuter
+         *          \f$\hat{u}_{p}^{RHS}\f$ (seen from the outside)
          **/
         template < class FaceDomainType >
         void velocityPressureFlux(  const IntersectionIteratorType& it,
@@ -1114,8 +1328,34 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         }
 
         /**
-         *  \brief
-         *  \todo   doc like velocityPressureFlux
+         *  \brief  implementation of \f$\hat{u}_{p}\f$
+         *
+         *  Under the assumption of linearity (see DiscreteStokesModelInterface)
+         *  this flux returns
+         *  - \f$\hat{u}_{p}^{U}:=0\f$,
+         *  - \f$\hat{u}_{p}^{P}:=0\f$
+         *
+         *  and
+         *  - \f$\hat{u}_{p}^{RHS}:=g_{D}\f$.
+         *
+         *  \tparam FaceDomainType
+         *          domain type on given face
+         *  \param[in]  it
+         *          faceiterator
+         *  \param[in]  time
+         *          global time
+         *  \param[in]  x
+         *          point to evaluate at (on the face)
+         *  \param[in]  uInner
+         *          value of \f$u\f$ in \f$x\f$
+         *  \param[in]  pInner
+         *          value of \f$p\f$ in \f$x\f$
+         *  \param[out]  uContribInner
+         *          \f$\hat{u}_{p}^{U}\f$
+         *  \param[out]  pContribInner
+         *          \f$\hat{u}_{p}^{P}\f$
+         *  \param[out]  rhsContribInner
+         *          \f$\hat{u}_{p}^{RHS}\f$
          **/
         template < class FaceDomainType >
         void velocityPressureBoundaryFlux(
@@ -1143,8 +1383,36 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         }
 
         /**
-         *  \brief
-         *  \todo latex doc
+         *  \brief  implementation of \f$\hat{p}\f$
+         *
+         *  Under the assumption of linearity (see DiscreteStokesModelInterface)
+         *  this flux returns
+         *  - \f$\hat{p}^{P}:=\{\{p\}\}-D_{12}\cdot\left[\left[p\right]\right]\f$
+         *
+         *  and
+         *  - \f$\hat{p}^{RHS}:=0\f$.
+         *
+         *  \attention  Assumption: \f$n_{-}=-1\cdot n_{+}\f$
+         *  \tparam FaceDomainType
+         *          domain type on given face
+         *  \param[in]  it
+         *          faceiterator
+         *  \param[in]  time
+         *          global time
+         *  \param[in]  x
+         *          point to evaluate at (on the face)
+         *  \param[in]  pInner
+         *          value of \f$p\f$ in \f$x\f$ (seen from the inside)
+         *  \param[in]  pOuter
+         *          value of \f$p\f$ in \f$x\f$ (seen from the outside)
+         *  \param[out]  pContribInner
+         *          \f$\hat{p}^{P}\f$ (seen from the inside)
+         *  \param[out]  pContribOuter
+         *          \f$\hat{p}^{P}\f$ (seen from the outside)
+         *  \param[out]  rhsContribInner
+         *          \f$\hat{p}^{RHS}\f$ (seen from the inside)
+         *  \param[out]  rhsContribOuter
+         *          \f$\hat{p}^{RHS}\f$ (seen from the outside)
          **/
         template < class FaceDomainType >
         void pressureFlux(  const IntersectionIteratorType& it,
@@ -1180,8 +1448,29 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         }
 
         /**
-         *  \brief
-         *  \todo   doc like pressureFlux
+         *  \brief  implementation of \f$\hat{p}\f$
+         *
+         *  Under the assumption of linearity (see DiscreteStokesModelInterface)
+         *  this flux returns
+         *  - \f$\hat{p}^{P}:=p^{+}\f$
+         *
+         *  and
+         *  - \f$\hat{p}^{RHS}:=0\f$.
+         *
+         *  \tparam FaceDomainType
+         *          domain type on given face
+         *  \param[in]  it
+         *          faceiterator
+         *  \param[in]  time
+         *          global time
+         *  \param[in]  x
+         *          point to evaluate at (on the face)
+         *  \param[in]  pInner
+         *          value of \f$p\f$ in \f$x\f$ (seen from the inside)
+         *  \param[out]  pContribInner
+         *          \f$\hat{p}^{P}\f$ (seen from the inside)
+         *  \param[out]  rhsContribInner
+         *          \f$\hat{p}^{RHS}\f$ (seen from the inside)
          **/
         template < class FaceDomainType >
         void pressureBoundaryFlux(  const IntersectionIteratorType& it,
@@ -1203,8 +1492,45 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         }
 
         /**
-         *  \brief
-         *  \todo   latex doc
+         *  \brief  implementation of \f$\hat{\sigma}\f$
+         *
+         *  Under the assumption of linearity (see DiscreteStokesModelInterface)
+         *  this flux returns
+         *  - \f$\hat{\sigma}^{\sigma}:=\{\{\sigma\}\}+\left[\left[\sigma\right]\right]\otimes C_{12}\f$,
+         *  - \f$\hat{\sigma}^{U}:=-C_{11}\underline{\left[\left[u\right]\right]}\f$
+         *
+         *  and
+         *  - \f$\hat{\sigma}^{RHS}:=0\f$.
+         *
+         *  \attention  Assumption: \f$n_{-}=-1\cdot n_{+}\f$
+         *  \tparam FaceDomainType
+         *          domain type on given face
+         *  \param[in]  it
+         *          faceiterator
+         *  \param[in]  time
+         *          global time
+         *  \param[in]  x
+         *          point to evaluate at (on the face)
+         *  \param[in]  uInner
+         *          value of \f$u\f$ in \f$x\f$ (seen from the inside)
+         *  \param[in]  uOuter
+         *          value of \f$u\f$ in \f$x\f$ (seen from the outside)
+         *  \param[in]  sigmaInner
+         *          value of \f$\sigma\f$ in \f$x\f$ (seen from the inside)
+         *  \param[in]  sigmaOuter
+         *          value of \f$\sigma\f$ in \f$x\f$ (seen from the outside)
+         *  \param[out]  sigmaContribInner
+         *          \f$\hat{\sigma}^{\sigma}\f$ (seen from the inside)
+         *  \param[out]  sigmaContribOuter
+         *          \f$\hat{\sigma}^{\sigma}\f$ (seen from the outside)
+         *  \param[out]  uContribInner
+         *          \f$\hat{\sigma}^{U}\f$ (seen from the inside)
+         *  \param[out]  uContribOuter
+         *          \f$\hat{\sigma}^{U}\f$ (seen from the outside)
+         *  \param[out]  rhsContribInner
+         *          \f$\hat{\sigma}^{RHS}\f$ (seen from the inside)
+         *  \param[out]  rhsContribOuter
+         *          \f$\hat{\sigma}^{RHS}\f$ (seen from the outside)
          **/
         template < class FaceDomainType >
         void sigmaFlux( const IntersectionIteratorType& it,
@@ -1256,8 +1582,34 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         }
 
         /**
-         *  \brief
-         *  \todo   doc like sigmaFlux
+         *  \brief  implementation of \f$\hat{\sigma}\f$
+         *
+         *  Under the assumption of linearity (see DiscreteStokesModelInterface)
+         *  this flux returns
+         *  - \f$\hat{\sigma}^{\sigma}:=\sigma^{+}\f$,
+         *  - \f$\hat{\sigma}^{U}:=-C_{11}u^{+}\otimes n^{+}\f$
+         *
+         *  and
+         *  - \f$\hat{\sigma}^{RHS}:=C_{11}g_{D}\otimes n^{+}\f$.
+         *
+         *  \tparam FaceDomainType
+         *          domain type on given face
+         *  \param[in]  it
+         *          faceiterator
+         *  \param[in]  time
+         *          global time
+         *  \param[in]  x
+         *          point to evaluate at (on the face)
+         *  \param[in]  uInner
+         *          value of \f$u\f$ in \f$x\f$ (seen from the inside)
+         *  \param[in]  sigmaInner
+         *          value of \f$\sigma\f$ in \f$x\f$ (seen from the inside)
+         *  \param[out]  sigmaContribInner
+         *          \f$\hat{\sigma}^{\sigma}\f$
+         *  \param[out]  uContribInner
+         *          \f$\hat{\sigma}^{U}\f$
+         *  \param[out]  rhsContribInner
+         *          \f$\hat{\sigma}^{RHS}\f$
          **/
         template < class FaceDomainType >
         void sigmaBoundaryFlux( const IntersectionIteratorType& it,
@@ -1288,8 +1640,18 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         }
 
         /**
-         *  \brief
-         *  \todo   latex doc
+         *  \brief  implementation of \f$f\f$.
+         *
+         *          Calls the implementation of the user.
+         *
+         *  \tparam DomainType
+         *          domain type in entity
+         *  \param[in]  time
+         *          global time
+         *  \param[in]  x
+         *          point to evaluate at
+         *  \param[out]  forceContrib
+         *          value of \f$f\f$ in \f$x\f$
          **/
         template < class DomainType >
         void force( const double time,
