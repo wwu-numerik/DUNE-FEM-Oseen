@@ -16,12 +16,12 @@ namespace Dune
 template <  class DiscreteModelImp,
             class PreviousPassImp,
             int PassID = 0 >
-class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID >
+class StokesPass : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
 {
     public:
 
         //! base type
-        typedef LocalPass < DiscreteModelImp, PreviousPassImp, PassID >
+        typedef Pass < DiscreteModelImp, PreviousPassImp, PassID >
             BaseType;
 
         //! previous pass type
@@ -88,17 +88,27 @@ class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID 
         typedef typename GridPartType::IntersectionIteratorType
             IntersectionIteratorType;
 
-        //!typedefs for interface compliance, not definitive
-        typedef typename BaseType::ArgumentType
-            ArgumentType;
+//        //!typedefs for interface compliance, not definitive
+//        typedef typename BaseType::ArgumentType
+//            ArgumentType;
 
         //!typedefs for interface compliance, not definitive
         typedef typename BaseType::DestinationType
             DestinationType;
 
-        //!typedefs for interface compliance, not definitive
-        typedef typename BaseType::Entity
-            EntityType;
+//        //!typedefs for interface compliance, not definitive
+//        typedef typename BaseType::Entity
+//            EntityType;
+
+
+        typedef typename BaseType::DomainType
+            DomainType;
+
+        typedef typename BaseType::RangeType
+            RangeType;
+
+        typedef typename BaseType::TotalArgumentType
+            TotalArgumentType;
 
         /**
          *  \brief  constructor
@@ -110,14 +120,13 @@ class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID 
                     const DiscretePressureFunctionSpaceType& pressureSpace,
                     const DiscreteModelType& discreteModel,
                     const GridPartType& gridPart )
-                : BaseType( prevPass, velocitySpace ),
+                : BaseType( prevPass ),
                 velocitySpace_( velocitySpace ),
                 sigmaSpace_( sigmaSpace ),
                 pressureSpace_( pressureSpace ),
                 discreteModel_( discreteModel ),
                 gridPart_( gridPart )
-        {
-        }
+        {}
         /**
          *  \brief  empty constructor
          **/
@@ -128,23 +137,35 @@ class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID 
 
     protected:
 
-        virtual void prepare(   const ArgumentType& arg,
-                                DestinationType& dest ) const
-        {
-            std::cout << "\n== prepare begin" << std::endl;
-            std::cout << "\n== prepare end" << std::endl;
-        }
+        virtual void apply(const DomainType &arg, RangeType &dest) const
+        {}
 
-        virtual void finalize(  const ArgumentType& arg,
-                                DestinationType& dest ) const
-        {
-            std::cout << "\n== finalize begin" << std::endl;
-            std::cout << "\n== finalize end" << std::endl;
-        }
+        virtual void compute(const TotalArgumentType &arg, DestinationType &dest) const
+        {}
 
-        virtual void applyLocal( EntityType& entity ) const
-        {
-            std::cout << "\n== applyLocal begin" << std::endl;
+    public:
+        virtual void allocateLocalMemory()
+        {}
+
+
+
+//        virtual void prepare(   const ArgumentType& arg,
+//                                DestinationType& dest ) const
+//        {
+//            std::cout << "\n== prepare begin" << std::endl;
+//            std::cout << "\n== prepare end" << std::endl;
+//        }
+
+//        virtual void finalize(  const ArgumentType& arg,
+//                                DestinationType& dest ) const
+//        {
+//            std::cout << "\n== finalize begin" << std::endl;
+//            std::cout << "\n== finalize end" << std::endl;
+//        }
+
+//        virtual void applyLocal( EntityType& entity ) const
+//        {
+//            std::cout << "\n== applyLocal begin" << std::endl;
 
 //            VolumeQuadratureType volumeQuad( entity, 1 );
 //            VelocityRangeType x( 1.0 );
@@ -191,9 +212,9 @@ class StokesPass : public LocalPass < DiscreteModelImp, PreviousPassImp, PassID 
 //                                                sReturn,
 //                                                sReturn);
 //            Stuff::printFieldMatrix( sReturn, "sReturn" );
-
-            std::cout << "\n== applyLocal end" << std::endl;
-        }
+//
+//            std::cout << "\n== applyLocal end" << std::endl;
+//        }
 
     private:
         const DiscreteVelocityFunctionSpaceType& velocitySpace_;
