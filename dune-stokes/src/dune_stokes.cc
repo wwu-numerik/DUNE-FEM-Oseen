@@ -142,6 +142,25 @@ int main( int argc, char** argv )
     StokesModelType::DiscreteSigmaFunctionSpaceType discreteSigmaSpace( gridPart );
     StokesModelType::DiscretePressureFunctionSpaceType discretePressureSpace( gridPart );
 
+    typedef Dune::DiscreteFunctionSpacePair< Dune::DiscreteFunctionSpacePairTraits< StokesModelType::DiscreteVelocityFunctionSpaceType, StokesModelType::DiscretePressureFunctionSpaceType > >
+        DiscreteFunctionSpacePair;
+
+    typedef Dune::Pair < GridPartType, GridPartType >
+        GridPartTypePair;
+
+    GridPartTypePair gridPartTypePair( gridPart, gridPart );
+
+    DiscreteFunctionSpacePair discreteFunctionSpacePair( gridPartTypePair );
+
+    typedef Dune::DiscreteFunctionPair< Dune::DiscreteFunctionPairTraits <
+                StokesModelType::DiscreteVelocityFunctionType,
+                StokesModelType::DiscretePressureFunctionType,
+                DiscreteFunctionSpacePair > >
+        DiscreteFunctionPairType;
+
+    DiscreteFunctionPairType discreteFunctionPair( "schick1", "schick2", discreteFunctionSpacePair );
+
+
     infoStream << "...done." << std::endl;
     /* ********************************************************************** *
      * initialize passes                                                      *

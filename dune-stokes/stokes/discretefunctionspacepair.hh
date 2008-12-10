@@ -13,15 +13,62 @@ namespace Dune
 {
 
 // forward
+template < class DiscreteFunctionPairTraitsImp >
+class DiscreteFunctionPair;
+
+template < class T1, class T2, class DiscreteFunctionSpacePairImp >
+class DiscreteFunctionPairTraits
+{
+    public:
+        typedef DiscreteFunctionSpacePairImp
+            DiscreteFunctionSpacePairType;
+
+        typedef T1
+            FirstDiscreteFunctionType;
+
+        typedef T2
+            SecondDiscreteFunctionType;
+};
+
+template < class DiscreteFunctionPairTraitsImp >
+class DiscreteFunctionPair
+{
+    public:
+        typedef DiscreteFunctionPairTraitsImp
+            Traits;
+
+        typedef typename Traits::DiscreteFunctionSpacePairType
+            DiscreteFunctionSpacePairType;
+
+        typedef typename Traits::FirstDiscreteFunctionType
+            FirstDiscreteFunctionType;
+
+        typedef typename Traits::SecondDiscreteFunctionType
+            SecondDiscreteFunctionType;
+
+        // names schould be a pair
+        DiscreteFunctionPair( const std::string name1, const std::string name2, DiscreteFunctionSpacePairType& spacePair )
+            : firstFunction_( name1, spacePair.first() ),
+            secondFunction_( name2, spacePair.second() )
+        {}
+
+        ~DiscreteFunctionPair()
+        {}
+
+    private:
+        FirstDiscreteFunctionType firstFunction_;
+        SecondDiscreteFunctionType secondFunction_;
+};
+
+// forward
 template < class DiscreteFunctionSpacePairTraitsImp >
 class DiscreteFunctionSpacePair;
-
 
 template < class T1, class T2 >
 class DiscreteFunctionSpacePairTraits
 {
     public:
-        //! CRTSP
+        //! CRTP
         typedef DiscreteFunctionSpacePair< DiscreteFunctionSpacePairTraits < T1, T2 > >
             DiscreteFunctionSpaceType;
 
@@ -39,11 +86,39 @@ class DiscreteFunctionSpacePairTraits
 
         typedef Pair < typename T1::GridPartType, typename T2::GridPartType >
             GridPartType;
+
+      typedef T1
+            FirstDiscreteFunctionSpaceType;
+
+        typedef T2
+            SecondDiscreteFunctionSpaceType;
+
+
+        typedef Pair <  typename FirstDiscreteFunctionSpaceType::MapperType,
+                        typename SecondDiscreteFunctionSpaceType::MapperType >
+            MapperType;
+
+
+        typedef Pair <  typename FirstDiscreteFunctionSpaceType::EntityType,
+                        typename SecondDiscreteFunctionSpaceType::EntityType >
+            EntityType;
+
+        typedef Pair <  typename FirstDiscreteFunctionSpaceType::GridType,
+                        typename SecondDiscreteFunctionSpaceType::GridType >
+            GridType;
+
+        typedef Pair <  typename FirstDiscreteFunctionSpaceType::IndexSetType,
+                        typename SecondDiscreteFunctionSpaceType::IndexSetType >
+            IndexSetType;
+
+        typedef Pair <  typename FirstDiscreteFunctionSpaceType::IteratorType,
+                        typename SecondDiscreteFunctionSpaceType::IteratorType >
+            IteratorType;
 };
 
 template < class DiscreteFunctionSpacePairTraitsImp >
 class DiscreteFunctionSpacePair
-    : public DiscreteFunctionSpaceInterface< DiscreteFunctionSpacePairTraitsImp >
+//    : public DiscreteFunctionSpaceInterface< DiscreteFunctionSpacePairTraitsImp >
 {
     public:
         typedef DiscreteFunctionSpaceInterface< DiscreteFunctionSpacePairTraitsImp >
@@ -61,45 +136,49 @@ class DiscreteFunctionSpacePair
         typedef typename DiscreteFunctionSpaces::Type2
             SecondDiscreteFunctionSpaceType;
 
-        typedef Pair <  typename FirstDiscreteFunctionSpaceType::BaseFunctionSetType,
-                        typename SecondDiscreteFunctionSpaceType::BaseFunctionSetType >
+        typedef typename Traits::BaseFunctionSetType
             BaseFunctionSetType;
 
-        typedef Pair <  typename FirstDiscreteFunctionSpaceType::MapperType,
-                        typename SecondDiscreteFunctionSpaceType::MapperType >
+        typedef typename Traits::MapperType
             MapperType;
 
-        typedef Pair <  typename FirstDiscreteFunctionSpaceType::BlockMapperType,
-                        typename SecondDiscreteFunctionSpaceType::BlockMapperType >
+        typedef typename Traits::BlockMapperType
             BlockMapperType;
 
-        typedef Pair <  typename FirstDiscreteFunctionSpaceType::EntityType,
-                        typename SecondDiscreteFunctionSpaceType::EntityType,
+        typedef typename Traits::EntityType
             EntityType;
 
-        typedef Pair <  typename FirstDiscreteFunctionSpaceType::GridType,
-                        typename SecondDiscreteFunctionSpaceType::GridType >
+        typedef typename Traits::GridType
             GridType;
 
-        typedef Pair <  typename FirstDiscreteFunctionSpaceType::GridPartType,
-                        typename SecondDiscreteFunctionSpaceType::GridPartType >
+        typedef typename Traits::GridPartType
             GridPartType;
 
-        typedef Pair <  typename FirstDiscreteFunctionSpaceType::IndexSetType,
-                        typename SecondDiscreteFunctionSpaceType::IndexSetType >
+        typedef typename Traits::IndexSetType
             IndexSetType;
 
-        typedef Pair <  typename FirstDiscreteFunctionSpaceType::IteratorType,
-                        typename SecondDiscreteFunctionSpaceType::IteratorType >
+        typedef typename Traits::IteratorType
             IteratorType;
 
 
-        DiscreteFunctionSpacePair()
-            : BaseType()
+        DiscreteFunctionSpacePair( GridPartType& gridPart )
+         //   : BaseType(),
+            :firstSpace_( gridPart.first() ),
+            secondSpace_( gridPart.second() )
         {}
 
         ~DiscreteFunctionSpacePair()
         {}
+
+        FirstDiscreteFunctionSpaceType& first()
+        {
+            return firstSpace_;
+        }
+
+        SecondDiscreteFunctionSpaceType& second()
+        {
+            return secondSpace_;
+        }
 
 
         /**
@@ -290,6 +369,28 @@ class DiscreteFunctionSpacePair
         inline int maxNumLocalDofs () const
         {}
 
+
+        /** \brief defines type of data handle for communication
+         *  \param  DiscreteFunction  type of \ref Dune::DiscreteFunctionInterface
+         *                            "discrete function" to communicate
+         *  \param  Operation         type of operation to perform on communication
+         *                            (defaults to copy)
+         */
+        template< class DiscreteFunction,
+                  class Operation = DFCommunicationOperation :: Copy >
+        struct CommDataHandle
+        {
+          //! type of communication data handle
+          typedef typename Traits
+            :: template CommDataHandle< DiscreteFunction, Operation > :: Type
+            Type;
+
+          //! type of operation to perform on scatter
+          typedef typename Traits
+            :: template CommDataHandle< DiscreteFunction, Operation > :: OperationType
+            OperationType;
+        };
+
         /** \brief Creates DataHandle for given discrete function
          *
          *  \param[in]  discreteFunction  \ref DiscreteFunctionInterface
@@ -302,6 +403,10 @@ class DiscreteFunctionSpacePair
         createDataHandle ( DiscreteFunction& discreteFunction,
                           const Operation* operation ) const
         {}
+
+    private:
+        FirstDiscreteFunctionSpaceType firstSpace_;
+        SecondDiscreteFunctionSpaceType secondSpace_;
 
 };
 };
