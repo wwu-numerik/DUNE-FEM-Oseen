@@ -11,6 +11,7 @@
 #include <dune/common/bartonnackmanifcheck.hh>
 #include <dune/common/fvector.hh>
 
+#include <dune/stokes/discretefunctionspacepair.hh>
 #include "../src/stuff.hh" // should be removed in the end
 
 namespace Dune
@@ -801,7 +802,6 @@ class DiscreteStokesModelDefault;
 
 /**
  *  \brief  traits class for DiscreteStokesModelDefault
- *  \todo   doc
  **/
 template < class GridPartImp, class AnalyticalForceImp, class AnalyticalDirichletDataImp, int gridDim, int polOrder >
 class DiscreteStokesModelDefaultTraits
@@ -860,6 +860,10 @@ class DiscreteStokesModelDefaultTraits
                                                     GridPartImp,
                                                     polOrder >
             DiscretePressureFunctionSpaceType;
+
+        //! pair of velocity and pressure space for the pass
+        typedef Dune::DiscreteFunctionSpacePair< Dune::DiscreteFunctionSpacePairTraits< DiscreteVelocityFunctionSpaceType, DiscretePressureFunctionSpaceType > >
+            DiscreteFunctionSpacePair;
 
         //! discrete function type for the pressure
         typedef Dune::AdaptiveDiscreteFunction< DiscretePressureFunctionSpaceType >
