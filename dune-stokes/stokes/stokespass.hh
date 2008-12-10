@@ -88,18 +88,12 @@ class StokesPass : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
         typedef typename GridPartType::IntersectionIteratorType
             IntersectionIteratorType;
 
-//        //!typedefs for interface compliance, not definitive
-//        typedef typename BaseType::ArgumentType
-//            ArgumentType;
-
-        //!typedefs for interface compliance, not definitive
+        /**
+         *  \name typedefs for interface compliance
+         *  \{
+         **/
         typedef typename BaseType::DestinationType
             DestinationType;
-
-//        //!typedefs for interface compliance, not definitive
-//        typedef typename BaseType::Entity
-//            EntityType;
-
 
         typedef typename BaseType::DomainType
             DomainType;
@@ -109,6 +103,10 @@ class StokesPass : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
 
         typedef typename BaseType::TotalArgumentType
             TotalArgumentType;
+        /**
+         *  \}
+         **/
+
 
         /**
          *  \brief  constructor
