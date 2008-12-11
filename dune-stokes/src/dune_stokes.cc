@@ -158,7 +158,9 @@ int main( int argc, char** argv )
                 DiscreteFunctionSpacePair > >
         DiscreteFunctionPairType;
 
-    DiscreteFunctionPairType discreteFunctionPair( "schick1", "schick2", discreteFunctionSpacePair );
+    Dune::Pair< const std::string, const std::string > namePair( "velocity", "pressure" );
+
+    DiscreteFunctionPairType discreteFunctionPair( namePair, discreteFunctionSpacePair );
 
 
     infoStream << "...done." << std::endl;
