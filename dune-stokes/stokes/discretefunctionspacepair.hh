@@ -47,6 +47,10 @@ class DiscreteFunctionPair
         typedef typename Traits::SecondDiscreteFunctionType
             SecondDiscreteFunctionType;
 
+        typedef Pair<   typename FirstDiscreteFunctionType::RangeFieldType,
+                        typename SecondDiscreteFunctionType::RangeFieldType >
+            RangeFieldType;
+
         DiscreteFunctionPair(   const Dune::Pair< const std::string, const std::string > namePair,
                                 DiscreteFunctionSpacePairType& spacePair )
             : firstFunction_( namePair.second(), spacePair.first() ),

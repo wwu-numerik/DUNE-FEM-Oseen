@@ -142,7 +142,7 @@ int main( int argc, char** argv )
     StokesModelType::DiscreteSigmaFunctionSpaceType discreteSigmaSpace( gridPart );
     StokesModelType::DiscretePressureFunctionSpaceType discretePressureSpace( gridPart );
 
-    typedef Dune::DiscreteFunctionSpacePair< Dune::DiscreteFunctionSpacePairTraits< StokesModelType::DiscreteVelocityFunctionSpaceType, StokesModelType::DiscretePressureFunctionSpaceType > >
+    typedef StokesModelType::Traits::DiscreteFunctionSpacePair
         DiscreteFunctionSpacePair;
 
     typedef Dune::Pair < GridPartType, GridPartType >
@@ -169,7 +169,7 @@ int main( int argc, char** argv )
      * ********************************************************************** */
     infoStream << "\ninitialising passes..." << std::endl;
 
-    typedef Dune::StartPass< StokesModelType::DiscreteVelocityFunctionType, -1 >
+    typedef Dune::StartPass< DiscreteFunctionPairType, -1 >
         StartPassType;
     StartPassType startPass;
 
@@ -182,8 +182,9 @@ int main( int argc, char** argv )
                                 stokesModel,
                                 gridPart );
 
-    StokesPassType::DomainType uDummy( "uDummy", discreteVelocitySpace );
-    stokesPass( uDummy, uDummy );
+    StokesPassType::DomainType dummyDomain( namePair, discreteFunctionSpacePair );
+    StokesPassType::RangeType dummyRange( namePair, discreteFunctionSpacePair );
+    stokesPass.apply( dummyDomain, dummyRange );
 
     infoStream << "...done." << std::endl;
 

@@ -861,10 +861,6 @@ class DiscreteStokesModelDefaultTraits
                                                     polOrder >
             DiscretePressureFunctionSpaceType;
 
-        //! pair of velocity and pressure space for the pass
-        typedef Dune::DiscreteFunctionSpacePair< Dune::DiscreteFunctionSpacePairTraits< DiscreteVelocityFunctionSpaceType, DiscretePressureFunctionSpaceType > >
-            DiscreteFunctionSpacePair;
-
         //! discrete function type for the pressure
         typedef Dune::AdaptiveDiscreteFunction< DiscretePressureFunctionSpaceType >
             DiscretePressureFunctionType;
@@ -877,16 +873,23 @@ class DiscreteStokesModelDefaultTraits
         typedef Dune::Function< VelocityFunctionSpaceType, AnalyticalDirichletDataImp >
             AnalyticalDirichletDataType;
 
+        //! pair of velocity and pressure space for the pass
+        typedef Dune::DiscreteFunctionSpacePair< Dune::DiscreteFunctionSpacePairTraits< DiscreteVelocityFunctionSpaceType, DiscretePressureFunctionSpaceType > >
+            DiscreteFunctionSpacePair;
 
-        /** \name Dummy types needed to comply with LocalPass
+        //! pair of velocity and pressure functions for the pass
+        typedef DiscreteFunctionPair< DiscreteFunctionPairTraits< DiscreteVelocityFunctionType, DiscretePressureFunctionType, DiscreteFunctionSpacePair > >
+            DiscreteFunctionPair;
+
+        /** \name Dummy types needed to comply with Pass
          *  \{
          */
         //! dummy return value of the pass
-        typedef DiscreteVelocityFunctionType
+        typedef DiscreteFunctionPair
             DestinationType;
 
         //! dummy discrete function space belonging to DestinationType
-        typedef DiscreteVelocityFunctionSpaceType
+        typedef DiscreteFunctionSpacePair
             DiscreteFunctionSpaceType;
         /**
          *  \}

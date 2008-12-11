@@ -16,7 +16,7 @@ namespace Dune
 template <  class DiscreteModelImp,
             class PreviousPassImp,
             int PassID = 0 >
-class StokesPass : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
+class StokesPass// : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
 {
     public:
 
@@ -118,8 +118,8 @@ class StokesPass : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
                     const DiscretePressureFunctionSpaceType& pressureSpace,
                     const DiscreteModelType& discreteModel,
                     const GridPartType& gridPart )
-                : BaseType( prevPass ),
-                velocitySpace_( velocitySpace ),
+//                : BaseType( prevPass ),
+                : velocitySpace_( velocitySpace ),
                 sigmaSpace_( sigmaSpace ),
                 pressureSpace_( pressureSpace ),
                 discreteModel_( discreteModel ),
@@ -131,17 +131,31 @@ class StokesPass : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
         StokesPass()
         {}
 
+        virtual void apply( const DomainType &arg, RangeType &dest) const
+        {
+            DiscreteVelocityFunctionType velocity( "pass_velocity", velocitySpace_ );
+            DiscretePressureFunctionType pressure( "pass_pressure", pressureSpace_ );
+            DiscreteSigmaFunctionType sigma( "pass_sigma", sigmaSpace_ );
 
+            typedef typename DiscreteVelocityFunctionSpaceType::IteratorType
+                EntityIteratorType;
 
-    protected:
+            EntityIteratorType entityItEnd = velocitySpace_.end();
+            for (EntityIteratorType entityIt = velocitySpace_.begin(); entityIt != entityItEnd; ++entityIt) {
 
-        virtual void apply(const DomainType &arg, RangeType &dest) const
+                typedef typename EntityIteratorType::Entity
+                    Entity;
+                typedef typename GridPartType::IntersectionIteratorType
+                    IntersectionIterator;
+
+//                IntersectionIterator iItEnd =
+
+            }
+        }
+
+        virtual void compute( const TotalArgumentType &arg, DestinationType &dest) const
         {}
 
-        virtual void compute(const TotalArgumentType &arg, DestinationType &dest) const
-        {}
-
-    public:
         virtual void allocateLocalMemory()
         {}
 
