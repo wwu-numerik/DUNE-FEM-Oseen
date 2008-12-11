@@ -83,7 +83,7 @@ int main( int argc, char** argv )
      * ********************************************************************** */
     infoStream << "\ninitialising grid..." << std::endl;
 
-    typedef Dune::LeafGridPart< GridType >
+    typedef Dune::DGAdaptiveLeafGridPart< GridType >
         GridPartType;
     Dune::GridPtr< GridType > gridPtr( parameters.DgfFilename() );
     GridPartType gridPart( *gridPtr );
