@@ -17,13 +17,15 @@
 #include <dune/fem/solver/oemsolver/oemsolver.hh>
 #include <dune/fem/space/dgspace.hh>
 #include <dune/fem/space/combinedspace.hh>
-#include <dune/fem/gridpart/gridpart.hh>
+#include <dune/fem/space/dgspace/dgadaptiveleafgridpart.hh>
+//#include <dune/fem/grid/gridpart.hh>
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
 
+#include <dune/stokes/discretestokesfunctionspacewrapper.hh>
 #include <dune/stokes/discretestokesmodelinterface.hh>
 //#include <dune/stokes/saddlepoint_inverse_operator.hh>
-#include <dune/stokes/stokespass.hh>
+//#include <dune/stokes/stokespass.hh>
 
 #include "parametercontainer.hh"
 #include "logging.hh"
@@ -138,9 +140,27 @@ int main( int argc, char** argv )
                     polOrder > >
         StokesModelType;
 
-    StokesModelType::DiscreteVelocityFunctionSpaceType discreteVelocitySpace( gridPart );
-    StokesModelType::DiscreteSigmaFunctionSpaceType discreteSigmaSpace( gridPart );
-    StokesModelType::DiscretePressureFunctionSpaceType discretePressureSpace( gridPart );
+    typedef StokesModelType::DiscreteVelocityFunctionSpaceType
+        DiscreteVelocityFunctionSpaceType;
+
+    typedef StokesModelType::DiscretePressureFunctionSpaceType
+        DiscretePressureFunctionSpaceType;
+
+    typedef Dune::DiscreteStokesFunctionSpaceWrapper< Dune::DiscreteStokesFunctionSpaceWrapperTraits<
+                DiscreteVelocityFunctionSpaceType,
+                DiscretePressureFunctionSpaceType > >
+        DiscreteStokesFunctionSpaceWrapperType;
+
+    DiscreteStokesFunctionSpaceWrapperType discreteStokesFunctionSpaceWrapper( gridPart );
+
+    typedef Dune::DiscreteStokesFunctionWrapper< Dune::DiscreteStokesFunctionWrapperTraits<
+                DiscreteStokesFunctionSpaceWrapperType,
+                StokesModelType::DiscreteVelocityFunctionType,
+                StokesModelType::DiscretePressureFunctionType > >
+        DiscreteStokesFunctionWrapperType;
+
+    DiscreteStokesFunctionWrapperType discreteStokesFunctionWrapper(    "wrapper",
+                                                                        discreteStokesFunctionSpaceWrapper );
 
     infoStream << "...done." << std::endl;
     /* ********************************************************************** *
@@ -148,28 +168,29 @@ int main( int argc, char** argv )
      * ********************************************************************** */
     infoStream << "\ninitialising passes..." << std::endl;
 
-    typedef Dune::StartPass< StokesModelType::DiscreteVelocityFunctionType, -1 >
-        StartPassType;
-    StartPassType startPass;
-
-    typedef Dune::StokesPass< StokesModelType, StartPassType, 0 >
-        StokesPassType;
-    StokesPassType stokesPass(  startPass,
-                                discreteVelocitySpace,
-                                discreteSigmaSpace,
-                                discretePressureSpace,
-                                stokesModel,
-                                gridPart );
-
-    StokesPassType::DomainType uDummy( "uDummy", discreteVelocitySpace );
-    stokesPass( uDummy, uDummy );
+//    typedef Dune::StartPass< DiscreteFunctionPairType, -1 >
+//        StartPassType;
+//    StartPassType startPass;
+//
+//    typedef Dune::StokesPass< StokesModelType, StartPassType, 0 >
+//        StokesPassType;
+//    StokesPassType stokesPass(  startPass,
+//                                discreteVelocitySpace,
+//                                discreteSigmaSpace,
+//                                discretePressureSpace,
+//                                stokesModel,
+//                                gridPart );
+//
+//    StokesPassType::DomainType dummyDomain( namePair, discreteFunctionSpacePair );
+//    StokesPassType::RangeType dummyRange( namePair, discreteFunctionSpacePair );
+//    stokesPass.apply( dummyDomain, dummyRange );
 
     infoStream << "...done." << std::endl;
 
     return 0;
   }
   catch ( Dune::Exception &e ){
-    std::cerr << "Dune reported error: " << e << std::endl;
+    std::cerr << "Dune reported error: " << e.what() << std::endl;
   }
   catch ( ... ){
     std::cerr << "Unknown exception thrown!" << std::endl;

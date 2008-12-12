@@ -79,7 +79,7 @@ class DiscreteStokesModelInterface
         typedef DiscreteStokesModelTraits
             Traits;
 
-        //! Implementation type for Barton-Nackman trick
+        //! Implementation type for CRTP
         typedef typename Traits::DiscreteModelType
             DiscreteModelType;
 
@@ -165,21 +165,6 @@ class DiscreteStokesModelInterface
         //! Element (codim 0 entity) of the grid
         typedef typename GridType::template Codim<0>::Entity
             EntityType;
-
-        /** \name Dummy types needed to comply to LocalPass
-         *  \{
-         */
-        //! dummy return value of the pass
-        typedef typename Traits::DestinationType
-            DestinationType;
-
-        //! dummy discrete function space belonging to DestinationType
-        typedef typename Traits::DiscreteFunctionSpaceType
-            DiscreteFunctionSpaceType;
-        /**
-         *  \}
-         **/
-
 
         /**
          *  \brief  constructor
@@ -815,7 +800,7 @@ class DiscreteStokesModelDefaultTraits
         typedef Dune::CachingQuadrature< GridPartImp, 0 >
             VolumeQuadratureType;
 
-        //! and for the faces
+        //! and we use for the faces
         typedef Dune::CachingQuadrature< GridPartImp, 1 >
             FaceQuadratureType;
 
@@ -851,7 +836,7 @@ class DiscreteStokesModelDefaultTraits
         typedef Dune::AdaptiveDiscreteFunction< DiscreteSigmaFunctionSpaceType >
             DiscreteSigmaFunctionType;
 
-      //! function space type for the pressure
+        //! function space type for the pressure
         typedef Dune::FunctionSpace< double, double, gridDim, 1 >
             PressureFunctionSpaceType;
 
@@ -877,20 +862,6 @@ class DiscreteStokesModelDefaultTraits
         typedef Dune::Function< VelocityFunctionSpaceType, AnalyticalDirichletDataImp >
             AnalyticalDirichletDataType;
 
-
-        /** \name Dummy types needed to comply with LocalPass
-         *  \{
-         */
-        //! dummy return value of the pass
-        typedef DiscreteVelocityFunctionType
-            DestinationType;
-
-        //! dummy discrete function space belonging to DestinationType
-        typedef DiscreteVelocityFunctionSpaceType
-            DiscreteFunctionSpaceType;
-        /**
-         *  \}
-         **/
 };
 
 
