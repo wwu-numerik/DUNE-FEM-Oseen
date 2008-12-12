@@ -16,7 +16,8 @@ namespace Dune
 template <  class DiscreteModelImp,
             class PreviousPassImp,
             int PassID = 0 >
-class StokesPass// : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
+class StokesPass
+    : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
 {
     public:
 
@@ -40,8 +41,16 @@ class StokesPass// : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
         typedef typename DiscreteModelType::FaceQuadratureType
             FaceQuadratureType;
 
+        //! type of discrete function space wrapper
+        typedef typename DiscreteModelType::DiscreteStokesFunctionSpaceWrapperType
+            DiscreteStokesFunctionSpaceWrapperType;
+
+        //! discrete function wrapper type
+        typedef typename DiscreteModelType::DiscreteStokesFunctionWrapperType
+            DiscreteStokesFunctionWrapperType;
+
         //! discrete function type for the velocity
-        typedef typename DiscreteModelType::DiscreteVelocityFunctionType
+        typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
             DiscreteVelocityFunctionType;
 
         //! discrete function space type for the velocity
@@ -57,7 +66,7 @@ class StokesPass// : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
             DiscreteSigmaFunctionSpaceType;
 
         //! discrete fucntion type for the pressure
-        typedef typename DiscreteModelType::DiscretePressureFunctionType
+        typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
             DiscretePressureFunctionType;
 
         //! discrete function space type for the pressure
@@ -133,21 +142,21 @@ class StokesPass// : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
 
         virtual void apply( const DomainType &arg, RangeType &dest) const
         {
-            DiscreteVelocityFunctionType velocity( "pass_velocity", velocitySpace_ );
-            DiscretePressureFunctionType pressure( "pass_pressure", pressureSpace_ );
-            DiscreteSigmaFunctionType sigma( "pass_sigma", sigmaSpace_ );
-
-            typedef typename DiscreteVelocityFunctionSpaceType::IteratorType
-                EntityIteratorType;
-
-            EntityIteratorType entityItEnd = velocitySpace_.end();
-            for (EntityIteratorType entityIt = velocitySpace_.begin(); entityIt != entityItEnd; ++entityIt) {
-
-                typedef typename EntityIteratorType::Entity
-                    Entity;
-                typedef typename GridPartType::IntersectionIteratorType
-                    IntersectionIterator;
-
+//            DiscreteVelocityFunctionType velocity( "pass_velocity", velocitySpace_ );
+//            DiscretePressureFunctionType pressure( "pass_pressure", pressureSpace_ );
+//            DiscreteSigmaFunctionType sigma( "pass_sigma", sigmaSpace_ );
+//
+//            typedef typename DiscreteVelocityFunctionSpaceType::IteratorType
+//                EntityIteratorType;
+//
+//            EntityIteratorType entityItEnd = velocitySpace_.end();
+//            for (EntityIteratorType entityIt = velocitySpace_.begin(); entityIt != entityItEnd; ++entityIt) {
+//
+//                typedef typename EntityIteratorType::Entity
+//                    Entity;
+//                typedef typename GridPartType::IntersectionIteratorType
+//                    IntersectionIterator;
+//
 //                IntersectionIterator iItEnd =
 
             }

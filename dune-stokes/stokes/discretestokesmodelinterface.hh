@@ -91,16 +91,19 @@ class DiscreteStokesModelInterface
         typedef typename Traits::FaceQuadratureType
             FaceQuadratureType;
 
-        //! discrete function space wrapper type for the pass
+        /**
+         *  \brief  discrete function space wrapper type for the pass
+         *  \todo   should be removed when DiscreteStokesFunctionWrapper complies with DiscreteFunctionInterface
+         **/
         typedef typename Traits::DiscreteStokesFunctionSpaceWrapperType
             DiscreteStokesFunctionSpaceWrapperType;
 
         //! discrete function wrapper type for the pass
         typedef typename Traits::DiscreteStokesFunctionWrapperType
-            DiscreteStokesFunctionType;
+            DiscreteStokesFunctionWrapperType;
 
         //! discrete function type for the velocity
-        typedef typename Traits::DiscreteVelocityFunctionType
+        typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
             DiscreteVelocityFunctionType;
 
         //! discrete function space type for the velocity
@@ -124,7 +127,7 @@ class DiscreteStokesModelInterface
             SigmaFunctionSpaceType;
 
         //! discrete function type for the pressure
-        typedef typename Traits::DiscretePressureFunctionType
+        typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
             DiscretePressureFunctionType;
 
         //! discrete function space type for the pressure
@@ -800,6 +803,7 @@ template < class GridPartImp, class AnalyticalForceImp, class AnalyticalDirichle
 class DiscreteStokesModelDefaultTraits
 {
     public:
+
         //! for Barton-Nackmann trick
         typedef DiscreteStokesModelDefault < DiscreteStokesModelDefaultTraits >
             DiscreteModelType;
@@ -812,6 +816,8 @@ class DiscreteStokesModelDefaultTraits
         typedef Dune::CachingQuadrature< GridPartImp, 1 >
             FaceQuadratureType;
 
+    private:
+
         //! function space type for the velocity
         typedef Dune::FunctionSpace< double, double, gridDim, gridDim >
             VelocityFunctionSpaceType;
@@ -821,28 +827,6 @@ class DiscreteStokesModelDefaultTraits
                                                     GridPartImp,
                                                     polOrder >
             DiscreteVelocityFunctionSpaceType;
-
-        //! discrete function type for the velocity
-        typedef Dune::AdaptiveDiscreteFunction< DiscreteVelocityFunctionSpaceType >
-            DiscreteVelocityFunctionType;
-
-        //! function space type for sigma
-        typedef Dune::MatrixFunctionSpace<  double,
-                                            double,
-                                            gridDim,
-                                            gridDim,
-                                            gridDim >
-            SigmaFunctionSpaceType;
-
-        //! discrete function space type for sigma
-        typedef Dune::DiscontinuousGalerkinSpace<   SigmaFunctionSpaceType,
-                                                    GridPartImp,
-                                                    polOrder >
-            DiscreteSigmaFunctionSpaceType;
-
-        //! discrete function type for sigma
-        typedef Dune::AdaptiveDiscreteFunction< DiscreteSigmaFunctionSpaceType >
-            DiscreteSigmaFunctionType;
 
         //! function space type for the pressure
         typedef Dune::FunctionSpace< double, double, gridDim, 1 >
@@ -854,19 +838,25 @@ class DiscreteStokesModelDefaultTraits
                                                     polOrder >
             DiscretePressureFunctionSpaceType;
 
-        //! pair of velocity and pressure space for the pass
-        typedef Dune::DiscreteFunctionSpacePair< Dune::DiscreteFunctionSpacePairTraits< DiscreteVelocityFunctionSpaceType, DiscretePressureFunctionSpaceType > >
-            DiscreteFunctionSpacePair;
-
-        //! discrete function type for the pressure
-        typedef Dune::AdaptiveDiscreteFunction< DiscretePressureFunctionSpaceType >
-            DiscretePressureFunctionType;
+    public:
 
         //! discrete function space wrapper type for the pass
         typedef Dune::DiscreteStokesFunctionSpaceWrapper< Dune::DiscreteStokesFunctionSpaceWrapperTraits<
                     DiscreteVelocityFunctionSpaceType,
                     DiscretePressureFunctionSpaceType > >
             DiscreteStokesFunctionSpaceWrapperType;
+
+    private:
+
+        //! discrete function type for the velocity
+        typedef Dune::AdaptiveDiscreteFunction< typename DiscreteStokesFunctionSpaceWrapperType::DiscreteVelocityFunctionSpaceType >
+            DiscreteVelocityFunctionType;
+
+        //! discrete function type for the pressure
+        typedef Dune::AdaptiveDiscreteFunction< typename DiscreteStokesFunctionSpaceWrapperType::DiscretePressureFunctionSpaceType >
+            DiscretePressureFunctionType;
+
+    public:
 
         //! discrete function wrapper type for the pass
         typedef Dune::DiscreteStokesFunctionWrapper< Dune::DiscreteStokesFunctionWrapperTraits<
@@ -875,13 +865,45 @@ class DiscreteStokesModelDefaultTraits
                     DiscretePressureFunctionType > >
             DiscreteStokesFunctionWrapperType;
 
+    private:
+
+        //! function space type for sigma
+        typedef Dune::MatrixFunctionSpace<  double,
+                                            double,
+                                            gridDim,
+                                            gridDim,
+                                            gridDim >
+            SigmaFunctionSpaceType;
+
+    public:
+
+        //! discrete function space type for sigma
+        typedef Dune::DiscontinuousGalerkinSpace<   SigmaFunctionSpaceType,
+                                                    GridPartImp,
+                                                    polOrder >
+            DiscreteSigmaFunctionSpaceType;
+
+        //! discrete function type for sigma
+        typedef Dune::AdaptiveDiscreteFunction< DiscreteSigmaFunctionSpaceType >
+            DiscreteSigmaFunctionType;
+
         //! function type for the analytical force
-        typedef Dune::Function< VelocityFunctionSpaceType, AnalyticalForceImp >
+        typedef Dune::Function< typename DiscreteStokesFunctionSpaceWrapperType::DiscreteVelocityFunctionSpaceType::FunctionSpaceType, AnalyticalForceImp >
             AnalyticalForceType;
 
         //! function type for the analytical boundary values
-        typedef Dune::Function< VelocityFunctionSpaceType, AnalyticalDirichletDataImp >
+        typedef Dune::Function< typename DiscreteStokesFunctionSpaceWrapperType::DiscreteVelocityFunctionSpaceType::FunctionSpaceType, AnalyticalDirichletDataImp >
             AnalyticalDirichletDataType;
+
+        /**
+         *  \name   types needed for the pass
+         *  \{
+         **/
+        typedef DiscreteStokesFunctionWrapperType
+            DestinationType;
+        /**
+         *  \}
+         **/
 
 };
 

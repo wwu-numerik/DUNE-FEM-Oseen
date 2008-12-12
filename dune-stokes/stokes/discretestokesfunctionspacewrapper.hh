@@ -434,6 +434,10 @@ class DiscreteStokesFunctionWrapper
         typedef typename Traits::DiscretePressureFunctionType
             DiscretePressureFunctionType;
 
+        //! type of range field
+        typedef typename DiscreteVelocityFunctionType::RangeFieldType
+            RangeFieldType;
+
         /**
          *  \brief  constructor
          *  \todo   doc
