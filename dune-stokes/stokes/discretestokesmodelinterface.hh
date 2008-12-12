@@ -91,6 +91,14 @@ class DiscreteStokesModelInterface
         typedef typename Traits::FaceQuadratureType
             FaceQuadratureType;
 
+        //! discrete function space wrapper type for the pass
+        typedef typename Traits::DiscreteStokesFunctionSpaceWrapperType
+            DiscreteStokesFunctionSpaceWrapperType;
+
+        //! discrete function wrapper type for the pass
+        typedef typename Traits::DiscreteStokesFunctionWrapperType
+            DiscreteStokesFunctionType;
+
         //! discrete function type for the velocity
         typedef typename Traits::DiscreteVelocityFunctionType
             DiscreteVelocityFunctionType;
@@ -853,6 +861,19 @@ class DiscreteStokesModelDefaultTraits
         //! discrete function type for the pressure
         typedef Dune::AdaptiveDiscreteFunction< DiscretePressureFunctionSpaceType >
             DiscretePressureFunctionType;
+
+        //! discrete function space wrapper type for the pass
+        typedef Dune::DiscreteStokesFunctionSpaceWrapper< Dune::DiscreteStokesFunctionSpaceWrapperTraits<
+                    DiscreteVelocityFunctionSpaceType,
+                    DiscretePressureFunctionSpaceType > >
+            DiscreteStokesFunctionSpaceWrapperType;
+
+        //! discrete function wrapper type for the pass
+        typedef Dune::DiscreteStokesFunctionWrapper< Dune::DiscreteStokesFunctionWrapperTraits<
+                    DiscreteStokesFunctionSpaceWrapperType,
+                    DiscreteVelocityFunctionType,
+                    DiscretePressureFunctionType > >
+            DiscreteStokesFunctionWrapperType;
 
         //! function type for the analytical force
         typedef Dune::Function< VelocityFunctionSpaceType, AnalyticalForceImp >
