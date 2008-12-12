@@ -166,21 +166,6 @@ class DiscreteStokesModelInterface
         typedef typename GridType::template Codim<0>::Entity
             EntityType;
 
-        /** \name Dummy types needed to comply to LocalPass
-         *  \{
-         */
-        //! dummy return value of the pass
-        typedef typename Traits::DestinationType
-            DestinationType;
-
-        //! dummy discrete function space belonging to DestinationType
-        typedef typename Traits::DiscreteFunctionSpaceType
-            DiscreteFunctionSpaceType;
-        /**
-         *  \}
-         **/
-
-
         /**
          *  \brief  constructor
          *
