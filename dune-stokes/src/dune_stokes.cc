@@ -17,13 +17,14 @@
 #include <dune/fem/solver/oemsolver/oemsolver.hh>
 #include <dune/fem/space/dgspace.hh>
 #include <dune/fem/space/combinedspace.hh>
-#include <dune/fem/gridpart/gridpart.hh>
+#include <dune/fem/space/dgspace/dgadaptiveleafgridpart.hh>
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
 
+#include <dune/stokes/discretestokesfunctionspacewrapper.hh>
 #include <dune/stokes/discretestokesmodelinterface.hh>
 //#include <dune/stokes/saddlepoint_inverse_operator.hh>
-#include <dune/stokes/stokespass.hh>
+//#include <dune/stokes/stokespass.hh>
 
 #include "parametercontainer.hh"
 #include "logging.hh"
@@ -138,30 +139,27 @@ int main( int argc, char** argv )
                     polOrder > >
         StokesModelType;
 
-    StokesModelType::DiscreteVelocityFunctionSpaceType discreteVelocitySpace( gridPart );
-    StokesModelType::DiscreteSigmaFunctionSpaceType discreteSigmaSpace( gridPart );
-    StokesModelType::DiscretePressureFunctionSpaceType discretePressureSpace( gridPart );
+    typedef StokesModelType::DiscreteVelocityFunctionSpaceType
+        DiscreteVelocityFunctionSpaceType;
 
-    typedef StokesModelType::Traits::DiscreteFunctionSpacePair
-        DiscreteFunctionSpacePair;
+    typedef StokesModelType::DiscretePressureFunctionSpaceType
+        DiscretePressureFunctionSpaceType;
 
-    typedef Dune::Pair < GridPartType, GridPartType >
-        GridPartTypePair;
+    typedef Dune::DiscreteStokesFunctionSpaceWrapper< Dune::DiscreteStokesFunctionSpaceWrapperTraits<
+                DiscreteVelocityFunctionSpaceType,
+                DiscretePressureFunctionSpaceType > >
+        DiscreteStokesFunctionSpaceWrapperType;
 
-    GridPartTypePair gridPartTypePair( gridPart, gridPart );
+    DiscreteStokesFunctionSpaceWrapperType discreteStokesFunctionSpaceWrapper( gridPart );
 
-    DiscreteFunctionSpacePair discreteFunctionSpacePair( gridPartTypePair );
-
-    typedef Dune::DiscreteFunctionPair< Dune::DiscreteFunctionPairTraits <
+    typedef Dune::DiscreteStokesFunctionWrapper< Dune::DiscreteStokesFunctionWrapperTraits<
+                DiscreteStokesFunctionSpaceWrapperType,
                 StokesModelType::DiscreteVelocityFunctionType,
-                StokesModelType::DiscretePressureFunctionType,
-                DiscreteFunctionSpacePair > >
-        DiscreteFunctionPairType;
+                StokesModelType::DiscretePressureFunctionType > >
+        DiscreteStokesFunctionWrapperType;
 
-    Dune::Pair< const std::string, const std::string > namePair( "velocity", "pressure" );
-
-    DiscreteFunctionPairType discreteFunctionPair( namePair, discreteFunctionSpacePair );
-
+//    DiscreteStokesFunctionWrapperType discreteStokesFunctionWrapper(    "wrapper",
+//                                                                        discreteStokesFunctionSpaceWrapper );
 
     infoStream << "...done." << std::endl;
     /* ********************************************************************** *
@@ -169,29 +167,29 @@ int main( int argc, char** argv )
      * ********************************************************************** */
     infoStream << "\ninitialising passes..." << std::endl;
 
-    typedef Dune::StartPass< DiscreteFunctionPairType, -1 >
-        StartPassType;
-    StartPassType startPass;
-
-    typedef Dune::StokesPass< StokesModelType, StartPassType, 0 >
-        StokesPassType;
-    StokesPassType stokesPass(  startPass,
-                                discreteVelocitySpace,
-                                discreteSigmaSpace,
-                                discretePressureSpace,
-                                stokesModel,
-                                gridPart );
-
-    StokesPassType::DomainType dummyDomain( namePair, discreteFunctionSpacePair );
-    StokesPassType::RangeType dummyRange( namePair, discreteFunctionSpacePair );
-    stokesPass.apply( dummyDomain, dummyRange );
+//    typedef Dune::StartPass< DiscreteFunctionPairType, -1 >
+//        StartPassType;
+//    StartPassType startPass;
+//
+//    typedef Dune::StokesPass< StokesModelType, StartPassType, 0 >
+//        StokesPassType;
+//    StokesPassType stokesPass(  startPass,
+//                                discreteVelocitySpace,
+//                                discreteSigmaSpace,
+//                                discretePressureSpace,
+//                                stokesModel,
+//                                gridPart );
+//
+//    StokesPassType::DomainType dummyDomain( namePair, discreteFunctionSpacePair );
+//    StokesPassType::RangeType dummyRange( namePair, discreteFunctionSpacePair );
+//    stokesPass.apply( dummyDomain, dummyRange );
 
     infoStream << "...done." << std::endl;
 
     return 0;
   }
   catch ( Dune::Exception &e ){
-    std::cerr << "Dune reported error: " << e << std::endl;
+    std::cerr << "Dune reported error: " << e.what() << std::endl;
   }
   catch ( ... ){
     std::cerr << "Unknown exception thrown!" << std::endl;

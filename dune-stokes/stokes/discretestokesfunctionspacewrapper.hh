@@ -1,7 +1,6 @@
 /**
  *  \file   discretestokesfunctionspacewrapper.hh
- *
- *  \brief  brief
+ *  \todo   doc
  **/
 
 #ifndef DISCRETESTOKESFUNCTIONSPACEWRAPPER_HH_INCLUDED
@@ -16,6 +15,9 @@ namespace Dune
 template < class DiscreteStokesFunctionSpaceWrapperTraitsImp >
 class DiscreteStokesFunctionSpaceWrapper;
 
+/**
+ *  \todo   doc
+ **/
 template < class DiscreteVelocitySpaceImp, class DiscretePressureSpaceImp >
 class DiscreteStokesFunctionSpaceWrapperTraits
 {
@@ -35,38 +37,40 @@ class DiscreteStokesFunctionSpaceWrapperTraits
          **/
         //! own type (CRTP) (for interface compliance)
         typedef DiscreteStokesFunctionSpaceWrapper<
-                    DiscreteStokesFunctionSpaceWrapperTraits<   VelocitySpace,
-                                                                PressureSpace > >
+                    DiscreteStokesFunctionSpaceWrapperTraits<   DiscreteVelocityFunctionSpaceType,
+                                                                DiscretePressureFunctionSpaceType > >
             DiscreteFunctionSpaceType;
 
         //! type of function space
-        typedef typename DiscreteVelocityFunctionSpace
+        typedef typename DiscreteVelocityFunctionSpaceType::FunctionSpaceType
             FunctionSpaceType;
 
         //! type of base function set
-        typedef typename DiscreteFunctionSpaceType::BaseFunctionSetType
+        typedef typename DiscreteVelocityFunctionSpaceType::BaseFunctionSetType
             BaseFunctionSetType;
 
         //! type of DoF mapper
-        typedef typename DiscreteFunctionSpaceType::MapperType
+        typedef typename DiscreteVelocityFunctionSpaceType::MapperType
             MapperType;
 
         //! type of block mapper
-        typedef typename DiscreteFunctionSpaceType::BlockMapperType
+        typedef typename DiscreteVelocityFunctionSpaceType::BlockMapperType
             BlockMapperType;
 
         //! type of underlying grid part
-        typedef typename DiscreteFunctionSpaceType::GridPartType
+        typedef typename DiscreteVelocityFunctionSpaceType::GridPartType
             GridPartType;
         /**
          *  \}
          **/
-
 }; // end of DiscreteStokesFunctionSpaceWrapperTraits
 
+/**
+ *  \todo   doc
+ **/
 template < class DiscreteStokesFunctionSpaceWrapperTraitsImp >
 class DiscreteStokesFunctionSpaceWrapper
-    : public DiscreteFunctionSpaceInterface< DiscreteStokesFunctionSpaceWrapperTraitsImp >
+    : public DiscreteFunctionSpaceDefault< DiscreteStokesFunctionSpaceWrapperTraitsImp >
 {
     public:
 
@@ -74,7 +78,7 @@ class DiscreteStokesFunctionSpaceWrapper
             Traits;
 
         //! base type
-        typedef DiscreteFunctionSpaceInterface< DiscreteStokesFunctionSpaceWrapperTraitsImp >
+        typedef DiscreteFunctionSpaceDefault< DiscreteStokesFunctionSpaceWrapperTraitsImp >
             BaseType;
 
         //! type of discrete velocity function space
@@ -123,7 +127,7 @@ class DiscreteStokesFunctionSpaceWrapper
 
         //! type of codim 0 entity (of the discrete velocity function space)
         typedef typename IteratorType::Entity
-            Entity;
+            EntityType;
 
         /**
          *  \brief  constructor
@@ -200,8 +204,8 @@ class DiscreteStokesFunctionSpaceWrapper
          **/
         inline int sequence() const
         {
-            return velocitySpace_.sequence()
-        };
+            return velocitySpace_.sequence();
+        }
 
         /**
          *  \brief  get global order of the discrete velocity function space
@@ -248,12 +252,118 @@ class DiscreteStokesFunctionSpaceWrapper
             return velocitySpace_.grid();
         }
 
+        /**
+         *  \brief  get a reference to the discrete velocity function space grid partition
+         *  \todo   doc
+         **/
+        inline const GridPartType& gridPart() const
+        {
+            return velocitySpace_.gridPart();
+        }
 
+        /**
+         *  \brief  get a reference to the discrete velocity function space grid partition
+         *  \todo   doc
+         **/
+        inline GridPartType& gridPart()
+        {
+            return velocitySpace_.gridPart();
+        }
 
+        /**
+         *  \brief  get a reference to the discrete velocity function space index set
+         *  \todo   doc
+         **/
+        inline const IndexSetType& indexSet() const
+        {
+            return velocitySpace_.indexSet();
+        }
 
+        /**
+         *  \brief  get number of DoFs for the discrete velocity function space
+         *  \todo   doc
+         **/
+        inline int size() const
+        {
+            return velocitySpace_.size();
+        }
 
+        /**
+         *  \brief  get discrete velocity function space iterator pointing to the first entity of the associated grid partition
+         *  \todo   doc
+         **/
+        inline IteratorType begin() const
+        {
+            return velocitySpace_.begin();
+        }
 
+        /**
+         *  \brief  get discrete velocity function space iterator pointing behind the last entity of the associated grid partition
+         *  \todo   doc
+         **/
+        inline IteratorType end() const
+        {
+            return velocitySpace_.end();
+        }
 
+        /**
+         *  \brief  apply discrete velocity function space functor to each entity in the associated grid partition
+         *  \todo   doc
+         **/
+        template< class FunctorType >
+        inline void forEach( FunctorType& f ) const
+        {
+            return velocitySpace_.forEach( f );
+        }
+
+        /**
+         *  \brief  returns true if the discrete velocity function space grid has more than one geometry type
+         *  \todo   doc
+         **/
+        inline bool multipleGeometryTypes() const
+        {
+            return velocitySpace_.multipleGeometryTypes();
+        }
+
+        /**
+         *  \brief  returns true if discrete velocity fucntion space base function sets depend on the entity
+         *  \todo   doc
+         **/
+        inline bool multipleBaseFunctionSets() const
+        {
+            return velocitySpace_.multipleBaseFunctionSets();
+        }
+
+        /**
+         *  \brief  map local DoF number to global DoF number (discrete velocity function space)
+         *  \todo   doc
+         **/
+        inline int mapToGlobal( const EntityType& entity,
+                                const int localDof ) const
+        {
+            return velocitySpace_.mapToGlobal( entity, localDof );
+        }
+
+        /**
+         *  \brief  return maximal number of local DoFs in discrete velocity funtion space
+         *  \todo   doc
+         **/
+        inline int maxNumLocalDofs() const
+        {
+            return velocitySpace_.maxNumLocalDofs();
+        }
+
+        /**
+         *  \brief  creates DataHandle for given discrete function (from dicrete velocity function space)
+         *  \todo   doc
+         **/
+        template< class DiscreteFunction, class Operation >
+        inline typename BaseType::template CommDataHandle< DiscreteFunction, Operation >::Type createDataHandle(    DiscreteFunction& discreteFunction,
+                                                                                                                    const Operation* operation ) const
+        {
+            return velocitySpace_.createDataHandle( discreteFunction,
+                                                    operation );
+        }
 
     private:
 
@@ -263,6 +373,109 @@ class DiscreteStokesFunctionSpaceWrapper
 
 }; // end of DiscreteStokesFunctionSpaceWrapper
 
+//! forward
+template < class DiscreteStokesFunctionWrapperTraitsImp >
+class DiscreteStokesFunctionWrapper;
+
+/**
+ *  \todo   doc
+ **/
+template <  class DiscreteStokesFunctionSpaceWrapperImp,
+            class DiscreteVelocityFunctionImp,
+            class DiscretePressureFunctionImp >
+class DiscreteStokesFunctionWrapperTraits
+{
+    public:
+
+        //! own type (CRTP)
+        typedef DiscreteStokesFunctionWrapper<
+                    DiscreteStokesFunctionWrapperTraits<
+                        DiscreteStokesFunctionSpaceWrapperImp,
+                        DiscreteVelocityFunctionImp,
+                        DiscretePressureFunctionImp > >
+            DiscreteFunctionType;
+
+        //! type of associated discrete function space
+        typedef DiscreteStokesFunctionSpaceWrapperImp
+            DiscreteFunctionSpaceType;
+
+        //! type of discrete velocity function
+        typedef DiscreteVelocityFunctionImp
+            DiscreteVelocityFunctionType;
+
+        //! type of discrete pressure function
+        typedef DiscretePressureFunctionImp
+            DiscretePressureFunctionType;
+
+}; // end of DiscreteStokesFunctionWrapperTraits
+
+/**
+ *  \todo   doc,
+ *          should comply with the DiscreteFunctionInterface some time
+ **/
+template < class DiscreteStokesFunctionWrapperTraitsImp >
+class DiscreteStokesFunctionWrapper
+//    : public DiscreteFunctionInterface< DiscreteStokesFunctionWrapperTraitsImp >
+{
+    public:
+
+        typedef DiscreteStokesFunctionWrapperTraitsImp
+            Traits;
+
+        //! DiscreteStokesFunctionSpaceWrapper
+        typedef typename Traits::DiscreteFunctionSpaceType
+            DiscreteFunctionSpaceType;
+
+        //! type of discrete velocity function
+        typedef typename Traits::DiscreteVelocityFunctionType
+            DiscreteVelocityFunctionType;
+
+        //! type of discrete pressure function
+        typedef typename Traits::DiscretePressureFunctionType
+            DiscretePressureFunctionType;
+
+        /**
+         *  \brief  constructor
+         *  \todo   doc
+         **/
+        DiscreteStokesFunctionWrapper(  const std::string name,
+                                        DiscreteFunctionSpaceType& space )
+            : space_( space ),
+            velocity_( name + std::string("_velocity"), space.discreteVelocitySpace() ),
+            pressure_( name + std::string("_pressure"), space.discretePressureSpace() )
+        {}
+
+        /**
+         *  \brief  destructor
+         *  \todo   doc
+         **/
+        ~DiscreteStokesFunctionWrapper()
+        {}
+
+        /**
+         *  \todo   doc
+         **/
+        DiscreteVelocityFunctionType& discreteVelocity() const
+        {
+            return velocity_;
+        }
+
+        /**
+         *  \todo   doc
+         **/
+        DiscretePressureFunctionType& discretePressure() const
+        {
+            return pressure_;
+        }
+
+    private:
+
+        const DiscreteFunctionSpaceType& space_;
+        DiscreteVelocityFunctionType velocity_;
+        DiscretePressureFunctionType pressure_;
+
+}; // end of DiscreteStokesFunctionWrapper
+
 }; // end of namespace Dune
 
-#ifndef // end of discretestokesfunctionspacewrapper.hh
+#endif // end of discretestokesfunctionspacewrapper.hh
