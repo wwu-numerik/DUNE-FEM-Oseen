@@ -149,7 +149,7 @@ class DiscreteStokesFunctionSpaceWrapper
          *  \brief  returns the discrete velocity space
          *  \todo   doc
          **/
-        DiscreteVelocityFunctionSpaceType discreteVelocitySpace() const
+        DiscreteVelocityFunctionSpaceType& discreteVelocitySpace()
         {
             return velocitySpace_;
         }
@@ -158,7 +158,7 @@ class DiscreteStokesFunctionSpaceWrapper
          *  \brief  return the discrete pressure space
          *  \todo   doc
          **/
-        DiscretePressureFunctionSpaceType discretePressureSpace() const
+        DiscretePressureFunctionSpaceType& discretePressureSpace()
         {
             return pressureSpace_;
         }

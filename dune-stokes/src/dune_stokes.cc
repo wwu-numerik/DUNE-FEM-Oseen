@@ -18,6 +18,7 @@
 #include <dune/fem/space/dgspace.hh>
 #include <dune/fem/space/combinedspace.hh>
 #include <dune/fem/space/dgspace/dgadaptiveleafgridpart.hh>
+//#include <dune/fem/grid/gridpart.hh>
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
 
@@ -84,7 +85,7 @@ int main( int argc, char** argv )
      * ********************************************************************** */
     infoStream << "\ninitialising grid..." << std::endl;
 
-    typedef Dune::DGAdaptiveLeafGridPart< GridType >
+    typedef Dune::LeafGridPart< GridType >
         GridPartType;
     Dune::GridPtr< GridType > gridPtr( parameters.DgfFilename() );
     GridPartType gridPart( *gridPtr );
@@ -158,8 +159,8 @@ int main( int argc, char** argv )
                 StokesModelType::DiscretePressureFunctionType > >
         DiscreteStokesFunctionWrapperType;
 
-//    DiscreteStokesFunctionWrapperType discreteStokesFunctionWrapper(    "wrapper",
-//                                                                        discreteStokesFunctionSpaceWrapper );
+    DiscreteStokesFunctionWrapperType discreteStokesFunctionWrapper(    "wrapper",
+                                                                        discreteStokesFunctionSpaceWrapper );
 
     infoStream << "...done." << std::endl;
     /* ********************************************************************** *
