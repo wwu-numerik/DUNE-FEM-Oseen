@@ -79,7 +79,7 @@ class DiscreteStokesModelInterface
         typedef DiscreteStokesModelTraits
             Traits;
 
-        //! Implementation type for Barton-Nackman trick
+        //! Implementation type for CRTP
         typedef typename Traits::DiscreteModelType
             DiscreteModelType;
 
@@ -815,7 +815,7 @@ class DiscreteStokesModelDefaultTraits
         typedef Dune::CachingQuadrature< GridPartImp, 0 >
             VolumeQuadratureType;
 
-        //! and for the faces
+        //! and we use for the faces
         typedef Dune::CachingQuadrature< GridPartImp, 1 >
             FaceQuadratureType;
 
@@ -851,7 +851,7 @@ class DiscreteStokesModelDefaultTraits
         typedef Dune::AdaptiveDiscreteFunction< DiscreteSigmaFunctionSpaceType >
             DiscreteSigmaFunctionType;
 
-      //! function space type for the pressure
+        //! function space type for the pressure
         typedef Dune::FunctionSpace< double, double, gridDim, 1 >
             PressureFunctionSpaceType;
 
@@ -873,27 +873,6 @@ class DiscreteStokesModelDefaultTraits
         typedef Dune::Function< VelocityFunctionSpaceType, AnalyticalDirichletDataImp >
             AnalyticalDirichletDataType;
 
-        //! pair of velocity and pressure space for the pass
-        typedef Dune::DiscreteFunctionSpacePair< Dune::DiscreteFunctionSpacePairTraits< DiscreteVelocityFunctionSpaceType, DiscretePressureFunctionSpaceType > >
-            DiscreteFunctionSpacePair;
-
-        //! pair of velocity and pressure functions for the pass
-        typedef DiscreteFunctionPair< DiscreteFunctionPairTraits< DiscreteVelocityFunctionType, DiscretePressureFunctionType, DiscreteFunctionSpacePair > >
-            DiscreteFunctionPair;
-
-        /** \name Dummy types needed to comply with Pass
-         *  \{
-         */
-        //! dummy return value of the pass
-        typedef DiscreteFunctionPair
-            DestinationType;
-
-        //! dummy discrete function space belonging to DestinationType
-        typedef DiscreteFunctionSpacePair
-            DiscreteFunctionSpaceType;
-        /**
-         *  \}
-         **/
 };
 
 
