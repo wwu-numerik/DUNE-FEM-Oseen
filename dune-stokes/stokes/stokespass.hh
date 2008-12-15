@@ -93,9 +93,13 @@ class StokesPass
         typedef typename DiscreteVelocityFunctionSpaceType::GridPartType
             GridPartType;
 
-        //! Intersection iterator of the grid
+        //! Intersection iterator of the gridpart
         typedef typename GridPartType::IntersectionIteratorType
             IntersectionIteratorType;
+
+        //! entity iterator of the gridpart
+        typedef typename GridPartType::template Codim< 0 >::IteratorType
+            EntityIteratorType;
 
         /**
          *  \name typedefs for interface compliance
@@ -142,6 +146,10 @@ class StokesPass
 
         virtual void apply( const DomainType &arg, RangeType &dest) const
         {
+            // walk the grid
+            EntityIteratorType entityItEnd = velocitySpace_.end();
+            for ( EntityIteratorType entityIt = velocitySpace_.begin(); entityIt != entityIt; ++entityIt ) {
+            } // done walking the grid
         }
 
         virtual void compute( const TotalArgumentType &arg, DestinationType &dest) const
@@ -164,73 +172,6 @@ class StokesPass
 #endif  // end of stokespass.hh
 
 
-
-//        virtual void prepare(   const ArgumentType& arg,
-//                                DestinationType& dest ) const
-//        {
-//            std::cout << "\n== prepare begin" << std::endl;
-//            std::cout << "\n== prepare end" << std::endl;
-//        }
-
-//        virtual void finalize(  const ArgumentType& arg,
-//                                DestinationType& dest ) const
-//        {
-//            std::cout << "\n== finalize begin" << std::endl;
-//            std::cout << "\n== finalize end" << std::endl;
-//        }
-
-//        virtual void applyLocal( EntityType& entity ) const
-//        {
-//            std::cout << "\n== applyLocal begin" << std::endl;
-
-//            VolumeQuadratureType volumeQuad( entity, 1 );
-//            VelocityRangeType x( 1.0 );
-//            VelocityRangeType f( 0.0 );
-//            Stuff::printFieldVector( x, "x", std::cout );
-//            discreteModel_.force( 0.0, x, f );
-//            Stuff::printFieldVector( f, "f(x)", std::cout );
-//            VelocityRangeType uInner( 0.0 );
-//            VelocityRangeType uOuter( 0.0 );
-//            VelocityRangeType uReturn( 0.0 );
-//            PressureRangeType pInner( 0.0 );
-//            PressureRangeType pOuter( 0.0 );
-//            PressureRangeType pReturn( 0.0 );
-//            SigmaRangeType sInner( 0.0 );
-//            SigmaRangeType sOuter( 0.0 );
-//            SigmaRangeType sReturn( 0.0 );
-//
-//            for ( unsigned int i = 0; i < uInner.dim(); ++i) {
-//                uInner[i] = ( i + 1.0 );
-//                uOuter[i] = 2.0 * ( i + 1.0 );
-//            }
-//            Stuff::printFieldVector( uInner, "uInner" );
-//
-//            for ( unsigned int i = 0; i < pInner.dim(); ++i) {
-//                pInner[i] = ( i + 1.0 );
-//                pOuter[i] = 2.0 * ( i + 1.0 );
-//            }
-//            Stuff::printFieldVector( uOuter, "uOuter" );
-//
-//            for ( unsigned int i = 0; i < SigmaRangeType::dimension; ++i) {
-//                sInner[i] = ( i + 1.0 );
-//                sOuter[i] = 2.0 * ( i + 1.0 );
-//            }
-//
-//            IntersectionIteratorType it = entity.ileafbegin();
-//            FaceQuadratureType faceQuad( gridPart_, it, 1, FaceQuadratureType::INSIDE );
-//            //faceQuad.localPoint( 0 )
-//            discreteModel_.sigmaBoundaryFlux(   it,
-//                                                0.0,
-//                                                faceQuad.localPoint( 0 ),
-//                                                uInner,
-//                                                sInner,
-//                                                sReturn,
-//                                                sReturn,
-//                                                sReturn);
-//            Stuff::printFieldMatrix( sReturn, "sReturn" );
-//
-//            std::cout << "\n== applyLocal end" << std::endl;
-//        }
 
 
 //            typedef SparseRowMatrix<double> MatrixType;

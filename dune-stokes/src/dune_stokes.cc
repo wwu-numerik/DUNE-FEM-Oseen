@@ -159,7 +159,7 @@ int main( int argc, char** argv )
                 StokesModelType::DiscretePressureFunctionType > >
         DiscreteStokesFunctionWrapperType;
 
-    DiscreteStokesFunctionWrapperType discreteStokesFunctionWrapper(    "wrapper",
+    DiscreteStokesFunctionWrapperType discreteStokesFunctionWrapper(    "wrapped",
                                                                         discreteStokesFunctionSpaceWrapper );
 
     infoStream << "...done." << std::endl;
@@ -179,10 +179,8 @@ int main( int argc, char** argv )
                                 stokesModel,
                                 gridPart,
                                 discreteStokesFunctionSpaceWrapper );
-//
-//    StokesPassType::DomainType dummyDomain( namePair, discreteFunctionSpacePair );
-//    StokesPassType::RangeType dummyRange( namePair, discreteFunctionSpacePair );
-//    stokesPass.apply( dummyDomain, dummyRange );
+
+    stokesPass.apply( discreteStokesFunctionWrapper, discreteStokesFunctionWrapper );
 
     infoStream << "...done." << std::endl;
 
