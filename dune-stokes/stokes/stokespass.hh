@@ -122,18 +122,18 @@ class StokesPass
          *  \todo   doc
          **/
         StokesPass( PreviousPassType& prevPass,
-                    const DiscreteVelocityFunctionSpaceType& velocitySpace,
-                    const DiscreteSigmaFunctionSpaceType& sigmaSpace,
-                    const DiscretePressureFunctionSpaceType& pressureSpace,
-                    const DiscreteModelType& discreteModel,
-                    const GridPartType& gridPart )
-//                : BaseType( prevPass ),
-                : velocitySpace_( velocitySpace ),
-                sigmaSpace_( sigmaSpace ),
-                pressureSpace_( pressureSpace ),
+                    DiscreteModelType& discreteModel,
+                    GridPartType& gridPart,
+                    DiscreteStokesFunctionSpaceWrapperType& spaceWrapper )
+                : BaseType( prevPass ),
                 discreteModel_( discreteModel ),
-                gridPart_( gridPart )
+                gridPart_( gridPart ),
+                spaceWrapper_( spaceWrapper ),
+                velocitySpace_( spaceWrapper.discreteVelocitySpace() ),
+                pressureSpace_( spaceWrapper.discretePressureSpace() ),
+                sigmaSpace_( gridPart )
         {}
+
         /**
          *  \brief  empty constructor
          **/
@@ -142,24 +142,6 @@ class StokesPass
 
         virtual void apply( const DomainType &arg, RangeType &dest) const
         {
-//            DiscreteVelocityFunctionType velocity( "pass_velocity", velocitySpace_ );
-//            DiscretePressureFunctionType pressure( "pass_pressure", pressureSpace_ );
-//            DiscreteSigmaFunctionType sigma( "pass_sigma", sigmaSpace_ );
-//
-//            typedef typename DiscreteVelocityFunctionSpaceType::IteratorType
-//                EntityIteratorType;
-//
-//            EntityIteratorType entityItEnd = velocitySpace_.end();
-//            for (EntityIteratorType entityIt = velocitySpace_.begin(); entityIt != entityItEnd; ++entityIt) {
-//
-//                typedef typename EntityIteratorType::Entity
-//                    Entity;
-//                typedef typename GridPartType::IntersectionIteratorType
-//                    IntersectionIterator;
-//
-//                IntersectionIterator iItEnd =
-
-            }
         }
 
         virtual void compute( const TotalArgumentType &arg, DestinationType &dest) const
@@ -167,6 +149,19 @@ class StokesPass
 
         virtual void allocateLocalMemory()
         {}
+
+    private:
+        DiscreteModelType& discreteModel_;
+        GridPartType& gridPart_;
+        DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
+        DiscreteVelocityFunctionSpaceType& velocitySpace_;
+        DiscretePressureFunctionSpaceType& pressureSpace_;
+        DiscreteSigmaFunctionSpaceType sigmaSpace_;
+
+};
+
+}
+#endif  // end of stokespass.hh
 
 
 
@@ -236,14 +231,6 @@ class StokesPass
 //
 //            std::cout << "\n== applyLocal end" << std::endl;
 //        }
-
-    private:
-        const DiscreteVelocityFunctionSpaceType& velocitySpace_;
-        const DiscreteSigmaFunctionSpaceType& sigmaSpace_;
-        const DiscretePressureFunctionSpaceType& pressureSpace_;
-        const DiscreteModelType& discreteModel_;
-        const GridPartType& gridPart_;
-
 
 
 //            typedef SparseRowMatrix<double> MatrixType;
@@ -395,8 +382,3 @@ class StokesPass
 //            PressureDivMatType pressureDivMatrix_;
 //            PressureStabMatType pressureStabMatrix_;
 //
-
-};
-
-}
-#endif  // end of stokespass.hh

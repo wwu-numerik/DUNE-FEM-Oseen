@@ -422,6 +422,9 @@ class DiscreteStokesFunctionWrapper
         typedef DiscreteStokesFunctionWrapperTraitsImp
             Traits;
 
+        typedef typename Traits::DiscreteFunctionType
+            DiscreteFunctionType;
+
         //! DiscreteStokesFunctionSpaceWrapper
         typedef typename Traits::DiscreteFunctionSpaceType
             DiscreteFunctionSpaceType;
@@ -459,7 +462,7 @@ class DiscreteStokesFunctionWrapper
         /**
          *  \todo   doc
          **/
-        DiscreteVelocityFunctionType& discreteVelocity() const
+        const DiscreteVelocityFunctionType& discreteVelocity() const
         {
             return velocity_;
         }
@@ -467,10 +470,109 @@ class DiscreteStokesFunctionWrapper
         /**
          *  \todo   doc
          **/
-        DiscretePressureFunctionType& discretePressure() const
+        DiscreteVelocityFunctionType& discreteVelocity()
+        {
+            return velocity_;
+        }
+
+        /**
+         *  \todo   doc
+         **/
+        const DiscretePressureFunctionType& discretePressure() const
         {
             return pressure_;
         }
+
+        /**
+         *  \todo   doc
+         **/
+        DiscretePressureFunctionType& discretePressure()
+        {
+            return pressure_;
+        }
+
+        /**
+         *  \brief  obtain the name of the discrete function
+         *  \todo   doc
+         **/
+        inline const std::string &name() const
+        {
+            return velocity_.name();
+        }
+
+//        //! obtain a local function for an entity (read-only)
+//        template< class EntityType >
+//        inline const LocalFunctionType localFunction( const EntityType& entity ) const
+//        {
+//            return velocity_.localFunction( entity );
+//        }
+//
+//        //! obtain a local function for an entity
+//        template< class EntityType >
+//        inline LocalFunctionType localFunction( const EntityType& entity )
+//        {
+//            return velocity_.localFunction( entity );
+//        }
+
+        /**
+         *  \brief  set all degrees of freedom to zero
+         *  \todo   doc
+         **/
+        inline void clear()
+        {
+            velocity_.clear();
+        }
+
+        /**
+         *  \brief  obtain total number of DoFs
+         *  \todo   doc
+         **/
+        inline int size() const
+        {
+            return velocity_.size();
+        }
+
+        /**
+         *  \brief  add another discrete function to this one
+         *  \todo   doc
+         **/
+        inline DiscreteFunctionType& operator+= ( const DiscreteFunctionType& arg )
+        {
+            velocity_ += arg.discreteVelocity();
+            return *this;
+        }
+
+        /**
+         *  \brief  substract all degrees of freedom from given discrete function using the dof iterators
+         *  \todo   doc
+         **/
+        template < class DFType >
+        DiscreteFunctionType& operator-=( const DFType& arg )
+        {
+            assert( false );
+            return *this;
+        }
+
+        /**
+         *  \brief  multiply all DoFs by a scalar factor
+         *  \todo   doc
+         **/
+        inline DiscreteFunctionType& operator*=( const RangeFieldType& scalar )
+        {
+            velocity_ *= scalar;
+            return *this;
+        }
+
+        /**
+         *  \brief  devide all DoFs by a scalar factor
+         *  \todo   doc
+         **/
+        inline DiscreteFunctionType& operator/=( const RangeFieldType& scalar )
+        {
+            velocity_ /= scalar;
+            return *this;
+        }
+
 
     private:
 

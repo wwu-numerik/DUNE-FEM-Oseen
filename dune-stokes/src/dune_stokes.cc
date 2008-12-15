@@ -25,7 +25,7 @@
 #include <dune/stokes/discretestokesfunctionspacewrapper.hh>
 #include <dune/stokes/discretestokesmodelinterface.hh>
 //#include <dune/stokes/saddlepoint_inverse_operator.hh>
-//#include <dune/stokes/stokespass.hh>
+#include <dune/stokes/stokespass.hh>
 
 #include "parametercontainer.hh"
 #include "logging.hh"
@@ -168,18 +168,17 @@ int main( int argc, char** argv )
      * ********************************************************************** */
     infoStream << "\ninitialising passes..." << std::endl;
 
-//    typedef Dune::StartPass< DiscreteFunctionPairType, -1 >
-//        StartPassType;
-//    StartPassType startPass;
-//
-//    typedef Dune::StokesPass< StokesModelType, StartPassType, 0 >
-//        StokesPassType;
-//    StokesPassType stokesPass(  startPass,
-//                                discreteVelocitySpace,
-//                                discreteSigmaSpace,
-//                                discretePressureSpace,
-//                                stokesModel,
-//                                gridPart );
+
+    typedef Dune::StartPass< DiscreteStokesFunctionWrapperType, -1 >
+        StartPassType;
+    StartPassType startPass;
+
+    typedef Dune::StokesPass< StokesModelType, StartPassType, 0 >
+        StokesPassType;
+    StokesPassType stokesPass(  startPass,
+                                stokesModel,
+                                gridPart,
+                                discreteStokesFunctionSpaceWrapper );
 //
 //    StokesPassType::DomainType dummyDomain( namePair, discreteFunctionSpacePair );
 //    StokesPassType::RangeType dummyRange( namePair, discreteFunctionSpacePair );
