@@ -101,6 +101,14 @@ class StokesPass
         typedef typename GridPartType::template Codim< 0 >::IteratorType
             EntityIteratorType;
 
+        //! type of the grid
+        typedef typename GridPartType::GridType
+            GridType;
+
+        //! type of codim 0 entity
+        typedef typename GridType::template Codim< 0 >::Entity
+            EntityType;
+
         /**
          *  \name typedefs for interface compliance
          *  \{
@@ -146,10 +154,129 @@ class StokesPass
 
         virtual void apply( const DomainType &arg, RangeType &dest) const
         {
+            std::cout << "\nthis is apply" << std::endl;
+            // functions
+            DiscreteVelocityFunctionType& velocity = dest.discreteVelocity();
+            DiscretePressureFunctionType& pressure = dest.discretePressure();
+            DiscreteSigmaFunctionType sigma( "sigma", sigmaSpace_ );
+
+            // local functions
+            typedef typename DiscreteVelocityFunctionType::LocalFunctionType
+                LocalDiscreteVelocityFunctionType;
+            typedef typename DiscretePressureFunctionType::LocalFunctionType
+                LocalDiscretePressureFunctionType;
+            typedef typename DiscreteSigmaFunctionType::LocalFunctionType
+                LocalDiscreteSigmaFunctionType;
+
+            // matrices
+            // M\in R^{M\times M}
+            typedef SparseRowMatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteSigmaFunctionSpaceType >
+                MmatrixType;
+            MmatrixType Mmatrix( sigmaSpace_, sigmaSpace_ );
+            Mmatrix.reserve();
+            // W\in R^{M\times L}
+            typedef SparseRowMatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
+                WmatrixType;
+            WmatrixType Wmatrix( sigmaSpace_, velocitySpace_ );
+            Wmatrix.reserve();
+            // X\in R^{L\times M}
+            typedef SparseRowMatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteSigmaFunctionSpaceType >
+                XmatrixType;
+            XmatrixType Xmatrix( velocitySpace_, sigmaSpace_ );
+            Xmatrix.reserve();
+            // Y\in R^{L\times L}
+            typedef SparseRowMatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
+                YmatrixType;
+            YmatrixType Ymatrix( velocitySpace_, velocitySpace_ );
+            Ymatrix.reserve();
+            // Z\in R^{L\times K}
+            typedef SparseRowMatrixObject< DiscreteVelocityFunctionSpaceType, DiscretePressureFunctionSpaceType >
+                ZmatrixType;
+            ZmatrixType Zmatrix( velocitySpace_, pressureSpace_ );
+            Zmatrix.reserve();
+            // E\in R^{K\times L}
+            typedef SparseRowMatrixObject< DiscretePressureFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
+                EmatrixType;
+            EmatrixType Ematrix( pressureSpace_, velocitySpace_ );
+            Ematrix.reserve();
+            // R\in R^{K\times K}
+            typedef SparseRowMatrixObject< DiscretePressureFunctionSpaceType, DiscretePressureFunctionSpaceType >
+                RmatrixType;
+            RmatrixType Rmatrix( pressureSpace_, pressureSpace_ );
+            Rmatrix.reserve();
+
+            // right hand sides
+            typedef SparseRowMatrix< double > RHSType;
+            // H_{1}\in R^{M}
+            RHSType H1rhs( sigmaSpace_.size(), 1, 1 );
+            // H_{2}\in R^{L}
+            RHSType H2rhs( velocitySpace_.size(), 1, 1 );
+            // H_{3}\in R^{K}
+            RHSType H3rhs( pressureSpace_.size(), 1, 1 );
+
+            // local matrices
+            // M\in R^{M\times M}
+            typedef typename MmatrixType::LocalMatrixType
+                LocalMmatrixType;
+            // W\in R^{M\times L}
+            typedef typename WmatrixType::LocalMatrixType
+                LocalWmatrixType;
+            // X\in R^{L\times M}
+            typedef typename XmatrixType::LocalMatrixType
+                LocalXmatrixType;
+            // Y\in R^{L\times L}
+            typedef typename YmatrixType::LocalMatrixType
+                LocalYmatrixType;
+            // Z\in R^{L\times K}
+            typedef typename ZmatrixType::LocalMatrixType
+                LocalZmatrixType;
+            // E\in R^{K\times L}
+            typedef typename EmatrixType::LocalMatrixType
+                LocalEmatrixType;
+            // R\in R^{K\times K}
+            typedef typename RmatrixType::LocalMatrixType
+                LocalRmatrixType;
+
             // walk the grid
             EntityIteratorType entityItEnd = velocitySpace_.end();
-            for ( EntityIteratorType entityIt = velocitySpace_.begin(); entityIt != entityIt; ++entityIt ) {
+            for ( EntityIteratorType entityIt = velocitySpace_.begin(); entityIt != entityItEnd; ++entityIt ) {
+
+                // entity and geometry
+                EntityType& entity = *entityIt;
+
+                // local functions
+                LocalDiscreteVelocityFunctionType localVelocity = velocity.localFunction( entity );
+                LocalDiscretePressureFunctionType localPressure = pressure.localFunction( entity );
+                LocalDiscreteSigmaFunctionType localSigma = sigma.localFunction( entity );
+
+                // local matrices for the volume integral
+                LocalMmatrixType localMmatrix = Mmatrix.localMatrix( entity, entity );
+                LocalWmatrixType localWmatrix = Wmatrix.localMatrix( entity, entity );
+                LocalXmatrixType localXmatrix = Xmatrix.localMatrix( entity, entity );
+                LocalYmatrixType localYmatrix = Ymatrix.localMatrix( entity, entity );
+                LocalZmatrixType localZmatrix = Zmatrix.localMatrix( entity, entity );
+                LocalEmatrixType localEmatrix = Ematrix.localMatrix( entity, entity );
+                LocalRmatrixType localRmatrix = Rmatrix.localMatrix( entity, entity );
+
+                localMmatrix.add( 1, 1, 1.0 );
+                localWmatrix.add( 1, 1, 1.0 );
+                localXmatrix.add( 1, 1, 1.0 );
+                localYmatrix.add( 1, 1, 1.0 );
+                localZmatrix.add( 1, 1, 1.0 );
+                localEmatrix.add( 1, 1, 1.0 );
+                localRmatrix.add( 1, 1, 1.0 );
+
             } // done walking the grid
+
+            // build global matrices
+            typedef SparseRowMatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteSigmaFunctionSpaceType >
+                AmatrixType;
+            AmatrixType Amatrix( sigmaSpace_, sigmaSpace_ );
+            Amatrix.reserve();
+
+
+
+
         }
 
         virtual void compute( const TotalArgumentType &arg, DestinationType &dest) const
