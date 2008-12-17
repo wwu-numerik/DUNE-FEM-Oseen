@@ -109,6 +109,14 @@ class StokesPass
         typedef typename GridType::template Codim< 0 >::Entity
             EntityType;
 
+        //! polynomial order for the discrete sigma function space
+        static const int sigmaSpaceOrder = DiscreteModelType::sigmaSpaceOrder;
+        //! polynomial order for the discrete velocity function space
+        static const int velocitySpaceOrder = DiscreteModelType::velocitySpaceOrder;
+        //! polynomial order for the discrete pressure function space
+        static const int pressureSpaceOrder = DiscreteModelType::pressureSpaceOrder;
+
+
         /**
          *  \name typedefs for interface compliance
          *  \{
@@ -205,15 +213,6 @@ class StokesPass
             RmatrixType Rmatrix( pressureSpace_, pressureSpace_ );
             Rmatrix.reserve();
 
-            // right hand sides
-            typedef SparseRowMatrix< double > RHSType;
-            // H_{1}\in R^{M}
-            RHSType H1rhs( sigmaSpace_.size(), 1, 1 );
-            // H_{2}\in R^{L}
-            RHSType H2rhs( velocitySpace_.size(), 1, 1 );
-            // H_{3}\in R^{K}
-            RHSType H3rhs( pressureSpace_.size(), 1, 1 );
-
             // local matrices
             // M\in R^{M\times M}
             typedef typename MmatrixType::LocalMatrixType
@@ -237,12 +236,36 @@ class StokesPass
             typedef typename RmatrixType::LocalMatrixType
                 LocalRmatrixType;
 
+            // right hand sides
+            typedef SparseRowMatrix< double > RHSType;
+            // H_{1}\in R^{M}
+            RHSType H1rhs( sigmaSpace_.size(), 1, 1 );
+            // H_{2}\in R^{L}
+            RHSType H2rhs( velocitySpace_.size(), 1, 1 );
+            // H_{3}\in R^{K}
+            RHSType H3rhs( pressureSpace_.size(), 1, 1 );
+
+            // base functions
+            // of type sigma
+            typedef typename DiscreteSigmaFunctionSpaceType::BaseFunctionSetType
+                SigmaBaseFunctionSetType;
+            // of type u
+            typedef typename DiscreteVelocityFunctionSpaceType::BaseFunctionSetType
+                VelocityBaseFunctionSetType;
+            // of type p
+            typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType
+                PressureBaseFunctionSetType;
+
             // walk the grid
             EntityIteratorType entityItEnd = velocitySpace_.end();
             for ( EntityIteratorType entityIt = velocitySpace_.begin(); entityIt != entityItEnd; ++entityIt ) {
 
                 // entity and geometry
                 EntityType& entity = *entityIt;
+                typedef typename EntityType::Geometry
+                    EntityGeometryType;
+
+                const EntityGeometryType& geometry = entity.geometry();
 
                 // local functions
                 LocalDiscreteVelocityFunctionType localVelocity = velocity.localFunction( entity );
@@ -250,21 +273,49 @@ class StokesPass
                 LocalDiscreteSigmaFunctionType localSigma = sigma.localFunction( entity );
 
                 // local matrices for the volume integral
-                LocalMmatrixType localMmatrix = Mmatrix.localMatrix( entity, entity );
-                LocalWmatrixType localWmatrix = Wmatrix.localMatrix( entity, entity );
-                LocalXmatrixType localXmatrix = Xmatrix.localMatrix( entity, entity );
-                LocalYmatrixType localYmatrix = Ymatrix.localMatrix( entity, entity );
-                LocalZmatrixType localZmatrix = Zmatrix.localMatrix( entity, entity );
-                LocalEmatrixType localEmatrix = Ematrix.localMatrix( entity, entity );
-                LocalRmatrixType localRmatrix = Rmatrix.localMatrix( entity, entity );
+                LocalMmatrixType localMmatrixElement = Mmatrix.localMatrix( entity, entity );
+                LocalWmatrixType localWmatrixElement = Wmatrix.localMatrix( entity, entity );
+                LocalXmatrixType localXmatrixElement = Xmatrix.localMatrix( entity, entity );
+                LocalYmatrixType localYmatrixElement = Ymatrix.localMatrix( entity, entity );
+                LocalZmatrixType localZmatrixElement = Zmatrix.localMatrix( entity, entity );
+                LocalEmatrixType localEmatrixElement = Ematrix.localMatrix( entity, entity );
+                LocalRmatrixType localRmatrixElement = Rmatrix.localMatrix( entity, entity );
 
-                localMmatrix.add( 1, 1, 1.0 );
-                localWmatrix.add( 1, 1, 1.0 );
-                localXmatrix.add( 1, 1, 1.0 );
-                localYmatrix.add( 1, 1, 1.0 );
-                localZmatrix.add( 1, 1, 1.0 );
-                localEmatrix.add( 1, 1, 1.0 );
-                localRmatrix.add( 1, 1, 1.0 );
+                // get basefunctionsets
+                SigmaBaseFunctionSetType sigmaBaseFunctionSetElement = sigmaSpace_.baseFunctionSet( entity );
+                VelocityBaseFunctionSetType velocityBaseFunctionSetElement = velocitySpace_.baseFunctionSet( entity );
+                PressureBaseFunctionSetType pressureBaseFunctionSetElement = pressureSpace_.baseFunctionSet( entity );
+                const int numSigmaBaseFunctionsElement = sigmaBaseFunctionSetElement.numBaseFunctions();
+                const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
+                const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
+
+                // calculate volume integrals
+                // (M)_{i,j} = \int_{T}\tau_{i}:\tau_{j}dx
+                for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
+                    for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
+                        double M_i_j = 0.0;
+                        // get quadrature
+                        VolumeQuadratureType volumeQuadrature( entity, sigmaSpaceOrder );
+                        // sum over all quadrature points
+                        for ( int quad = 0; quad < volumeQuadrature.nop(); ++quad ) {
+                            WorldCoordinateType x = volumeQuadrature.point( quad );
+                            double elementVolume = geometry.integrationElement( volumeQuadrature.localPoint( quad ) );
+                            double integrationWeight = volumeQuadrature.weight( quad );
+                            // calculate \tau_{i}:\tau_{j}
+                            SigmaRangeType tau_i( 0.0 );
+                            SigmaRangeType tau_j( 0.0 );
+                            sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
+                            sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
+                            M_i_j += elementVolume *
+                                        integrationWeight *
+                                        colonProduct( tau_i, tau_j );
+                        }
+
+                    }
+                }
+
+
+
 
             } // done walking the grid
 
@@ -272,7 +323,6 @@ class StokesPass
             typedef SparseRowMatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteSigmaFunctionSpaceType >
                 AmatrixType;
             AmatrixType Amatrix( sigmaSpace_, sigmaSpace_ );
-            Amatrix.reserve();
 
 
 
@@ -292,6 +342,35 @@ class StokesPass
         DiscreteVelocityFunctionSpaceType& velocitySpace_;
         DiscretePressureFunctionSpaceType& pressureSpace_;
         DiscreteSigmaFunctionSpaceType sigmaSpace_;
+
+        template < class FieldMatrixType >
+        double colonProduct(    const FieldMatrixType& arg1,
+                                const FieldMatrixType& arg2 ) const
+        {
+            assert( arg1.rowdim() == arg2.coldim() );
+            double ret = 0.0;
+            // iterators
+            typedef typename FieldMatrixType::ConstRowIterator
+                ConstRowIterator;
+            typedef typename FieldMatrixType::row_type::ConstIterator
+                ConstIterator;
+            ConstRowIterator arg1RowItEnd = arg1.end();
+            ConstRowIterator arg2RowItEnd = arg2.end();
+            ConstRowIterator arg2RowIt = arg2.begin();
+            for (   ConstRowIterator arg1RowIt = arg1.begin();
+                    arg1RowIt != arg1RowItEnd, arg2RowIt != arg2RowItEnd;
+                    ++arg1RowIt, ++arg2RowIt ) {
+                ConstIterator row1ItEnd = arg1RowIt->end();
+                ConstIterator row2ItEnd = arg2RowIt->end();
+                ConstIterator row2It = arg2RowIt->begin();
+                for (   ConstIterator row1It = arg1RowIt->begin();
+                        row1It != row1ItEnd, row2It != row2ItEnd;
+                        ++row1It, ++row2It ) {
+                    ret += *row1It * *row2It;
+                }
+            }
+        }
+
 
 };
 
