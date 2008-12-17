@@ -162,7 +162,7 @@ class StokesPass
 
         virtual void apply( const DomainType &arg, RangeType &dest) const
         {
-            std::cout << "\nthis is apply" << std::endl;
+
             // functions
             DiscreteVelocityFunctionType& velocity = dest.discreteVelocity();
             DiscretePressureFunctionType& pressure = dest.discretePressure();
@@ -256,9 +256,15 @@ class StokesPass
             typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType
                 PressureBaseFunctionSetType;
 
+            bool gridRun = true;
+
             // walk the grid
             EntityIteratorType entityItEnd = velocitySpace_.end();
             for ( EntityIteratorType entityIt = velocitySpace_.begin(); entityIt != entityItEnd; ++entityIt ) {
+
+                if ( gridRun ) {
+                    std::cout << "\nfirst entity" << std::endl;
+                }
 
                 // entity and geometry
                 EntityType& entity = *entityIt;
@@ -289,6 +295,12 @@ class StokesPass
                 const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
                 const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
 
+                if ( gridRun ) {
+                    std::cout << "\nnumSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
+                    std::cout << "\nnumVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
+                    std::cout << "\nnumPressureBaseFunctionsElement: " << numPressureBaseFunctionsElement << std::endl;
+                }
+
                 // calculate volume integrals
                 // (M)_{i,j} = \int_{T}\tau_{i}:\tau_{j}dx
                 for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
@@ -297,36 +309,40 @@ class StokesPass
                         // get quadrature
                         VolumeQuadratureType volumeQuadrature( entity, sigmaSpaceOrder );
                         // sum over all quadrature points
+                        if ( gridRun ) {
+                            std::cout << "\nBasefunctions " << i << j << std::endl;
+                        }
                         for ( int quad = 0; quad < volumeQuadrature.nop(); ++quad ) {
+                            if ( gridRun ) std::cout << "\n quad " << quad << std::endl;
                             WorldCoordinateType x = volumeQuadrature.point( quad );
+                            if ( gridRun ) Stuff::printFieldVector( x, " x", std::cout );
                             double elementVolume = geometry.integrationElement( volumeQuadrature.localPoint( quad ) );
+                            if ( gridRun ) std::cout << "\n elementVolume: " << elementVolume << std::endl;
                             double integrationWeight = volumeQuadrature.weight( quad );
+                            if ( gridRun ) std::cout << "\n integrationWeight: " << integrationWeight << std::endl;
                             // calculate \tau_{i}:\tau_{j}
                             SigmaRangeType tau_i( 0.0 );
                             SigmaRangeType tau_j( 0.0 );
                             sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
+                            if ( gridRun ) Stuff::printFieldMatrix( tau_i, " tau_i", std::cout );
                             sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
+                            if ( gridRun ) Stuff::printFieldMatrix( tau_j, " tau_j", std::cout );
+                            if ( gridRun ) std::cout << "\n shout colonProduct: " << colonProduct( tau_i, tau_j ) << std::endl;
                             M_i_j += elementVolume *
                                         integrationWeight *
                                         colonProduct( tau_i, tau_j );
                         }
-
+                        localMmatrixElement.add( i, j, M_i_j );
                     }
                 }
-
-
-
-
             } // done walking the grid
 
-            // build global matrices
-            typedef SparseRowMatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteSigmaFunctionSpaceType >
-                AmatrixType;
-            AmatrixType Amatrix( sigmaSpace_, sigmaSpace_ );
+            Mmatrix.matrix().print( std::cout );
 
 
 
 
+            gridRun = false;
         }
 
         virtual void compute( const TotalArgumentType &arg, DestinationType &dest) const
