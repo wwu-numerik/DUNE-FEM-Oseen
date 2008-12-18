@@ -9,7 +9,10 @@
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/fem/space/dgspace.hh>
 
-#include "../src/stuff.hh" // should be removed in the end
+#ifndef NLOG // if we want logging, should be removed in the end
+    #include "../src/stuff.hh"
+    #include "../src/logging.hh"
+#endif
 
 namespace Dune
 {
@@ -256,15 +259,26 @@ class StokesPass
             typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType
                 PressureBaseFunctionSetType;
 
-            bool gridRun = true;
+            // eps
+            const double eps = 1.0e-15;
+
+#ifndef NLOG
+            // logging stuff
+            Logging::LogStream& infoStream = Logger().Info();
+            Logging::LogStream& debugStream = Logger().Dbg();
+            int infoLogState = Logger().GetStreamFlags( Logging::LOG_INFO );
+            int debugLogState = Logger().GetStreamFlags( Logging::LOG_DEBUG );
+            bool output = false;
+            const int outputEntity = 0;
+            int entityNR = 0;
+            infoStream << "\nthis is StokesPass::apply()" << std::endl;
+            infoStream << "- starting gridwalk" << std::endl;
+            Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+#endif
 
             // walk the grid
             EntityIteratorType entityItEnd = velocitySpace_.end();
             for ( EntityIteratorType entityIt = velocitySpace_.begin(); entityIt != entityItEnd; ++entityIt ) {
-
-                if ( gridRun ) {
-                    std::cout << "\nfirst entity" << std::endl;
-                }
 
                 // entity and geometry
                 EntityType& entity = *entityIt;
@@ -295,55 +309,104 @@ class StokesPass
                 const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
                 const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
 
-                if ( gridRun ) {
-                    std::cout << "\nnumSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
-                    std::cout << "\nnumVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
-                    std::cout << "\nnumPressureBaseFunctionsElement: " << numPressureBaseFunctionsElement << std::endl;
-                }
-
+#ifndef NLOG
+                if ( outputEntity == entityNR ) output = true;
+                if ( output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                debugStream << "  - entity " << outputEntity << std::endl;
+                debugStream << "  - numSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
+                debugStream << "  - numVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
+                debugStream << "  - numPressureBaseFunctionsElement: " << numPressureBaseFunctionsElement << std::endl;
+                debugStream << "  - calculating Minvers" << std::endl;
+                debugStream << "    ===================" << std::endl;
+                bool Moutput = false;
+                // we want logging at the following base functions
+                const int logBaseI = 0;
+                const int logBaseJ = 8;
+                Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+#endif
                 // calculate volume integrals
                 // (M)_{i,j} = \int_{T}\tau_{i}:\tau_{j}dx
+                // we build M^-1 in fact, because M should be diagonal, and
+                // inversion is pretty easy
                 for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
+
                         double M_i_j = 0.0;
                         // get quadrature
-                        VolumeQuadratureType volumeQuadrature( entity, sigmaSpaceOrder );
+                        VolumeQuadratureType volumeQuadrature( entity, ( 2 * sigmaSpaceOrder ) + 1 );
+#ifndef NLOG
+                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Moutput = true;
+                        if ( output && Moutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                        debugStream << "    basefunctions " << i << " " << j << std::endl;
+                        debugStream << "    volumeQuadrature.nop() " << volumeQuadrature.nop() << std::endl;
+#endif
                         // sum over all quadrature points
-                        if ( gridRun ) {
-                            std::cout << "\nBasefunctions " << i << j << std::endl;
-                        }
                         for ( int quad = 0; quad < volumeQuadrature.nop(); ++quad ) {
-                            if ( gridRun ) std::cout << "\n quad " << quad << std::endl;
+                            // get x
                             WorldCoordinateType x = volumeQuadrature.point( quad );
-                            if ( gridRun ) Stuff::printFieldVector( x, " x", std::cout );
-                            double elementVolume = geometry.integrationElement( volumeQuadrature.localPoint( quad ) );
-                            if ( gridRun ) std::cout << "\n elementVolume: " << elementVolume << std::endl;
+                            // get the integration factor
+                            double elementVolume = geometry.integrationElement( x );
+                            // get the quadrature weight
                             double integrationWeight = volumeQuadrature.weight( quad );
-                            if ( gridRun ) std::cout << "\n integrationWeight: " << integrationWeight << std::endl;
                             // calculate \tau_{i}:\tau_{j}
                             SigmaRangeType tau_i( 0.0 );
                             SigmaRangeType tau_j( 0.0 );
                             sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
-                            if ( gridRun ) Stuff::printFieldMatrix( tau_i, " tau_i", std::cout );
                             sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
-                            if ( gridRun ) Stuff::printFieldMatrix( tau_j, " tau_j", std::cout );
-                            if ( gridRun ) std::cout << "\n shout colonProduct: " << colonProduct( tau_i, tau_j ) << std::endl;
+                            double tau_i_times_tau_j = colonProduct( tau_i, tau_j );
+                            // calculate M_i_j
                             M_i_j += elementVolume *
                                         integrationWeight *
-                                        colonProduct( tau_i, tau_j );
+                                        tau_i_times_tau_j;
+
+
+#ifndef NLOG
+                            debugStream << "    - quadPoint " << quad;
+
+                            Stuff::printFieldVector( x, "x", debugStream, "      " );
+                            debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
+                            debugStream << "      - integrationWeight: " << integrationWeight;
+                            Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "      " );
+                            Stuff::printFieldMatrix( tau_j, "tau_j", debugStream, "      " );
+                            debugStream << "\n      - colonProduct( tau_i, tau_j ): " << tau_i_times_tau_j << std::endl;
+                            debugStream << "      - M_i_j: " << M_i_j << std::endl;
+#endif
                         }
+
+                        // if small, should be zero
+                        if ( M_i_j < eps ) {
+                            M_i_j = 0.0;
+                        }
+                        // else invert
+                        else {
+                            M_i_j = 1.0 / M_i_j;
+                        }
+
+                        // add to matrix
                         localMmatrixElement.add( i, j, M_i_j );
                     }
-                }
+#ifndef NLOG
+                        Moutput = false;
+                        Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+#endif
+                } // done calculating M
+#ifndef NLOG
+                if ( output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                debugStream << "  - done calculating Minvers" << std::endl;
+                debugStream << "    ========================" << std::endl;
+                Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+                output = false;
+                ++entityNR;
+#endif
+
             } // done walking the grid
-
+#ifndef NLOG
+            infoStream << "- gridwalk done" << std::endl;
+            debugStream << "- printing Minvers" << std::endl;
             Mmatrix.matrix().print( std::cout );
-
-
-
-
-            gridRun = false;
-        }
+            Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // return to original state
+#endif
+        } // end of apply
 
         virtual void compute( const TotalArgumentType &arg, DestinationType &dest) const
         {}
