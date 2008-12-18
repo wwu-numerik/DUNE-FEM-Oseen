@@ -14,6 +14,8 @@
     #include "../src/logging.hh"
 #endif
 
+#include <cmath>
+
 namespace Dune
 {
 template <  class DiscreteModelImp,
@@ -374,7 +376,7 @@ class StokesPass
                         }
 
                         // if small, should be zero
-                        if ( M_i_j < eps ) {
+                        if ( fabs( M_i_j ) < eps ) {
                             M_i_j = 0.0;
                         }
                         // else invert
