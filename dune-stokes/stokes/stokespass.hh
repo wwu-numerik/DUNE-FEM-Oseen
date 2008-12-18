@@ -9,9 +9,9 @@
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/fem/space/dgspace.hh>
 
-#ifndef BLUB
-    #include "../src/stuff.hh" // should be removed in the end
-    #include "../src/logging.hh" // should be removed in the end
+#ifndef NLOG // if we want logging, should be removed in the end
+    #include "../src/stuff.hh"
+    #include "../src/logging.hh"
 #endif
 
 namespace Dune
@@ -166,11 +166,6 @@ class StokesPass
         virtual void apply( const DomainType &arg, RangeType &dest) const
         {
 
-#ifndef BLUB
-            Logging::LogStream& infoStream = Logger().Info();
-            Logging::LogStream& debugStream = Logger().Dbg();
-#endif
-
             // functions
             DiscreteVelocityFunctionType& velocity = dest.discreteVelocity();
             DiscretePressureFunctionType& pressure = dest.discretePressure();
@@ -267,19 +262,22 @@ class StokesPass
             // eps
             const double eps = 1.0e-15;
 
-#ifndef BLUB
+#ifndef NLOG
+            // logging stuff
+            Logging::LogStream& infoStream = Logger().Info();
+            Logging::LogStream& debugStream = Logger().Dbg();
+            int infoLogState = Logger().GetStreamFlags( Logging::LOG_INFO );
+            int debugLogState = Logger().GetStreamFlags( Logging::LOG_DEBUG );
             bool output = false;
             int outputEntity = 0;
-            infoStream << "\n== starting gridwalk" << std::endl;
+            infoStream << "\nthis is StokesPass::apply()" << std::endl;
+            infoStream << "- starting gridwalk" << std::endl;
+            Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
 #endif
 
             // walk the grid
             EntityIteratorType entityItEnd = velocitySpace_.end();
             for ( EntityIteratorType entityIt = velocitySpace_.begin(); entityIt != entityItEnd; ++entityIt ) {
-
-#ifndef BLUB
-                if ( outputEntity == 0 ) output = true;
-#endif
 
                 // entity and geometry
                 EntityType& entity = *entityIt;
@@ -310,80 +308,72 @@ class StokesPass
                 const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
                 const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
 
-#ifndef BLUB
-                if ( output ) {
-                    debugStream << "\nnumSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
-                    debugStream << "\nnumVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
-                    debugStream << "\nnumPressureBaseFunctionsElement: " << numPressureBaseFunctionsElement << std::endl;
-                }
+#ifndef NLOG
+                if ( outputEntity == 0 ) output = true;
+                if ( output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                debugStream << "  - entity " << outputEntity << std::endl;
+                debugStream << "  - numSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
+                debugStream << "  - numVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
+                debugStream << "  - numPressureBaseFunctionsElement: " << numPressureBaseFunctionsElement << std::endl;
+                debugStream << "  - calculating Minvers" << std::endl;
+                debugStream << "    ===================" << std::endl;
+                bool Moutput = false;
+                // we want logging at the following base functions
+                const int logBaseI = 0;
+                const int logBaseJ = 8;
+                Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
 #endif
-
                 // calculate volume integrals
                 // (M)_{i,j} = \int_{T}\tau_{i}:\tau_{j}dx
-                // we build M^-1 in fact, besauce M should be diagnal, and
+                // we build M^-1 in fact, because M should be diagonal, and
                 // inversion is pretty easy
-#ifndef BLUB
-                if ( output ) {
-                    debugStream << "\ncalculating M" << std::endl;
-                    debugStream << "=============" << std::endl;
-                }
-                bool Moutput = false;
-#endif
                 for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
-#ifndef BLUB
-                        if ( ( i == 0 ) && ( j == 8 ) ) Moutput = true;
-#endif
+
                         double M_i_j = 0.0;
                         // get quadrature
                         VolumeQuadratureType volumeQuadrature( entity, ( 2 * sigmaSpaceOrder ) + 1 );
+#ifndef NLOG
+                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Moutput = true;
+                        if ( output && Moutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                        debugStream << "    basefunctions " << i << " " << j << std::endl;
+                        debugStream << "    volumeQuadrature.nop() " << volumeQuadrature.nop() << std::endl;
+#endif
                         // sum over all quadrature points
-#ifndef BLUB
-                        if ( output && Moutput ) debugStream << "Basefunctions " << i << " " << j << std::endl;
-                        if ( output && Moutput ) debugStream << "volumeQuadrature.nop() " << volumeQuadrature.nop() << std::endl;
-#endif
                         for ( int quad = 0; quad < volumeQuadrature.nop(); ++quad ) {
-#ifndef BLUB
-                            if ( output && Moutput ) debugStream << "-quadPoint " << quad;
-#endif
+                            // get x
                             WorldCoordinateType x = volumeQuadrature.point( quad );
-#ifndef BLUB
-                            if ( output && Moutput ) Stuff::printFieldVector( x, "x", debugStream );
-#endif
+                            // get the integration factor
                             double elementVolume = geometry.integrationElement( x );
-#ifndef BLUB
-                            if ( output && Moutput ) debugStream << "\nelementVolume: " << elementVolume << std::endl;
-#endif
+                            // get the quadrature weight
                             double integrationWeight = volumeQuadrature.weight( quad );
-#ifndef BLUB
-                            if ( output && Moutput ) debugStream << "integrationWeight: " << integrationWeight;
-#endif
                             // calculate \tau_{i}:\tau_{j}
                             SigmaRangeType tau_i( 0.0 );
                             SigmaRangeType tau_j( 0.0 );
                             sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
-#ifndef BLUB
-                            if ( output && Moutput ) Stuff::printFieldMatrix( tau_i, "tau_i", debugStream );
-#endif
                             sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
                             double tau_i_times_tau_j = colonProduct( tau_i, tau_j );
-
-#ifndef BLUB
-                            if ( output && Moutput ) Stuff::printFieldMatrix( tau_j, "tau_j", debugStream );
-                            if ( output && Moutput ) debugStream << "\ncolonProduct( tau_i, tau_j ): " << tau_i_times_tau_j << std::endl;
-#endif
+                            // calculate M_i_j
                             M_i_j += elementVolume *
                                         integrationWeight *
                                         tau_i_times_tau_j;
-#ifndef BLUB
-                            if ( output && Moutput ) debugStream << "M_i_j: " << M_i_j << std::endl;
+
+
+#ifndef NLOG
+                            debugStream << "    - quadPoint " << quad;
+
+                            Stuff::printFieldVector( x, "x", debugStream, "      " );
+                            debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
+                            debugStream << "      - integrationWeight: " << integrationWeight;
+                            Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "      " );
+                            Stuff::printFieldMatrix( tau_j, "tau_j", debugStream, "      " );
+                            debugStream << "\n      - colonProduct( tau_i, tau_j ): " << tau_i_times_tau_j << std::endl;
+                            debugStream << "      - M_i_j: " << M_i_j << std::endl;
 #endif
                         }
-#ifndef BLUB
-                        Moutput = false;
-#endif
+
                         // if small, should be zero
-                        if ( M_i_j <= eps ) {
+                        if ( M_i_j < eps ) {
                             M_i_j = 0.0;
                         }
                         // else invert
@@ -394,30 +384,28 @@ class StokesPass
                         // add to matrix
                         localMmatrixElement.add( i, j, M_i_j );
                     }
+#ifndef NLOG
+                        Moutput = false;
+                        Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+#endif
                 } // done calculating M
-#ifndef BLUB
-                if ( output ) {
-                    debugStream << "\ndone calculating M" << std::endl;
-                    debugStream << "==================" << std::endl;
-                }
+#ifndef NLOG
+                if ( output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                debugStream << "  - done calculating Minvers" << std::endl;
+                debugStream << "    ========================" << std::endl;
+                Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
                 output = false;
                 ++outputEntity;
 #endif
 
             } // done walking the grid
-#ifndef BLUB
-            infoStream << "\n== gridwalk done." << std::endl;
-#endif
-
-#ifndef BLUB
-            debugStream << "\nMmatrix" << std::endl;
+#ifndef NLOG
+            infoStream << "- gridwalk done" << std::endl;
+            debugStream << "- printing Minvers" << std::endl;
             Mmatrix.matrix().print( std::cout );
+            Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // return to original state
 #endif
-
-
-
-
-        }
+        } // end of apply
 
         virtual void compute( const TotalArgumentType &arg, DestinationType &dest) const
         {}

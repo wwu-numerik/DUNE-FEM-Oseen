@@ -21,11 +21,12 @@ class Logging
     public:
 
         enum LogFlags{
-          LOG_ERR = 1,
-          LOG_INFO = 2,
-          LOG_DEBUG = 4,
-          LOG_CONSOLE = 8,
-          LOG_FILE = 16
+          LOG_NONE = 1,
+          LOG_ERR = 2,
+          LOG_INFO = 4,
+          LOG_DEBUG = 8,
+          LOG_CONSOLE = 16,
+          LOG_FILE = 32
         };
 
         class LogStream //: virtual public std::ostream
@@ -125,6 +126,12 @@ class Logging
             assert( stream & ( LOG_ERR | LOG_INFO | LOG_DEBUG ) );
             //this might result in logging to diff targtes, so we flush the current targets
             flagmap_[stream] = flags;
+        }
+
+        int GetStreamFlags( LogFlags stream )
+        {
+            assert( stream & ( LOG_ERR | LOG_INFO | LOG_DEBUG ) );
+            return flagmap_[stream];
         }
 
          /** \name Log funcs for member-function pointers
