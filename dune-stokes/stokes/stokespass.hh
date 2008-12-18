@@ -9,7 +9,10 @@
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/fem/space/dgspace.hh>
 
-#include "../src/stuff.hh" // should be removed in the end
+#ifndef BLUB
+    #include "../src/stuff.hh" // should be removed in the end
+    #include "../src/logging.hh" // should be removed in the end
+#endif
 
 namespace Dune
 {
@@ -163,6 +166,11 @@ class StokesPass
         virtual void apply( const DomainType &arg, RangeType &dest) const
         {
 
+#ifndef BLUB
+            Logging::LogStream& infoStream = Logger().Info();
+            Logging::LogStream& debugStream = Logger().Dbg();
+#endif
+
             // functions
             DiscreteVelocityFunctionType& velocity = dest.discreteVelocity();
             DiscretePressureFunctionType& pressure = dest.discretePressure();
@@ -256,15 +264,22 @@ class StokesPass
             typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType
                 PressureBaseFunctionSetType;
 
-            bool gridRun = true;
+            // eps
+            const double eps = 1.0e-15;
+
+#ifndef BLUB
+            bool output = false;
+            int outputEntity = 0;
+            infoStream << "\n== starting gridwalk" << std::endl;
+#endif
 
             // walk the grid
             EntityIteratorType entityItEnd = velocitySpace_.end();
             for ( EntityIteratorType entityIt = velocitySpace_.begin(); entityIt != entityItEnd; ++entityIt ) {
 
-                if ( gridRun ) {
-                    std::cout << "\nfirst entity" << std::endl;
-                }
+#ifndef BLUB
+                if ( outputEntity == 0 ) output = true;
+#endif
 
                 // entity and geometry
                 EntityType& entity = *entityIt;
@@ -295,54 +310,113 @@ class StokesPass
                 const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
                 const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
 
-                if ( gridRun ) {
-                    std::cout << "\nnumSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
-                    std::cout << "\nnumVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
-                    std::cout << "\nnumPressureBaseFunctionsElement: " << numPressureBaseFunctionsElement << std::endl;
+#ifndef BLUB
+                if ( output ) {
+                    debugStream << "\nnumSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
+                    debugStream << "\nnumVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
+                    debugStream << "\nnumPressureBaseFunctionsElement: " << numPressureBaseFunctionsElement << std::endl;
                 }
+#endif
 
                 // calculate volume integrals
                 // (M)_{i,j} = \int_{T}\tau_{i}:\tau_{j}dx
+                // we build M^-1 in fact, besauce M should be diagnal, and
+                // inversion is pretty easy
+#ifndef BLUB
+                if ( output ) {
+                    debugStream << "\ncalculating M" << std::endl;
+                    debugStream << "=============" << std::endl;
+                }
+                bool Moutput = false;
+#endif
                 for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
+#ifndef BLUB
+                        if ( ( i == 0 ) && ( j == 8 ) ) Moutput = true;
+#endif
                         double M_i_j = 0.0;
                         // get quadrature
-                        VolumeQuadratureType volumeQuadrature( entity, sigmaSpaceOrder );
+                        VolumeQuadratureType volumeQuadrature( entity, ( 2 * sigmaSpaceOrder ) + 1 );
                         // sum over all quadrature points
-                        if ( gridRun ) {
-                            std::cout << "\nBasefunctions " << i << j << std::endl;
-                        }
+#ifndef BLUB
+                        if ( output && Moutput ) debugStream << "Basefunctions " << i << " " << j << std::endl;
+                        if ( output && Moutput ) debugStream << "volumeQuadrature.nop() " << volumeQuadrature.nop() << std::endl;
+#endif
                         for ( int quad = 0; quad < volumeQuadrature.nop(); ++quad ) {
-                            if ( gridRun ) std::cout << "\n quad " << quad << std::endl;
+#ifndef BLUB
+                            if ( output && Moutput ) debugStream << "-quadPoint " << quad;
+#endif
                             WorldCoordinateType x = volumeQuadrature.point( quad );
-                            if ( gridRun ) Stuff::printFieldVector( x, " x", std::cout );
-                            double elementVolume = geometry.integrationElement( volumeQuadrature.localPoint( quad ) );
-                            if ( gridRun ) std::cout << "\n elementVolume: " << elementVolume << std::endl;
+#ifndef BLUB
+                            if ( output && Moutput ) Stuff::printFieldVector( x, "x", debugStream );
+#endif
+                            double elementVolume = geometry.integrationElement( x );
+#ifndef BLUB
+                            if ( output && Moutput ) debugStream << "\nelementVolume: " << elementVolume << std::endl;
+#endif
                             double integrationWeight = volumeQuadrature.weight( quad );
-                            if ( gridRun ) std::cout << "\n integrationWeight: " << integrationWeight << std::endl;
+#ifndef BLUB
+                            if ( output && Moutput ) debugStream << "integrationWeight: " << integrationWeight;
+#endif
                             // calculate \tau_{i}:\tau_{j}
                             SigmaRangeType tau_i( 0.0 );
                             SigmaRangeType tau_j( 0.0 );
                             sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
-                            if ( gridRun ) Stuff::printFieldMatrix( tau_i, " tau_i", std::cout );
+#ifndef BLUB
+                            if ( output && Moutput ) Stuff::printFieldMatrix( tau_i, "tau_i", debugStream );
+#endif
                             sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
-                            if ( gridRun ) Stuff::printFieldMatrix( tau_j, " tau_j", std::cout );
-                            if ( gridRun ) std::cout << "\n shout colonProduct: " << colonProduct( tau_i, tau_j ) << std::endl;
+                            double tau_i_times_tau_j = colonProduct( tau_i, tau_j );
+
+#ifndef BLUB
+                            if ( output && Moutput ) Stuff::printFieldMatrix( tau_j, "tau_j", debugStream );
+                            if ( output && Moutput ) debugStream << "\ncolonProduct( tau_i, tau_j ): " << tau_i_times_tau_j << std::endl;
+#endif
                             M_i_j += elementVolume *
                                         integrationWeight *
-                                        colonProduct( tau_i, tau_j );
+                                        tau_i_times_tau_j;
+#ifndef BLUB
+                            if ( output && Moutput ) debugStream << "M_i_j: " << M_i_j << std::endl;
+#endif
                         }
+#ifndef BLUB
+                        Moutput = false;
+#endif
+                        // if small, should be zero
+                        if ( M_i_j <= eps ) {
+                            M_i_j = 0.0;
+                        }
+                        // else invert
+                        else {
+                            M_i_j = 1.0 / M_i_j;
+                        }
+
+                        // add to matrix
                         localMmatrixElement.add( i, j, M_i_j );
                     }
+                } // done calculating M
+#ifndef BLUB
+                if ( output ) {
+                    debugStream << "\ndone calculating M" << std::endl;
+                    debugStream << "==================" << std::endl;
                 }
+                output = false;
+                ++outputEntity;
+#endif
+
             } // done walking the grid
+#ifndef BLUB
+            infoStream << "\n== gridwalk done." << std::endl;
+#endif
 
+#ifndef BLUB
+            debugStream << "\nMmatrix" << std::endl;
             Mmatrix.matrix().print( std::cout );
+#endif
 
 
 
 
-            gridRun = false;
         }
 
         virtual void compute( const TotalArgumentType &arg, DestinationType &dest) const
