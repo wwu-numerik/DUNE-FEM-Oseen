@@ -58,14 +58,17 @@ void safe_delete ( T t )
  *  \brief prints a Dune::FieldVector
  *
  *  or anything compatible in terms of Iterators
- *  \tparam should be Dune::FieldVector or compatible
+ *  \tparam T
+ *          should be Dune::FieldVector or compatible
+ *  \tparam out
+ *          std::ostream or compatible
  *  \param  arg
  *          Vector to be printed
  *  \param  name
  *          name to be printed along
  **/
-template < class T >
-void printFieldVector( T& arg, std::string name, std::ostream& out )
+template < class T, class stream >
+void printFieldVector( T& arg, std::string name, stream& out )
 {
     out << "\nprinting " << name << " (Dune::FieldVector)" << std::endl;
     typedef typename T::ConstIterator
@@ -80,14 +83,17 @@ void printFieldVector( T& arg, std::string name, std::ostream& out )
  *  \brief prints a Dune::FieldMatrix
  *
  *  or anything compatible in terms of Iterators
- *  \tparam should be Dune::FieldMatrix or compatible
+ *  \tparam T
+ *          should be Dune::FieldMatrix or compatible
+ *  \tparam out
+ *          std::ostream or compatible
  *  \param  arg
  *          Matrix to be printed
  *  \param  name
  *          name to be printed along
  **/
-template < class T >
-void printFieldMatrix( T& arg, std::string name, std::ostream& out )
+template < class T, class stream >
+void printFieldMatrix( T& arg, std::string name, stream& out )
 {
     out << "\nprinting " << name << " (Dune::FieldMatrix)";
     typedef typename T::ConstRowIterator

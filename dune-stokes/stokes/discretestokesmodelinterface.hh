@@ -1,9 +1,8 @@
 /**
  *  \file   discretestokesmodelinterface.hh
- *  \brief  containing a class DiscreteStokesModelInterface
+ *  \brief  contains a class DiscreteStokesModelInterface
  *          and a class DiscreteStokesModelDefault with traits class
  *          DiscreteStokesModelDefaultTraits
- *  \todo   check compatibility with certain doxygen versions
  **/
 #ifndef DUNE_DISCRESTOKESTEMODELINTERFACE_HH
 #define DUNE_DISCRESTOKESTEMODELINTERFACE_HH
@@ -176,6 +175,13 @@ class DiscreteStokesModelInterface
         //! Element (codim 0 entity) of the grid
         typedef typename GridType::template Codim<0>::Entity
             EntityType;
+
+        //! polynomial order for the discrete sigma function space
+        static const int sigmaSpaceOrder = Traits::sigmaSpaceOrder;
+        //! polynomial order for the discrete velocity function space
+        static const int velocitySpaceOrder = Traits::velocitySpaceOrder;
+        //! polynomial order for the discrete pressure function space
+        static const int pressureSpaceOrder = Traits::pressureSpaceOrder;
 
         /**
          *  \brief  constructor
@@ -816,6 +822,14 @@ class DiscreteStokesModelDefaultTraits
         typedef Dune::CachingQuadrature< GridPartImp, 1 >
             FaceQuadratureType;
 
+        //! polynomial order for the discrete sigma function space
+        static const int sigmaSpaceOrder = polOrder;
+        //! polynomial order for the discrete velocity function space
+        static const int velocitySpaceOrder = polOrder;
+        //! polynomial order for the discrete pressure function space
+        static const int pressureSpaceOrder = polOrder;
+
+
     private:
 
         //! function space type for the velocity
@@ -825,7 +839,7 @@ class DiscreteStokesModelDefaultTraits
         //! discrete function type space for the velocity
         typedef Dune::DiscontinuousGalerkinSpace<   VelocityFunctionSpaceType,
                                                     GridPartImp,
-                                                    polOrder >
+                                                    velocitySpaceOrder >
             DiscreteVelocityFunctionSpaceType;
 
         //! function space type for the pressure
@@ -835,7 +849,7 @@ class DiscreteStokesModelDefaultTraits
         //! discrete function space type for the pressure
         typedef Dune::DiscontinuousGalerkinSpace<   PressureFunctionSpaceType,
                                                     GridPartImp,
-                                                    polOrder >
+                                                    pressureSpaceOrder >
             DiscretePressureFunctionSpaceType;
 
     public:
@@ -880,7 +894,7 @@ class DiscreteStokesModelDefaultTraits
         //! discrete function space type for sigma
         typedef Dune::DiscontinuousGalerkinSpace<   SigmaFunctionSpaceType,
                                                     GridPartImp,
-                                                    polOrder >
+                                                    sigmaSpaceOrder >
             DiscreteSigmaFunctionSpaceType;
 
         //! discrete function type for sigma
