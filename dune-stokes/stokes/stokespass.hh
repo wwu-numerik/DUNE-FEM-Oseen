@@ -269,7 +269,8 @@ class StokesPass
             int infoLogState = Logger().GetStreamFlags( Logging::LOG_INFO );
             int debugLogState = Logger().GetStreamFlags( Logging::LOG_DEBUG );
             bool output = false;
-            int outputEntity = 0;
+            const int outputEntity = 0;
+            int entityNR = 0;
             infoStream << "\nthis is StokesPass::apply()" << std::endl;
             infoStream << "- starting gridwalk" << std::endl;
             Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
@@ -309,7 +310,7 @@ class StokesPass
                 const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
 
 #ifndef NLOG
-                if ( outputEntity == 0 ) output = true;
+                if ( outputEntity == entityNR ) output = true;
                 if ( output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
                 debugStream << "  - entity " << outputEntity << std::endl;
                 debugStream << "  - numSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
@@ -395,7 +396,7 @@ class StokesPass
                 debugStream << "    ========================" << std::endl;
                 Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
                 output = false;
-                ++outputEntity;
+                ++entityNR;
 #endif
 
             } // done walking the grid
