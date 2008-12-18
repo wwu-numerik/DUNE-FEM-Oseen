@@ -8,6 +8,7 @@
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/fem/space/dgspace.hh>
+#include <dune/fem/operator/matrix/istlmatrix.hh>
 
 #include "../src/stuff.hh" // should be removed in the end
 
@@ -269,10 +270,24 @@ class StokesPass
             } // done walking the grid
 
             // build global matrices
-            typedef SparseRowMatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteSigmaFunctionSpaceType >
+            typedef SparseRowMatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
                 AmatrixType;
-            AmatrixType Amatrix( sigmaSpace_, sigmaSpace_ );
+            AmatrixType Amatrix( velocitySpace_, velocitySpace_ );
             Amatrix.reserve();
+            typedef SparseRowMatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
+                Tmp_matrixType;
+            Tmp_matrixType tmp( sigmaSpace_, velocitySpace_ );
+            tmp.reserve();
+
+
+            Mmatrix.matrix().multiply( Wmatrix.matrix(), tmp.matrix() );
+            Xmatrix.matrix().multiply( tmp.matrix(), Amatrix.matrix() );
+            Amatrix.matrix().scale( -1 );
+            Ymatrix.matrix().add( Amatrix.matrix() );
+//            Amatrix = Ymatrix;
+
+
+        //    Mmatrix.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
 
 
 
