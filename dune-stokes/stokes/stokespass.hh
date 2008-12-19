@@ -450,6 +450,7 @@ class StokesPass
                     ret += *row1It * *row2It;
                 }
             }
+            return ret;
         }
 
 
