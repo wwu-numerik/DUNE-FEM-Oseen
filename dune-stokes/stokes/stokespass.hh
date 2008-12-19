@@ -311,6 +311,10 @@ class StokesPass
                 const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
                 const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
 
+                // get quadrature
+                VolumeQuadratureType volumeQuadratureElement( entity, ( 2 * sigmaSpaceOrder ) + 1 );
+
+
 #ifndef NLOG
                 if ( outputEntity == entityNR ) output = true;
                 if ( output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
@@ -318,8 +322,8 @@ class StokesPass
                 debugStream << "  - numSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
                 debugStream << "  - numVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
                 debugStream << "  - numPressureBaseFunctionsElement: " << numPressureBaseFunctionsElement << std::endl;
-                debugStream << "  - calculating Minvers" << std::endl;
-                debugStream << "    ===================" << std::endl;
+//                debugStream << "  - calculating Minvers" << std::endl;
+//                debugStream << "    ===================" << std::endl;
                 bool Moutput = false;
                 // we want logging at the following base functions
                 const int logBaseI = 0;
@@ -334,22 +338,20 @@ class StokesPass
                     for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
 
                         double M_i_j = 0.0;
-                        // get quadrature
-                        VolumeQuadratureType volumeQuadrature( entity, ( 2 * sigmaSpaceOrder ) + 1 );
 #ifndef NLOG
-                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Moutput = true;
-                        if ( output && Moutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+//                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Moutput = true;
+//                        if ( output && Moutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
-                        debugStream << "    volumeQuadrature.nop() " << volumeQuadrature.nop() << std::endl;
+                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
                         // sum over all quadrature points
-                        for ( int quad = 0; quad < volumeQuadrature.nop(); ++quad ) {
+                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
-                            WorldCoordinateType x = volumeQuadrature.point( quad );
+                            WorldCoordinateType x = volumeQuadratureElement.point( quad );
                             // get the integration factor
                             double elementVolume = geometry.integrationElement( x );
                             // get the quadrature weight
-                            double integrationWeight = volumeQuadrature.weight( quad );
+                            double integrationWeight = volumeQuadratureElement.weight( quad );
                             // calculate \tau_{i}:\tau_{j}
                             SigmaRangeType tau_i( 0.0 );
                             SigmaRangeType tau_j( 0.0 );
@@ -393,13 +395,46 @@ class StokesPass
 #endif
                 } // done calculating M
 #ifndef NLOG
-                if ( output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+//                if ( output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
                 debugStream << "  - done calculating Minvers" << std::endl;
                 debugStream << "    ========================" << std::endl;
                 Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
                 output = false;
                 ++entityNR;
 #endif
+                // (W)_{i,j}=\int_{\partial T}\hat{u}^{U}(v_{j})\cdot\tau_{i}\cdot n_{T}ds
+                //           -\int_{T}v_{j}\cdot(\nabla \cdot \tau_{i})dx
+                // we only compute the contribution of the 2nd integral here,
+                // the surface integral will be computed later on
+                for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
+                    for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+                        double W_i_j = 0.0;
+
+                        // sum over all quadrature points
+                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
+                            // get x
+                            WorldCoordinateType x = volumeQuadratureElement.point( quad );
+                            // get the integration factor
+                            double elementVolume = geometry.integrationElement( x );
+                            // get the quadrature weight
+                            double integrationWeight = volumeQuadratureElement.weight( quad );
+                            // calculate \tau_{i}:\tau_{j}
+                            SigmaRangeType tau_i( 0.0 );
+                            VelocityRangeType v_j( 0.0 );
+                            sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
+                            velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+                            VelocityRangeType divergence_of_tau_i = divergenceOf( tau_i );
+                            W_i_j += v_j * divergence_of_tau_i;
+                        }
+
+
+
+
+
+
+                    }
+                } // done calculationg W
+
 
             } // done walking the grid
 #ifndef NLOG
@@ -424,27 +459,29 @@ class StokesPass
         DiscretePressureFunctionSpaceType& pressureSpace_;
         DiscreteSigmaFunctionSpaceType sigmaSpace_;
 
-        template < class FieldMatrixType >
-        double colonProduct(    const FieldMatrixType& arg1,
-                                const FieldMatrixType& arg2 ) const
+        /**
+         *  \todo   doc
+         **/
+        double colonProduct(    const SigmaRangeType& arg1,
+                                const SigmaRangeType& arg2 ) const
         {
             assert( arg1.rowdim() == arg2.coldim() );
             double ret = 0.0;
             // iterators
-            typedef typename FieldMatrixType::ConstRowIterator
-                ConstRowIterator;
-            typedef typename FieldMatrixType::row_type::ConstIterator
-                ConstIterator;
-            ConstRowIterator arg1RowItEnd = arg1.end();
-            ConstRowIterator arg2RowItEnd = arg2.end();
-            ConstRowIterator arg2RowIt = arg2.begin();
-            for (   ConstRowIterator arg1RowIt = arg1.begin();
+            typedef typename SigmaRangeType::ConstRowIterator
+                ConstRowIteratorType;
+            typedef typename SigmaRangeType::row_type::ConstIterator
+                ConstIteratorType;
+            ConstRowIteratorType arg1RowItEnd = arg1.end();
+            ConstRowIteratorType arg2RowItEnd = arg2.end();
+            ConstRowIteratorType arg2RowIt = arg2.begin();
+            for (   ConstRowIteratorType arg1RowIt = arg1.begin();
                     arg1RowIt != arg1RowItEnd, arg2RowIt != arg2RowItEnd;
                     ++arg1RowIt, ++arg2RowIt ) {
-                ConstIterator row1ItEnd = arg1RowIt->end();
-                ConstIterator row2ItEnd = arg2RowIt->end();
-                ConstIterator row2It = arg2RowIt->begin();
-                for (   ConstIterator row1It = arg1RowIt->begin();
+                ConstIteratorType row1ItEnd = arg1RowIt->end();
+                ConstIteratorType row2ItEnd = arg2RowIt->end();
+                ConstIteratorType row2It = arg2RowIt->begin();
+                for (   ConstIteratorType row1It = arg1RowIt->begin();
                         row1It != row1ItEnd, row2It != row2ItEnd;
                         ++row1It, ++row2It ) {
                     ret += *row1It * *row2It;
@@ -452,6 +489,36 @@ class StokesPass
             }
             return ret;
         }
+
+        /**
+         *  \todo   doc
+         **/
+        VelocityRangeType divergenceOf( const SigmaRangeType& arg ) const
+        {
+            VelocityRangeType ret( 0.0 );
+            typedef typename SigmaRangeType::ConstRowIterator
+                ArgConstRowIteratorType;
+            typedef typename SigmaRangeType::row_type::ConstIterator
+                ArgConstIteratorType;
+            typedef typename VelocityRangeType::Iterator
+                RetIteratorType;
+            ArgConstRowIteratorType argRowItEnd = arg.end();
+            RetIteratorType retItEnd = ret.end();
+            RetIteratorType retIt = ret.begin();
+            for (   ArgConstRowIteratorType argRowIt = arg.begin();
+                    argRowIt != argRowItEnd, retIt != retItEnd;
+                    ++argRowIt, ++retIt ) {
+                ArgConstIteratorType argItEnd = argRowIt->end();
+                for (   ArgConstIteratorType argIt = argRowIt->begin();
+                        argIt != argItEnd;
+                        ++argIt ) {
+                            *retIt += *argIt;
+                }
+            }
+            return ret;
+        }
+
+
 
 
 };
