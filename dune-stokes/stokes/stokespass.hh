@@ -322,12 +322,13 @@ class StokesPass
                 debugStream << "  - numSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
                 debugStream << "  - numVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
                 debugStream << "  - numPressureBaseFunctionsElement: " << numPressureBaseFunctionsElement << std::endl;
-//                debugStream << "  - calculating Minvers" << std::endl;
-//                debugStream << "    ===================" << std::endl;
+                debugStream << "  - calculating muX" << std::endl;
+                debugStream << "    ===============" << std::endl;
                 bool Moutput = false;
+                bool Xoutput = false;
                 // we want logging at the following base functions
                 const int logBaseI = 0;
-                const int logBaseJ = 8;
+                const int logBaseJ = 0;
                 Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
 #endif
                 // calculate volume integrals
@@ -394,14 +395,6 @@ class StokesPass
                         Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
 #endif
                 } // done calculating M
-#ifndef NLOG
-//                if ( output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
-                debugStream << "  - done calculating Minvers" << std::endl;
-                debugStream << "    ========================" << std::endl;
-                Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
-                output = false;
-                ++entityNR;
-#endif
 
                 // (W)_{i,j}=\int_{\partial T}\hat{u}^{U}(v_{j})\cdot\tau_{i}\cdot n_{T}ds
                 //           -\int_{T}v_{j}\cdot(\nabla \cdot \tau_{i})dx
@@ -445,6 +438,12 @@ class StokesPass
                 for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
                         double X_i_j = 0.0;
+#ifndef NLOG
+                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
+                        if ( output && Xoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                        debugStream << "    basefunctions " << i << " " << j << std::endl;
+                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+#endif
                         // sum over all quadrature points
                         for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
@@ -465,6 +464,17 @@ class StokesPass
                                         integrationWeight *
                                         tau_j_times_gradient_v_i *
                                         mu;
+#ifndef NLOG
+                            debugStream << "    - quadPoint " << quad;
+
+                            Stuff::printFieldVector( x, "x", debugStream, "      " );
+                            debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
+                            debugStream << "      - integrationWeight: " << integrationWeight;
+                            Stuff::printFieldMatrix( gradient_of_v_i, "gradient of v_i", debugStream, "      " );
+                            Stuff::printFieldMatrix( tau_j, "tau_j", debugStream, "      " );
+                            debugStream << "\n      - colonProduct( tau_j, grad v_i ): " << tau_j_times_gradient_v_i << std::endl;
+                            debugStream << "      - X_i_j: " << X_i_j << std::endl;
+#endif
                         } // done sum over quadrature points
                         // if small, should be zero
                         if ( fabs( X_i_j ) < eps ) {
@@ -472,16 +482,25 @@ class StokesPass
                         }
                         // add to matrix
                         localXmatrixElement.add( i, j, X_i_j );
+#ifndef NLOG
+                        Xoutput = false;
+                        Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+#endif
                     }
                 } // done calculating X
-
-
-
+#ifndef NLOG
+                if ( output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                debugStream << "  - done calculating muX" << std::endl;
+                debugStream << "    ====================" << std::endl;
+                Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+                output = false;
+                ++entityNR;
+#endif
 
             } // done walking the grid
 #ifndef NLOG
             infoStream << "- gridwalk done" << std::endl;
-            debugStream << "- printing Minvers" << std::endl;
+            debugStream << "- printing muX" << std::endl;
             Xmatrix.matrix().print( std::cout );
             Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // return to original state
 #endif
