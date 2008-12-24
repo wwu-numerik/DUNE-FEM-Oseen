@@ -129,7 +129,8 @@ int main( int argc, char** argv )
                                     1.0,
                                     ones,
                                     analyticalForce,
-                                    analyticalDirichletData );
+                                    analyticalDirichletData,
+                                    2.0 );
 
     typedef Dune::DiscreteStokesModelInterface<
                 Dune::DiscreteStokesModelDefaultTraits<

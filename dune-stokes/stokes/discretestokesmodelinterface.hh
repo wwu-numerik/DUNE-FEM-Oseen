@@ -783,6 +783,17 @@ class DiscreteStokesModelInterface
                                 forceContrib ) );
         }
 
+        /**
+         *  \brief  Returns the viscosity \f$\mu\f$ of the fluid.
+         *          Calls the implementation of the derived class.
+         *  \return \f$\mu\f$
+         **/
+        double viscosity() const
+        {
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().viscosity() );
+            return asImp().viscosity();
+        }
+
     protected:
         //! for Barton-Nackmann trick
         DiscreteModelType& asImp()
@@ -1078,13 +1089,15 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                     const double D_11,
                                     const VelocityRangeType& D_12,
                                     const AnalyticalForceType& force,
-                                    const AnalyticalDirichletDataType& dirichletData )
+                                    const AnalyticalDirichletDataType& dirichletData,
+                                    const double viscosity )
             : C_11_( C_11 ),
             C_12_( C_12 ),
             D_11_( D_11 ),
             D_12_( D_12 ),
             force_( force ),
-            dirichletData_( dirichletData )
+            dirichletData_( dirichletData ),
+            viscosity_( viscosity )
         {}
 
         /**
@@ -1693,9 +1706,18 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             force_.evaluate( x, forceContrib );
         }
 
+        /**
+         *  \brief  Returns the viscosity \f$\mu\f$ of the fluid.
+         *  \return \f$\mu\f$
+         **/
+        double viscosity() const
+        {
+            return viscosity_;
+        }
+
     private:
 
-        double C_11_, D_11_;
+        double C_11_, D_11_, viscosity_;
         const VelocityRangeType C_12_, D_12_;
         const AnalyticalForceType& force_;
         const AnalyticalDirichletDataType& dirichletData_;
