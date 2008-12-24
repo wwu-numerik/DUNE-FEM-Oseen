@@ -262,7 +262,7 @@ class StokesPass
                 PressureBaseFunctionSetType;
 
             // eps
-            const double eps = 1.0e-15;
+            const double eps = 1.0e-14;
 
 #ifndef NLOG
             // logging stuff
@@ -375,7 +375,7 @@ class StokesPass
                             debugStream << "\n      - colonProduct( tau_i, tau_j ): " << tau_i_times_tau_j << std::endl;
                             debugStream << "      - M_i_j: " << M_i_j << std::endl;
 #endif
-                        }
+                        } // done sum over quadrature points
 
                         // if small, should be zero
                         if ( fabs( M_i_j ) < eps ) {
@@ -402,6 +402,7 @@ class StokesPass
                 output = false;
                 ++entityNR;
 #endif
+
                 // (W)_{i,j}=\int_{\partial T}\hat{u}^{U}(v_{j})\cdot\tau_{i}\cdot n_{T}ds
                 //           -\int_{T}v_{j}\cdot(\nabla \cdot \tau_{i})dx
                 // we only compute the contribution of the 2nd integral here,
@@ -409,7 +410,6 @@ class StokesPass
                 for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                         double W_i_j = 0.0;
-
                         // sum over all quadrature points
                         for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
@@ -424,23 +424,65 @@ class StokesPass
                             sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
                             velocityBaseFunctionSetElement.evaluate( j, x, v_j );
                             VelocityRangeType divergence_of_tau_i = divergenceOf( tau_i );
-                            W_i_j += v_j * divergence_of_tau_i;
+                            double v_j_times_divergence_of_tau_i = v_j * divergence_of_tau_i;
+                            W_i_j += elementVolume *
+                                        integrationWeight *
+                                        v_j_times_divergence_of_tau_i * -1.0;
+                        } // done sum over quadrature points
+                        // if small, should be zero
+                        if ( fabs( W_i_j ) < eps ) {
+                            W_i_j = 0.0;
                         }
-
-
-
-
-
-
+                        // add to matrix
+                        localWmatrixElement.add( i, j, W_i_j );
                     }
                 } // done calculationg W
+
+                // \mu(X)_{i,j}=\mu\int_{T}\tau_{j}:\nabla v_{i} dx
+                //              -\mu\int_{\partial}v_{i}\cdot\hat{\sigma}^{\sigma}(\tau_{j})\cdot n_{T}ds
+                // we only compute the contribution of the 1st integral here,
+                // the surface integral will be computed later on
+                for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+                    for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
+                        double X_i_j = 0.0;
+                        // sum over all quadrature points
+                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
+                            // get x
+                            WorldCoordinateType x = volumeQuadratureElement.point( quad );
+                            // get the integration factor
+                            double elementVolume = geometry.integrationElement( x );
+                            // get the quadrature weight
+                            double integrationWeight = volumeQuadratureElement.weight( quad );
+                            // calculate \tau_{j}:\nabla v_{i}
+                            SigmaRangeType gradient_of_v_i( 0.0 );
+                            SigmaRangeType tau_j( 0.0 );
+                            velocityBaseFunctionSetElement.jacobian( i, x, gradient_of_v_i );
+                            sigmaBaseFunctionSetElement.evaluate( i, x, tau_j );
+                            double tau_j_times_gradient_v_i =
+                                colonProduct( tau_j, gradient_of_v_i );
+                            double mu = discreteModel_.viscosity();
+                            X_i_j += elementVolume *
+                                        integrationWeight *
+                                        tau_j_times_gradient_v_i *
+                                        mu;
+                        } // done sum over quadrature points
+                        // if small, should be zero
+                        if ( fabs( X_i_j ) < eps ) {
+                            X_i_j = 0.0;
+                        }
+                        // add to matrix
+                        localXmatrixElement.add( i, j, X_i_j );
+                    }
+                } // done calculating X
+
+
 
 
             } // done walking the grid
 #ifndef NLOG
             infoStream << "- gridwalk done" << std::endl;
             debugStream << "- printing Minvers" << std::endl;
-            Mmatrix.matrix().print( std::cout );
+            Xmatrix.matrix().print( std::cout );
             Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // return to original state
 #endif
         } // end of apply
