@@ -430,6 +430,7 @@ class StokesPass
 
 
 
+            }
         }
 
         virtual void compute( const TotalArgumentType &arg, DestinationType &dest) const
