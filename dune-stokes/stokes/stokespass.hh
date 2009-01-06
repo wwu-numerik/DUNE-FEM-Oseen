@@ -10,6 +10,8 @@
 #include <dune/fem/space/dgspace.hh>
 #include <dune/fem/operator/matrix/istlmatrix.hh>
 
+#include <dune/stokes/saddlepoint_inverse_operator.hh>
+
 #ifndef BLUB
     #include "../src/stuff.hh" // should be removed in the end
     #include "../src/logging.hh" // should be removed in the end
