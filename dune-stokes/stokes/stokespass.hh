@@ -26,6 +26,9 @@ class StokesPass
     : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
 {
     public:
+        //! own type
+        typedef StokesPass< DiscreteModelImp, PreviousPassImp, PassID >
+            ThisType;
 
         //! base type
         typedef Pass < DiscreteModelImp, PreviousPassImp, PassID >
@@ -114,6 +117,10 @@ class StokesPass
         //! type of codim 0 entity
         typedef typename GridType::template Codim< 0 >::Entity
             EntityType;
+
+        //! type of the used solver
+        typedef SaddlepointInverseOperator< ThisType >
+            InvOpType;
 
         //! polynomial order for the discrete sigma function space
         static const int sigmaSpaceOrder = DiscreteModelType::sigmaSpaceOrder;
@@ -428,7 +435,8 @@ class StokesPass
 
         //    Mmatrix.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
 
-
+            InvOpType op( 1.0,1.0,1,1 );
+            op.solve( arg, dest, Amatrix, Amatrix, tmp );
 
 
 

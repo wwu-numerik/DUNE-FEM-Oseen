@@ -26,24 +26,30 @@ namespace Dune {
         \tparam EllipticInverseOperatorType Operator type used to do the inner A^-1 inversion
    */
 
-  template <class StokesPassImp,
-            class EllipticInverseOperatorType>
+  template < class StokesPassImp >
+            //class EllipticInverseOperatorType>
     class SaddlepointInverseOperator
-        : public Operator< typename StokesPassImp :: DiscreteStokesFunctionWrapperType::DomainFieldType,
-                           typename  StokesPassImp ::DiscreteStokesFunctionWrapperType::RangeFieldType,
-                            typename StokesPassImp ::DiscreteStokesFunctionWrapperType, typename StokesPassImp :: DiscreteStokesFunctionWrapperType>
+//        : public Operator< typename StokesPassImp :: DiscreteStokesFunctionWrapperType::DomainFieldType,
+//                           typename  StokesPassImp ::DiscreteStokesFunctionWrapperType::RangeFieldType,
+//                            typename StokesPassImp ::DiscreteStokesFunctionWrapperType, typename StokesPassImp :: DiscreteStokesFunctionWrapperType>
 {
   private:
 
     typedef StokesPassImp StokesPassType;
 
-    typedef typename StokesPassType::MatrixType
-        MatrixType;
+//    typedef typename StokesPassType::MatrixType
+//        MatrixType;
     typedef typename StokesPassType::DiscreteStokesFunctionWrapperType
         DiscreteStokesFunctionWrapperType;
 
-    typedef typename StokesPassType::PressureDiscreteFunctionType::DiscreteFunctionSpaceType
-        PressureDiscreteSpaceType;
+    typedef typename StokesPassType::DomainType
+        DomainType;
+
+    typedef typename StokesPassType::RangeType
+        RangeType;
+
+//    typedef typename StokesPassType::PressureDiscreteFunctionType::DiscreteFunctionSpaceType
+//        PressureDiscreteSpaceType;
 //    typedef typename StokesPassType::VelocityDiscreteFunctionType::DiscreteFunctionSpaceType
 //        VelocityDiscreteSpaceType;
 //    typedef typename StokesPassType::PressureDiscreteFunctionType
@@ -62,19 +68,27 @@ namespace Dune {
 			 double redEps,
 			 double absLimit,
 			 int maxIter,
-			 int verbose,
-			 const EllipticInverseOperatorType& aufSolver
+			 int verbose
+			 //const EllipticInverseOperatorType& aufSolver
 			 )
       : error_reduction_per_step_ ( redEps ),
         epsilon_ ( absLimit ),
         max_iterations_ (maxIter ),
-        verbosity_ ( verbose ),
-        aufSolver_(aufSolver)
+        verbosity_ ( verbose )
+        //aufSolver_(aufSolver)
     {
 
     }
 
-    virtual void operator()() const
+
+    template <  class AMatrixType,
+                class BMatrixType,
+                class CMatrixType >
+    void solve( const DomainType& arg,
+                RangeType& dest,
+                AMatrixType& mat_A,
+                BMatrixType& mat_B,
+                CMatrixType& mat_C ) const
     {
         Logging::LogStream& logDebug = Logger().Dbg();
         Logging::LogStream& logError = Logger().Err();
@@ -251,7 +265,7 @@ namespace Dune {
     int verbosity_ ;
 //
 //    the CGSolver for A^-1
-    const EllipticInverseOperatorType& aufSolver_;
+   // const EllipticInverseOperatorType& aufSolver_;
 //
 
   };
