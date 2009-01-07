@@ -323,13 +323,16 @@ class StokesPass
                 debugStream << "  - numSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
                 debugStream << "  - numVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
                 debugStream << "  - numPressureBaseFunctionsElement: " << numPressureBaseFunctionsElement << std::endl;
-                debugStream << "  - calculating E" << std::endl;
-                debugStream << "    =============" << std::endl;
+                debugStream << "  - calculating H2" << std::endl;
+                debugStream << "    ==============" << std::endl;
                 bool Moutput = false;
                 bool Xoutput = false;
                 bool Zoutput = false;
                 bool Eoutput = false;
                 bool Routput = false;
+                bool H1output = false;
+                bool H2output = false;
+                bool H3output = false;
                 // we want logging at the following base functions
                 const int logBaseI = 0;
                 const int logBaseJ = 0;
@@ -398,7 +401,7 @@ class StokesPass
 #endif
                 } // done calculating M
 
-                // (W)_{i,j}=\int_{\partial T}\hat{u}^{U}(v_{j})\cdot\tau_{i}\cdot n_{T}ds
+                // (W)_{i,j}=\int_{\partial T}\hat{u}^{U}\cdot\tau_{i}\cdot n_{T}ds
                 //           -\int_{T}v_{j}\cdot(\nabla \cdot \tau_{i})dx
                 // we only compute the contribution of the 2nd integral here,
                 // the surface integral will be computed later on
@@ -434,7 +437,7 @@ class StokesPass
                 } // done calculationg W
 
                 // \mu(X)_{i,j}=\mu\int_{T}\tau_{j}:\nabla v_{i} dx
-                //              -\mu\int_{\partial}v_{i}\cdot\hat{\sigma}^{\sigma}(\tau_{j})\cdot n_{T}ds
+                //              -\mu\int_{\partial}v_{i}\cdot\hat{\sigma}^{\sigma}\cdot n_{T}ds
                 // we only compute the contribution of the 1st integral here,
                 // the surface integral will be computed later on
                 for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
@@ -490,7 +493,7 @@ class StokesPass
                 } // done calculating X
 
                 // (Z)_{i,j}=\int_{T} -q_{j}\cdot(\naba\cdot v_i) dx
-                //           +\int_{\partial T}\hat{p}^{P}(q_j)\cdot v_{i}\cdot n_{T} ds
+                //           +\int_{\partial T}\hat{p}^{P}\cdot v_{i}\cdot n_{T} ds
                 // we only compute the contribution of the 1st integral here,
                 // the surface integral will be computed later on
                 for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
@@ -546,15 +549,15 @@ class StokesPass
                 } // done calculating Z
 
                 // (E)_{i,j}=\int_{T} -v_{j}\cdot(\naba q_i) dx
-                //           +\int_{\partial T}\hat{u}^{U}(v_j)\cdot n_{T} q_{i}ds
+                //           +\int_{\partial T}\hat{u}^{U}\cdot n_{T} q_{i}ds
                 // we only compute the contribution of the 1st integral here,
                 // the surface integral will be computed later on
                 for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                         double E_i_j = 0.0;
 #ifndef NLOG
-                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
-                        if ( output && Eoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+//                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
+//                        if ( output && Eoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
@@ -601,10 +604,65 @@ class StokesPass
 #endif
                 } // done calculating E
 
+                // (H2)_{j}=\int_{T}f\cdot v_{j} dx
+                //          +\mu(\int_{\partial T}v_{j}\cdot\hat{\sigma}^{RHS} \cdot n_{T})
+                //          -\int_{\partial T}\hat{p}^{RHS}\cdot v_j \cdot n_{T} ds
+                // we only compute the contribution of the 1st integral here,
+                // the surface integral will be computed later on
+                for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+                    double H2_j = 0.0;
+#ifndef NLOG
+                    if ( ( j == logBaseJ ) ) H2output = true;
+                    if ( output && H2output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                    debugStream << "    basefunction " << " " << j << std::endl;
+                    debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+#endif
+                    // sum over all quadratur points
+                    for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
+                        // get x
+                        WorldCoordinateType x = volumeQuadratureElement.point( quad );
+                        // get the integration factor
+                        double elementVolume = geometry.integrationElement( x );
+                        // get the quadrature weight
+                        double integrationWeight = volumeQuadratureElement.weight( quad );
+                        // calculate f\cdot v_j
+                        VelocityRangeType v_j( 0.0 );
+                        VelocityRangeType f( 0.0 );
+                        velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+                        discreteModel_.force( 0.0, x, f );
+                        double f_times_v_j = f * v_j;
+                        H2_j += elementVolume *
+                                    integrationWeight *
+                                    f_times_v_j;
+#ifndef NLOG
+                        debugStream << "    - quadPoint " << quad;
+                        Stuff::printFieldVector( x, "x", debugStream, "      " );
+                        debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
+                        debugStream << "      - integrationWeight: " << integrationWeight;
+                        Stuff::printFieldVector( f, "f", debugStream, "      " );
+                        Stuff::printFieldVector( v_j, "v_j", debugStream, "      " );
+                        debugStream << "\n      - f_times_v_j: " << f_times_v_j << std::endl;
+                        debugStream << "      - H2_j: " << H2_j << std::endl;
+#endif
+                    } // done sum over all quadrature points
+                    // if small, should be zero
+                    if ( fabs( H2_j ) < eps ) {
+                        H2_j = 0.0;
+                    }
+                    // add to matrix
+                    H2rhs.set( velocitySpace_.mapToGlobal( entity, j ), 0, H2_j );
+
+#ifndef NLOG
+                    H2output = false;
+                    Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+#endif
+                } // done calculating H2
+
+
 #ifndef NLOG
                 if ( output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
-                debugStream << "  - done calculating E" << std::endl;
-                debugStream << "    ==================" << std::endl;
+                debugStream << "  - done calculating H2" << std::endl;
+                debugStream << "    ===================" << std::endl;
                 Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
                 output = false;
                 ++entityNR;
@@ -613,7 +671,8 @@ class StokesPass
             } // done walking the grid
 #ifndef NLOG
             infoStream << "- gridwalk done" << std::endl;
-            Ematrix.matrix().print( std::cout );
+            //Ematrix.matrix().print( std::cout );
+            H2rhs.print( std::cout );
             Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // return to original state
 #endif
         } // end of apply
