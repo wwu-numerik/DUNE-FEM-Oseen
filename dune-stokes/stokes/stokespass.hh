@@ -405,6 +405,7 @@ class StokesPass
                 }
                 output = false;
                 ++outputEntity;
+            }
 #endif
 #ifndef BLUB
             infoStream << "\n== gridwalk done." << std::endl;
@@ -430,7 +431,7 @@ class StokesPass
 
 
 
-            }
+
         }
 
         virtual void compute( const TotalArgumentType &arg, DestinationType &dest) const
