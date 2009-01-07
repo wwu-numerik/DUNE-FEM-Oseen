@@ -168,6 +168,9 @@ class StokesPass
         virtual void apply( const DomainType &arg, RangeType &dest) const
         {
 
+            // viscosity
+            double mu = discreteModel_.viscosity();
+
             // functions
             DiscreteVelocityFunctionType& velocity = dest.discreteVelocity();
             DiscretePressureFunctionType& pressure = dest.discretePressure();
@@ -313,8 +316,6 @@ class StokesPass
 
                 // get quadrature
                 VolumeQuadratureType volumeQuadratureElement( entity, ( 2 * sigmaSpaceOrder ) + 1 );
-
-
 #ifndef NLOG
                 if ( outputEntity == entityNR ) output = true;
                 if ( output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
@@ -322,16 +323,20 @@ class StokesPass
                 debugStream << "  - numSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
                 debugStream << "  - numVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
                 debugStream << "  - numPressureBaseFunctionsElement: " << numPressureBaseFunctionsElement << std::endl;
-                debugStream << "  - calculating muX" << std::endl;
-                debugStream << "    ===============" << std::endl;
+                debugStream << "  - calculating E" << std::endl;
+                debugStream << "    =============" << std::endl;
                 bool Moutput = false;
                 bool Xoutput = false;
+                bool Zoutput = false;
+                bool Eoutput = false;
+                bool Routput = false;
                 // we want logging at the following base functions
                 const int logBaseI = 0;
                 const int logBaseJ = 0;
                 Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
 #endif
                 // calculate volume integrals
+
                 // (M)_{i,j} = \int_{T}\tau_{i}:\tau_{j}dx
                 // we build M^-1 in fact, because M should be diagonal, and
                 // inversion is pretty easy
@@ -363,11 +368,8 @@ class StokesPass
                             M_i_j += elementVolume *
                                         integrationWeight *
                                         tau_i_times_tau_j;
-
-
 #ifndef NLOG
                             debugStream << "    - quadPoint " << quad;
-
                             Stuff::printFieldVector( x, "x", debugStream, "      " );
                             debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
                             debugStream << "      - integrationWeight: " << integrationWeight;
@@ -416,7 +418,7 @@ class StokesPass
                             VelocityRangeType v_j( 0.0 );
                             sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
                             velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-                            VelocityRangeType divergence_of_tau_i = divergenceOf( tau_i );
+                            VelocityRangeType divergence_of_tau_i = sigmaDivergenceOf( tau_i );
                             double v_j_times_divergence_of_tau_i = v_j * divergence_of_tau_i;
                             W_i_j += elementVolume *
                                         integrationWeight *
@@ -439,8 +441,8 @@ class StokesPass
                     for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
                         double X_i_j = 0.0;
 #ifndef NLOG
-                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-                        if ( output && Xoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+//                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
+//                        if ( output && Xoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
@@ -459,18 +461,16 @@ class StokesPass
                             sigmaBaseFunctionSetElement.evaluate( i, x, tau_j );
                             double tau_j_times_gradient_v_i =
                                 colonProduct( tau_j, gradient_of_v_i );
-                            double mu = discreteModel_.viscosity();
                             X_i_j += elementVolume *
                                         integrationWeight *
                                         tau_j_times_gradient_v_i *
                                         mu;
 #ifndef NLOG
                             debugStream << "    - quadPoint " << quad;
-
                             Stuff::printFieldVector( x, "x", debugStream, "      " );
                             debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
                             debugStream << "      - integrationWeight: " << integrationWeight;
-                            Stuff::printFieldMatrix( gradient_of_v_i, "gradient of v_i", debugStream, "      " );
+                            Stuff::printFieldVector( gradient_of_v_i, "gradient of v_i", debugStream, "      " );
                             Stuff::printFieldMatrix( tau_j, "tau_j", debugStream, "      " );
                             debugStream << "\n      - colonProduct( tau_j, grad v_i ): " << tau_j_times_gradient_v_i << std::endl;
                             debugStream << "      - X_i_j: " << X_i_j << std::endl;
@@ -488,10 +488,123 @@ class StokesPass
 #endif
                     }
                 } // done calculating X
+
+                // (Z)_{i,j}=\int_{T} -q_{j}\cdot(\naba\cdot v_i) dx
+                //           +\int_{\partial T}\hat{p}^{P}(q_j)\cdot v_{i}\cdot n_{T} ds
+                // we only compute the contribution of the 1st integral here,
+                // the surface integral will be computed later on
+                for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+                    for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
+                        double Z_i_j = 0.0;
+#ifndef NLOG
+//                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
+//                        if ( output && Zoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                        debugStream << "    basefunctions " << i << " " << j << std::endl;
+                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+#endif
+                        // sum over all quadratur points
+                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
+                            // get x
+                            WorldCoordinateType x = volumeQuadratureElement.point( quad );
+                            // get the integration factor
+                            double elementVolume = geometry.integrationElement( x );
+                            // get the quadrature weight
+                            double integrationWeight = volumeQuadratureElement.weight( quad );
+                            // calculate q_{j}\cdot(\nabla\cdot v_i)
+                            SigmaRangeType gradient_of_v_i( 0.0 );
+                            PressureRangeType q_j( 0.0 );
+                            velocityBaseFunctionSetElement.jacobian( i, x, gradient_of_v_i );
+                            double divergence_of_v_i = velocityDivergenceOutOfGradient( gradient_of_v_i );
+                            pressureBaseFunctionSetElement.evaluate( j, x, q_j );
+                            double q_j_times_divergence_of_v_i = q_j * divergence_of_v_i;
+                            Z_i_j += -1.0 *
+                                        elementVolume *
+                                        integrationWeight *
+                                        q_j_times_divergence_of_v_i;
+#ifndef NLOG
+                            debugStream << "    - quadPoint " << quad;
+                            Stuff::printFieldVector( x, "x", debugStream, "      " );
+                            debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
+                            debugStream << "      - integrationWeight: " << integrationWeight;
+                            Stuff::printFieldMatrix( gradient_of_v_i, "gradient_of_v_i", debugStream, "      " );
+                            Stuff::printFieldVector( q_j, "q_j", debugStream, "      " );
+                            debugStream << "\n      - q_j_times_divergence_of_v_i: " << q_j_times_divergence_of_v_i << std::endl;
+                            debugStream << "      - Z_i_j: " << Z_i_j << std::endl;
+#endif
+                        } // done sum over all quadrature points
+                        // if small, should be zero
+                        if ( fabs( Z_i_j ) < eps ) {
+                            Z_i_j = 0.0;
+                        }
+                        // add to matrix
+                        localZmatrixElement.add( i, j, Z_i_j );
+                    }
+#ifndef NLOG
+                        Zoutput = false;
+                        Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+#endif
+                } // done calculating Z
+
+                // (E)_{i,j}=\int_{T} -v_{j}\cdot(\naba q_i) dx
+                //           +\int_{\partial T}\hat{u}^{U}(v_j)\cdot n_{T} q_{i}ds
+                // we only compute the contribution of the 1st integral here,
+                // the surface integral will be computed later on
+                for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
+                    for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+                        double E_i_j = 0.0;
+#ifndef NLOG
+                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
+                        if ( output && Eoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                        debugStream << "    basefunctions " << i << " " << j << std::endl;
+                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+#endif
+                        // sum over all quadratur points
+                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
+                            // get x
+                            WorldCoordinateType x = volumeQuadratureElement.point( quad );
+                            // get the integration factor
+                            double elementVolume = geometry.integrationElement( x );
+                            // get the quadrature weight
+                            double integrationWeight = volumeQuadratureElement.weight( quad );
+                            // calculate v_{j}\cdot(\nabla q_i)
+                            typename DiscretePressureFunctionSpaceType::JacobianRangeType jacobian_of_q_i( 0.0 );
+                            VelocityRangeType v_j( 0.0 );
+                            pressureBaseFunctionSetElement.jacobian( i, x, jacobian_of_q_i );
+                            velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+                            VelocityRangeType gradient_of_q_i( jacobian_of_q_i[0] );
+                            double v_j_times_gradient_of_q_i = v_j * gradient_of_q_i;
+                            E_i_j += -1.0 *
+                                        elementVolume *
+                                        integrationWeight *
+                                        v_j_times_gradient_of_q_i;
+#ifndef NLOG
+                            debugStream << "    - quadPoint " << quad;
+                            Stuff::printFieldVector( x, "x", debugStream, "      " );
+                            debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
+                            debugStream << "      - integrationWeight: " << integrationWeight;
+                            Stuff::printFieldVector( gradient_of_q_i, "gradient_of_q_i", debugStream, "      " );
+                            Stuff::printFieldVector( v_j, "v_j", debugStream, "      " );
+                            debugStream << "\n      - v_j_times_gradient_of_q_i: " << v_j_times_gradient_of_q_i << std::endl;
+                            debugStream << "      - E_i_j: " << E_i_j << std::endl;
+#endif
+                        } // done sum over all quadrature points
+                        // if small, should be zero
+                        if ( fabs( E_i_j ) < eps ) {
+                            E_i_j = 0.0;
+                        }
+                        // add to matrix
+                        localEmatrixElement.add( i, j, E_i_j );
+                    }
+#ifndef NLOG
+                        Zoutput = false;
+                        Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+#endif
+                } // done calculating E
+
 #ifndef NLOG
                 if ( output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
-                debugStream << "  - done calculating muX" << std::endl;
-                debugStream << "    ====================" << std::endl;
+                debugStream << "  - done calculating E" << std::endl;
+                debugStream << "    ==================" << std::endl;
                 Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
                 output = false;
                 ++entityNR;
@@ -500,8 +613,7 @@ class StokesPass
             } // done walking the grid
 #ifndef NLOG
             infoStream << "- gridwalk done" << std::endl;
-            debugStream << "- printing muX" << std::endl;
-            Xmatrix.matrix().print( std::cout );
+            Ematrix.matrix().print( std::cout );
             Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // return to original state
 #endif
         } // end of apply
@@ -554,7 +666,7 @@ class StokesPass
         /**
          *  \todo   doc
          **/
-        VelocityRangeType divergenceOf( const SigmaRangeType& arg ) const
+        VelocityRangeType sigmaDivergenceOf( const SigmaRangeType& arg ) const
         {
             VelocityRangeType ret( 0.0 );
             typedef typename SigmaRangeType::ConstRowIterator
@@ -577,6 +689,24 @@ class StokesPass
                 }
             }
             return ret;
+        }
+
+        /**
+         *  \todo   doc
+         **/
+        double velocityDivergenceOutOfGradient( const SigmaRangeType& arg ) const
+        {
+            double ret( 0.0 );
+            typedef typename SigmaRangeType::ConstRowIterator
+                ConstRowIteratorType;
+            ConstRowIteratorType rowItEnd = arg.end();
+            int i = 0;
+            for (   ConstRowIteratorType rowIt = arg.begin();
+                    rowIt != rowItEnd;
+                    ++rowIt ) {
+                ret += (*rowIt)[i];
+                ++i;
+            }
         }
 
 
