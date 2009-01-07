@@ -65,13 +65,15 @@ namespace Dune {
     * velocity,rhs1 is  stored as member,no better idea
 	  **/
     SaddlepointInverseOperator(
-			 double redEps,
-			 double absLimit,
-			 int maxIter,
-			 int verbose
-			 //const EllipticInverseOperatorType& aufSolver
-			 )
-      : error_reduction_per_step_ ( redEps ),
+            const StokesPassType& pass,
+            double redEps,
+			double absLimit,
+			int maxIter,
+			int verbose
+			//const EllipticInverseOperatorType& aufSolver
+			)
+      : pass_( pass ),
+        error_reduction_per_step_ ( redEps ),
         epsilon_ ( absLimit ),
         max_iterations_ (maxIter ),
         verbosity_ ( verbose )
@@ -267,6 +269,7 @@ namespace Dune {
 //    the CGSolver for A^-1
    // const EllipticInverseOperatorType& aufSolver_;
 //
+    const StokesPassType& pass_;
 
   };
 

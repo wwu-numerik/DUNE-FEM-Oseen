@@ -435,7 +435,7 @@ class StokesPass
 
         //    Mmatrix.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
 
-            InvOpType op( 1.0,1.0,1,1 );
+            InvOpType op( *this, 1.0,1.0,1,1 );
             op.solve( arg, dest, Amatrix, Amatrix, tmp );
 
 
