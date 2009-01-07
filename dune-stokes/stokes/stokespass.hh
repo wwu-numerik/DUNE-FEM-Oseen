@@ -292,11 +292,6 @@ class StokesPass
 
                 const EntityGeometryType& geometry = entity.geometry();
 
-                // local functions
-                LocalDiscreteVelocityFunctionType localVelocity = velocity.localFunction( entity );
-                LocalDiscretePressureFunctionType localPressure = pressure.localFunction( entity );
-                LocalDiscreteSigmaFunctionType localSigma = sigma.localFunction( entity );
-
                 // local matrices for the volume integral
                 LocalMmatrixType localMmatrixElement = Mmatrix.localMatrix( entity, entity );
                 LocalWmatrixType localWmatrixElement = Wmatrix.localMatrix( entity, entity );
@@ -612,8 +607,8 @@ class StokesPass
                 for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                     double H2_j = 0.0;
 #ifndef NLOG
-                    if ( ( j == logBaseJ ) ) H2output = true;
-                    if ( output && H2output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+//                    if ( ( j == logBaseJ ) ) H2output = true;
+//                    if ( output && H2output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
                     debugStream << "    basefunction " << " " << j << std::endl;
                     debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
@@ -651,7 +646,6 @@ class StokesPass
                     }
                     // add to matrix
                     H2rhs.set( velocitySpace_.mapToGlobal( entity, j ), 0, H2_j );
-
 #ifndef NLOG
                     H2output = false;
                     Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
