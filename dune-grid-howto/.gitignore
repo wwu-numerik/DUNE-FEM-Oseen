@@ -60,3 +60,10 @@ traversal
 traversal-traversal.o
 visualization
 visualization-visualization.o
+doc/grid-howto.aux
+doc/grid-howto.bbl
+doc/grid-howto.blg
+doc/grid-howto.idx
+doc/grid-howto.log
+doc/grid-howto.out
+doc/grid-howto.toc

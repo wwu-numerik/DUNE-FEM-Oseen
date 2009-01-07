@@ -33,3 +33,5 @@ src_localdg/doc/doxygen/doxygen.out
 src_localdg/doc/doxygen/html
 src_localdg/doc/doxygen/man
 stamp-h1
+depcomp
+src_localdg/.deps

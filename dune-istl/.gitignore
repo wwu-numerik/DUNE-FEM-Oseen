@@ -56,3 +56,9 @@ istl/tutorial/example.o
 ltmain.sh
 missing
 stamp-h1
+doc/istl.aux
+doc/istl.bbl
+doc/istl.blg
+doc/istl.log
+doc/istl.out
+doc/istl.toc
