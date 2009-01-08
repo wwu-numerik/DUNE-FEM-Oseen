@@ -719,7 +719,11 @@ class StokesPass
                     // if we are inside the grid
                     if ( intIt.neighbor() && !intIt.boundary() ) {
                         // get neighbour
-                        const EntityType& neighbour = *(intIt.outside());
+                        const typename IntersectionIteratorType::EntityPointer neighbourPtr = intIt.outside();
+                        const EntityType& neighbour = *neighbourPtr;
+
+                        // get quadrature on neighbour
+                        VolumeQuadratureType volumeQuadratureNeighbour( neighbour, ( 2 * sigmaSpaceOrder ) + 1 );
 
                         // compute the surface integrals
 
@@ -739,20 +743,29 @@ class StokesPass
                                 for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                     // get x
                                     ElementCoordinateType x = faceQuadratureElement.point( quad );
+                                    ElementCoordinateType xNeighbour = volumeQuadratureNeighbour.point( quad );
                                     IntersectionCoordinateType localXElement = faceQuadratureElement.localPoint( quad );
                                     // get the integration factor
                                     double intersectionVolume = intersectionGeometryElement.integrationElement( localXElement );
                                     // get the quadrature weight
                                     double integrationWeight = volumeQuadratureElement.weight( quad );
                                     // calculate \hat{u}^{RHS}\cdot\tau_{j}\cdot n_{T}
+                                    SigmaRangeType tau_j_element( 0.0 );
+                                    SigmaRangeType tau_j_neighbour( 0.0 );
+                                    sigmaBaseFunctionSetElement.evaluate( j, x, tau_j_element );
+                                    sigmaBaseFunctionSetElement.evaluate( j, xNeighbour, tau_j_neighbour );
 #ifndef NLOG
                                     debugStream << "      - quadPoint " << quad;
                                     Stuff::printFieldVector( x, "x", debugStream, "        " );
+                                    Stuff::printFieldVector( xNeighbour, "xNeighbour", debugStream, "        " );
                                     Stuff::printFieldVector( localXElement, "localXElement", debugStream, "        " );
                                     debugStream << "\n        - elementVolume: " << intersectionVolume << std::endl;
                                     debugStream << "        - integrationWeight: " << integrationWeight << std::endl;
                                     debugStream << "        - intIt.numberInSelf(): " << intIt.numberInSelf() << std::endl;
-                                    debugStream << "        - intIt.numberInNeighbor(): " << intIt.numberInNeighbor() << std::endl;
+                                    debugStream << "        - intIt.numberInNeighbor(): " << intIt.numberInNeighbor();
+                                    Stuff::printFieldMatrix( tau_j_element, "tau_j_element", debugStream, "        " );
+                                    Stuff::printFieldMatrix( tau_j_neighbour, "tau_j_neighbour", debugStream, "        " );
+                                    debugStream << std::endl;
 #endif
                                 } // done sum over quadrature points
                             } // done if there is a velocity sigma flux contribution
