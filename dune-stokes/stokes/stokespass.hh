@@ -359,9 +359,9 @@ class StokesPass
 
                         double M_i_j = 0.0;
 #ifndef NLOG
-//                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Moutput = true;
+                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Moutput = true;
                         if ( entityOutput && Moutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
-                        debugStream << "    = M =========================" << std::endl;
+                        debugStream << "    = M ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
@@ -390,7 +390,7 @@ class StokesPass
                             debugStream << "      - integrationWeight: " << integrationWeight;
                             Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "      " );
                             Stuff::printFieldMatrix( tau_j, "tau_j", debugStream, "      " );
-                            debugStream << "\n      - colonProduct( tau_i, tau_j ): " << tau_i_times_tau_j << std::endl;
+                            debugStream << "\n      - tau_i_times_tau_j: " << tau_i_times_tau_j << std::endl;
                             debugStream << "      - M_" << i << "_" << j << "+=: " << M_i_j << std::endl;
 #endif
                         } // done sum over quadrature points
@@ -809,8 +809,10 @@ class StokesPass
             debugStream << "  found " << intersectionNR << " intersections," << std::endl;
             debugStream << "        " << numberOfBoundaryIntersections << " intersections inside and" << std::endl;
             debugStream << "        " << numberOfInnerIntersections << " intersections on the boundary." << std::endl;
-            //Ematrix.matrix().print( std::cout );
-            //H2rhs.print( std::cout );
+//            debugStream << "- printing M ==================" << std::endl;
+//            Mmatrix.matrix().print( std::cout );
+//            debugStream << "- printing H2 =================" << std::endl;
+//            H2rhs.print( std::cout );
             Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // return to original state
 #endif
         } // end of apply
