@@ -9,44 +9,38 @@
 #include <dune/fem/operator/lagrangeinterpolation.hh>
 
 #include "logging.hh"
-#include "problem.hh"
 
-template <  class ProblemImp,
-            class GridPartImp,
-            class DiscreteVelocityFunctionImp,
-            class DiscretePressureFunctionImp >
+template <  class StokesPassImp >
 class PostProcessor
 {
     public:
-        typedef ProblemImp
-            ProblemType;
-        typedef typename ProblemType::VelocityType
-            ContinuousVelocityType;
-        typedef GridPartImp
+        typedef StokesPassImp
+            StokesPassType;
+        typedef typename StokesPassType::DiscreteStokesFunctionSpaceWrapperType
+            DiscreteStokesFunctionSpaceWrapperType;
+        typedef typename StokesPassType::GridPartType
             GridPartType;
 
-        typedef DiscreteVelocityFunctionImp
+        typedef typename StokesPassType::DiscreteVelocityFunctionType
             DiscreteVelocityFunctionType;
-        typedef typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType
+        typedef typename StokesPassType::DiscreteVelocityFunctionSpaceType
             DiscreteVelocityFunctionSpaceType;
 
-        typedef DiscretePressureFunctionImp
+        typedef typename StokesPassType::DiscretePressureFunctionType
             DiscretePressureFunctionType;
-        typedef typename DiscretePressureFunctionType::DiscreteFunctionSpaceType
+        typedef typename StokesPassType::DiscretePressureFunctionSpaceType
             DiscretePressureFunctionSpaceType;
 
 
-
-        PostProcessor( const ProblemType& problem, const GridPartType& gridPart,
-                        const DiscreteVelocityFunctionSpaceType& velocity_space,
-                        const DiscretePressureFunctionSpaceType& press_space)
-            : problem_( problem ),
-            gridPart_( gridPart ),
-            velocitySpace_ ( velocity_space ),
-            discreteExactVelocity_( "u_exact", velocity_space ),
-            discreteExactForce_( "f_exact", velocity_space ),
-            discreteExactDirichlet_( "gd_exact", velocity_space ),
-            discreteExactPressure_( "p_exact", press_space )
+        PostProcessor( const StokesPassType& pass )
+            : pass_( pass ),
+            spaceWrapper_( pass.GetFunctionSpaceWrapper() ),
+            gridPart_( spaceWrapper_.gridPart() ),
+            velocitySpace_ ( spaceWrapper_.discreteVelocitySpace() ),
+            discreteExactVelocity_( "u_exact", velocitySpace_ ),
+            discreteExactForce_( "f_exact", velocitySpace_ ),
+            discreteExactDirichlet_( "gd_exact", velocitySpace_ ),
+            discreteExactPressure_( "p_exact", spaceWrapper_.discretePressureSpace() )
         {
 
         }
@@ -57,17 +51,18 @@ class PostProcessor
 
         void assembleExactSolution()
         {
-            Dune::LagrangeInterpolation< DiscreteVelocityFunctionType >::interpolateFunction( problem_.velocity(), discreteExactVelocity_ );
-            Dune::LagrangeInterpolation< DiscreteVelocityFunctionType >::interpolateFunction( problem_.dirichletData(), discreteExactDirichlet_ );
-            Dune::LagrangeInterpolation< DiscreteVelocityFunctionType >::interpolateFunction( problem_.force(), discreteExactForce_ );
-            Dune::LagrangeInterpolation< DiscretePressureFunctionType >::interpolateFunction( problem_.velocity(), discreteExactPressure_ );
+//            Dune::LagrangeInterpolation< DiscreteVelocityFunctionType >::interpolateFunction( problem_.velocity(), discreteExactVelocity_ );
+//            Dune::LagrangeInterpolation< DiscreteVelocityFunctionType >::interpolateFunction( problem_.dirichletData(), discreteExactDirichlet_ );
+//            Dune::LagrangeInterpolation< DiscreteVelocityFunctionType >::interpolateFunction( problem_.force(), discreteExactForce_ );
+//            Dune::LagrangeInterpolation< DiscretePressureFunctionType >::interpolateFunction( problem_.velocity(), discreteExactPressure_ );
         }
 
     private:
-        const ProblemType& problem_;
+        const StokesPassType& pass_;
         //ContinuousVelocityType& continuousVelocity_;
         const GridPartType& gridPart_;
         const DiscreteVelocityFunctionSpaceType& velocitySpace_;
+        const DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
         DiscreteVelocityFunctionType discreteExactVelocity_;
         DiscreteVelocityFunctionType discreteExactForce_;
         DiscreteVelocityFunctionType discreteExactDirichlet_;

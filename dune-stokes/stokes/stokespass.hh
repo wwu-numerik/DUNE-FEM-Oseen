@@ -175,6 +175,12 @@ class StokesPass
         StokesPass()
         {}
 
+        //! used in Postprocessing to get refs to gridparts, spaces
+        const DiscreteStokesFunctionSpaceWrapperType& GetFunctionSpaceWrapper()
+        {
+            return spaceWrapper_;
+        }
+
         virtual void apply( const DomainType &arg, RangeType &dest) const
         {
 
