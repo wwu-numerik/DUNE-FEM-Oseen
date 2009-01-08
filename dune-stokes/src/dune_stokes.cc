@@ -123,6 +123,9 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     typedef Dune::LeafGridPart< GridType >
         GridPartType;
     GridPartType gridPart( *gridPtr );
+    const int gridDim = GridType::dimensionworld;
+    const int polOrder = POLORDER;
+
 
 
     infoStream << "...done." << std::endl;
@@ -138,10 +141,6 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     typedef Force< VelocityFunctionSpaceType >
         AnalyticalForceType;
     AnalyticalForceType analyticalForce( 0.5, velocitySpace );
-
-    const int gridDim = GridType::dimensionworld;
-    const int polOrder = POLORDER;
-
 
     typedef DirichletData< VelocityFunctionSpaceType >
         AnalyticalDirichletDataType;
@@ -237,12 +236,11 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
         PostProcessorType;
     PostProcessorType postProcessor( stokesPass, problem );
 
-    StokesModelType::DiscretePressureFunctionType pDummy ( "pDummy", pressureSpace );
-    postProcessor.save( *gridPtr, pDummy, uDummy ); //dummy params, should be computed solutions );
+    postProcessor.save( *gridPtr, discreteStokesFunctionWrapper ); //dummy params, should be computed solutions );
     l2_errors.push_back( postProcessor.getError() );
 
     profiler().StopTiming( "Problem/Postprocessing" );
-    profiler().Output( mpicomm, 0, uDummy.size() );
+    profiler().Output( mpicomm, 0, gridPtr->size(0) );
 
     infoStream << "...done." << std::endl;
 

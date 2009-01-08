@@ -33,7 +33,8 @@ class PostProcessor
             StokesPassType;
         typedef typename StokesPassType::DiscreteStokesFunctionSpaceWrapperType
             DiscreteStokesFunctionSpaceWrapperType;
-        typedef typename StokesPassType::GridPartType
+        typedef typename StokesPassType::DiscreteStokesFunctionWrapperType
+            DiscreteStokesFunctionWrapperType;
 
         typedef typename ProblemType::VelocityType
             ContinuousVelocityType;
@@ -73,12 +74,12 @@ class PostProcessor
             discreteExactForce_( "f_exact", velocitySpace_ ),
             discreteExactDirichlet_( "gd_exact", velocitySpace_ ),
             discreteExactPressure_( "p_exact", spaceWrapper_.discretePressureSpace() ),
-            errorFunc_velocity_( "err_velocity", velocity_space ),
-            errorFunc_pressure_( "err_pressure", press_space ),
+            errorFunc_velocity_( "err_velocity", velocitySpace_ ),
+            errorFunc_pressure_( "err_pressure", spaceWrapper_.discretePressureSpace() ),
             solutionAssembled_(false),
             l2_error_pressure_( - std::numeric_limits<double>::max() ),
             l2_error_velocity_( - std::numeric_limits<double>::max() ),
-            vtkWriter_( gridPart )
+            vtkWriter_( spaceWrapper_.gridPart() )
         {
 
         }
@@ -106,12 +107,12 @@ class PostProcessor
             projectionP( problem_.pressure(), discreteExactPressure_ );
         }
 
-        void save( const GridType& grid, const DiscretePressureFunctionType& pressure, const DiscreteVelocityFunctionType& velocity )
+        void save( const GridType& grid, const DiscreteStokesFunctionWrapperType& wrapper )
         {
             if ( !solutionAssembled_ )
                 assembleExactSolution();
 
-            calcError( pressure, velocity );
+            calcError( wrapper.discretePressure() , wrapper.discreteVelocity() );
 
             VTK_WRITE( discreteExactVelocity_ );
 			VTK_WRITE( discreteExactPressure_ );
