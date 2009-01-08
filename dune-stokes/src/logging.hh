@@ -137,29 +137,35 @@ class Logging
          /** \name Log funcs for member-function pointers
          * \{
          */
-        template < class Class >
-        void LogDebug( void ( Class::*pf )(std::ostream&) , Class& c )
+        template < typename Pointer, class Class >
+        void LogDebug( Pointer pf, Class& c )
         {
             if ( ( logflags_ & LOG_DEBUG ) )
                 Log( pf, c, LOG_DEBUG );
         }
 
-        template < class Class >
-        void LogInfo( void ( Class::*pf )(std::ostream&) , Class& c )
+//        template < typename Pointer, class Class >
+//        {
+//            if ( ( logflags_ & LOG_INFO ) )
+//                Log( pf, c, LOG_INFO );
+//        }
+
+        template < class Class,typename Pointer >
+        void LogInfo( Pointer pf , Class& c )
         {
             if ( ( logflags_ & LOG_INFO ) )
                 Log( pf, c, LOG_INFO );
         }
 
-        template < class Class >
-        void LogErr( void ( Class::*pf )(std::ostream&) , Class& c )
+        template < typename Pointer, class Class >
+        void LogErr( Pointer pf, Class& c )
         {
             if ( ( logflags_ & LOG_ERR ) )
                 Log( pf, c, LOG_ERR  );
         }
 
-        template < class Class >
-        void Log( void ( Class::*pf )(std::ostream&) , Class& c, LogFlags stream)
+        template < typename Pointer, class Class >
+        void Log( void ( Class::*pf )(std::ostream&) const, Class& c, LogFlags stream)
         {
             assert( stream & ( LOG_ERR | LOG_INFO | LOG_DEBUG ) );
             if ( ( flagmap_[stream] & LOG_CONSOLE ) != 0 )
@@ -167,6 +173,17 @@ class Logging
             if ( ( flagmap_[stream] & LOG_FILE ) != 0 )
                 (c.*pf)( logfile_ );
         }
+
+        template < class Class,typename Pointer >
+        void Log( Pointer pf, Class& c, LogFlags stream)
+        {
+            assert( stream & ( LOG_ERR | LOG_INFO | LOG_DEBUG ) );
+            if ( ( flagmap_[stream] & LOG_CONSOLE ) != 0 )
+                (c.*pf)( std::cout );
+            if ( ( flagmap_[stream] & LOG_FILE ) != 0 )
+                (c.*pf)( logfile_ );
+        }
+
         /** \}
         */
 

@@ -20,26 +20,42 @@ struct TimingData
 typedef std::map<std::string,TimingData> DataMap;
 typedef std::vector<DataMap> MapVector;
 
+/** simple inline profiling class
+ *
+ *  - User can set as many (even nested) named sections which total clock time will be computed across all program instances.\n
+ *  - Provides csv-conform output of process-averaged runtimes.
+ **/
 class Profiler
 {
 
 	public:
-		Profiler() {}
-		~Profiler() {};
-		inline void StartTiming( const std::string funcname )
+		Profiler() { Reset(1); }
+		~Profiler() {}
+
+		//! set this to begin a named section
+		inline void StartTiming( const std::string section_name )
 		{
-			TimingData td( funcname,clock() );
-			(m_timings[m_cur_run_num])[funcname] = td;
+			TimingData td( section_name,clock() );
+			(m_timings[m_cur_run_num])[section_name] = td;
 		}
 
-		inline void StopTiming( const std::string funcname )
+        //! stop named section's counter
+		inline void StopTiming( const std::string section_name )
 		{
-			(m_timings[m_cur_run_num])[funcname].end = clock();
+			(m_timings[m_cur_run_num])[section_name].end = clock();
 		}
 
+        /** output to currently pre-defined (csv) file
+         * \param comm used to gather and average the runtime data over all processes
+         * \tparam CollectiveCommunication should be Dune::CollectiveCommunication< MPI_Comm / double >
+         **/
         template < class CollectiveCommunication >
 		void Output( CollectiveCommunication& comm, const int refineLevel, const long numDofs );
 
+        /** call this with correct numRuns <b> before </b> starting any profiling
+         *  if you're planning on doing more than one iteration of your code
+         *  called once fromm ctor with numRuns=1
+         **/
 		inline void Reset( const int numRuns )
 		{
 			m_timings.clear();
@@ -51,11 +67,13 @@ class Profiler
             m_l2_error = 0;
 		}
 
+        //! simple counter, usable to count how often a single piece of code is called
 		inline void AddCount( const int num)
 		{
 		    m_count[num] +=1;
 		}
 
+        //! call this after one iteration of your code has finished. increments current run number and puts new timing data into the vector
 		inline void NextRun(const double error )
 		{
             m_cur_run_num +=  m_cur_run_num < m_total_runs - 1 ?  1 : 0 ;
@@ -96,6 +114,7 @@ void Profiler::Output( CollectiveCommunication& comm, const int refineLevel, con
 
     std::ofstream csv(( filename.str() ).c_str() );
 
+
     typedef std::map<std::string,long> AvgMap;
     AvgMap averages;
     for ( MapVector::const_iterator vit = m_timings.begin(); vit != m_timings.end(); ++vit )
@@ -132,6 +151,7 @@ void Profiler::Output( CollectiveCommunication& comm, const int refineLevel, con
 
 }
 
+//!global profiler object
 Profiler& profiler()
 {
 	static Profiler pf;

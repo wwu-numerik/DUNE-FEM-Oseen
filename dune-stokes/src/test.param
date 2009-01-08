@@ -3,4 +3,8 @@ dgf_file_3d: grid_3d.dgf
 viscosity: 1.0
 loglevel: 4
 logfile: dune-stokes.log
+fem.io.datafileprefix: data_
+fem.io.savestep: -1
+fem.io.savecount: 1
+fem.io.outputformat: 1
 

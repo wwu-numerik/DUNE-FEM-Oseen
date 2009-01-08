@@ -9,7 +9,6 @@
 #endif
 
 #include <iostream>
-#include <memory> //not including this gives error of undefined autopointer in dgfparser.hh
 #include <dune/common/mpihelper.hh> // An initializer of MPI
 #include <dune/common/exceptions.hh> // We use exceptions
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
@@ -21,6 +20,7 @@
 //#include <dune/fem/grid/gridpart.hh>
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
+#include <dune/fem/misc/eoc.hh>
 
 #include <dune/stokes/discretestokesfunctionspacewrapper.hh>
 #include <dune/stokes/discretestokesmodelinterface.hh>
@@ -30,8 +30,21 @@
 #include "logging.hh"
 #include "postprocessing.hh"
 #include "profiler.hh"
-#include "problem.hh"
+#include "stuff.hh"
 
+#if ENABLE_MPI
+        typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
+#else
+        typedef Dune::CollectiveCommunication<double > CollectiveCommunication;
+#endif
+
+typedef std::vector< std::vector<double> > L2ErrorVector;
+typedef std::vector<std::string> ErrorColumnHeaders;
+const std::string errheaders[] = { "Velocity L2 Error", "Pressure L2 Error" };
+const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
+
+int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPtr,
+                L2ErrorVector& l2_errors );
 
 /**
  *  \brief  main function
@@ -46,34 +59,24 @@
 int main( int argc, char** argv )
 {
   try{
-    //Maybe initialize Mpi
-    #if ENABLE_MPI
-        typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
-    #else
-        typedef Dune::CollectiveCommunication<double > CollectiveCommunication;
-    #endif
+
     Dune::MPIHelper& mpihelper = Dune::MPIHelper::instance(argc, argv);
     CollectiveCommunication mpicomm ( mpihelper.getCommunicator() );
 
     /* ********************************************************************** *
      * initialize all the stuff we need                                       *
      * ********************************************************************** */
-
-    ParameterContainer& parameters = Parameters();
-    if ( !( parameters.ReadCommandLine( argc, argv ) ) ) {
+    if ( !(  Parameters().ReadCommandLine( argc, argv ) ) ) {
         return 1;
     }
-    if ( !( parameters.SetUp() ) ) {
-        return 1;
+    if ( !(  Parameters().SetUp() ) ) {
+        return 2;
     }
     else {
-        parameters.SetGridDimension( GridType::dimensionworld );
-        parameters.SetPolOrder( POLORDER );
-        parameters.Print( std::cout );
+        Parameters().SetGridDimension( GridType::dimensionworld );
+        Parameters().SetPolOrder( POLORDER );
+        Parameters().Print( std::cout );
     }
-
-    const int gridDim = GridType::dimensionworld;
-    const int polOrder = POLORDER;
 
     Logger().Create(
         Logging::LOG_CONSOLE |
@@ -82,9 +85,35 @@ int main( int argc, char** argv )
         Logging::LOG_DEBUG |
         Logging::LOG_INFO );
 
+    L2ErrorVector l2_errors;
+    ErrorColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
+
+    Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
+    int err = singleRun( mpicomm, gridPtr, l2_errors );
+
+    err += chdir( "data" );
+    Dune::EocOutput eoc_output ( "eoc", "info" );
+    Stuff::TexOutput texOP;
+    eoc_output.printInput( *gridPtr, texOP );
+
+    eoc_output.printTexAddError( gridPtr->size(0), l2_errors[0], errorColumnHeaders, 150, 0 );
+    eoc_output.printTexEnd( 650 );
+
+    return err;
+  }
+  catch (Dune::Exception &e){
+    std::cerr << "Dune reported error: " << e << std::endl;
+  }
+  catch (...){
+    std::cerr << "Unknown exception thrown!" << std::endl;
+  }
+}
+
+int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPtr,
+                L2ErrorVector& l2_errors )
+{
     Logging::LogStream& infoStream = Logger().Info();
-    //Logging::LogStream& debugStream = Logger().Dbg();
-    //Logging::LogStream& errorStream = Logger().Err();
+    ParameterContainer& parameters = Parameters();
 
     /* ********************************************************************** *
      * initialize the grid                                                    *
@@ -93,8 +122,8 @@ int main( int argc, char** argv )
 
     typedef Dune::LeafGridPart< GridType >
         GridPartType;
-    Dune::GridPtr< GridType > gridPtr( parameters.DgfFilename() );
     GridPartType gridPart( *gridPtr );
+
 
     infoStream << "...done." << std::endl;
     /* ********************************************************************** *
@@ -109,6 +138,10 @@ int main( int argc, char** argv )
     typedef Force< VelocityFunctionSpaceType >
         AnalyticalForceType;
     AnalyticalForceType analyticalForce( 0.5, velocitySpace );
+
+    const int gridDim = GridType::dimensionworld;
+    const int polOrder = POLORDER;
+
 
     typedef DirichletData< VelocityFunctionSpaceType >
         AnalyticalDirichletDataType;
@@ -203,16 +236,15 @@ int main( int argc, char** argv )
     typedef PostProcessor< StokesPassType, ProblemType >
         PostProcessorType;
     PostProcessorType postProcessor( stokesPass, problem );
-    infoStream << "...done." << std::endl;
+
+    StokesModelType::DiscretePressureFunctionType pDummy ( "pDummy", pressureSpace );
+    postProcessor.save( *gridPtr, pDummy, uDummy ); //dummy params, should be computed solutions );
+    l2_errors.push_back( postProcessor.getError() );
+
     profiler().StopTiming( "Problem/Postprocessing" );
-//    profiler().Output( mpicomm, 0, exactPressure.size() );
+    profiler().Output( mpicomm, 0, uDummy.size() );
+
+    infoStream << "...done." << std::endl;
 
     return 0;
-  }
-  catch ( Dune::Exception &e ){
-    std::cerr << "Dune reported error: " << e.what() << std::endl;
-  }
-  catch ( ... ){
-    std::cerr << "Unknown exception thrown!" << std::endl;
-  }
 }
