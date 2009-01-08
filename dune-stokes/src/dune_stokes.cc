@@ -32,7 +32,7 @@
 #include "problem.hh"
 #include "postprocessing.hh"
 #include "profiler.hh"
-#include "analyticaldata.hh"
+
 
 /**
  *  \brief  main function
@@ -194,20 +194,15 @@ int main( int argc, char** argv )
     /* ********************************************************************** *
      * postprocessing (with profiler example)                                 *
      * ********************************************************************** */
-
-   infoStream << "\ninitialising model..." << std::endl;
-    profiler().Reset( 1 ); //prepare for one single run of code
-    profiler().StartTiming( "Problem/Postprocessing" );
-    typedef Problem< ProblemTraits< gridDim, VelocityFunctionSpaceType, PressureFunctionSpaceType > >
-        Problemtype;
-    Problemtype problem( parameters.viscosity(), velocitySpace, pressureSpace );
-    //problem.testMe();
-    typedef PostProcessor< Problemtype, GridPartType, DiscreteVelocityFunctionType, DiscretePressureFunctionType >
-        PostProcessorType;
-    PostProcessorType postProcessor( problem, gridPart, velocitySpace, pressureSpace );
-    infoStream << "...done." << std::endl;
-    profiler().StopTiming( "Problem/Postprocessing" );
-    profiler().Output( mpicomm, 0, exactPressure.size() );
+//    profiler().Reset( 1 ); //prepare for one single run of code
+//    profiler().StartTiming( "Problem/Postprocessing" );
+//
+//    typedef PostProcessor< Problemtype, GridPartType, DiscreteVelocityFunctionType, DiscretePressureFunctionType >
+//        PostProcessorType;
+//    PostProcessorType postProcessor( problem, gridPart, velocitySpace, pressureSpace );
+//    infoStream << "...done." << std::endl;
+//    profiler().StopTiming( "Problem/Postprocessing" );
+//    profiler().Output( mpicomm, 0, exactPressure.size() );
 
     return 0;
   }
