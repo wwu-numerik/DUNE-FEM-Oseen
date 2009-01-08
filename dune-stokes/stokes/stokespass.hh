@@ -8,6 +8,7 @@
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/fem/space/dgspace.hh>
+#include <dune/fem/quadrature/caching/twistutility.hh>
 
 #ifndef NLOG // if we want logging, should be removed in the end
     #include "../src/stuff.hh"
@@ -78,9 +79,13 @@ class StokesPass
         typedef typename DiscretePressureFunctionType::DiscreteFunctionSpaceType
             DiscretePressureFunctionSpaceType;
 
-        //! Coordinate type (world coordinates)
+        //! Coordinate type on the element
         typedef typename DiscreteVelocityFunctionSpaceType::DomainType
-            WorldCoordinateType;
+            ElementCoordinateType;
+
+        //! Coordinate type on an intersection
+        typedef typename FaceQuadratureType::LocalCoordinateType
+            IntersectionCoordinateType;
 
         //! Vector type of the velocity's discrete function space's range
         typedef typename DiscreteVelocityFunctionSpaceType::RangeType
@@ -264,6 +269,12 @@ class StokesPass
             typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType
                 PressureBaseFunctionSetType;
 
+            // twist utility, needed to evaluate basefunctions from both sides
+            // of a face
+            typedef typename Dune::TwistUtility< GridType >
+                TwistUtilityType;
+            TwistUtilityType twistUtility( gridPart_.grid() );
+
             // eps
             const double eps = 1.0e-14;
 
@@ -273,9 +284,14 @@ class StokesPass
             Logging::LogStream& debugStream = Logger().Dbg();
             int infoLogState = Logger().GetStreamFlags( Logging::LOG_INFO );
             int debugLogState = Logger().GetStreamFlags( Logging::LOG_DEBUG );
-            bool output = false;
+            bool entityOutput = false;
+            bool intersectionOutput = false;
             const int outputEntity = 0;
+            const int outputIntersection = 0;
             int entityNR = 0;
+            int intersectionNR = 0;
+            int numberOfBoundaryIntersections = 0;
+            int numberOfInnerIntersections = 0;
             infoStream << "\nthis is StokesPass::apply()" << std::endl;
             infoStream << "- starting gridwalk" << std::endl;
             Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
@@ -286,10 +302,9 @@ class StokesPass
             for ( EntityIteratorType entityIt = velocitySpace_.begin(); entityIt != entityItEnd; ++entityIt ) {
 
                 // entity and geometry
-                EntityType& entity = *entityIt;
+                const EntityType& entity = *entityIt;
                 typedef typename EntityType::Geometry
                     EntityGeometryType;
-
                 const EntityGeometryType& geometry = entity.geometry();
 
                 // local matrices for the volume integral
@@ -312,14 +327,14 @@ class StokesPass
                 // get quadrature
                 VolumeQuadratureType volumeQuadratureElement( entity, ( 2 * sigmaSpaceOrder ) + 1 );
 #ifndef NLOG
-                if ( outputEntity == entityNR ) output = true;
-                if ( output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                if ( outputEntity == entityNR ) entityOutput = true;
+                if ( entityOutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
                 debugStream << "  - entity " << outputEntity << std::endl;
                 debugStream << "  - numSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
                 debugStream << "  - numVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
                 debugStream << "  - numPressureBaseFunctionsElement: " << numPressureBaseFunctionsElement << std::endl;
-                debugStream << "  - calculating H2" << std::endl;
-                debugStream << "    ==============" << std::endl;
+                debugStream << "  - start calculations on entity" << std::endl;
+                debugStream << "    ============================" << std::endl;
                 bool Moutput = false;
                 bool Xoutput = false;
                 bool Zoutput = false;
@@ -330,7 +345,7 @@ class StokesPass
                 bool H3output = false;
                 // we want logging at the following base functions
                 const int logBaseI = 0;
-                const int logBaseJ = 0;
+                const int logBaseJ = 1;
                 Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
 #endif
                 // calculate volume integrals
@@ -344,14 +359,14 @@ class StokesPass
                         double M_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Moutput = true;
-//                        if ( output && Moutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                        if ( entityOutput && Moutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
                         // sum over all quadrature points
                         for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
-                            WorldCoordinateType x = volumeQuadratureElement.point( quad );
+                            ElementCoordinateType x = volumeQuadratureElement.point( quad );
                             // get the integration factor
                             double elementVolume = geometry.integrationElement( x );
                             // get the quadrature weight
@@ -406,7 +421,7 @@ class StokesPass
                         // sum over all quadrature points
                         for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
-                            WorldCoordinateType x = volumeQuadratureElement.point( quad );
+                            ElementCoordinateType x = volumeQuadratureElement.point( quad );
                             // get the integration factor
                             double elementVolume = geometry.integrationElement( x );
                             // get the quadrature weight
@@ -440,14 +455,14 @@ class StokesPass
                         double X_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-//                        if ( output && Xoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                        if ( entityOutput && Xoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
                         // sum over all quadrature points
                         for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
-                            WorldCoordinateType x = volumeQuadratureElement.point( quad );
+                            ElementCoordinateType x = volumeQuadratureElement.point( quad );
                             // get the integration factor
                             double elementVolume = geometry.integrationElement( x );
                             // get the quadrature weight
@@ -496,14 +511,14 @@ class StokesPass
                         double Z_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
-//                        if ( output && Zoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                        if ( entityOutput && Zoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
                         // sum over all quadratur points
                         for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
                             // get x
-                            WorldCoordinateType x = volumeQuadratureElement.point( quad );
+                            ElementCoordinateType x = volumeQuadratureElement.point( quad );
                             // get the integration factor
                             double elementVolume = geometry.integrationElement( x );
                             // get the quadrature weight
@@ -552,14 +567,14 @@ class StokesPass
                         double E_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
-//                        if ( output && Eoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                        if ( entityOutput && Eoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
                         // sum over all quadratur points
                         for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
                             // get x
-                            WorldCoordinateType x = volumeQuadratureElement.point( quad );
+                            ElementCoordinateType x = volumeQuadratureElement.point( quad );
                             // get the integration factor
                             double elementVolume = geometry.integrationElement( x );
                             // get the quadrature weight
@@ -608,14 +623,14 @@ class StokesPass
                     double H2_j = 0.0;
 #ifndef NLOG
 //                    if ( ( j == logBaseJ ) ) H2output = true;
-//                    if ( output && H2output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                    if ( entityOutput && H2output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
                     debugStream << "    basefunction " << " " << j << std::endl;
                     debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
                     // sum over all quadratur points
                     for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
                         // get x
-                        WorldCoordinateType x = volumeQuadratureElement.point( quad );
+                        ElementCoordinateType x = volumeQuadratureElement.point( quad );
                         // get the integration factor
                         double elementVolume = geometry.integrationElement( x );
                         // get the quadrature weight
@@ -652,21 +667,109 @@ class StokesPass
 #endif
                 } // done calculating H2
 
+                // walk the neighbours
+                IntersectionIteratorType intItEnd = gridPart_.iend( entity );
+                for (   IntersectionIteratorType intIt = gridPart_.ibegin( entity );
+                        intIt != intItEnd;
+                        ++intIt ) {
+#ifndef NLOG
+                    if ( ( outputIntersection == intersectionNR ) && entityOutput ) intersectionOutput = true;
+                    if ( intersectionOutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                    debugStream << "    - intersection " << intersectionNR << std::endl;
+                    debugStream << "    - start calculations on intersection" << std::endl;
+                    debugStream << "      ==================================" << std::endl;
+                    Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+#endif
+                    // get intersection informations, seen from the inside
+                    typedef typename IntersectionIteratorType::LocalGeometry
+                        IntersectionGeometryType;
+                    const IntersectionGeometryType& intersectionGeometryElement = intIt.intersectionSelfLocal();
+                    // get quadrature
+                    FaceQuadratureType faceQuadratureElement(   gridPart_,
+                                                                intIt,
+                                                                ( 2 * sigmaSpaceOrder ) + 1,
+                                                                FaceQuadratureType::INSIDE );
+                    // if we are inside the grid
+                    if ( intIt.neighbor() && !intIt.boundary() ) {
+                        // get neighbour
+                        const EntityType& neighbour = *(intIt.outside());
+
+                        // compute the surface integrals
+
+                        // (H1)_{j}=\int_{\partial_T}\hat{u}^{RHS}\cdot\tau_{j}\cdot n_{T} ds
+                        for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
+                            double H1_j = 0.0;
+#ifndef NLOG
+                            if ( ( j == logBaseJ ) ) H1output = true;
+                            if ( intersectionOutput && H1output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                            debugStream << "      basefunction " << j << std::endl;
+                            debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
+#endif
+                            // only do calculations if there is a velocity sigma flux contribution
+                            if ( discreteModel_.hasVelocitySigmaFlux() ) {
+//                                // sum over all quadrature points
+                                for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+                                    // get x
+                                    ElementCoordinateType x = faceQuadratureElement.point( quad );
+                                    IntersectionCoordinateType localXElement = faceQuadratureElement.localPoint( quad );
+                                    // get the integration factor
+                                    double intersectionVolume = intersectionGeometryElement.integrationElement( localXElement );
+                                    // get the quadrature weight
+                                    double integrationWeight = volumeQuadratureElement.weight( quad );
+                                    // calculate \hat{u}^{RHS}\cdot\tau_{j}\cdot n_{T}
+#ifndef NLOG
+                                    debugStream << "      - quadPoint " << quad;
+                                    Stuff::printFieldVector( x, "x", debugStream, "        " );
+                                    Stuff::printFieldVector( localXElement, "localXElement", debugStream, "        " );
+                                    debugStream << "\n        - elementVolume: " << intersectionVolume << std::endl;
+                                    debugStream << "        - integrationWeight: " << integrationWeight << std::endl;
+                                    debugStream << "        - intIt.numberInSelf(): " << intIt.numberInSelf() << std::endl;
+                                    debugStream << "        - intIt.numberInNeighbor(): " << intIt.numberInNeighbor() << std::endl;
+#endif
+                                } // done sum over quadrature points
+                            } // done if there is a velocity sigma flux contribution
+#ifndef NLOG
+                            H1output = false;
+                            Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+#endif
+                        } // done calculating H1
+#ifndef NLOG
+                    ++numberOfBoundaryIntersections;
+#endif
+                    } // done with those inside the grid
+
+                    // if we are on the boundary of the grid
+                    if ( !intIt.neighbor() && intIt.boundary() ) {
+                        ++numberOfInnerIntersections;
+                    } // done with those on the boundary
+#ifndef NLOG
+                if ( intersectionOutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                debugStream << "    - done calculations on intersection" << std::endl;
+                debugStream << "      =================================" << std::endl;
+                Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+                intersectionOutput = false;
+                ++intersectionNR;
+#endif
+                } // done walking the neighbours
 
 #ifndef NLOG
-                if ( output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
-                debugStream << "  - done calculating H2" << std::endl;
-                debugStream << "    ===================" << std::endl;
+                if ( entityOutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                debugStream << "  - done calculations on entity" << std::endl;
+                debugStream << "    ===========================" << std::endl;
                 Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
-                output = false;
+                entityOutput = false;
                 ++entityNR;
 #endif
-
             } // done walking the grid
 #ifndef NLOG
             infoStream << "- gridwalk done" << std::endl;
+            Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+            debugStream << "  found " << entityNR << " entities," << std::endl;
+            debugStream << "  found " << intersectionNR << " intersections," << std::endl;
+            debugStream << "  found " << numberOfBoundaryIntersections << " intersections inside," << std::endl;
+            debugStream << "  found " << numberOfInnerIntersections << " intersections on the boundary." << std::endl;
             //Ematrix.matrix().print( std::cout );
-            H2rhs.print( std::cout );
+            //H2rhs.print( std::cout );
             Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // return to original state
 #endif
         } // end of apply
