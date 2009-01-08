@@ -10,10 +10,13 @@
 
 #include "logging.hh"
 
-template <  class StokesPassImp >
+template <  class StokesPassImp, class ProblemImp >
 class PostProcessor
 {
     public:
+        typedef ProblemImp
+            ProblemType;
+
         typedef StokesPassImp
             StokesPassType;
         typedef typename StokesPassType::DiscreteStokesFunctionSpaceWrapperType
@@ -32,8 +35,9 @@ class PostProcessor
             DiscretePressureFunctionSpaceType;
 
 
-        PostProcessor( const StokesPassType& pass )
+        PostProcessor( const StokesPassType& pass, const ProblemType& prob )
             : pass_( pass ),
+            problem_( prob ),
             spaceWrapper_( pass.GetFunctionSpaceWrapper() ),
             gridPart_( spaceWrapper_.gridPart() ),
             velocitySpace_ ( spaceWrapper_.discreteVelocitySpace() ),
@@ -51,14 +55,15 @@ class PostProcessor
 
         void assembleExactSolution()
         {
-//            Dune::LagrangeInterpolation< DiscreteVelocityFunctionType >::interpolateFunction( problem_.velocity(), discreteExactVelocity_ );
-//            Dune::LagrangeInterpolation< DiscreteVelocityFunctionType >::interpolateFunction( problem_.dirichletData(), discreteExactDirichlet_ );
-//            Dune::LagrangeInterpolation< DiscreteVelocityFunctionType >::interpolateFunction( problem_.force(), discreteExactForce_ );
-//            Dune::LagrangeInterpolation< DiscretePressureFunctionType >::interpolateFunction( problem_.velocity(), discreteExactPressure_ );
+            Dune::LagrangeInterpolation< DiscreteVelocityFunctionType >::interpolateFunction( problem_.velocity(), discreteExactVelocity_ );
+            Dune::LagrangeInterpolation< DiscreteVelocityFunctionType >::interpolateFunction( problem_.dirichletData(), discreteExactDirichlet_ );
+            Dune::LagrangeInterpolation< DiscreteVelocityFunctionType >::interpolateFunction( problem_.force(), discreteExactForce_ );
+            Dune::LagrangeInterpolation< DiscretePressureFunctionType >::interpolateFunction( problem_.velocity(), discreteExactPressure_ );
         }
 
     private:
         const StokesPassType& pass_;
+        const ProblemType& problem_;
         //ContinuousVelocityType& continuousVelocity_;
         const GridPartType& gridPart_;
         const DiscreteVelocityFunctionSpaceType& velocitySpace_;

@@ -191,16 +191,20 @@ int main( int argc, char** argv )
     infoStream << "...done." << std::endl;
 
     /* ********************************************************************** *
-     * postprocessing (with profiler example)                                 *
+     * Problem postprocessing (with profiler example)                                 *
      * ********************************************************************** */
-//    profiler().Reset( 1 ); //prepare for one single run of code
-//    profiler().StartTiming( "Problem/Postprocessing" );
-//
-//    typedef PostProcessor< Problemtype, GridPartType, DiscreteVelocityFunctionType, DiscretePressureFunctionType >
-//        PostProcessorType;
-//    PostProcessorType postProcessor( problem, gridPart, velocitySpace, pressureSpace );
-//    infoStream << "...done." << std::endl;
-//    profiler().StopTiming( "Problem/Postprocessing" );
+    profiler().Reset( 1 ); //prepare for one single run of code
+    profiler().StartTiming( "Problem/Postprocessing" );
+
+    typedef Problem< gridDim, DiscreteStokesFunctionWrapperType >
+        ProblemType;
+    ProblemType problem( 0, discreteStokesFunctionWrapper );
+
+    typedef PostProcessor< StokesPassType, ProblemType >
+        PostProcessorType;
+    PostProcessorType postProcessor( stokesPass, problem );
+    infoStream << "...done." << std::endl;
+    profiler().StopTiming( "Problem/Postprocessing" );
 //    profiler().Output( mpicomm, 0, exactPressure.size() );
 
     return 0;

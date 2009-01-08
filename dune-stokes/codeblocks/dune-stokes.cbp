@@ -116,15 +116,13 @@
 		<Unit filename="../src/analyticaldata.hh" />
 		<Unit filename="../src/dirichletdata.hh" />
 		<Unit filename="../src/dune_stokes.cc" />
-		<Unit filename="../src/fluxes.hh" />
+		<Unit filename="../src/force.hh" />
 		<Unit filename="../src/logging.hh" />
 		<Unit filename="../src/model.hh" />
 		<Unit filename="../src/parametercontainer.hh" />
 		<Unit filename="../src/postprocessing.hh" />
 		<Unit filename="../src/pressure.hh" />
-		<Unit filename="../src/problem.hh" />
 		<Unit filename="../src/profiler.hh" />
-		<Unit filename="../src/saddlepoint_inverse_operator.hh" />
 		<Unit filename="../src/stuff.hh" />
 		<Unit filename="../src/velocity.hh" />
 		<Unit filename="../stokes/discretestokesfunctionspacewrapper.hh" />

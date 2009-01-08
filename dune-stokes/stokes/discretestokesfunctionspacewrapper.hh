@@ -153,12 +153,20 @@ class DiscreteStokesFunctionSpaceWrapper
         {
             return velocitySpace_;
         }
+        const DiscreteVelocityFunctionSpaceType& discreteVelocitySpace() const
+        {
+            return velocitySpace_;
+        }
 
         /**
          *  \brief  return the discrete pressure space
          *  \todo   doc
          **/
         DiscretePressureFunctionSpaceType& discretePressureSpace()
+        {
+            return pressureSpace_;
+        }
+        const DiscretePressureFunctionSpaceType& discretePressureSpace() const
         {
             return pressureSpace_;
         }

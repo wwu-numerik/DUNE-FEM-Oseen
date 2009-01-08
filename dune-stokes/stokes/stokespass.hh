@@ -176,7 +176,7 @@ class StokesPass
         {}
 
         //! used in Postprocessing to get refs to gridparts, spaces
-        const DiscreteStokesFunctionSpaceWrapperType& GetFunctionSpaceWrapper()
+        const DiscreteStokesFunctionSpaceWrapperType& GetFunctionSpaceWrapper() const
         {
             return spaceWrapper_;
         }
