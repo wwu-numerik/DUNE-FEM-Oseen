@@ -1,6 +1,6 @@
 # use these options for configure if no options a provided on the cmdline
 #AUTOGEN_FLAGS="--ac=2.59 --am=-1.8"
-CONFIGURE_FLAGS="CXX=g++ CC=gcc CXXFLAGS='-O0 -DNDEBUG' \
+CONFIGURE_FLAGS="CXX=g++ CC=gcc CXXFLAGS='-O0' \
 	LDFLAGS=/usr/lib64/libgfortran.so.1.0.0 \
   --prefix=/data/dune_work/private/f_albr01/diplomarbeit_felix_rene \
   --with-metis=/share/dune/Modules/modules_$HOSTTYPE/metis \
