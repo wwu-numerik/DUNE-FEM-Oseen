@@ -67,8 +67,7 @@ int main( int argc, char** argv )
     }
 
     const int gridDim = GridType::dimensionworld;
-//    const int polOrder = POLORDER;
-    const int polOrder = 2;
+    const int polOrder = POLORDER;
 
     Logger().Create(
         Logging::LOG_CONSOLE |

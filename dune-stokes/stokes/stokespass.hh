@@ -359,7 +359,7 @@ class StokesPass
 
                         double M_i_j = 0.0;
 #ifndef NLOG
-                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Moutput = true;
+//                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Moutput = true;
                         if ( entityOutput && Moutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
                         debugStream << "    = M ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
@@ -731,7 +731,7 @@ class StokesPass
                         for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
                             double H1_j = 0.0;
 #ifndef NLOG
-                            if ( ( j == logBaseJ ) ) H1output = true;
+//                            if ( ( j == logBaseJ ) ) H1output = true;
                             if ( intersectionOutput && H1output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
                             debugStream << "      = H1 =============================" << std::endl;
                             debugStream << "      basefunction " << j << std::endl;
@@ -809,8 +809,10 @@ class StokesPass
             debugStream << "  found " << intersectionNR << " intersections," << std::endl;
             debugStream << "        " << numberOfBoundaryIntersections << " intersections inside and" << std::endl;
             debugStream << "        " << numberOfInnerIntersections << " intersections on the boundary." << std::endl;
-//            debugStream << "- printing M ==================" << std::endl;
-//            Mmatrix.matrix().print( std::cout );
+//            debugStream << "- printing E ==================" << std::endl;
+//            Ematrix.matrix().print( std::cout );
+//            debugStream << "- printing Z ==================" << std::endl;
+//            Zmatrix.matrix().print( std::cout );
 //            debugStream << "- printing H2 =================" << std::endl;
 //            H2rhs.print( std::cout );
             Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // return to original state
