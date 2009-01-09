@@ -27,22 +27,36 @@
  *
  *  \todo   extensive docu with latex
  **/
-template < int griddim, class VelocityFunctionSpaceImp, class PressureFunctionSpaceImp >
+template < int griddim, class DiscreteFunctionWrapperImp >
 class Problem
 {
     public:
         static const unsigned int gridDim = griddim;
-        typedef VelocityFunctionSpaceImp
-            VelocityFunctionSpaceType;
+
+        typedef DiscreteFunctionWrapperImp
+            DiscreteFunctionWrapperType;
+
+        typedef typename DiscreteFunctionWrapperType::DiscreteFunctionSpaceType
+            DiscreteFunctionSpaceWrapperType;
+
+        typedef typename DiscreteFunctionSpaceWrapperType
+                ::DiscreteVelocityFunctionSpaceType
+                ::FunctionSpaceType
+        VelocityFunctionSpaceType;
+
         typedef Velocity< VelocityTraits < gridDim, VelocityFunctionSpaceType > >
             VelocityType;
-        typedef PressureFunctionSpaceImp
+
+        typedef typename DiscreteFunctionSpaceWrapperType
+                ::DiscretePressureFunctionSpaceType
+                ::FunctionSpaceType
             PressureFunctionSpaceType;
+
         typedef Pressure< PressureTraits< gridDim, PressureFunctionSpaceType > >
             PressureType;
         typedef Force< ForceTraits< gridDim, VelocityFunctionSpaceType > >
             ForceType;
-        typedef ForceType::BaseType
+//        typedef ForceType::BaseType
         typedef DirichletData< DirichletDataTraits< gridDim, VelocityFunctionSpaceType > >
             DirichletDataType;
 
@@ -51,11 +65,11 @@ class Problem
      *
      *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
      **/
-    Problem( const double viscosity, const VelocityFunctionSpaceType& velocity_space, const PressureFunctionSpaceType& press_space )
-        : velocity_( velocity_space ),
-          pressure_ ( press_space ),
-          force_( viscosity, velocity_space ),
-          dirichletData_( velocity_space )
+    Problem( const double viscosity, const DiscreteFunctionWrapperType& funcWrapper )
+        : velocity_( funcWrapper.discreteVelocity().space() ),
+          pressure_ ( funcWrapper.discretePressure().space() ),
+          force_( viscosity, funcWrapper.discreteVelocity().space() ),
+          dirichletData_( funcWrapper.discreteVelocity().space() )
 
     {
     }

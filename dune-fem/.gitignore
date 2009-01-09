@@ -23,15 +23,6 @@ doc/doxygen/man
 dune
 dune-fem.pc
 fem/.libs
-fem/Makefile
-fem/Makefile.in
-fem/devel-suite/Makefile
-fem/devel-suite/Makefile.in
-fem/devel-suite/elliptic/.deps
-fem/devel-suite/elliptic/Makefile
-fem/devel-suite/elliptic/Makefile.in
-fem/devel-suite/l2projection/.deps
-fem/devel-suite/l2projection/Makefile
 fem/devel-suite/l2projection/Makefile.in
 fem/devel-suite/laplace/.deps
 fem/devel-suite/laplace/Makefile
@@ -213,5 +204,9 @@ lib/Makefile
 lib/Makefile.in
 lib/libdunefem.la
 ltmain.sh
+m4/Makefile
+m4/Makefile.in
+make.inc
 missing
 stamp-h1
+

@@ -39,8 +39,16 @@ std::string toString(const ReturnType& s)
     return r;
 }
 
+struct TexOutput
+{
+    void printTexInfo(std::ostream&) const
+    {
+
+    }
+};
+
 /**
- *  \brief Only free mem asc. to valid pointer, log warning otherwise
+ *  \brief Only free mem pointed to by valid pointer, log warning otherwise
  *
  **/
 
