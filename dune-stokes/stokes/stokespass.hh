@@ -750,13 +750,13 @@ class StokesPass
 //                                // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                     // get x
-                                    ElementCoordinateType x = faceQuadratureElement.point( quad );
-                                    ElementCoordinateType xNeighbour = volumeQuadratureNeighbour.point( quad );
-                                    IntersectionCoordinateType localXElement = faceQuadratureElement.localPoint( quad );
+//                                    ElementCoordinateType x = faceQuadratureElement.point( quad );
+//                                    ElementCoordinateType xNeighbour = volumeQuadratureNeighbour.point( quad );
+//                                    IntersectionCoordinateType localXElement = faceQuadratureElement.localPoint( quad );
                                     // get the integration factor
-                                    double intersectionVolume = intersectionGeometryElement.integrationElement( localXElement );
+//                                    double intersectionVolume = intersectionGeometryElement.integrationElement( localXElement );
                                     // get the quadrature weight
-                                    double integrationWeight = faceQuadratureElement.weight( quad );
+//                                    double integrationWeight = faceQuadratureElement.weight( quad );
                                     // calculate \hat{u}^{RHS}\cdot\tau_{j}\cdot n_{T}
 #ifndef NLOG
 //                                    debugStream << "      - quadPoint " << quad;
