@@ -842,13 +842,25 @@ class StokesPass
                 Tmp_matrixType;
             Tmp_matrixType tmp( sigmaSpace_, velocitySpace_ );
             tmp.reserve();
-
+            Mmatrix.matrix().multiply( Wmatrix.matrix(), tmp.matrix() );
+            Xmatrix.matrix().multiply( tmp.matrix(), Amatrix.matrix() );
+            Amatrix.matrix().scale( -1 );
+            Ymatrix.matrix().add( Amatrix.matrix() );
+//            Amatrix = Ymatrix;
 
 
         //    Mmatrix.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
 
+
+            Ematrix.matrix().scale( -1 );
+            Rmatrix.matrix().scale( -1 );
+
+//            H1rhs
+
+            H3rhs.scale( -1 );
+
             InvOpType op( *this, 1.0,1.0,1,1 );
-            op.solve( arg, dest, Amatrix, Amatrix, tmp );
+            op.solve( arg, dest, Ymatrix, Zmatrix,Ematrix,Rmatrix,Amatrix, H3rhs );
 
 
         } // end of apply

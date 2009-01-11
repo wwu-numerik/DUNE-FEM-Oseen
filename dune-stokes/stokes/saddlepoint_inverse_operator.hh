@@ -84,13 +84,19 @@ namespace Dune {
 
 
     template <  class AMatrixType,
-                class BMatrixType,
-                class CMatrixType >
+                class B1MatrixType,
+                class B2MatrixType,
+                class CMatrixType,
+                class FMatrixType,
+                class GMatrixType >
     void solve( const DomainType& arg,
                 RangeType& dest,
                 AMatrixType& mat_A,
-                BMatrixType& mat_B,
-                CMatrixType& mat_C ) const
+                B1MatrixType& mat_B1,
+                B2MatrixType& mat_B2,
+                CMatrixType& mat_C,
+                FMatrixType& mat_F,
+                GMatrixType& mat_G ) const
     {
         Logging::LogStream& logDebug = Logger().Dbg();
         Logging::LogStream& logError = Logger().Err();
