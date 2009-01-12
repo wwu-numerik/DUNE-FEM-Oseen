@@ -808,17 +808,29 @@ class StokesPass
                 AmatrixType;
             AmatrixType Amatrix( velocitySpace_, velocitySpace_ );
             Amatrix.reserve();
-            typedef SparseRowMatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
-                Tmp_matrixType;
-            Tmp_matrixType tmp( sigmaSpace_, velocitySpace_ );
-            tmp.reserve();
 
+            YmatrixType neg_X_Minv_mat( velocitySpace_, velocitySpace_ );
+            neg_X_Minv_mat.reserve();
+            Xmatrix.matrix().multiply( Mmatrix.matrix(), neg_X_Minv_mat.matrix() );
+            neg_X_Minv_mat.matrix().scale( -1 );
 
+            neg_X_Minv_mat.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );;
+            Ymatrix.matrix().add( Amatrix.matrix() );
+//            Amatrix = Ymatrix;
 
-        //    Mmatrix.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
+            Ematrix.matrix().scale( -1 );
+            Rmatrix.matrix().scale( -1 );
+
+            RHSType Fmat ( velocitySpace_.size(), 1, 1 );
+            neg_X_Minv_mat.matrix().scale ( 23 ); //mu
+            neg_X_Minv_mat.matrix().multiply( H1rhs, Fmat );
+            H2rhs.add( Fmat );
+            //Fmat = H2rhs;
+
+            H3rhs.scale( -1 );
 
             InvOpType op( *this, 1.0,1.0,1,1 );
-            op.solve( arg, dest, Amatrix, Amatrix, tmp );
+            op.solve( arg, dest, Ymatrix, Zmatrix, Ematrix, Rmatrix, H2rhs, H3rhs );
 
 
         } // end of apply
