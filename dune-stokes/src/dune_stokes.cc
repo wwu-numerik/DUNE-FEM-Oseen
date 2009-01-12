@@ -26,6 +26,7 @@
 #include <dune/stokes/discretestokesmodelinterface.hh>
 #include <dune/stokes/stokespass.hh>
 
+#include "analyticaldata.hh"
 #include "parametercontainer.hh"
 #include "logging.hh"
 #include "postprocessing.hh"
