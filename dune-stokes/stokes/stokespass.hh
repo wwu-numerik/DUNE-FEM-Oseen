@@ -10,6 +10,9 @@
 #include <dune/fem/space/dgspace.hh>
 #include <dune/fem/quadrature/caching/twistutility.hh>
 
+#include <dune/stokes/saddlepoint_inverse_operator.hh>
+
+
 #ifndef NLOG // if we want logging, should be removed in the end
     #include "../src/stuff.hh"
     #include "../src/logging.hh"
@@ -26,6 +29,9 @@ class StokesPass
     : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
 {
     public:
+        //! own type
+        typedef StokesPass< DiscreteModelImp, PreviousPassImp, PassID >
+            ThisType;
 
         //! base type
         typedef Pass < DiscreteModelImp, PreviousPassImp, PassID >
@@ -119,6 +125,10 @@ class StokesPass
         typedef typename GridType::template Codim< 0 >::Entity
             EntityType;
 
+        //! type of the used solver
+        typedef SaddlepointInverseOperator< ThisType >
+            InvOpType;
+
         //! polynomial order for the discrete sigma function space
         static const int sigmaSpaceOrder = DiscreteModelType::sigmaSpaceOrder;
         //! polynomial order for the discrete velocity function space
@@ -169,6 +179,12 @@ class StokesPass
          **/
         StokesPass()
         {}
+
+        //! used in Postprocessing to get refs to gridparts, spaces
+        const DiscreteStokesFunctionSpaceWrapperType& GetFunctionSpaceWrapper() const
+        {
+            return spaceWrapper_;
+        }
 
         virtual void apply( const DomainType &arg, RangeType &dest) const
         {
@@ -787,6 +803,24 @@ class StokesPass
 //            H2rhs.print( std::cout );
             Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // return to original state
 #endif
+            // build global matrices
+            typedef SparseRowMatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
+                AmatrixType;
+            AmatrixType Amatrix( velocitySpace_, velocitySpace_ );
+            Amatrix.reserve();
+            typedef SparseRowMatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
+                Tmp_matrixType;
+            Tmp_matrixType tmp( sigmaSpace_, velocitySpace_ );
+            tmp.reserve();
+
+
+
+        //    Mmatrix.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
+
+            InvOpType op( *this, 1.0,1.0,1,1 );
+            op.solve( arg, dest, Amatrix, Amatrix, tmp );
+
+
         } // end of apply
 
         virtual void compute( const TotalArgumentType &arg, DestinationType &dest) const

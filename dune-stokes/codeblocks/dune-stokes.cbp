@@ -18,6 +18,7 @@
 				</Compiler>
 				<Linker>
 					<Add library="blas" />
+					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
 				</Linker>
 			</Target>
 			<Target title="felix">
@@ -31,6 +32,10 @@
 					<Add option="-w" />
 					<Add option="-g" />
 				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add directory="/usr/local/grape" />
+				</Linker>
 			</Target>
 			<Target title="rene">
 				<Option output="bin/Debug/dune-stokes" prefix_auto="1" extension_auto="1" />
@@ -45,6 +50,7 @@
 				<Linker>
 					<Add library="blas" />
 					<Add library="gfortran" />
+					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
 				</Linker>
 			</Target>
 			<Target title="uni_10.2">
@@ -76,6 +82,7 @@
 			<Add option="-DPOLORDER=1" />
 			<Add option="-DENABLE_ALBERTA" />
 			<Add option="-DHAVE_CONFIG_H" />
+			<Add option="-DDUNE_FEM_COMPATIBILITY" />
 			<Add directory="../../dune-common/" />
 			<Add directory="../../dune-grid/" />
 			<Add directory="../../dune-istl/" />
@@ -89,6 +96,7 @@
 			<Add directory="/usr/local/alugrid-1.1/include" />
 			<Add directory="/usr/local/alugrid-1.1/include/parallel" />
 			<Add directory="/usr/local/alugrid-1.1/include/serial" />
+			<Add directory="/share/dune/Modules/modules_x86_64/grape/" />
 		</Compiler>
 		<Linker>
 			<Add library="ALBERTA33_0" />
@@ -102,6 +110,8 @@
 			<Add library="../../dune-grid/lib/.libs/libdunegrid.a" />
 			<Add library="../../dune-common/lib/.libs/libdunecommon.a" />
 			<Add library="m" />
+			<Add library="gr" />
+			<Add library="GL" />
 			<Add directory="../../dune-common/lib" />
 			<Add directory="../../dune-grid/lib" />
 			<Add directory="../../dune-fem/lib" />
@@ -114,10 +124,7 @@
 		</Linker>
 		<Unit filename="../src/analyticaldata.hh" />
 		<Unit filename="../src/dirichletdata.hh" />
-		<Unit filename="../src/discretemodel.hh" />
-		<Unit filename="../src/discretization.hh" />
 		<Unit filename="../src/dune_stokes.cc" />
-		<Unit filename="../src/fluxes.hh" />
 		<Unit filename="../src/force.hh" />
 		<Unit filename="../src/logging.hh" />
 		<Unit filename="../src/model.hh" />
@@ -125,13 +132,12 @@
 		<Unit filename="../src/postprocessing.hh" />
 		<Unit filename="../src/pressure.hh" />
 		<Unit filename="../src/problem.hh" />
+		<Unit filename="../src/profiler.hh" />
 		<Unit filename="../src/stuff.hh" />
-		<Unit filename="../src/traits.hh" />
 		<Unit filename="../src/velocity.hh" />
 		<Unit filename="../stokes/discretestokesfunctionspacewrapper.hh" />
 		<Unit filename="../stokes/discretestokesmodelinterface.hh" />
 		<Unit filename="../stokes/saddlepoint_inverse_operator.hh" />
-		<Unit filename="../stokes/spinverseoperator.hh" />
 		<Unit filename="../stokes/stokespass.hh" />
 		<Extensions>
 			<code_completion />

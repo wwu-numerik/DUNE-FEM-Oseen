@@ -1,0 +1,4 @@
+comm/comm*
+!comm/*.tex
+istl.*
+!istl.tex

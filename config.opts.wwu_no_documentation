@@ -11,11 +11,11 @@ CONFIGURE_FLAGS="CXX=mpic++ CC=mpicc CXXFLAGS='-O0 -DNDEBUG' \
   --x-libraries=/usr/X11R6/lib64 \
   --with-grape=/share/dune/Modules/modules_$HOSTTYPE/grape \
   --with-grid-dim=3 \
-  --with-grid-type=ALUGRID_CUBE \
+  --with-grid-type=ALUGRID_CUBE "
+MAKE_FLAGS=
+#  --enable-parallel \
+#  --with-metis=/share/dune/Modules/modules_$HOSTTYPE/metis \
   --enable-mpi \
   --enable-parallel \
   --disable-documentation \
   --with-mpi=/usr/o0/openmpi-1.2.3/ix86_64-ibm-linux\lib "
-MAKE_FLAGS=
-#  --enable-parallel \
-#  --with-metis=/share/dune/Modules/modules_$HOSTTYPE/metis \
