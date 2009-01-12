@@ -190,7 +190,7 @@ class StokesPass
         {
 
             // viscosity
-            double mu = discreteModel_.viscosity();
+            const double mu = discreteModel_.viscosity();
 
             // functions
             DiscreteVelocityFunctionType& velocity = dest.discreteVelocity();
@@ -803,18 +803,19 @@ class StokesPass
 //            H2rhs.print( std::cout );
             Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // return to original state
 #endif
-            // build global matrices
+            infoStream << "- build global matrices - " << std::endl;
             typedef SparseRowMatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
                 AmatrixType;
             AmatrixType Amatrix( velocitySpace_, velocitySpace_ );
             Amatrix.reserve();
 
-            YmatrixType neg_X_Minv_mat( velocitySpace_, velocitySpace_ );
+            XmatrixType neg_X_Minv_mat( velocitySpace_, sigmaSpace_ );
             neg_X_Minv_mat.reserve();
             Xmatrix.matrix().multiply( Mmatrix.matrix(), neg_X_Minv_mat.matrix() );
+            infoStream << "-    1te feritg- " << std::endl;
             neg_X_Minv_mat.matrix().scale( -1 );
 
-            neg_X_Minv_mat.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );;
+            neg_X_Minv_mat.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
             Ymatrix.matrix().add( Amatrix.matrix() );
 //            Amatrix = Ymatrix;
 
@@ -824,10 +825,11 @@ class StokesPass
             RHSType Fmat ( velocitySpace_.size(), 1, 1 );
             neg_X_Minv_mat.matrix().scale ( 23 ); //mu
             neg_X_Minv_mat.matrix().multiply( H1rhs, Fmat );
-            H2rhs.add( Fmat );
+//            H2rhs.add( Fmat );
             //Fmat = H2rhs;
 
             H3rhs.scale( -1 );
+            infoStream << "- build global matrices - done" << std::endl;
 
             InvOpType op( *this, 1.0,1.0,1,1 );
             op.solve( arg, dest, Ymatrix, Zmatrix, Ematrix, Rmatrix, H2rhs, H3rhs );
