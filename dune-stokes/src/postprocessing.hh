@@ -64,10 +64,10 @@ class PostProcessor
             DiscretePressureFunctionSpaceType;
 
 
-        PostProcessor( const StokesPassType& pass, const ProblemType& prob )
-            : pass_( pass ),
+        PostProcessor( const DiscreteStokesFunctionSpaceWrapperType& wrapper, const ProblemType& prob )
+            : //pass_( pass ),
             problem_( prob ),
-            spaceWrapper_( pass.GetFunctionSpaceWrapper() ),
+            spaceWrapper_( wrapper ),
             gridPart_( spaceWrapper_.gridPart() ),
             velocitySpace_ ( spaceWrapper_.discreteVelocitySpace() ),
             discreteExactVelocity_( "u_exact", velocitySpace_ ),
@@ -76,10 +76,10 @@ class PostProcessor
             discreteExactPressure_( "p_exact", spaceWrapper_.discretePressureSpace() ),
             errorFunc_velocity_( "err_velocity", velocitySpace_ ),
             errorFunc_pressure_( "err_pressure", spaceWrapper_.discretePressureSpace() ),
-            solutionAssembled_(false),
+            solutionAssembled_( false ),
             l2_error_pressure_( - std::numeric_limits<double>::max() ),
             l2_error_velocity_( - std::numeric_limits<double>::max() ),
-            vtkWriter_( spaceWrapper_.gridPart() )
+            vtkWriter_( gridPart_ )
         {
 
         }
@@ -152,7 +152,7 @@ class PostProcessor
         }
 
     private:
-        const StokesPassType& pass_;
+//        const StokesPassType& pass_;
         const ProblemType& problem_;
         const GridPartType& gridPart_;
         const DiscreteVelocityFunctionSpaceType& velocitySpace_;
