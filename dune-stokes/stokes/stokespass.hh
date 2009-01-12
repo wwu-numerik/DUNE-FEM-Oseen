@@ -286,8 +286,8 @@ class StokesPass
             int debugLogState = Logger().GetStreamFlags( Logging::LOG_DEBUG );
             bool entityOutput = false;
             bool intersectionOutput = false;
-            const int outputEntity = 0;
-            const int outputIntersection = 0;
+            const int outputEntity = 1;
+            const int outputIntersection = 2;
             int entityNR = 0;
             int intersectionNR = 0;
             int numberOfBoundaryIntersections = 0;
@@ -722,10 +722,22 @@ class StokesPass
                         const typename IntersectionIteratorType::EntityPointer neighbourPtr = intIt.outside();
                         const EntityType& neighbour = *neighbourPtr;
 
+                        // local matrices for the surface integral
+                        LocalMmatrixType localMmatrixNeighbour = Mmatrix.localMatrix( entity, neighbour );
+                        LocalWmatrixType localWmatrixNeighbour = Wmatrix.localMatrix( entity, neighbour );
+                        LocalXmatrixType localXmatrixNeighbour = Xmatrix.localMatrix( entity, neighbour );
+                        LocalYmatrixType localYmatrixNeighbour = Ymatrix.localMatrix( entity, neighbour );
+                        LocalZmatrixType localZmatrixNeighbour = Zmatrix.localMatrix( entity, neighbour );
+                        LocalEmatrixType localEmatrixNeighbour = Ematrix.localMatrix( entity, neighbour );
+                        LocalRmatrixType localRmatrixNeighbour = Rmatrix.localMatrix( entity, neighbour );
+
                         // get basefunctionsets
                         SigmaBaseFunctionSetType sigmaBaseFunctionSetNeighbour = sigmaSpace_.baseFunctionSet( neighbour );
                         VelocityBaseFunctionSetType velocityBaseFunctionSetNeighbour = velocitySpace_.baseFunctionSet( neighbour );
                         PressureBaseFunctionSetType pressureBaseFunctionSetNeighbour = pressureSpace_.baseFunctionSet( neighbour );
+                        const int numSigmaBaseFunctionsNeighbour = sigmaBaseFunctionSetNeighbour.numBaseFunctions();
+                        const int numVelocityBaseFunctionsNeighbour = velocityBaseFunctionSetNeighbour.numBaseFunctions();
+                        const int numPressureBaseFunctionsNeighbour = pressureBaseFunctionSetNeighbour.numBaseFunctions();
 
                         // get intersection quadrature, seen from outside
                         FaceQuadratureType faceQuadratureNeighbour( gridPart_,
@@ -735,52 +747,6 @@ class StokesPass
 
                         // compute the surface integrals
 
-                        // (H1)_{j}=\int_{\partial_T}\hat{u}^{RHS}\cdot\tau_{j}\cdot n_{T} ds
-                        for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
-                            double H1_j = 0.0;
-#ifndef NLOG
-//                            if ( ( j == logBaseJ ) ) H1output = true;
-                            if ( intersectionOutput && H1output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
-                            debugStream << "      = H1 =============================" << std::endl;
-                            debugStream << "      basefunction " << j << std::endl;
-                            debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
-#endif
-                            // only do calculations if there is a velocity sigma flux contribution
-                            if ( discreteModel_.hasVelocitySigmaFlux() ) {
-//                                // sum over all quadrature points
-                                for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-                                    // get x
-//                                    ElementCoordinateType x = faceQuadratureElement.point( quad );
-//                                    ElementCoordinateType xNeighbour = volumeQuadratureNeighbour.point( quad );
-//                                    IntersectionCoordinateType localXElement = faceQuadratureElement.localPoint( quad );
-                                    // get the integration factor
-//                                    double intersectionVolume = intersectionGeometryElement.integrationElement( localXElement );
-                                    // get the quadrature weight
-//                                    double integrationWeight = faceQuadratureElement.weight( quad );
-                                    // calculate \hat{u}^{RHS}\cdot\tau_{j}\cdot n_{T}
-#ifndef NLOG
-//                                    debugStream << "      - quadPoint " << quad;
-//                                    Stuff::printFieldVector( x, "x", debugStream, "        " );
-//                                    Stuff::printFieldVector( xNeighbour, "xNeighbour", debugStream, "        " );
-//                                    Stuff::printFieldVector( localXElement, "localXElement", debugStream, "        " );
-//                                    debugStream << "\n        - elementVolume: " << intersectionVolume << std::endl;
-//                                    debugStream << "        - integrationWeight: " << integrationWeight << std::endl;
-//                                    debugStream << "        - intIt.numberInSelf(): " << intIt.numberInSelf() << std::endl;
-//                                    debugStream << "        - intIt.numberInNeighbor(): " << intIt.numberInNeighbor();
-//                                    Stuff::printFieldMatrix( tau_j_element, "tau_j_element", debugStream, "        " );
-//                                    Stuff::printFieldMatrix( tau_j_neighbour, "tau_j_neighbour", debugStream, "        " );
-//                                    debugStream << std::endl;
-#endif
-                                } // done sum over quadrature points
-                            } // done if there is a velocity sigma flux contribution
-#ifndef NLOG
-                            H1output = false;
-                            Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
-#endif
-                        } // done calculating H1
-#ifndef NLOG
-                    ++numberOfBoundaryIntersections;
-#endif
                     } // done with those inside the grid
 
                     // if we are on the boundary of the grid
