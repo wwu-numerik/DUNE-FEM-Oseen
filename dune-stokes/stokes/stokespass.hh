@@ -808,7 +808,7 @@ class StokesPass
                 debugStream << "- printing matrices" << std::endl;
                 if ( Mprint ) {
                     debugStream << " - M ==============" << std::endl;
-                    Mmatrix.matrix().print( std::cout );
+                    Logger().LogDebug( &MmatrixType::MatrixType::print,  Mmatrix.matrix() );
                 }
                 if ( Wprint ) {
                     debugStream << " - W ==============" << std::endl;
