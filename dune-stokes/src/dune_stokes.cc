@@ -221,6 +221,10 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
                                 gridPart,
                                 discreteStokesFunctionSpaceWrapper );
 
+    infoStream << "...done." << std::endl;
+
+    infoStream << "\nstarting pass..." << std::endl;
+
     stokesPass.apply( discreteStokesFunctionWrapper, discreteStokesFunctionWrapper );
 
     infoStream << "...done." << std::endl;
@@ -239,7 +243,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     typedef PostProcessor< StokesPassType, ProblemType >
         PostProcessorType;
 
-    problem.testMe();
+//    problem.testMe();
     PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );
 
     postProcessor.save( *gridPtr, discreteStokesFunctionWrapper ); //dummy params, should be computed solutions );

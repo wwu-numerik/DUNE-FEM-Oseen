@@ -36,11 +36,12 @@ class Logging
                 int& logflags_;
                 std::stringstream buffer_;
                 std::ofstream& logfile_;
+                std::ofstream& logfileWoTime_;
 
             public:
-                LogStream( LogFlags loglevel, int& logflags, std::ofstream& file )
+                LogStream( LogFlags loglevel, int& logflags, std::ofstream& file, std::ofstream& fileWoTime )
                     : loglevel_(loglevel), logflags_(logflags),
-                      logfile_(file) {}
+                      logfile_(file), logfileWoTime_( fileWoTime ) {}
                 ~LogStream(){}
 
                 template < typename T >
@@ -70,6 +71,7 @@ class Logging
                             if ( ( logflags_ & LOG_FILE ) != 0 ) {
                                 logfile_ << "\n" << TimeString()
                                          << buffer_.str() << std::endl;
+                                logfileWoTime_ << buffer_.str() << std::endl;
                             }
                             buffer_.str("");// clear the buffer
 
@@ -106,18 +108,21 @@ class Logging
             \param logflags any OR'd combination of flags
             \param logfile filename for log, can contain paths, but creation will fail if dir is non-existant
         **/
-        void Create (unsigned int logflags = LOG_FILE | LOG_CONSOLE | LOG_ERR, std::string logfile = "dune-stokes.log" )
+        void Create (unsigned int logflags = LOG_FILE | LOG_CONSOLE | LOG_ERR, std::string logfile = "dune_stokes" )
         {
             logflags_ = logflags;
-            filename_ = logfile;
+            filename_ = logfile + "_time.log";
+            filenameWoTime_ = logfile + ".log";
             if ( ( logflags_ & LOG_FILE ) != 0 ) {
                 logfile_.open ( filename_.c_str() );
                 assert( logfile_.is_open() );
+                logfileWoTime_.open ( filenameWoTime_.c_str() );
+                assert( logfileWoTime_.is_open() );
             }
             IdVecCIter it = streamIDs_.begin();
             for ( ; it != streamIDs_.end(); ++it ) {
                 flagmap_[*it] = logflags;
-                streammap_[*it] = new LogStream( *it, flagmap_[*it], logfile_ );
+                streammap_[*it] = new LogStream( *it, flagmap_[*it], logfile_, logfileWoTime_ );
             }
         }
 
@@ -242,13 +247,15 @@ class Logging
             LogFlags streamID = (LogFlags) streamID_int;
             streamIDs_.push_back( streamID );
             flagmap_[streamID] = flags | streamID;
-            streammap_[streamID] = new LogStream( streamID, flagmap_[streamID], logfile_ );
+            streammap_[streamID] = new LogStream( streamID, flagmap_[streamID], logfile_, logfileWoTime_ );
             return streamID_int;
         }
 
     private:
         std::string filename_;
+        std::string filenameWoTime_;
         std::ofstream logfile_;
+        std::ofstream logfileWoTime_;
         typedef std::map<LogFlags,int> FlagMap;
         FlagMap flagmap_;
         typedef std::map<LogFlags,LogStream*> StreamMap;

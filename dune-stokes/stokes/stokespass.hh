@@ -308,6 +308,15 @@ class StokesPass
             int intersectionNR = 0;
             int numberOfBoundaryIntersections = 0;
             int numberOfInnerIntersections = 0;
+            const bool Mprint = true;
+            const bool Wprint = false;
+            const bool Xprint = false;
+            const bool Zprint = false;
+            const bool Eprint = false;
+            const bool Rprint = false;
+            const bool H1print = false;
+            const bool H2print = false;
+            const bool H3print = false;
             infoStream << "\nthis is StokesPass::apply()" << std::endl;
             infoStream << "- starting gridwalk" << std::endl;
             Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
@@ -795,44 +804,78 @@ class StokesPass
             debugStream << "  found " << intersectionNR << " intersections," << std::endl;
             debugStream << "        " << numberOfBoundaryIntersections << " intersections inside and" << std::endl;
             debugStream << "        " << numberOfInnerIntersections << " intersections on the boundary." << std::endl;
-//            debugStream << "- printing E ==================" << std::endl;
-//            Ematrix.matrix().print( std::cout );
-//            debugStream << "- printing Z ==================" << std::endl;
-//            Zmatrix.matrix().print( std::cout );
-//            debugStream << "- printing H2 =================" << std::endl;
-//            H2rhs.print( std::cout );
+            if ( Mprint || Wprint || Xprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
+                debugStream << "- printing matrices" << std::endl;
+                if ( Mprint ) {
+                    debugStream << " - M ==============" << std::endl;
+                    Logger().LogDebug( &MmatrixType::MatrixType::print,  Mmatrix.matrix() );
+                }
+                if ( Wprint ) {
+                    debugStream << " - W ==============" << std::endl;
+                    Wmatrix.matrix().print( std::cout );
+                }
+                if ( Xprint ) {
+                    debugStream << " - X ==============" << std::endl;
+                    Xmatrix.matrix().print( std::cout );
+                }
+                if ( Zprint ) {
+                    debugStream << " - Z ==============" << std::endl;
+                    Zmatrix.matrix().print( std::cout );
+                }
+                if ( Eprint ) {
+                    debugStream << " - E ==============" << std::endl;
+                    Ematrix.matrix().print( std::cout );
+                }
+                if ( Rprint ) {
+                    debugStream << " - R ==============" << std::endl;
+                    Rmatrix.matrix().print( std::cout );
+                }
+                if ( H1print ) {
+                    debugStream << " - H1 =============" << std::endl;
+                    H1rhs.print( std::cout );
+                }
+                if ( H2print ) {
+                    debugStream << " - H2 =============" << std::endl;
+                    H2rhs.print( std::cout );
+                }
+                if ( H3print ) {
+                    debugStream << " - H3 =============" << std::endl;
+                    H3rhs.print( std::cout );
+                }
+                debugStream << "- done printing matrices" << std::endl;
+            }
             Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // return to original state
 #endif
-            infoStream << "- build global matrices - " << std::endl;
-            typedef SparseRowMatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
-                AmatrixType;
-            AmatrixType Amatrix( velocitySpace_, velocitySpace_ );
-            Amatrix.reserve();
-
-            XmatrixType neg_X_Minv_mat( velocitySpace_, sigmaSpace_ );
-            neg_X_Minv_mat.reserve();
-            Xmatrix.matrix().multiply( Mmatrix.matrix(), neg_X_Minv_mat.matrix() );
-            infoStream << "-    1te feritg- " << std::endl;
-            neg_X_Minv_mat.matrix().scale( -1 );
-
-            neg_X_Minv_mat.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
-            Ymatrix.matrix().add( Amatrix.matrix() );
-//            Amatrix = Ymatrix;
-
-            Ematrix.matrix().scale( -1 );
-            Rmatrix.matrix().scale( -1 );
-
-            RHSType Fmat ( velocitySpace_.size(), 1, 1 );
-            neg_X_Minv_mat.matrix().scale ( mu );
-            neg_X_Minv_mat.matrix().multiply( H1rhs, Fmat );
-//            H2rhs.add( Fmat );
-            //Fmat = H2rhs;
-
-            H3rhs.scale( -1 );
-            infoStream << "- build global matrices - done" << std::endl;
-
-            InvOpType op( *this, 1.0,1.0,1,1 );
-            op.solve( arg, dest, Ymatrix, Zmatrix, Ematrix, Rmatrix, H2rhs, H3rhs );
+//            infoStream << "- build global matrices - " << std::endl;
+//            typedef SparseRowMatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
+//                AmatrixType;
+//            AmatrixType Amatrix( velocitySpace_, velocitySpace_ );
+//            Amatrix.reserve();
+//
+//            XmatrixType neg_X_Minv_mat( velocitySpace_, sigmaSpace_ );
+//            neg_X_Minv_mat.reserve();
+//            Xmatrix.matrix().multiply( Mmatrix.matrix(), neg_X_Minv_mat.matrix() );
+//            infoStream << "-    1te feritg- " << std::endl;
+//            neg_X_Minv_mat.matrix().scale( -1 );
+//
+//            neg_X_Minv_mat.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
+//            Ymatrix.matrix().add( Amatrix.matrix() );
+////            Amatrix = Ymatrix;
+//
+//            Ematrix.matrix().scale( -1 );
+//            Rmatrix.matrix().scale( -1 );
+//
+//            RHSType Fmat ( velocitySpace_.size(), 1, 1 );
+//            neg_X_Minv_mat.matrix().scale ( mu );
+//            neg_X_Minv_mat.matrix().multiply( H1rhs, Fmat );
+////            H2rhs.add( Fmat );
+//            //Fmat = H2rhs;
+//
+//            H3rhs.scale( -1 );
+//            infoStream << "- build global matrices - done" << std::endl;
+//
+//            InvOpType op( *this, 1.0,1.0,1,1 );
+//            op.solve( arg, dest, Ymatrix, Zmatrix, Ematrix, Rmatrix, H2rhs, H3rhs );
 
 
         } // end of apply
