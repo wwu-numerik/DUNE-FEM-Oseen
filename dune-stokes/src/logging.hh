@@ -81,6 +81,15 @@ class Logging
                     }
                     return *this;
                 }
+
+                template < class Class,typename Pointer >
+                void Log( Pointer pf, Class& c )
+                {
+                    if ( logflags_ & loglevel_ ) {
+                        (c.*pf)( buffer_ );
+                    }
+                }
+
         };
 
         Logging( )
