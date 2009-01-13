@@ -823,7 +823,7 @@ class StokesPass
             Rmatrix.matrix().scale( -1 );
 
             RHSType Fmat ( velocitySpace_.size(), 1, 1 );
-            neg_X_Minv_mat.matrix().scale ( 23 ); //mu
+            neg_X_Minv_mat.matrix().scale ( mu );
             neg_X_Minv_mat.matrix().multiply( H1rhs, Fmat );
 //            H2rhs.add( Fmat );
             //Fmat = H2rhs;

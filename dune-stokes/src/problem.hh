@@ -134,8 +134,8 @@ class Problem
         //tests
         velocity_.testMe();
         pressure_.testMe();
-        force_.testMe();
-        dirichletData_.testMe();
+//        force_.testMe();
+//        dirichletData_.testMe();
         // happy
         infoStream << "...test passed!" << std::endl;
     }

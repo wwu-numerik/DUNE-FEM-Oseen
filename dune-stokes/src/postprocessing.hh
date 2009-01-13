@@ -68,18 +68,18 @@ class PostProcessor
             : //pass_( pass ),
             problem_( prob ),
             spaceWrapper_( wrapper ),
-            gridPart_( spaceWrapper_.gridPart() ),
-            velocitySpace_ ( spaceWrapper_.discreteVelocitySpace() ),
-            discreteExactVelocity_( "u_exact", velocitySpace_ ),
-            discreteExactForce_( "f_exact", velocitySpace_ ),
-            discreteExactDirichlet_( "gd_exact", velocitySpace_ ),
-            discreteExactPressure_( "p_exact", spaceWrapper_.discretePressureSpace() ),
-            errorFunc_velocity_( "err_velocity", velocitySpace_ ),
-            errorFunc_pressure_( "err_pressure", spaceWrapper_.discretePressureSpace() ),
+            gridPart_( wrapper.gridPart() ),
+            velocitySpace_ ( wrapper.discreteVelocitySpace() ),
+            discreteExactVelocity_( "u_exact", wrapper.discreteVelocitySpace() ),
+            discreteExactForce_( "f_exact", wrapper.discreteVelocitySpace() ),
+            discreteExactDirichlet_( "gd_exact", wrapper.discreteVelocitySpace() ),
+            discreteExactPressure_( "p_exact", wrapper.discretePressureSpace() ),
+            errorFunc_velocity_( "err_velocity", wrapper.discreteVelocitySpace() ),
+            errorFunc_pressure_( "err_pressure", wrapper.discretePressureSpace() ),
             solutionAssembled_( false ),
             l2_error_pressure_( - std::numeric_limits<double>::max() ),
             l2_error_velocity_( - std::numeric_limits<double>::max() ),
-            vtkWriter_( gridPart_ )
+            vtkWriter_( wrapper.gridPart() )
         {
 
         }
