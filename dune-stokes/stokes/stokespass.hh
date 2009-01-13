@@ -360,6 +360,15 @@ class StokesPass
                 bool H1output = false;
                 bool H2output = false;
                 bool H3output = false;
+                const bool Mprint = true;
+                const bool Wprint = false;
+                const bool Xprint = false;
+                const bool Zprint = false;
+                const bool Eprint = false;
+                const bool Rprint = false;
+                const bool H1print = false;
+                const bool H2print = false;
+                const bool H3print = false;
                 // we want logging at the following base functions
                 const int logBaseI = 0;
                 const int logBaseJ = 0;
@@ -803,36 +812,36 @@ class StokesPass
 //            H2rhs.print( std::cout );
             Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // return to original state
 #endif
-            infoStream << "- build global matrices - " << std::endl;
-            typedef SparseRowMatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
-                AmatrixType;
-            AmatrixType Amatrix( velocitySpace_, velocitySpace_ );
-            Amatrix.reserve();
-
-            XmatrixType neg_X_Minv_mat( velocitySpace_, sigmaSpace_ );
-            neg_X_Minv_mat.reserve();
-            Xmatrix.matrix().multiply( Mmatrix.matrix(), neg_X_Minv_mat.matrix() );
-            infoStream << "-    1te feritg- " << std::endl;
-            neg_X_Minv_mat.matrix().scale( -1 );
-
-            neg_X_Minv_mat.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
-            Ymatrix.matrix().add( Amatrix.matrix() );
-//            Amatrix = Ymatrix;
-
-            Ematrix.matrix().scale( -1 );
-            Rmatrix.matrix().scale( -1 );
-
-            RHSType Fmat ( velocitySpace_.size(), 1, 1 );
-            neg_X_Minv_mat.matrix().scale ( mu );
-            neg_X_Minv_mat.matrix().multiply( H1rhs, Fmat );
-//            H2rhs.add( Fmat );
-            //Fmat = H2rhs;
-
-            H3rhs.scale( -1 );
-            infoStream << "- build global matrices - done" << std::endl;
-
-            InvOpType op( *this, 1.0,1.0,1,1 );
-            op.solve( arg, dest, Ymatrix, Zmatrix, Ematrix, Rmatrix, H2rhs, H3rhs );
+//            infoStream << "- build global matrices - " << std::endl;
+//            typedef SparseRowMatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
+//                AmatrixType;
+//            AmatrixType Amatrix( velocitySpace_, velocitySpace_ );
+//            Amatrix.reserve();
+//
+//            XmatrixType neg_X_Minv_mat( velocitySpace_, sigmaSpace_ );
+//            neg_X_Minv_mat.reserve();
+//            Xmatrix.matrix().multiply( Mmatrix.matrix(), neg_X_Minv_mat.matrix() );
+//            infoStream << "-    1te feritg- " << std::endl;
+//            neg_X_Minv_mat.matrix().scale( -1 );
+//
+//            neg_X_Minv_mat.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
+//            Ymatrix.matrix().add( Amatrix.matrix() );
+////            Amatrix = Ymatrix;
+//
+//            Ematrix.matrix().scale( -1 );
+//            Rmatrix.matrix().scale( -1 );
+//
+//            RHSType Fmat ( velocitySpace_.size(), 1, 1 );
+//            neg_X_Minv_mat.matrix().scale ( mu );
+//            neg_X_Minv_mat.matrix().multiply( H1rhs, Fmat );
+////            H2rhs.add( Fmat );
+//            //Fmat = H2rhs;
+//
+//            H3rhs.scale( -1 );
+//            infoStream << "- build global matrices - done" << std::endl;
+//
+//            InvOpType op( *this, 1.0,1.0,1,1 );
+//            op.solve( arg, dest, Ymatrix, Zmatrix, Ematrix, Rmatrix, H2rhs, H3rhs );
 
 
         } // end of apply
