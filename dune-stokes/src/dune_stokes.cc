@@ -26,6 +26,7 @@
 #include <dune/stokes/discretestokesmodelinterface.hh>
 #include <dune/stokes/stokespass.hh>
 
+#include "analyticaldata.hh"
 #include "parametercontainer.hh"
 #include "logging.hh"
 #include "postprocessing.hh"
@@ -96,8 +97,8 @@ int main( int argc, char** argv )
     Stuff::TexOutput texOP;
     eoc_output.printInput( *gridPtr, texOP );
 
-    eoc_output.printTexAddError( gridPtr->size(0), l2_errors[0], errorColumnHeaders, 150, 0 );
-    eoc_output.printTexEnd( 650 );
+//    eoc_output.printTexAddError( gridPtr->size(0), l2_errors[0], errorColumnHeaders, 150, 0 );
+//    eoc_output.printTexEnd( 650 );
 
     return err;
   }
@@ -199,6 +200,8 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
 
     DiscreteStokesFunctionWrapperType discreteStokesFunctionWrapper(    "wrapped",
                                                                         discreteStokesFunctionSpaceWrapper );
+    DiscreteStokesFunctionWrapperType discreteStokesFunctionWrapper2(    "wrapped2",
+                                                                        discreteStokesFunctionSpaceWrapper );
 
     infoStream << "...done." << std::endl;
     /* ********************************************************************** *
@@ -225,6 +228,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     /* ********************************************************************** *
      * Problem postprocessing (with profiler example)                                 *
      * ********************************************************************** */
+    infoStream << "postprocesing" << std::endl;
     profiler().Reset( 1 ); //prepare for one single run of code
     profiler().StartTiming( "Problem/Postprocessing" );
 
@@ -234,7 +238,9 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
 
     typedef PostProcessor< StokesPassType, ProblemType >
         PostProcessorType;
-    PostProcessorType postProcessor( stokesPass, problem );
+
+    problem.testMe();
+    PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );
 
     postProcessor.save( *gridPtr, discreteStokesFunctionWrapper ); //dummy params, should be computed solutions );
     l2_errors.push_back( postProcessor.getError() );
@@ -242,7 +248,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     profiler().StopTiming( "Problem/Postprocessing" );
     profiler().Output( mpicomm, 0, gridPtr->size(0) );
 
-    infoStream << "...done." << std::endl;
+    infoStream << "...done RUN." << std::endl;
 
     return 0;
 }
