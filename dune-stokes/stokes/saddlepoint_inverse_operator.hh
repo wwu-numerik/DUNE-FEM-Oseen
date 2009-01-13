@@ -17,6 +17,8 @@
     #include "matrixoperator.hh"
 #endif
 
+#include <dune/fem/solver/oemsolver.hh>
+
 #include "../src/logging.hh"
 
 namespace Dune {
@@ -52,10 +54,10 @@ namespace Dune {
 //        PressureDiscreteSpaceType;
 //    typedef typename StokesPassType::VelocityDiscreteFunctionType::DiscreteFunctionSpaceType
 //        VelocityDiscreteSpaceType;
-//    typedef typename StokesPassType::PressureDiscreteFunctionType
-//        PressureDiscreteFunctionType;
-//    typedef typename StokesPassType::VelocityDiscreteFunctionType
-//        VelocityDiscreteFunctionType;
+    typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
+        PressureDiscreteFunctionType;
+    typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
+        VelocityDiscreteFunctionType;
 
 
   public:
@@ -102,6 +104,11 @@ namespace Dune {
         Logging::LogStream& logError = Logger().Err();
         Logging::LogStream& logInfo = Logger().Info();
         logInfo << "Begin SaddlePointInverseOperator " << std::endl;
+
+        //get some refs for more readability
+        PressureDiscreteFunctionType& pressure = dest.discretePressure();
+        VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
+
 
         //schurkomplement Operator ist: B2 * A_inv * B1 + C
 
