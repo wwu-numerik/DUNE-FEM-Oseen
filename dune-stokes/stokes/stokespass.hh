@@ -308,6 +308,15 @@ class StokesPass
             int intersectionNR = 0;
             int numberOfBoundaryIntersections = 0;
             int numberOfInnerIntersections = 0;
+            const bool Mprint = true;
+            const bool Wprint = false;
+            const bool Xprint = false;
+            const bool Zprint = false;
+            const bool Eprint = false;
+            const bool Rprint = false;
+            const bool H1print = false;
+            const bool H2print = false;
+            const bool H3print = false;
             infoStream << "\nthis is StokesPass::apply()" << std::endl;
             infoStream << "- starting gridwalk" << std::endl;
             Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
@@ -360,15 +369,6 @@ class StokesPass
                 bool H1output = false;
                 bool H2output = false;
                 bool H3output = false;
-                const bool Mprint = true;
-                const bool Wprint = false;
-                const bool Xprint = false;
-                const bool Zprint = false;
-                const bool Eprint = false;
-                const bool Rprint = false;
-                const bool H1print = false;
-                const bool H2print = false;
-                const bool H3print = false;
                 // we want logging at the following base functions
                 const int logBaseI = 0;
                 const int logBaseJ = 0;
@@ -804,12 +804,46 @@ class StokesPass
             debugStream << "  found " << intersectionNR << " intersections," << std::endl;
             debugStream << "        " << numberOfBoundaryIntersections << " intersections inside and" << std::endl;
             debugStream << "        " << numberOfInnerIntersections << " intersections on the boundary." << std::endl;
-//            debugStream << "- printing E ==================" << std::endl;
-//            Ematrix.matrix().print( std::cout );
-//            debugStream << "- printing Z ==================" << std::endl;
-//            Zmatrix.matrix().print( std::cout );
-//            debugStream << "- printing H2 =================" << std::endl;
-//            H2rhs.print( std::cout );
+            if ( Mprint || Wprint || Xprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
+                debugStream << "- printing matrices" << std::endl;
+                if ( Mprint ) {
+                    debugStream << " - M ===============" << std::endl;
+                    Mmatrix.matrix().print( std::cout );
+                }
+                if ( Wprint ) {
+                    debugStream << " - W ===============" << std::endl;
+                    Wmatrix.matrix().print( std::cout );
+                }
+                if ( Xprint ) {
+                    debugStream << " - X ===============" << std::endl;
+                    Xmatrix.matrix().print( std::cout );
+                }
+                if ( Zprint ) {
+                    debugStream << " - Z ===============" << std::endl;
+                    Zmatrix.matrix().print( std::cout );
+                }
+                if ( Eprint ) {
+                    debugStream << " - E ===============" << std::endl;
+                    Ematrix.matrix().print( std::cout );
+                }
+                if ( Rprint ) {
+                    debugStream << " - R ===============" << std::endl;
+                    Rmatrix.matrix().print( std::cout );
+                }
+                if ( H1print ) {
+                    debugStream << " - H1 ==============" << std::endl;
+                    H1rhs.print( std::cout );
+                }
+                if ( H2print ) {
+                    debugStream << " - H2 ==============" << std::endl;
+                    H2rhs.print( std::cout );
+                }
+                if ( H3print ) {
+                    debugStream << " - H3 ==============" << std::endl;
+                    H3rhs.print( std::cout );
+                }
+                debugStream << "- done printing matrices" << std::endl;
+            }
             Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // return to original state
 #endif
 //            infoStream << "- build global matrices - " << std::endl;
