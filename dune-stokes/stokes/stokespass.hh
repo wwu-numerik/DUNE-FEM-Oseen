@@ -266,13 +266,26 @@ class StokesPass
                 LocalRmatrixType;
 
             // right hand sides
-            typedef SparseRowMatrix< double > RHSType;
             // H_{1}\in R^{M}
-            RHSType H1rhs( sigmaSpace_.size(), 1, 1 );
+            DiscreteSigmaFunctionType H1rhs( "H1", sigmaSpace_ );
+            H1rhs.clear();
             // H_{2}\in R^{L}
-            RHSType H2rhs( velocitySpace_.size(), 1, 1 );
+            DiscreteVelocityFunctionType H2rhs( "H2", velocitySpace_ );
+            H2rhs.clear();
             // H_{3}\in R^{K}
-            RHSType H3rhs( pressureSpace_.size(), 1, 1 );
+            DiscretePressureFunctionType H3rhs( "H3", pressureSpace_ );
+            H3rhs.clear();
+
+            // local right hand sides
+            // H_{1}\in R^{M}
+            typedef typename DiscreteSigmaFunctionType::LocalFunctionType
+                LocalH1rhsType;
+            // H_{2}\in R^{L}
+            typedef typename DiscreteVelocityFunctionType::LocalFunctionType
+                LocalH2rhsType;
+            // H_{3}\in R^{K}
+            typedef typename DiscretePressureFunctionType::LocalFunctionType
+                LocalH3rhsType;
 
             // base functions
             // of type sigma
@@ -308,14 +321,14 @@ class StokesPass
             int intersectionNR = 0;
             int numberOfBoundaryIntersections = 0;
             int numberOfInnerIntersections = 0;
-            const bool Mprint = true;
+            const bool Mprint = false;
             const bool Wprint = false;
             const bool Xprint = false;
             const bool Zprint = false;
             const bool Eprint = false;
             const bool Rprint = false;
             const bool H1print = false;
-            const bool H2print = false;
+            const bool H2print = true;
             const bool H3print = false;
             infoStream << "\nthis is StokesPass::apply()" << std::endl;
             infoStream << "- starting gridwalk" << std::endl;
@@ -340,6 +353,11 @@ class StokesPass
                 LocalZmatrixType localZmatrixElement = Zmatrix.localMatrix( entity, entity );
                 LocalEmatrixType localEmatrixElement = Ematrix.localMatrix( entity, entity );
                 LocalRmatrixType localRmatrixElement = Rmatrix.localMatrix( entity, entity );
+
+                // local right hand sides
+                LocalH1rhsType LocalH1rhs = H1rhs.localFunction( entity );
+                LocalH2rhsType LocalH2rhs = H2rhs.localFunction( entity );
+                LocalH3rhsType LocalH3rhs = H3rhs.localFunction( entity );
 
                 // get basefunctionsets
                 SigmaBaseFunctionSetType sigmaBaseFunctionSetElement = sigmaSpace_.baseFunctionSet( entity );
@@ -374,11 +392,9 @@ class StokesPass
                 const int logBaseJ = 0;
                 Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
 #endif
-                // calculate volume integrals
+                // calculate volume integrals on the entity
 
-                // (M)_{i,j} = \int_{T}\tau_{i}:\tau_{j}dx
-                // we build M^-1 in fact, because M should be diagonal, and
-                // inversion is pretty easy
+                // (M^{-1})_{i,j} = (\int_{T}\tau_{j}:\tau_{i}dx)^{-1}
                 for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
 
@@ -403,11 +419,11 @@ class StokesPass
                             SigmaRangeType tau_j( 0.0 );
                             sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
                             sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
-                            double tau_i_times_tau_j = colonProduct( tau_i, tau_j );
+                            double tau_j_times_tau_i = colonProduct( tau_j, tau_i );
                             // calculate M_i_j
                             M_i_j += elementVolume *
                                         integrationWeight *
-                                        tau_i_times_tau_j;
+                                        tau_j_times_tau_i;
 #ifndef NLOG
                             debugStream << "    - quadPoint " << quad;
                             Stuff::printFieldVector( x, "x", debugStream, "      " );
@@ -415,7 +431,7 @@ class StokesPass
                             debugStream << "      - integrationWeight: " << integrationWeight;
                             Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "      " );
                             Stuff::printFieldMatrix( tau_j, "tau_j", debugStream, "      " );
-                            debugStream << "\n      - tau_i_times_tau_j: " << tau_i_times_tau_j << std::endl;
+                            debugStream << "\n      - tau_j_times_tau_i: " << tau_j_times_tau_i << std::endl;
                             debugStream << "      - M_" << i << "_" << j << "+=: " << M_i_j << std::endl;
 #endif
                         } // done sum over quadrature points
@@ -438,10 +454,7 @@ class StokesPass
                     }
                 } // done calculating M
 
-                // (W)_{i,j}=\int_{\partial T}\hat{u}^{U}\cdot\tau_{i}\cdot n_{T}ds
-                //           -\int_{T}v_{j}\cdot(\nabla \cdot \tau_{i})dx
-                // we only compute the contribution of the 2nd integral here,
-                // the surface integral will be computed later on
+                // (W)_{i,j} += \int_{T}v_{j}\cdot(\nabla\cdot\tau_{i})dx
                 for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                         double W_i_j = 0.0;
@@ -469,7 +482,7 @@ class StokesPass
                             double v_j_times_divergence_of_tau_i = v_j * divergence_of_tau_i;
                             W_i_j += elementVolume *
                                         integrationWeight *
-                                        v_j_times_divergence_of_tau_i * -1.0;
+                                        v_j_times_divergence_of_tau_i;
 #ifndef NLOG
                             debugStream << "    - quadPoint " << quad;
                             Stuff::printFieldVector( x, "x", debugStream, "      " );
@@ -494,10 +507,7 @@ class StokesPass
                     }
                 } // done calculationg W
 
-                // \mu(X)_{i,j}=\mu\int_{T}\tau_{j}:\nabla v_{i} dx
-                //              -\mu\int_{\partial}v_{i}\cdot\hat{\sigma}^{\sigma}\cdot n_{T}ds
-                // we only compute the contribution of the 1st integral here,
-                // the surface integral will be computed later on
+                // (X)_{i,j} += \mu\int_{T}\tau_{j}:\nabla v_{i} dx
                 for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
                         double X_i_j = 0.0;
@@ -551,10 +561,7 @@ class StokesPass
                     }
                 } // done calculating X
 
-                // (Z)_{i,j}=\int_{T} -q_{j}\cdot(\naba\cdot v_i) dx
-                //           +\int_{\partial T}\hat{p}^{P}\cdot v_{i}\cdot n_{T} ds
-                // we only compute the contribution of the 1st integral here,
-                // the surface integral will be computed later on
+                // (Z)_{i,j} += -\int_{T}q_{j}(\nabla\cdot v_{i})dx
                 for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
                         double Z_i_j = 0.0;
@@ -608,10 +615,57 @@ class StokesPass
                     }
                 } // done calculating Z
 
-                // (E)_{i,j}=\int_{T} -v_{j}\cdot(\naba q_i) dx
-                //           +\int_{\partial T}\hat{u}^{U}\cdot n_{T} q_{i}ds
-                // we only compute the contribution of the 1st integral here,
-                // the surface integral will be computed later on
+                // (H2)_{j} += \int_{T}f\cdot v_{j}dx
+                for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+                    double H2_j = 0.0;
+#ifndef NLOG
+//                    if ( ( j == logBaseJ ) ) H2output = true;
+                    if ( entityOutput && H2output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                    debugStream << "    = H2 =======================" << std::endl;
+                    debugStream << "    basefunction " << " " << j << std::endl;
+                    debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+#endif
+                    // sum over all quadratur points
+                    for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
+                        // get x
+                        ElementCoordinateType x = volumeQuadratureElement.point( quad );
+                        // get the integration factor
+                        double elementVolume = geometry.integrationElement( x );
+                        // get the quadrature weight
+                        double integrationWeight = volumeQuadratureElement.weight( quad );
+                        // calculate f\cdot v_j
+                        VelocityRangeType v_j( 0.0 );
+                        VelocityRangeType f( 0.0 );
+                        velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+                        discreteModel_.force( 0.0, x, f );
+                        double f_times_v_j = f * v_j;
+                        H2_j += elementVolume *
+                                    integrationWeight *
+                                    f_times_v_j;
+#ifndef NLOG
+                        debugStream << "    - quadPoint " << quad;
+                        Stuff::printFieldVector( x, "x", debugStream, "      " );
+                        debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
+                        debugStream << "      - integrationWeight: " << integrationWeight;
+                        Stuff::printFieldVector( f, "f", debugStream, "      " );
+                        Stuff::printFieldVector( v_j, "v_j", debugStream, "      " );
+                        debugStream << "\n      - f_times_v_j: " << f_times_v_j << std::endl;
+                        debugStream << "      - H2_" << j << "+=: " << H2_j << std::endl;
+#endif
+                    } // done sum over all quadrature points
+                    // if small, should be zero
+                    if ( fabs( H2_j ) < eps ) {
+                        H2_j = 0.0;
+                    }
+                    // add to matrix
+                    LocalH2rhs[ velocitySpace_.mapToGlobal( entity, j ) ] = H2_j;
+#ifndef NLOG
+                    H2output = false;
+                    Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+#endif
+                } // done calculating H2
+
+                // (E)_{i,j} += -\int_{T}v_{j}\cdot\nabla q_{i}dx
                 for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                         double E_i_j = 0.0;
@@ -665,59 +719,6 @@ class StokesPass
                     }
                 } // done calculating E
 
-                // (H2)_{j}=\int_{T}f\cdot v_{j} dx
-                //          +\mu(\int_{\partial T}v_{j}\cdot\hat{\sigma}^{RHS} \cdot n_{T})
-                //          -\int_{\partial T}\hat{p}^{RHS}\cdot v_j \cdot n_{T} ds
-                // we only compute the contribution of the 1st integral here,
-                // the surface integral will be computed later on
-                for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
-                    double H2_j = 0.0;
-#ifndef NLOG
-//                    if ( ( j == logBaseJ ) ) H2output = true;
-                    if ( entityOutput && H2output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
-                    debugStream << "    = H2 =======================" << std::endl;
-                    debugStream << "    basefunction " << " " << j << std::endl;
-                    debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
-#endif
-                    // sum over all quadratur points
-                    for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
-                        // get x
-                        ElementCoordinateType x = volumeQuadratureElement.point( quad );
-                        // get the integration factor
-                        double elementVolume = geometry.integrationElement( x );
-                        // get the quadrature weight
-                        double integrationWeight = volumeQuadratureElement.weight( quad );
-                        // calculate f\cdot v_j
-                        VelocityRangeType v_j( 0.0 );
-                        VelocityRangeType f( 0.0 );
-                        velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-                        discreteModel_.force( 0.0, x, f );
-                        double f_times_v_j = f * v_j;
-                        H2_j += elementVolume *
-                                    integrationWeight *
-                                    f_times_v_j;
-#ifndef NLOG
-                        debugStream << "    - quadPoint " << quad;
-                        Stuff::printFieldVector( x, "x", debugStream, "      " );
-                        debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
-                        debugStream << "      - integrationWeight: " << integrationWeight;
-                        Stuff::printFieldVector( f, "f", debugStream, "      " );
-                        Stuff::printFieldVector( v_j, "v_j", debugStream, "      " );
-                        debugStream << "\n      - f_times_v_j: " << f_times_v_j << std::endl;
-                        debugStream << "      - H2_" << j << "+=: " << H2_j << std::endl;
-#endif
-                    } // done sum over all quadrature points
-                    // if small, should be zero
-                    if ( fabs( H2_j ) < eps ) {
-                        H2_j = 0.0;
-                    }
-                    // add to matrix
-                    H2rhs.set( velocitySpace_.mapToGlobal( entity, j ), 0, H2_j );
-#ifndef NLOG
-                    H2output = false;
-                    Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
-#endif
-                } // done calculating H2
 
                 // walk the neighbours
                 IntersectionIteratorType intItEnd = gridPart_.iend( entity );
@@ -808,7 +809,7 @@ class StokesPass
                 debugStream << "- printing matrices" << std::endl;
                 if ( Mprint ) {
                     debugStream << " - M ==============" << std::endl;
-                    Logger().LogDebug( &MmatrixType::MatrixType::print,  Mmatrix.matrix() );
+                    Mmatrix.matrix().print( std::cout );
                 }
                 if ( Wprint ) {
                     debugStream << " - W ==============" << std::endl;
