@@ -99,7 +99,9 @@ class Logging
 
             if ( ( logflags_ & LOG_FILE ) != 0 ) {
                 logfile_ << '\n' << TimeString() << ": LOG END" << std::endl;
+                logfileWoTime_ << std::endl;
                 logfile_.close();
+                logfileWoTime_.close();
             }
         }
 
@@ -149,12 +151,6 @@ class Logging
                 Log( pf, c, LOG_DEBUG );
         }
 
-//        template < typename Pointer, class Class >
-//        {
-//            if ( ( logflags_ & LOG_INFO ) )
-//                Log( pf, c, LOG_INFO );
-//        }
-
         template < class Class,typename Pointer >
         void LogInfo( Pointer pf , Class& c )
         {
@@ -185,8 +181,10 @@ class Logging
             assert( stream & ( LOG_ERR | LOG_INFO | LOG_DEBUG ) );
             if ( ( flagmap_[stream] & LOG_CONSOLE ) != 0 )
                 (c.*pf)( std::cout );
-            if ( ( flagmap_[stream] & LOG_FILE ) != 0 )
+            if ( ( flagmap_[stream] & LOG_FILE ) != 0 ) {
                 (c.*pf)( logfile_ );
+                (c.*pf)( logfileWoTime_ );
+            }
         }
 
         /** \}
@@ -222,8 +220,10 @@ class Logging
             assert( stream & ( LOG_ERR | LOG_INFO | LOG_DEBUG ) );
             if ( ( flagmap_[stream] & LOG_CONSOLE ) != 0 )
                 std::cout << c;
-            if ( ( flagmap_[stream] & LOG_FILE ) != 0 )
+            if ( ( flagmap_[stream] & LOG_FILE ) != 0 ) {
                 logfile_ << c;
+                logfileWoTime_ << c;
+            }
         }
         /** \}
         */
