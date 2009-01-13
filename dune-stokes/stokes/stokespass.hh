@@ -807,39 +807,39 @@ class StokesPass
             if ( Mprint || Wprint || Xprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
                 debugStream << "- printing matrices" << std::endl;
                 if ( Mprint ) {
-                    debugStream << " - M ===============" << std::endl;
+                    debugStream << " - M ==============" << std::endl;
                     Mmatrix.matrix().print( std::cout );
                 }
                 if ( Wprint ) {
-                    debugStream << " - W ===============" << std::endl;
+                    debugStream << " - W ==============" << std::endl;
                     Wmatrix.matrix().print( std::cout );
                 }
                 if ( Xprint ) {
-                    debugStream << " - X ===============" << std::endl;
+                    debugStream << " - X ==============" << std::endl;
                     Xmatrix.matrix().print( std::cout );
                 }
                 if ( Zprint ) {
-                    debugStream << " - Z ===============" << std::endl;
+                    debugStream << " - Z ==============" << std::endl;
                     Zmatrix.matrix().print( std::cout );
                 }
                 if ( Eprint ) {
-                    debugStream << " - E ===============" << std::endl;
+                    debugStream << " - E ==============" << std::endl;
                     Ematrix.matrix().print( std::cout );
                 }
                 if ( Rprint ) {
-                    debugStream << " - R ===============" << std::endl;
+                    debugStream << " - R ==============" << std::endl;
                     Rmatrix.matrix().print( std::cout );
                 }
                 if ( H1print ) {
-                    debugStream << " - H1 ==============" << std::endl;
+                    debugStream << " - H1 =============" << std::endl;
                     H1rhs.print( std::cout );
                 }
                 if ( H2print ) {
-                    debugStream << " - H2 ==============" << std::endl;
+                    debugStream << " - H2 =============" << std::endl;
                     H2rhs.print( std::cout );
                 }
                 if ( H3print ) {
-                    debugStream << " - H3 ==============" << std::endl;
+                    debugStream << " - H3 =============" << std::endl;
                     H3rhs.print( std::cout );
                 }
                 debugStream << "- done printing matrices" << std::endl;
