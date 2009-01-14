@@ -84,26 +84,58 @@ namespace Dune {
 
     }
 
-
-    template <  class AMatrixType,
-                class B1MatrixType,
-                class B2MatrixType,
-                class CMatrixType,
-                class FMatrixType,
-                class GMatrixType >
+    /** takes raw matrices from pass
+    */
+    template <  class XmatrixType,
+                class MmatrixType,
+                class YmatrixType,
+                class EmatrixType,
+                class RmatrixType,
+                class FmatrixType,
+                class GmatrixType >
     void solve( const DomainType& arg,
                 RangeType& dest,
-                AMatrixType& mat_A,
-                B1MatrixType& mat_B1,
-                B2MatrixType& mat_B2,
-                CMatrixType& mat_C,
-                FMatrixType& mat_F,
-                GMatrixType& mat_G ) const
+                XmatrixType& Xmatrix,
+                MmatrixType& Mmatrix,
+                YmatrixType& Ymatrix,
+                EmatrixType& Ematrix,
+                RmatrixType& Rmatrix,
+                FmatrixType& mat_F,
+                GmatrixType& mat_G ) const
     {
         Logging::LogStream& logDebug = Logger().Dbg();
         Logging::LogStream& logError = Logger().Err();
         Logging::LogStream& logInfo = Logger().Info();
         logInfo << "Begin SaddlePointInverseOperator " << std::endl;
+//
+//        logInfo << "- build global matrices - " << std::endl;
+//        typedef SparseRowMatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
+//            AmatrixType;
+//        AmatrixType Amatrix( velocitySpace_, velocitySpace_ );
+//        Amatrix.reserve();
+//
+//        XmatrixType neg_X_Minv_mat( velocitySpace_, sigmaSpace_ );
+//        neg_X_Minv_mat.reserve();
+//        Xmatrix.matrix().multiply( Mmatrix.matrix(), neg_X_Minv_mat.matrix() );
+//        logInfo << "-    1te feritg- " << std::endl;
+//        neg_X_Minv_mat.matrix().scale( -1 );
+//
+//        neg_X_Minv_mat.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
+//        Ymatrix.matrix().add( Amatrix.matrix() );
+////            Amatrix = Ymatrix;
+//
+//        Ematrix.matrix().scale( -1 );
+//        Rmatrix.matrix().scale( -1 );
+//
+//        RHSType Fmat ( velocitySpace_.size(), 1, 1 );
+//        neg_X_Minv_mat.matrix().scale ( mu );
+//        neg_X_Minv_mat.matrix().multiply( H1rhs, Fmat );
+////            H2rhs.add( Fmat );
+//        //Fmat = H2rhs;
+//
+//        H3rhs.scale( -1 );
+//        logInfo << "- build global matrices - done" << std::endl;
+
 
         //get some refs for more readability
         PressureDiscreteFunctionType& pressure = dest.discretePressure();
