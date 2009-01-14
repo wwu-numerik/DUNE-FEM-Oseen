@@ -212,9 +212,9 @@ class StokesPass
             // matrices
             // M\in R^{M\times M}
             typedef SparseRowMatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteSigmaFunctionSpaceType >
-                MmatrixType;
-            MmatrixType Mmatrix( sigmaSpace_, sigmaSpace_ );
-            Mmatrix.reserve();
+                MInversMatrixType;
+            MInversMatrixType MInversMatrix( sigmaSpace_, sigmaSpace_ );
+            MInversMatrix.reserve();
             // W\in R^{M\times L}
             typedef SparseRowMatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
                 WmatrixType;
@@ -248,8 +248,8 @@ class StokesPass
 
             // local matrices
             // M\in R^{M\times M}
-            typedef typename MmatrixType::LocalMatrixType
-                LocalMmatrixType;
+            typedef typename MInversMatrixType::LocalMatrixType
+                LocalMInversMatrixType;
             // W\in R^{M\times L}
             typedef typename WmatrixType::LocalMatrixType
                 LocalWmatrixType;
@@ -349,7 +349,7 @@ class StokesPass
                 const EntityGeometryType& geometry = entity.geometry();
 
                 // local matrices for the volume integral
-                LocalMmatrixType localMmatrixElement = Mmatrix.localMatrix( entity, entity );
+                LocalMInversMatrixType localMInversMatrixElement = MInversMatrix.localMatrix( entity, entity );
                 LocalWmatrixType localWmatrixElement = Wmatrix.localMatrix( entity, entity );
                 LocalXmatrixType localXmatrixElement = Xmatrix.localMatrix( entity, entity );
                 LocalYmatrixType localYmatrixElement = Ymatrix.localMatrix( entity, entity );
@@ -449,7 +449,7 @@ class StokesPass
                         }
 
                         // add to matrix
-                        localMmatrixElement.add( i, j, M_i_j );
+                        localMInversMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
                         Moutput = false;
                         Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
@@ -758,7 +758,7 @@ class StokesPass
                         const IntersectionGeometryType& intersectionGeoemtry = intIt.intersectionSelfLocal();
 
                         // local matrices for the surface integral
-                        LocalMmatrixType localMmatrixNeighbour = Mmatrix.localMatrix( entity, neighbour );
+                        LocalMInversMatrixType localMInversMatrixNeighbour = MInversMatrix.localMatrix( entity, neighbour );
                         LocalWmatrixType localWmatrixNeighbour = Wmatrix.localMatrix( entity, neighbour );
                         LocalXmatrixType localXmatrixNeighbour = Xmatrix.localMatrix( entity, neighbour );
                         LocalYmatrixType localYmatrixNeighbour = Ymatrix.localMatrix( entity, neighbour );
@@ -894,7 +894,7 @@ class StokesPass
                 debugStream << "- printing matrices" << std::endl;
                 if ( Mprint ) {
                     debugStream << " - M ==============" << std::endl;
-                    debugStream.Log( &MmatrixType::MatrixType::print,  Mmatrix.matrix() );
+                    debugStream.Log( &MInversMatrixType::MatrixType::print,  MInversMatrix.matrix() );
                 }
                 if ( Wprint ) {
                     debugStream << " - W ==============" << std::endl;
