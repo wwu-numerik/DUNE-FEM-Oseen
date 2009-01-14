@@ -152,7 +152,7 @@ class PostProcessor
         }
 
     private:
-//        const StokesPassType& pass_;
+
         const ProblemType& problem_;
         const GridPartType& gridPart_;
         const DiscreteVelocityFunctionSpaceType& velocitySpace_;
