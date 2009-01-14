@@ -933,10 +933,8 @@ class StokesPass
             Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // return to original state
 #endif
 
-//            InvOpType op( *this, 1.0,1.0,1,1 );
-
-//            XmatrixType, MmatrixType, YmatrixType, EmatrixType, RmatrixType,
-//            op.solve( arg, dest, Xmatrix, Mmatrix, Ymatrix, Ematrix, Rmatrix, H2rhs, H3rhs );
+            InvOpType op( *this, 1.0,1.0,1,1 );
+            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, H1rhs, H2rhs, H3rhs );
 
 
         } // end of apply

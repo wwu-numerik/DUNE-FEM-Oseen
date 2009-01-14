@@ -28,12 +28,8 @@ namespace Dune {
         \tparam EllipticInverseOperatorType Operator type used to do the inner A^-1 inversion
    */
 
-  template < class StokesPassImp >
-            //class EllipticInverseOperatorType>
+    template < class StokesPassImp >
     class SaddlepointInverseOperator
-//        : public Operator< typename StokesPassImp :: DiscreteStokesFunctionWrapperType::DomainFieldType,
-//                           typename  StokesPassImp ::DiscreteStokesFunctionWrapperType::RangeFieldType,
-//                            typename StokesPassImp ::DiscreteStokesFunctionWrapperType, typename StokesPassImp :: DiscreteStokesFunctionWrapperType>
 {
   private:
 
@@ -91,8 +87,9 @@ namespace Dune {
                 class YmatrixType,
                 class EmatrixType,
                 class RmatrixType,
-                class FmatrixType,
-                class GmatrixType >
+                class DiscreteSigmaFunctionType,
+                class DiscreteVelocityFunctionType,
+                class DiscretePressureFunctionType  >
     void solve( const DomainType& arg,
                 RangeType& dest,
                 XmatrixType& Xmatrix,
@@ -100,8 +97,9 @@ namespace Dune {
                 YmatrixType& Ymatrix,
                 EmatrixType& Ematrix,
                 RmatrixType& Rmatrix,
-                FmatrixType& mat_F,
-                GmatrixType& mat_G ) const
+                DiscreteSigmaFunctionType& rhs1,
+                DiscreteVelocityFunctionType& rhs2,
+                DiscretePressureFunctionType& rhs3 ) const
     {
         Logging::LogStream& logDebug = Logger().Dbg();
         Logging::LogStream& logError = Logger().Err();
