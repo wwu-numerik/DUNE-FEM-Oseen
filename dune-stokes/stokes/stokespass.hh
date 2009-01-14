@@ -113,6 +113,10 @@ class StokesPass
         typedef typename GridPartType::IntersectionIteratorType
             IntersectionIteratorType;
 
+        //! local coordinate type on an intersection
+        typedef typename FaceQuadratureType::LocalCoordinateType
+            LocalIntersectionCoordinateType;
+
         //! entity iterator of the gridpart
         typedef typename GridPartType::template Codim< 0 >::IteratorType
             EntityIteratorType;
@@ -208,9 +212,9 @@ class StokesPass
             // matrices
             // M\in R^{M\times M}
             typedef SparseRowMatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteSigmaFunctionSpaceType >
-                MmatrixType;
-            MmatrixType Mmatrix( sigmaSpace_, sigmaSpace_ );
-            Mmatrix.reserve();
+                MInversMatrixType;
+            MInversMatrixType MInversMatrix( sigmaSpace_, sigmaSpace_ );
+            MInversMatrix.reserve();
             // W\in R^{M\times L}
             typedef SparseRowMatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
                 WmatrixType;
@@ -244,8 +248,8 @@ class StokesPass
 
             // local matrices
             // M\in R^{M\times M}
-            typedef typename MmatrixType::LocalMatrixType
-                LocalMmatrixType;
+            typedef typename MInversMatrixType::LocalMatrixType
+                LocalMInversMatrixType;
             // W\in R^{M\times L}
             typedef typename WmatrixType::LocalMatrixType
                 LocalWmatrixType;
@@ -298,12 +302,6 @@ class StokesPass
             typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType
                 PressureBaseFunctionSetType;
 
-            // twist utility, needed to evaluate basefunctions from both sides
-            // of a face
-            typedef typename Dune::TwistUtility< GridType >
-                TwistUtilityType;
-            TwistUtilityType twistUtility( gridPart_.grid() );
-
             // eps
             const double eps = 1.0e-14;
 
@@ -315,20 +313,20 @@ class StokesPass
             int debugLogState = Logger().GetStreamFlags( Logging::LOG_DEBUG );
             bool entityOutput = false;
             bool intersectionOutput = false;
-            const int outputEntity = 1;
-            const int outputIntersection = 2;
+            const int outputEntity = 0;
+            const int outputIntersection = 1;
             int entityNR = 0;
             int intersectionNR = 0;
             int numberOfBoundaryIntersections = 0;
             int numberOfInnerIntersections = 0;
             const bool Mprint = false;
-            const bool Wprint = false;
+            const bool Wprint = true;
             const bool Xprint = false;
             const bool Zprint = false;
             const bool Eprint = false;
             const bool Rprint = false;
             const bool H1print = false;
-            const bool H2print = true;
+            const bool H2print = false;
             const bool H3print = false;
             infoStream << "\nthis is StokesPass::apply()" << std::endl;
             infoStream << "- starting gridwalk" << std::endl;
@@ -346,7 +344,7 @@ class StokesPass
                 const EntityGeometryType& geometry = entity.geometry();
 
                 // local matrices for the volume integral
-                LocalMmatrixType localMmatrixElement = Mmatrix.localMatrix( entity, entity );
+                LocalMInversMatrixType localMInversMatrixElement = MInversMatrix.localMatrix( entity, entity );
                 LocalWmatrixType localWmatrixElement = Wmatrix.localMatrix( entity, entity );
                 LocalXmatrixType localXmatrixElement = Xmatrix.localMatrix( entity, entity );
                 LocalYmatrixType localYmatrixElement = Ymatrix.localMatrix( entity, entity );
@@ -446,7 +444,7 @@ class StokesPass
                         }
 
                         // add to matrix
-                        localMmatrixElement.add( i, j, M_i_j );
+                        localMInversMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
                         Moutput = false;
                         Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
@@ -461,7 +459,7 @@ class StokesPass
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
                         if ( entityOutput && Woutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
-                        debugStream << "    = W =========================" << std::endl;
+                        debugStream << "    = W ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
@@ -514,7 +512,7 @@ class StokesPass
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
                         if ( entityOutput && Xoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
-                        debugStream << "    = mu X =====================" << std::endl;
+                        debugStream << "    = X ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
@@ -719,7 +717,6 @@ class StokesPass
                     }
                 } // done calculating E
 
-
                 // walk the neighbours
                 IntersectionIteratorType intItEnd = gridPart_.iend( entity );
                 for (   IntersectionIteratorType intIt = gridPart_.ibegin( entity );
@@ -737,11 +734,18 @@ class StokesPass
                     typedef typename IntersectionIteratorType::LocalGeometry
                         IntersectionGeometryType;
                     const IntersectionGeometryType& intersectionGeometryElement = intIt.intersectionSelfLocal();
+
                     // get intersection quadrature, seen from inside
                     FaceQuadratureType faceQuadratureElement(   gridPart_,
                                                                 intIt,
                                                                 ( 2 * sigmaSpaceOrder ) + 1,
                                                                 FaceQuadratureType::INSIDE );
+
+                    // get intersection geometry
+                    typedef typename IntersectionIteratorType::LocalGeometry
+                        IntersectionGeometryType;
+                    const IntersectionGeometryType& intersectionGeoemtry = intIt.intersectionSelfLocal();
+
                     // if we are inside the grid
                     if ( intIt.neighbor() && !intIt.boundary() ) {
                         // get neighbour
@@ -749,7 +753,7 @@ class StokesPass
                         const EntityType& neighbour = *neighbourPtr;
 
                         // local matrices for the surface integral
-                        LocalMmatrixType localMmatrixNeighbour = Mmatrix.localMatrix( entity, neighbour );
+                        LocalMInversMatrixType localMInversMatrixNeighbour = MInversMatrix.localMatrix( entity, neighbour );
                         LocalWmatrixType localWmatrixNeighbour = Wmatrix.localMatrix( entity, neighbour );
                         LocalXmatrixType localXmatrixNeighbour = Xmatrix.localMatrix( entity, neighbour );
                         LocalYmatrixType localYmatrixNeighbour = Ymatrix.localMatrix( entity, neighbour );
@@ -773,11 +777,220 @@ class StokesPass
 
                         // compute the surface integrals
 
+                        //                                                                                                               // we will call this one
+                        // (W)_{i,j} += -\int_{\varepsilon\in \Epsilon_{I}^{T}}\hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // element integral
+                        //           += -\int_{\varepsilon\in \Epsilon_{I}^{T}}\hat{u}_{\sigma}^{U^{-}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // neighbour integral
+                        for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
+                            // compute the element integral
+                            for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+                                double W_i_j = 0.0;
+#ifndef NLOG
+//                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
+                                if ( intersectionOutput && Woutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                                debugStream << "      = W element ======================" << std::endl;
+                                debugStream << "      basefunctions " << i << " " << j << std::endl;
+                                debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+#endif
+                                // sum over all quadrature points
+                                for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+                                    // get x
+                                    ElementCoordinateType x = faceQuadratureElement.point( quad );
+                                    LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
+                                    // get the integration factor
+                                    double elementVolume = intersectionGeoemtry.integrationElement( localX );
+                                    // get the quadrature weight
+                                    double integrationWeight = faceQuadratureElement.weight( quad );
+                                    // calculate \hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{j}\cdot n_{T}
+                                    SigmaRangeType tau_i( 0.0 );
+                                    VelocityRangeType v_j( 0.0 );
+                                    VelocityRangeType u_sigma_u_plus_flux( 0.0 );
+                                    VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                    sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
+                                    velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+                                    discreteModel_.velocitySigmaFlux(   intIt,
+                                                                        0.0,
+                                                                        localX,
+                                                                        DiscreteModelType::inside,
+                                                                        v_j,
+                                                                        u_sigma_u_plus_flux );
+                                    VelocityRangeType tau_i_times_n_t( 0.0 );
+                                    tau_i.mv( outerNormal, tau_i_times_n_t );
+                                    const double flux_times_tau_i_times_n_t = u_sigma_u_plus_flux * tau_i_times_n_t;
+                                    W_i_j += -1.0 *
+                                                elementVolume *
+                                                integrationWeight *
+                                                flux_times_tau_i_times_n_t;
+#ifndef NLOG
+                                    debugStream << "      - quadPoint " << quad;
+                                    Stuff::printFieldVector( x, "x", debugStream, "        " );
+                                    Stuff::printFieldVector( localX, "localX", debugStream, "          " );
+                                    Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
+                                    debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
+                                    debugStream << "      - integrationWeight: " << integrationWeight;
+                                    Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "        " );
+                                    Stuff::printFieldVector( v_j, "v_j", debugStream, "        " );
+                                    Stuff::printFieldVector( u_sigma_u_plus_flux, "u_sigma_u_plus_flux", debugStream, "        " );
+                                    Stuff::printFieldVector( tau_i_times_n_t, "tau_i_times_n_t", debugStream, "        " );
+                                    debugStream << "\n        - flux_times_tau_i_times_n_t: " << flux_times_tau_i_times_n_t << std::endl;
+                                    debugStream << "        - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
+#endif
+                                } // done sum over all quadrature points
+                                // if small, should be zero
+                                if ( fabs( W_i_j ) < eps ) {
+                                    W_i_j = 0.0;
+                                }
+                                // add to matrix
+                                localWmatrixElement.add( i, j, W_i_j );
+#ifndef NLOG
+                                Woutput = false;
+                                Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+#endif
+                            } // done with the element Integral
+                            // compute the neighbour integral
+                            for ( int j = 0; j < numVelocityBaseFunctionsNeighbour; ++j ) {
+                                double W_i_j = 0.0;
+#ifndef NLOG
+//                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
+                                if ( intersectionOutput && Woutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                                debugStream << "      = W neighbour ====================" << std::endl;
+                                debugStream << "      basefunctions " << i << " " << j << std::endl;
+                                debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+#endif
+                                // sum over all quadrature points
+                                for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
+                                    // get x
+                                    ElementCoordinateType x = faceQuadratureNeighbour.point( quad );
+                                    LocalIntersectionCoordinateType localX = faceQuadratureNeighbour.localPoint( quad );
+                                    // get the integration factor
+                                    double elementVolume = intersectionGeoemtry.integrationElement( localX );
+                                    // get the quadrature weight
+                                    double integrationWeight = faceQuadratureNeighbour.weight( quad );
+                                    // calculate \hat{u}_{\sigma}^{U^{-}}(v_{j})\cdot\tau_{j}\cdot n_{T}
+                                    SigmaRangeType tau_i( 0.0 );
+                                    VelocityRangeType v_j( 0.0 );
+                                    VelocityRangeType u_sigma_u_plus_flux( 0.0 );
+                                    VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                    sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
+                                    velocityBaseFunctionSetNeighbour.evaluate( j, x, v_j );
+                                    discreteModel_.velocitySigmaFlux(   intIt,
+                                                                        0.0,
+                                                                        localX,
+                                                                        DiscreteModelType::outside,
+                                                                        v_j,
+                                                                        u_sigma_u_plus_flux );
+                                    VelocityRangeType tau_i_times_n_t( 0.0 );
+                                    tau_i.mv( outerNormal, tau_i_times_n_t );
+                                    const double flux_times_tau_i_times_n_t = u_sigma_u_plus_flux * tau_i_times_n_t;
+                                    W_i_j += -1.0 *
+                                                elementVolume *
+                                                integrationWeight *
+                                                flux_times_tau_i_times_n_t;
+#ifndef NLOG
+                                    debugStream << "      - quadPoint " << quad;
+                                    Stuff::printFieldVector( x, "x", debugStream, "        " );
+                                    Stuff::printFieldVector( localX, "localX", debugStream, "          " );
+                                    Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
+                                    debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
+                                    debugStream << "      - integrationWeight: " << integrationWeight;
+                                    Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "        " );
+                                    Stuff::printFieldVector( v_j, "v_j", debugStream, "        " );
+                                    Stuff::printFieldVector( u_sigma_u_plus_flux, "u_sigma_u_plus_flux", debugStream, "        " );
+                                    Stuff::printFieldVector( tau_i_times_n_t, "tau_i_times_n_t", debugStream, "        " );
+                                    debugStream << "\n        - flux_times_tau_i_times_n_t: " << flux_times_tau_i_times_n_t << std::endl;
+                                    debugStream << "        - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
+#endif
+                                } // done sum over all quadrature points
+                                // if small, should be zero
+                                if ( fabs( W_i_j ) < eps ) {
+                                    W_i_j = 0.0;
+                                }
+                                // add to matrix
+                                localWmatrixNeighbour.add( i, j, W_i_j );
+#ifndef NLOG
+                                Woutput = false;
+                                Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+#endif
+                            } // done with the neighbour integral
+                        } // done calculating W
+#ifndef NLOG
+                        ++numberOfInnerIntersections;
+#endif
                     } // done with those inside the grid
 
                     // if we are on the boundary of the grid
                     if ( !intIt.neighbor() && intIt.boundary() ) {
-                        ++numberOfInnerIntersections;
+                        // compute the surface integrals
+
+                        //                                                                                                               // we wil call this one
+                        // (W)_{i,j} += -\int_{\varepsilon\in \Epsilon_{D}^{T}}\hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // boundary integral
+                        for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
+                            for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+                                double W_i_j = 0.0;
+#ifndef NLOG
+                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
+                                if ( intersectionOutput && Woutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                                debugStream << "      = W boundary =====================" << std::endl;
+                                debugStream << "      basefunctions " << i << " " << j << std::endl;
+                                debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+#endif
+                                // sum over all quadrature points
+                                for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+                                    // get x
+                                    ElementCoordinateType x = faceQuadratureElement.point( quad );
+                                    LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
+                                    // get the integration factor
+                                    double elementVolume = intersectionGeoemtry.integrationElement( localX );
+                                    // get the quadrature weight
+                                    double integrationWeight = faceQuadratureElement.weight( quad );
+                                    // calculate \hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{j}\cdot n_{T}
+                                    SigmaRangeType tau_i( 0.0 );
+                                    VelocityRangeType v_j( 0.0 );
+                                    VelocityRangeType u_sigma_u_plus_flux( 0.0 );
+                                    VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                    sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
+                                    velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+                                    discreteModel_.velocitySigmaBoundaryFlux(   intIt,
+                                                                                0.0,
+                                                                                localX,
+                                                                                v_j,
+                                                                                u_sigma_u_plus_flux );
+                                    VelocityRangeType tau_i_times_n_t( 0.0 );
+                                    tau_i.mv( outerNormal, tau_i_times_n_t );
+                                    const double flux_times_tau_i_times_n_t = u_sigma_u_plus_flux * tau_i_times_n_t;
+                                    W_i_j += -1.0 *
+                                                elementVolume *
+                                                integrationWeight *
+                                                flux_times_tau_i_times_n_t;
+#ifndef NLOG
+                                    debugStream << "      - quadPoint " << quad;
+                                    Stuff::printFieldVector( x, "x", debugStream, "        " );
+                                    Stuff::printFieldVector( localX, "localX", debugStream, "          " );
+                                    Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
+                                    debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
+                                    debugStream << "      - integrationWeight: " << integrationWeight;
+                                    Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "        " );
+                                    Stuff::printFieldVector( v_j, "v_j", debugStream, "        " );
+                                    Stuff::printFieldVector( u_sigma_u_plus_flux, "u_sigma_u_plus_flux", debugStream, "        " );
+                                    Stuff::printFieldVector( tau_i_times_n_t, "tau_i_times_n_t", debugStream, "        " );
+                                    debugStream << "\n        - flux_times_tau_i_times_n_t: " << flux_times_tau_i_times_n_t << std::endl;
+                                    debugStream << "        - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
+#endif
+                                } // done sum over all quadrature points
+                                // if small, should be zero
+                                if ( fabs( W_i_j ) < eps ) {
+                                    W_i_j = 0.0;
+                                }
+                                // add to matrix
+                                localWmatrixElement.add( i, j, W_i_j );
+#ifndef NLOG
+                                Woutput = false;
+                                Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+#endif
+                            }
+                        } // done calculating W
+#ifndef NLOG
+                        ++numberOfBoundaryIntersections;
+#endif
                     } // done with those on the boundary
 #ifndef NLOG
                     if ( intersectionOutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
@@ -790,6 +1003,7 @@ class StokesPass
                 } // done walking the neighbours
 
 #ifndef NLOG
+                intersectionNR = 0;
                 if ( entityOutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
                 debugStream << "  - done calculations on entity" << std::endl;
                 debugStream << "    ===========================" << std::endl;
@@ -803,80 +1017,55 @@ class StokesPass
             Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
             debugStream << "  found " << entityNR << " entities," << std::endl;
             debugStream << "  found " << intersectionNR << " intersections," << std::endl;
-            debugStream << "        " << numberOfBoundaryIntersections << " intersections inside and" << std::endl;
-            debugStream << "        " << numberOfInnerIntersections << " intersections on the boundary." << std::endl;
+            debugStream << "        " << numberOfInnerIntersections << " intersections inside and" << std::endl;
+            debugStream << "        " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
             if ( Mprint || Wprint || Xprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
                 debugStream << "- printing matrices" << std::endl;
                 if ( Mprint ) {
                     debugStream << " - M ==============" << std::endl;
-                    Mmatrix.matrix().print( std::cout );
+                    debugStream.Log( &MInversMatrixType::MatrixType::print,  MInversMatrix.matrix() );
                 }
                 if ( Wprint ) {
                     debugStream << " - W ==============" << std::endl;
-                    Wmatrix.matrix().print( std::cout );
+                    debugStream.Log( &WmatrixType::MatrixType::print,  Wmatrix.matrix() );
                 }
                 if ( Xprint ) {
                     debugStream << " - X ==============" << std::endl;
-                    Xmatrix.matrix().print( std::cout );
+                    debugStream.Log( &XmatrixType::MatrixType::print,  Xmatrix.matrix() );
                 }
                 if ( Zprint ) {
                     debugStream << " - Z ==============" << std::endl;
-                    Zmatrix.matrix().print( std::cout );
+                    debugStream.Log( &ZmatrixType::MatrixType::print,  Zmatrix.matrix() );
                 }
                 if ( Eprint ) {
                     debugStream << " - E ==============" << std::endl;
-                    Ematrix.matrix().print( std::cout );
+                    debugStream.Log( &EmatrixType::MatrixType::print,  Ematrix.matrix() );
                 }
                 if ( Rprint ) {
                     debugStream << " - R ==============" << std::endl;
-                    Rmatrix.matrix().print( std::cout );
+                    debugStream.Log( &RmatrixType::MatrixType::print,  Rmatrix.matrix() );
                 }
                 if ( H1print ) {
                     debugStream << " - H1 =============" << std::endl;
-                    H1rhs.print( std::cout );
+                    debugStream.Log( &DiscreteSigmaFunctionType::print, H1rhs );
                 }
                 if ( H2print ) {
                     debugStream << " - H2 =============" << std::endl;
-                    H2rhs.print( std::cout );
+                    debugStream.Log( &DiscreteVelocityFunctionType::print, H2rhs );
                 }
                 if ( H3print ) {
                     debugStream << " - H3 =============" << std::endl;
-                    H3rhs.print( std::cout );
+                    debugStream.Log( &DiscretePressureFunctionType::print, H3rhs );
                 }
                 debugStream << "- done printing matrices" << std::endl;
             }
             Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // return to original state
 #endif
-//            infoStream << "- build global matrices - " << std::endl;
-//            typedef SparseRowMatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
-//                AmatrixType;
-//            AmatrixType Amatrix( velocitySpace_, velocitySpace_ );
-//            Amatrix.reserve();
-//
-//            XmatrixType neg_X_Minv_mat( velocitySpace_, sigmaSpace_ );
-//            neg_X_Minv_mat.reserve();
-//            Xmatrix.matrix().multiply( Mmatrix.matrix(), neg_X_Minv_mat.matrix() );
-//            infoStream << "-    1te feritg- " << std::endl;
-//            neg_X_Minv_mat.matrix().scale( -1 );
-//
-//            neg_X_Minv_mat.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
-//            Ymatrix.matrix().add( Amatrix.matrix() );
-////            Amatrix = Ymatrix;
-//
-//            Ematrix.matrix().scale( -1 );
-//            Rmatrix.matrix().scale( -1 );
-//
-//            RHSType Fmat ( velocitySpace_.size(), 1, 1 );
-//            neg_X_Minv_mat.matrix().scale ( mu );
-//            neg_X_Minv_mat.matrix().multiply( H1rhs, Fmat );
-////            H2rhs.add( Fmat );
-//            //Fmat = H2rhs;
-//
-//            H3rhs.scale( -1 );
-//            infoStream << "- build global matrices - done" << std::endl;
-//
+
 //            InvOpType op( *this, 1.0,1.0,1,1 );
-//            op.solve( arg, dest, Ymatrix, Zmatrix, Ematrix, Rmatrix, H2rhs, H3rhs );
+
+//            XmatrixType, MmatrixType, YmatrixType, EmatrixType, RmatrixType,
+//            op.solve( arg, dest, Xmatrix, Mmatrix, Ymatrix, Ematrix, Rmatrix, H2rhs, H3rhs );
 
 
         } // end of apply
@@ -971,9 +1160,6 @@ class StokesPass
                 ++i;
             }
         }
-
-
-
 
 };
 

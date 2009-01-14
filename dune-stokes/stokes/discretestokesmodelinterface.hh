@@ -200,6 +200,14 @@ class DiscreteStokesModelInterface
         {}
 
         /**
+         *  \todo   doc
+         **/
+        enum Side{
+            inside,
+            outside
+        };
+
+        /**
          *  \brief  Returns true if problem has a flux contribution of type
          *          \f$\hat{u}_{\sigma}\f$.
          *          Calls the implementation of the derived class.
@@ -299,28 +307,23 @@ class DiscreteStokesModelInterface
          *          \f$\hat{u}_{\sigma}^{RHS}\f$ (seen from the inside)
          *  \param[out]  rhsContribOuter
          *          \f$\hat{u}_{\sigma}^{RHS}\f$ (seen from the outside)
+         *  \todo   correct doc
          **/
         template < class FaceDomainType >
         void velocitySigmaFlux( const IntersectionIteratorType& it,
                                 const double time,
                                 const FaceDomainType& x,
-                                const VelocityRangeType& uInner,
-                                const VelocityRangeType& uOuter,
-                                VelocityRangeType& uContribInner,
-                                VelocityRangeType& uContribOuter,
-                                VelocityRangeType& rhsContribInner,
-                                VelocityRangeType& rhsContribOuter ) const
+                                const Side side,
+                                const VelocityRangeType& u,
+                                VelocityRangeType& uReturn) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
                 asImp().velocitySigmaFlux(  it,
                                             time,
                                             x,
-                                            uInner,
-                                            uOuter,
-                                            uContribInner,
-                                            uContribOuter,
-                                            rhsContribInner,
-                                            rhsContribOuter ) );
+                                            side,
+                                            u,
+                                            uReturn) );
         }
 
         /**
@@ -354,22 +357,33 @@ class DiscreteStokesModelInterface
          *          \f$\hat{u}_{\sigma}^{U}\f$
          *  \param[out]  rhsContribInner
          *          \f$\hat{u}_{\sigma}^{RHS}\f$
+         *  \todo   correct doc
          **/
         template < class FaceDomainType >
         void velocitySigmaBoundaryFlux( const IntersectionIteratorType& it,
                                         const double time,
                                         const FaceDomainType& x,
-                                        const VelocityRangeType& uInner,
-                                        VelocityRangeType& uContribInner,
-                                        VelocityRangeType& rhsContribInner ) const
+                                        const VelocityRangeType& u,
+                                        VelocityRangeType& uReturn ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
                 asImp().velocitySigmaBoundaryFlux(  it,
                                                     time,
                                                     x,
-                                                    uInner,
-                                                    uContribInner,
-                                                    rhsContribInner ) );
+                                                    u,
+                                                    uReturn ) );
+        }
+        template < class FaceDomainType >
+        void velocitySigmaBoundaryFlux( const IntersectionIteratorType& it,
+                                        const double time,
+                                        const FaceDomainType& x,
+                                        VelocityRangeType& rhsReturn ) const
+        {
+            CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
+                asImp().velocitySigmaBoundaryFlux(  it,
+                                                    time,
+                                                    x,
+                                                    rhsReturn ) );
         }
 
         /**
@@ -424,31 +438,17 @@ class DiscreteStokesModelInterface
         void velocityPressureFlux(  const IntersectionIteratorType& it,
                                     const double time,
                                     const FaceDomainType& x,
-                                    const VelocityRangeType& uInner,
-                                    const VelocityRangeType& uOuter,
-                                    const PressureRangeType& pInner,
-                                    const PressureRangeType& pOuter,
-                                    VelocityRangeType& uContribInner,
-                                    VelocityRangeType& uContribOuter,
-                                    VelocityRangeType& pContribInner,
-                                    VelocityRangeType& pContribOuter,
-                                    VelocityRangeType& rhsContribInner,
-                                    VelocityRangeType& rhsContribOuter ) const
+                                    const Side side,
+                                    const VelocityRangeType& u,
+                                    VelocityRangeType& uReturn ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
                 asImp().velocityPressureFlux(   it,
                                                 time,
                                                 x,
-                                                uInner,
-                                                uOuter,
-                                                pInner,
-                                                pOuter,
-                                                uContribInner,
-                                                uContribOuter,
-                                                pContribInner,
-                                                pContribOuter,
-                                                rhsContribInner,
-                                                rhsContribOuter) );
+                                                side,
+                                                u,
+                                                uReturn ) );
         }
 
         /**
@@ -1067,6 +1067,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         typedef typename BaseType::AnalyticalDirichletDataType
             AnalyticalDirichletDataType;
 
+        typedef enum BaseType::Side
+            Side;
+
         /**
          *  \brief  constructor
          *
@@ -1194,17 +1197,15 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *              \f$\hat{u}_{\sigma}^{RHS}\f$ (seen from the inside)
          *  \param[out] rhsContribOuter
          *              \f$\hat{u}_{\sigma}^{RHS}\f$ (seen from the outside)
+         *  \todo   correct doc
          **/
         template < class FaceDomainType >
         void velocitySigmaFlux( const IntersectionIteratorType& it,
                                 const double time,
                                 const FaceDomainType& x,
-                                const VelocityRangeType& uInner,
-                                const VelocityRangeType& uOuter,
-                                VelocityRangeType& uContribInner,
-                                VelocityRangeType& uContribOuter,
-                                VelocityRangeType& rhsContribInner,
-                                VelocityRangeType& rhsContribOuter ) const
+                                const Side side,
+                                const VelocityRangeType& u,
+                                VelocityRangeType& uReturn) const
         {
             // some preperations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
@@ -1212,24 +1213,26 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             innerNormal *= -1.0;
 
             // contribution to u vector ( from inside entity )
-            SigmaRangeType innerJump = uTypeMatrixJump( uInner,
-                                                        uOuter,
-                                                        outerNormal );
-            innerJump.mv( C_12_, uContribInner );
-            uContribInner += meanValue( uInner, uOuter );
+            // \hat{u}_{\sigma}^{U^{+}}(u^{+}) = 0.5 * u^{+} + (u^{+}\otimes n^{+})\cdot C_{12}
+            if ( side == BaseType::inside ) {
+                SigmaRangeType u_plus_tensor_n_plus = dyadicProduct( u, outerNormal );
+                VelocityRangeType u_plus_tensor_n_plus_times_c_12( 0.0 );
+                u_plus_tensor_n_plus.mv( C_12_, u_plus_tensor_n_plus_times_c_12 );
+                uReturn = u;
+                uReturn *= 0.5;
+                uReturn += u_plus_tensor_n_plus_times_c_12;
+            }
 
             // contribution to u vector ( from outside entity )
-            SigmaRangeType outerJump = uTypeMatrixJump( uOuter,
-                                                        uInner,
-                                                        innerNormal );
-            outerJump.mv( C_12_, uContribOuter );
-            uContribOuter += meanValue( uOuter, uInner );
-
-            // contribution to rhs ( from inside entity )
-            rhsContribInner = 0.0;
-
-            // contribution to rhs  ( from outside entity )
-            rhsContribOuter = 0.0;
+            // \hat{u}_{\sigma}^{U^{-}}(u^{-}) = 0.5 * u^{-} + (u^{-}\otimes n^{-})\cdot C_{12}
+            if ( side == BaseType::outside ) {
+                SigmaRangeType u_minus_tensor_n_minus = dyadicProduct( u, innerNormal );
+                VelocityRangeType u_minus_tensor_n_minus_times_c_12( 0.0 );
+                u_minus_tensor_n_minus.mv( C_12_, u_minus_tensor_n_minus_times_c_12 );
+                uReturn = u;
+                uReturn *= 0.5;
+                uReturn += u_minus_tensor_n_minus_times_c_12;
+            }
         }
 
         /**
@@ -1261,19 +1264,30 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         void velocitySigmaBoundaryFlux( const IntersectionIteratorType& it,
                                         const double time,
                                         const FaceDomainType& x,
-                                        const VelocityRangeType& uInner,
-                                        VelocityRangeType& uContribInner,
-                                        VelocityRangeType& rhsContribInner ) const
+                                        const VelocityRangeType& u,
+                                        VelocityRangeType& uReturn ) const
         {
-            // some preperations
+            // some preparations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType global = it->intersectionSelfLocal().global( x );
 
             // contribution to u vector ( from inside entity )
-            uContribInner = 0.0;
+                uReturn = 0.0;
+        }
+
+        template < class FaceDomainType >
+        void velocitySigmaBoundaryFlux( const IntersectionIteratorType& it,
+                                        const double time,
+                                        const FaceDomainType& x,
+                                        VelocityRangeType& rhsReturn ) const
+        {
+            // some preparations
+            VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            VelocityRangeType global = it->intersectionSelfLocal().global( x );
 
             // contribution to rhs ( from inside entity )
-            dirichletData_.evaluate( global,  rhsContribInner );
+            rhsReturn = 0.0;
+            dirichletData_.evaluate( global,  rhsReturn );
         }
 
         /**
