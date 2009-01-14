@@ -658,7 +658,7 @@ class StokesPass
                         H2_j = 0.0;
                     }
                     // add to matrix
-                    LocalH2rhs[ velocitySpace_.mapToGlobal( entity, j ) ] = H2_j;
+                    LocalH2rhs[ j ] = H2_j;
 #ifndef NLOG
                     H2output = false;
                     Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
