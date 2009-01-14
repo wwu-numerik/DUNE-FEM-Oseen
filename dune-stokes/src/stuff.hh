@@ -120,6 +120,25 @@ void printFieldMatrix( T& arg, std::string name, stream& out, std::string prefix
     }
 }
 
+template < class Matrix, class Function >
+void DiagonalMult( const Matrix& matrix, Function& f )
+{
+    Function diag( "temp", f.space() );
+    matrix.getDiag( diag );
+
+    typedef typename Function::DofIteratorType DofIteratorType;
+    DofIteratorType diag_it = diag.dbegin();
+    DofIteratorType f_it = f.dbegin();
+
+    for(int row=0; row< matrix.size(0); row++)
+    {
+        (*f_it) *= (*diag_it);
+        ++f_it;
+        ++diag_it;
+    }
+    return;
+}
+
 } // end namepspace stuff
 
 

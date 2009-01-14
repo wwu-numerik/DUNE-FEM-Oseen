@@ -28,7 +28,7 @@ class InnerCG {
         const BMatType& b_mat_;
         const AMatType& a_mat_;
         const B_t_MatType& b_t_mat_;
-        const CMatType& c_mat )_;
+        const CMatType& c_mat_;
 
 };
 

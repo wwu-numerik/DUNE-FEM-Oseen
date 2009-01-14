@@ -18,8 +18,10 @@
 #endif
 
 #include <dune/fem/solver/oemsolver.hh>
+#include <dune/stokes/innercg.hh>
 
 #include "../src/logging.hh"
+#include "../src/stuff.hh" //DiagonalMult
 
 namespace Dune {
   //!CG Verfahren fuer Sattelpunkt Problem
@@ -82,21 +84,25 @@ namespace Dune {
 
     /** takes raw matrices from pass
     */
-    template <  class XmatrixType,
-                class MmatrixType,
-                class YmatrixType,
-                class EmatrixType,
-                class RmatrixType,
+    template <  class XmatrixObjectType,
+                class MmatrixObjectType,
+                class YmatrixObjectType,
+                class EmatrixObjectType,
+                class RmatrixObjectType,
+                class ZmatrixObjectType,
+                class WmatrixObjectType,
                 class DiscreteSigmaFunctionType,
                 class DiscreteVelocityFunctionType,
                 class DiscretePressureFunctionType  >
     void solve( const DomainType& arg,
                 RangeType& dest,
-                XmatrixType& Xmatrix,
-                MmatrixType& Mmatrix,
-                YmatrixType& Ymatrix,
-                EmatrixType& Ematrix,
-                RmatrixType& Rmatrix,
+                XmatrixObjectType& Xmatrix,
+                MmatrixObjectType& Mmatrix,
+                YmatrixObjectType& Ymatrix,
+                EmatrixObjectType& Ematrix,
+                RmatrixObjectType& Rmatrix,
+                ZmatrixObjectType& Zmatrix,
+                WmatrixObjectType& Wmatrix,
                 DiscreteSigmaFunctionType& rhs1,
                 DiscreteVelocityFunctionType& rhs2,
                 DiscretePressureFunctionType& rhs3 ) const
@@ -105,6 +111,48 @@ namespace Dune {
         Logging::LogStream& logError = Logger().Err();
         Logging::LogStream& logInfo = Logger().Info();
         logInfo << "Begin SaddlePointInverseOperator " << std::endl;
+
+        //get some refs for more readability
+        PressureDiscreteFunctionType& pressure = dest.discretePressure();
+        VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
+
+        typedef typename  XmatrixObjectType::MatrixType
+            XmatrixType;
+        typedef typename  MmatrixObjectType::MatrixType
+            MmatrixType;
+        typedef typename  YmatrixObjectType::MatrixType
+            YmatrixType;
+        typedef typename  EmatrixObjectType::MatrixType
+            B_t_matrixType;                             //! renamed
+        typedef typename  RmatrixObjectType::MatrixType
+            CmatrixType;                                //! renamed
+        typedef typename  ZmatrixObjectType::MatrixType
+            BmatrixType;                                //! renamed
+        typedef typename  WmatrixObjectType::MatrixType
+            WmatrixType;
+
+        XmatrixType& x_mat      = Xmatrix.matrix();
+        MmatrixType& m_inv_mat  = Mmatrix.matrix();
+        YmatrixType& y_mat      = Ymatrix.matrix();
+        B_t_matrixType& b_t_mat = Ematrix.matrix(); //! renamed
+        CmatrixType& c_mat      = Rmatrix.matrix(); //! renamed
+        BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
+        WmatrixType& w_mat      = Wmatrix.matrix();
+
+        b_t_mat.scale( -1 ); //since B_t = -E
+        c_mat.scale( -1 ); //since C = -R
+
+        DiscretePressureFunctionType& g_func = rhs3;
+        g_func *= ( -1 ); //since G = -H_3
+
+        Stuff::DiagonalMult( m_inv_mat, rhs1 ); //calc m_inv * H_1 "in-place"
+        DiscreteVelocityFunctionType f_func( "f_func", velocity.space() );
+        f_func.clear();
+        x_mat.apply( rhs1, f_func );
+        f_func += rhs2;
+
+
+
 //
 //        logInfo << "- build global matrices - " << std::endl;
 //        typedef SparseRowMatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
@@ -122,8 +170,6 @@ namespace Dune {
 //        Ymatrix.matrix().add( Amatrix.matrix() );
 ////            Amatrix = Ymatrix;
 //
-//        Ematrix.matrix().scale( -1 );
-//        Rmatrix.matrix().scale( -1 );
 //
 //        RHSType Fmat ( velocitySpace_.size(), 1, 1 );
 //        neg_X_Minv_mat.matrix().scale ( mu );
@@ -135,15 +181,14 @@ namespace Dune {
 //        logInfo << "- build global matrices - done" << std::endl;
 
 
-        //get some refs for more readability
-        PressureDiscreteFunctionType& pressure = dest.discretePressure();
-        VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
+
 
 
         //schurkomplement Operator ist: B2 * A_inv * B1 + C
 
         //schritt 1
         //löse S * u_0 = F - B1 * p_0
+      //  typedef InnerCG<
 
         //schritt 2
         //setzte:

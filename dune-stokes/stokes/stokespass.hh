@@ -934,7 +934,7 @@ class StokesPass
 #endif
 
             InvOpType op( *this, 1.0,1.0,1,1 );
-            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, H1rhs, H2rhs, H3rhs );
+            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 
 
         } // end of apply
