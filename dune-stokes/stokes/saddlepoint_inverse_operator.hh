@@ -18,7 +18,7 @@
 #endif
 
 #include <dune/fem/solver/oemsolver.hh>
-#include <dune/stokes/innercg.hh>
+#include <dune/stokes/cghelper.hh>
 
 #include "../src/logging.hh"
 #include "../src/stuff.hh" //DiagonalMult
@@ -152,6 +152,18 @@ namespace Dune {
         f_func += rhs2;
 
 
+        typedef SchurkomplementSolver<  XmatrixType,
+                                        MmatrixType,
+                                        YmatrixType,
+                                        B_t_matrixType,
+                                        CmatrixType,
+                                        BmatrixType,
+                                        WmatrixType,
+                                        DiscreteVelocityFunctionType,
+                                        DiscretePressureFunctionType >
+                SkSolver;
+
+        SkSolver( x_mat, m_inv_mat, y_mat, b_t_mat, c_mat, b_mat, w_mat, f_func, g_func );
 
 //
 //        logInfo << "- build global matrices - " << std::endl;

@@ -135,9 +135,9 @@
 		<Unit filename="../src/profiler.hh" />
 		<Unit filename="../src/stuff.hh" />
 		<Unit filename="../src/velocity.hh" />
+		<Unit filename="../stokes/cghelper.hh" />
 		<Unit filename="../stokes/discretestokesfunctionspacewrapper.hh" />
 		<Unit filename="../stokes/discretestokesmodelinterface.hh" />
-		<Unit filename="../stokes/innercg.hh" />
 		<Unit filename="../stokes/saddlepoint_inverse_operator.hh" />
 		<Unit filename="../stokes/stokespass.hh" />
 		<Extensions>
