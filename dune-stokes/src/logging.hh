@@ -34,6 +34,7 @@ class Logging
             protected:
                 LogFlags loglevel_;
                 int& logflags_;
+                int suspended_logflags_;
                 std::stringstream buffer_;
                 std::ofstream& logfile_;
                 std::ofstream& logfileWoTime_;
@@ -50,6 +51,17 @@ class Logging
                     if ( logflags_ & loglevel_ )
                         buffer_ << in;
                     return *this;
+                }
+
+                void Suspend()
+                {
+                    suspended_logflags_ = logflags_;
+                    logflags_ = 1;
+                }
+
+                void Resume()
+                {
+                    logflags_ = suspended_logflags_;
                 }
 
                 //template < class Class >
