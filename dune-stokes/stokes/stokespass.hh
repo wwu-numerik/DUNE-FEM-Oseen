@@ -425,12 +425,12 @@ class StokesPass
 #ifndef NLOG
                             debugStream << "    - quadPoint " << quad;
                             Stuff::printFieldVector( x, "x", debugStream, "      " );
-                            debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
-                            debugStream << "      - integrationWeight: " << integrationWeight;
+                            debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
+                            debugStream << "        - integrationWeight: " << integrationWeight;
                             Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "      " );
                             Stuff::printFieldMatrix( tau_j, "tau_j", debugStream, "      " );
-                            debugStream << "\n      - tau_j_times_tau_i: " << tau_j_times_tau_i << std::endl;
-                            debugStream << "      - M_" << i << "_" << j << "+=: " << M_i_j << std::endl;
+                            debugStream << "\n        - tau_j_times_tau_i: " << tau_j_times_tau_i << std::endl;
+                            debugStream << "        - M_" << i << "_" << j << "+=: " << M_i_j << std::endl;
 #endif
                         } // done sum over quadrature points
 
@@ -484,12 +484,12 @@ class StokesPass
 #ifndef NLOG
                             debugStream << "    - quadPoint " << quad;
                             Stuff::printFieldVector( x, "x", debugStream, "      " );
-                            debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
-                            debugStream << "      - integrationWeight: " << integrationWeight;
+                            debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
+                            debugStream << "        - integrationWeight: " << integrationWeight;
                             Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "      " );
                             Stuff::printFieldVector( v_j, "v_j", debugStream, "      " );
-                            debugStream << "\n      - v_j_times_divergence_of_tau_i: " << v_j_times_divergence_of_tau_i << std::endl;
-                            debugStream << "      - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
+                            debugStream << "\n        - v_j_times_divergence_of_tau_i: " << v_j_times_divergence_of_tau_i << std::endl;
+                            debugStream << "        - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
 #endif
                         } // done sum over quadrature points
                         // if small, should be zero
@@ -538,12 +538,12 @@ class StokesPass
 #ifndef NLOG
                             debugStream << "    - quadPoint " << quad;
                             Stuff::printFieldVector( x, "x", debugStream, "      " );
-                            debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
-                            debugStream << "      - integrationWeight: " << integrationWeight;
+                            debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
+                            debugStream << "        - integrationWeight: " << integrationWeight;
                             Stuff::printFieldVector( gradient_of_v_i, "gradient of v_i", debugStream, "      " );
                             Stuff::printFieldMatrix( tau_j, "tau_j", debugStream, "      " );
-                            debugStream << "\n      - colonProduct( tau_j, grad v_i ): " << tau_j_times_gradient_v_i << std::endl;
-                            debugStream << "      - X_" << i << "_" << j << "+=: " << X_i_j << std::endl;
+                            debugStream << "\n        - colonProduct( tau_j, grad v_i ): " << tau_j_times_gradient_v_i << std::endl;
+                            debugStream << "        - X_" << i << "_" << j << "+=: " << X_i_j << std::endl;
 #endif
                         } // done sum over quadrature points
                         // if small, should be zero
@@ -592,12 +592,12 @@ class StokesPass
 #ifndef NLOG
                             debugStream << "    - quadPoint " << quad;
                             Stuff::printFieldVector( x, "x", debugStream, "      " );
-                            debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
-                            debugStream << "      - integrationWeight: " << integrationWeight;
+                            debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
+                            debugStream << "        - integrationWeight: " << integrationWeight;
                             Stuff::printFieldMatrix( gradient_of_v_i, "gradient_of_v_i", debugStream, "      " );
                             Stuff::printFieldVector( q_j, "q_j", debugStream, "      " );
-                            debugStream << "\n      - q_j_times_divergence_of_v_i: " << q_j_times_divergence_of_v_i << std::endl;
-                            debugStream << "      - Z_" << i << "_" << j << "+=: " << Z_i_j << std::endl;
+                            debugStream << "\n        - q_j_times_divergence_of_v_i: " << q_j_times_divergence_of_v_i << std::endl;
+                            debugStream << "        - Z_" << i << "_" << j << "+=: " << Z_i_j << std::endl;
 #endif
                         } // done sum over all quadrature points
                         // if small, should be zero
@@ -643,12 +643,12 @@ class StokesPass
 #ifndef NLOG
                         debugStream << "    - quadPoint " << quad;
                         Stuff::printFieldVector( x, "x", debugStream, "      " );
-                        debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
-                        debugStream << "      - integrationWeight: " << integrationWeight;
+                        debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
+                        debugStream << "        - integrationWeight: " << integrationWeight;
                         Stuff::printFieldVector( f, "f", debugStream, "      " );
                         Stuff::printFieldVector( v_j, "v_j", debugStream, "      " );
-                        debugStream << "\n      - f_times_v_j: " << f_times_v_j << std::endl;
-                        debugStream << "      - H2_" << j << "+=: " << H2_j << std::endl;
+                        debugStream << "\n        - f_times_v_j: " << f_times_v_j << std::endl;
+                        debugStream << "        - H2_" << j << "+=: " << H2_j << std::endl;
 #endif
                     } // done sum over all quadrature points
                     // if small, should be zero
@@ -656,7 +656,7 @@ class StokesPass
                         H2_j = 0.0;
                     }
                     // add to matrix
-                    LocalH2rhs[ j ] = H2_j;
+                    LocalH2rhs[ j ] += H2_j;
 #ifndef NLOG
                     H2output = false;
                     Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
@@ -696,12 +696,12 @@ class StokesPass
 #ifndef NLOG
                             debugStream << "    - quadPoint " << quad;
                             Stuff::printFieldVector( x, "x", debugStream, "      " );
-                            debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
-                            debugStream << "      - integrationWeight: " << integrationWeight;
+                            debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
+                            debugStream << "        - integrationWeight: " << integrationWeight;
                             Stuff::printFieldVector( gradient_of_q_i, "gradient_of_q_i", debugStream, "      " );
                             Stuff::printFieldVector( v_j, "v_j", debugStream, "      " );
-                            debugStream << "\n      - v_j_times_gradient_of_q_i: " << v_j_times_gradient_of_q_i << std::endl;
-                            debugStream << "      - E_" << i << "_" << j << "+=: " << E_i_j << std::endl;
+                            debugStream << "\n        - v_j_times_gradient_of_q_i: " << v_j_times_gradient_of_q_i << std::endl;
+                            debugStream << "        - E_" << i << "_" << j << "+=: " << E_i_j << std::endl;
 #endif
                         } // done sum over all quadrature points
                         // if small, should be zero
@@ -825,14 +825,14 @@ class StokesPass
                                     Stuff::printFieldVector( x, "x", debugStream, "        " );
                                     Stuff::printFieldVector( localX, "localX", debugStream, "          " );
                                     Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                    debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
-                                    debugStream << "      - integrationWeight: " << integrationWeight;
+                                    debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
+                                    debugStream << "        - integrationWeight: " << integrationWeight;
                                     Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "        " );
                                     Stuff::printFieldVector( v_j, "v_j", debugStream, "        " );
                                     Stuff::printFieldVector( u_sigma_u_plus_flux, "u_sigma_u_plus_flux", debugStream, "        " );
                                     Stuff::printFieldVector( tau_i_times_n_t, "tau_i_times_n_t", debugStream, "        " );
-                                    debugStream << "\n        - flux_times_tau_i_times_n_t: " << flux_times_tau_i_times_n_t << std::endl;
-                                    debugStream << "        - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
+                                    debugStream << "\n          - flux_times_tau_i_times_n_t: " << flux_times_tau_i_times_n_t << std::endl;
+                                    debugStream << "          - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
 #endif
                                 } // done sum over all quadrature points
                                 // if small, should be zero
@@ -890,14 +890,14 @@ class StokesPass
                                     Stuff::printFieldVector( x, "x", debugStream, "        " );
                                     Stuff::printFieldVector( localX, "localX", debugStream, "          " );
                                     Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                    debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
-                                    debugStream << "      - integrationWeight: " << integrationWeight;
+                                    debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
+                                    debugStream << "        - integrationWeight: " << integrationWeight;
                                     Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "        " );
                                     Stuff::printFieldVector( v_j, "v_j", debugStream, "        " );
                                     Stuff::printFieldVector( u_sigma_u_plus_flux, "u_sigma_u_plus_flux", debugStream, "        " );
                                     Stuff::printFieldVector( tau_i_times_n_t, "tau_i_times_n_t", debugStream, "        " );
-                                    debugStream << "\n        - flux_times_tau_i_times_n_t: " << flux_times_tau_i_times_n_t << std::endl;
-                                    debugStream << "        - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
+                                    debugStream << "\n          - flux_times_tau_i_times_n_t: " << flux_times_tau_i_times_n_t << std::endl;
+                                    debugStream << "          - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
 #endif
                                 } // done sum over all quadrature points
                                 // if small, should be zero
@@ -966,14 +966,14 @@ class StokesPass
                                     Stuff::printFieldVector( x, "x", debugStream, "        " );
                                     Stuff::printFieldVector( localX, "localX", debugStream, "          " );
                                     Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                    debugStream << "\n      - elementVolume: " << elementVolume << std::endl;
-                                    debugStream << "      - integrationWeight: " << integrationWeight;
+                                    debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
+                                    debugStream << "        - integrationWeight: " << integrationWeight;
                                     Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "        " );
                                     Stuff::printFieldVector( v_j, "v_j", debugStream, "        " );
                                     Stuff::printFieldVector( u_sigma_u_plus_flux, "u_sigma_u_plus_flux", debugStream, "        " );
                                     Stuff::printFieldVector( tau_i_times_n_t, "tau_i_times_n_t", debugStream, "        " );
-                                    debugStream << "\n        - flux_times_tau_i_times_n_t: " << flux_times_tau_i_times_n_t << std::endl;
-                                    debugStream << "        - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
+                                    debugStream << "\n          - flux_times_tau_i_times_n_t: " << flux_times_tau_i_times_n_t << std::endl;
+                                    debugStream << "          - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
 #endif
                                 } // done sum over all quadrature points
                                 // if small, should be zero
