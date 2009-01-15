@@ -1343,6 +1343,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             uReturn = 0.0;
         }
 
+        /**
+         *  \todo   doc
+         **/
         template < class FaceDomainType >
         void velocitySigmaBoundaryFlux( const IntersectionIteratorType& it,
                                         const double time,
@@ -1432,6 +1435,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             }
         }
 
+        /**
+         *  \todo   doc
+         **/
         template < class FaceDomainType >
         void velocityPressureFlux(  const IntersectionIteratorType& it,
                                     const double time,
@@ -1502,6 +1508,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             uReturn = 0.0;
         }
 
+        /**
+         *  \todo   doc
+         **/
         template < class FaceDomainType >
         void velocityPressureBoundaryFlux(
                                     const IntersectionIteratorType& it,
@@ -1514,6 +1523,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             pReturn = 0.0;
         }
 
+        /**
+         *  \todo   doc
+         **/
         template < class FaceDomainType >
         void velocityPressureBoundaryFlux(
                                     const IntersectionIteratorType& it,
@@ -1625,6 +1637,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             pReturn = p;
         }
 
+        /**
+         *  \todo   doc
+         **/
         template < class FaceDomainType >
         void pressureBoundaryFlux(  const IntersectionIteratorType& it,
                                     const double time,
@@ -1703,6 +1718,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             }
         }
 
+        /**
+         *  \todo   doc
+         **/
         template < class FaceDomainType >
         void sigmaFlux( const IntersectionIteratorType& it,
                         const double time,
@@ -1785,6 +1803,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             uReturn *= ( -1.0 * C_11_ );
         }
 
+        /**
+         *  \todo   doc
+         **/
         template < class FaceDomainType >
         void sigmaBoundaryFlux( const IntersectionIteratorType& it,
                                 const double time,
@@ -1796,6 +1817,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             sigmaReturn = sigma;
         }
 
+        /**
+         *  \todo   doc
+         **/
         template < class FaceDomainType >
         void sigmaBoundaryFlux( const IntersectionIteratorType& it,
                                 const double time,

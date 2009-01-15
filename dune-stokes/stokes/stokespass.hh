@@ -655,7 +655,7 @@ class StokesPass
                     if ( fabs( H2_j ) < eps ) {
                         H2_j = 0.0;
                     }
-                    // add to matrix
+                    // add to functions
                     LocalH2rhs[ j ] += H2_j;
 #ifndef NLOG
                     H2output = false;
@@ -988,6 +988,49 @@ class StokesPass
 #endif
                             }
                         } // done calculating W
+
+                        //                                                                                                    // we will call this one
+                        // (H1)_{j} = \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{u}_{\sigma}^{RHS}()\cdot\tau_{j}\cdot n_{T}ds // boundary integral
+                        for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
+                            double H1_j = 0.0;
+#ifndef NLOG
+                            if ( j == logBaseJ ) H1output = true;
+                            if ( intersectionOutput && H1output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                            debugStream << "      = H1 boundary ====================" << std::endl;
+                            debugStream << "      basefunction " << j << std::endl;
+                            debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+#endif
+                            // sum over all quadrature points
+                            for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+                                // get x
+                                ElementCoordinateType x = faceQuadratureElement.point( quad );
+                                LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
+                                // get the integration factor
+                                double elementVolume = intersectionGeoemtry.integrationElement( localX );
+                                // get the quadrature weight
+                                double integrationWeight = faceQuadratureElement.weight( quad );
+                                // calculate \hat{u}_{\sigma}^{RHS}()\cdot\tau_{j}\cdot n_{T}
+                                SigmaRangeType tau_j( 0.0 );
+                                sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
+                                const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                VelocityRangeType tau_j_times_n_t( 0.0 );
+                                tau_j.mv( outerNormal, tau_j_times_n_t );
+                                VelocityRangeType u_sigma_rhs_flux( 0.0 );
+                                discreteModel_. velocitySigmaBoundaryFlux(  intIt,
+                                                                            0.0,
+
+                            } // done sum over all quadrature points
+                            // if small, should be zero
+                            if ( fabs( W_i_j ) < eps ) {
+                                H1_j = 0.0;
+                            }
+                            // add to matrix
+                            LocalH1rhs[ j ] = H1_j;
+#ifndef NLOG
+                            H1output = false;
+                            Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+#endif
+                        } // done calculating H1
 #ifndef NLOG
                         ++numberOfBoundaryIntersections;
 #endif
