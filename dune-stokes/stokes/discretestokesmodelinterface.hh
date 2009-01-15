@@ -1685,10 +1685,12 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                         const VelocityRangeType& u,
                         SigmaRangeType& uReturn ) const
         {
-            // some preperations
-            VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            // some preparations
+            const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             // contribution to u vector ( from inside entity )
             if ( side == BaseType::inside ) {
+                uReturn = dyadicProduct( u, outerNormal );
+                uReturn *= ( -1.0 * C_11_ );
             }
             // contribution to u vector ( from outside entity )
             if ( side == BaseType::outside ) {
@@ -1696,6 +1698,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 VelocityRangeType innerNormal = outerNormal;
                 innerNormal *= -1.0;
                 // calculations
+                uReturn = dyadicProduct( u, innerNormal );
+                uReturn *= ( -1.0 * C_11_ );
             }
         }
 
@@ -1707,65 +1711,35 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                         const SigmaRangeType& sigma,
                         SigmaRangeType& sigmaReturn ) const
         {
-            // some preperations
-            VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            // some preparations
+            const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             // contribution to sigma vector ( from inside entity )
             if ( side == BaseType::inside ) {
+                VelocityRangeType sigma_plus_times_n_plus( 0.0 );
+                sigma.mv( outerNormal, sigma_plus_times_n_plus );
+                const SigmaRangeType
+                    sigma_plus_times_n_plus_times_c_12 =
+                        dyadicProduct( sigma_plus_times_n_plus, C_12_ );
+                sigmaReturn = sigma;
+                sigmaReturn *= 0.5;
+                sigmaReturn += sigma_plus_times_n_plus_times_c_12;
             }
             // contribution to sigma vector ( from outside entity )
             if ( side == BaseType::outside ) {
-                // some preperations
+                // some preparations
                 VelocityRangeType innerNormal = outerNormal;
                 innerNormal *= -1.0;
                 // calculations
+                VelocityRangeType sigma_minus_times_n_minus( 0.0 );
+                sigma.mv( innerNormal, sigma_minus_times_n_minus );
+                const SigmaRangeType
+                    sigma_minus_times_n_minus_times_c_12 =
+                        dyadicProduct( sigma_minus_times_n_minus, C_12_ );
+                sigmaReturn = sigma;
+                sigmaReturn *= 0.5;
+                sigmaReturn += sigma_minus_times_n_minus_times_c_12;
             }
         }
-
-
-//        template < class FaceDomainType >
-//        void sigmaFlux( const IntersectionIteratorType& it,
-//                        const double time,
-//                        const FaceDomainType& x,
-//                        const VelocityRangeType& uInner,
-//                        const VelocityRangeType& uOuter,
-//                        const SigmaRangeType& sigmaInner,
-//                        const SigmaRangeType& sigmaOuter,
-//                        SigmaRangeType& sigmaContribInner,
-//                        SigmaRangeType& sigmaContribOuter,
-//                        SigmaRangeType& uContribInner,
-//                        SigmaRangeType& uContribOuter,
-//                        SigmaRangeType& rhsContribInner,
-//                        SigmaRangeType& rhsContribOuter ) const
-//        {
-//
-//
-//            sigmaContribInner = dyadicProduct(
-//                sigmaTypeJump(
-//                    sigmaInner, sigmaOuter, outerNormal ),
-//                C_12_ );
-//            sigmaContribInner += meanValue( sigmaInner, sigmaOuter );
-//
-//            // contribution to sigma vector ( from outside entity )
-//            sigmaContribInner = dyadicProduct(
-//                sigmaTypeJump(
-//                    sigmaOuter, sigmaInner, innerNormal ),
-//                C_12_ );
-//            sigmaContribInner += meanValue( sigmaOuter, sigmaInner );
-//
-//            // contribution to u vector ( from inside entity )
-//            uContribInner = uTypeMatrixJump( uInner, uOuter, outerNormal );
-//            uContribInner *= -1.0 * C_11_;
-//
-//            // contribution to u vector ( from outside entity )
-//            uContribInner = uTypeMatrixJump( uOuter, uInner, innerNormal );
-//            uContribInner *= -1.0 * C_11_;
-//
-//            // contribution to rhs ( from inside entity )
-//            rhsContribInner = 0.0;
-//
-//            // contribution to rhs ( from outside entity )
-//            rhsContribOuter = 0.0;
-//        }
 
         /**
          *  \brief  implementation of \f$\hat{\sigma}\f$
@@ -1804,6 +1778,11 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                 const VelocityRangeType& u,
                                 SigmaRangeType& uReturn ) const
         {
+            // some preparations
+            const VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            // contribution to u vector
+            uReturn = dyadicProduct( u, outerNormal );
+            uReturn *= ( -1.0 * C_11_ );
         }
 
         template < class FaceDomainType >
@@ -1813,6 +1792,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                 const SigmaRangeType& sigma,
                                 SigmaRangeType& sigmaReturn ) const
         {
+            // contribution to sigma vector
+            sigmaReturn = sigma;
         }
 
         template < class FaceDomainType >
@@ -1821,35 +1802,15 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                 const FaceDomainType& x,
                                 SigmaRangeType& rhsReturn ) const
         {
+            // some preparations
+            const VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            const VelocityRangeType global = it->intersectionSelfLocal().global( x );
+            // contribution to rhs
+            VelocityRangeType gD( 0.0 );
+            dirichletData_.evaluate( global, gD );
+            rhsReturn = dyadicProduct( gD, outerNormal );
+            rhsReturn *= C_11_;
         }
-
-//        template < class FaceDomainType >
-//        void sigmaBoundaryFlux( const IntersectionIteratorType& it,
-//                                const double time,
-//                                const FaceDomainType& x,
-//                                const VelocityRangeType& uInner,
-//                                const SigmaRangeType& sigmaInner,
-//                                SigmaRangeType& sigmaContribInner,
-//                                SigmaRangeType& uContribInner,
-//                                SigmaRangeType& rhsContribInner ) const
-//        {
-//            //some preperations
-//            VelocityRangeType outerNormal = it.unitOuterNormal( x );
-//            VelocityRangeType global = it->intersectionSelfLocal().global( x );
-//
-//            // contribution to sigma vector ( from inside entity )
-//            sigmaContribInner = sigmaInner;
-//
-//            // contribution to u vector ( from inside entity )
-//            uContribInner = dyadicProduct( uInner, outerNormal );
-//            uContribInner *= ( -1.0 * C_11_ );
-//
-//            // contribution to rhs ( from inside entity )
-//            VelocityRangeType gD( 0.0 );
-//            dirichletData_.evaluate( global, gD );
-//            rhsContribInner = dyadicProduct( gD, outerNormal );
-//            rhsContribInner *= C_11_;
-//        }
 
         /**
          *  \brief  implementation of \f$f\f$.
