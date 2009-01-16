@@ -35,6 +35,7 @@ class Logging
                 LogFlags loglevel_;
                 int& logflags_;
                 int suspended_logflags_;
+                bool suspended_;
                 std::stringstream buffer_;
                 std::ofstream& logfile_;
                 std::ofstream& logfileWoTime_;
@@ -42,7 +43,8 @@ class Logging
             public:
                 LogStream( LogFlags loglevel, int& logflags, std::ofstream& file, std::ofstream& fileWoTime )
                     : loglevel_(loglevel), logflags_(logflags),
-                      logfile_(file), logfileWoTime_( fileWoTime ) {}
+                    suspended_logflags_(logflags),
+                    logfile_(file), logfileWoTime_( fileWoTime ) {}
                 ~LogStream(){}
 
                 template < typename T >
@@ -61,6 +63,8 @@ class Logging
 
                 void Resume()
                 {
+                    //this can be safely called even if no previous suspend has been called
+                    //since suspended_logflags_ is initialized with logflags_  in ctor
                     logflags_ = suspended_logflags_;
                 }
 
