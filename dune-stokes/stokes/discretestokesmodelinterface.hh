@@ -1874,49 +1874,49 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         const AnalyticalForceType& force_;
         const AnalyticalDirichletDataType& dirichletData_;
 
-        /**
-         *  \brief  jump for pressure-type functions
-         *
-         *  \f$\left[\left[\p\right]\right]:=\left(p^{+} + p^{-}\right)n^{+}\in R^{d}\f$,
-         *  where \f$n^{+}\f4 is the unit outer normal,
-         *  \f$p^{+}\f$ is the value of p on the inside and
-         *  \f$p^{-}\f$ the value of p at the outside
-         *  \attention  assumption: \f$n_{inner}=-1*n_{outer}\f$
-         **/
-        template < class NormalType >
-        VelocityRangeType pTypeJump(    const PressureRangeType& pInner,
-                                        const PressureRangeType& pOuter,
-                                        const NormalType& outerNormal ) const
-        {
-            VelocityRangeType ret = outerNormal;
-            ret *= ( pInner - pOuter );
-            return ret;
-        }
+//        /**
+//         *  \brief  jump for pressure-type functions
+//         *
+//         *  \f$\left[\left[\p\right]\right]:=\left(p^{+} + p^{-}\right)n^{+}\in R^{d}\f$,
+//         *  where \f$n^{+}\f4 is the unit outer normal,
+//         *  \f$p^{+}\f$ is the value of p on the inside and
+//         *  \f$p^{-}\f$ the value of p at the outside
+//         *  \attention  assumption: \f$n_{inner}=-1*n_{outer}\f$
+//         **/
+//        template < class NormalType >
+//        VelocityRangeType pTypeJump(    const PressureRangeType& pInner,
+//                                        const PressureRangeType& pOuter,
+//                                        const NormalType& outerNormal ) const
+//        {
+//            VelocityRangeType ret = outerNormal;
+//            ret *= ( pInner - pOuter );
+//            return ret;
+//        }
 
-        /**
-         *  \brief  jump for velocity-type functions
-         *  \todo doc like pTypeJump
-         **/
-        double uTypeJump(   const VelocityRangeType& uInner,
-                            const VelocityRangeType& uOuter,
-                            const VelocityRangeType& outerNormal ) const
-        {
-            return ( uInner - uOuter ) * outerNormal;
-        }
+//        /**
+//         *  \brief  jump for velocity-type functions
+//         *  \todo doc like pTypeJump
+//         **/
+//        double uTypeJump(   const VelocityRangeType& uInner,
+//                            const VelocityRangeType& uOuter,
+//                            const VelocityRangeType& outerNormal ) const
+//        {
+//            return ( uInner - uOuter ) * outerNormal;
+//        }
 
-        /**
-         *  \brief  matrix valued jump for velocity-type functions
-         *  \todo   doc like pTypeJump
-         **/
-        SigmaRangeType uTypeMatrixJump( const VelocityRangeType& uInner,
-                                        const VelocityRangeType& uOuter,
-                                        const VelocityRangeType& outerNormal ) const
-        {
-            SigmaRangeType ret( 0.0 );
-            VelocityRangeType uDiff = uInner - uOuter;
-            ret = dyadicProduct( uDiff, outerNormal );
-            return ret;
-        }
+//        /**
+//         *  \brief  matrix valued jump for velocity-type functions
+//         *  \todo   doc like pTypeJump
+//         **/
+//        SigmaRangeType uTypeMatrixJump( const VelocityRangeType& uInner,
+//                                        const VelocityRangeType& uOuter,
+//                                        const VelocityRangeType& outerNormal ) const
+//        {
+//            SigmaRangeType ret( 0.0 );
+//            VelocityRangeType uDiff = uInner - uOuter;
+//            ret = dyadicProduct( uDiff, outerNormal );
+//            return ret;
+//        }
 
         /**
          *  \brief  dyadic product
@@ -1948,35 +1948,35 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             return ret;
         }
 
-        /**
-         *  \brief  jump for sigma-type functions
-         *  \todo   doc
-         **/
-        VelocityRangeType sigmaTypeJump(    const SigmaRangeType& sInner,
-                                            const SigmaRangeType& sOuter,
-                                            const VelocityRangeType& outerNormal ) const
-        {
-            VelocityRangeType ret( 0.0 );
-            SigmaRangeType sDiff = sInner;
-            sDiff -= sOuter;
-            sDiff.mv( outerNormal, ret );
-            return ret;
-        }
+//        /**
+//         *  \brief  jump for sigma-type functions
+//         *  \todo   doc
+//         **/
+//        VelocityRangeType sigmaTypeJump(    const SigmaRangeType& sInner,
+//                                            const SigmaRangeType& sOuter,
+//                                            const VelocityRangeType& outerNormal ) const
+//        {
+//            VelocityRangeType ret( 0.0 );
+//            SigmaRangeType sDiff = sInner;
+//            sDiff -= sOuter;
+//            sDiff.mv( outerNormal, ret );
+//            return ret;
+//        }
 
-        /**
-         *  \brief  mean value of two functions (of same type)
-         *  \todo   texdoc example
-         **/
-        template < class DiscreteFunctionImp >
-        DiscreteFunctionImp meanValue( const DiscreteFunctionImp& funcInner,
-                                    const DiscreteFunctionImp& funcOuter ) const
-        {
-            DiscreteFunctionImp ret( 0.0 );
-            ret += funcInner;
-            ret += funcOuter;
-            ret *= 0.5;
-            return ret;
-        }
+//        /**
+//         *  \brief  mean value of two functions (of same type)
+//         *  \todo   texdoc example
+//         **/
+//        template < class DiscreteFunctionImp >
+//        DiscreteFunctionImp meanValue( const DiscreteFunctionImp& funcInner,
+//                                    const DiscreteFunctionImp& funcOuter ) const
+//        {
+//            DiscreteFunctionImp ret( 0.0 );
+//            ret += funcInner;
+//            ret += funcOuter;
+//            ret *= 0.5;
+//            return ret;
+//        }
 
 
 };
