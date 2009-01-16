@@ -12,10 +12,18 @@ template <  class WMatType,
             class XMatType,
             class YMatType,
             class DiscreteSigmaFunctionType >
-class MultA {
+class MatrixA_Operator {
 
     public:
-        MultA ( const WMatType& w_mat,
+
+        typedef MatrixA_Operator<   WMatType,
+                        MMatType,
+                        XMatType,
+                        YMatType,
+                        DiscreteSigmaFunctionType >
+                    ThisType;
+
+        MatrixA_Operator ( const WMatType& w_mat,
                 const MMatType& m_mat,
                 const XMatType& x_mat,
                 const YMatType& y_mat,
@@ -27,7 +35,7 @@ class MultA {
             sigma_dummy_(sigma_dummy)
         {}
 
-        ~MultA()
+        ~MatrixA_Operator()
         {}
 
         template <class VECtype>
@@ -40,6 +48,11 @@ class MultA {
             x_mat_.multOEM( tmp2.leakPointer(), ret );
 
             y_mat_.multOEMAdd( x, ret );
+        }
+
+        ThisType& systemMatrix ()
+        {
+            return *this;
         }
 
     private:
@@ -61,14 +74,27 @@ template <  class XmatrixType,
             class FFunctype,
             class GFunctype,
             class DiscreteSigmaFunctionType  >
-class SchurkomplementSolver
+class SchurkomplementOperator
 {
     private:
-        typedef MultA< WmatrixType, M_inv_matrixType, XmatrixType, YmatrixType, DiscreteSigmaFunctionType >
+        typedef MatrixA_Operator< WmatrixType, M_inv_matrixType, XmatrixType, YmatrixType, DiscreteSigmaFunctionType >
             MultAType;
 
     public:
-        SchurkomplementSolver(  const XmatrixType& x_mat,
+
+        typedef SchurkomplementOperator <  XmatrixType,
+                                         M_inv_matrixType,
+                                         YmatrixType,
+                                         B_t_matrixType,
+                                         CmatrixType,
+                                         BmatrixType,
+                                         WmatrixType,
+                                         FFunctype,
+                                         GFunctype,
+                                         DiscreteSigmaFunctionType  >
+                ThisType;
+
+        SchurkomplementOperator(  const XmatrixType& x_mat,
                                 const M_inv_matrixType& m_inv_mat,
                                 const YmatrixType& y_mat,
                                 const B_t_matrixType& b_t_mat,
@@ -96,8 +122,26 @@ class SchurkomplementSolver
                         DestDescreteFunctionType& dest )
         {
             MultAType a_op( w_mat_, m_inv_mat_, x_mat_, y_mat_, sigma_dummy_ );
-            a_op.multOEM( arg.discreteVelocity().leakPointer(), dest.discreteVelocity().leakPointer() );
 
+            typedef OEMCGOp< typename DestDescreteFunctionType::DiscretePressureFunctionType, MultAType >
+                AufSolver;
+            AufSolver auf_solver( a_op, 0.001, 0.01, 2000, 1 );
+            auf_solver( arg.discretePressure(), dest.discretePressure() );
+
+
+
+        }
+
+        template <class VECtype>
+        void multOEM(const VECtype *x, VECtype * ret) const
+        {
+
+        }
+
+
+        ThisType& systemMatrix ()
+        {
+            return *this;
         }
 
     private:

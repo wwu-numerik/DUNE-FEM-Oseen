@@ -142,7 +142,7 @@ namespace Dune {
         f_func += rhs2;
 
 
-        typedef SchurkomplementSolver<  XmatrixType,
+        typedef SchurkomplementOperator<  XmatrixType,
                                         MmatrixType,
                                         YmatrixType,
                                         B_t_matrixType,
