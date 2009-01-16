@@ -73,7 +73,7 @@ template <  class XmatrixType,
             class WmatrixType,
             class FFunctype,
             class GFunctype,
-            class DiscreteSigmaFunctionType  >
+            class DiscreteSigmaFunctionType >
 class SchurkomplementOperator
 {
     private:
@@ -91,7 +91,7 @@ class SchurkomplementOperator
                                          WmatrixType,
                                          FFunctype,
                                          GFunctype,
-                                         DiscreteSigmaFunctionType  >
+                                         DiscreteSigmaFunctionType >
                 ThisType;
 
         SchurkomplementOperator(  const XmatrixType& x_mat,
@@ -103,6 +103,8 @@ class SchurkomplementOperator
                                 const WmatrixType& w_mat,
                                 const FFunctype& f_func,
                                 const GFunctype& g_func,
+                                const FFunctype& arg,
+                                FFunctype& dest,
                                 const DiscreteSigmaFunctionType& sigma_dummy )
             : x_mat_(x_mat),
             m_inv_mat_(m_inv_mat),
@@ -113,6 +115,8 @@ class SchurkomplementOperator
             w_mat_(w_mat),
             f_func_(f_func),
             g_func_(g_func),
+            arg_(arg),
+            dest_(dest),
             sigma_dummy_(sigma_dummy)
         {}
 
@@ -121,12 +125,7 @@ class SchurkomplementOperator
         void apply (    const ArgDescreteFunctionType& arg,
                         DestDescreteFunctionType& dest )
         {
-            MultAType a_op( w_mat_, m_inv_mat_, x_mat_, y_mat_, sigma_dummy_ );
 
-            typedef OEMCGOp< typename DestDescreteFunctionType::DiscretePressureFunctionType, MultAType >
-                AufSolver;
-            AufSolver auf_solver( a_op, 0.001, 0.01, 2000, 1 );
-            auf_solver( arg.discretePressure(), dest.discretePressure() );
 
 
 
@@ -135,7 +134,12 @@ class SchurkomplementOperator
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret) const
         {
+            MultAType a_op( w_mat_, m_inv_mat_, x_mat_, y_mat_, sigma_dummy_ );
 
+            typedef OEMCGOp< FFunctype, MultAType >
+                AufSolver;
+            AufSolver auf_solver( a_op, 0.001, 0.01, 2000, 1 );
+            auf_solver( arg_, dest_ );
         }
 
 
@@ -154,6 +158,8 @@ class SchurkomplementOperator
         const WmatrixType& w_mat_;
         const FFunctype& f_func_;
         const GFunctype& g_func_;
+        const FFunctype& arg_;
+        FFunctype& dest_;
         const DiscreteSigmaFunctionType& sigma_dummy_;
 };
 
