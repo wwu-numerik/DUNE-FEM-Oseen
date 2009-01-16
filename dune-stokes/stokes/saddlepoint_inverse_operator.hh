@@ -6,18 +6,8 @@
  */
 
 #include <dune/fem/function/common/discretefunction.hh>
-#include <dune/fem/operator/common/operator.hh>
-#include<dune/fem/operator/matrix/spmatrix.hh>
+#include <dune/fem/operator/matrix/spmatrix.hh>
 
-//using istl results in compile errors atm /rene
-//#define USE_ISTL
-
-#if defined(USE_ISTL)
-    #include<dune/fem/operator/matrix/istlmatrix.hh>
-    #include "matrixoperator.hh"
-#endif
-
-#include <dune/fem/solver/oemsolver.hh>
 #include <dune/stokes/cghelper.hh>
 
 #include "../src/logging.hh"
@@ -25,9 +15,9 @@
 
 namespace Dune {
   //!CG Verfahren fuer Sattelpunkt Problem
-  //!siehe NavSt Skript Siebert,Seite 36, Alg 3.34
-  /**   \brief Inversion operator using CG algorithm
-        \tparam EllipticInverseOperatorType Operator type used to do the inner A^-1 inversion
+  //
+  /**   \brief
+        \tparam StokesPassImp discrete function types etc. get extracted from this
    */
 
     template < class StokesPassImp >
@@ -160,10 +150,12 @@ namespace Dune {
                                         BmatrixType,
                                         WmatrixType,
                                         DiscreteVelocityFunctionType,
-                                        DiscretePressureFunctionType >
+                                        DiscretePressureFunctionType,
+                                        DiscreteSigmaFunctionType >
                 SkSolver;
 
-        SkSolver( x_mat, m_inv_mat, y_mat, b_t_mat, c_mat, b_mat, w_mat, f_func, g_func );
+        SkSolver suf( x_mat, m_inv_mat, y_mat, b_t_mat, c_mat, b_mat, w_mat, f_func, g_func, rhs1 );
+        suf.apply( arg, dest );
 
 //
 //        logInfo << "- build global matrices - " << std::endl;
