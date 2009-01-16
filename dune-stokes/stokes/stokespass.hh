@@ -18,7 +18,7 @@
     #include "../src/logging.hh"
 #endif
 
-#include <cmath>
+#include "../src/profiler.hh"
 
 namespace Dune
 {
@@ -193,6 +193,8 @@ class StokesPass
         virtual void apply( const DomainType &arg, RangeType &dest) const
         {
 
+            profiler().StartTiming("Pass");
+            profiler().StartTiming("Pass -- ASSEMBLE");
             // viscosity
             const double mu = discreteModel_.viscosity();
 
@@ -933,8 +935,15 @@ class StokesPass
             debugStream.Resume(); // return to original state
 #endif
 
+
+            profiler().StartTiming("Pass -- SOLVER");
             InvOpType op( *this, 1.0,1.0,1,1 );
             op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+            profiler().StopTiming("Pass -- SOLVER");
+
+            profiler().StopTiming("Pass -- ASSEMBLE");
+            profiler().StopTiming("Pass");
+
 
 
         } // end of apply

@@ -90,6 +90,8 @@ int main( int argc, char** argv )
     ErrorColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
 
     Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
+    long el = gridPtr->size(0);
+    profiler().Reset( 1 ); //prepare for one single run of code
     int err = singleRun( mpicomm, gridPtr, l2_errors );
 
     err += chdir( "data" );
@@ -97,8 +99,9 @@ int main( int argc, char** argv )
     Stuff::TexOutput texOP;
     eoc_output.printInput( *gridPtr, texOP );
 
-//    eoc_output.printTexAddError( gridPtr->size(0), l2_errors[0], errorColumnHeaders, 150, 0 );
-//    eoc_output.printTexEnd( 650 );
+    long prof_time = profiler().Output( mpicomm, 0, el );
+    eoc_output.printTexAddError( el, l2_errors[0], errorColumnHeaders, 150, 0 );
+    eoc_output.printTexEnd( prof_time );
 
     return err;
   }
@@ -233,7 +236,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
      * Problem postprocessing (with profiler example)                                 *
      * ********************************************************************** */
     infoStream << "postprocesing" << std::endl;
-    profiler().Reset( 1 ); //prepare for one single run of code
+
     profiler().StartTiming( "Problem/Postprocessing" );
 
     typedef Problem< gridDim, DiscreteStokesFunctionWrapperType >
@@ -250,7 +253,6 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     l2_errors.push_back( postProcessor.getError() );
 
     profiler().StopTiming( "Problem/Postprocessing" );
-    profiler().Output( mpicomm, 0, gridPtr->size(0) );
 
     infoStream << "...done RUN." << std::endl;
 

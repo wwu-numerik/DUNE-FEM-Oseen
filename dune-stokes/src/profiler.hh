@@ -50,7 +50,7 @@ class Profiler
          * \tparam CollectiveCommunication should be Dune::CollectiveCommunication< MPI_Comm / double >
          **/
         template < class CollectiveCommunication >
-		void Output( CollectiveCommunication& comm, const int refineLevel, const long numDofs );
+		long Output( CollectiveCommunication& comm, const int refineLevel, const long numDofs );
 
         /** call this with correct numRuns <b> before </b> starting any profiling
          *  if you're planning on doing more than one iteration of your code
@@ -65,6 +65,7 @@ class Profiler
 			DataMap td;
             m_timings.push_back( td );
             m_l2_error = 0;
+            init_time_ = clock();
 		}
 
         //! simple counter, usable to count how often a single piece of code is called
@@ -89,12 +90,13 @@ class Profiler
 		double m_l2_error;
 		//debug counter, only outputted in debug mode
 		std::map<int,int> m_count;
+		clock_t init_time_;
 
 
 };
 
 template < class CollectiveCommunication >
-void Profiler::Output( CollectiveCommunication& comm, const int refineLevel, const long numDofs )
+long Profiler::Output( CollectiveCommunication& comm, const int refineLevel, const long numDofs )
 {
 	const int numProce = comm.size();
 
@@ -148,6 +150,8 @@ void Profiler::Output( CollectiveCommunication& comm, const int refineLevel, con
 
 
 	csv.close();
+
+	return (long) ( clock() - init_time_ ) / double( CLOCKS_PER_SEC*0.001 );
 
 }
 
