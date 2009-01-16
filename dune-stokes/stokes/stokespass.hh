@@ -335,7 +335,7 @@ class StokesPass
             const bool H3print = false;
             infoStream << "\nthis is StokesPass::apply()" << std::endl;
             infoStream << "- starting gridwalk" << std::endl;
-            Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+            debugStream.Suspend(); // disable logging
 #endif
 
             // walk the grid
@@ -374,7 +374,7 @@ class StokesPass
                 VolumeQuadratureType volumeQuadratureElement( entity, ( 2 * sigmaSpaceOrder ) + 1 );
 #ifndef NLOG
                 if ( outputEntity == entityNR ) entityOutput = true;
-                if ( entityOutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                if ( entityOutput ) debugStream.Resume(); // enable logging
                 debugStream << "  - entity " << outputEntity << std::endl;
                 debugStream << "  - numSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
                 debugStream << "  - numVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
@@ -393,7 +393,7 @@ class StokesPass
                 // we want logging at the following base functions
                 const int logBaseI = 0;
                 const int logBaseJ = 0;
-                Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+                debugStream.Suspend(); // disable logging
 #endif
                 // calculate volume integrals on the entity
 
@@ -404,7 +404,7 @@ class StokesPass
                         double M_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Moutput = true;
-                        if ( entityOutput && Moutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                        if ( entityOutput && Moutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = M ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
@@ -452,7 +452,7 @@ class StokesPass
                         localMInversMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
                         Moutput = false;
-                        Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+                        debugStream.Suspend(); // disable logging
 #endif
                     }
                 } // done calculating M
@@ -463,7 +463,7 @@ class StokesPass
                         double W_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
-                        if ( entityOutput && Woutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                        if ( entityOutput && Woutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = W ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
@@ -505,7 +505,7 @@ class StokesPass
                         localWmatrixElement.add( i, j, W_i_j );
 #ifndef NLOG
                         Woutput = false;
-                        Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+                        debugStream.Suspend(); // disable logging
 #endif
                     }
                 } // done calculationg W
@@ -516,7 +516,7 @@ class StokesPass
                         double X_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-                        if ( entityOutput && Xoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                        if ( entityOutput && Xoutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = X ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
@@ -559,7 +559,7 @@ class StokesPass
                         localXmatrixElement.add( i, j, X_i_j );
 #ifndef NLOG
                         Xoutput = false;
-                        Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+                        debugStream.Suspend(); // disable logging
 #endif
                     }
                 } // done calculating X
@@ -570,7 +570,7 @@ class StokesPass
                         double Z_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
-                        if ( entityOutput && Zoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                        if ( entityOutput && Zoutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = Z ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
@@ -613,7 +613,7 @@ class StokesPass
                         localZmatrixElement.add( i, j, Z_i_j );
 #ifndef NLOG
                         Zoutput = false;
-                        Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+                        debugStream.Suspend(); // disable logging
 #endif
                     }
                 } // done calculating Z
@@ -623,7 +623,7 @@ class StokesPass
                     double H2_j = 0.0;
 #ifndef NLOG
 //                    if ( ( j == logBaseJ ) ) H2output = true;
-                    if ( entityOutput && H2output ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                    if ( entityOutput && H2output ) debugStream.Resume(); // enable logging
                     debugStream << "    = H2 =======================" << std::endl;
                     debugStream << "    basefunction " << " " << j << std::endl;
                     debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
@@ -664,7 +664,7 @@ class StokesPass
                     LocalH2rhs[ j ] = H2_j;
 #ifndef NLOG
                     H2output = false;
-                    Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+                    debugStream.Suspend(); // disable logging
 #endif
                 } // done calculating H2
 
@@ -674,7 +674,7 @@ class StokesPass
                         double E_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
-                        if ( entityOutput && Eoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                        if ( entityOutput && Eoutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = E ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
@@ -717,7 +717,7 @@ class StokesPass
                         localEmatrixElement.add( i, j, E_i_j );
 #ifndef NLOG
                         Eoutput = false;
-                        Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+                        debugStream.Suspend(); // disable logging
 #endif
                     }
                 } // done calculating E
@@ -729,11 +729,11 @@ class StokesPass
                         ++intIt ) {
 #ifndef NLOG
                     if ( ( outputIntersection == intersectionNR ) && entityOutput ) intersectionOutput = true;
-                    if ( intersectionOutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                    if ( intersectionOutput ) debugStream.Resume(); // enable logging
                     debugStream << "    - intersection " << intersectionNR << std::endl;
                     debugStream << "    - start calculations on intersection" << std::endl;
                     debugStream << "      ==================================" << std::endl;
-                    Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+                    debugStream.Suspend(); // disable logging
 #endif
                     // get intersection informations, seen from the inside
                     typedef typename IntersectionIteratorType::LocalGeometry
@@ -791,7 +791,7 @@ class StokesPass
                                 double W_i_j = 0.0;
 #ifndef NLOG
                                 if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
-                                if ( intersectionOutput && Woutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                                if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = W element ======================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
                                 debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
@@ -848,7 +848,7 @@ class StokesPass
                                 localWmatrixElement.add( i, j, W_i_j );
 #ifndef NLOG
                                 Woutput = false;
-                                Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+                                debugStream.Suspend(); // disable logging
 #endif
                             } // done with the element Integral
                             for ( int j = 0; j < numVelocityBaseFunctionsNeighbour; ++j ) {
@@ -864,10 +864,10 @@ class StokesPass
                         ++numberOfBoundaryIntersections;
                     } // done with those on the boundary
 #ifndef NLOG
-                    if ( intersectionOutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                    if ( intersectionOutput ) debugStream.Resume(); // enable logging
                     debugStream << "    - done calculations on intersection" << std::endl;
                     debugStream << "      =================================" << std::endl;
-                    Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+                    debugStream.Suspend(); // disable logging
                     intersectionOutput = false;
                     ++intersectionNR;
 #endif
@@ -875,17 +875,17 @@ class StokesPass
 
 #ifndef NLOG
                 intersectionNR = 0;
-                if ( entityOutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                if ( entityOutput ) debugStream.Resume(); // enable logging
                 debugStream << "  - done calculations on entity" << std::endl;
                 debugStream << "    ===========================" << std::endl;
-                Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+                debugStream.Suspend(); // disable logging
                 entityOutput = false;
                 ++entityNR;
 #endif
             } // done walking the grid
 #ifndef NLOG
             infoStream << "- gridwalk done" << std::endl;
-            Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+            debugStream.Resume(); // enable logging
             debugStream << "  found " << entityNR << " entities," << std::endl;
             debugStream << "  found " << intersectionNR << " intersections," << std::endl;
             debugStream << "        " << numberOfInnerIntersections << " intersections inside and" << std::endl;
@@ -930,7 +930,7 @@ class StokesPass
                 }
                 debugStream << "- done printing matrices" << std::endl;
             }
-            Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // return to original state
+            debugStream.Resume(); // return to original state
 #endif
 
             InvOpType op( *this, 1.0,1.0,1,1 );
