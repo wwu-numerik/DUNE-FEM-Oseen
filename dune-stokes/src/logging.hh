@@ -39,12 +39,13 @@ class Logging
                 std::stringstream buffer_;
                 std::ofstream& logfile_;
                 std::ofstream& logfileWoTime_;
+                bool is_suspended_;
 
             public:
                 LogStream( LogFlags loglevel, int& logflags, std::ofstream& file, std::ofstream& fileWoTime )
                     : loglevel_(loglevel), logflags_(logflags),
-                    suspended_logflags_(logflags),
-                    logfile_(file), logfileWoTime_( fileWoTime ) {}
+                    suspended_logflags_(logflags), logfile_(file),
+                    logfileWoTime_( fileWoTime ), is_suspended_(false) {}
                 ~LogStream(){}
 
                 template < typename T >
@@ -57,15 +58,19 @@ class Logging
 
                 void Suspend()
                 {
-                    suspended_logflags_ = logflags_;
-                    logflags_ = 1;
+                    //don't accidentally invalidate flags if already suspended
+                    if ( !is_suspended_ ) {
+                        suspended_logflags_ = logflags_;
+                        logflags_ = 1;
+                    }
+                    is_suspended_ = true;
                 }
 
                 void Resume()
                 {
-                    //this can be safely called even if no previous suspend has been called
-                    //since suspended_logflags_ is initialized with logflags_  in ctor
-                    logflags_ = suspended_logflags_;
+                    if ( is_suspended_ )
+                        logflags_ = suspended_logflags_;
+                    is_suspended_ = false;
                 }
 
                 //template < class Class >
@@ -289,6 +294,7 @@ class Logging
         typedef std::vector<LogFlags>::const_iterator IdVecCIter;
         IdVec streamIDs_;
         int logflags_;
+
 };
 
 ///global Logging instance
