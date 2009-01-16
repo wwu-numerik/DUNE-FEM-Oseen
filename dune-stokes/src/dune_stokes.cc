@@ -91,8 +91,9 @@ int main( int argc, char** argv )
 
     Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
     long el = gridPtr->size(0);
-    profiler().Reset( 1 ); //prepare for one single run of code
+    profiler().Reset( 1 ); //prepare for one single run
     int err = singleRun( mpicomm, gridPtr, l2_errors );
+    profiler().NextRun( l2_errors[0][0] ); //finish this run
 
     err += chdir( "data" );
     Dune::EocOutput eoc_output ( "eoc", "info" );

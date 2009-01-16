@@ -101,7 +101,7 @@ long Profiler::Output( CollectiveCommunication& comm, const int refineLevel, con
 	const int numProce = comm.size();
 
 	std::ostringstream filename;
-	filename << "./data/p" << numProce << "_refinelvl_" << refineLevel << ".csv";
+	filename << "p" << numProce << "_refinelvl_" << refineLevel << ".csv";
 	filename.flush();
 
     if ( comm.rank() == 0 )
