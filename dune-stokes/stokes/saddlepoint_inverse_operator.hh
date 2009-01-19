@@ -156,10 +156,9 @@ namespace Dune {
         DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
         f_solver( f_func, tmp_f );
 
-        DiscretePressureFunctionType new_f ( "new_f", g_func.space() ); //this could prolly be dest.pressure()
-        b_mat.apply( tmp_f, new_f );
+        DiscretePressureFunctionType new_f ( "new_f", g_func.space() );
+        b_t_mat.apply( tmp_f, new_f );
         new_f -= g_func;
-
 
 
         typedef SchurkomplementOperator<A_OperatorType,
@@ -182,36 +181,6 @@ namespace Dune {
                             f_func, g_func, arg.discreteVelocity(), dest.discreteVelocity(), rhs1 );
         Sk_Solver sk_solver( sk_op, 0.001, 0.01, 2000, 1 );
         sk_solver( new_f, dest.discretePressure() );
-
-//
-//        logInfo << "- build global matrices - " << std::endl;
-//        typedef SparseRowMatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
-//            AmatrixType;
-//        AmatrixType Amatrix( velocitySpace_, velocitySpace_ );
-//        Amatrix.reserve();
-//
-//        XmatrixType neg_X_Minv_mat( velocitySpace_, sigmaSpace_ );
-//        neg_X_Minv_mat.reserve();
-//        Xmatrix.matrix().multiply( Mmatrix.matrix(), neg_X_Minv_mat.matrix() );
-//        logInfo << "-    1te feritg- " << std::endl;
-//        neg_X_Minv_mat.matrix().scale( -1 );
-//
-//        neg_X_Minv_mat.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
-//        Ymatrix.matrix().add( Amatrix.matrix() );
-////            Amatrix = Ymatrix;
-//
-//
-//        RHSType Fmat ( velocitySpace_.size(), 1, 1 );
-//        neg_X_Minv_mat.matrix().scale ( mu );
-//        neg_X_Minv_mat.matrix().multiply( H1rhs, Fmat );
-////            H2rhs.add( Fmat );
-//        //Fmat = H2rhs;
-//
-//        H3rhs.scale( -1 );
-//        logInfo << "- build global matrices - done" << std::endl;
-
-
-
 
 
         //schurkomplement Operator ist: B2 * A_inv * B1 + C
