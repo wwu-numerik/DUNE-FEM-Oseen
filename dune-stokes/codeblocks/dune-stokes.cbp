@@ -49,7 +49,6 @@
 				</Compiler>
 				<Linker>
 					<Add library="blas" />
-					<Add library="gfortran" />
 					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
 				</Linker>
 			</Target>
@@ -80,7 +79,6 @@
 			<Add option="-DALUGRID_SIMPLEX" />
 			<Add option="-DGRIDDIM=2" />
 			<Add option="-DPOLORDER=1" />
-			<Add option="-DENABLE_ALBERTA" />
 			<Add option="-DHAVE_CONFIG_H" />
 			<Add option="-DDUNE_FEM_COMPATIBILITY" />
 			<Add directory="../../dune-common/" />
@@ -99,11 +97,7 @@
 			<Add directory="/share/dune/Modules/modules_x86_64/grape/" />
 		</Compiler>
 		<Linker>
-			<Add library="ALBERTA33_0" />
-			<Add library="alberta_util" />
 			<Add library="libalugrid.a" />
-			<Add library="libALBERTA33_0.a" />
-			<Add library="libalberta_util.a" />
 			<Add library="SM" />
 			<Add library="ICE" />
 			<Add library="../../dune-fem/lib/.libs/libdunefem.a" />
