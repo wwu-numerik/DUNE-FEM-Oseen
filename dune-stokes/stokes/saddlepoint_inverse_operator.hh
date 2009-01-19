@@ -154,13 +154,13 @@ namespace Dune {
                                         DiscreteSigmaFunctionType >
                 Sk_Operator;
 
-        typedef OEMCGOp< DiscretePressureFunctionType, Sk_Operator >
+        typedef OEMCGOp< DiscreteVelocityFunctionType, Sk_Operator >
                 Sk_Solver;
 
         Sk_Operator sk_op(  x_mat, m_inv_mat, y_mat, b_t_mat, c_mat, b_mat, w_mat,
-                            f_func, g_func, arg.discretePressure(), dest.discretePressure(), rhs1 );
-        Sk_Solver( sk_op, 0.001, 0.01, 2000, 1 );
-        sk_op( arg.discretePressure(), dest.discretePressure() );
+                            f_func, g_func, arg.discreteVelocity(), dest.discreteVelocity(), rhs1 );
+        Sk_Solver sk_solver( sk_op, 0.001, 0.01, 2000, 1 );
+        sk_solver( arg.discreteVelocity(), dest.discreteVelocity() );
 
 //
 //        logInfo << "- build global matrices - " << std::endl;

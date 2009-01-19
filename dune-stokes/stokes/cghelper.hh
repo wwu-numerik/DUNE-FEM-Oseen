@@ -1,6 +1,7 @@
 #ifndef INNERCG_HH_INCLUDED
 #define INNERCG_HH_INCLUDED
-
+//! using the memprovider from FEM currently results in aseertion failed
+#undef USE_MEMPROVIDER
 #include <dune/fem/solver/oemsolver.hh>
 
 namespace Dune {
