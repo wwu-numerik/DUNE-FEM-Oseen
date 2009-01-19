@@ -33,7 +33,9 @@ class MatrixA_Operator {
             m_mat_(m_mat),
             x_mat_(x_mat),
             y_mat_(y_mat),
-            sigma_dummy_(sigma_dummy)
+            sigma_dummy_(sigma_dummy),
+            tmp1( "tmp1", sigma_dummy.space() ),
+            tmp2( "tmp2", sigma_dummy.space() )
         {}
 
         ~MatrixA_Operator()
@@ -42,10 +44,10 @@ class MatrixA_Operator {
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret) const
         {
-            DiscreteSigmaFunctionType tmp ( "tmp", sigma_dummy_.space() );
-            DiscreteSigmaFunctionType tmp2 ( "tmp", sigma_dummy_.space() );
-            w_mat_.multOEM( x, tmp.leakPointer() );
-            m_mat_.multOEM( tmp.leakPointer(), tmp2.leakPointer() );
+            tmp1.clear();
+            tmp2.clear();
+            w_mat_.multOEM( x, tmp1.leakPointer() );
+            m_mat_.multOEM( tmp1.leakPointer(), tmp2.leakPointer() );
             x_mat_.multOEM( tmp2.leakPointer(), ret );
 
             y_mat_.multOEMAdd( x, ret );
@@ -62,6 +64,8 @@ class MatrixA_Operator {
         const XMatType& x_mat_;
         const YMatType& y_mat_;
         const DiscreteSigmaFunctionType& sigma_dummy_;
+        mutable DiscreteSigmaFunctionType tmp1;
+        mutable DiscreteSigmaFunctionType tmp2;
 };
 
 
@@ -118,7 +122,9 @@ class SchurkomplementOperator
             g_func_(g_func),
             arg_(arg),
             dest_(dest),
-            sigma_dummy_(sigma_dummy)
+            sigma_dummy_(sigma_dummy),
+            tmp1 ( "tmp1", f_func.space() ),
+            tmp2 ( "tmp2", f_func.space() )
         {}
 
 //        template <  class ArgDescreteFunctionType,
@@ -141,10 +147,10 @@ class SchurkomplementOperator
                 AufSolver;
             AufSolver auf_solver( a_op, 0.001, 0.01, 2000, 1 );
 
-            FFunctype tmp ( "tmp", arg_.space() );
-            FFunctype tmp2 ( "tmp2", arg_.space() );
-            b_mat_.multOEM( x, tmp.leakPointer() );
-            auf_solver( tmp, tmp2 );
+            tmp1.clear();
+            tmp2.clear();
+            b_mat_.multOEM( x, tmp1.leakPointer() );
+            auf_solver( tmp1, tmp2 );
             b_t_mat_.multOEM( tmp2.leakPointer(), ret );
             c_mat_.multOEMAdd( x, ret );
 
@@ -169,6 +175,8 @@ class SchurkomplementOperator
         const FFunctype& arg_;
         FFunctype& dest_;
         const DiscreteSigmaFunctionType& sigma_dummy_;
+        mutable FFunctype tmp1;
+        mutable FFunctype tmp2;
 };
 
 }
