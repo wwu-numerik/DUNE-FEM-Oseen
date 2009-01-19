@@ -320,6 +320,8 @@ class StokesPass
             const int outputIntersection = -1;
             int entityNR = 0;
             int intersectionNR = 0;
+            int numberOfEntities = 0;
+            int numberOfIntersections = 0;
             int numberOfBoundaryIntersections = 0;
             int numberOfInnerIntersections = 0;
             const bool Mprint = true;
@@ -333,8 +335,43 @@ class StokesPass
             const bool H2print = true;
             const bool H3print = true;
             infoStream << "\nthis is StokesPass::apply()" << std::endl;
+
+            // do an empty grid walk to get informations
+            EntityIteratorType entityItEndLog = velocitySpace_.end();
+            for (   EntityIteratorType entityItLog = velocitySpace_.begin();
+                    entityItLog != entityItEndLog;
+                    ++entityItLog ) {
+                const EntityType& entity = *entityItLog;
+                // count entities
+                ++numberOfEntities;
+                // walk the intersections
+                IntersectionIteratorType intItEnd = gridPart_.iend( entity );
+                for (   IntersectionIteratorType intIt = gridPart_.ibegin( entity );
+                        intIt != intItEnd;
+                        ++intIt ) {
+                    // count intersections
+                    ++numberOfIntersections;
+                    // if we are inside the grid
+                    if ( intIt.neighbor() && !intIt.boundary() ) {
+                        // count inner intersections
+                        ++numberOfInnerIntersections;
+                    }
+                    // if we are on the boundary of the grid
+                    if ( !intIt.neighbor() && intIt.boundary() ) {
+                        // count boundary intersections
+                        ++numberOfBoundaryIntersections;
+                    }
+                }
+            }
+            const int anotherFivePercentOfEntities = numberOfEntities / 20;
+            infoStream << "found " << numberOfEntities << " entities," << std::endl;
+            infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
+            infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
+            infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
             infoStream << "- starting gridwalk" << std::endl;
-            debugStream.Suspend(); // disable logging
+            infoStream << "  [ assembling          ]" << std::endl;
+            infoStream << "  [";
+            int fivePercents = 0;
 #endif
             // walk the grid
             EntityIteratorType entityItEnd = velocitySpace_.end();
@@ -374,6 +411,12 @@ class StokesPass
                 const VolumeQuadratureType volumeQuadratureElement( entity,
                                                                     ( 2 * sigmaSpaceOrder ) + 1 );
 #ifndef NLOG
+//                if ( ( outputEntity != 0 ) && ( fivePercents < 21 ) ) {
+//                    if ( ( entityNR % anotherFivePercentOfEntities ) == 0 ) {
+//                        infoStream << "=";
+//                        ++fivePercents;
+//                    }
+//                }
                 if ( outputEntity == entityNR ) entityOutput = true;
                 if ( entityOutput ) debugStream.Resume(); // enable logging
                 debugStream << "  - entity " << outputEntity << std::endl;
@@ -1605,9 +1648,7 @@ class StokesPass
 #endif
                             } // done computing R's neighbour surface integral
                         } // done computing R's surface integrals
-#ifndef NLOG
-                        ++numberOfInnerIntersections;
-#endif
+
                     } // done with those inside the grid
 
                     // if we are on the boundary of the grid
@@ -2165,9 +2206,7 @@ class StokesPass
                             debugStream.Suspend(); // disable logging
 #endif
                         } // done computing H3's boundary integral
-#ifndef NLOG
-                        ++numberOfBoundaryIntersections;
-#endif
+
                     } // done with those on the boundary
 #ifndef NLOG
                     if ( intersectionOutput ) debugStream.Resume(); // enable logging
@@ -2190,12 +2229,8 @@ class StokesPass
 #endif
             } // done walking the grid
 #ifndef NLOG
+            infoStream << "]" << std::endl;
             infoStream << "- gridwalk done" << std::endl;
-            debugStream.Resume(); // enable logging
-            debugStream << "  found " << entityNR << " entities and" << std::endl;
-            debugStream << "  found " << intersectionNR << " intersections," << std::endl;
-//            debugStream << "        " << numberOfInnerIntersections << " intersections inside and" << std::endl;
-//            debugStream << "        " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
             if ( Mprint || Wprint || Xprint || Yprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
                 debugStream << "- printing matrices" << std::endl;
                 if ( Mprint ) {
