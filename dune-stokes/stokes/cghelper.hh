@@ -1,6 +1,6 @@
 #ifndef INNERCG_HH_INCLUDED
 #define INNERCG_HH_INCLUDED
-//! using the memprovider from FEM currently results in aseertion failed
+//! using the memprovider from FEM currently results in assertion failed
 #undef USE_MEMPROVIDER
 #include <dune/fem/solver/oemsolver.hh>
 
@@ -79,7 +79,7 @@ class SchurkomplementOperator
 {
     private:
         typedef MatrixA_Operator< WmatrixType, M_inv_matrixType, XmatrixType, YmatrixType, DiscreteSigmaFunctionType >
-            MultAType;
+            A_OperatorType;
 
     public:
 
@@ -121,26 +121,33 @@ class SchurkomplementOperator
             sigma_dummy_(sigma_dummy)
         {}
 
-        template <  class ArgDescreteFunctionType,
-                    class DestDescreteFunctionType >
-        void apply (    const ArgDescreteFunctionType& arg,
-                        DestDescreteFunctionType& dest )
-        {
-
-
-
-
-        }
+//        template <  class ArgDescreteFunctionType,
+//                    class DestDescreteFunctionType >
+//        void apply (    const ArgDescreteFunctionType& arg,
+//                        DestDescreteFunctionType& dest )
+//        {
+//
+//
+//
+//
+//        }
 
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret) const
         {
-            MultAType a_op( w_mat_, m_inv_mat_, x_mat_, y_mat_, sigma_dummy_ );
+            A_OperatorType a_op( w_mat_, m_inv_mat_, x_mat_, y_mat_, sigma_dummy_ );
 
-            typedef OEMCGOp< FFunctype, MultAType >
+            typedef OEMCGOp< FFunctype, A_OperatorType >
                 AufSolver;
             AufSolver auf_solver( a_op, 0.001, 0.01, 2000, 1 );
-            auf_solver( arg_, dest_ );
+
+            FFunctype tmp ( "tmp", arg_.space() );
+            FFunctype tmp2 ( "tmp2", arg_.space() );
+            b_mat_.multOEM( x, tmp.leakPointer() );
+            auf_solver( tmp, tmp2 );
+            b_t_mat_.multOEM( tmp2.leakPointer(), ret );
+            c_mat_.multOEMAdd( x, ret );
+
         }
 
 

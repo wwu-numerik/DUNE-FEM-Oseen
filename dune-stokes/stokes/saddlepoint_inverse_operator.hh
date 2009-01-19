@@ -7,7 +7,8 @@
 
 #include <dune/fem/function/common/discretefunction.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
-
+//! using the memprovider from FEM currently results in assertion failed
+#undef USE_MEMPROVIDER
 #include <dune/stokes/cghelper.hh>
 
 #include "../src/logging.hh"
