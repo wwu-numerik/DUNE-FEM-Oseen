@@ -147,6 +147,21 @@ namespace Dune {
         A_OperatorType a_op( w_mat, m_inv_mat, x_mat, y_mat, rhs1 );
 
 
+        typedef OEMCGOp< DiscreteVelocityFunctionType, A_OperatorType >
+                F_Solver;
+
+        F_Solver f_solver( a_op, 0.0001, 0.01, 2000, 2 );
+
+        // new_f := B * A^-1 * f_func + g_func
+        DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
+        f_solver( f_func, tmp_f );
+
+        DiscretePressureFunctionType new_f ( "new_f", g_func.space() ); //this could prolly be dest.pressure()
+        b_mat.apply( tmp_f, new_f );
+        new_f -= g_func;
+
+
+
         typedef SchurkomplementOperator<A_OperatorType,
                                         XmatrixType,
                                         MmatrixType,
@@ -160,13 +175,13 @@ namespace Dune {
                                         DiscreteSigmaFunctionType >
                 Sk_Operator;
 
-        typedef OEMCGOp< DiscreteVelocityFunctionType, Sk_Operator >
+        typedef OEMCGOp< DiscretePressureFunctionType, Sk_Operator >
                 Sk_Solver;
 
         Sk_Operator sk_op(  a_op, x_mat, m_inv_mat, y_mat, b_t_mat, c_mat, b_mat, w_mat,
                             f_func, g_func, arg.discreteVelocity(), dest.discreteVelocity(), rhs1 );
         Sk_Solver sk_solver( sk_op, 0.001, 0.01, 2000, 1 );
-        sk_solver( f_func, dest.discreteVelocity() );
+        sk_solver( new_f, dest.discretePressure() );
 
 //
 //        logInfo << "- build global matrices - " << std::endl;
