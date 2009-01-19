@@ -142,8 +142,13 @@ namespace Dune {
         x_mat.apply( rhs1, f_func );
         f_func += rhs2;
 
+        typedef MatrixA_Operator< WmatrixType, MmatrixType, XmatrixType, YmatrixType, DiscreteSigmaFunctionType >
+            A_OperatorType;
+        A_OperatorType a_op( w_mat, m_inv_mat, x_mat, y_mat, rhs1 );
 
-        typedef SchurkomplementOperator<  XmatrixType,
+
+        typedef SchurkomplementOperator<A_OperatorType,
+                                        XmatrixType,
                                         MmatrixType,
                                         YmatrixType,
                                         B_t_matrixType,
@@ -158,7 +163,7 @@ namespace Dune {
         typedef OEMCGOp< DiscreteVelocityFunctionType, Sk_Operator >
                 Sk_Solver;
 
-        Sk_Operator sk_op(  x_mat, m_inv_mat, y_mat, b_t_mat, c_mat, b_mat, w_mat,
+        Sk_Operator sk_op(  a_op, x_mat, m_inv_mat, y_mat, b_t_mat, c_mat, b_mat, w_mat,
                             f_func, g_func, arg.discreteVelocity(), dest.discreteVelocity(), rhs1 );
         Sk_Solver sk_solver( sk_op, 0.001, 0.01, 2000, 1 );
         sk_solver( f_func, dest.discreteVelocity() );

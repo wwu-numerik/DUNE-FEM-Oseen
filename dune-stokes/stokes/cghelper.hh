@@ -69,7 +69,8 @@ class MatrixA_Operator {
 };
 
 
-template <  class XmatrixType,
+template <  class A_OperatorType,
+            class XmatrixType,
             class M_inv_matrixType,
             class YmatrixType,
             class B_t_matrixType,
@@ -81,25 +82,23 @@ template <  class XmatrixType,
             class DiscreteSigmaFunctionType >
 class SchurkomplementOperator
 {
-    private:
-        typedef MatrixA_Operator< WmatrixType, M_inv_matrixType, XmatrixType, YmatrixType, DiscreteSigmaFunctionType >
-            A_OperatorType;
-
     public:
 
-        typedef SchurkomplementOperator <  XmatrixType,
-                                         M_inv_matrixType,
-                                         YmatrixType,
-                                         B_t_matrixType,
-                                         CmatrixType,
-                                         BmatrixType,
-                                         WmatrixType,
-                                         FFunctype,
-                                         GFunctype,
-                                         DiscreteSigmaFunctionType >
+        typedef SchurkomplementOperator <   A_OperatorType,
+                                            XmatrixType,
+                                            M_inv_matrixType,
+                                            YmatrixType,
+                                            B_t_matrixType,
+                                            CmatrixType,
+                                            BmatrixType,
+                                            WmatrixType,
+                                            FFunctype,
+                                            GFunctype,
+                                            DiscreteSigmaFunctionType >
                 ThisType;
 
-        SchurkomplementOperator(  const XmatrixType& x_mat,
+        SchurkomplementOperator( A_OperatorType& a_op,
+                                const XmatrixType& x_mat,
                                 const M_inv_matrixType& m_inv_mat,
                                 const YmatrixType& y_mat,
                                 const B_t_matrixType& b_t_mat,
@@ -111,7 +110,8 @@ class SchurkomplementOperator
                                 const FFunctype& arg,
                                 FFunctype& dest,
                                 const DiscreteSigmaFunctionType& sigma_dummy )
-            : x_mat_(x_mat),
+            : a_op_(a_op),
+            x_mat_(x_mat),
             m_inv_mat_(m_inv_mat),
             y_mat_(y_mat),
             b_t_mat_(b_t_mat),
@@ -127,25 +127,12 @@ class SchurkomplementOperator
             tmp2 ( "tmp2", f_func.space() )
         {}
 
-//        template <  class ArgDescreteFunctionType,
-//                    class DestDescreteFunctionType >
-//        void apply (    const ArgDescreteFunctionType& arg,
-//                        DestDescreteFunctionType& dest )
-//        {
-//
-//
-//
-//
-//        }
-
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret) const
         {
-            A_OperatorType a_op( w_mat_, m_inv_mat_, x_mat_, y_mat_, sigma_dummy_ );
-
             typedef OEMCGOp< FFunctype, A_OperatorType >
                 AufSolver;
-            AufSolver auf_solver( a_op, 0.001, 0.01, 2000, 1 );
+            AufSolver auf_solver( a_op_, 0.001, 0.01, 2000, 1 );
 
             tmp1.clear();
             tmp2.clear();
@@ -163,6 +150,7 @@ class SchurkomplementOperator
         }
 
     private:
+         A_OperatorType& a_op_;
         const XmatrixType& x_mat_;
         const M_inv_matrixType& m_inv_mat_;
         const YmatrixType& y_mat_;
