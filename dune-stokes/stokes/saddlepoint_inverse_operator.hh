@@ -178,9 +178,9 @@ namespace Dune {
                 Sk_Solver;
 
         Sk_Operator sk_op(  a_op, x_mat, m_inv_mat, y_mat, b_t_mat, c_mat, b_mat, w_mat,
-                            f_func, g_func, arg.discreteVelocity(), dest.discreteVelocity(), rhs1 );
+                            f_func, g_func, arg.discreteVelocity(), velocity, rhs1 );
         Sk_Solver sk_solver( sk_op, 0.001, 0.01, 2000, 1 );
-        sk_solver( new_f, dest.discretePressure() );
+        sk_solver( new_f, pressure );
 
 
         //schurkomplement Operator ist: B2 * A_inv * B1 + C
