@@ -134,11 +134,14 @@ class StokesPass
             InvOpType;
 
         //! polynomial order for the discrete sigma function space
-        static const int sigmaSpaceOrder = DiscreteModelType::sigmaSpaceOrder;
+        static const int sigmaSpaceOrder
+            = DiscreteModelType::sigmaSpaceOrder;
         //! polynomial order for the discrete velocity function space
-        static const int velocitySpaceOrder = DiscreteModelType::velocitySpaceOrder;
+        static const int velocitySpaceOrder
+            = DiscreteModelType::velocitySpaceOrder;
         //! polynomial order for the discrete pressure function space
-        static const int pressureSpaceOrder = DiscreteModelType::pressureSpaceOrder;
+        static const int pressureSpaceOrder
+            = DiscreteModelType::pressureSpaceOrder;
 
 
         /**
@@ -169,13 +172,13 @@ class StokesPass
                     DiscreteModelType& discreteModel,
                     GridPartType& gridPart,
                     DiscreteStokesFunctionSpaceWrapperType& spaceWrapper )
-                : BaseType( prevPass ),
-                discreteModel_( discreteModel ),
-                gridPart_( gridPart ),
-                spaceWrapper_( spaceWrapper ),
-                velocitySpace_( spaceWrapper.discreteVelocitySpace() ),
-                pressureSpace_( spaceWrapper.discretePressureSpace() ),
-                sigmaSpace_( gridPart )
+            : BaseType( prevPass ),
+            discreteModel_( discreteModel ),
+            gridPart_( gridPart ),
+            spaceWrapper_( spaceWrapper ),
+            velocitySpace_( spaceWrapper.discreteVelocitySpace() ),
+            pressureSpace_( spaceWrapper.discretePressureSpace() ),
+            sigmaSpace_( gridPart )
         {}
 
         /**
@@ -190,6 +193,10 @@ class StokesPass
             return spaceWrapper_;
         }
 
+        /**
+         *  \todo doc
+         *  \attention  think about quadrature orders
+         **/
         virtual void apply( const DomainType &arg, RangeType &dest) const
         {
 
@@ -199,49 +206,47 @@ class StokesPass
             // functions
             DiscreteVelocityFunctionType& velocity = dest.discreteVelocity();
             DiscretePressureFunctionType& pressure = dest.discretePressure();
-            DiscreteSigmaFunctionType sigma( "sigma", sigmaSpace_ );
-
-            // local functions
-            typedef typename DiscreteVelocityFunctionType::LocalFunctionType
-                LocalDiscreteVelocityFunctionType;
-            typedef typename DiscretePressureFunctionType::LocalFunctionType
-                LocalDiscretePressureFunctionType;
-            typedef typename DiscreteSigmaFunctionType::LocalFunctionType
-                LocalDiscreteSigmaFunctionType;
 
             // matrices
             // M\in R^{M\times M}
-            typedef SparseRowMatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteSigmaFunctionSpaceType >
+            typedef SparseRowMatrixObject<  DiscreteSigmaFunctionSpaceType,
+                                            DiscreteSigmaFunctionSpaceType >
                 MInversMatrixType;
             MInversMatrixType MInversMatrix( sigmaSpace_, sigmaSpace_ );
             MInversMatrix.reserve();
             // W\in R^{M\times L}
-            typedef SparseRowMatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
+            typedef SparseRowMatrixObject<  DiscreteSigmaFunctionSpaceType,
+                                            DiscreteVelocityFunctionSpaceType >
                 WmatrixType;
             WmatrixType Wmatrix( sigmaSpace_, velocitySpace_ );
             Wmatrix.reserve();
             // X\in R^{L\times M}
-            typedef SparseRowMatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteSigmaFunctionSpaceType >
+            typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
+                                            DiscreteSigmaFunctionSpaceType >
                 XmatrixType;
             XmatrixType Xmatrix( velocitySpace_, sigmaSpace_ );
             Xmatrix.reserve();
             // Y\in R^{L\times L}
-            typedef SparseRowMatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
+            typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
+                                            DiscreteVelocityFunctionSpaceType >
                 YmatrixType;
             YmatrixType Ymatrix( velocitySpace_, velocitySpace_ );
             Ymatrix.reserve();
             // Z\in R^{L\times K}
-            typedef SparseRowMatrixObject< DiscreteVelocityFunctionSpaceType, DiscretePressureFunctionSpaceType >
+            typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
+                                            DiscretePressureFunctionSpaceType >
                 ZmatrixType;
             ZmatrixType Zmatrix( velocitySpace_, pressureSpace_ );
             Zmatrix.reserve();
             // E\in R^{K\times L}
-            typedef SparseRowMatrixObject< DiscretePressureFunctionSpaceType, DiscreteVelocityFunctionSpaceType >
+            typedef SparseRowMatrixObject<  DiscretePressureFunctionSpaceType,
+                                            DiscreteVelocityFunctionSpaceType >
                 EmatrixType;
             EmatrixType Ematrix( pressureSpace_, velocitySpace_ );
             Ematrix.reserve();
             // R\in R^{K\times K}
-            typedef SparseRowMatrixObject< DiscretePressureFunctionSpaceType, DiscretePressureFunctionSpaceType >
+            typedef SparseRowMatrixObject<  DiscretePressureFunctionSpaceType,
+                                            DiscretePressureFunctionSpaceType >
                 RmatrixType;
             RmatrixType Rmatrix( pressureSpace_, pressureSpace_ );
             Rmatrix.reserve();
@@ -309,8 +314,6 @@ class StokesPass
             // logging stuff
             Logging::LogStream& infoStream = Logger().Info();
             Logging::LogStream& debugStream = Logger().Dbg();
-            int infoLogState = Logger().GetStreamFlags( Logging::LOG_INFO );
-            int debugLogState = Logger().GetStreamFlags( Logging::LOG_DEBUG );
             bool entityOutput = false;
             bool intersectionOutput = false;
             const int outputEntity = -1;
@@ -333,18 +336,19 @@ class StokesPass
             infoStream << "- starting gridwalk" << std::endl;
             debugStream.Suspend(); // disable logging
 #endif
-
             // walk the grid
             EntityIteratorType entityItEnd = velocitySpace_.end();
-            for ( EntityIteratorType entityIt = velocitySpace_.begin(); entityIt != entityItEnd; ++entityIt ) {
+            for (   EntityIteratorType entityIt = velocitySpace_.begin();
+                    entityIt != entityItEnd;
+                    ++entityIt ) {
 
-                // entity and geometry
+                // get entity and geometry
                 const EntityType& entity = *entityIt;
                 typedef typename EntityType::Geometry
                     EntityGeometryType;
                 const EntityGeometryType& geometry = entity.geometry();
 
-                // local matrices for the volume integral
+                // get local matrices for the volume integral
                 LocalMInversMatrixType localMInversMatrixElement = MInversMatrix.localMatrix( entity, entity );
                 LocalWmatrixType localWmatrixElement = Wmatrix.localMatrix( entity, entity );
                 LocalXmatrixType localXmatrixElement = Xmatrix.localMatrix( entity, entity );
@@ -353,21 +357,22 @@ class StokesPass
                 LocalEmatrixType localEmatrixElement = Ematrix.localMatrix( entity, entity );
                 LocalRmatrixType localRmatrixElement = Rmatrix.localMatrix( entity, entity );
 
-                // local right hand sides
+                // get local right hand sides
                 LocalH1rhsType LocalH1rhs = H1rhs.localFunction( entity );
                 LocalH2rhsType LocalH2rhs = H2rhs.localFunction( entity );
                 LocalH3rhsType LocalH3rhs = H3rhs.localFunction( entity );
 
                 // get basefunctionsets
-                SigmaBaseFunctionSetType sigmaBaseFunctionSetElement = sigmaSpace_.baseFunctionSet( entity );
-                VelocityBaseFunctionSetType velocityBaseFunctionSetElement = velocitySpace_.baseFunctionSet( entity );
-                PressureBaseFunctionSetType pressureBaseFunctionSetElement = pressureSpace_.baseFunctionSet( entity );
+                const SigmaBaseFunctionSetType sigmaBaseFunctionSetElement = sigmaSpace_.baseFunctionSet( entity );
+                const VelocityBaseFunctionSetType velocityBaseFunctionSetElement = velocitySpace_.baseFunctionSet( entity );
+                const PressureBaseFunctionSetType pressureBaseFunctionSetElement = pressureSpace_.baseFunctionSet( entity );
                 const int numSigmaBaseFunctionsElement = sigmaBaseFunctionSetElement.numBaseFunctions();
                 const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
                 const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
 
                 // get quadrature
-                VolumeQuadratureType volumeQuadratureElement( entity, ( 2 * sigmaSpaceOrder ) + 1 );
+                const VolumeQuadratureType volumeQuadratureElement( entity,
+                                                                    ( 2 * sigmaSpaceOrder ) + 1 );
 #ifndef NLOG
                 if ( outputEntity == entityNR ) entityOutput = true;
                 if ( entityOutput ) debugStream.Resume(); // enable logging
@@ -392,12 +397,12 @@ class StokesPass
                 const int logBaseJ = 0;
                 debugStream.Suspend(); // disable logging
 #endif
-                // calculate volume integrals on the entity
+                // compute volume integrals
 
-                // (M^{-1})_{i,j} = (\int_{T}\tau_{j}:\tau_{i}dx)^{-1}
+                //                                                     // we will call this one
+                // (M^{-1})_{i,j} = (\int_{T}\tau_{j}:\tau_{i}dx)^{-1} // Minvs' volume integral
                 for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
-
                         double M_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Moutput = true;
@@ -409,18 +414,18 @@ class StokesPass
                         // sum over all quadrature points
                         for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
-                            ElementCoordinateType x = volumeQuadratureElement.point( quad );
+                            const ElementCoordinateType x = volumeQuadratureElement.point( quad );
                             // get the integration factor
-                            double elementVolume = geometry.integrationElement( x );
+                            const double elementVolume = geometry.integrationElement( x );
                             // get the quadrature weight
-                            double integrationWeight = volumeQuadratureElement.weight( quad );
-                            // calculate \tau_{i}:\tau_{j}
+                            const double integrationWeight = volumeQuadratureElement.weight( quad );
+                            // compute \tau_{i}:\tau_{j}
                             SigmaRangeType tau_i( 0.0 );
                             SigmaRangeType tau_j( 0.0 );
                             sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
                             sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
-                            double tau_j_times_tau_i = colonProduct( tau_j, tau_i );
-                            // calculate M_i_j
+                            const double tau_j_times_tau_i = colonProduct( tau_j, tau_i );
+                            // compute M_i_j
                             M_i_j += elementVolume
                                 * integrationWeight
                                 * tau_j_times_tau_i;
@@ -435,16 +440,13 @@ class StokesPass
                             debugStream << "        - M_" << i << "_" << j << "+=: " << M_i_j << std::endl;
 #endif
                         } // done sum over quadrature points
-
                         // if small, should be zero
                         if ( fabs( M_i_j ) < eps ) {
                             M_i_j = 0.0;
-                        }
-                        // else invert
+                        } // else invert
                         else {
                             M_i_j = 1.0 / M_i_j;
                         }
-
                         // add to matrix
                         localMInversMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
@@ -452,9 +454,11 @@ class StokesPass
                         debugStream.Suspend(); // disable logging
 #endif
                     }
-                } // done calculating M
+                } // done computing Minvs' volume integral
 
-                // (W)_{i,j} += \int_{T}v_{j}\cdot(\nabla\cdot\tau_{i})dx
+                //                                                        // we will call this one
+                // (W)_{i,j} += \int_{T}v_{j}\cdot(\nabla\cdot\tau_{i})dx // W's volume integral
+                //                                                        // see also "W's entitity surface integral", "W's neighbour surface integral" and "W's boundary integral" below
                 for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                         double W_i_j = 0.0;
@@ -468,18 +472,18 @@ class StokesPass
                         // sum over all quadrature points
                         for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
-                            ElementCoordinateType x = volumeQuadratureElement.point( quad );
+                            const ElementCoordinateType x = volumeQuadratureElement.point( quad );
                             // get the integration factor
-                            double elementVolume = geometry.integrationElement( x );
+                            const double elementVolume = geometry.integrationElement( x );
                             // get the quadrature weight
-                            double integrationWeight = volumeQuadratureElement.weight( quad );
-                            // calculate \tau_{i}:\tau_{j}
+                            const double integrationWeight = volumeQuadratureElement.weight( quad );
+                            // compute \tau_{i}:\tau_{j}
                             SigmaRangeType tau_i( 0.0 );
                             VelocityRangeType v_j( 0.0 );
                             sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
                             velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-                            VelocityRangeType divergence_of_tau_i = sigmaDivergenceOf( tau_i );
-                            double v_j_times_divergence_of_tau_i = v_j * divergence_of_tau_i;
+                            const VelocityRangeType divergence_of_tau_i = sigmaDivergenceOf( tau_i );
+                            const double v_j_times_divergence_of_tau_i = v_j * divergence_of_tau_i;
                             W_i_j += elementVolume
                                 * integrationWeight
                                 * v_j_times_divergence_of_tau_i;
@@ -505,9 +509,11 @@ class StokesPass
                         debugStream.Suspend(); // disable logging
 #endif
                     }
-                } // done calculationg W
+                } // done computing W's volume integral
 
-                // (X)_{i,j} += \mu\int_{T}\tau_{j}:\nabla v_{i} dx
+                //                                                  // we will call this one
+                // (X)_{i,j} += \mu\int_{T}\tau_{j}:\nabla v_{i} dx // X's volume integral
+                //                                                  // see also "X's entitity surface integral", "X's neighbour surface integral" and "X's boundary integral" below
                 for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
                         double X_i_j = 0.0;
@@ -521,17 +527,17 @@ class StokesPass
                         // sum over all quadrature points
                         for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
-                            ElementCoordinateType x = volumeQuadratureElement.point( quad );
+                            const ElementCoordinateType x = volumeQuadratureElement.point( quad );
                             // get the integration factor
-                            double elementVolume = geometry.integrationElement( x );
+                            const double elementVolume = geometry.integrationElement( x );
                             // get the quadrature weight
-                            double integrationWeight = volumeQuadratureElement.weight( quad );
-                            // calculate \tau_{j}:\nabla v_{i}
+                            const double integrationWeight = volumeQuadratureElement.weight( quad );
+                            // compute \tau_{j}:\nabla v_{i}
                             SigmaRangeType gradient_of_v_i( 0.0 );
                             SigmaRangeType tau_j( 0.0 );
                             velocityBaseFunctionSetElement.jacobian( i, x, gradient_of_v_i );
-                            sigmaBaseFunctionSetElement.evaluate( i, x, tau_j );
-                            double tau_j_times_gradient_v_i =
+                            sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
+                            const double tau_j_times_gradient_v_i =
                                 colonProduct( tau_j, gradient_of_v_i );
                             X_i_j += elementVolume
                                 * integrationWeight
@@ -559,9 +565,11 @@ class StokesPass
                         debugStream.Suspend(); // disable logging
 #endif
                     }
-                } // done calculating X
+                } // done computing X's volume integral
 
-                // (Z)_{i,j} += -\int_{T}q_{j}(\nabla\cdot v_{i})dx
+                //                                                  // we will call this one
+                // (Z)_{i,j} += -\int_{T}q_{j}(\nabla\cdot v_{i})dx // Z's volume integral
+                //                                                  // see also "Z's entitity surface integral", "Z's neighbour surface integral" and "Z's boundary integral" below
                 for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
                         double Z_i_j = 0.0;
@@ -575,18 +583,18 @@ class StokesPass
                         // sum over all quadratur points
                         for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
                             // get x
-                            ElementCoordinateType x = volumeQuadratureElement.point( quad );
+                            const ElementCoordinateType x = volumeQuadratureElement.point( quad );
                             // get the integration factor
-                            double elementVolume = geometry.integrationElement( x );
+                            const double elementVolume = geometry.integrationElement( x );
                             // get the quadrature weight
-                            double integrationWeight = volumeQuadratureElement.weight( quad );
-                            // calculate q_{j}\cdot(\nabla\cdot v_i)
+                            const double integrationWeight = volumeQuadratureElement.weight( quad );
+                            // compute q_{j}\cdot(\nabla\cdot v_i)
                             SigmaRangeType gradient_of_v_i( 0.0 );
                             PressureRangeType q_j( 0.0 );
                             velocityBaseFunctionSetElement.jacobian( i, x, gradient_of_v_i );
-                            double divergence_of_v_i = velocityDivergenceOutOfGradient( gradient_of_v_i );
+                            const double divergence_of_v_i = velocityDivergenceOutOfGradient( gradient_of_v_i );
                             pressureBaseFunctionSetElement.evaluate( j, x, q_j );
-                            double q_j_times_divergence_of_v_i = q_j * divergence_of_v_i;
+                            const double q_j_times_divergence_of_v_i = q_j * divergence_of_v_i;
                             Z_i_j += -1.0
                                 * elementVolume
                                 * integrationWeight
@@ -613,9 +621,11 @@ class StokesPass
                         debugStream.Suspend(); // disable logging
 #endif
                     }
-                } // done calculating Z
+                } // done computing Z's volume integral
 
-                // (H2)_{j} += \int_{T}f\cdot v_{j}dx
+                //                                    // we will call this one
+                // (H2)_{j} += \int_{T}f\cdot v_{j}dx // H2's volume integral
+                //                                    // see also "H2's boundary integral" further down
                 for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                     double H2_j = 0.0;
 #ifndef NLOG
@@ -628,17 +638,17 @@ class StokesPass
                     // sum over all quadratur points
                     for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
                         // get x
-                        ElementCoordinateType x = volumeQuadratureElement.point( quad );
+                        const ElementCoordinateType x = volumeQuadratureElement.point( quad );
                         // get the integration factor
-                        double elementVolume = geometry.integrationElement( x );
+                        const double elementVolume = geometry.integrationElement( x );
                         // get the quadrature weight
-                        double integrationWeight = volumeQuadratureElement.weight( quad );
-                        // calculate f\cdot v_j
+                        const double integrationWeight = volumeQuadratureElement.weight( quad );
+                        // compute f\cdot v_j
                         VelocityRangeType v_j( 0.0 );
                         VelocityRangeType f( 0.0 );
                         velocityBaseFunctionSetElement.evaluate( j, x, v_j );
                         discreteModel_.force( 0.0, x, f );
-                        double f_times_v_j = f * v_j;
+                        const double f_times_v_j = f * v_j;
                         H2_j += elementVolume
                             * integrationWeight
                             * f_times_v_j;
@@ -657,15 +667,17 @@ class StokesPass
                     if ( fabs( H2_j ) < eps ) {
                         H2_j = 0.0;
                     }
-                    // add to functions
+                    // add to rhs
                     LocalH2rhs[ j ] += H2_j;
 #ifndef NLOG
                     H2output = false;
                     debugStream.Suspend(); // disable logging
 #endif
-                } // done calculating H2
+                } // done computing H2's volume integral
 
-                // (E)_{i,j} += -\int_{T}v_{j}\cdot\nabla q_{i}dx
+                //                                                // we will call this one
+                // (E)_{i,j} += -\int_{T}v_{j}\cdot\nabla q_{i}dx // E's volume integral
+                //                                                // see also "E's entitity surface integral", "E's neighbour surface integral" and "E's boundary integral" below
                 for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                         double E_i_j = 0.0;
@@ -684,7 +696,7 @@ class StokesPass
                             double elementVolume = geometry.integrationElement( x );
                             // get the quadrature weight
                             double integrationWeight = volumeQuadratureElement.weight( quad );
-                            // calculate v_{j}\cdot(\nabla q_i)
+                            // compute v_{j}\cdot(\nabla q_i)
                             typename DiscretePressureFunctionSpaceType::JacobianRangeType jacobian_of_q_i( 0.0 );
                             VelocityRangeType v_j( 0.0 );
                             pressureBaseFunctionSetElement.jacobian( i, x, jacobian_of_q_i );
@@ -717,9 +729,9 @@ class StokesPass
                         debugStream.Suspend(); // disable logging
 #endif
                     }
-                } // done calculating E
+                } // done computing E's volume integral
 
-                // walk the neighbours
+                // walk the intersections
                 IntersectionIteratorType intItEnd = gridPart_.iend( entity );
                 for (   IntersectionIteratorType intIt = gridPart_.ibegin( entity );
                         intIt != intItEnd;
@@ -733,21 +745,17 @@ class StokesPass
                     debugStream << "      ==================================" << std::endl;
                     debugStream.Suspend(); // disable logging
 #endif
-                    // get intersection informations, seen from the inside
-                    typedef typename IntersectionIteratorType::LocalGeometry
-                        IntersectionGeometryType;
-                    const IntersectionGeometryType& intersectionGeometryElement = intIt.intersectionSelfLocal();
-
-                    // get intersection quadrature, seen from inside
-                    FaceQuadratureType faceQuadratureElement(   gridPart_,
-                                                                intIt,
-                                                                ( 2 * sigmaSpaceOrder ) + 1,
-                                                                FaceQuadratureType::INSIDE );
 
                     // get intersection geometry
                     typedef typename IntersectionIteratorType::LocalGeometry
                         IntersectionGeometryType;
                     const IntersectionGeometryType& intersectionGeoemtry = intIt.intersectionSelfLocal();
+
+                    // get intersection quadrature, seen from inside
+                    const FaceQuadratureType faceQuadratureElement( gridPart_,
+                                                                    intIt,
+                                                                    ( 2 * sigmaSpaceOrder ) + 1,
+                                                                    FaceQuadratureType::INSIDE );
 
                     // if we are inside the grid
                     if ( intIt.neighbor() && !intIt.boundary() ) {
@@ -755,7 +763,7 @@ class StokesPass
                         const typename IntersectionIteratorType::EntityPointer neighbourPtr = intIt.outside();
                         const EntityType& neighbour = *neighbourPtr;
 
-                        // local matrices for the surface integral
+                        // get local matrices for the surface integrals
                         LocalMInversMatrixType localMInversMatrixNeighbour = MInversMatrix.localMatrix( entity, neighbour );
                         LocalWmatrixType localWmatrixNeighbour = Wmatrix.localMatrix( entity, neighbour );
                         LocalXmatrixType localXmatrixNeighbour = Xmatrix.localMatrix( entity, neighbour );
@@ -765,26 +773,28 @@ class StokesPass
                         LocalRmatrixType localRmatrixNeighbour = Rmatrix.localMatrix( entity, neighbour );
 
                         // get basefunctionsets
-                        SigmaBaseFunctionSetType sigmaBaseFunctionSetNeighbour = sigmaSpace_.baseFunctionSet( neighbour );
-                        VelocityBaseFunctionSetType velocityBaseFunctionSetNeighbour = velocitySpace_.baseFunctionSet( neighbour );
-                        PressureBaseFunctionSetType pressureBaseFunctionSetNeighbour = pressureSpace_.baseFunctionSet( neighbour );
+                        const SigmaBaseFunctionSetType sigmaBaseFunctionSetNeighbour = sigmaSpace_.baseFunctionSet( neighbour );
+                        const VelocityBaseFunctionSetType velocityBaseFunctionSetNeighbour = velocitySpace_.baseFunctionSet( neighbour );
+                        const PressureBaseFunctionSetType pressureBaseFunctionSetNeighbour = pressureSpace_.baseFunctionSet( neighbour );
                         const int numSigmaBaseFunctionsNeighbour = sigmaBaseFunctionSetNeighbour.numBaseFunctions();
                         const int numVelocityBaseFunctionsNeighbour = velocityBaseFunctionSetNeighbour.numBaseFunctions();
                         const int numPressureBaseFunctionsNeighbour = pressureBaseFunctionSetNeighbour.numBaseFunctions();
 
                         // get intersection quadrature, seen from outside
-                        FaceQuadratureType faceQuadratureNeighbour( gridPart_,
-                                                                    intIt,
-                                                                    ( 2 * sigmaSpaceOrder ) + 1,
-                                                                    FaceQuadratureType::OUTSIDE );
+                        const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
+                                                                            intIt,
+                                                                            ( 2 * sigmaSpaceOrder ) + 1,
+                                                                            FaceQuadratureType::OUTSIDE );
 
                         // compute the surface integrals
 
                         //                                                                                                               // we will call this one
-                        // (W)_{i,j} += -\int_{\varepsilon\in \Epsilon_{I}^{T}}\hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // element integral
-                        //           += -\int_{\varepsilon\in \Epsilon_{I}^{T}}\hat{u}_{\sigma}^{U^{-}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // neighbour integral
+                        // (W)_{i,j} += \int_{\varepsilon\in \Epsilon_{I}^{T}}-\hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // W's element surface integral
+                        //           += \int_{\varepsilon\in \Epsilon_{I}^{T}}-\hat{u}_{\sigma}^{U^{-}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // W's neighbour surface integral
+                        //                                                                                                               // see also "W's boundary integral" below
+                        //                                                                                                               // and "W's volume integral" above
                         for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
-                            // compute the element integral
+                            // compute W's element surface integral
                             for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                                 double W_i_j = 0.0;
 #ifndef NLOG
@@ -792,22 +802,22 @@ class StokesPass
                                 if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = W element ======================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+                                debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-                                    // get x
-                                    ElementCoordinateType x = faceQuadratureElement.point( quad );
-                                    LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
+                                    // get x in codim<0> and codim<1> coordinates
+                                    const ElementCoordinateType x = faceQuadratureElement.point( quad );
+                                    const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
                                     // get the integration factor
-                                    double elementVolume = intersectionGeoemtry.integrationElement( localX );
+                                    const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                     // get the quadrature weight
-                                    double integrationWeight = faceQuadratureElement.weight( quad );
-                                    // calculate \hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{j}\cdot n_{T}
+                                    const double integrationWeight = faceQuadratureElement.weight( quad );
+                                    // compute \hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{j}\cdot n_{T}
                                     SigmaRangeType tau_i( 0.0 );
                                     VelocityRangeType v_j( 0.0 );
                                     VelocityRangeType u_sigma_u_plus_flux( 0.0 );
-                                    VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                    const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
                                     velocityBaseFunctionSetElement.evaluate( j, x, v_j );
                                     discreteModel_.velocitySigmaFlux(   intIt,
@@ -848,31 +858,31 @@ class StokesPass
                                 Woutput = false;
                                 debugStream.Suspend(); // disable logging
 #endif
-                            } // done with the element Integral
-                            // compute the neighbour integral
+                            } // done computing W's element surface integral
+                            // compute W's neighbour surface integral
                             for ( int j = 0; j < numVelocityBaseFunctionsNeighbour; ++j ) {
                                 double W_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
-                                if ( intersectionOutput && Woutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                                if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = W neighbour ====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                debugStream << "      volumeQuadrature.nop() " << faceQuadratureNeighbour.nop() << std::endl;
+                                debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
-                                    // get x
-                                    ElementCoordinateType x = faceQuadratureNeighbour.point( quad );
-                                    LocalIntersectionCoordinateType localX = faceQuadratureNeighbour.localPoint( quad );
+                                    // get x in codim<0> and codim<1> coordinates
+                                    const ElementCoordinateType x = faceQuadratureNeighbour.point( quad );
+                                    const LocalIntersectionCoordinateType localX = faceQuadratureNeighbour.localPoint( quad );
                                     // get the integration factor
-                                    double elementVolume = intersectionGeoemtry.integrationElement( localX );
+                                    const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                     // get the quadrature weight
-                                    double integrationWeight = faceQuadratureNeighbour.weight( quad );
-                                    // calculate \hat{u}_{\sigma}^{U^{-}}(v_{j})\cdot\tau_{j}\cdot n_{T}
+                                    const double integrationWeight = faceQuadratureNeighbour.weight( quad );
+                                    // compute \hat{u}_{\sigma}^{U^{-}}(v_{j})\cdot\tau_{j}\cdot n_{T}
+                                    const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     SigmaRangeType tau_i( 0.0 );
                                     VelocityRangeType v_j( 0.0 );
                                     VelocityRangeType u_sigma_u_plus_flux( 0.0 );
-                                    VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
                                     velocityBaseFunctionSetNeighbour.evaluate( j, x, v_j );
                                     discreteModel_.velocitySigmaFlux(   intIt,
@@ -913,14 +923,16 @@ class StokesPass
                                 Woutput = false;
                                 Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
 #endif
-                            } // done with the neighbour integral
-                        } // done calculating W
+                            } // done computing W's neighbour surface integral
+                        } // done computing W's surface integrals
 
                         //                                                                                                                   // we will call this one
-                        // (X)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}ds // element integral
-                        //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}ds // neighbour integral
+                        // (X)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}ds // X's element sourface integral
+                        //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}ds // X's neighbour sourface integral
+                        //                                                                                                                   // see also "X's boundary integral" below
+                        //                                                                                                                   // and "X's volume integral" above
                         for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
-                            // compute the element integral
+                            // compute X's element sourface integral
                             for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
                                 double X_i_j = 0.0;
 #ifndef NLOG
@@ -928,18 +940,18 @@ class StokesPass
                                 if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = X element ======================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+                                debugStream << "      volumeQuadratureElement.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-                                    // get x
+                                    // get x in codim<0> and codim<1> coordinates
                                     const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                     const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
                                     // get the integration factor
                                     const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureElement.weight( quad );
-                                    // calculate -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
+                                    // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
                                     const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     SigmaRangeType tau_j( 0.0 );
                                     sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
@@ -985,8 +997,8 @@ class StokesPass
                                 Xoutput = false;
                                 debugStream.Suspend(); // disable logging
 #endif
-                            } // done with the element integral
-                            // compute the neighbour integral
+                            } // done computing X's element sourface integral
+                            // compute X's neighbour sourface integral
                             for ( int j = 0; j < numSigmaBaseFunctionsNeighbour; ++j ) {
                                 double X_i_j = 0.0;
 #ifndef NLOG
@@ -994,18 +1006,18 @@ class StokesPass
                                 if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = X neighbour ====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                debugStream << "      volumeQuadrature.nop() " << faceQuadratureNeighbour.nop() << std::endl;
+                                debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
-                                    // get x
+                                    // get x codim<0> and codim<1> coordinates
                                     const ElementCoordinateType x = faceQuadratureNeighbour.point( quad );
                                     const LocalIntersectionCoordinateType localX = faceQuadratureNeighbour.localPoint( quad );
                                     // get the integration factor
                                     const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureNeighbour.weight( quad );
-                                    // calculate -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}
+                                    // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}
                                     const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     SigmaRangeType tau_j( 0.0 );
                                     sigmaBaseFunctionSetNeighbour.evaluate( j, x, tau_j );
@@ -1026,7 +1038,6 @@ class StokesPass
                                         * integrationWeight
                                         * mu
                                         * v_i_times_flux_times_n_t;
-
 #ifndef NLOG
                                     debugStream << "      - quadPoint " << quad;
                                     Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -1052,14 +1063,15 @@ class StokesPass
                                 Xoutput = false;
                                 debugStream.Suspend(); // disable logging
 #endif
-                            } // done with the neighbour integral
-                        } // done caculating X
+                            } // done computing X's neighbour sourface integral
+                        } // done computing X's sourface integrals
 
                         //                                                                                                         // we call this one
-                        // (Y)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{u{+}}(v{j})\cdot n_{t}ds // element integral
-                        //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{u{-}}(v{j})\cdot n_{t}ds // neighbour integral
+                        // (Y)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U{+}}(v{j})\cdot n_{t}ds // Y's element surface integral
+                        //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}ds // Y's neighbour surface integral
+                        //                                                                                                         // see also "Y's boundary integral" below
                         for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
-                            // compute element integral
+                            // compute Y's element surface integral
                             for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                                 double Y_i_j = 0.0;
 #ifndef NLOG
@@ -1067,18 +1079,18 @@ class StokesPass
                                 if ( intersectionOutput && Youtput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = Y element ======================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+                                debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-                                    // get x
+                                    // get x codim<0> and codim<1> coordinates
                                     const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                     const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
                                     // get the integration factor
                                     const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureElement.weight( quad );
-                                    // calculate -\mu v_{i}\cdot\hat{\sigma}^{u{+}}(v{j})\cdot n_{t}
+                                    // compute -\mu v_{i}\cdot\hat{\sigma}^{U{+}}(v{j})\cdot n_{t}
                                     const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     VelocityRangeType v_j( 0.0 );
                                     velocityBaseFunctionSetElement.evaluate( j, x, v_j );
@@ -1124,8 +1136,8 @@ class StokesPass
                                 Youtput = false;
                                 debugStream.Suspend(); // disable logging
 #endif
-                            } // done with the element integral
-                            // compute neighbour integral
+                            } // done computing Y's element surface integral
+                            // compute Y's neighbour surface integral
                             for ( int j = 0; j < numVelocityBaseFunctionsNeighbour; ++j ) {
                                 double Y_i_j = 0.0;
 #ifndef NLOG
@@ -1133,18 +1145,18 @@ class StokesPass
                                 if ( intersectionOutput && Youtput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = Y neighbour ====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                debugStream << "      volumeQuadrature.nop() " << faceQuadratureNeighbour.nop() << std::endl;
+                                debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
-                                    // get x
+                                    // get x codim<0> and codim<1> coordinates
                                     const ElementCoordinateType x = faceQuadratureNeighbour.point( quad );
                                     const LocalIntersectionCoordinateType localX = faceQuadratureNeighbour.localPoint( quad );
                                     // get the integration factor
                                     const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureNeighbour.weight( quad );
-                                    // calculate -\mu v_{i}\cdot\hat{\sigma}^{u{+}}(v{j})\cdot n_{t}
+                                    // compute -\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}
                                     const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     VelocityRangeType v_j( 0.0 );
                                     velocityBaseFunctionSetNeighbour.evaluate( j, x, v_j );
@@ -1152,7 +1164,7 @@ class StokesPass
                                     discreteModel_.sigmaFlux(   intIt,
                                                                 0.0,
                                                                 localX,
-                                                                DiscreteModelType::inside,
+                                                                DiscreteModelType::outside,
                                                                 v_j,
                                                                 sigma_u_minus_flux );
                                     VelocityRangeType flux_times_n_t( 0.0 );
@@ -1190,14 +1202,16 @@ class StokesPass
                                 Youtput = false;
                                 debugStream.Suspend(); // disable logging
 #endif
-                            } // done with the neighbour integral
-                        } // done calculating Y
+                            } // done computing Y's neighbour surface integral
+                        } // done computing Y's surface integrals
 
                         //                                                                                                  // we will call this one
-                        // (Z)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}ds // element integral
-                        //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{p}^{P^{-}}(q_{j})\cdot v_{i}\cdot n_{T}ds // neighbour integral
+                        // (Z)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's element surface integral
+                        //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{p}^{P^{-}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's neighbour surface integral
+                        //                                                                                                  // see also "Z's boundary integral" below
+                        //                                                                                                  // and "Z's volume integral" above
                         for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
-                            // compute element integral
+                            // compute Z's element surface integral
                             for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
                                 double Z_i_j = 0.0;
 #ifndef NLOG
@@ -1205,18 +1219,18 @@ class StokesPass
                                 if ( intersectionOutput && Zoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = Z element ======================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+                                debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-                                    // get x
+                                    // get x codim<0> and codim<1> coordinates
                                     const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                     const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
                                     // get the integration factor
                                     const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureElement.weight( quad );
-                                    // calculate \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
+                                    // compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
                                     const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     VelocityRangeType v_i( 0.0 );
                                     velocityBaseFunctionSetElement.evaluate( i, x, v_i );
@@ -1258,8 +1272,8 @@ class StokesPass
                                 Zoutput = false;
                                 debugStream.Suspend(); // disable logging
 #endif
-                            } // done with element integral
-                            // compute neighbour integral
+                            } // done computing Z's element surface integral
+                            // compute Z's neighbour surface integral
                             for ( int j = 0; j < numPressureBaseFunctionsNeighbour; ++j ) {
                                 double Z_i_j = 0.0;
 #ifndef NLOG
@@ -1267,18 +1281,18 @@ class StokesPass
                                 if ( intersectionOutput && Zoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = Z neighbour ====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                debugStream << "      volumeQuadrature.nop() " << faceQuadratureNeighbour.nop() << std::endl;
+                                debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
-                                    // get x
+                                    // get x codim<0> and codim<1> coordinates
                                     const ElementCoordinateType x = faceQuadratureNeighbour.point( quad );
                                     const LocalIntersectionCoordinateType localX = faceQuadratureNeighbour.localPoint( quad );
                                     // get the integration factor
                                     const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureNeighbour.weight( quad );
-                                    // calculate \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
+                                    // compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
                                     const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     VelocityRangeType v_i( 0.0 );
                                     velocityBaseFunctionSetElement.evaluate( i, x, v_i );
@@ -1289,7 +1303,7 @@ class StokesPass
                                     discreteModel_.pressureFlux(    intIt,
                                                                     0.0,
                                                                     localX,
-                                                                    DiscreteModelType::inside,
+                                                                    DiscreteModelType::outside,
                                                                     q_j,
                                                                     p_p_minus_flux );
                                     Z_i_j += elementVolume
@@ -1320,14 +1334,16 @@ class StokesPass
                                 Zoutput = false;
                                 debugStream.Suspend(); // disable logging
 #endif
-                            } // done with neighbour integral
-                        } // done calculating Z
+                            } // done computing Z's neighbour surface integral
+                        } // done computing Z's surface integrals
 
                         //                                                                                                // we will call this one
-                        // (E)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{U^{+}}(v_{j})\cdot n_{T}q_{i}ds // element integral
-                        //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{U^{-}}(v_{j})\cdot n_{T}q_{i}ds // neighbour integral
+                        // (E)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{U^{+}}(v_{j})\cdot n_{T}q_{i}ds // E's element surface integral
+                        //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{U^{-}}(v_{j})\cdot n_{T}q_{i}ds // E's neighbour surface integral
+                        //                                                                                                // see also "E's boundary integral" below
+                        //                                                                                                // and "E's volume integral" above
                         for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
-                            // compute element integral
+                            // compute E's element surface integral
                             for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                                 double E_i_j = 0.0;
 #ifndef NLOG
@@ -1335,18 +1351,18 @@ class StokesPass
                                 if ( intersectionOutput && Eoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = E element ======================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+                                debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-                                    // get x
+                                    // get x codim<0> and codim<1> coordinates
                                     const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                     const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
                                     // get the integration factor
                                     const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureElement.weight( quad );
-                                    // calculate \hat{u}_{p}^{U^{+}}(v_{j})\cdot n_{T}q_{i}
+                                    // compute \hat{u}_{p}^{U^{+}}(v_{j})\cdot n_{T}q_{i}
                                     const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     VelocityRangeType v_j( 0.0 );
                                     velocityBaseFunctionSetElement.evaluate( j, x, v_j );
@@ -1389,8 +1405,8 @@ class StokesPass
                                 Eoutput = false;
                                 debugStream.Suspend(); // disable logging
 #endif
-                            } // done with element integral
-                            // compute neighbour integral
+                            } // done computing E's element surface integral
+                            // compute E's neighbour surface integral
                             for ( int j = 0; j < numVelocityBaseFunctionsNeighbour; ++j ) {
                                 double E_i_j = 0.0;
 #ifndef NLOG
@@ -1398,18 +1414,18 @@ class StokesPass
                                 if ( intersectionOutput && Eoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = E neighbour ====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                debugStream << "      volumeQuadrature.nop() " << faceQuadratureNeighbour.nop() << std::endl;
+                                debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
-                                    // get x
+                                    // get x codim<0> and codim<1> coordinates
                                     const ElementCoordinateType x = faceQuadratureNeighbour.point( quad );
                                     const LocalIntersectionCoordinateType localX = faceQuadratureNeighbour.localPoint( quad );
                                     // get the integration factor
                                     const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureNeighbour.weight( quad );
-                                    // calculate \hat{u}_{p}^{U^{-}}(v_{j})\cdot n_{T}q_{i}
+                                    // compute \hat{u}_{p}^{U^{-}}(v_{j})\cdot n_{T}q_{i}
                                     const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     VelocityRangeType v_j( 0.0 );
                                     velocityBaseFunctionSetNeighbour.evaluate( j, x, v_j );
@@ -1417,7 +1433,7 @@ class StokesPass
                                     discreteModel_.velocityPressureFlux(    intIt,
                                                                             0.0,
                                                                             localX,
-                                                                            DiscreteModelType::inside,
+                                                                            DiscreteModelType::outside,
                                                                             v_j,
                                                                             u_p_u_minus_flux );
                                     const double flux_times_n_t = u_p_u_minus_flux * outerNormal;
@@ -1452,14 +1468,15 @@ class StokesPass
                                 Eoutput = false;
                                 debugStream.Suspend(); // disable logging
 #endif
-                            } // done with neighbour integral
-                        } // done calculating Z
+                            } // done computing E's neighbour surface integral
+                        } // done computing E's surface integrals
 
                         //                                                                                                // we will call this one
-                        // (R)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}ds // element integral
-                        //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}ds // neighbour integral
+                        // (R)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}ds // R's element surface integral
+                        //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}ds // R's neighbour surface integral
+                        //                                                                                                // see also "R's boundary integral" below
                         for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
-                            // compute element integral
+                            // compute R's element surface integral
                             for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
                                 double R_i_j = 0.0;
 #ifndef NLOG
@@ -1467,18 +1484,18 @@ class StokesPass
                                 if ( intersectionOutput && Routput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = R element ======================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+                                debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-                                    // get x
+                                    // get x codim<0> and codim<1> coordinates
                                     const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                     const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
                                     // get the integration factor
                                     const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureElement.weight( quad );
-                                    // calculate \hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}
+                                    // compute \hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}
                                     const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     PressureRangeType q_j( 0.0 );
                                     pressureBaseFunctionSetElement.evaluate( j, x, q_j );
@@ -1522,8 +1539,8 @@ class StokesPass
                                 Routput = false;
                                 debugStream.Suspend(); // disable logging
 #endif
-                            } // done with element integral
-                            // compute neighbour integral
+                            } // done computing R's element surface integral
+                            // compute R's neighbour surface integral
                             for ( int j = 0; j < numPressureBaseFunctionsNeighbour; ++j ) {
                                 double R_i_j = 0.0;
 #ifndef NLOG
@@ -1531,18 +1548,18 @@ class StokesPass
                                 if ( intersectionOutput && Routput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = R neighbour ====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                debugStream << "      volumeQuadrature.nop() " << faceQuadratureNeighbour.nop() << std::endl;
+                                debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
-                                    // get x
+                                    // get x codim<0> and codim<1> coordinates
                                     const ElementCoordinateType x = faceQuadratureNeighbour.point( quad );
                                     const LocalIntersectionCoordinateType localX = faceQuadratureNeighbour.localPoint( quad );
                                     // get the integration factor
                                     const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureNeighbour.weight( quad );
-                                    // calculate \hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}
+                                    // compute \hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}
                                     const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     PressureRangeType q_j( 0.0 );
                                     pressureBaseFunctionSetNeighbour.evaluate( j, x, q_j );
@@ -1586,8 +1603,8 @@ class StokesPass
                                 Routput = false;
                                 debugStream.Suspend(); // disable logging
 #endif
-                            } // done with neighbour integral
-                        } // done calculating R
+                            } // done computing R's neighbour surface integral
+                        } // done computing R's surface integrals
 #ifndef NLOG
                         ++numberOfInnerIntersections;
 #endif
@@ -1595,34 +1612,35 @@ class StokesPass
 
                     // if we are on the boundary of the grid
                     if ( !intIt.neighbor() && intIt.boundary() ) {
-                        // compute the surface integrals
+                        // compute the boundary integrals
 
                         //                                                                                                               // we wil call this one
-                        // (W)_{i,j} += -\int_{\varepsilon\in \Epsilon_{D}^{T}}\hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // boundary integral
+                        // (W)_{i,j} += \int_{\varepsilon\in \Epsilon_{D}^{T}}-\hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // W's boundary integral
+                        //                                                                                                               // see also "W's volume integral", "W's element surface integral" and "W's neighbour surface integral" above
                         for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                             for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                                 double W_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
-                                if ( intersectionOutput && Woutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                                if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = W boundary =====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+                                debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-                                    // get x
-                                    ElementCoordinateType x = faceQuadratureElement.point( quad );
-                                    LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
+                                    // get x codim<0> and codim<1> coordinates
+                                    const ElementCoordinateType x = faceQuadratureElement.point( quad );
+                                    const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
                                     // get the integration factor
-                                    double elementVolume = intersectionGeoemtry.integrationElement( localX );
+                                    const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                     // get the quadrature weight
-                                    double integrationWeight = faceQuadratureElement.weight( quad );
-                                    // calculate \hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{j}\cdot n_{T}
+                                    const double integrationWeight = faceQuadratureElement.weight( quad );
+                                    // compute \hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{j}\cdot n_{T}
+                                    const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     SigmaRangeType tau_i( 0.0 );
                                     VelocityRangeType v_j( 0.0 );
                                     VelocityRangeType u_sigma_u_plus_flux( 0.0 );
-                                    VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
                                     velocityBaseFunctionSetElement.evaluate( j, x, v_j );
                                     discreteModel_.velocitySigmaBoundaryFlux(   intIt,
@@ -1663,10 +1681,10 @@ class StokesPass
                                 Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
 #endif
                             }
-                        } // done calculating W
+                        } // done computing W's boundary integral
 
                         //                                                                                                    // we will call this one
-                        // (H1)_{j} = \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{u}_{\sigma}^{RHS}()\cdot\tau_{j}\cdot n_{T}ds // boundary integral
+                        // (H1)_{j} = \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{u}_{\sigma}^{RHS}()\cdot\tau_{j}\cdot n_{T}ds // H1's boundary integral
                         for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
                             double H1_j = 0.0;
 #ifndef NLOG
@@ -1674,21 +1692,21 @@ class StokesPass
                             if ( intersectionOutput && H1output ) debugStream.Resume(); // enable logging
                             debugStream << "      = H1 boundary ====================" << std::endl;
                             debugStream << "      basefunction " << j << std::endl;
-                            debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+                            debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                             // sum over all quadrature points
                             for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-                                // get x
-                                ElementCoordinateType x = faceQuadratureElement.point( quad );
-                                LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
+                                // get x codim<0> and codim<1> coordinates
+                                const ElementCoordinateType x = faceQuadratureElement.point( quad );
+                                const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
                                 // get the integration factor
-                                double elementVolume = intersectionGeoemtry.integrationElement( localX );
+                                const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                 // get the quadrature weight
-                                double integrationWeight = faceQuadratureElement.weight( quad );
-                                // calculate \hat{u}_{\sigma}^{RHS}()\cdot\tau_{j}\cdot n_{T}
+                                const double integrationWeight = faceQuadratureElement.weight( quad );
+                                // compute \hat{u}_{\sigma}^{RHS}()\cdot\tau_{j}\cdot n_{T}
+                                const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                 SigmaRangeType tau_j( 0.0 );
                                 sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
-                                const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                 VelocityRangeType tau_j_times_n_t( 0.0 );
                                 tau_j.mv( outerNormal, tau_j_times_n_t );
                                 VelocityRangeType u_sigma_rhs_flux( 0.0 );
@@ -1724,30 +1742,31 @@ class StokesPass
                             H1output = false;
                             debugStream.Suspend(); // disable logging
 #endif
-                        } // done calculating H1
+                        } // done computing H1's boundary integral
 
                         //                                                                                                                   // we will call this one
-                        // (X)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}ds // boundary integral
+                        // (X)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}ds // X's boundary integral
+                        //                                                                                                                   // see also "X's volume integral", "X's element surface integral" and "X's neighbour surface integral" above
                         for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                             for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
                                 double X_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-                                if ( intersectionOutput && Xoutput ) Logger().SetStreamFlags( Logging::LOG_DEBUG, debugLogState ); // enable logging
+                                if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = X boundary =====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+                                debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-                                    // get x
+                                    // get x codim<0> and codim<1> coordinates
                                     const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                     const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
                                     // get the integration factor
                                     const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureElement.weight( quad );
-                                    // calculate -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
+                                    // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
                                     const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     SigmaRangeType tau_j( 0.0 );
                                     sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
@@ -1794,10 +1813,11 @@ class StokesPass
                                 Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
 #endif
                             }
-                        } // done calculating X
+                        } // done computing X's boundary integral
 
                         //                                                                                                  // we will call this one
-                        // (Z)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}ds // boundary integral
+                        // (Z)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's boundary integral
+                        //                                                                                                  // see also "Z's volume integral", "Z's element surface integral" and "Z's neighbour surface integral" above
                         for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                             // compute the boundary integral
                             for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
@@ -1807,18 +1827,18 @@ class StokesPass
                                 if ( intersectionOutput && Zoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = Z boundary =====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+                                debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-                                    // get x
+                                    // get x codim<0> and codim<1> coordinates
                                     const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                     const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
                                     // get the integration factor
                                     const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureElement.weight( quad );
-                                    // calculate \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
+                                    // compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
                                     const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     VelocityRangeType v_i( 0.0 );
                                     velocityBaseFunctionSetElement.evaluate( i, x, v_i );
@@ -1860,12 +1880,13 @@ class StokesPass
                                 Zoutput = false;
                                 debugStream.Suspend(); // disable logging
 #endif
-                            } // done with boundary integral
-                        } // done calculating Z
+                            }
+                        } // done computing Z's boundary integral
 
                         //                                                                                                                 // we will call this one
-                        // (H2)_{j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\left( \mu v_{j}\cdot\hat{\sigma}^{RHS}()\cdot n_{T}ds         // 1st boundary integral
-                        //                                                         -\hat{p}^{RHS}()\cdot v_{j}\cdot n_{T}ds        \right) // 2nd boundary integral
+                        // (H2)_{j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\left( \mu v_{j}\cdot\hat{\sigma}^{RHS}()\cdot n_{T}ds         // H2's 1st boundary integral
+                        //                                                         -\hat{p}^{RHS}()\cdot v_{j}\cdot n_{T}ds        \right) // H2's 2nd boundary integral
+                        //                                                                                                                 // see also "H2's volume integral" above
                         for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                             double H2_j = 0.0;
 #ifndef NLOG
@@ -1873,11 +1894,11 @@ class StokesPass
                             if ( intersectionOutput && H2output ) debugStream.Resume(); // enable logging
                             debugStream << "      = H2 boundary ====================" << std::endl;
                             debugStream << "      basefunction " << j << std::endl;
-                            debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+                            debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                             // sum over all quadrature points
                             for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-                                // get x
+                                // get x codim<0> and codim<1> coordinates
                                 const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                 const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
                                 // get the integration factor
@@ -1901,6 +1922,7 @@ class StokesPass
                                     * integrationWeight
                                     * mu
                                     * v_j_times_flux_times_n_t;
+                                // done computing H2's 1st boundary integral
 #ifndef NLOG
                                 debugStream << "      - quadPoint " << quad;
                                 Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -1926,6 +1948,7 @@ class StokesPass
                                     * elementVolume
                                     * integrationWeight
                                     * flux_times_v_j_times_n_t;
+                                // done computing H2's 2nd boundary integral
 #ifndef NLOG
                                 Stuff::printFieldVector( p_rhs_flux, "p_rhs_flux", debugStream, "        " );
                                 debugStream << "\n        - flux_times_v_j_times_n_t: " << flux_times_v_j_times_n_t << std::endl;
@@ -1942,10 +1965,11 @@ class StokesPass
                             H2output = false;
                             debugStream.Suspend(); // disable logging
 #endif
-                        } // done calculating H2
+                        } // done computing H2's boundary integrals
 
-                        //                                                                                           // we will call this one
-                        // (E)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{u}_{p}^{U^{+}}(v_{j}\cdot n_{T}q_{i}ds // boundary integral
+                        //                                                                                               // we will call this one
+                        // (E)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{u}_{p}^{U^{+}}(v_{j}\cdot n_{T}q_{i}ds // E's boundary integral
+                        //                                                                                               // see also "E's volume integral", "E's element surface integral" and "E's neighbour surface integral" above
                         for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
                             // compute the boundary integral
                             for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
@@ -1955,18 +1979,18 @@ class StokesPass
                                 if ( intersectionOutput && Eoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = E boundary =====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+                                debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-                                    // get x
+                                    // get x codim<0> and codim<1> coordinates
                                     const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                     const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
                                     // get the integration factor
                                     const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureElement.weight( quad );
-                                    // calculate \hat{u}_{p}^{U^{+}}(v_{j})\cdot n_{T}q_{i}
+                                    // compute \hat{u}_{p}^{U^{+}}(v_{j})\cdot n_{T}q_{i}
                                     const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     VelocityRangeType v_j( 0.0 );
                                     velocityBaseFunctionSetElement.evaluate( j, x, v_j );
@@ -2009,11 +2033,12 @@ class StokesPass
                                 Eoutput = false;
                                 debugStream.Suspend(); // disable logging
 #endif
-                            } // done withe boundary integral
-                        } // done calculating E
+                            }
+                        } // done computing E's boundary integral
 
-                        //                                                                                            //we call this one
-                        // (R)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{t}q_{i}ds // boundary integral
+                        //                                                                                                // we call this one
+                        // (R)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{t}q_{i}ds // R's boundary integral
+                        //                                                                                                // see also "R's element surface integral" and "R's neighbour surface integral" above
                         for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
                             for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
                                 double R_i_j = 0.0;
@@ -2022,18 +2047,18 @@ class StokesPass
                                 if ( intersectionOutput && Routput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = R boundary =====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+                                debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
                                 for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-                                    // get x
+                                    // get x codim<0> and codim<1> coordinates
                                     const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                     const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
                                     // get the integration factor
                                     const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureElement.weight( quad );
-                                    // calculate \hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}
+                                    // compute \hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}
                                     const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     PressureRangeType q_j( 0.0 );
                                     pressureBaseFunctionSetElement.evaluate( j, x, q_j );
@@ -2076,11 +2101,11 @@ class StokesPass
                                 Routput = false;
                                 debugStream.Suspend(); // disable logging
 #endif
-                            } // done with boundary integral
-                        } // done calculating R
+                            }
+                        } // done computing R's boundary integral
 
-                        //                                                                                         // we will call this one
-                        // (H3)_{j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\hat{u}_{p}^{RHS}()\cdot n_{T}q_{j}ds // boundary integral
+                        //                                                                                        // we will call this one
+                        // (H3)_{j} = \int_{\varepsilon\in\Epsilon_{D}^{T}}-\hat{u}_{p}^{RHS}()\cdot n_{T}q_{j}ds // H3's boundary integral
                         for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
                             double H3_j = 0.0;
 #ifndef NLOG
@@ -2088,11 +2113,11 @@ class StokesPass
                             if ( intersectionOutput && H3output ) debugStream.Resume(); // enable logging
                             debugStream << "      = H3 boundary ====================" << std::endl;
                             debugStream << "      basefunction " << j << std::endl;
-                            debugStream << "      volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+                            debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                             // sum over all quadrature points
                             for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-                                // get x
+                                // get x codim<0> and codim<1> coordinates
                                 const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                 const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
                                 // get the integration factor
@@ -2139,11 +2164,7 @@ class StokesPass
                             H3output = false;
                             debugStream.Suspend(); // disable logging
 #endif
-                        } // done calculating H3
-
-
-
-
+                        } // done computing H3's boundary integral
 #ifndef NLOG
                         ++numberOfBoundaryIntersections;
 #endif
@@ -2171,10 +2192,10 @@ class StokesPass
 #ifndef NLOG
             infoStream << "- gridwalk done" << std::endl;
             debugStream.Resume(); // enable logging
-            debugStream << "  found " << entityNR << " entities," << std::endl;
+            debugStream << "  found " << entityNR << " entities and" << std::endl;
             debugStream << "  found " << intersectionNR << " intersections," << std::endl;
-            debugStream << "        " << numberOfInnerIntersections << " intersections inside and" << std::endl;
-            debugStream << "        " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
+//            debugStream << "        " << numberOfInnerIntersections << " intersections inside and" << std::endl;
+//            debugStream << "        " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
             if ( Mprint || Wprint || Xprint || Yprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
                 debugStream << "- printing matrices" << std::endl;
                 if ( Mprint ) {
@@ -2191,7 +2212,7 @@ class StokesPass
                 }
                 if ( Yprint ) {
                     debugStream << " - = Y ============" << std::endl;
-                    debugStream.Log( &XmatrixType::MatrixType::print,  Xmatrix.matrix() );
+                    debugStream.Log( &YmatrixType::MatrixType::print,  Ymatrix.matrix() );
                 }
                 if ( Zprint ) {
                     debugStream << " - = Z ============" << std::endl;
