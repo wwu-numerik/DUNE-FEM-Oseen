@@ -18,7 +18,7 @@
 
 //! simple macro that uses member vtkWriter instance to write file according to variable name
 #define VTK_WRITE(z)    vtkWriter_.addVertexData(z); \
-                        vtkWriter_.write(( "data/z" ) ); \
+                        vtkWriter_.write(( "data/"#z ) ); \
                         vtkWriter_.clear();
 
 
