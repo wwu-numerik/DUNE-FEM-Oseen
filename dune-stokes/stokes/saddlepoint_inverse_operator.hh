@@ -6,7 +6,7 @@
  */
 
 
-#define CG_SOLVERTYPE OEMBICGSTABOp
+//#define CG_SOLVERTYPE OEMBICGSTABOp
 #ifndef CG_SOLVERTYPE
     #define CG_SOLVERTYPE OEMCGOp
 #endif
@@ -153,7 +153,7 @@ namespace Dune {
         A_OperatorType a_op( w_mat, m_inv_mat, x_mat, y_mat, rhs1 );
 
 
-        typedef OEMCGOp< DiscreteVelocityFunctionType, A_OperatorType >
+        typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
                 F_Solver;
 
         F_Solver f_solver( a_op, 0.0001, 0.01, 2000, 2 );

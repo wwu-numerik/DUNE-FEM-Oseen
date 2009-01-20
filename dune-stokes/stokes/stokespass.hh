@@ -373,6 +373,7 @@ class StokesPass
             infoStream << "- starting gridwalk" << std::endl;
             infoStream << "  [ assembling          ]" << std::endl;
             infoStream << "  [";
+
             int fivePercents = 0;
 #endif
             // walk the grid
@@ -413,12 +414,13 @@ class StokesPass
                 const VolumeQuadratureType volumeQuadratureElement( entity,
                                                                     ( 2 * sigmaSpaceOrder ) + 1 );
 #ifndef NLOG
-//                if ( ( outputEntity != 0 ) && ( fivePercents < 21 ) ) {
-//                    if ( ( entityNR % anotherFivePercentOfEntities ) == 0 ) {
-//                        infoStream << "=";
-//                        ++fivePercents;
-//                    }
-//                }
+                if ( ( outputEntity != 0 ) && ( fivePercents < 21 ) ) {
+                    if ( ( entityNR % anotherFivePercentOfEntities ) == 0 ) {
+                        infoStream << "=";
+                        ++fivePercents;
+                        infoStream.Flush();
+                    }
+                }
                 if ( outputEntity == entityNR ) entityOutput = true;
                 if ( entityOutput ) debugStream.Resume(); // enable logging
                 debugStream << "  - entity " << outputEntity << std::endl;

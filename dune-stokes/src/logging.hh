@@ -73,6 +73,25 @@ class Logging
                     is_suspended_ = false;
                 }
 
+                void Flush()
+                {
+                    if ( logflags_ & loglevel_ )
+                    { //flush buffer into stream
+                        if ( ( logflags_ & LOG_CONSOLE ) != 0 ) {
+                            std::cout << buffer_.str();
+                            std::cout .flush();
+                        }
+                        if ( ( logflags_ & LOG_FILE ) != 0 ) {
+                            logfile_ << buffer_.str();
+                            logfileWoTime_ << buffer_.str();
+                            logfile_.flush();
+                            logfileWoTime_.flush();
+                        }
+                        buffer_.str("");// clear the buffer
+
+                    }
+                }
+
                 //template < class Class >
                 LogStream& operator << ( LogStream& ( *pf )(LogStream&) )
                 {
