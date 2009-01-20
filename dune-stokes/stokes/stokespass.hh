@@ -314,7 +314,7 @@ class StokesPass
             Logging::LogStream& debugStream = Logger().Dbg();
             bool entityOutput = false;
             bool intersectionOutput = false;
-            const int outputEntity = -1;
+            const int outputEntity = 0;
             const int outputIntersection = -1;
             int entityNR = 0;
             int intersectionNR = 0;
@@ -331,7 +331,7 @@ class StokesPass
             const bool Rprint = false;
             const bool H1print = false;
             const bool H2print = false;
-            const bool H3print = true;
+            const bool H3print = false;
             infoStream << "\nthis is StokesPass::apply()" << std::endl;
 
             // do an empty grid walk to get informations
@@ -2281,13 +2281,13 @@ class StokesPass
 #endif
 
 
-//            profiler().StartTiming("Pass -- SOLVER");
-//            InvOpType op( *this, 1.0,1.0,1,1 );
-//            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-//            profiler().StopTiming("Pass -- SOLVER");
-//
-//            profiler().StopTiming("Pass -- ASSEMBLE");
-//            profiler().StopTiming("Pass");
+            profiler().StartTiming("Pass -- SOLVER");
+            InvOpType op( *this, 1.0,1.0,1,1 );
+            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+            profiler().StopTiming("Pass -- SOLVER");
+
+            profiler().StopTiming("Pass -- ASSEMBLE");
+            profiler().StopTiming("Pass");
 
 
 

@@ -115,7 +115,7 @@ class SchurkomplementOperator
             tmp2.clear();
             Stuff::printDoubleVec( dbg, x );
             b_mat_.multOEM( x, tmp1.leakPointer() );
-            dbg.Log (&FunctionType::print , tmp1 ) ;
+//            dbg.Log (&FunctionType::print , tmp1 ) ;
             dbg << "begin: inner Ax=f" << std::endl;
             auf_solver( tmp1, tmp2 );
 

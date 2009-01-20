@@ -143,8 +143,20 @@ template < class Stream, class Type >
 void printDoubleVec( Stream& stream, const Type * vec )
 {
     stream << "\n [ ";
-    for ( unsigned int i = 0; i < sizeof (vec) / sizeof(double) ; ++i )
+    for ( unsigned int i = 0; i < sizeof (vec) / sizeof(vec[0]) ; ++i )
         stream << vec[i];
+
+    stream << " ] " << std::endl;
+}
+
+template < class Stream, class DiscFunc >
+void oneLinePrint( Stream& stream, const DiscFunc& func )
+{
+    typedef typename DiscFunc::ConstDofIteratorType DofIteratorType;
+    DofIteratorType it = func.dbegin();
+    stream << "\n" << func.name() << ": [ ";
+    for ( ; it != func.dend(); ++it )
+        stream << std::setw(5) << *it << "  ";
 
     stream << " ] " << std::endl;
 }

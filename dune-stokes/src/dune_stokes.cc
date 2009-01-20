@@ -23,6 +23,7 @@
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
 #include <dune/fem/misc/eoc.hh>
+#include <dune/fem/misc/gridwidth.hh>
 
 #include <dune/stokes/discretestokesfunctionspacewrapper.hh>
 #include <dune/stokes/discretestokesmodelinterface.hh>
@@ -166,15 +167,22 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
                     polOrder > >
         StokesModelImpType;
 
-    Dune::FieldVector< double, gridDim > ones( 1.0 );
+    Dune::GridWidthProvider< GridType > gw ( *gridPtr );
+
+    double grid_width = gw.gridWidth();
+    infoStream << " \n max grid width: " << grid_width << std::endl;
+
+    Dune::FieldVector< double, gridDim > vec_h( 1.0 );
+    Dune::FieldVector< double, gridDim > vec_1_h( 1.0 );
+    //ones /= grid_width;
     Dune::FieldVector< double, gridDim > zeros( 0.0 );
-    StokesModelImpType stokesModel( 1.0,
-                                    ones,
-                                    0.0,
+    StokesModelImpType stokesModel( 1.0 / grid_width,
+                                    zeros,
+                                    grid_width,
                                     zeros,
                                     analyticalForce,
                                     analyticalDirichletData,
-                                    1.0 );
+                                    0.0 );
 
     typedef Dune::DiscreteStokesModelInterface<
                 Dune::DiscreteStokesModelDefaultTraits<

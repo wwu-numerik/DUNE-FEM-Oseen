@@ -111,6 +111,7 @@ namespace Dune {
         Logging::LogStream& logInfo = Logger().Info();
         logInfo << "Begin SaddlePointInverseOperator " << std::endl;
 
+        logDebug.Resume();
         //get some refs for more readability
         PressureDiscreteFunctionType& pressure = dest.discretePressure();
         VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
@@ -154,7 +155,7 @@ namespace Dune {
         x_mat.apply( m_tmp, f_func );
         f_func *= -1;
         f_func += rhs2;
-
+        Stuff::oneLinePrint( logDebug, f_func );
         typedef MatrixA_Operator< WmatrixType, MmatrixType, XmatrixType, YmatrixType, DiscreteSigmaFunctionType >
             A_OperatorType;
         A_OperatorType a_op( w_mat, m_inv_mat, x_mat, y_mat, rhs1 );
@@ -163,7 +164,7 @@ namespace Dune {
         typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
                 F_Solver;
         logInfo << " \nstart f solver " << std::endl;
-        F_Solver f_solver( a_op, redEps, absLimit, 2000, 1 );
+        F_Solver f_solver( a_op, redEps, absLimit, 2000, 0 );
 
         // new_f := B * A^-1 * f_func + g_func
         DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
