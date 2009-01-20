@@ -230,7 +230,8 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     infoStream << "...done." << std::endl;
 
     infoStream << "\nstarting pass..." << std::endl;
-
+    discreteStokesFunctionWrapper.discretePressure().clear();
+    discreteStokesFunctionWrapper.discreteVelocity().clear();
     stokesPass.apply( discreteStokesFunctionWrapper, discreteStokesFunctionWrapper );
 
     infoStream << "...done." << std::endl;
