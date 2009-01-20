@@ -249,7 +249,6 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     typedef PostProcessor< StokesPassType, ProblemType >
         PostProcessorType;
 
-//    problem.testMe();
     PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );
 
     postProcessor.save( *gridPtr, discreteStokesFunctionWrapper ); //dummy params, should be computed solutions );
@@ -257,7 +256,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
 
     profiler().StopTiming( "Problem/Postprocessing" );
 
-    infoStream << "...done RUN." << std::endl;
+    infoStream << "...done." << std::endl;
 
     return 0;
 }
