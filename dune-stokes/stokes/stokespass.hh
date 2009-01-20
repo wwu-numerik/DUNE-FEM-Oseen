@@ -410,8 +410,8 @@ class StokesPass
                 const VolumeQuadratureType volumeQuadratureElement( entity,
                                                                     ( 2 * sigmaSpaceOrder ) + 1 );
 #ifndef NLOG
-                if ( ( outputEntity != 0 ) && ( fivePercents < 21 ) ) {
-                    if ( ( entityNR % anotherFivePercentOfEntities ) == 0 ) {
+                if ( ( entityNR % anotherFivePercentOfEntities ) == 0 ) {
+                    if ( fivePercents < 21 ) {
                         infoStream << "=";
                         ++fivePercents;
                         infoStream.Flush();
@@ -2281,13 +2281,13 @@ class StokesPass
 #endif
 
 
-            profiler().StartTiming("Pass -- SOLVER");
-            InvOpType op( *this, 1.0,1.0,1,1 );
-            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-            profiler().StopTiming("Pass -- SOLVER");
-
-            profiler().StopTiming("Pass -- ASSEMBLE");
-            profiler().StopTiming("Pass");
+//            profiler().StartTiming("Pass -- SOLVER");
+//            InvOpType op( *this, 1.0,1.0,1,1 );
+//            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+//            profiler().StopTiming("Pass -- SOLVER");
+//
+//            profiler().StopTiming("Pass -- ASSEMBLE");
+//            profiler().StopTiming("Pass");
 
 
 
