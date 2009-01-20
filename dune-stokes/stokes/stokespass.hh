@@ -205,10 +205,6 @@ class StokesPass
             // viscosity
             const double mu = discreteModel_.viscosity();
 
-            // functions
-            DiscreteVelocityFunctionType& velocity = dest.discreteVelocity();
-            DiscretePressureFunctionType& pressure = dest.discretePressure();
-
             // matrices
             // M\in R^{M\times M}
             typedef SparseRowMatrixObject<  DiscreteSigmaFunctionSpaceType,

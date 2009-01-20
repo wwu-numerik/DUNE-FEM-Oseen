@@ -154,9 +154,9 @@ class PostProcessor
     private:
 
         const ProblemType& problem_;
+        const DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
         const GridPartType& gridPart_;
         const DiscreteVelocityFunctionSpaceType& velocitySpace_;
-        const DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
         DiscreteVelocityFunctionType discreteExactVelocity_;
         DiscreteVelocityFunctionType discreteExactForce_;
         DiscreteVelocityFunctionType discreteExactDirichlet_;

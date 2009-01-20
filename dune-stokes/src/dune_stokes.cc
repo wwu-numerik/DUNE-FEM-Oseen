@@ -120,7 +120,6 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
                 L2ErrorVector& l2_errors )
 {
     Logging::LogStream& infoStream = Logger().Info();
-    ParameterContainer& parameters = Parameters();
 
     /* ********************************************************************** *
      * initialize the grid                                                    *

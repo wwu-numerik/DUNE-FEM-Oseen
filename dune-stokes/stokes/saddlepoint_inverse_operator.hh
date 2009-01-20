@@ -70,7 +70,6 @@ namespace Dune {
 			double absLimit,
 			int maxIter,
 			int verbose
-			//const EllipticInverseOperatorType& aufSolver
 			)
       : pass_( pass ),
         error_reduction_per_step_ ( redEps ),
@@ -240,9 +239,8 @@ namespace Dune {
 //    VelocityDiscreteFunctionType& velocity() { return velocity_; }
 
   private:
-    // reference to operator which should be inverted
-//    const StokesPassType & pass_;
 
+    const StokesPassType& pass_;
     // reduce error each step by
     double error_reduction_per_step_;
 //
@@ -258,7 +256,7 @@ namespace Dune {
 //    the CGSolver for A^-1
    // const EllipticInverseOperatorType& aufSolver_;
 //
-    const StokesPassType& pass_;
+
 
   };
 

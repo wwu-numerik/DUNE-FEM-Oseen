@@ -143,7 +143,7 @@ template < class Stream, class Type >
 void printDoubleVec( Stream& stream, const Type * vec )
 {
     stream << "\n [ ";
-    for ( int i = 0; i < sizeof (vec) / sizeof(double) ; ++i )
+    for ( unsigned int i = 0; i < sizeof (vec) / sizeof(double) ; ++i )
         stream << vec[i];
 
     stream << " ] " << std::endl;
