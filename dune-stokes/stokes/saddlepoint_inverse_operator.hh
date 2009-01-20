@@ -5,6 +5,12 @@
     \brief SPinverseoperator_original.hh
  */
 
+
+#define CG_SOLVERTYPE OEMBICGSTABOp
+#ifndef CG_SOLVERTYPE
+    #define CG_SOLVERTYPE OEMCGOp
+#endif
+
 #include <dune/fem/function/common/discretefunction.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
 //! using the memprovider from FEM currently results in assertion failed
@@ -174,7 +180,7 @@ namespace Dune {
                                         DiscreteSigmaFunctionType >
                 Sk_Operator;
 
-        typedef OEMCGOp< DiscretePressureFunctionType, Sk_Operator >
+        typedef CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
                 Sk_Solver;
 
         Sk_Operator sk_op(  a_op, x_mat, m_inv_mat, y_mat, b_t_mat, c_mat, b_mat, w_mat,

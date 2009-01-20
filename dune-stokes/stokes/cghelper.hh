@@ -130,7 +130,7 @@ class SchurkomplementOperator
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret) const
         {
-            typedef OEMCGOp< FFunctype, A_OperatorType >
+            typedef CG_SOLVERTYPE< FFunctype, A_OperatorType >
                 AufSolver;
             AufSolver auf_solver( a_op_, 0.001, 0.01, 2000, 1 );
 
