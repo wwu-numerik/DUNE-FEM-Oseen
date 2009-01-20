@@ -1,7 +1,7 @@
 # $Id: Makefile.am 3930 2007-12-05 17:17:07Z robertk $
 
 if INKSCAPE
-INKSCAPE_SUBDIRS = refinement
+#INKSCAPE_SUBDIRS = refinement
 endif INKSCAPE
 SUBDIRS = appl $(INKSCAPE_SUBDIRS) doxygen layout
 
