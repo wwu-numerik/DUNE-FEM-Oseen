@@ -782,12 +782,8 @@ class StokesPass
                         intIt != intItEnd;
                         ++intIt ) {
 #ifndef NLOG
-<<<<<<< HEAD:dune-stokes/stokes/stokespass.hh
-                    if ( ( outputIntersection == intersectionNR ) && entityOutput ) intersectionOutput = true;
-=======
 //                    if ( ( outputIntersection == intersectionNR ) && entityOutput ) intersectionOutput = true;
                     if ( entityOutput ) intersectionOutput = true;
->>>>>>> origin/model:dune-stokes/stokes/stokespass.hh
                     if ( intersectionOutput ) debugStream.Resume(); // enable logging
                     debugStream << "    - intersection " << intersectionNR << std::endl;
                     debugStream << "    - start calculations on intersection" << std::endl;
@@ -2237,16 +2233,9 @@ class StokesPass
 #ifndef NLOG
             infoStream << "]" << std::endl;
             infoStream << "- gridwalk done" << std::endl;
-<<<<<<< HEAD:dune-stokes/stokes/stokespass.hh
-            debugStream.Resume(); // enable logging
-            debugStream << "  found " << entityNR << " entities," << std::endl;
-            debugStream << "  found " << intersectionNR << " intersections," << std::endl;
-            debugStream << "        " << numberOfInnerIntersections << " intersections inside and" << std::endl;
-            debugStream << "        " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
-            if ( Mprint || Wprint || Xprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
-=======
+
             if ( Mprint || Wprint || Xprint || Yprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
->>>>>>> origin/model:dune-stokes/stokes/stokespass.hh
+
                 debugStream << "- printing matrices" << std::endl;
                 if ( Mprint ) {
                     debugStream << " - = M ============" << std::endl;
