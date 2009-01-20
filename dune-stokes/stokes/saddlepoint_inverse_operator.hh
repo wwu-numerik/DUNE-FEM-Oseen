@@ -6,10 +6,13 @@
  */
 
 
-//#define CG_SOLVERTYPE OEMBICGSTABOp
+#define CG_SOLVERTYPE OEMBICGSTABOp
 #ifndef CG_SOLVERTYPE
     #define CG_SOLVERTYPE OEMCGOp
 #endif
+
+const double redEps = 1e-6;
+const double absLimit = 1e-6;
 
 #include <dune/fem/function/common/discretefunction.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
@@ -142,10 +145,15 @@ namespace Dune {
         DiscretePressureFunctionType& g_func = rhs3;
         g_func *= ( -1 ); //since G = -H_3
 
-        Stuff::DiagonalMult( m_inv_mat, rhs1 ); //calc m_inv * H_1 "in-place"
+        //Stuff::DiagonalMult( m_inv_mat, rhs1 ); //calc m_inv * H_1 "in-place"
+        DiscreteSigmaFunctionType m_tmp ( "m_tom", rhs1.space() );
+        m_inv_mat.apply( rhs1, m_tmp );
+
+
         DiscreteVelocityFunctionType f_func( "f_func", velocity.space() );
         f_func.clear();
-        x_mat.apply( rhs1, f_func );
+        x_mat.apply( m_tmp, f_func );
+        f_func *= -1;
         f_func += rhs2;
 
         typedef MatrixA_Operator< WmatrixType, MmatrixType, XmatrixType, YmatrixType, DiscreteSigmaFunctionType >
@@ -155,12 +163,14 @@ namespace Dune {
 
         typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
                 F_Solver;
-
-        F_Solver f_solver( a_op, 0.0001, 0.01, 2000, 2 );
+        logInfo << " \nstart f solver " << std::endl;
+        F_Solver f_solver( a_op, redEps, absLimit, 2000, 1 );
 
         // new_f := B * A^-1 * f_func + g_func
         DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
+        tmp_f.clear();
         f_solver( f_func, tmp_f );
+        logInfo << " \nend f solver " << std::endl;
 
         DiscretePressureFunctionType new_f ( "new_f", g_func.space() );
         b_t_mat.apply( tmp_f, new_f );
@@ -168,26 +178,22 @@ namespace Dune {
 
 
         typedef SchurkomplementOperator<A_OperatorType,
-                                        XmatrixType,
-                                        MmatrixType,
-                                        YmatrixType,
                                         B_t_matrixType,
                                         CmatrixType,
                                         BmatrixType,
-                                        WmatrixType,
                                         DiscreteVelocityFunctionType,
-                                        DiscretePressureFunctionType,
-                                        DiscreteSigmaFunctionType >
+                                        typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType >
                 Sk_Operator;
 
-        typedef CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
+        typedef OEMGMRESOp< DiscretePressureFunctionType, Sk_Operator >
                 Sk_Solver;
-
-        Sk_Operator sk_op(  a_op, x_mat, m_inv_mat, y_mat, b_t_mat, c_mat, b_mat, w_mat,
-                            f_func, g_func, arg.discreteVelocity(), velocity, rhs1 );
-        Sk_Solver sk_solver( sk_op, 0.001, 0.01, 2000, 1 );
+        logInfo << " \nbegin SK solver " << std::endl;
+        Sk_Operator sk_op(  a_op, b_t_mat, c_mat, b_mat,
+                            f_func.space() );
+        Sk_Solver sk_solver( sk_op, redEps, absLimit, 2000, 1 );
+        pressure.clear();
         sk_solver( new_f, pressure );
-
+        logInfo << " \nend SK solver " << std::endl;
 
         //schurkomplement Operator ist: B2 * A_inv * B1 + C
 

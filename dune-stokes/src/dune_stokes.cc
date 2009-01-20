@@ -85,7 +85,7 @@ int main( int argc, char** argv )
         Logging::LOG_CONSOLE |
         Logging::LOG_FILE |
         Logging::LOG_ERR |
-
+        Logging::LOG_DEBUG |
         Logging::LOG_INFO );
 
     L2ErrorVector l2_errors;
@@ -168,13 +168,14 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
         StokesModelImpType;
 
     Dune::FieldVector< double, gridDim > ones( 1.0 );
+    Dune::FieldVector< double, gridDim > zeros( 0.0 );
     StokesModelImpType stokesModel( 1.0,
                                     ones,
-                                    1.0,
-                                    ones,
+                                    0.0,
+                                    zeros,
                                     analyticalForce,
                                     analyticalDirichletData,
-                                    2.0 );
+                                    1.0 );
 
     typedef Dune::DiscreteStokesModelInterface<
                 Dune::DiscreteStokesModelDefaultTraits<

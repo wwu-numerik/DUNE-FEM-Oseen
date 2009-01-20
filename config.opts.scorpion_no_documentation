@@ -5,8 +5,6 @@ CONFIGURE_FLAGS="CXX=g++ CC=gcc CXXFLAGS='-O0' \
   --prefix=/data/dune_work/private/f_albr01/diplomarbeit_felix_rene \
   --with-metis=/share/dune/Modules/modules_$HOSTTYPE/metis \
   --with-alugrid=/share/dune/Modules/modules_$HOSTTYPE/ALUGrid-1.1_Parallel \
-  --with-alberta=/share/dune/Modules/modules_$HOSTTYPE/alberta \
-  --with-ug=/share/dune/Modules/modules_$HOSTTYPE/ug \
   --x-includes=/usr/X11R6/include \
   --x-libraries=/usr/X11R6/lib64 \
   --with-grape=/share/dune/Modules/modules_$HOSTTYPE/grape \

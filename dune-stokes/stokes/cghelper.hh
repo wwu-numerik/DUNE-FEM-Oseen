@@ -3,6 +3,8 @@
 //! using the memprovider from FEM currently results in assertion failed
 #undef USE_MEMPROVIDER
 #include <dune/fem/solver/oemsolver.hh>
+#include "../src/logging.hh"
+#include "../src/stuff.hh"
 
 namespace Dune {
 
@@ -47,7 +49,8 @@ class MatrixA_Operator {
             tmp1.clear();
             tmp2.clear();
             w_mat_.multOEM( x, tmp1.leakPointer() );
-            m_mat_.multOEM( tmp1.leakPointer(), tmp2.leakPointer() );
+            m_mat_.multOEM( tmp1.leakPointer(), tmp2.leakPointer() );//Stuff:DiagmUlt
+            tmp2 *= ( -1 );
             x_mat_.multOEM( tmp2.leakPointer(), ret );
 
             y_mat_.multOEMAdd( x, ret );
@@ -70,74 +73,53 @@ class MatrixA_Operator {
 
 
 template <  class A_OperatorType,
-            class XmatrixType,
-            class M_inv_matrixType,
-            class YmatrixType,
             class B_t_matrixType,
             class CmatrixType,
             class BmatrixType,
-            class WmatrixType,
-            class FFunctype,
-            class GFunctype,
-            class DiscreteSigmaFunctionType >
+            class FunctionType ,
+            class FunctionSpaceType>
 class SchurkomplementOperator
 {
     public:
 
         typedef SchurkomplementOperator <   A_OperatorType,
-                                            XmatrixType,
-                                            M_inv_matrixType,
-                                            YmatrixType,
                                             B_t_matrixType,
                                             CmatrixType,
                                             BmatrixType,
-                                            WmatrixType,
-                                            FFunctype,
-                                            GFunctype,
-                                            DiscreteSigmaFunctionType >
+                                            FunctionType,
+                                            FunctionSpaceType>
                 ThisType;
 
         SchurkomplementOperator( A_OperatorType& a_op,
-                                const XmatrixType& x_mat,
-                                const M_inv_matrixType& m_inv_mat,
-                                const YmatrixType& y_mat,
                                 const B_t_matrixType& b_t_mat,
                                 const CmatrixType& c_mat,
                                 const BmatrixType& b_mat,
-                                const WmatrixType& w_mat,
-                                const FFunctype& f_func,
-                                const GFunctype& g_func,
-                                const FFunctype& arg,
-                                FFunctype& dest,
-                                const DiscreteSigmaFunctionType& sigma_dummy )
+                                const FunctionSpaceType& space )
             : a_op_(a_op),
-            x_mat_(x_mat),
-            m_inv_mat_(m_inv_mat),
-            y_mat_(y_mat),
             b_t_mat_(b_t_mat),
             c_mat_(c_mat),
             b_mat_(b_mat),
-            w_mat_(w_mat),
-            f_func_(f_func),
-            g_func_(g_func),
-            arg_(arg),
-            dest_(dest),
-            sigma_dummy_(sigma_dummy),
-            tmp1 ( "tmp1", f_func.space() ),
-            tmp2 ( "tmp2", f_func.space() )
+            tmp1 ( "tmp1", space ),
+            tmp2 ( "tmp2", space )
         {}
 
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret) const
         {
-            typedef CG_SOLVERTYPE< FFunctype, A_OperatorType >
+            Logging::LogStream& dbg = Logger().Dbg();
+            typedef OEMBICGSTABOp< FunctionType, A_OperatorType >
                 AufSolver;
-            AufSolver auf_solver( a_op_, 0.001, 0.01, 2000, 1 );
+            AufSolver auf_solver( a_op_, redEps, absLimit, 2000, 0 );
 
             tmp1.clear();
             tmp2.clear();
+            Stuff::printDoubleVec( dbg, x );
             b_mat_.multOEM( x, tmp1.leakPointer() );
+            dbg.Log (&FunctionType::print , tmp1 ) ;
+            dbg << "begin: inner Ax=f" << std::endl;
             auf_solver( tmp1, tmp2 );
+
+            dbg << "end: inner Ax=f" << std::endl;
             b_t_mat_.multOEM( tmp2.leakPointer(), ret );
             c_mat_.multOEMAdd( x, ret );
 
@@ -151,20 +133,11 @@ class SchurkomplementOperator
 
     private:
          A_OperatorType& a_op_;
-        const XmatrixType& x_mat_;
-        const M_inv_matrixType& m_inv_mat_;
-        const YmatrixType& y_mat_;
         const B_t_matrixType& b_t_mat_;
         const CmatrixType& c_mat_;
         const BmatrixType& b_mat_;
-        const WmatrixType& w_mat_;
-        const FFunctype& f_func_;
-        const GFunctype& g_func_;
-        const FFunctype& arg_;
-        FFunctype& dest_;
-        const DiscreteSigmaFunctionType& sigma_dummy_;
-        mutable FFunctype tmp1;
-        mutable FFunctype tmp2;
+        mutable FunctionType tmp1;
+        mutable FunctionType tmp2;
 };
 
 }

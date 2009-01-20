@@ -326,15 +326,15 @@ class StokesPass
             int numberOfIntersections = 0;
             int numberOfBoundaryIntersections = 0;
             int numberOfInnerIntersections = 0;
-            const bool Mprint = true;
-            const bool Wprint = true;
-            const bool Xprint = true;
-            const bool Yprint = true;
-            const bool Zprint = true;
-            const bool Eprint = true;
-            const bool Rprint = true;
-            const bool H1print = true;
-            const bool H2print = true;
+            const bool Mprint = false;
+            const bool Wprint = false;
+            const bool Xprint = false;
+            const bool Yprint = false;
+            const bool Zprint = false;
+            const bool Eprint = false;
+            const bool Rprint = false;
+            const bool H1print = false;
+            const bool H2print = false;
             const bool H3print = true;
             infoStream << "\nthis is StokesPass::apply()" << std::endl;
 
@@ -2238,6 +2238,7 @@ class StokesPass
 
             if ( Mprint || Wprint || Xprint || Yprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
 
+                debugStream.Resume();
                 debugStream << "- printing matrices" << std::endl;
                 if ( Mprint ) {
                     debugStream << " - = M ============" << std::endl;
@@ -2281,7 +2282,6 @@ class StokesPass
                 }
                 debugStream << "- done printing matrices" << std::endl;
             }
-            debugStream.Resume(); // return to original state
 #endif
 
 
@@ -2386,6 +2386,7 @@ class StokesPass
                 ret += (*rowIt)[i];
                 ++i;
             }
+            return ret;
         }
 
 };
