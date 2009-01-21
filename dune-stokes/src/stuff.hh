@@ -161,6 +161,16 @@ void oneLinePrint( Stream& stream, const DiscFunc& func )
     stream << " ] " << std::endl;
 }
 
+template < class Function >
+void addScalarToFunc( Function& f, double sc )
+{
+    typedef typename Function::DofIteratorType DofIteratorType;
+    DofIteratorType it = f.dbegin();
+    for ( ; it != f.dend(); ++it )
+        *it += sc;
+    return;
+}
+
 } // end namepspace stuff
 
 
