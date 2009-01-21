@@ -7,8 +7,6 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
-//! using the memprovider from FEM currently results in assertion failed
-#undef USE_MEMPROVIDER
 
 #include <iostream>
 #include <dune/common/mpihelper.hh> // An initializer of MPI

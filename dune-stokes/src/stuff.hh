@@ -140,11 +140,11 @@ void DiagonalMult( const Matrix& matrix, Function& f )
 }
 
 template < class Stream, class Type >
-void printDoubleVec( Stream& stream, const Type * vec )
+void printDoubleVec( Stream& stream, const Type * vec, const unsigned int N )
 {
-    stream << "\n [ ";
-    for ( unsigned int i = 0; i < sizeof (vec) / sizeof(vec[0]) ; ++i )
-        stream << vec[i];
+    stream << "\n [ " << std::setw(5);
+    for ( unsigned int i = 0; i < N ; ++i )
+        stream << vec[i] << " ";
 
     stream << " ] " << std::endl;
 }

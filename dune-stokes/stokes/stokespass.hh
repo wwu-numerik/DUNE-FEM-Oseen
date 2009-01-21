@@ -410,13 +410,13 @@ class StokesPass
                 const VolumeQuadratureType volumeQuadratureElement( entity,
                                                                     ( 2 * sigmaSpaceOrder ) + 1 );
 #ifndef NLOG
-                if ( ( entityNR % anotherFivePercentOfEntities ) == 0 ) {
-                    if ( fivePercents < 21 ) {
-                        infoStream << "=";
-                        ++fivePercents;
-                        infoStream.Flush();
-                    }
-                }
+//                if ( ( entityNR % anotherFivePercentOfEntities ) == 0 ) {
+//                    if ( fivePercents < 21 ) {
+//                        infoStream << "=";
+//                        ++fivePercents;
+//                        infoStream.Flush();
+//                    }
+//                }
                 if ( outputEntity == entityNR ) entityOutput = true;
                 if ( entityOutput ) debugStream.Resume(); // enable logging
                 debugStream << "  - entity " << outputEntity << std::endl;

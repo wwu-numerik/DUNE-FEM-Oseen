@@ -17,7 +17,7 @@ const double absLimit = 1e-6;
 #include <dune/fem/function/common/discretefunction.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
 //! using the memprovider from FEM currently results in assertion failed
-#undef USE_MEMPROVIDER
+//#undef USE_MEMPROVIDER
 #include <dune/stokes/cghelper.hh>
 
 #include "../src/logging.hh"
@@ -156,9 +156,9 @@ namespace Dune {
         f_func *= -1;
         f_func += rhs2;
         Stuff::oneLinePrint( logDebug, f_func );
-        typedef MatrixA_Operator< WmatrixType, MmatrixType, XmatrixType, YmatrixType, DiscreteSigmaFunctionType >
+        typedef MatrixA_Operator< WmatrixType, MmatrixType, XmatrixType, YmatrixType, DiscreteVelocityFunctionType >
             A_OperatorType;
-        A_OperatorType a_op( w_mat, m_inv_mat, x_mat, y_mat, rhs1 );
+        A_OperatorType a_op( w_mat, m_inv_mat, x_mat, y_mat, velocity.space() );
 
 
         typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
@@ -182,16 +182,17 @@ namespace Dune {
                                         CmatrixType,
                                         BmatrixType,
                                         DiscreteVelocityFunctionType,
-                                        typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType >
+                                        DiscretePressureFunctionType >
                 Sk_Operator;
 
-        typedef OEMGMRESOp< DiscretePressureFunctionType, Sk_Operator >
+        typedef OEMBICGSTABOp< DiscretePressureFunctionType, Sk_Operator >
                 Sk_Solver;
         logInfo << " \nbegin SK solver " << std::endl;
         Sk_Operator sk_op(  a_op, b_t_mat, c_mat, b_mat,
-                            f_func.space() );
-        Sk_Solver sk_solver( sk_op, redEps, absLimit, 2000, 1 );
-        pressure.clear();
+                            velocity.space(), pressure.space() );
+        Sk_Solver sk_solver( sk_op, redEps, absLimit, 2000, 0 );
+        pressure.assign( new_f );
+        Stuff::addScalarToFunc( pressure, 0.0001 );
         sk_solver( new_f, pressure );
         logInfo << " \nend SK solver " << std::endl;
 
