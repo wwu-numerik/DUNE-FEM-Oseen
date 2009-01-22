@@ -365,16 +365,16 @@ class StokesPass
                     }
                 }
             }
-            const int anotherFivePercentOfEntities = numberOfEntities / 20;
-            infoStream << "found " << numberOfEntities << " entities," << std::endl;
-            infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
-            infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
-            infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
-            infoStream << "- starting gridwalk" << std::endl;
-            infoStream << "  [ assembling          ]" << std::endl;
-            infoStream << "  [";
+//            const int anotherFivePercentOfEntities = numberOfEntities / 20;
+//            infoStream << "found " << numberOfEntities << " entities," << std::endl;
+//            infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
+//            infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
+//            infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
+//            infoStream << "- starting gridwalk" << std::endl;
+//            infoStream << "  [ assembling          ]" << std::endl;
+//            infoStream << "  [";
 
-            int fivePercents = 0;
+//            int fivePercents = 0;
 #endif
             // walk the grid
             EntityIteratorType entityItEnd = velocitySpace_.end();
@@ -414,13 +414,13 @@ class StokesPass
                 const VolumeQuadratureType volumeQuadratureElement( entity,
                                                                     ( 2 * sigmaSpaceOrder ) + 1 );
 #ifndef NLOG
-                if ( ( entityNR % anotherFivePercentOfEntities ) == 0 ) {
-                    if ( fivePercents < 21 ) {
-                        infoStream << "=";
-                        ++fivePercents;
-                        infoStream.Flush();
-                    }
-                }
+//                if ( ( entityNR % anotherFivePercentOfEntities ) == 0 ) {
+//                    if ( fivePercents < 21 ) {
+//                        infoStream << "=";
+//                        ++fivePercents;
+//                        infoStream.Flush();
+//                    }
+//                }
                 if ( outputEntity == entityNR ) entityOutput = true;
                 if ( entityOutput ) debugStream.Resume(); // enable logging
                 debugStream << "  - entity " << outputEntity << std::endl;
@@ -2236,8 +2236,23 @@ class StokesPass
             infoStream << "]" << std::endl;
             infoStream << "- gridwalk done" << std::endl;
 
-            if ( Mprint || Wprint || Xprint || Yprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
+            // build A for testing
+            // W\in R^{L\times L}
+            typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
+                                            DiscreteVelocityFunctionSpaceType >
+                AmatrixType;
+            AmatrixType Amatrix( velocitySpace_, velocitySpace_ );
+            Amatrix.reserve();
 
+            XmatrixType neg_X_Minv_mat( velocitySpace_, sigmaSpace_ );
+            neg_X_Minv_mat.reserve();
+            Xmatrix.matrix().multiply( MInversMatrix.matrix(), neg_X_Minv_mat.matrix() );
+            neg_X_Minv_mat.matrix().scale( -1.0 );
+            neg_X_Minv_mat.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
+            Amatrix.matrix().add( Ymatrix.matrix() );
+
+//            if ( Mprint || Wprint || Xprint || Yprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
+                debugStream.Resume();
                 debugStream << "- printing matrices" << std::endl;
                 if ( Mprint ) {
                     debugStream << " - = M ============" << std::endl;
@@ -2279,8 +2294,10 @@ class StokesPass
                     debugStream << " - = H3 ===========" << std::endl;
                     debugStream.Log( &DiscretePressureFunctionType::print, H3rhs );
                 }
+                debugStream << " - = A ============" << std::endl;
+                debugStream.Log( &AmatrixType::MatrixType::print,  Amatrix.matrix() );
                 debugStream << "- done printing matrices" << std::endl;
-            }
+//            }
             debugStream.Resume(); // return to original state
 #endif
 
