@@ -8,6 +8,8 @@
 # include "config.h"
 #endif
 
+#define POLORDER 0
+
 #include <iostream>
 #include <dune/common/mpihelper.hh> // An initializer of MPI
 #include <dune/common/exceptions.hh> // We use exceptions

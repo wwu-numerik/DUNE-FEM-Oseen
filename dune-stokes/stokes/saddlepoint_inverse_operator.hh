@@ -229,11 +229,11 @@ namespace Dune {
 
             if ( res_norm < absLimit )
                 break;
+            logInfo << "\nnext SK solver iteration" << std::endl;
+            b_mat.apply( residuum, residuum_tmp );
+            sk_solver( new_f, pressure );
 
-//            b_mat.apply( residuum, residuum_tmp );
-//            sk_solver( new_f, pressure );
-
-        } while ( res_norm < absLimit );
+        } while ( false ) ;//res_norm > absLimit );
         //schritt 2
         //setzte:
         //  r_0     = -B2 * u_0 + C * p_0 + G
