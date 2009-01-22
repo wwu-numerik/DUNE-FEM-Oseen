@@ -11,8 +11,8 @@
     #define CG_SOLVERTYPE OEMCGOp
 #endif
 
-const double redEps = 1e-6;
-const double absLimit = 1e-6;
+const double redEps = 1e-4;
+const double absLimit = 1e-3;
 
 #include <dune/fem/function/common/discretefunction.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
@@ -65,14 +65,12 @@ namespace Dune {
     * velocity,rhs1 is  stored as member,no better idea
 	  **/
     SaddlepointInverseOperator(
-            const StokesPassType& pass,
             double redEps,
 			double absLimit,
 			int maxIter,
 			int verbose
 			)
-      : pass_( pass ),
-        error_reduction_per_step_ ( redEps ),
+      : error_reduction_per_step_ ( redEps ),
         epsilon_ ( absLimit ),
         max_iterations_ (maxIter ),
         verbosity_ ( verbose )
@@ -102,7 +100,7 @@ namespace Dune {
                 RmatrixObjectType& Rmatrix,
                 ZmatrixObjectType& Zmatrix,
                 WmatrixObjectType& Wmatrix,
-                DiscreteSigmaFunctionType& rhs1,
+                const DiscreteSigmaFunctionType& rhs1,
                 DiscreteVelocityFunctionType& rhs2,
                 DiscretePressureFunctionType& rhs3 ) const
     {
@@ -155,20 +153,26 @@ namespace Dune {
         x_mat.apply( m_tmp, f_func );
         f_func *= -1;
         f_func += rhs2;
-        Stuff::oneLinePrint( logDebug, f_func );
-        typedef MatrixA_Operator< WmatrixType, MmatrixType, XmatrixType, YmatrixType, DiscreteVelocityFunctionType >
+//
+        typedef MatrixA_Operator<   WmatrixType,
+                                    MmatrixType,
+                                    XmatrixType,
+                                    YmatrixType,
+                                    DiscreteVelocityFunctionType,
+                                    DiscreteSigmaFunctionType >
             A_OperatorType;
-        A_OperatorType a_op( w_mat, m_inv_mat, x_mat, y_mat, velocity.space() );
-
-
+        A_OperatorType a_op( w_mat, m_inv_mat, x_mat, y_mat, velocity.space(), rhs1.space() );
+//
+//
         typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
                 F_Solver;
         logInfo << " \nstart f solver " << std::endl;
-        F_Solver f_solver( a_op, redEps, absLimit, 2000, 0 );
-
+        F_Solver f_solver( a_op, redEps, absLimit, 2000, 1 );
+//
         // new_f := B * A^-1 * f_func + g_func
         DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
         tmp_f.clear();
+//        tmp_f += f_func;
         f_solver( f_func, tmp_f );
         logInfo << " \nend f solver " << std::endl;
 
@@ -191,8 +195,9 @@ namespace Dune {
         Sk_Operator sk_op(  a_op, b_t_mat, c_mat, b_mat,
                             velocity.space(), pressure.space() );
         Sk_Solver sk_solver( sk_op, redEps, absLimit, 2000, 0 );
-        pressure.assign( new_f );
-        Stuff::addScalarToFunc( pressure, 0.0001 );
+        pressure.clear();
+//        pressure += new_f ;
+        Stuff::addScalarToFunc( pressure, 0.1 );
         sk_solver( new_f, pressure );
         logInfo << " \nend SK solver " << std::endl;
 
@@ -242,7 +247,6 @@ namespace Dune {
 
   private:
 
-    const StokesPassType& pass_;
     // reduce error each step by
     double error_reduction_per_step_;
 //

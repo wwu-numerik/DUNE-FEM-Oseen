@@ -130,7 +130,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     GridPartType gridPart( *gridPtr );
     const int gridDim = GridType::dimensionworld;
     const int polOrder = POLORDER;
-
+    const double viscosity = 1.0;
 
 
     infoStream << "...done." << std::endl;
@@ -145,7 +145,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
 
     typedef Force< VelocityFunctionSpaceType >
         AnalyticalForceType;
-    AnalyticalForceType analyticalForce( 0.5, velocitySpace );
+    AnalyticalForceType analyticalForce( viscosity , velocitySpace );
 
     typedef DirichletData< VelocityFunctionSpaceType >
         AnalyticalDirichletDataType;
@@ -170,17 +170,17 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     double grid_width = gw.gridWidth();
     infoStream << " \n max grid width: " << grid_width << std::endl;
 
-    Dune::FieldVector< double, gridDim > vec_h( 1.0 );
+    Dune::FieldVector< double, gridDim > ones( 1.0 );
     Dune::FieldVector< double, gridDim > vec_1_h( 1.0 );
     //ones /= grid_width;
     Dune::FieldVector< double, gridDim > zeros( 0.0 );
-    StokesModelImpType stokesModel( 1.0 / grid_width,
+    StokesModelImpType stokesModel( 1 ,
                                     zeros,
-                                    grid_width,
+                                    1,
                                     zeros,
                                     analyticalForce,
                                     analyticalDirichletData,
-                                    0.0 );
+                                    viscosity  );
 
     typedef Dune::DiscreteStokesModelInterface<
                 Dune::DiscreteStokesModelDefaultTraits<
@@ -251,7 +251,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
 
     typedef Problem< gridDim, DiscreteStokesFunctionWrapperType >
         ProblemType;
-    ProblemType problem( 0, discreteStokesFunctionWrapper );
+    ProblemType problem( viscosity , discreteStokesFunctionWrapper );
 
     typedef PostProcessor< StokesPassType, ProblemType >
         PostProcessorType;

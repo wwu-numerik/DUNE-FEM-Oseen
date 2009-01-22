@@ -14,7 +14,8 @@ template <  class WMatType,
             class MMatType,
             class XMatType,
             class YMatType,
-            class DiscreteVelocityFunctionType >
+            class DiscreteVelocityFunctionType,
+            class DiscreteSigmaFunctionType >
 class MatrixA_Operator {
 
     public:
@@ -23,20 +24,24 @@ class MatrixA_Operator {
                         MMatType,
                         XMatType,
                         YMatType,
-                        DiscreteVelocityFunctionType >
+                        DiscreteVelocityFunctionType,
+                        DiscreteSigmaFunctionType >
                     ThisType;
 
         MatrixA_Operator ( const WMatType& w_mat,
                 const MMatType& m_mat,
                 const XMatType& x_mat,
                 const YMatType& y_mat,
-                const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& space )
+                const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& vel_space,
+                const typename DiscreteSigmaFunctionType::DiscreteFunctionSpaceType& sig_space )
             :  w_mat_(w_mat),
             m_mat_(m_mat),
             x_mat_(x_mat),
             y_mat_(y_mat),
-            tmp1( "tmp1", space ),
-            tmp2( "tmp2", space )
+            vel_tmp1( "vel_tmp1", vel_space ),
+            vel_tmp2( "vel_tmp2", vel_space ),
+            sig_tmp1( "sig_tmp1", sig_space ),
+            sig_tmp2( "sig_tmp2", sig_space )
         {}
 
         ~MatrixA_Operator()
@@ -45,17 +50,17 @@ class MatrixA_Operator {
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret) const
         {
-            tmp1.clear();
-            tmp2.clear();
+            sig_tmp1.clear();
+            sig_tmp2.clear();
             Logging::LogStream& dbg = Logger().Dbg();
 
 //            dbg << "\n Auf x: " ;
 //            Stuff::printDoubleVec( dbg, x, w_mat_.cols() );
 //            dbg << std::endl ;
-            w_mat_.multOEM( x, tmp1.leakPointer() );
-            m_mat_.multOEM( tmp1.leakPointer(), tmp2.leakPointer() );//Stuff:DiagmUlt
-            tmp2 *= ( -1 );
-            x_mat_.multOEM( tmp2.leakPointer(), ret );
+            w_mat_.multOEM( x, sig_tmp1.leakPointer() );
+            m_mat_.apply( sig_tmp1, sig_tmp2 );//Stuff:DiagmUlt
+            sig_tmp2 *= ( -1 );
+            x_mat_.multOEM( sig_tmp2.leakPointer(), ret );
 
             y_mat_.multOEMAdd( x, ret );
         }
@@ -70,8 +75,10 @@ class MatrixA_Operator {
         const MMatType& m_mat_;
         const XMatType& x_mat_;
         const YMatType& y_mat_;
-        mutable DiscreteVelocityFunctionType tmp1;
-        mutable DiscreteVelocityFunctionType tmp2;
+        mutable DiscreteVelocityFunctionType vel_tmp1;
+        mutable DiscreteVelocityFunctionType vel_tmp2;
+        mutable DiscreteSigmaFunctionType sig_tmp1;
+        mutable DiscreteSigmaFunctionType sig_tmp2;
 };
 
 

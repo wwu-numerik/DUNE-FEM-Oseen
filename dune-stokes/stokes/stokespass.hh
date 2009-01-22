@@ -2282,7 +2282,7 @@ class StokesPass
 
 
             profiler().StartTiming("Pass -- SOLVER");
-            InvOpType op( *this, 1.0,1.0,1,1 );
+            InvOpType op( 1.0,1.0,1,1 );
             op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
             profiler().StopTiming("Pass -- SOLVER");
 
