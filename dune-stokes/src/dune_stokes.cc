@@ -130,7 +130,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     GridPartType gridPart( *gridPtr );
     const int gridDim = GridType::dimensionworld;
     const int polOrder = POLORDER;
-    const double viscosity = 1.0;
+    const double viscosity = Parameters().getParam( "viscosity", 1.0 );
 
 
     infoStream << "...done." << std::endl;
@@ -174,9 +174,9 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     Dune::FieldVector< double, gridDim > vec_1_h( 1.0 );
     //ones /= grid_width;
     Dune::FieldVector< double, gridDim > zeros( 0.0 );
-    StokesModelImpType stokesModel( 1 ,
+    StokesModelImpType stokesModel( 1 / grid_width,
                                     zeros,
-                                    1,
+                                    grid_width,
                                     zeros,
                                     analyticalForce,
                                     analyticalDirichletData,

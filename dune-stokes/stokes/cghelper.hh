@@ -118,9 +118,13 @@ class SchurkomplementOperator
         void multOEM(const VECtype *x, VECtype * ret) const
         {
             Logging::LogStream& dbg = Logger().Dbg();
-            typedef OEMBICGSTABOp< DiscreteVelocityFunctionType, A_OperatorType >
+            const double redEps = Parameters().getParam( "redEps", 1e-4 );
+            const double absLimit = Parameters().getParam( "absLimit", 1e-3 );
+            const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
+
+            typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
                 AufSolver;
-            AufSolver auf_solver( a_op_, redEps, absLimit, 2000, 0 );
+            AufSolver auf_solver( a_op_, redEps, absLimit, 2000, solverVerbosity );
 
             tmp1.clear();
             tmp2.clear();

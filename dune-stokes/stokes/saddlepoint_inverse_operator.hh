@@ -8,20 +8,17 @@
 
 #define CG_SOLVERTYPE OEMBICGSTABOp
 #ifndef CG_SOLVERTYPE
-    #define CG_SOLVERTYPE OEMCGOp
+    #define CG_SOLVERTYPE OEMBICGSTABOp
 #endif
-
-const double redEps = 1e-4;
-const double absLimit = 1e-3;
 
 #include <dune/fem/function/common/discretefunction.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
-//! using the memprovider from FEM currently results in assertion failed
-//#undef USE_MEMPROVIDER
 #include <dune/stokes/cghelper.hh>
 
 #include "../src/logging.hh"
+#include "../src/parametercontainer.hh"
 #include "../src/stuff.hh" //DiagonalMult
+
 
 namespace Dune {
   //!CG Verfahren fuer Sattelpunkt Problem
@@ -107,6 +104,11 @@ namespace Dune {
         Logging::LogStream& logDebug = Logger().Dbg();
         Logging::LogStream& logError = Logger().Err();
         Logging::LogStream& logInfo = Logger().Info();
+
+        const double redEps = Parameters().getParam( "redEps", 1e-4 );
+        const double absLimit = Parameters().getParam( "absLimit", 1e-3 );
+        const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
+
         logInfo << "Begin SaddlePointInverseOperator " << std::endl;
 
         logDebug.Resume();
@@ -153,7 +155,7 @@ namespace Dune {
         x_mat.apply( m_tmp, f_func );
         f_func *= -1;
         f_func += rhs2;
-//
+
         typedef MatrixA_Operator<   WmatrixType,
                                     MmatrixType,
                                     XmatrixType,
@@ -162,17 +164,16 @@ namespace Dune {
                                     DiscreteSigmaFunctionType >
             A_OperatorType;
         A_OperatorType a_op( w_mat, m_inv_mat, x_mat, y_mat, velocity.space(), rhs1.space() );
-//
-//
+
         typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
                 F_Solver;
         logInfo << " \nstart f solver " << std::endl;
-        F_Solver f_solver( a_op, redEps, absLimit, 2000, 1 );
-//
+        F_Solver f_solver( a_op, redEps, absLimit, 2000, solverVerbosity );
+
         // new_f := B * A^-1 * f_func + g_func
         DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
         tmp_f.clear();
-//        tmp_f += f_func;
+
         f_solver( f_func, tmp_f );
         logInfo << " \nend f solver " << std::endl;
 
@@ -189,24 +190,50 @@ namespace Dune {
                                         DiscretePressureFunctionType >
                 Sk_Operator;
 
-        typedef OEMBICGSTABOp< DiscretePressureFunctionType, Sk_Operator >
+        typedef CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
                 Sk_Solver;
         logInfo << " \nbegin SK solver " << std::endl;
         Sk_Operator sk_op(  a_op, b_t_mat, c_mat, b_mat,
                             velocity.space(), pressure.space() );
-        Sk_Solver sk_solver( sk_op, redEps, absLimit, 2000, 0 );
+        Sk_Solver sk_solver( sk_op, redEps, absLimit, 2000, solverVerbosity );
         pressure.clear();
-//        pressure += new_f ;
-        Stuff::addScalarToFunc( pressure, 0.1 );
         sk_solver( new_f, pressure );
         logInfo << " \nend SK solver " << std::endl;
 
-        //schurkomplement Operator ist: B2 * A_inv * B1 + C
+        typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
+                U_Solver;
 
-        //schritt 1
-        //löse S * u_0 = F - B1 * p_0
-      //  typedef InnerCG<
 
+        DiscreteVelocityFunctionType Bp_temp ( "Bp_temp", velocity.space() );
+        b_mat.apply( pressure, Bp_temp );
+        Bp_temp *= ( -1 );
+        Bp_temp += f_func;
+        U_Solver u_solver( a_op, redEps, absLimit, 2000, solverVerbosity );
+        u_solver ( Bp_temp, velocity );
+
+        DiscretePressureFunctionType residuum ( "resi", pressure.space() );
+        DiscretePressureFunctionType residuum_tmp ( "resi_tmp", pressure.space() );
+
+        double res_norm = std::numeric_limits<double>::max();
+
+        do {
+            residuum.clear();
+            residuum_tmp.clear();
+            c_mat.apply( pressure, residuum );
+            residuum += g_func;
+            b_t_mat.apply( velocity, residuum_tmp );
+            residuum -= residuum_tmp;
+
+            res_norm = residuum.scalarProductDofs( residuum );
+            logInfo << "SK:: residuum-norm: " << res_norm << std::endl ;
+
+            if ( res_norm < absLimit )
+                break;
+
+//            b_mat.apply( residuum, residuum_tmp );
+//            sk_solver( new_f, pressure );
+
+        } while ( res_norm < absLimit );
         //schritt 2
         //setzte:
         //  r_0     = -B2 * u_0 + C * p_0 + G
