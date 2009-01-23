@@ -1,10 +1,14 @@
 dgf_file_2d: grid_2d.dgf
 dgf_file_3d: grid_3d.dgf
-viscosity: 1.0
+viscosity: 1
 loglevel: 4
 logfile: dune-stokes.log
 fem.io.datafileprefix: data_
 fem.io.savestep: -1
 fem.io.savecount: 1
 fem.io.outputformat: 1
-
+redEps: 1e-4
+absLimit: 1e-6
+solverVerbosity: 0
+tau: 0.010
+maxSKIterations: 40

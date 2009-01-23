@@ -205,10 +205,6 @@ class StokesPass
             // viscosity
             const double mu = discreteModel_.viscosity();
 
-            // functions
-            DiscreteVelocityFunctionType& velocity = dest.discreteVelocity();
-            DiscretePressureFunctionType& pressure = dest.discretePressure();
-
             // matrices
             // M\in R^{M\times M}
             typedef SparseRowMatrixObject<  DiscreteSigmaFunctionSpaceType,
@@ -318,7 +314,7 @@ class StokesPass
             Logging::LogStream& debugStream = Logger().Dbg();
             bool entityOutput = false;
             bool intersectionOutput = false;
-            const int outputEntity = -1;
+            const int outputEntity = 0;
             const int outputIntersection = -1;
             int entityNR = 0;
             int intersectionNR = 0;
@@ -326,16 +322,16 @@ class StokesPass
             int numberOfIntersections = 0;
             int numberOfBoundaryIntersections = 0;
             int numberOfInnerIntersections = 0;
-            const bool Mprint = true;
-            const bool Wprint = true;
-            const bool Xprint = true;
-            const bool Yprint = true;
-            const bool Zprint = true;
-            const bool Eprint = true;
-            const bool Rprint = true;
-            const bool H1print = true;
-            const bool H2print = true;
-            const bool H3print = true;
+            const bool Mprint = false;
+            const bool Wprint = false;
+            const bool Xprint = false;
+            const bool Yprint = false;
+            const bool Zprint = false;
+            const bool Eprint = false;
+            const bool Rprint = false;
+            const bool H1print = false;
+            const bool H2print = false;
+            const bool H3print = false;
             infoStream << "\nthis is StokesPass::apply()" << std::endl;
 
             // do an empty grid walk to get informations
@@ -2298,17 +2294,16 @@ class StokesPass
                 debugStream.Log( &AmatrixType::MatrixType::print,  Amatrix.matrix() );
                 debugStream << "- done printing matrices" << std::endl;
 //            }
-            debugStream.Resume(); // return to original state
 #endif
 
 
-//            profiler().StartTiming("Pass -- SOLVER");
-//            InvOpType op( *this, 1.0,1.0,1,1 );
-//            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-//            profiler().StopTiming("Pass -- SOLVER");
-//
-//            profiler().StopTiming("Pass -- ASSEMBLE");
-//            profiler().StopTiming("Pass");
+            profiler().StartTiming("Pass -- SOLVER");
+            InvOpType op( 1.0,1.0,1,1 );
+            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+            profiler().StopTiming("Pass -- SOLVER");
+
+            profiler().StopTiming("Pass -- ASSEMBLE");
+            profiler().StopTiming("Pass");
 
 
 
@@ -2403,6 +2398,7 @@ class StokesPass
                 ret += (*rowIt)[i];
                 ++i;
             }
+            return ret;
         }
 
 };
