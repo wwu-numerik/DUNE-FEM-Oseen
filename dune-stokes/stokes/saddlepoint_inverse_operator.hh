@@ -192,13 +192,14 @@ namespace Dune {
 
         typedef CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
                 Sk_Solver;
-        logInfo << " \nbegin SK solver " << std::endl;
+
         Sk_Operator sk_op(  a_op, b_t_mat, c_mat, b_mat,
                             velocity.space(), pressure.space() );
         Sk_Solver sk_solver( sk_op, redEps, absLimit, 2000, solverVerbosity );
         pressure.clear();
-        sk_solver( new_f, pressure );
-        logInfo << " \nend SK solver " << std::endl;
+//        sk_solver( new_f, pressure );
+//        *pressure.dbegin() = 1;
+        Stuff::addScalarToFunc( pressure, 1 );
 
         typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
                 U_Solver;
@@ -211,29 +212,47 @@ namespace Dune {
         U_Solver u_solver( a_op, redEps, absLimit, 2000, solverVerbosity );
         u_solver ( Bp_temp, velocity );
 
-        DiscretePressureFunctionType residuum ( "resi", pressure.space() );
+        DiscretePressureFunctionType pressure_tmp ( "press_tmp", pressure.space() );
         DiscretePressureFunctionType residuum_tmp ( "resi_tmp", pressure.space() );
 
+        DiscretePressureFunctionType pressure_last( "p_k-1", pressure.space() );
+        DiscreteVelocityFunctionType velocity_last( "u_k-1", velocity.space() );
+
         double res_norm = std::numeric_limits<double>::max();
+        double tau = Parameters().getParam( "tau", 0.1 );
 
+        int i = 0;
+        int max_iter = Parameters().getParam( "maxSKIterations", 10 );
         do {
-            residuum.clear();
-            residuum_tmp.clear();
-            c_mat.apply( pressure, residuum );
-            residuum += g_func;
-            b_t_mat.apply( velocity, residuum_tmp );
-            residuum -= residuum_tmp;
+            logInfo << " \n SK solver Iteration: " << i << std::endl;
+            pressure_last.assign( pressure );
+            pressure.clear();
+            pressure_tmp.clear();
+            velocity_last.assign( velocity );
+            velocity_last.clear();
 
-            res_norm = residuum.scalarProductDofs( residuum );
-            logInfo << "SK:: residuum-norm: " << res_norm << std::endl ;
+            //p_k+1 = p_k + tau * (f_new - S * p_k )
+            sk_op.multOEM( pressure_last.leakPointer(), pressure.leakPointer() );
+            pressure += new_f;
+            pressure *= -1 * tau;
+            pressure += pressure_last;
 
-            if ( res_norm < absLimit )
-                break;
-            logInfo << "\nnext SK solver iteration" << std::endl;
-            b_mat.apply( residuum, residuum_tmp );
-            sk_solver( new_f, pressure );
+//            pressure_tmp += pressure_last;
+//            pressure_tmp *= tau;
+//            pressure_tmp += new_f;
+//            sk_solver( pressure_tmp, pressure );
 
-        } while ( false ) ;//res_norm > absLimit );
+            // u_k+1 = A^-1 * ( f - B_t * p_k )
+            Bp_temp.clear();
+            b_mat.apply( pressure_last, Bp_temp );
+            Bp_temp *= ( -1 );
+            Bp_temp += f_func;
+            U_Solver u_solver( a_op, redEps, absLimit, 2000, solverVerbosity );
+            u_solver ( Bp_temp, velocity );
+
+            i++;
+
+        } while ( i < max_iter ) ;//res_norm > absLimit );
         //schritt 2
         //setzte:
         //  r_0     = -B2 * u_0 + C * p_0 + G

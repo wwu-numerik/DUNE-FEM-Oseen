@@ -114,6 +114,8 @@ class PostProcessor
 
             calcError( wrapper.discretePressure() , wrapper.discreteVelocity() );
 
+            VTK_WRITE( wrapper.discretePressure() );
+            VTK_WRITE( wrapper.discreteVelocity() );
             VTK_WRITE( discreteExactVelocity_ );
 			VTK_WRITE( discreteExactPressure_ );
             VTK_WRITE( discreteExactForce_ );
