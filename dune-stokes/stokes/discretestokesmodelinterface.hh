@@ -905,6 +905,12 @@ class DiscreteStokesModelDefaultTraits
             FaceQuadratureType;
 
         //! polynomial order for the discrete sigma function space
+//        static const int sigmaSpaceOrder = polOrder;
+//        //! polynomial order for the discrete velocity function space
+//        static const int velocitySpaceOrder = polOrder+1;
+//        //! polynomial order for the discrete pressure function space
+//        static const int pressureSpaceOrder = polOrder+2;
+
         static const int sigmaSpaceOrder = polOrder;
         //! polynomial order for the discrete velocity function space
         static const int velocitySpaceOrder = polOrder;

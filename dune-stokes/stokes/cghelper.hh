@@ -133,7 +133,7 @@ class SchurkomplementOperator
 //            dbg << std::endl ;
             b_mat_.multOEM( x, tmp1.leakPointer() );
 //            dbg.Log (&DiscreteVelocityFunctionType::print , tmp1 ) ;
-//            Stuff::oneLinePrint( dbg, tmp1 );
+//            Stuff::printDoubleVec( dbg, tmp1.leakPointer(), b_mat_.cols() );
 //            dbg << "begin: inner Ax=f" << std::endl;
             auf_solver( tmp1, tmp2 );
 
