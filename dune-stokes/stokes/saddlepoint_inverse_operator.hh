@@ -6,7 +6,7 @@
  */
 
 
-#define CG_SOLVERTYPE OEMBICGSTABOp
+//#define CG_SOLVERTYPE OEMGMRESOp
 #ifndef CG_SOLVERTYPE
     #define CG_SOLVERTYPE OEMBICGSTABOp
 #endif
@@ -181,6 +181,10 @@ namespace Dune {
         b_t_mat.apply( tmp_f, new_f );
         new_f -= g_func;
 
+        double delta = std::numeric_limits<double>::max();
+        double tau = Parameters().getParam( "tau", 0.1 );
+        int i = 0;
+        int max_iter = Parameters().getParam( "maxSKIterations", 10 );
 
         typedef SchurkomplementOperator<A_OperatorType,
                                         B_t_matrixType,
@@ -195,35 +199,36 @@ namespace Dune {
 
         Sk_Operator sk_op(  a_op, b_t_mat, c_mat, b_mat,
                             velocity.space(), pressure.space() );
-        Sk_Solver sk_solver( sk_op, redEps, absLimit, 2000, solverVerbosity );
+        Sk_Solver sk_solver( sk_op, redEps, absLimit, 2000, solverVerbosity+41 );
         pressure.clear();
-//        sk_solver( new_f, pressure );
-//        *pressure.dbegin() = 1;
-        Stuff::addScalarToFunc( pressure, 1 );
+//        Stuff::addScalarToFunc( pressure, 1 );
+        if ( max_iter < 0 ){
+            logInfo << "cg solver" << std::endl;
+            sk_solver( new_f, pressure );
+            logInfo << "\nend cg solver" << std::endl;
+        }
 
         typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
                 U_Solver;
 
+        typedef CG_SOLVERTYPE< DiscretePressureFunctionType, CmatrixType >
+                C_Solver;
 
         DiscreteVelocityFunctionType Bp_temp ( "Bp_temp", velocity.space() );
-        b_mat.apply( pressure, Bp_temp );
-        Bp_temp *= ( -1 );
-        Bp_temp += f_func;
-        U_Solver u_solver( a_op, redEps, absLimit, 2000, solverVerbosity );
-        u_solver ( Bp_temp, velocity );
 
         DiscretePressureFunctionType pressure_tmp ( "press_tmp", pressure.space() );
-        DiscretePressureFunctionType residuum_tmp ( "resi_tmp", pressure.space() );
+        DiscretePressureFunctionType pressure_tmp2 ( "press_tmp2", pressure.space() );
+        DiscretePressureFunctionType pressure_tmp3 ( "press_tmp3", pressure.space() );
+
 
         DiscretePressureFunctionType pressure_last( "p_k-1", pressure.space() );
         DiscreteVelocityFunctionType velocity_last( "u_k-1", velocity.space() );
+        DiscreteVelocityFunctionType velocity_tmp( "u_k-1", velocity.space() );
 
-        double res_norm = std::numeric_limits<double>::max();
-        double tau = Parameters().getParam( "tau", 0.1 );
+        pressure_last.assign( pressure );
 
-        int i = 0;
-        int max_iter = Parameters().getParam( "maxSKIterations", 10 );
-        do {
+
+        while ( i < max_iter ) {
             logInfo << " \n SK solver Iteration: " << i << std::endl;
             pressure_last.assign( pressure );
             pressure.clear();
@@ -231,61 +236,38 @@ namespace Dune {
             velocity_last.assign( velocity );
             velocity_last.clear();
 
-            //p_k+1 = p_k + tau * (f_new - S * p_k )
-            sk_op.multOEM( pressure_last.leakPointer(), pressure.leakPointer() );
-            pressure += new_f;
-            pressure *= -1 * tau;
-            pressure += pressure_last;
+            //p_k+1 = S * p_k - C*p + C^-1 ( f_new  + G ) + G
+//            Stuff::printDoubleVec( logInfo, pressure_last.leakPointer(), b_mat.cols() );
+            sk_op.multOEM( pressure_last.leakPointer(), pressure_tmp.leakPointer() ); //S*p_k
+            pressure_tmp *= tau; // tau * S *p_k
+            pressure_tmp += pressure_last; // tau * S *p_k + p_k
 
-//            pressure_tmp += pressure_last;
-//            pressure_tmp *= tau;
-//            pressure_tmp += new_f;
-//            sk_solver( pressure_tmp, pressure );
+
+            pressure_tmp2.clear();
+            pressure_tmp2.assign( new_f );
+            pressure_tmp2 *= tau; // tau ( B_t * A^-1  * B - G)
+            pressure_tmp2 *= -1; // tau ( - B_t * A^-1  * B + G)
+
+            pressure_tmp += pressure_tmp2;
+
+            pressure.assign( pressure_tmp );
+
 
             // u_k+1 = A^-1 * ( f - B_t * p_k )
-            Bp_temp.clear();
-            b_mat.apply( pressure_last, Bp_temp );
-            Bp_temp *= ( -1 );
-            Bp_temp += f_func;
-            U_Solver u_solver( a_op, redEps, absLimit, 2000, solverVerbosity );
-            u_solver ( Bp_temp, velocity );
+
 
             i++;
 
-        } while ( i < max_iter ) ;//res_norm > absLimit );
-        //schritt 2
-        //setzte:
-        //  r_0     = -B2 * u_0 + C * p_0 + G
-        //  d_0     = r_0
-        //  delta_0 = ( r_0, r_0 )
+        }
 
-        //schritt 3:
-        //wenn d_0 == 0 dann GOTO end
-
-        //schritt 4:
-        //löse S * X_m = B1 * d_m
-
-        //schritt 5:
-        //setze:
-        //  h_m         = B2 * X_m + C * p_m
-        //  rho_m       = delta_m /  (h_m,d_m)
-        //  p_m+1       = p_m - rho_m + d_m
-        //  u_m+1       = u_m + rho_m * X_m
-        //  r_m+1       = r_m - rho_m * h_m
-        //  delta_m+1   = (r_m+1,r_m+1)
-
-        //schritt 6:
-        //wenn delta_m+1 == 0 dann GOTO end
-
-        //schritt 7:
-        //setze:
-        //  gamma_m     = delta_m+1 / delta_m
-        //  d_m+1       = r_m - gamma_m * d_m
-
-        //schritt 8:
-        //GOTO schritt 4
-
-        logInfo << "End SaddlePointInverseOperator " << std::endl;
+        Bp_temp.clear();
+        b_mat.apply( pressure_last, Bp_temp );
+        Bp_temp *= ( -1 );
+        Bp_temp += f_func;
+        U_Solver u_solver( a_op, redEps, absLimit, 2000, solverVerbosity );
+        u_solver ( Bp_temp, velocity );
+//
+//        logInfo << "End SaddlePointInverseOperator " << std::endl;
     }
 
 //  where do i need this?
@@ -316,3 +298,76 @@ namespace Dune {
 
 #endif
 
+/**
+        DiscretePressureFunctionType residuum_tmp ( "resi_tmp", pressure.space() );
+        DiscretePressureFunctionType residuum ( "resi", pressure.space() );
+        DiscretePressureFunctionType d_m ( "d_m", pressure.space() );
+        DiscretePressureFunctionType X_m ( "X_m", pressure.space() );
+       DiscreteVelocityFunctionType h_m( "h_m", velocity.space() );
+
+//  //schritt 2
+//        //setzte:
+//        //  r_0     = -B2 * u_0 + C * p_0 + G
+//        //  d_0     = r_0
+//        //  delta_0 = ( r_0, r_0 ) residuum.clear();
+//        residuum_tmp.clear();
+//        c_mat.apply( pressure, residuum );
+//        residuum += g_func;
+//        b_t_mat.apply( velocity, residuum_tmp );
+//        residuum -= residuum_tmp;
+//        d_m.assign( residuum );
+//        delta = residuum.scalarProductDofs( residuum );
+//        logInfo << "SK:: residuum-norm: " << delta << std::endl ;
+//
+//        //schritt 3:
+//        //wenn d_0 == 0 dann GOTO end
+//
+//
+//        while ( i < max_iter ) {
+//            //schritt 4:
+//            //löse S * X_m = B1 * d_m
+//            b_mat.apply( d_m, velocity_tmp );
+//            sk_solver( velocity_tmp, X_m );
+//
+//            //schritt 5:
+//            //setze:
+//            //  h_m         = B2 * X_m + C * p_m
+//            //  rho_m       = delta_m /  (h_m,d_m)
+//            //  p_m+1       = p_m - rho_m + d_m
+//            //  u_m+1       = u_m + rho_m * X_m
+//            //  r_m+1       = r_m - rho_m * h_m
+//            //  delta_m+1   = (r_m+1,r_m+1)
+//            c_mat.apply( pressure, velocity_tmp );
+//            b_t_mat.apply( X_m, h_m );
+//            h_m += velocity_tmp;
+//            double rho_m = delta * 100 ;/// h_m.scalarProductDofs( d_m );
+//            pressure_tmp.assign( d_m );
+//            pressure_tmp *= rho_m;
+//            pressure -= pressure_tmp;
+//
+//            velocity_tmp.assign( h_m );
+//            velocity_tmp *= rho_m;
+//            velocity += velocity_tmp;
+//
+//            pressure_tmp.assign( X_m );
+//            pressure_tmp *= rho_m;
+//            residuum -= pressure_tmp;
+//            double delta_next = residuum.scalarProductDofs( residuum );
+//            //schritt 6:
+//            //wenn delta_m+1 == 0 dann GOTO end
+//            if ( delta_next < absLimit )
+//                break;
+//
+//            //schritt 7:
+//            //setze:
+//            //  gamma_m     = delta_m+1 / delta_m
+//            //  d_m+1       = r_m - gamma_m * d_m
+//            double gamma = delta_next / delta;
+//            delta = delta_next;
+//            d_m *= -1 * gamma;
+//            d_m += residuum;
+//            //schritt 8:
+//            //GOTO schritt 4
+//            i++;
+//        }
+*/

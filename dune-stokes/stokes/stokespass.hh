@@ -2305,6 +2305,7 @@ class StokesPass
             profiler().StopTiming("Pass -- ASSEMBLE");
             profiler().StopTiming("Pass");
 
+            Stuff::oneLinePrint( debugStream, dest.discretePressure() );
 
 
         } // end of apply
