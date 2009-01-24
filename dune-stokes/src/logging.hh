@@ -29,6 +29,54 @@ class Logging
           LOG_FILE = 32
         };
 
+        //! only for logging to a single file which should then be executabla by matlab
+        class MatlabLogStream
+        {
+            public:
+                MatlabLogStream( std::ofstream& logFile )
+                    : matlabLogFile_( logFile ) {}
+
+                ~MatlabLogStream(){}
+
+                template < typename T >
+                MatlabLogStream& operator << ( T in )
+                {
+                    buffer_ << in;
+                    return *this;
+                }
+
+                MatlabLogStream& operator << ( MatlabLogStream& ( *pf )(MatlabLogStream&) )
+                {
+                    buffer_ << pf;
+                    return *this;
+                }
+
+                MatlabLogStream& operator << ( std::ostream& ( *pf )(std::ostream &) )
+                {
+                    if ( pf == (std::ostream& ( * )(std::ostream&))std::endl )
+                    { //flush buffer into stream
+                        matlabLogFile_ << buffer_.str() << std::endl;
+                        buffer_.str("");// clear the buffer
+                    }
+                    else {
+                        buffer_ << pf;
+                    }
+                    return *this;
+                }
+
+                void Flush()
+                {
+                    matlabLogFile_ << buffer_.str();
+                    matlabLogFile_.flush();
+                    buffer_.str("");// clear the buffer
+                }
+
+
+            private:
+                std::stringstream buffer_;
+                std::ofstream& matlabLogFile_;
+        };
+
         class LogStream //: virtual public std::ostream
         {
             protected:
@@ -152,6 +200,10 @@ class Logging
                 logfile_.close();
                 logfileWoTime_.close();
             }
+
+            // delete the MatlabLogStream
+            matlabLogStreamPtr->Flush();
+            Stuff::safe_delete( matlabLogStreamPtr );
         }
 
 
@@ -175,6 +227,11 @@ class Logging
                 flagmap_[*it] = logflags;
                 streammap_[*it] = new LogStream( *it, flagmap_[*it], logfile_, logfileWoTime_ );
             }
+            // create the MatlabLogStream
+            std::string matlabLogFileName = logfile + "_matlab.m";
+            matlabLogFile_.open( matlabLogFileName.c_str() );
+            assert( matlabLogFile_.is_open() );
+            matlabLogStreamPtr = new MatlabLogStream( matlabLogFile_ );
         }
 
         void SetStreamFlags( LogFlags stream, int flags )
@@ -281,6 +338,7 @@ class Logging
         LogStream& Err() { return GetStream( LOG_ERR ); }
         LogStream& Info() { return GetStream( LOG_INFO ); }
         LogStream& Dbg() { return GetStream( LOG_DEBUG ); }
+        MatlabLogStream& Matlab() { return *matlabLogStreamPtr; }
 
         static std::string TimeString()
         {
@@ -305,6 +363,7 @@ class Logging
         std::string filenameWoTime_;
         std::ofstream logfile_;
         std::ofstream logfileWoTime_;
+        std::ofstream matlabLogFile_;
         typedef std::map<LogFlags,int> FlagMap;
         FlagMap flagmap_;
         typedef std::map<LogFlags,LogStream*> StreamMap;
@@ -313,6 +372,7 @@ class Logging
         typedef std::vector<LogFlags>::const_iterator IdVecCIter;
         IdVec streamIDs_;
         int logflags_;
+        MatlabLogStream* matlabLogStreamPtr;
 
 };
 
