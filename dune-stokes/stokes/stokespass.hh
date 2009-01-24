@@ -308,6 +308,8 @@ class StokesPass
             // eps
             const double eps = 1.0e-14;
 
+            int quadrature_order = 2 * velocitySpaceOrder +1;
+
 #ifndef NLOG
             // logging stuff
             Logging::LogStream& infoStream = Logger().Info();
@@ -408,7 +410,7 @@ class StokesPass
 
                 // get quadrature
                 const VolumeQuadratureType volumeQuadratureElement( entity,
-                                                                    ( 2 * sigmaSpaceOrder ) + 1 );
+                                                                    quadrature_order );
 #ifndef NLOG
 //                if ( ( entityNR % anotherFivePercentOfEntities ) == 0 ) {
 //                    if ( fivePercents < 21 ) {
@@ -797,7 +799,7 @@ class StokesPass
                     // get intersection quadrature, seen from inside
                     const FaceQuadratureType faceQuadratureElement( gridPart_,
                                                                     intIt,
-                                                                    ( 2 * sigmaSpaceOrder ) + 1,
+                                                                    quadrature_order,
                                                                     FaceQuadratureType::INSIDE );
 
                     // if we are inside the grid
@@ -826,7 +828,7 @@ class StokesPass
                         // get intersection quadrature, seen from outside
                         const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
                                                                             intIt,
-                                                                            ( 2 * sigmaSpaceOrder ) + 1,
+                                                                            quadrature_order,
                                                                             FaceQuadratureType::OUTSIDE );
 
                         // compute the surface integrals
@@ -2234,18 +2236,18 @@ class StokesPass
 
             // build A for testing
             // W\in R^{L\times L}
-            typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
-                                            DiscreteVelocityFunctionSpaceType >
-                AmatrixType;
-            AmatrixType Amatrix( velocitySpace_, velocitySpace_ );
-            Amatrix.reserve();
-
-            XmatrixType neg_X_Minv_mat( velocitySpace_, sigmaSpace_ );
-            neg_X_Minv_mat.reserve();
-            Xmatrix.matrix().multiply( MInversMatrix.matrix(), neg_X_Minv_mat.matrix() );
-            neg_X_Minv_mat.matrix().scale( -1.0 );
-            neg_X_Minv_mat.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
-            Amatrix.matrix().add( Ymatrix.matrix() );
+//            typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
+//                                            DiscreteVelocityFunctionSpaceType >
+//                AmatrixType;
+//            AmatrixType Amatrix( velocitySpace_, velocitySpace_ );
+//            Amatrix.reserve();
+//
+//            XmatrixType neg_X_Minv_mat( velocitySpace_, sigmaSpace_ );
+//            neg_X_Minv_mat.reserve();
+//            Xmatrix.matrix().multiply( MInversMatrix.matrix(), neg_X_Minv_mat.matrix() );
+//            neg_X_Minv_mat.matrix().scale( -1.0 );
+//            neg_X_Minv_mat.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
+//            Amatrix.matrix().add( Ymatrix.matrix() );
 
 //            if ( Mprint || Wprint || Xprint || Yprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
                 debugStream.Resume();
@@ -2290,9 +2292,9 @@ class StokesPass
                     debugStream << " - = H3 ===========" << std::endl;
                     debugStream.Log( &DiscretePressureFunctionType::print, H3rhs );
                 }
-                debugStream << " - = A ============" << std::endl;
-                debugStream.Log( &AmatrixType::MatrixType::print,  Amatrix.matrix() );
-                debugStream << "- done printing matrices" << std::endl;
+//                debugStream << " - = A ============" << std::endl;
+//                debugStream.Log( &AmatrixType::MatrixType::print,  Amatrix.matrix() );
+//                debugStream << "- done printing matrices" << std::endl;
 //            }
 #endif
 

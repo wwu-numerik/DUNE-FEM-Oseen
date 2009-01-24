@@ -11,7 +11,7 @@
 //! using the memprovider from FEM currently results in assertion failed
 #undef USE_MEMPROVIDER
 
-#define POLORDER 0
+#define POLORDER 1
 
 #include <iostream>
 #include <dune/common/mpihelper.hh> // An initializer of MPI
@@ -177,12 +177,14 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     infoStream << " \n max grid width: " << grid_width << std::endl;
 
     Dune::FieldVector< double, gridDim > ones( 1.0 );
-    Dune::FieldVector< double, gridDim > vec_1_h( 1.0 );
+    Dune::FieldVector< double, gridDim > vec_1_h( 1 - grid_width );
     //ones /= grid_width;
     Dune::FieldVector< double, gridDim > zeros( 0.0 );
-    StokesModelImpType stokesModel( 1 / grid_width,
+    double h_fac = Parameters().getParam( "h-factor", 1.0 );
+
+    StokesModelImpType stokesModel( h_fac / ( grid_width) ,
                                     zeros,
-                                    grid_width,
+                                    h_fac * grid_width,
                                     zeros,
                                     analyticalForce,
                                     analyticalDirichletData,
