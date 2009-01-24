@@ -7,7 +7,7 @@
 #ifndef PARAMETERCONTAINER_HH_INCLUDED
 #define PARAMETERCONTAINER_HH_INCLUDED
 
-#include "dune/fem/io/parameter.hh"
+#include <dune/fem/io/parameter.hh>
 
 #include "stuff.hh"
 #include "logging.hh"
@@ -217,6 +217,13 @@ class ParameterContainer
         double viscosity() const
         {
             return viscosity_;
+        }
+
+        //! passthrough to underlying Dune::Parameter
+        template< typename T >
+        T getParam( std::string name, T def )
+        {
+            return Dune::Parameter::getValue( name, def );
         }
 
     private:

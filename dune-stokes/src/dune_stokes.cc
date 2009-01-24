@@ -7,8 +7,11 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
 //! using the memprovider from FEM currently results in assertion failed
 #undef USE_MEMPROVIDER
+
+#define POLORDER 0
 
 #include <iostream>
 #include <dune/common/mpihelper.hh> // An initializer of MPI
@@ -23,6 +26,7 @@
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
 #include <dune/fem/misc/eoc.hh>
+#include <dune/fem/misc/gridwidth.hh>
 
 #include <dune/stokes/discretestokesfunctionspacewrapper.hh>
 #include <dune/stokes/discretestokesmodelinterface.hh>
@@ -132,7 +136,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     GridPartType gridPart( *gridPtr );
     const int gridDim = GridType::dimensionworld;
     const int polOrder = POLORDER;
-
+    const double viscosity = Parameters().getParam( "viscosity", 1.0 );
 
 
     infoStream << "...done." << std::endl;
@@ -147,7 +151,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
 
     typedef Force< VelocityFunctionSpaceType >
         AnalyticalForceType;
-    AnalyticalForceType analyticalForce( 0.5, velocitySpace );
+    AnalyticalForceType analyticalForce( viscosity , velocitySpace );
 
     typedef DirichletData< VelocityFunctionSpaceType >
         AnalyticalDirichletDataType;
@@ -167,14 +171,22 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
                     polOrder > >
         StokesModelImpType;
 
+    Dune::GridWidthProvider< GridType > gw ( *gridPtr );
+
+    double grid_width = gw.gridWidth();
+    infoStream << " \n max grid width: " << grid_width << std::endl;
+
     Dune::FieldVector< double, gridDim > ones( 1.0 );
-    StokesModelImpType stokesModel( 1.0,
-                                    ones,
-                                    1.0,
-                                    ones,
+    Dune::FieldVector< double, gridDim > vec_1_h( 1.0 );
+    //ones /= grid_width;
+    Dune::FieldVector< double, gridDim > zeros( 0.0 );
+    StokesModelImpType stokesModel( 1 / grid_width,
+                                    zeros,
+                                    grid_width,
+                                    zeros,
                                     analyticalForce,
                                     analyticalDirichletData,
-                                    2.0 );
+                                    viscosity  );
 
     typedef Dune::DiscreteStokesModelInterface<
                 Dune::DiscreteStokesModelDefaultTraits<
@@ -245,7 +257,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
 
     typedef Problem< gridDim, DiscreteStokesFunctionWrapperType >
         ProblemType;
-    ProblemType problem( 0, discreteStokesFunctionWrapper );
+    ProblemType problem( viscosity , discreteStokesFunctionWrapper );
 
     typedef PostProcessor< StokesPassType, ProblemType >
         PostProcessorType;

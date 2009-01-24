@@ -139,6 +139,38 @@ void DiagonalMult( const Matrix& matrix, Function& f )
     return;
 }
 
+template < class Stream, class Type >
+void printDoubleVec( Stream& stream, const Type * vec, const unsigned int N )
+{
+    stream << "\n [ " << std::setw(5);
+    for ( unsigned int i = 0; i < N ; ++i )
+        stream << vec[i] << " ";
+
+    stream << " ] " << std::endl;
+}
+
+template < class Stream, class DiscFunc >
+void oneLinePrint( Stream& stream, const DiscFunc& func )
+{
+    typedef typename DiscFunc::ConstDofIteratorType DofIteratorType;
+    DofIteratorType it = func.dbegin();
+    stream << "\n" << func.name() << ": [ ";
+    for ( ; it != func.dend(); ++it )
+        stream << std::setw(5) << *it << "  ";
+
+    stream << " ] " << std::endl;
+}
+
+template < class Function >
+void addScalarToFunc( Function& f, double sc )
+{
+    typedef typename Function::DofIteratorType DofIteratorType;
+    DofIteratorType it = f.dbegin();
+    for ( ; it != f.dend(); ++it )
+        *it += sc;
+    return;
+}
+
 } // end namepspace stuff
 
 

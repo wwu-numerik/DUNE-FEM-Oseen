@@ -114,6 +114,8 @@ class PostProcessor
 
             calcError( wrapper.discretePressure() , wrapper.discreteVelocity() );
 
+            VTK_WRITE( wrapper.discretePressure() );
+            VTK_WRITE( wrapper.discreteVelocity() );
             VTK_WRITE( discreteExactVelocity_ );
 			VTK_WRITE( discreteExactPressure_ );
             VTK_WRITE( discreteExactForce_ );
@@ -154,9 +156,9 @@ class PostProcessor
     private:
 
         const ProblemType& problem_;
+        const DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
         const GridPartType& gridPart_;
         const DiscreteVelocityFunctionSpaceType& velocitySpace_;
-        const DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
         DiscreteVelocityFunctionType discreteExactVelocity_;
         DiscreteVelocityFunctionType discreteExactForce_;
         DiscreteVelocityFunctionType discreteExactDirichlet_;

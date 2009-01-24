@@ -205,10 +205,6 @@ class StokesPass
             // viscosity
             const double mu = discreteModel_.viscosity();
 
-            // functions
-            DiscreteVelocityFunctionType& velocity = dest.discreteVelocity();
-            DiscretePressureFunctionType& pressure = dest.discretePressure();
-
             // matrices
             // M\in R^{M\times M}
             typedef SparseRowMatrixObject<  DiscreteSigmaFunctionSpaceType,
@@ -318,7 +314,7 @@ class StokesPass
             Logging::LogStream& debugStream = Logger().Dbg();
             bool entityOutput = false;
             bool intersectionOutput = false;
-            const int outputEntity = -1;
+            const int outputEntity = 0;
             const int outputIntersection = -1;
             int entityNR = 0;
             int intersectionNR = 0;
@@ -326,16 +322,16 @@ class StokesPass
             int numberOfIntersections = 0;
             int numberOfBoundaryIntersections = 0;
             int numberOfInnerIntersections = 0;
-            const bool Mprint = true;
-            const bool Wprint = true;
-            const bool Xprint = true;
-            const bool Yprint = true;
-            const bool Zprint = true;
-            const bool Eprint = true;
-            const bool Rprint = true;
-            const bool H1print = true;
-            const bool H2print = true;
-            const bool H3print = true;
+            const bool Mprint = false;
+            const bool Wprint = false;
+            const bool Xprint = false;
+            const bool Yprint = false;
+            const bool Zprint = false;
+            const bool Eprint = false;
+            const bool Rprint = false;
+            const bool H1print = false;
+            const bool H2print = false;
+            const bool H3print = false;
             infoStream << "\nthis is StokesPass::apply()" << std::endl;
 
             // do an empty grid walk to get informations
@@ -365,16 +361,16 @@ class StokesPass
                     }
                 }
             }
-            const int anotherFivePercentOfEntities = numberOfEntities / 20;
-            infoStream << "found " << numberOfEntities << " entities," << std::endl;
-            infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
-            infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
-            infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
-            infoStream << "- starting gridwalk" << std::endl;
-            infoStream << "  [ assembling          ]" << std::endl;
-            infoStream << "  [";
+//            const int anotherFivePercentOfEntities = numberOfEntities / 20;
+//            infoStream << "found " << numberOfEntities << " entities," << std::endl;
+//            infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
+//            infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
+//            infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
+//            infoStream << "- starting gridwalk" << std::endl;
+//            infoStream << "  [ assembling          ]" << std::endl;
+//            infoStream << "  [";
 
-            int fivePercents = 0;
+//            int fivePercents = 0;
 #endif
             // walk the grid
             EntityIteratorType entityItEnd = velocitySpace_.end();
@@ -414,13 +410,13 @@ class StokesPass
                 const VolumeQuadratureType volumeQuadratureElement( entity,
                                                                     ( 2 * sigmaSpaceOrder ) + 1 );
 #ifndef NLOG
-                if ( ( entityNR % anotherFivePercentOfEntities ) == 0 ) {
-                    if ( fivePercents < 21 ) {
-                        infoStream << "=";
-                        ++fivePercents;
-                        infoStream.Flush();
-                    }
-                }
+//                if ( ( entityNR % anotherFivePercentOfEntities ) == 0 ) {
+//                    if ( fivePercents < 21 ) {
+//                        infoStream << "=";
+//                        ++fivePercents;
+//                        infoStream.Flush();
+//                    }
+//                }
                 if ( outputEntity == entityNR ) entityOutput = true;
                 if ( entityOutput ) debugStream.Resume(); // enable logging
                 debugStream << "  - entity " << outputEntity << std::endl;
@@ -2236,8 +2232,23 @@ class StokesPass
             infoStream << "]" << std::endl;
             infoStream << "- gridwalk done" << std::endl;
 
-            if ( Mprint || Wprint || Xprint || Yprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
+            // build A for testing
+            // W\in R^{L\times L}
+            typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
+                                            DiscreteVelocityFunctionSpaceType >
+                AmatrixType;
+            AmatrixType Amatrix( velocitySpace_, velocitySpace_ );
+            Amatrix.reserve();
 
+            XmatrixType neg_X_Minv_mat( velocitySpace_, sigmaSpace_ );
+            neg_X_Minv_mat.reserve();
+            Xmatrix.matrix().multiply( MInversMatrix.matrix(), neg_X_Minv_mat.matrix() );
+            neg_X_Minv_mat.matrix().scale( -1.0 );
+            neg_X_Minv_mat.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
+            Amatrix.matrix().add( Ymatrix.matrix() );
+
+//            if ( Mprint || Wprint || Xprint || Yprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
+                debugStream.Resume();
                 debugStream << "- printing matrices" << std::endl;
                 if ( Mprint ) {
                     debugStream << " - = M ============" << std::endl;
@@ -2279,19 +2290,20 @@ class StokesPass
                     debugStream << " - = H3 ===========" << std::endl;
                     debugStream.Log( &DiscretePressureFunctionType::print, H3rhs );
                 }
+                debugStream << " - = A ============" << std::endl;
+                debugStream.Log( &AmatrixType::MatrixType::print,  Amatrix.matrix() );
                 debugStream << "- done printing matrices" << std::endl;
-            }
-            debugStream.Resume(); // return to original state
+//            }
 #endif
 
 
-//            profiler().StartTiming("Pass -- SOLVER");
-//            InvOpType op( *this, 1.0,1.0,1,1 );
-//            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-//            profiler().StopTiming("Pass -- SOLVER");
-//
-//            profiler().StopTiming("Pass -- ASSEMBLE");
-//            profiler().StopTiming("Pass");
+            profiler().StartTiming("Pass -- SOLVER");
+            InvOpType op( 1.0,1.0,1,1 );
+            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+            profiler().StopTiming("Pass -- SOLVER");
+
+            profiler().StopTiming("Pass -- ASSEMBLE");
+            profiler().StopTiming("Pass");
 
 
 
@@ -2386,6 +2398,7 @@ class StokesPass
                 ret += (*rowIt)[i];
                 ++i;
             }
+            return ret;
         }
 
 };

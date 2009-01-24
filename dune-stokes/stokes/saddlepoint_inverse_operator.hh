@@ -6,19 +6,19 @@
  */
 
 
-//#define CG_SOLVERTYPE OEMBICGSTABOp
+#define CG_SOLVERTYPE OEMBICGSTABOp
 #ifndef CG_SOLVERTYPE
-    #define CG_SOLVERTYPE OEMCGOp
+    #define CG_SOLVERTYPE OEMBICGSTABOp
 #endif
 
 #include <dune/fem/function/common/discretefunction.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
-//! using the memprovider from FEM currently results in assertion failed
-#undef USE_MEMPROVIDER
 #include <dune/stokes/cghelper.hh>
 
 #include "../src/logging.hh"
+#include "../src/parametercontainer.hh"
 #include "../src/stuff.hh" //DiagonalMult
+
 
 namespace Dune {
   //!CG Verfahren fuer Sattelpunkt Problem
@@ -62,15 +62,12 @@ namespace Dune {
     * velocity,rhs1 is  stored as member,no better idea
 	  **/
     SaddlepointInverseOperator(
-            const StokesPassType& pass,
             double redEps,
 			double absLimit,
 			int maxIter,
 			int verbose
-			//const EllipticInverseOperatorType& aufSolver
 			)
-      : pass_( pass ),
-        error_reduction_per_step_ ( redEps ),
+      : error_reduction_per_step_ ( redEps ),
         epsilon_ ( absLimit ),
         max_iterations_ (maxIter ),
         verbosity_ ( verbose )
@@ -100,15 +97,21 @@ namespace Dune {
                 RmatrixObjectType& Rmatrix,
                 ZmatrixObjectType& Zmatrix,
                 WmatrixObjectType& Wmatrix,
-                DiscreteSigmaFunctionType& rhs1,
+                const DiscreteSigmaFunctionType& rhs1,
                 DiscreteVelocityFunctionType& rhs2,
                 DiscretePressureFunctionType& rhs3 ) const
     {
         Logging::LogStream& logDebug = Logger().Dbg();
         Logging::LogStream& logError = Logger().Err();
         Logging::LogStream& logInfo = Logger().Info();
+
+        const double redEps = Parameters().getParam( "redEps", 1e-4 );
+        const double absLimit = Parameters().getParam( "absLimit", 1e-3 );
+        const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
+
         logInfo << "Begin SaddlePointInverseOperator " << std::endl;
 
+        logDebug.Resume();
         //get some refs for more readability
         PressureDiscreteFunctionType& pressure = dest.discretePressure();
         VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
@@ -142,25 +145,37 @@ namespace Dune {
         DiscretePressureFunctionType& g_func = rhs3;
         g_func *= ( -1 ); //since G = -H_3
 
-        Stuff::DiagonalMult( m_inv_mat, rhs1 ); //calc m_inv * H_1 "in-place"
+        //Stuff::DiagonalMult( m_inv_mat, rhs1 ); //calc m_inv * H_1 "in-place"
+        DiscreteSigmaFunctionType m_tmp ( "m_tom", rhs1.space() );
+        m_inv_mat.apply( rhs1, m_tmp );
+
+
         DiscreteVelocityFunctionType f_func( "f_func", velocity.space() );
         f_func.clear();
-        x_mat.apply( rhs1, f_func );
+        x_mat.apply( m_tmp, f_func );
+        f_func *= -1;
         f_func += rhs2;
 
-        typedef MatrixA_Operator< WmatrixType, MmatrixType, XmatrixType, YmatrixType, DiscreteSigmaFunctionType >
+        typedef MatrixA_Operator<   WmatrixType,
+                                    MmatrixType,
+                                    XmatrixType,
+                                    YmatrixType,
+                                    DiscreteVelocityFunctionType,
+                                    DiscreteSigmaFunctionType >
             A_OperatorType;
-        A_OperatorType a_op( w_mat, m_inv_mat, x_mat, y_mat, rhs1 );
-
+        A_OperatorType a_op( w_mat, m_inv_mat, x_mat, y_mat, velocity.space(), rhs1.space() );
 
         typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
                 F_Solver;
-
-        F_Solver f_solver( a_op, 0.0001, 0.01, 2000, 2 );
+        logInfo << " \nstart f solver " << std::endl;
+        F_Solver f_solver( a_op, redEps, absLimit, 2000, solverVerbosity );
 
         // new_f := B * A^-1 * f_func + g_func
         DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
+        tmp_f.clear();
+
         f_solver( f_func, tmp_f );
+        logInfo << " \nend f solver " << std::endl;
 
         DiscretePressureFunctionType new_f ( "new_f", g_func.space() );
         b_t_mat.apply( tmp_f, new_f );
@@ -168,33 +183,76 @@ namespace Dune {
 
 
         typedef SchurkomplementOperator<A_OperatorType,
-                                        XmatrixType,
-                                        MmatrixType,
-                                        YmatrixType,
                                         B_t_matrixType,
                                         CmatrixType,
                                         BmatrixType,
-                                        WmatrixType,
                                         DiscreteVelocityFunctionType,
-                                        DiscretePressureFunctionType,
-                                        DiscreteSigmaFunctionType >
+                                        DiscretePressureFunctionType >
                 Sk_Operator;
 
         typedef CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
                 Sk_Solver;
 
-        Sk_Operator sk_op(  a_op, x_mat, m_inv_mat, y_mat, b_t_mat, c_mat, b_mat, w_mat,
-                            f_func, g_func, arg.discreteVelocity(), velocity, rhs1 );
-        Sk_Solver sk_solver( sk_op, 0.001, 0.01, 2000, 1 );
-        sk_solver( new_f, pressure );
+        Sk_Operator sk_op(  a_op, b_t_mat, c_mat, b_mat,
+                            velocity.space(), pressure.space() );
+        Sk_Solver sk_solver( sk_op, redEps, absLimit, 2000, solverVerbosity );
+        pressure.clear();
+//        sk_solver( new_f, pressure );
+//        *pressure.dbegin() = 1;
+        Stuff::addScalarToFunc( pressure, 1 );
+
+        typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
+                U_Solver;
 
 
-        //schurkomplement Operator ist: B2 * A_inv * B1 + C
+        DiscreteVelocityFunctionType Bp_temp ( "Bp_temp", velocity.space() );
+        b_mat.apply( pressure, Bp_temp );
+        Bp_temp *= ( -1 );
+        Bp_temp += f_func;
+        U_Solver u_solver( a_op, redEps, absLimit, 2000, solverVerbosity );
+        u_solver ( Bp_temp, velocity );
 
-        //schritt 1
-        //löse S * u_0 = F - B1 * p_0
-      //  typedef InnerCG<
+        DiscretePressureFunctionType pressure_tmp ( "press_tmp", pressure.space() );
+        DiscretePressureFunctionType residuum_tmp ( "resi_tmp", pressure.space() );
 
+        DiscretePressureFunctionType pressure_last( "p_k-1", pressure.space() );
+        DiscreteVelocityFunctionType velocity_last( "u_k-1", velocity.space() );
+
+        double res_norm = std::numeric_limits<double>::max();
+        double tau = Parameters().getParam( "tau", 0.1 );
+
+        int i = 0;
+        int max_iter = Parameters().getParam( "maxSKIterations", 10 );
+        do {
+            logInfo << " \n SK solver Iteration: " << i << std::endl;
+            pressure_last.assign( pressure );
+            pressure.clear();
+            pressure_tmp.clear();
+            velocity_last.assign( velocity );
+            velocity_last.clear();
+
+            //p_k+1 = p_k + tau * (f_new - S * p_k )
+            sk_op.multOEM( pressure_last.leakPointer(), pressure.leakPointer() );
+            pressure += new_f;
+            pressure *= -1 * tau;
+            pressure += pressure_last;
+
+//            pressure_tmp += pressure_last;
+//            pressure_tmp *= tau;
+//            pressure_tmp += new_f;
+//            sk_solver( pressure_tmp, pressure );
+
+            // u_k+1 = A^-1 * ( f - B_t * p_k )
+            Bp_temp.clear();
+            b_mat.apply( pressure_last, Bp_temp );
+            Bp_temp *= ( -1 );
+            Bp_temp += f_func;
+            U_Solver u_solver( a_op, redEps, absLimit, 2000, solverVerbosity );
+            u_solver ( Bp_temp, velocity );
+
+            i++;
+
+        } while ( i < max_iter ) ;//res_norm > absLimit );
         //schritt 2
         //setzte:
         //  r_0     = -B2 * u_0 + C * p_0 + G
@@ -234,8 +292,6 @@ namespace Dune {
 //    VelocityDiscreteFunctionType& velocity() { return velocity_; }
 
   private:
-    // reference to operator which should be inverted
-//    const StokesPassType & pass_;
 
     // reduce error each step by
     double error_reduction_per_step_;
@@ -252,7 +308,7 @@ namespace Dune {
 //    the CGSolver for A^-1
    // const EllipticInverseOperatorType& aufSolver_;
 //
-    const StokesPassType& pass_;
+
 
   };
 

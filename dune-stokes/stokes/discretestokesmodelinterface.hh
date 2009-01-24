@@ -1166,12 +1166,12 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                     const AnalyticalDirichletDataType& dirichletData,
                                     const double viscosity )
             : C_11_( C_11 ),
-            C_12_( C_12 ),
             D_11_( D_11 ),
+            viscosity_( viscosity ),
+            C_12_( C_12 ),
             D_12_( D_12 ),
             force_( force ),
-            dirichletData_( dirichletData ),
-            viscosity_( viscosity )
+            dirichletData_( dirichletData )
         {}
 
         /**

@@ -407,6 +407,7 @@ void SparseRowMatrix<T>::multOEM(const VECtype *x, VECtype *ret) const
 {
   for(register int row=0; row<dim_[0]; ++row)
   {
+//      std::cout << "row: " << row << std::endl;
     ret[row] = multOEMRow( x, row );
   }
   return;
