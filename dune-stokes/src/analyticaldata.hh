@@ -54,6 +54,7 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
             // play safe
             assert( arg.dim() == 2 );
             assert( ret.dim() == 2 );
+#ifndef SIMPLE_PROBLEM
             // some computations
             double x1 = arg[0];
             double x2 = arg[1];
@@ -64,6 +65,10 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 ( ( 1.0 - viscosity_ ) * std::sin( x2 )
                 + viscosity_ * cos_of_x2 );
             ret[1] = 2.0 * ( 1.0 - viscosity_ ) * exp_of_x1 * cos_of_x2;
+#else
+            ret[0] = arg[1];
+            ret[1] = arg[0];
+#endif
         }
 
     private:
@@ -121,6 +126,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
             assert( arg.dim() == 2 );
             assert( ret.dim() == 2 );
             // some computations
+#ifndef SIMPLE_PROBLEM
             double x1 = arg[0];
             double x2 = arg[1];
             double exp_of_x1 = std::exp( x1 );
@@ -129,6 +135,10 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
             ret[0] = -1.0 * exp_of_x1 *
                 ( ( x2 * std::cos( x2 ) ) + sin_of_x2 );
             ret[1] = exp_of_x1 * x2 * sin_of_x2;
+#else
+            ret[0] = 1;
+            ret[1] = 0;
+#endif
         }
 };
 

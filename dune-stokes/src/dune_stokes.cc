@@ -11,7 +11,8 @@
 //! using the memprovider from FEM currently results in assertion failed
 #undef USE_MEMPROVIDER
 
-#define POLORDER 1
+#define POLORDER 0
+#define SIMPLE_PROBLEM
 
 #include <iostream>
 #include <dune/common/mpihelper.hh> // An initializer of MPI
