@@ -2304,6 +2304,13 @@ class StokesPass
 //                debugStream << "- done printing matrices" << std::endl;
             }
 
+            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+            Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
+
+            Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
+
+
+#endif
 
 #endif
 
