@@ -2283,6 +2283,11 @@ class StokesPass
                 }
             }
 
+            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+            Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
+
+            Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
+
 //            infoStream << "- printing matrices" << std::endl;
 //            if ( Mprint ) {
 //                infoStream << " - = M ============" << std::endl;
