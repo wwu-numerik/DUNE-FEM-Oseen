@@ -324,16 +324,18 @@ class StokesPass
             int numberOfIntersections = 0;
             int numberOfBoundaryIntersections = 0;
             int numberOfInnerIntersections = 0;
-            const bool Mprint = false;
-            const bool Wprint = false;
-            const bool Xprint = false;
-            const bool Yprint = false;
-            const bool Zprint = false;
-            const bool Eprint = false;
-            const bool Rprint = false;
-            const bool H1print = false;
-            const bool H2print = false;
-            const bool H3print = false;
+            const bool Mprint = true;
+            const bool Wprint = true;
+            const bool Xprint = true;
+            const bool Yprint = true;
+            const bool Zprint = true;
+            const bool Eprint = true;
+            const bool Rprint = true;
+            const bool H1print = true;
+            const bool H2print = true;
+            const bool H3print = true;
+            int fivePercentOfEntities = 0;
+            int fivePercents = 0;
             infoStream << "\nthis is StokesPass::apply()" << std::endl;
 
             // do an empty grid walk to get informations
@@ -363,16 +365,22 @@ class StokesPass
                     }
                 }
             }
-//            const int anotherFivePercentOfEntities = numberOfEntities / 20;
-//            infoStream << "found " << numberOfEntities << " entities," << std::endl;
-//            infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
-//            infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
-//            infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
-//            infoStream << "- starting gridwalk" << std::endl;
-//            infoStream << "  [ assembling          ]" << std::endl;
-//            infoStream << "  [";
-
-//            int fivePercents = 0;
+            if ( numberOfEntities > 19 ) {
+                infoStream << "found " << numberOfEntities << " entities," << std::endl;
+                infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
+                infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
+                infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
+                infoStream << "- starting gridwalk" << std::endl;
+                fivePercentOfEntities = int( std::floor(double(numberOfEntities) / double(20)));
+                infoStream << "  [ assembling         ]" << std::endl;
+                infoStream << "  [";
+            } else {
+                infoStream << "found " << numberOfEntities << " entities," << std::endl;
+                infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
+                infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
+                infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
+                infoStream << "- starting gridwalk" << std::endl;
+            }
 #endif
             // walk the grid
             EntityIteratorType entityItEnd = velocitySpace_.end();
@@ -412,21 +420,22 @@ class StokesPass
                 const VolumeQuadratureType volumeQuadratureElement( entity,
                                                                     quadrature_order );
 #ifndef NLOG
-//                if ( ( entityNR % anotherFivePercentOfEntities ) == 0 ) {
-//                    if ( fivePercents < 21 ) {
-//                        infoStream << "=";
-//                        ++fivePercents;
-//                        infoStream.Flush();
-//                    }
-//                }
+                if ( numberOfEntities > 19 ) {
+                   if ( ( entityNR % fivePercentOfEntities ) == 0 ) {
+                    	if ( fivePercents < 20 ) {
+                        	infoStream << "=";
+                        	++fivePercents;
+                	        infoStream.Flush();
+        	        }
+	           }
+                }
+
                 if ( outputEntity == entityNR ) entityOutput = true;
                 if ( entityOutput ) debugStream.Resume(); // enable logging
-                debugStream << "  - entity " << outputEntity << std::endl;
                 debugStream << "  - numSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
                 debugStream << "  - numVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
                 debugStream << "  - numPressureBaseFunctionsElement: " << numPressureBaseFunctionsElement << std::endl;
-                debugStream << "  - start calculations on entity" << std::endl;
-                debugStream << "    ============================" << std::endl;
+                debugStream << "  - == start calculations on entity " << outputEntity << std::endl;
                 bool Moutput = false;
                 bool Woutput = false;
                 bool Xoutput = false;
@@ -785,9 +794,7 @@ class StokesPass
 //                    if ( ( outputIntersection == intersectionNR ) && entityOutput ) intersectionOutput = true;
                     if ( entityOutput ) intersectionOutput = true;
                     if ( intersectionOutput ) debugStream.Resume(); // enable logging
-                    debugStream << "    - intersection " << intersectionNR << std::endl;
-                    debugStream << "    - start calculations on intersection" << std::endl;
-                    debugStream << "      ==================================" << std::endl;
+                    debugStream << "    - ==== start calculations on intersection " << intersectionNR << std::endl;
                     debugStream.Suspend(); // disable logging
 #endif
 
@@ -843,7 +850,7 @@ class StokesPass
                             for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                                 double W_i_j = 0.0;
 #ifndef NLOG
-                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
+//                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
                                 if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = W element ======================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -2212,8 +2219,7 @@ class StokesPass
                     } // done with those on the boundary
 #ifndef NLOG
                     if ( intersectionOutput ) debugStream.Resume(); // enable logging
-                    debugStream << "    - done calculations on intersection" << std::endl;
-                    debugStream << "      =================================" << std::endl;
+                    debugStream << "    - ==== done calculations on intersection " << intersectionNR << std::endl;
                     debugStream.Suspend(); // disable logging
                     intersectionOutput = false;
                     ++intersectionNR;
@@ -2223,16 +2229,17 @@ class StokesPass
 #ifndef NLOG
                 intersectionNR = 0;
                 if ( entityOutput ) debugStream.Resume(); // enable logging
-                debugStream << "  - done calculations on entity" << std::endl;
-                debugStream << "    ===========================" << std::endl;
+                debugStream << "  - == done calculations on entity " << outputEntity << std::endl;
                 debugStream.Suspend(); // disable logging
                 entityOutput = false;
                 ++entityNR;
 #endif
             } // done walking the grid
 #ifndef NLOG
-            infoStream << "]" << std::endl;
-            infoStream << "- gridwalk done" << std::endl;
+            if ( numberOfEntities > 19 ) {
+                infoStream << "]";
+            }
+            infoStream << "\n- gridwalk done" << std::endl;
 
             // build A for testing
             // W\in R^{L\times L}
@@ -2249,7 +2256,7 @@ class StokesPass
 //            neg_X_Minv_mat.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
 //            Amatrix.matrix().add( Ymatrix.matrix() );
 
-//            if ( Mprint || Wprint || Xprint || Yprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
+            if ( Mprint || Wprint || Xprint || Yprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
                 debugStream.Resume();
                 debugStream << "- printing matrices" << std::endl;
                 if ( Mprint ) {
@@ -2295,7 +2302,9 @@ class StokesPass
 //                debugStream << " - = A ============" << std::endl;
 //                debugStream.Log( &AmatrixType::MatrixType::print,  Amatrix.matrix() );
 //                debugStream << "- done printing matrices" << std::endl;
-//            }
+            }
+
+
 #endif
 
 
