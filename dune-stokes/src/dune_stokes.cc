@@ -90,7 +90,7 @@ int main( int argc, char** argv )
         Logging::LOG_CONSOLE |
         Logging::LOG_FILE |
         Logging::LOG_ERR |
-//        Logging::LOG_DEBUG |
+        Logging::LOG_DEBUG |
         Logging::LOG_INFO );
 
     L2ErrorVector l2_errors;
