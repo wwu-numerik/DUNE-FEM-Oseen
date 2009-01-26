@@ -44,3 +44,6 @@ stokes/discretestokesfunctionspacewrapper.hh.bak
 stokes/discretestokesmodelinterface.hh.bak
 stokes/stokespass.hh.bak
 src/data
+doc/references/stokes.pdf
+src/dune_stokes_matlab.m
+src/logging.hh.bak

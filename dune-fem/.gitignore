@@ -209,5 +209,7 @@ m4/Makefile.in
 make.inc
 missing
 stamp-h1
-fem/devel-suite/elliptic/.deps/
-fem/devel-suite/l2projection/.deps/
+fem/devel-suite/elliptic/.deps
+fem/devel-suite/l2projection/.deps
+fem/operator/matrix/spmatrix.cc.bak
+
