@@ -2241,21 +2241,6 @@ class StokesPass
             }
             infoStream << "\n- gridwalk done" << std::endl;
 
-            // build A for testing
-            // W\in R^{L\times L}
-//            typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
-//                                            DiscreteVelocityFunctionSpaceType >
-//                AmatrixType;
-//            AmatrixType Amatrix( velocitySpace_, velocitySpace_ );
-//            Amatrix.reserve();
-//
-//            XmatrixType neg_X_Minv_mat( velocitySpace_, sigmaSpace_ );
-//            neg_X_Minv_mat.reserve();
-//            Xmatrix.matrix().multiply( MInversMatrix.matrix(), neg_X_Minv_mat.matrix() );
-//            neg_X_Minv_mat.matrix().scale( -1.0 );
-//            neg_X_Minv_mat.matrix().multiply( Wmatrix.matrix(), Amatrix.matrix() );
-//            Amatrix.matrix().add( Ymatrix.matrix() );
-
             if ( Mprint || Wprint || Xprint || Yprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
                 debugStream.Resume();
                 debugStream << "- printing matrices" << std::endl;
@@ -2299,29 +2284,21 @@ class StokesPass
                     debugStream << " - = H3 ===========" << std::endl;
                     debugStream.Log( &DiscretePressureFunctionType::print, H3rhs );
                 }
-//                debugStream << " - = A ============" << std::endl;
-//                debugStream.Log( &AmatrixType::MatrixType::print,  Amatrix.matrix() );
-//                debugStream << "- done printing matrices" << std::endl;
-            }
+	    }
 
             Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
             Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
 
             Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
-
-
 #endif
 
-#endif
-
-
-            profiler().StartTiming("Pass -- SOLVER");
-            InvOpType op( 1.0,1.0,1,1 );
-            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-            profiler().StopTiming("Pass -- SOLVER");
-
-            profiler().StopTiming("Pass -- ASSEMBLE");
-            profiler().StopTiming("Pass");
+//            profiler().StartTiming("Pass -- SOLVER");
+//            InvOpType op( 1.0,1.0,1,1 );
+//            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+//            profiler().StopTiming("Pass -- SOLVER");
+//
+//            profiler().StopTiming("Pass -- ASSEMBLE");
+//            profiler().StopTiming("Pass");
 
             Stuff::oneLinePrint( debugStream, dest.discretePressure() );
 
