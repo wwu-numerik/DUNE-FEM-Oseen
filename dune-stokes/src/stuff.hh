@@ -83,7 +83,7 @@ void printFieldVector( T& arg, std::string name, stream& out, std::string prefix
         IteratorType;
     IteratorType itEnd = arg.end();
     for ( IteratorType it = arg.begin(); it != itEnd; ++it ) {
-            out << prefix << std::setw( 7 ) << std::setprecision( 3 ) << *it;
+            out << prefix << std::setw( 10 ) << std::setprecision( 6 ) << *it;
     }
 }
 
@@ -114,7 +114,7 @@ void printFieldMatrix( T& arg, std::string name, stream& out, std::string prefix
         out << "\n" << prefix << "row " << row << ":";
         VectorInRowIteratorType vItEnd = rIt->end();
         for (   VectorInRowIteratorType vIt = rIt->begin(); vIt != vItEnd; ++vIt ) {
-            out << prefix << std::setw( 7 ) << std::setprecision( 3 ) << *vIt;
+            out << prefix << std::setw( 10 ) << std::setprecision( 6 ) << *vIt;
         }
         row += 1;
     }
