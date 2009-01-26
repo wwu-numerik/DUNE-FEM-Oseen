@@ -436,7 +436,7 @@ class StokesPass
                 debugStream << "  - numSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
                 debugStream << "  - numVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
                 debugStream << "  - numPressureBaseFunctionsElement: " << numPressureBaseFunctionsElement << std::endl;
-                debugStream << "  - == start calculations on entity " << outputEntity << std::endl;
+                debugStream << "  - == start calculations on entity " << entityNR << std::endl;
                 bool Moutput = false;
                 bool Woutput = false;
                 bool Xoutput = false;
@@ -2255,7 +2255,7 @@ class StokesPass
 #ifndef NLOG
                 intersectionNR = 0;
                 if ( entityOutput ) debugStream.Resume(); // enable logging
-                debugStream << "  - == done calculations on entity " << outputEntity << std::endl;
+                debugStream << "  - == done calculations on entity " << entityNR << std::endl;
                 debugStream.Suspend(); // disable logging
                 entityOutput = false;
                 ++entityNR;
