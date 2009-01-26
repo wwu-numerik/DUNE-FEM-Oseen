@@ -178,19 +178,20 @@ inline void Velocity< TraitsImp >::evaluate(
     // play safe
     assert( arg.dim() == 2 );
     assert( ret.dim() == 2 );
-
-#ifndef SIMPLE_PROBLEM
-    // some computations
     double x1 = arg[0];
     double x2 = arg[1];
+#ifdef SIMPLE_PROBLEM
+    ret[0] = -1 * x1*x1;
+    ret[1] = x2*x2;
+#elif defined(CONSTANT_PROBLEM)
+    ret[0] = -1;
+    ret[1] = 0;
+#else
     double exp_of_x1 = std::exp( x1 );
     double sin_of_x2 = std::sin( x2 );
     // return
     ret[0] = -1.0 * exp_of_x1 * ( x2 * std::cos( x2 ) + sin_of_x2 );
     ret[1] = exp_of_x1 * x2 * sin_of_x2;
-#else
-    ret[0] = 1;
-    ret[1] = 0;
 #endif
 
 }
