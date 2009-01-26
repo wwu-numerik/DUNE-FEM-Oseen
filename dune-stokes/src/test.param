@@ -7,8 +7,10 @@ fem.io.datafileprefix: data_
 fem.io.savestep: -1
 fem.io.savecount: 1
 fem.io.outputformat: 1
-redEps: 1e-4
-absLimit: 1e-6
+redEps: 1e-6
+absLimit: 1e-8
 solverVerbosity: 0
-tau: 0.010
-maxSKIterations: 40
+tau: 0.10
+maxSKIterations: 500
+h-factor: 1.0
+f-init: 0.100
