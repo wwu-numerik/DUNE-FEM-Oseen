@@ -601,7 +601,7 @@ class StokesPass
                             debugStream << "        - integrationWeight: " << integrationWeight;
                             Stuff::printFieldVector( gradient_of_v_i, "gradient of v_i", debugStream, "      " );
                             Stuff::printFieldMatrix( tau_j, "tau_j", debugStream, "      " );
-                            debugStream << "\n        - colonProduct( tau_j, grad v_i ): " << tau_j_times_gradient_v_i << std::endl;
+                            debugStream << "\n        - tau_j_times_gradient_v_i: " << tau_j_times_gradient_v_i << std::endl;
                             debugStream << "        - X_" << i << "_" << j << "+=: " << X_i_j << std::endl;
 #endif
                         } // done sum over quadrature points
@@ -2283,52 +2283,30 @@ class StokesPass
                 }
             }
 
+            // do the matlab logging stuff
             Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
             Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Xmatrix.matrix(), "X", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Ymatrix.matrix(), "Y", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Zmatrix.matrix(), "Z", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Ematrix.matrix(), "E", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Rmatrix.matrix(), "R", matlabLogStream );
 
             Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
+            Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
+            Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
 
-//            infoStream << "- printing matrices" << std::endl;
-//            if ( Mprint ) {
-//                infoStream << " - = M ============" << std::endl;
-//                infoStream.Log( &MInversMatrixType::MatrixType::print,  MInversMatrix.matrix() );
-//            }
-//            if ( Wprint ) {
-//                infoStream << " - = W ============" << std::endl;
-//                infoStream.Log( &WmatrixType::MatrixType::print,  Wmatrix.matrix() );
-//            }
-//            if ( Xprint ) {
-//                infoStream << " - = X ============" << std::endl;
-//                infoStream.Log( &XmatrixType::MatrixType::print,  Xmatrix.matrix() );
-//            }
-//            if ( Yprint ) {
-//                infoStream << " - = Y ============" << std::endl;
-//                infoStream.Log( &YmatrixType::MatrixType::print,  Ymatrix.matrix() );
-//            }
-//            if ( Zprint ) {
-//                infoStream << " - = Z ============" << std::endl;
-//                infoStream.Log( &ZmatrixType::MatrixType::print,  Zmatrix.matrix() );
-//            }
-//            if ( Eprint ) {
-//                infoStream << " - = E ============" << std::endl;
-//                infoStream.Log( &EmatrixType::MatrixType::print,  Ematrix.matrix() );
-//            }
-//            if ( Rprint ) {
-//                infoStream << " - = R ============" << std::endl;
-//                infoStream.Log( &RmatrixType::MatrixType::print,  Rmatrix.matrix() );
-//            }
-//            if ( H1print ) {
-//                infoStream << " - = H1 ===========" << std::endl;
-//                infoStream.Log( &DiscreteSigmaFunctionType::print, H1rhs );
-//            }
-//            if ( H2print ) {
-//                infoStream << " - = H2 ===========" << std::endl;
-//                infoStream.Log( &DiscreteVelocityFunctionType::print, H2rhs );
-//            }
-//            if ( H3print ) {
-//                infoStream << " - = H3 ===========" << std::endl;
-//                infoStream.Log( &DiscretePressureFunctionType::print, H3rhs );
-//            }
+            matlabLogStream << "\nA = Y - X * M_invers * W;" << std::endl;
+            matlabLogStream << "B = Z;" << std::endl;
+            matlabLogStream << "B_T = - E;" << std::endl;
+            matlabLogStream << "C = R;" << std::endl;
+            matlabLogStream << "F = H2 - X * M_invers * H1;" << std::endl;
+            matlabLogStream << "G = - H3;" << std::endl;
+            matlabLogStream << "A_invers = inv( A )" << std::endl;
+            matlabLogStream << "schur_S = B_T * A_invers * B + C;" << std::endl;
+            matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
+            matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
 
 #endif
 

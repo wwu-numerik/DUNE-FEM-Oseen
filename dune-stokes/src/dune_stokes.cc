@@ -8,11 +8,11 @@
 # include "config.h"
 #endif
 
-#define POLORDER 1
+#define POLORDER 0
 #undef USE_MEMPROVIDER
 
-#define SIMPLE_PROBLEM
-//#define CONSTANT_PROBLEM
+//#define SIMPLE_PROBLEM
+#define CONSTANT_PROBLEM
 
 #include <iostream>
 #include <dune/common/mpihelper.hh> // An initializer of MPI
@@ -90,7 +90,7 @@ int main( int argc, char** argv )
         Logging::LOG_CONSOLE |
         Logging::LOG_FILE |
         Logging::LOG_ERR |
-//        Logging::LOG_DEBUG |
+        Logging::LOG_DEBUG |
         Logging::LOG_INFO );
 
     L2ErrorVector l2_errors;
@@ -137,7 +137,6 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     GridPartType gridPart( *gridPtr );
     const int gridDim = GridType::dimensionworld;
     const int polOrder = POLORDER;
-    const double viscosity = Parameters().getParam( "viscosity", 1.0 );
     const double viscosity = 1.0;
 
 
