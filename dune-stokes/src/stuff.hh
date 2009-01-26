@@ -120,6 +120,33 @@ void printFieldMatrix( T& arg, std::string name, stream& out, std::string prefix
     }
 }
 
+template < class T, class stream >
+void printSparseRowMatrixMatlabStyle( const T& arg, const std::string name, stream& out )
+{
+    out << "\n" << name << " = [ ";
+    for ( int row = 0; row < arg.rows(); row++ ) {
+        for ( int col = 0; col < arg.cols(); col++ ) {
+            out << std::setw( 8 ) << std::setprecision( 2 ) << arg(row,col);
+        }
+        out << ";" << std::endl;
+    }
+    out << "];" << std::endl;
+}
+
+template < class T, class stream >
+void printDiscreteFunctionMatlabStyle( const T& arg, const std::string name, stream& out )
+{
+    out << "\n" << name << " = [ ";
+    typedef typename T::ConstDofIteratorType
+        ConstDofIteratorType;
+    ConstDofIteratorType itEnd = arg.dend();
+    for ( ConstDofIteratorType it = arg.dbegin(); it != itEnd; ++it ) {
+        out << std::setprecision( 2 ) << *it;
+        out << ";" << std::endl;
+    }
+    out << "];" << std::endl;
+}
+
 template < class Matrix, class Function >
 void DiagonalMult( const Matrix& matrix, Function& f )
 {

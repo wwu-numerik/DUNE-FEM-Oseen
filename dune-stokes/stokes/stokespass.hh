@@ -416,11 +416,11 @@ class StokesPass
 
                 // get quadrature
                 const VolumeQuadratureType volumeQuadratureElement( entity,
-                                                                    ( 2 * sigmaSpaceOrder ) + 1 );
+                                                                    ( 2 * pressureSpaceOrder ) + 1 );
 #ifndef NLOG
                 if ( numberOfEntities > 19 ) {
                 if ( ( entityNR % fivePercentOfEntities ) == 0 ) {
-                    if ( fivePercents < 21 ) {
+                    if ( fivePercents < 20 ) {
                         infoStream << "=";
                         ++fivePercents;
                         infoStream.Flush();
@@ -803,7 +803,7 @@ class StokesPass
                     // get intersection quadrature, seen from inside
                     const FaceQuadratureType faceQuadratureElement( gridPart_,
                                                                     intIt,
-                                                                    ( 2 * sigmaSpaceOrder ) + 1,
+                                                                    ( 2 * pressureSpaceOrder ) + 1,
                                                                     FaceQuadratureType::INSIDE );
 
                     // if we are inside the grid
@@ -832,7 +832,7 @@ class StokesPass
                         // get intersection quadrature, seen from outside
                         const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
                                                                             intIt,
-                                                                            ( 2 * sigmaSpaceOrder ) + 1,
+                                                                            ( 2 * pressureSpaceOrder ) + 1,
                                                                             FaceQuadratureType::OUTSIDE );
 
                         // compute the surface integrals
@@ -2283,47 +2283,52 @@ class StokesPass
                 }
             }
 
-            infoStream << "- printing matrices" << std::endl;
-            if ( Mprint ) {
-                infoStream << " - = M ============" << std::endl;
-                infoStream.Log( &MInversMatrixType::MatrixType::print,  MInversMatrix.matrix() );
-            }
-            if ( Wprint ) {
-                infoStream << " - = W ============" << std::endl;
-                infoStream.Log( &WmatrixType::MatrixType::print,  Wmatrix.matrix() );
-            }
-            if ( Xprint ) {
-                infoStream << " - = X ============" << std::endl;
-                infoStream.Log( &XmatrixType::MatrixType::print,  Xmatrix.matrix() );
-            }
-            if ( Yprint ) {
-                infoStream << " - = Y ============" << std::endl;
-                infoStream.Log( &YmatrixType::MatrixType::print,  Ymatrix.matrix() );
-            }
-            if ( Zprint ) {
-                infoStream << " - = Z ============" << std::endl;
-                infoStream.Log( &ZmatrixType::MatrixType::print,  Zmatrix.matrix() );
-            }
-            if ( Eprint ) {
-                infoStream << " - = E ============" << std::endl;
-                infoStream.Log( &EmatrixType::MatrixType::print,  Ematrix.matrix() );
-            }
-            if ( Rprint ) {
-                infoStream << " - = R ============" << std::endl;
-                infoStream.Log( &RmatrixType::MatrixType::print,  Rmatrix.matrix() );
-            }
-            if ( H1print ) {
-                infoStream << " - = H1 ===========" << std::endl;
-                infoStream.Log( &DiscreteSigmaFunctionType::print, H1rhs );
-            }
-            if ( H2print ) {
-                infoStream << " - = H2 ===========" << std::endl;
-                infoStream.Log( &DiscreteVelocityFunctionType::print, H2rhs );
-            }
-            if ( H3print ) {
-                infoStream << " - = H3 ===========" << std::endl;
-                infoStream.Log( &DiscretePressureFunctionType::print, H3rhs );
-            }
+            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+            Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
+
+            Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
+
+//            infoStream << "- printing matrices" << std::endl;
+//            if ( Mprint ) {
+//                infoStream << " - = M ============" << std::endl;
+//                infoStream.Log( &MInversMatrixType::MatrixType::print,  MInversMatrix.matrix() );
+//            }
+//            if ( Wprint ) {
+//                infoStream << " - = W ============" << std::endl;
+//                infoStream.Log( &WmatrixType::MatrixType::print,  Wmatrix.matrix() );
+//            }
+//            if ( Xprint ) {
+//                infoStream << " - = X ============" << std::endl;
+//                infoStream.Log( &XmatrixType::MatrixType::print,  Xmatrix.matrix() );
+//            }
+//            if ( Yprint ) {
+//                infoStream << " - = Y ============" << std::endl;
+//                infoStream.Log( &YmatrixType::MatrixType::print,  Ymatrix.matrix() );
+//            }
+//            if ( Zprint ) {
+//                infoStream << " - = Z ============" << std::endl;
+//                infoStream.Log( &ZmatrixType::MatrixType::print,  Zmatrix.matrix() );
+//            }
+//            if ( Eprint ) {
+//                infoStream << " - = E ============" << std::endl;
+//                infoStream.Log( &EmatrixType::MatrixType::print,  Ematrix.matrix() );
+//            }
+//            if ( Rprint ) {
+//                infoStream << " - = R ============" << std::endl;
+//                infoStream.Log( &RmatrixType::MatrixType::print,  Rmatrix.matrix() );
+//            }
+//            if ( H1print ) {
+//                infoStream << " - = H1 ===========" << std::endl;
+//                infoStream.Log( &DiscreteSigmaFunctionType::print, H1rhs );
+//            }
+//            if ( H2print ) {
+//                infoStream << " - = H2 ===========" << std::endl;
+//                infoStream.Log( &DiscreteVelocityFunctionType::print, H2rhs );
+//            }
+//            if ( H3print ) {
+//                infoStream << " - = H3 ===========" << std::endl;
+//                infoStream.Log( &DiscretePressureFunctionType::print, H3rhs );
+//            }
 
 #endif
 

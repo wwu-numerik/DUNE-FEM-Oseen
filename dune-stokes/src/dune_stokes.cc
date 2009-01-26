@@ -8,6 +8,9 @@
 # include "config.h"
 #endif
 
+//! using the memprovider from FEM currently results in assertion failed
+#undef USE_MEMPROVIDER
+
 #define POLORDER 0
 
 #include <iostream>
@@ -121,6 +124,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
                 L2ErrorVector& l2_errors )
 {
     Logging::LogStream& infoStream = Logger().Info();
+    ParameterContainer& parameters = Parameters();
 
     /* ********************************************************************** *
      * initialize the grid                                                    *
