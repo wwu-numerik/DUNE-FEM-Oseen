@@ -58,6 +58,13 @@ basefunctionstorage.cc( 39 )
     	assert(baseFunct >= 0 && baseFunct < numBaseFunctions());
 =>    	storage_[baseFunct]->evaluate(diffVar, xLocal, result);
 	}
+	
+dgbasefunctions.hh( 261 )
+	virtual void evaluate( const FieldVector<deriType, 0>& diffVariable,
+                           const DomainType& x, RangeType& phi) const
+	{
+=>		phi = this->eval_triangle_2d(x);
+    }
 		
 dgbasefunctions.hh( 113 )
 	RangeFieldType eval_triangle_2d (const DomainType & xi ) const
