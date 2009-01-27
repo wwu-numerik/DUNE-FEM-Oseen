@@ -11,6 +11,6 @@ redEps: 1e-6
 absLimit: 1e-8
 solverVerbosity: 0
 tau: 0.10
-maxSKIterations: -50
-h-factor: 1.00
+maxSKIterations: -500
+h-factor: 1.0
 f-init: 0.100

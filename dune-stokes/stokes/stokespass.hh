@@ -2348,16 +2348,16 @@ class StokesPass
 
 #endif
 
-//            profiler().StartTiming("Pass -- SOLVER");
-//            InvOpType op( 1.0,1.0,1,1 );
-//            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-//            profiler().StopTiming("Pass -- SOLVER");
-//
-//            profiler().StopTiming("Pass -- ASSEMBLE");
-//            profiler().StopTiming("Pass");
+            profiler().StartTiming("Pass -- SOLVER");
+            InvOpType op( 1.0,1.0,1,1 );
+            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+            profiler().StopTiming("Pass -- SOLVER");
 
+            profiler().StopTiming("Pass -- ASSEMBLE");
+            profiler().StopTiming("Pass");
+#ifndef NLOG
             Stuff::oneLinePrint( debugStream, dest.discretePressure() );
-
+#endif
 
         } // end of apply
 

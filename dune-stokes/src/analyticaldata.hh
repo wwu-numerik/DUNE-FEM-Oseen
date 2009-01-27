@@ -67,7 +67,7 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
             double exp_of_x1 = std::exp( x1 );
             double cos_of_x2 = std::cos( x2 );
             //return
-            ret[0] = 2.0 * exp_of_x1 *cd
+            ret[0] = 2.0 * exp_of_x1 *
                 ( ( 1.0 - viscosity_ ) * std::sin( x2 )
                 + viscosity_ * cos_of_x2 );
             ret[1] = 2.0 * ( 1.0 - viscosity_ ) * exp_of_x1 * cos_of_x2;

@@ -140,7 +140,7 @@ namespace Dune {
         WmatrixType& w_mat      = Wmatrix.matrix();
 
         b_t_mat.scale( -1 ); //since B_t = -E
-        c_mat.scale( -1 ); //since C = -R
+//        c_mat.scale(  ); //since C = -R
 
         DiscretePressureFunctionType& g_func = rhs3;
         g_func *= ( -1 ); //since G = -H_3
