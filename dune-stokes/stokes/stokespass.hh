@@ -298,6 +298,8 @@ class StokesPass
             // of type sigma
             typedef typename DiscreteSigmaFunctionSpaceType::BaseFunctionSetType
                 SigmaBaseFunctionSetType;
+            typedef typename SigmaBaseFunctionSetType::JacobianRangeType
+                SigmaJacobianRangeType;
             // of type u
             typedef typename DiscreteVelocityFunctionSpaceType::BaseFunctionSetType
                 VelocityBaseFunctionSetType;
@@ -461,7 +463,6 @@ class StokesPass
                         double M_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Moutput = true;
-                        Moutput = true;
                         if ( entityOutput && Moutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = M ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
@@ -538,8 +539,10 @@ class StokesPass
                             SigmaRangeType tau_i( 0.0 );
                             VelocityRangeType v_j( 0.0 );
                             sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
+                            SigmaJacobianRangeType gradient_of_tau_i( 0.0 );
+                            sigmaBaseFunctionSetElement.jacobian( i, x, gradient_of_tau_i );
                             velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-                            const VelocityRangeType divergence_of_tau_i = sigmaDivergenceOf( tau_i );
+                            const VelocityRangeType divergence_of_tau_i = sigmaDivergenceOutOfGradient( gradient_of_tau_i );
                             const double v_j_times_divergence_of_tau_i = v_j * divergence_of_tau_i;
                             W_i_j += elementVolume
                                 * integrationWeight
@@ -2332,10 +2335,11 @@ class StokesPass
             matlabLogStream << "C = R;" << std::endl;
             matlabLogStream << "F = H2 - X * M_invers * H1;" << std::endl;
             matlabLogStream << "G = - H3;" << std::endl;
-            matlabLogStream << "A_invers = inv( A )" << std::endl;
+            matlabLogStream << "A_invers = inv( A );" << std::endl;
             matlabLogStream << "schur_S = B_T * A_invers * B + C;" << std::endl;
             matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
             matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
+            matlabLogStream << "u = A_invers * ( F - B * p );" << std::endl;
 
 #endif
 
@@ -2400,26 +2404,44 @@ class StokesPass
         /**
          *  \todo   doc
          **/
-        VelocityRangeType sigmaDivergenceOf( const SigmaRangeType& arg ) const
+//        VelocityRangeType sigmaDivergenceOf( const SigmaRangeType& arg ) const
+//        {
+//            VelocityRangeType ret( 0.0 );
+//            typedef typename SigmaRangeType::ConstRowIterator
+//                ArgConstRowIteratorType;
+//            typedef typename SigmaRangeType::row_type::ConstIterator
+//                ArgConstIteratorType;
+//            typedef typename VelocityRangeType::Iterator
+//                RetIteratorType;
+//            ArgConstRowIteratorType argRowItEnd = arg.end();
+//            RetIteratorType retItEnd = ret.end();
+//            RetIteratorType retIt = ret.begin();
+//            for (   ArgConstRowIteratorType argRowIt = arg.begin();
+//                    argRowIt != argRowItEnd, retIt != retItEnd;
+//                    ++argRowIt, ++retIt ) {
+//                ArgConstIteratorType argItEnd = argRowIt->end();
+//                for (   ArgConstIteratorType argIt = argRowIt->begin();
+//                        argIt != argItEnd;
+//                        ++argIt ) {
+//                            *retIt += *argIt;
+//                }
+//            }
+//            return ret;
+//        }
+
+        /**
+         *  \todo   doc
+         *  \tparam C   SigmaJacobianRangeType
+         **/
+        template < class C >
+        VelocityRangeType sigmaDivergenceOutOfGradient( const C& arg ) const
         {
             VelocityRangeType ret( 0.0 );
-            typedef typename SigmaRangeType::ConstRowIterator
-                ArgConstRowIteratorType;
-            typedef typename SigmaRangeType::row_type::ConstIterator
-                ArgConstIteratorType;
-            typedef typename VelocityRangeType::Iterator
-                RetIteratorType;
-            ArgConstRowIteratorType argRowItEnd = arg.end();
-            RetIteratorType retItEnd = ret.end();
-            RetIteratorType retIt = ret.begin();
-            for (   ArgConstRowIteratorType argRowIt = arg.begin();
-                    argRowIt != argRowItEnd, retIt != retItEnd;
-                    ++argRowIt, ++retIt ) {
-                ArgConstIteratorType argItEnd = argRowIt->end();
-                for (   ArgConstIteratorType argIt = argRowIt->begin();
-                        argIt != argItEnd;
-                        ++argIt ) {
-                            *retIt += *argIt;
+            const int dim = arg[0].dim();
+            for ( int i = 0; i < dim; ++i ) {
+                for ( int j = 0; j < dim; ++j ) {
+                    const VelocityRangeType gradientRow = arg[( 3 * i ) + j];
+                    ret[i] += gradientRow[ i ];
                 }
             }
             return ret;
