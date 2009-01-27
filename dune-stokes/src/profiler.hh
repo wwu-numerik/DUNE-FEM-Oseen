@@ -12,8 +12,8 @@ struct TimingData
 	clock_t start;
 	clock_t end;
 	std::string name;
-	TimingData( const std::string _name, const clock_t _start ):start( _start ),end( 0.0 ),name( _name ) {};
-	TimingData():start( 0.0 ),end( 0.0 ),name( "blank" ) {};
+	TimingData( const std::string _name, const clock_t _start ):start( _start ),end( (clock_t)0.0 ),name( _name ) {};
+	TimingData():start( (clock_t)0.0 ),end( (clock_t)0.0 ),name( "blank" ) {};
 
 };
 
@@ -143,7 +143,7 @@ long Profiler::Output( CollectiveCommunication& comm, const int refineLevel, con
 	for ( AvgMap::const_iterator it = averages.begin(); it != averages.end(); ++it )
 	{
 		long clock_count = it->second;
-		clock_count =  comm.sum( clock_count ) / double( CLOCKS_PER_SEC*0.001*numProce );
+		clock_count =  long ( comm.sum( clock_count ) / double( CLOCKS_PER_SEC*0.001*numProce ) );
 		csv << clock_count/double(m_total_runs) << ";" ;
 	}
     csv << "=I$2/I2;" << "=SUM(E$2:G$2)/SUM(E2:G2)"  << std::endl;
@@ -151,7 +151,7 @@ long Profiler::Output( CollectiveCommunication& comm, const int refineLevel, con
 
 	csv.close();
 
-	return (long) ( clock() - init_time_ ) / double( CLOCKS_PER_SEC*0.001 );
+	return long( ( clock() - init_time_ ) / double( CLOCKS_PER_SEC*0.001 ) );
 
 }
 
