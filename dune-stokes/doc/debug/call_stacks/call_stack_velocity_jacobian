@@ -1,0 +1,76 @@
+call stack velocityBaseFunctionSetElement.jacobian
+==================================================
+
+stokespass.hh( 589 )
+=>	velocityBaseFunctionSetElement.jacobian( i, x, gradient_of_v_i );
+
+basefunctionproxy.hh( 118 )
+	template< class PointType >
+    inline void jacobian( const int baseFunction,// baseFunction = 0
+                          const PointType &x,// x = [ 0.33, 0.33 ]
+                          JacobianRangeType &phi ) const// phi = [ 0, 0; 0, 0 ]
+    {
+=>		baseFunctionSet().jacobian( baseFunction, x, phi );
+    }
+	
+basefunctionsets.hh( 264 )
+	template< class PointType >
+    inline void jacobian ( const int baseFunction,// baseFunction = 0
+                           const PointType &x,// x = [ 0.33, 0.33 ]
+                           JacobianRangeType &phi ) const// phi = [ 0, 0; 0, 0 ]
+    {
+		ScalarJacobianRangeType tmp;
+		const int scalarBaseFunction = util_.containedDof( baseFunction ); //scalarBaseFunction = 0
+=>		jacobianScalar( scalarBaseFunction, x, tmp );
+		phi = 0;
+		phi[ util_.component( baseFunction )] = tmp[ 0 ];
+    }
+	
+basefunctionsets.hh( 254 )
+	template< class PointType >
+    inline void jacobianScalar ( const int baseFunction,// baseFunction = 0
+                                 const PointType &x,// x = [ 0.33, 0.33 ]
+                                 ScalarJacobianRangeType &phi ) const// phi = [ 0, 0; 0, 0 ]
+    {
+		assert( (baseFunction >= 0) && (baseFunction < numDifferentBaseFunctions()) );
+=>		storage_.jacobian( baseFunction, x, phi );
+    }
+	
+basefunctionstorage.hh( 49 )
+	template <class FunctionSpaceImp>
+	void StorageBase<FunctionSpaceImp>::jacobian( int baseFunct,// baseFunct = 0
+												  const DomainType& xLocal,// xLocal = [ 0.33, 0.33 ]
+                                                  JacobianRangeType& result) const// result = [ 6,9e-310, 2,1e-317 ]
+	{
+    	assert(baseFunct >= 0 && baseFunct < numBaseFunctions());
+		RangeType tmp;
+        for (int i = 0; i < DomainType::dimension; ++i) {
+			diffVar1_[0] = i;
+=>			storage_[baseFunct]->evaluate(diffVar1_, xLocal, tmp);
+			for (int j = 0; j < RangeType::dimension; ++j) {
+				result[j][i] = tmp[j];
+			}
+		}
+	}
+
+dgbasefunctions.hh( 266 )
+	virtual void evaluate( const FieldVector<deriType, 1>& diffVariable,// diffVariable = 0
+                           const DomainType& x,// x = [ 0.33, 0.33 ]
+						   RangeType& phi) const// phi = 6,9e-310
+    {
+=>		phi = this->grad_triangle_2d(diffVariable[0], x);
+    }
+		
+dgbasefunctions.hh( 123 )
+	RangeFieldType grad_triangle_2d ( const int comp,// comp = 0
+									  const DomainType & xi) const// x = [ 0.33, 0.33 ]
+    {
+=>		OrthonormalBase_2D::grad_triangle_2d(baseNum,&xi[0],grad_);
+		return grad_[comp];
+    }
+		
+		
+		
+		
+		
+		
