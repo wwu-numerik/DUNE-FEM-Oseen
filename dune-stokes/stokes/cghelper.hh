@@ -86,6 +86,7 @@ template <  class A_OperatorType,
             class B_t_matrixType,
             class CmatrixType,
             class BmatrixType,
+            class MmatrixType,
             class DiscreteVelocityFunctionType ,
             class DiscretePressureFunctionType>
 class SchurkomplementOperator
@@ -96,6 +97,7 @@ class SchurkomplementOperator
                                             B_t_matrixType,
                                             CmatrixType,
                                             BmatrixType,
+                                            MmatrixType,
                                             DiscreteVelocityFunctionType,
                                             DiscretePressureFunctionType>
                 ThisType;
@@ -104,12 +106,14 @@ class SchurkomplementOperator
                                 const B_t_matrixType& b_t_mat,
                                 const CmatrixType& c_mat,
                                 const BmatrixType& b_mat,
+                                const MmatrixType& m_mat,
                                 const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& velocity_space,
                                 const typename DiscretePressureFunctionType::DiscreteFunctionSpaceType& pressure_space )
             : a_op_(a_op),
             b_t_mat_(b_t_mat),
             c_mat_(c_mat),
             b_mat_(b_mat),
+            m_mat_(m_mat),
             tmp1 ( "tmp1", velocity_space ),
             tmp2 ( "tmp2", velocity_space )
         {}
@@ -154,6 +158,7 @@ class SchurkomplementOperator
         const B_t_matrixType& b_t_mat_;
         const CmatrixType& c_mat_;
         const BmatrixType& b_mat_;
+        const MmatrixType& m_mat_;
         mutable DiscreteVelocityFunctionType tmp1;
         mutable DiscreteVelocityFunctionType tmp2;
 };

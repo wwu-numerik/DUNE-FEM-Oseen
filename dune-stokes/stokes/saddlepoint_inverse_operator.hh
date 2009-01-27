@@ -190,6 +190,7 @@ namespace Dune {
                                         B_t_matrixType,
                                         CmatrixType,
                                         BmatrixType,
+                                        MmatrixType,
                                         DiscreteVelocityFunctionType,
                                         DiscretePressureFunctionType >
                 Sk_Operator;
