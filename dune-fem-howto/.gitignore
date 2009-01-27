@@ -35,3 +35,4 @@ src_localdg/doc/doxygen/man
 stamp-h1
 depcomp
 src_localdg/.deps
+doc/femhowto.ps
