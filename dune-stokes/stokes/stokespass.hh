@@ -521,7 +521,6 @@ class StokesPass
                         double W_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
-                        Woutput = true;
                         if ( entityOutput && Woutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = W ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
@@ -579,7 +578,6 @@ class StokesPass
                         double X_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-                        Xoutput = true;
                         if ( entityOutput && Xoutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = X ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
@@ -636,7 +634,6 @@ class StokesPass
                         double Z_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
-                        Zoutput = true;
                         if ( entityOutput && Zoutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = Z ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
@@ -692,7 +689,6 @@ class StokesPass
                     double H2_j = 0.0;
 #ifndef NLOG
 //                    if ( ( j == logBaseJ ) ) H2output = true;
-                    H2output = true;
                     if ( entityOutput && H2output ) debugStream.Resume(); // enable logging
                     debugStream << "    = H2 =======================" << std::endl;
                     debugStream << "    basefunction " << " " << j << std::endl;
@@ -746,7 +742,6 @@ class StokesPass
                         double E_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
-                        Eoutput = true;
                         if ( entityOutput && Eoutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = E ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
@@ -805,13 +800,23 @@ class StokesPass
                     if ( entityOutput ) intersectionOutput = true;
                     if ( intersectionOutput ) debugStream.Resume(); // enable logging
                     debugStream << "    - ==== start calculations on intersection " << intersectionNR << std::endl;
-                    debugStream.Suspend(); // disable logging
 #endif
 
                     // get intersection geometry
-                    typedef typename IntersectionIteratorType::LocalGeometry
+                    typedef typename IntersectionIteratorType::Geometry
                         IntersectionGeometryType;
-                    const IntersectionGeometryType& intersectionGeoemtry = intIt.intersectionSelfLocal();
+//                    const IntersectionGeometryType& intersectionGeoemtry = intIt.intersectionSelfLocal();
+                    const IntersectionGeometryType& intersectionGeoemtry = intIt.intersectionGlobal();
+#ifndef NLOG
+                    // get corners
+                    debugStream << "      - intersection " << intersectionNR << " has " << intersectionGeoemtry.corners() << " corners:";
+                    for ( int i = 0; i < intersectionGeoemtry.corners(); ++i ) {
+                        const VelocityRangeType corner = intersectionGeoemtry[i];
+                        Stuff::printFieldVector( corner, "corner_"+Stuff::toString(i), debugStream, "        " );
+                    }
+                    debugStream << std::endl;
+                    debugStream.Suspend(); // disable logging
+#endif
 
                     // get intersection quadrature, seen from inside
                     const FaceQuadratureType faceQuadratureElement( gridPart_,
