@@ -198,7 +198,8 @@ namespace Dune {
         typedef CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
                 Sk_Solver;
 
-        Sk_Operator sk_op(  a_op, b_t_mat, c_mat, b_mat,
+        logInfo << " \nbegin SK solver " << std::endl;
+        Sk_Operator sk_op(  a_op, b_t_mat, c_mat, b_mat, m_inv_mat,
                             velocity.space(), pressure.space() );
         Sk_Solver sk_solver( sk_op, redEps, absLimit, 2000, solverVerbosity+41 );
         pressure.clear();
