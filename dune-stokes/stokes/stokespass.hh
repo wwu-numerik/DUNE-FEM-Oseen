@@ -1752,7 +1752,6 @@ class StokesPass
                             double H1_j = 0.0;
 #ifndef NLOG
 //                            if ( j == logBaseJ ) H1output = true;
-                            H1output = true;
                             if ( intersectionOutput && H1output ) debugStream.Resume(); // enable logging
                             debugStream << "      = H1 boundary ====================" << std::endl;
                             debugStream << "      basefunction " << j << std::endl;
