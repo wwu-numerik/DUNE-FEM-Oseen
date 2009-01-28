@@ -864,7 +864,6 @@ class StokesPass
                                 double W_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
-                                Woutput = true;
                                 if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = W element ======================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -930,7 +929,6 @@ class StokesPass
                                 double W_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
-                                Woutput = true;
                                 if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = W neighbour ====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1004,7 +1002,6 @@ class StokesPass
                                 double X_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-                                Xoutput = true;
                                 if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = X element ======================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1071,7 +1068,6 @@ class StokesPass
                                 double X_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-                                Xoutput = true;
                                 if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = X neighbour ====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
