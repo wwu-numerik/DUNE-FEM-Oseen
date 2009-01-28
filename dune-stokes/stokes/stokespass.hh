@@ -1834,12 +1834,11 @@ class StokesPass
                                     SigmaRangeType tau_j( 0.0 );
                                     sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
                                     SigmaRangeType sigma_sigma_plus_flux( 0.0 );
-                                    discreteModel_.sigmaFlux(   intIt,
-                                                                0.0,
-                                                                localX,
-                                                                DiscreteModelType::inside,
-                                                                tau_j,
-                                                                sigma_sigma_plus_flux );
+                                    discreteModel_.sigmaBoundaryFlux(   intIt,
+                                                                        0.0,
+                                                                        localX,
+                                                                        tau_j,
+                                                                        sigma_sigma_plus_flux );
                                     VelocityRangeType flux_times_n_t( 0.0 );
                                     sigma_sigma_plus_flux.mv( outerNormal, flux_times_n_t );
                                     VelocityRangeType v_i( 0.0 );
