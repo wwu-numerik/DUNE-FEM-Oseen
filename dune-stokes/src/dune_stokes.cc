@@ -8,11 +8,11 @@
 # include "config.h"
 #endif
 
-//! using the memprovider from FEM currently results in assertion failed
+#define POLORDER 0
 #undef USE_MEMPROVIDER
 
-#define POLORDER 0
-#define SIMPLE_PROBLEM
+//#define SIMPLE_PROBLEM
+#define CONSTANT_PROBLEM
 
 #include <iostream>
 #include <dune/common/mpihelper.hh> // An initializer of MPI
@@ -137,7 +137,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     GridPartType gridPart( *gridPtr );
     const int gridDim = GridType::dimensionworld;
     const int polOrder = POLORDER;
-    const double viscosity = Parameters().getParam( "viscosity", 1.0 );
+    const double viscosity = 1.0;
 
 
     infoStream << "...done." << std::endl;

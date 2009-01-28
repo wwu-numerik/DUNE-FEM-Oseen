@@ -1,0 +1,85 @@
+call stack velocityBaseFunctionSetElement.evaluate
+==================================================
+
+stokespass.hh( 535 )
+=>	velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+
+basefunctionproxy.hh( 109 )
+	template< class PointType >
+    inline void evaluate ( const int baseFunction,
+                           const PointType &x,
+                           RangeType &phi ) const
+    {
+=>    	baseFunctionSet().evaluate( baseFunction, x, phi );
+    }
+
+basefunctionsetinterface.hh( 263 )
+	template< class PointType >
+    inline void evaluate ( const int baseFunction,
+                           const PointType &x,
+                           RangeType &phi ) const
+    {
+		FieldVector< deriType, 0 > diffVar;
+=>		asImp().evaluate( baseFunction, diffVar, x, phi );
+    }
+	
+basefunctionsets.hh( 240 )
+	template< int diffOrd, class PointType >
+    inline void evaluate ( const int baseFunction,
+                           const FieldVector< int, diffOrd > &diffVariable,
+                           const PointType &x,
+                           RangeType &phi ) const
+    {
+		ScalarRangeType tmp;
+		const int scalarBaseFunction = util_.containedDof( baseFunction );
+=>		evaluateScalar( scalarBaseFunction, diffVariable, x, tmp );
+		phi = 0;
+		phi[ util_.component( baseFunction ) ] = tmp[ 0 ];
+    }
+	
+basefunctionsets.hh( 220 )
+	template< int diffOrd, class PointType >
+    inline void evaluateScalar ( const int baseFunction,
+                                 const FieldVector< int, diffOrd > &diffVariable,
+                                 const PointType &x,
+                                 ScalarRangeType &phi ) const
+    {
+		assert( (baseFunction >= 0) && (baseFunction < numDifferentBaseFunctions()) );
+=>		storage_.evaluate( baseFunction, diffVariable, x, phi );
+    }
+	
+basefunctionstorage.cc( 39 )
+	template <class FunctionSpaceImp>
+	template <int diffOrd>
+	void StorageBase<FunctionSpaceImp>::
+	evaluate( int baseFunct, const FieldVector<int, diffOrd>& diffVar, 
+              const DomainType& xLocal, RangeType& result) const
+	{
+    	assert(baseFunct >= 0 && baseFunct < numBaseFunctions());
+=>    	storage_[baseFunct]->evaluate(diffVar, xLocal, result);
+	}
+	
+dgbasefunctions.hh( 261 )
+	virtual void evaluate( const FieldVector<deriType, 0>& diffVariable,
+                           const DomainType& x, RangeType& phi) const
+	{
+=>		phi = this->eval_triangle_2d(x);
+    }
+	
+dgbasefunctions.hh( 113 )
+	RangeFieldType eval_triangle_2d (const DomainType & xi ) const
+    {
+=>		return OrthonormalBase_2D::eval_triangle_2d(baseNum,&xi[0]);
+    }
+	
+orthonormalbase_2d.cc( 17 )
+	double eval_triangle_2d ( const int i, DomainType xi )
+	{
+		const double &x = xi[0];
+		const double &y = xi[1];
+		switch (i)	{
+			#if (PMAX2D>=0)
+			case ( 0 ):
+				return 1.4142135623730950488016887242097;
+		}
+	}

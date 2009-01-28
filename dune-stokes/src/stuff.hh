@@ -83,7 +83,7 @@ void printFieldVector( T& arg, std::string name, stream& out, std::string prefix
         IteratorType;
     IteratorType itEnd = arg.end();
     for ( IteratorType it = arg.begin(); it != itEnd; ++it ) {
-            out << prefix << std::setw( 7 ) << std::setprecision( 3 ) << *it;
+            out << prefix << std::setw( 10 ) << std::setprecision( 6 ) << *it;
     }
 }
 
@@ -114,10 +114,37 @@ void printFieldMatrix( T& arg, std::string name, stream& out, std::string prefix
         out << "\n" << prefix << "row " << row << ":";
         VectorInRowIteratorType vItEnd = rIt->end();
         for (   VectorInRowIteratorType vIt = rIt->begin(); vIt != vItEnd; ++vIt ) {
-            out << prefix << std::setw( 7 ) << std::setprecision( 3 ) << *vIt;
+            out << prefix << std::setw( 10 ) << std::setprecision( 6 ) << *vIt;
         }
         row += 1;
     }
+}
+
+template < class T, class stream >
+void printSparseRowMatrixMatlabStyle( const T& arg, const std::string name, stream& out )
+{
+    out << "\n" << name << " = [ ";
+    for ( int row = 0; row < arg.rows(); row++ ) {
+        for ( int col = 0; col < arg.cols(); col++ ) {
+            out << std::setw( 8 ) << std::setprecision( 2 ) << arg(row,col);
+        }
+        out << ";" << std::endl;
+    }
+    out << "];" << std::endl;
+}
+
+template < class T, class stream >
+void printDiscreteFunctionMatlabStyle( const T& arg, const std::string name, stream& out )
+{
+    out << "\n" << name << " = [ ";
+    typedef typename T::ConstDofIteratorType
+        ConstDofIteratorType;
+    ConstDofIteratorType itEnd = arg.dend();
+    for ( ConstDofIteratorType it = arg.dbegin(); it != itEnd; ++it ) {
+        out << std::setprecision( 2 ) << *it;
+        out << ";" << std::endl;
+    }
+    out << "];" << std::endl;
 }
 
 template < class Matrix, class Function >
