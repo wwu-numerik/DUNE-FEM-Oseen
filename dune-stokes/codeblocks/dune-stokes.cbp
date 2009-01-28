@@ -117,9 +117,7 @@
 			<Add directory="/usr/lib64" />
 		</Linker>
 		<Unit filename="../src/analyticaldata.hh" />
-		<Unit filename="../src/dirichletdata.hh" />
 		<Unit filename="../src/dune_stokes.cc" />
-		<Unit filename="../src/force.hh" />
 		<Unit filename="../src/logging.hh" />
 		<Unit filename="../src/model.hh" />
 		<Unit filename="../src/parametercontainer.hh" />

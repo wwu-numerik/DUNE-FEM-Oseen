@@ -15,6 +15,7 @@
 #include "parametercontainer.hh"
 
 #include <dune/fem/misc/l2norm.hh>
+#include <cmath>
 
 //! simple macro that uses member vtkWriter instance to write file according to variable name
 #define VTK_WRITE(z)    vtkWriter_.addVertexData(z); \
@@ -125,6 +126,8 @@ class PostProcessor
 			VTK_WRITE( wrapper.discretePressure()  );
 			VTK_WRITE( wrapper.discreteVelocity() );
 
+			entityColoration();
+
         }
 
         void calcError( const DiscretePressureFunctionType& pressure, const DiscreteVelocityFunctionType& velocity )
@@ -144,7 +147,9 @@ class PostProcessor
                 l2_Error.norm( errorFunc_velocity_ );
 
             Logger().Info()  << "L2-Error Pressure: " << std::setw(8) << l2_error_pressure_ << "\n"
-                                << "L2-Error Velocity: " << std::setw(8) << l2_error_velocity_ << std::endl;
+                                << "L2-Error Velocity: " << std::setw(8) << l2_error_velocity_ << "\n"
+                                << "L2-Error Pressure (sqrt): " << std::setw(8) << std::sqrt( l2_error_pressure_ ) << "\n"
+                                << "L2-Error Velocity (sqrt): " << std::setw(8) << std::sqrt( l2_error_velocity_ ) << std::endl;
         }
 
         std::vector<double> getError()
@@ -153,6 +158,60 @@ class PostProcessor
             ret.push_back( l2_error_velocity_ );
             ret.push_back( l2_error_pressure_ );
             return ret;
+        }
+
+        void entityColoration()
+        {
+            Logging::LogStream& dbg = Logger().Dbg();
+            DiscretePressureFunctionType cl ( "entitiy-num", spaceWrapper_.discretePressureSpace() );
+            unsigned long numberOfEntities = 0;
+
+            typedef typename GridPartType::GridType::template Codim< 0 >::Entity
+                EntityType;
+            typedef typename GridPartType::template Codim< 0 >::IteratorType
+                EntityIteratorType;
+            typedef typename GridPartType::IntersectionIteratorType
+                IntersectionIteratorType;
+
+            EntityIteratorType entityItEndLog = velocitySpace_.end();
+            for (   EntityIteratorType entityItLog = velocitySpace_.begin();
+                    entityItLog != entityItEndLog;
+                    ++entityItLog, ++numberOfEntities ) {
+                const EntityType& entity = *entityItLog;
+                const typename EntityType::Geometry& geo = entity .geometry();
+
+                dbg << "entity: " << numberOfEntities <<"\n";
+                for ( int i = 0; i < geo.corners(); ++i ){
+                    Stuff::printFieldVector( geo[i], "  corner", dbg );
+                }
+                dbg << std::endl;
+
+                typename DiscretePressureFunctionType::LocalFunctionType
+                    lf = cl.localFunction( entity );
+
+                for ( int i = 0; i < lf.numDofs(); ++i ){
+                    lf[i] = numberOfEntities;
+                }
+
+                unsigned long numberOfIntersections =0;
+                IntersectionIteratorType intItEnd = gridPart_.iend( entity );
+                for (   IntersectionIteratorType intIt = gridPart_.ibegin( entity );
+                        intIt != intItEnd;
+                        ++intIt,++numberOfIntersections ) {
+                    // if we are inside the grid
+                    if ( intIt.neighbor() && !intIt.boundary() ) {
+                        // count inner intersections
+
+                    }
+                    // if we are on the boundary of the grid
+                    if ( !intIt.neighbor() && intIt.boundary() ) {
+                        // count boundary intersections
+
+                    }
+                }
+            }
+
+            VTK_WRITE( cl );
         }
 
     private:

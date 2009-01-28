@@ -6,7 +6,7 @@
  */
 
 
-#define CG_SOLVERTYPE OEMBICGSTABOp
+//#define CG_SOLVERTYPE OEMGMRESOp
 #ifndef CG_SOLVERTYPE
     #define CG_SOLVERTYPE OEMBICGSTABOp
 #endif
@@ -34,8 +34,6 @@ namespace Dune {
 
     typedef StokesPassImp StokesPassType;
 
-//    typedef typename StokesPassType::MatrixType
-//        MatrixType;
     typedef typename StokesPassType::DiscreteStokesFunctionWrapperType
         DiscreteStokesFunctionWrapperType;
 
@@ -45,10 +43,6 @@ namespace Dune {
     typedef typename StokesPassType::RangeType
         RangeType;
 
-//    typedef typename StokesPassType::PressureDiscreteFunctionType::DiscreteFunctionSpaceType
-//        PressureDiscreteSpaceType;
-//    typedef typename StokesPassType::VelocityDiscreteFunctionType::DiscreteFunctionSpaceType
-//        VelocityDiscreteSpaceType;
     typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
         PressureDiscreteFunctionType;
     typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
@@ -58,23 +52,10 @@ namespace Dune {
   public:
     /** \todo Please doc me!
      * \brief Constructor:
-    * aufSolver is the InverseOperator for Solving the elliptic Problem A^-1
-    * velocity,rhs1 is  stored as member,no better idea
+	*
 	  **/
-    SaddlepointInverseOperator(
-            double redEps,
-			double absLimit,
-			int maxIter,
-			int verbose
-			)
-      : error_reduction_per_step_ ( redEps ),
-        epsilon_ ( absLimit ),
-        max_iterations_ (maxIter ),
-        verbosity_ ( verbose )
-        //aufSolver_(aufSolver)
-    {
-
-    }
+    SaddlepointInverseOperator()
+	{}
 
     /** takes raw matrices from pass
     */
@@ -105,7 +86,9 @@ namespace Dune {
         Logging::LogStream& logError = Logger().Err();
         Logging::LogStream& logInfo = Logger().Info();
 
-        const double redEps = Parameters().getParam( "redEps", 1e-4 );
+		// relative min. error at which cg-solvers will abort
+        const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
+		// aboslute min. error at which cg-solvers will abort
         const double absLimit = Parameters().getParam( "absLimit", 1e-3 );
         const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
 
@@ -140,52 +123,52 @@ namespace Dune {
         WmatrixType& w_mat      = Wmatrix.matrix();
 
         b_t_mat.scale( -1 ); //since B_t = -E
-        c_mat.scale( -1 ); //since C = -R
 
         DiscretePressureFunctionType& g_func = rhs3;
         g_func *= ( -1 ); //since G = -H_3
 
+        logInfo << " \n\tbegin calc new_f,f_func " << std::endl;
         //Stuff::DiagonalMult( m_inv_mat, rhs1 ); //calc m_inv * H_1 "in-place"
         DiscreteSigmaFunctionType m_tmp ( "m_tom", rhs1.space() );
-        m_inv_mat.apply( rhs1, m_tmp );
-
-
         DiscreteVelocityFunctionType f_func( "f_func", velocity.space() );
-        f_func.clear();
+		f_func.clear();
+		m_tmp.clear();
+		
+		// f_func = ( ( -1 * ( X * ( M_inv * rhs1 ) ) ) + rhs2 )
+        m_inv_mat.apply( rhs1, m_tmp );
         x_mat.apply( m_tmp, f_func );
         f_func *= -1;
         f_func += rhs2;
-
+		//
+		
         typedef MatrixA_Operator<   WmatrixType,
                                     MmatrixType,
                                     XmatrixType,
                                     YmatrixType,
-                                    DiscreteVelocityFunctionType,
                                     DiscreteSigmaFunctionType >
             A_OperatorType;
-        A_OperatorType a_op( w_mat, m_inv_mat, x_mat, y_mat, velocity.space(), rhs1.space() );
+        A_OperatorType a_op( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space() );
 
-        typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
-                F_Solver;
-        logInfo << " \nstart f solver " << std::endl;
-        F_Solver f_solver( a_op, redEps, absLimit, 2000, solverVerbosity );
-
-        // new_f := B * A^-1 * f_func + g_func
+		typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
+		F_Solver;
+        F_Solver f_solver( a_op, relLimit, absLimit, 2000, solverVerbosity );
         DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
+		DiscretePressureFunctionType new_f ( "new_f", g_func.space() );
         tmp_f.clear();
+		new_f.clear();
 
+		// new_f := ( B * A^-1 * f_func ) + g_func
         f_solver( f_func, tmp_f );
-        logInfo << " \nend f solver " << std::endl;
-
-        DiscretePressureFunctionType new_f ( "new_f", g_func.space() );
-        b_t_mat.apply( tmp_f, new_f );
+		b_t_mat.apply( tmp_f, new_f );
         new_f -= g_func;
-
+		//
+        logInfo << " \n\tend calc new_f,f_func " << std::endl;
 
         typedef SchurkomplementOperator<A_OperatorType,
                                         B_t_matrixType,
                                         CmatrixType,
                                         BmatrixType,
+                                        MmatrixType,
                                         DiscreteVelocityFunctionType,
                                         DiscretePressureFunctionType >
                 Sk_Operator;
@@ -193,122 +176,31 @@ namespace Dune {
         typedef CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
                 Sk_Solver;
 
-        Sk_Operator sk_op(  a_op, b_t_mat, c_mat, b_mat,
+        logInfo << " \n\tbegin S*p=new_f " << std::endl;
+        Sk_Operator sk_op(  a_op, b_t_mat, c_mat, b_mat, m_inv_mat,
                             velocity.space(), pressure.space() );
-        Sk_Solver sk_solver( sk_op, redEps, absLimit, 2000, solverVerbosity );
+        Sk_Solver sk_solver( sk_op, relLimit, absLimit, 2000, solverVerbosity );
         pressure.clear();
-//        sk_solver( new_f, pressure );
-//        *pressure.dbegin() = 1;
-        Stuff::addScalarToFunc( pressure, 1 );
+		// p = S^-1 * new_f = ( B_t * A^-1 * B + rhs3 )^-1 * new_f
+		sk_solver( new_f, pressure );
+		//
+		logInfo << "\n\tend  S*p=new_f" << std::endl;
+
 
         typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
                 U_Solver;
-
+		U_Solver u_solver( a_op, relLimit, absLimit, 2000, solverVerbosity );
 
         DiscreteVelocityFunctionType Bp_temp ( "Bp_temp", velocity.space() );
-        b_mat.apply( pressure, Bp_temp );
+        Bp_temp.clear();
+		// velocity = A^-1 * ( ( -1 * ( B * pressure ) ) + f_func )
+		b_mat.apply( pressure, Bp_temp );
         Bp_temp *= ( -1 );
         Bp_temp += f_func;
-        U_Solver u_solver( a_op, redEps, absLimit, 2000, solverVerbosity );
         u_solver ( Bp_temp, velocity );
 
-        DiscretePressureFunctionType pressure_tmp ( "press_tmp", pressure.space() );
-        DiscretePressureFunctionType residuum_tmp ( "resi_tmp", pressure.space() );
-
-        DiscretePressureFunctionType pressure_last( "p_k-1", pressure.space() );
-        DiscreteVelocityFunctionType velocity_last( "u_k-1", velocity.space() );
-
-        double res_norm = std::numeric_limits<double>::max();
-        double tau = Parameters().getParam( "tau", 0.1 );
-
-        int i = 0;
-        int max_iter = Parameters().getParam( "maxSKIterations", 10 );
-        do {
-            logInfo << " \n SK solver Iteration: " << i << std::endl;
-            pressure_last.assign( pressure );
-            pressure.clear();
-            pressure_tmp.clear();
-            velocity_last.assign( velocity );
-            velocity_last.clear();
-
-            //p_k+1 = p_k + tau * (f_new - S * p_k )
-            sk_op.multOEM( pressure_last.leakPointer(), pressure.leakPointer() );
-            pressure += new_f;
-            pressure *= -1 * tau;
-            pressure += pressure_last;
-
-//            pressure_tmp += pressure_last;
-//            pressure_tmp *= tau;
-//            pressure_tmp += new_f;
-//            sk_solver( pressure_tmp, pressure );
-
-            // u_k+1 = A^-1 * ( f - B_t * p_k )
-            Bp_temp.clear();
-            b_mat.apply( pressure_last, Bp_temp );
-            Bp_temp *= ( -1 );
-            Bp_temp += f_func;
-            U_Solver u_solver( a_op, redEps, absLimit, 2000, solverVerbosity );
-            u_solver ( Bp_temp, velocity );
-
-            i++;
-
-        } while ( i < max_iter ) ;//res_norm > absLimit );
-        //schritt 2
-        //setzte:
-        //  r_0     = -B2 * u_0 + C * p_0 + G
-        //  d_0     = r_0
-        //  delta_0 = ( r_0, r_0 )
-
-        //schritt 3:
-        //wenn d_0 == 0 dann GOTO end
-
-        //schritt 4:
-        //löse S * X_m = B1 * d_m
-
-        //schritt 5:
-        //setze:
-        //  h_m         = B2 * X_m + C * p_m
-        //  rho_m       = delta_m /  (h_m,d_m)
-        //  p_m+1       = p_m - rho_m + d_m
-        //  u_m+1       = u_m + rho_m * X_m
-        //  r_m+1       = r_m - rho_m * h_m
-        //  delta_m+1   = (r_m+1,r_m+1)
-
-        //schritt 6:
-        //wenn delta_m+1 == 0 dann GOTO end
-
-        //schritt 7:
-        //setze:
-        //  gamma_m     = delta_m+1 / delta_m
-        //  d_m+1       = r_m - gamma_m * d_m
-
-        //schritt 8:
-        //GOTO schritt 4
-
-        logInfo << "End SaddlePointInverseOperator " << std::endl;
+        logInfo << "\nEnd SaddlePointInverseOperator " << std::endl;
     }
-
-//  where do i need this?
-//    VelocityDiscreteFunctionType& velocity() { return velocity_; }
-
-  private:
-
-    // reduce error each step by
-    double error_reduction_per_step_;
-//
-//     minial error to reach
-    double epsilon_;
-//
-//     number of maximal iterations
-    int max_iterations_;
-//
-//     level of output
-    int verbosity_ ;
-//
-//    the CGSolver for A^-1
-   // const EllipticInverseOperatorType& aufSolver_;
-//
-
 
   };
 

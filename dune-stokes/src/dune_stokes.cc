@@ -9,7 +9,6 @@
 #endif
 
 #define POLORDER 0
-#undef USE_MEMPROVIDER
 
 //#define SIMPLE_PROBLEM
 #define CONSTANT_PROBLEM
@@ -86,12 +85,10 @@ int main( int argc, char** argv )
         Parameters().Print( std::cout );
     }
 
-    Logger().Create(
-        Logging::LOG_CONSOLE |
-        Logging::LOG_FILE |
-        Logging::LOG_ERR |
-        Logging::LOG_DEBUG |
-        Logging::LOG_INFO );
+    // LOG_NONE = 1, LOG_ERR = 2, LOG_INFO = 4,LOG_DEBUG = 8,LOG_CONSOLE = 16,LOG_FILE = 32
+    //--> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_CONSOLE | LOG_FILE = 46
+    Logger().Create( Parameters().getParam( "loglevel", 62 ),
+                     Parameters().getParam( "logfile", std::string("dune_stokes") ) );
 
     L2ErrorVector l2_errors;
     ErrorColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
@@ -137,7 +134,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     GridPartType gridPart( *gridPtr );
     const int gridDim = GridType::dimensionworld;
     const int polOrder = POLORDER;
-    const double viscosity = 1.0;
+    const double viscosity = Parameters().getParam( "viscosity", 1.0 );
 
 
     infoStream << "...done." << std::endl;
@@ -178,12 +175,14 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     infoStream << " \n max grid width: " << grid_width << std::endl;
 
     Dune::FieldVector< double, gridDim > ones( 1.0 );
-    Dune::FieldVector< double, gridDim > vec_1_h( 1.0 );
+    Dune::FieldVector< double, gridDim > vec_1_h( 1 - grid_width );
     //ones /= grid_width;
     Dune::FieldVector< double, gridDim > zeros( 0.0 );
-    StokesModelImpType stokesModel( 1 / grid_width,
+    double h_fac = Parameters().getParam( "h-factor", 1.0 );
+
+    StokesModelImpType stokesModel( h_fac / ( grid_width) ,
                                     zeros,
-                                    grid_width,
+                                    h_fac * grid_width,
                                     zeros,
                                     analyticalForce,
                                     analyticalDirichletData,

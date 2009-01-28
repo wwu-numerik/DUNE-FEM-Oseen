@@ -133,7 +133,6 @@ inline void Pressure< PressureTraitsImp  >::evaluate( const DomainType& arg, Ran
     assert( ret.dim() == 1 );
     double x1 = arg[0];
     double x2 = arg[1];
-
 #ifdef SIMPLE_PROBLEM
     ret[0] = x1*x2;
 #elif defined(CONSTANT_PROBLEM)
@@ -141,7 +140,6 @@ inline void Pressure< PressureTraitsImp  >::evaluate( const DomainType& arg, Ran
 #else
     ret[0] = 2.0 * std::exp( x1 ) * std::sin( x2 );
 #endif
-
 }
 
 /**
