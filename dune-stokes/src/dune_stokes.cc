@@ -9,7 +9,6 @@
 #endif
 
 #define POLORDER 0
-#undef USE_MEMPROVIDER
 
 //#define SIMPLE_PROBLEM
 #define CONSTANT_PROBLEM
@@ -86,12 +85,9 @@ int main( int argc, char** argv )
         Parameters().Print( std::cout );
     }
 
-    Logger().Create(
-        Logging::LOG_CONSOLE |
-        Logging::LOG_FILE |
-        Logging::LOG_ERR |
-        Logging::LOG_DEBUG |
-        Logging::LOG_INFO );
+    // LOG_NONE = 1, LOG_ERR = 2, LOG_INFO = 4,LOG_DEBUG = 8,LOG_CONSOLE = 16,LOG_FILE = 32
+    //--> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_CONSOLE | LOG_FILE = 46
+    Logger().Create( Parameters().getParam( "loglevel", 62 ) );
 
     L2ErrorVector l2_errors;
     ErrorColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;

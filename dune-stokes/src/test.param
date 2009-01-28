@@ -1,7 +1,9 @@
 dgf_file_2d: grid_2d.dgf
 dgf_file_3d: grid_3d.dgf
 viscosity: 1
-loglevel: 4
+# LOG_NONE = 1, LOG_ERR = 2, LOG_INFO = 4,LOG_DEBUG = 8,LOG_CONSOLE = 16,LOG_FILE = 32
+# --> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_FILE = 46
+loglevel: 46
 logfile: dune-stokes.log
 fem.io.datafileprefix: data_
 fem.io.savestep: -1
@@ -10,7 +12,6 @@ fem.io.outputformat: 1
 relLimit: 1e-6
 absLimit: 1e-8
 solverVerbosity: 0
-tau: 0.10
 maxSKIterations: -500
 h-factor: 1.0
-f-init: 0.100
+quad_order: 2
