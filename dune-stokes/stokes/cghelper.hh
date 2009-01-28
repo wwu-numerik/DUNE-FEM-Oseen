@@ -42,6 +42,11 @@ class MatrixA_Operator {
         ~MatrixA_Operator()
         {}
 
+        virtual void apply (const DomainType &arg, RangeType &dest) const
+        {
+
+        }
+
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret) const
         {
@@ -145,6 +150,39 @@ class SchurkomplementOperator
         const MmatrixType& m_mat_;
         mutable DiscreteVelocityFunctionType tmp1;
         mutable DiscreteVelocityFunctionType tmp2;
+};
+
+template <  class WMatType,
+            class MMatType,
+            class XMatType,
+            class YMatType,
+            class DiscreteSigmaFunctionType >
+class SolverCaller {
+    public:
+        typedef MatrixA_Operator<   WmatrixType,
+                                    MmatrixType,
+                                    XmatrixType,
+                                    YmatrixType,
+                                    DiscreteSigmaFunctionType >
+                A_OperatorType;
+
+
+        MatrixA_Solver( const WMatType& w_mat,
+                const MMatType& m_mat,
+                const XMatType& x_mat,
+                const YMatType& y_mat,
+                const typename DiscreteSigmaFunctionType::DiscreteFunctionSpaceType& sig_space )
+            :  w_mat_(w_mat),
+            m_mat_(m_mat),
+            x_mat_(x_mat),
+            y_mat_(y_mat),
+            sig_tmp1( "sig_tmp1", sig_space ),
+            sig_tmp2( "sig_tmp2", sig_space )
+        {}
+
+        A_OperatorType a_op( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space() );
+    private:
+        const MMatType& precond_;
 };
 
 }
