@@ -1141,7 +1141,6 @@ class StokesPass
                                 double Y_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Youtput = true;
-                                Youtput = true;
                                 if ( intersectionOutput && Youtput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = Y element ======================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
