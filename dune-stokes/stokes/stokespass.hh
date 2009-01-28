@@ -1685,6 +1685,7 @@ class StokesPass
                                 double W_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
+                                Woutput = true;
                                 if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = W boundary =====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1752,6 +1753,7 @@ class StokesPass
                             double H1_j = 0.0;
 #ifndef NLOG
 //                            if ( j == logBaseJ ) H1output = true;
+                            H1output = true;
                             if ( intersectionOutput && H1output ) debugStream.Resume(); // enable logging
                             debugStream << "      = H1 boundary ====================" << std::endl;
                             debugStream << "      basefunction " << j << std::endl;
@@ -1815,6 +1817,7 @@ class StokesPass
                                 double X_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
+                                Xoutput = true;
                                 if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = X boundary =====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -2326,19 +2329,15 @@ class StokesPass
             matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
             matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
             matlabLogStream << "u = A_invers * ( F - B * p );" << std::endl;
-
 #endif
-
-
-            profiler().StartTiming("Pass -- SOLVER");
-            InvOpType op;
-            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-            profiler().StopTiming("Pass -- SOLVER");
-
-            profiler().StopTiming("Pass -- ASSEMBLE");
-            profiler().StopTiming("Pass");
+//            profiler().StopTiming("Pass -- ASSEMBLE");
+//            profiler().StartTiming("Pass -- SOLVER");
+//            InvOpType op;
+//            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+//            profiler().StopTiming("Pass -- SOLVER");
+//            profiler().StopTiming("Pass");
 #ifndef NLOG
-            Stuff::oneLinePrint( debugStream, dest.discretePressure() );
+//            Stuff::oneLinePrint( debugStream, dest.discretePressure() );
 #endif
 
 
