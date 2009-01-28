@@ -1337,8 +1337,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                         VelocityRangeType& uReturn ) const
         {
             // some preparations
-            VelocityRangeType outerNormal = it.unitOuterNormal( x );
-            VelocityRangeType global = it->intersectionSelfLocal().global( x );
+//            VelocityRangeType outerNormal = it.unitOuterNormal( x );
+//            VelocityRangeType global = it->intersectionSelfLocal().global( x );
             // contribution to u vector ( from inside entity )
             uReturn = 0.0;
         }
