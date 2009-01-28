@@ -2059,10 +2059,9 @@ class StokesPass
                                     VelocityRangeType v_j( 0.0 );
                                     velocityBaseFunctionSetElement.evaluate( j, x, v_j );
                                     VelocityRangeType u_p_u_plus_flux( 0.0 );
-                                    discreteModel_.velocityPressureFlux(    intIt,
+                                    discreteModel_.velocityPressureBoundaryFlux(    intIt,
                                                                             0.0,
                                                                             localX,
-                                                                            DiscreteModelType::inside,
                                                                             v_j,
                                                                             u_p_u_plus_flux );
                                     const double flux_times_n_t = u_p_u_plus_flux * outerNormal;
