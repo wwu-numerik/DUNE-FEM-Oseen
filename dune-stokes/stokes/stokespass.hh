@@ -1909,10 +1909,9 @@ class StokesPass
                                     PressureRangeType q_j( 0.0 );
                                     pressureBaseFunctionSetElement.evaluate( j, x, q_j );
                                     PressureRangeType p_p_plus_flux( 0.0 );
-                                    discreteModel_.pressureFlux(    intIt,
+                                    discreteModel_.pressureBoundaryFlux(    intIt,
                                                                     0.0,
                                                                     localX,
-                                                                    DiscreteModelType::inside,
                                                                     q_j,
                                                                     p_p_plus_flux );
                                     Z_i_j += elementVolume
