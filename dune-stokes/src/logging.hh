@@ -55,8 +55,7 @@ class Logging
                 {
                     if ( pf == (std::ostream& ( * )(std::ostream&))std::endl )
                     { //flush buffer into stream
-                        matlabLogFile_ << buffer_.str() << std::endl;
-                        buffer_.str("");// clear the buffer
+                        Flush();
                     }
                     else {
                         buffer_ << pf;
@@ -68,6 +67,7 @@ class Logging
                 {
                     matlabLogFile_ << buffer_.str();
                     matlabLogFile_.flush();
+                    buffer_.flush();
                     buffer_.str("");// clear the buffer
                 }
 
@@ -126,17 +126,18 @@ class Logging
                     if ( logflags_ & loglevel_ )
                     { //flush buffer into stream
                         if ( ( logflags_ & LOG_CONSOLE ) != 0 ) {
-                            std::cout << buffer_.str();
+                            std::cout << buffer_.str() << std::endl;
                             std::cout .flush();
                         }
                         if ( ( logflags_ & LOG_FILE ) != 0 ) {
-                            logfile_ << buffer_.str();
-                            logfileWoTime_ << buffer_.str();
+                            logfile_ << "\n" << TimeString()
+                                     << buffer_.str() << std::endl;
+                            logfileWoTime_ << buffer_.str() << std::endl;
                             logfile_.flush();
                             logfileWoTime_.flush();
                         }
+                        buffer_.flush();
                         buffer_.str("");// clear the buffer
-
                     }
                 }
 
@@ -153,16 +154,7 @@ class Logging
                     if ( logflags_ & loglevel_ ) {
                         if ( pf == (std::ostream& ( * )(std::ostream&))std::endl )
                         { //flush buffer into stream
-                            if ( ( logflags_ & LOG_CONSOLE ) != 0 ) {
-                                std::cout << buffer_.str() << std::endl;
-                            }
-                            if ( ( logflags_ & LOG_FILE ) != 0 ) {
-                                logfile_ << "\n" << TimeString()
-                                         << buffer_.str() << std::endl;
-                                logfileWoTime_ << buffer_.str() << std::endl;
-                            }
-                            buffer_.str("");// clear the buffer
-
+                            Flush();
                         }
                         else
                             buffer_ << pf;

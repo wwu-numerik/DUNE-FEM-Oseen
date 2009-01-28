@@ -87,7 +87,8 @@ int main( int argc, char** argv )
 
     // LOG_NONE = 1, LOG_ERR = 2, LOG_INFO = 4,LOG_DEBUG = 8,LOG_CONSOLE = 16,LOG_FILE = 32
     //--> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_CONSOLE | LOG_FILE = 46
-    Logger().Create( Parameters().getParam( "loglevel", 62 ) );
+    Logger().Create( Parameters().getParam( "loglevel", 62 ),
+                     Parameters().getParam( "logfile", std::string("dune_stokes") ) );
 
     L2ErrorVector l2_errors;
     ErrorColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
