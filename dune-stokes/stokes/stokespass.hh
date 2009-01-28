@@ -1815,7 +1815,6 @@ class StokesPass
                                 double X_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-                                Xoutput = true;
                                 if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = X boundary =====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
