@@ -313,8 +313,8 @@ class StokesPass
 #ifndef NLOG
             // logging stuff
             Logging::LogStream& infoStream = Logger().Info();
-            Logging::LogStream& debugStream = Logger().Info();
-//            Logging::LogStream& debugStream = Logger().Dbg();
+//            Logging::LogStream& debugStream = Logger().Info();
+            Logging::LogStream& debugStream = Logger().Dbg();
             bool entityOutput = false;
             bool intersectionOutput = false;
             const int outputEntity = 0;
@@ -2332,12 +2332,13 @@ class StokesPass
 #endif
 //            profiler().StopTiming("Pass -- ASSEMBLE");
 //            profiler().StartTiming("Pass -- SOLVER");
-//            InvOpType op;
-//            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+            InvOpType op;
+            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 //            profiler().StopTiming("Pass -- SOLVER");
 //            profiler().StopTiming("Pass");
 #ifndef NLOG
-//            Stuff::oneLinePrint( debugStream, dest.discretePressure() );
+            debugStream.Resume();
+            Stuff::oneLinePrint( debugStream, dest.discretePressure() );
 #endif
 
 
