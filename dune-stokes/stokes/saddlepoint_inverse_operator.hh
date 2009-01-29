@@ -141,14 +141,14 @@ namespace Dune {
         f_func += rhs2;
 		//
 
-        typedef SolverCaller<   WmatrixType,
-                                    MmatrixType,
-                                    XmatrixType,
-                                    YmatrixType,
-                                    DiscreteSigmaFunctionType,
-                                    DiscreteVelocityFunctionType >
-            A_SolverCaller;
-        A_SolverCaller a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space() );
+        typedef A_SolverCaller< WmatrixType,
+                                MmatrixType,
+                                XmatrixType,
+                                YmatrixType,
+                                DiscreteSigmaFunctionType,
+                                DiscreteVelocityFunctionType >
+            A_Solver;
+        A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space() );
 
 //		typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
 //		F_Solver;
@@ -165,13 +165,13 @@ namespace Dune {
 		//
         logInfo << " \n\tend calc new_f,f_func " << std::endl;
 
-        typedef SchurkomplementOperator< A_SolverCaller,
-                                        B_t_matrixType,
-                                        CmatrixType,
-                                        BmatrixType,
-                                        MmatrixType,
-                                        DiscreteVelocityFunctionType,
-                                        DiscretePressureFunctionType >
+        typedef SchurkomplementOperator<    A_Solver,
+                                            B_t_matrixType,
+                                            CmatrixType,
+                                            BmatrixType,
+                                            MmatrixType,
+                                            DiscreteVelocityFunctionType,
+                                            DiscretePressureFunctionType >
                 Sk_Operator;
 
         typedef CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >

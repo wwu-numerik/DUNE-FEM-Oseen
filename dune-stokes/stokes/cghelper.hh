@@ -149,7 +149,7 @@ template <  class WMatType,
             class YMatType,
             class DiscreteSigmaFunctionType,
             class DiscreteVelocityFunctionType >
-class SolverCaller {
+class A_SolverCaller {
     public:
         typedef MatrixA_Operator<   WMatType,
                                     MMatType,
@@ -161,7 +161,7 @@ class SolverCaller {
         typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
             CG_SolverType;
 
-        SolverCaller( const WMatType& w_mat,
+        A_SolverCaller( const WMatType& w_mat,
                 const MMatType& m_mat,
                 const XMatType& x_mat,
                 const YMatType& y_mat,
@@ -181,7 +181,7 @@ class SolverCaller {
 
         void apply ( const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest )
         {
-
+            cg_solver(arg,dest);
         }
 
         const A_OperatorType& getA_operator( )
