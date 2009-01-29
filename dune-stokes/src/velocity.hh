@@ -192,6 +192,7 @@ inline void Velocity< TraitsImp >::evaluate(
     // return
     ret[0] = -1.0 * exp_of_x1 * ( x2 * std::cos( x2 ) + sin_of_x2 );
     ret[1] = exp_of_x1 * x2 * sin_of_x2;
+
 #endif
 
 }

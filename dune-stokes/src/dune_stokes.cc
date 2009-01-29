@@ -135,7 +135,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     GridPartType gridPart( *gridPtr );
     const int gridDim = GridType::dimensionworld;
     const int polOrder = POLORDER;
-    const double viscosity = Parameters().getParam( "viscosity", 1.0 );;
+    const double viscosity = Parameters().getParam( "viscosity", 1.0 );
 
 
     infoStream << "...done." << std::endl;
