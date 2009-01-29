@@ -133,38 +133,39 @@ namespace Dune {
         DiscreteVelocityFunctionType f_func( "f_func", velocity.space() );
 		f_func.clear();
 		m_tmp.clear();
-		
+
 		// f_func = ( ( -1 * ( X * ( M_inv * rhs1 ) ) ) + rhs2 )
         m_inv_mat.apply( rhs1, m_tmp );
         x_mat.apply( m_tmp, f_func );
         f_func *= -1;
         f_func += rhs2;
 		//
-		
-        typedef MatrixA_Operator<   WmatrixType,
+
+        typedef SolverCaller<   WmatrixType,
                                     MmatrixType,
                                     XmatrixType,
                                     YmatrixType,
-                                    DiscreteSigmaFunctionType >
-            A_OperatorType;
-        A_OperatorType a_op( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space() );
+                                    DiscreteSigmaFunctionType,
+                                    DiscreteVelocityFunctionType >
+            A_SolverCaller;
+        A_SolverCaller a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space() );
 
-		typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
-		F_Solver;
-        F_Solver f_solver( a_op, relLimit, absLimit, 2000, solverVerbosity );
+//		typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
+//		F_Solver;
+//        F_Solver f_solver( a_op, relLimit, absLimit, 2000, solverVerbosity );
         DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
 		DiscretePressureFunctionType new_f ( "new_f", g_func.space() );
         tmp_f.clear();
 		new_f.clear();
 
 		// new_f := ( B * A^-1 * f_func ) + g_func
-        f_solver( f_func, tmp_f );
+        a_solver.apply( f_func, tmp_f );
 		b_t_mat.apply( tmp_f, new_f );
         new_f -= g_func;
 		//
         logInfo << " \n\tend calc new_f,f_func " << std::endl;
 
-        typedef SchurkomplementOperator<A_OperatorType,
+        typedef SchurkomplementOperator< A_SolverCaller,
                                         B_t_matrixType,
                                         CmatrixType,
                                         BmatrixType,
@@ -177,7 +178,7 @@ namespace Dune {
                 Sk_Solver;
 
         logInfo << " \n\tbegin S*p=new_f " << std::endl;
-        Sk_Operator sk_op(  a_op, b_t_mat, c_mat, b_mat, m_inv_mat,
+        Sk_Operator sk_op(  a_solver, b_t_mat, c_mat, b_mat, m_inv_mat,
                             velocity.space(), pressure.space() );
         Sk_Solver sk_solver( sk_op, relLimit, absLimit, 2000, solverVerbosity );
         pressure.clear();
@@ -186,18 +187,13 @@ namespace Dune {
 		//
 		logInfo << "\n\tend  S*p=new_f" << std::endl;
 
-
-        typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
-                U_Solver;
-		U_Solver u_solver( a_op, relLimit, absLimit, 2000, solverVerbosity );
-
         DiscreteVelocityFunctionType Bp_temp ( "Bp_temp", velocity.space() );
         Bp_temp.clear();
 		// velocity = A^-1 * ( ( -1 * ( B * pressure ) ) + f_func )
 		b_mat.apply( pressure, Bp_temp );
         Bp_temp *= ( -1 );
         Bp_temp += f_func;
-        u_solver ( Bp_temp, velocity );
+        a_solver.apply ( Bp_temp, velocity );
 
         logInfo << "\nEnd SaddlePointInverseOperator " << std::endl;
     }
