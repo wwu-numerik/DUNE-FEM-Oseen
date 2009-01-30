@@ -66,11 +66,20 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
             // some computations
             double exp_of_x1 = std::exp( x1 );
             double cos_of_x2 = std::cos( x2 );
+            double sin_of_x2 = std::sin( x2 );
             //return
-            ret[0] = 2.0 * exp_of_x1 *cd
-                ( ( 1.0 - viscosity_ ) * std::sin( x2 )
-                + viscosity_ * cos_of_x2 );
-            ret[1] = 2.0 * ( 1.0 - viscosity_ ) * exp_of_x1 * cos_of_x2;
+            ret[0] = 2.0 * sin_of_x2;
+            ret[0] += viscosity_ * x2 * cos_of_x2;
+            ret[0] += viscosity_ * sin_of_x2;
+            ret[0] *= exp_of_x1;
+            ret[1] = -2.0 * cos_of_x2;
+            ret[1] -= viscosity_ * 3.0 * sin_of_x2;
+            ret[1] -= viscosity_ * x2 * cos_of_x2;
+            ret[1] *= exp( x1 );
+//            ret[0] = 2.0 * exp_of_x1 *cd
+//                ( ( 1.0 - viscosity_ ) * std::sin( x2 )
+//                + viscosity_ * cos_of_x2 );
+//            ret[1] = 2.0 * ( 1.0 - viscosity_ ) * exp_of_x1 * cos_of_x2;
 #endif
         }
 
@@ -140,10 +149,15 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 #else
             double exp_of_x1 = std::exp( x1 );
             double sin_of_x2 = std::sin( x2 );
+            double cos_of_x2 = std::cos( x2 );
             //return
-            ret[0] = -1.0 * exp_of_x1 *
-                ( ( x2 * std::cos( x2 ) ) + sin_of_x2 );
+            ret[0] = x2 * cos_of_x2;
+            ret[0] += sin_of_x2;
+            ret[0] *= -1.0 * exp_of_x1;
             ret[1] = exp_of_x1 * x2 * sin_of_x2;
+//            ret[0] = -1.0 * exp_of_x1 *
+//                ( ( x2 * std::cos( x2 ) ) + sin_of_x2 );
+//            ret[1] = exp_of_x1 * x2 * sin_of_x2;
 #endif
         }
 };
