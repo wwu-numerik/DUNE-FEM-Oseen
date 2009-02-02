@@ -1293,7 +1293,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 u_plus_tensor_n_plus.mv( C_12_, u_plus_tensor_n_plus_times_c_12 );
                 uReturn = u;
                 uReturn *= 0.5;
-                uReturn += u_plus_tensor_n_plus_times_c_12;
+                uReturn -= u_plus_tensor_n_plus_times_c_12;
             }
             // contribution to u vector ( from outside entity )
             if ( side == BaseType::outside ) {
@@ -1306,7 +1306,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 u_minus_tensor_n_minus.mv( C_12_, u_minus_tensor_n_minus_times_c_12 );
                 uReturn = u;
                 uReturn *= 0.5;
-                uReturn += u_minus_tensor_n_minus_times_c_12;
+                uReturn -= u_minus_tensor_n_minus_times_c_12;
             }
         }
 
