@@ -119,7 +119,6 @@
 		<Unit filename="../src/analyticaldata.hh" />
 		<Unit filename="../src/dune_stokes.cc" />
 		<Unit filename="../src/logging.hh" />
-		<Unit filename="../src/model.hh" />
 		<Unit filename="../src/parametercontainer.hh" />
 		<Unit filename="../src/postprocessing.hh" />
 		<Unit filename="../src/pressure.hh" />

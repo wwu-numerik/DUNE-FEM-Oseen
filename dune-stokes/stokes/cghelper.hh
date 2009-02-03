@@ -121,6 +121,8 @@ class SchurkomplementOperator
 
 			// ret = ( ( B_t * ( A^-1 * ( B * x ) ) ) + ( C * x ) )
             b_mat_.multOEM( x, tmp1.leakPointer() );
+            Stuff::oneLinePrint( dbg, tmp1 ) ;
+            Stuff::printDoubleVec( dbg, x, b_mat_.cols() );
             a_solver_.apply( tmp1, tmp2 );
             b_t_mat_.multOEM( tmp2.leakPointer(), ret );
             c_mat_.multOEMAdd( x, ret );

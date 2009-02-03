@@ -12,7 +12,7 @@
 
 //#define SIMPLE_PROBLEM
 #define CONSTANT_PROBLEM
-#define NLOG
+//#define NLOG
 
 #include <iostream>
 #include <dune/common/mpihelper.hh> // An initializer of MPI
@@ -182,9 +182,9 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     double h_fac = Parameters().getParam( "h-factor", 1.0 );
 
     StokesModelImpType stokesModel( h_fac / ( grid_width) ,
-                                    vec_1_h,
+                                    zeros,
                                     h_fac * grid_width,
-                                    vec_1_h,
+                                    zeros,
                                     analyticalForce,
                                     analyticalDirichletData,
                                     viscosity  );
