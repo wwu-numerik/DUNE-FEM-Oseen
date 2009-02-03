@@ -418,8 +418,10 @@ class StokesPass
                 const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
 
                 // get quadrature
+//                const VolumeQuadratureType volumeQuadratureElement( entity,
+//                                                                    ( 2 * pressureSpaceOrder ) + 1 );
                 const VolumeQuadratureType volumeQuadratureElement( entity,
-                                                                    ( 2 * pressureSpaceOrder ) + 1 );
+                                                                    5 );
 #ifndef NLOG
                 if ( numberOfEntities > 19 ) {
                     if ( ( entityNR % fivePercentOfEntities ) == 0 ) {
@@ -461,7 +463,7 @@ class StokesPass
                         double M_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Moutput = true;
-                        Moutput = true;
+//                        Moutput = true;
                         if ( entityOutput && Moutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = M ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
@@ -520,7 +522,7 @@ class StokesPass
                         double W_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
-                        Woutput = true;
+//                        Woutput = true;
                         if ( entityOutput && Woutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = W ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
@@ -578,7 +580,7 @@ class StokesPass
                         double X_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-                        Xoutput = true;
+//                        Xoutput = true;
                         if ( entityOutput && Xoutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = X ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
@@ -635,7 +637,7 @@ class StokesPass
                         double Z_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
-                        Zoutput = true;
+//                        Zoutput = true;
                         if ( entityOutput && Zoutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = Z ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
@@ -701,6 +703,8 @@ class StokesPass
                     for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
                         // get x
                         const ElementCoordinateType x = volumeQuadratureElement.point( quad );
+                        const VelocityRangeType xWorld = geometry.global( x );
+
                         // get the integration factor
                         const double elementVolume = geometry.integrationElement( x );
                         // get the quadrature weight
@@ -709,7 +713,7 @@ class StokesPass
                         VelocityRangeType v_j( 0.0 );
                         VelocityRangeType f( 0.0 );
                         velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-                        discreteModel_.force( 0.0, x, f );
+                        discreteModel_.force( 0.0, xWorld, f );
                         const double f_times_v_j = f * v_j;
                         H2_j += elementVolume
                             * integrationWeight
@@ -717,6 +721,7 @@ class StokesPass
 #ifndef NLOG
                         debugStream << "    - quadPoint " << quad;
                         Stuff::printFieldVector( x, "x", debugStream, "      " );
+                        Stuff::printFieldVector( xWorld, "xWorld", debugStream, "      " );
                         debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
                         debugStream << "        - integrationWeight: " << integrationWeight;
                         Stuff::printFieldVector( f, "f", debugStream, "      " );
@@ -745,7 +750,7 @@ class StokesPass
                         double E_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
-                        Eoutput = true;
+//                        Eoutput = true;
                         if ( entityOutput && Eoutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = E ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
@@ -823,9 +828,13 @@ class StokesPass
 #endif
 
                     // get intersection quadrature, seen from inside
+//                    const FaceQuadratureType faceQuadratureElement( gridPart_,
+//                                                                    intIt,
+//                                                                    ( 2 * pressureSpaceOrder ) + 1,
+//                                                                    FaceQuadratureType::INSIDE );
                     const FaceQuadratureType faceQuadratureElement( gridPart_,
                                                                     intIt,
-                                                                    ( 2 * pressureSpaceOrder ) + 1,
+                                                                    4,
                                                                     FaceQuadratureType::INSIDE );
 
                     // if we are inside the grid
@@ -852,9 +861,13 @@ class StokesPass
                         const int numPressureBaseFunctionsNeighbour = pressureBaseFunctionSetNeighbour.numBaseFunctions();
 
                         // get intersection quadrature, seen from outside
+//                        const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
+//                                                                            intIt,
+//                                                                            ( 2 * pressureSpaceOrder ) + 1,
+//                                                                            FaceQuadratureType::OUTSIDE );
                         const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
                                                                             intIt,
-                                                                            ( 2 * pressureSpaceOrder ) + 1,
+                                                                            4,
                                                                             FaceQuadratureType::OUTSIDE );
 
                         // compute the surface integrals
@@ -870,7 +883,7 @@ class StokesPass
                                 double W_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
-                                Woutput = true;
+//                                Woutput = true;
                                 if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = W element ======================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -936,7 +949,7 @@ class StokesPass
                                 double W_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
-                                Woutput = true;
+//                                Woutput = true;
                                 if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = W neighbour ====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1010,7 +1023,7 @@ class StokesPass
                                 double X_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-                                Xoutput = true;
+//                                Xoutput = true;
                                 if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = X element ======================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1077,7 +1090,7 @@ class StokesPass
                                 double X_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-                                Xoutput = true;
+//                                Xoutput = true;
                                 if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = X neighbour ====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1151,7 +1164,7 @@ class StokesPass
                                 double Y_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Youtput = true;
-                                Youtput = true;
+//                                Youtput = true;
                                 if ( intersectionOutput && Youtput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = Y element ======================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1218,7 +1231,7 @@ class StokesPass
                                 double Y_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Youtput = true;
-                                Youtput = true;
+//                                Youtput = true;
                                 if ( intersectionOutput && Youtput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = Y neighbour ====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1293,7 +1306,7 @@ class StokesPass
                                 double Z_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
-                                Zoutput = true;
+//                                Zoutput = true;
                                 if ( intersectionOutput && Zoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = Z element ======================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1356,7 +1369,7 @@ class StokesPass
                                 double Z_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
-                                Zoutput = true;
+//                                Zoutput = true;
                                 if ( intersectionOutput && Zoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = Z neighbour ====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1427,7 +1440,7 @@ class StokesPass
                                 double E_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
-                                Eoutput = true;
+//                                Eoutput = true;
                                 if ( intersectionOutput && Eoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = E element ======================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1491,7 +1504,7 @@ class StokesPass
                                 double E_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
-                                Eoutput = true;
+//                                Eoutput = true;
                                 if ( intersectionOutput && Eoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = E neighbour ====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1562,7 +1575,7 @@ class StokesPass
                                 double R_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Routput = true;
-                                Routput = true;
+//                                Routput = true;
                                 if ( intersectionOutput && Routput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = R element ======================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1627,7 +1640,7 @@ class StokesPass
                                 double R_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Routput = true;
-                                Routput = true;
+//                                Routput = true;
                                 if ( intersectionOutput && Routput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = R neighbour ====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1703,7 +1716,7 @@ class StokesPass
                                 double W_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
-                                Woutput = true;
+//                                Woutput = true;
                                 if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = W boundary =====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1781,6 +1794,7 @@ class StokesPass
                             for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                 // get x codim<0> and codim<1> coordinates
                                 const ElementCoordinateType x = faceQuadratureElement.point( quad );
+                                const VelocityRangeType globalX = geometry.global( x );
                                 const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
                                 // get the integration factor
                                 const double elementVolume = intersectionGeoemtry.integrationElement( localX );
@@ -1805,6 +1819,7 @@ class StokesPass
                                 debugStream << "      - quadPoint " << quad;
                                 Stuff::printFieldVector( x, "x", debugStream, "        " );
                                 Stuff::printFieldVector( localX, "localX", debugStream, "        " );
+                                Stuff::printFieldVector( globalX, "globalX", debugStream, "        " );
                                 Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "        " );
                                 debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
                                 debugStream << "        - integrationWeight: " << integrationWeight;
@@ -1835,7 +1850,7 @@ class StokesPass
                                 double X_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-                                Xoutput = true;
+//                                Xoutput = true;
                                 if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = X boundary =====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1907,7 +1922,7 @@ class StokesPass
                                 double Z_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
-                                Zoutput = true;
+//                                Zoutput = true;
                                 if ( intersectionOutput && Zoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = Z boundary =====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1974,7 +1989,7 @@ class StokesPass
                             double H2_j = 0.0;
 #ifndef NLOG
 //                            if ( j == logBaseJ ) H2output = true;
-                            H2output = true;
+//                            H2output = true;
                             if ( intersectionOutput && H2output ) debugStream.Resume(); // enable logging
                             debugStream << "      = H2 boundary ====================" << std::endl;
                             debugStream << "      basefunction " << j << std::endl;
@@ -2060,7 +2075,7 @@ class StokesPass
                                 double E_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
-                                Eoutput = true;
+//                                Eoutput = true;
                                 if ( intersectionOutput && Eoutput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = E boundary =====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -2128,7 +2143,7 @@ class StokesPass
                                 double R_i_j = 0.0;
 #ifndef NLOG
 //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Routput = true;
-                                Routput = true;
+//                                Routput = true;
                                 if ( intersectionOutput && Routput ) debugStream.Resume(); // enable logging
                                 debugStream << "      = R boundary =====================" << std::endl;
                                 debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -2195,7 +2210,7 @@ class StokesPass
                             double H3_j = 0.0;
 #ifndef NLOG
 //                            if ( j == logBaseJ ) H3output = true;
-                            H3output = true;
+//                            H3output = true;
                             if ( intersectionOutput && H3output ) debugStream.Resume(); // enable logging
                             debugStream << "      = H3 boundary ====================" << std::endl;
                             debugStream << "      basefunction " << j << std::endl;
@@ -2407,34 +2422,6 @@ class StokesPass
             }
             return ret;
         }
-
-        /**
-         *  \todo   doc
-         **/
-//        VelocityRangeType sigmaDivergenceOf( const SigmaRangeType& arg ) const
-//        {
-//            VelocityRangeType ret( 0.0 );
-//            typedef typename SigmaRangeType::ConstRowIterator
-//                ArgConstRowIteratorType;
-//            typedef typename SigmaRangeType::row_type::ConstIterator
-//                ArgConstIteratorType;
-//            typedef typename VelocityRangeType::Iterator
-//                RetIteratorType;
-//            ArgConstRowIteratorType argRowItEnd = arg.end();
-//            RetIteratorType retItEnd = ret.end();
-//            RetIteratorType retIt = ret.begin();
-//            for (   ArgConstRowIteratorType argRowIt = arg.begin();
-//                    argRowIt != argRowItEnd, retIt != retItEnd;
-//                    ++argRowIt, ++retIt ) {
-//                ArgConstIteratorType argItEnd = argRowIt->end();
-//                for (   ArgConstIteratorType argIt = argRowIt->begin();
-//                        argIt != argItEnd;
-//                        ++argIt ) {
-//                            *retIt += *argIt;
-//                }
-//            }
-//            return ret;
-//        }
 
         /**
          *  \todo   doc
