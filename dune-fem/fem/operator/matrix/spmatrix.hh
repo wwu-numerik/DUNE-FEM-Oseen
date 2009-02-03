@@ -638,9 +638,9 @@ private:
       assert( (localRow >= 0) && (localRow < rows()) );
       assert( (localCol >= 0) && (localCol < columns()) );
 #ifndef NLOG
-    Logging::LogStream& debugStream = Logger().Info();
-      debugStream << "          this is LocalMatrix::add( " << localRow << ", " << localCol << ", " << value << " )" << std::endl;
-      debugStream << "          doing matrix_.add( " << row_[ localRow ] << ", " << col_[ localCol ] << ", " << value << " )" << std::endl;
+//        Logging::LogStream& debugStream = Logger().Info();
+//        debugStream << "          this is LocalMatrix::add( " << localRow << ", " << localCol << ", " << value << " )" << std::endl;
+//        debugStream << "          doing matrix_.add( " << row_[ localRow ] << ", " << col_[ localCol ] << ", " << value << " )" << std::endl;
 #endif
       matrix_.add( row_[ localRow ], col_[ localCol ], value );
     }
