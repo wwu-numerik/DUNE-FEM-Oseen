@@ -11,7 +11,11 @@
 #include <dune/common/fvector.hh>
 
 #include <dune/stokes/discretefunctionspacepair.hh>
-#include "../src/stuff.hh" // should be removed in the end
+
+#ifndef NLOG
+    #include "../src/stuff.hh" // should be removed in the end
+    #include "../src/logging.hh"
+#endif
 
 namespace Dune
 {
@@ -911,13 +915,6 @@ class DiscreteStokesModelDefaultTraits
         //! polynomial order for the discrete pressure function space
         static const int pressureSpaceOrder = polOrder;
 
-//        static const int sigmaSpaceOrder = polOrder;
-//        //! polynomial order for the discrete velocity function space
-//        static const int velocitySpaceOrder = polOrder;
-//        //! polynomial order for the discrete pressure function space
-//        static const int pressureSpaceOrder = polOrder;
-
-
     private:
 
         //! function space type for the velocity
@@ -1123,6 +1120,19 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         //! iterator over intersections
         typedef typename BaseType::IntersectionIteratorType
             IntersectionIteratorType;
+
+    private:
+
+        typedef typename IntersectionIteratorType::EntityPointer
+            EntityPointer;
+
+        typedef typename IntersectionIteratorType::Entity
+            EntityType;
+
+        typedef typename EntityType::Geometry
+            EntityGeometryType;
+
+    public:
 
         //! Vector type of the velocity's discrete function space's range
         typedef typename BaseType::VelocityRangeType
@@ -1342,9 +1352,6 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                         const VelocityRangeType& u,
                                         VelocityRangeType& uReturn ) const
         {
-            // some preparations
-//            VelocityRangeType outerNormal = it.unitOuterNormal( x );
-//            VelocityRangeType global = it->intersectionSelfLocal().global( x );
             // contribution to u vector ( from inside entity )
             uReturn = 0.0;
         }
@@ -1359,28 +1366,14 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                         VelocityRangeType& rhsReturn ) const
         {
             // some preparations
-            VelocityRangeType outerNormal = it.unitOuterNormal( x );
-            VelocityRangeType global = it->intersectionSelfLocal().global( x );
+            const EntityPointer entityPt = it.inside();
+            const EntityType& entity = *entityPt;
+            const EntityGeometryType& geometry = entity.geometry();
+            const VelocityRangeType xIntersectionGlobal = it->intersectionSelfLocal().global( x );
+            const VelocityRangeType xWorld = geometry.global( xIntersectionGlobal );
             // contribution to rhs ( from inside entity )
             rhsReturn = 0.0;
-            dirichletData_.evaluate( global,  rhsReturn );
-        }
-        template < class FaceDomainType, class DomainType >
-        void velocitySigmaBoundaryFlux( const IntersectionIteratorType& it,
-                                        const double time,
-                                        const FaceDomainType& x,
-                                        const DomainType& globalX,
-                                        VelocityRangeType& rhsReturn ) const
-        {
-            // some preparations
-            Stuff::printFieldVector( x, "arg x", std::cout, "=============== " );
-            VelocityRangeType outerNormal = it.unitOuterNormal( x );
-            VelocityRangeType global = it->intersectionSelfLocal().global( x );
-            Stuff::printFieldVector( global, "global", std::cout, "=============== " );
-            Stuff::printFieldVector( globalX, "globalX", std::cout, "=============== " );
-            // contribution to rhs ( from inside entity )
-            rhsReturn = 0.0;
-            dirichletData_.evaluate( globalX,  rhsReturn );
+            dirichletData_.evaluate( xWorld,  rhsReturn );
         }
 
         /**
@@ -1557,10 +1550,14 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                     VelocityRangeType& rhsReturn ) const
         {
             //some preparations
-            VelocityRangeType globalX = it->intersectionSelfLocal().global( x );
+            const EntityPointer entityPt = it.inside();
+            const EntityType& entity = *entityPt;
+            const EntityGeometryType& geometry = entity.geometry();
+            const VelocityRangeType xIntersectionGlobal = it->intersectionSelfLocal().global( x );
+            const VelocityRangeType xWorld = geometry.global( xIntersectionGlobal );
             // contribution to rhs
             rhsReturn = 0.0;
-            dirichletData_.evaluate( globalX, rhsReturn );
+            dirichletData_.evaluate( xWorld, rhsReturn );
         }
 
         /**

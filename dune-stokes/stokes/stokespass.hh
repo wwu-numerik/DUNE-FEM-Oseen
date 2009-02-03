@@ -325,16 +325,16 @@ class StokesPass
             int numberOfIntersections = 0;
             int numberOfBoundaryIntersections = 0;
             int numberOfInnerIntersections = 0;
-            const bool Mprint = false;
-            const bool Wprint = false;
-            const bool Xprint = false;
-            const bool Yprint = false;
-            const bool Zprint = false;
-            const bool Eprint = false;
-            const bool Rprint = false;
+            const bool Mprint = true;
+            const bool Wprint = true;
+            const bool Xprint = true;
+            const bool Yprint = true;
+            const bool Zprint = true;
+            const bool Eprint = true;
+            const bool Rprint = true;
             const bool H1print = true;
-            const bool H2print = false;
-            const bool H3print = false;
+            const bool H2print = true;
+            const bool H3print = true;
             int fivePercentOfEntities = 0;
             int fivePercents = 0;
             infoStream << "\nthis is StokesPass::apply()" << std::endl;
@@ -418,8 +418,10 @@ class StokesPass
                 const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
 
                 // get quadrature
+//                const VolumeQuadratureType volumeQuadratureElement( entity,
+//                                                                    ( 2 * pressureSpaceOrder ) + 1 );
                 const VolumeQuadratureType volumeQuadratureElement( entity,
-                                                                    ( 2 * pressureSpaceOrder ) + 1 );
+                                                                    5 );
 #ifndef NLOG
                 if ( numberOfEntities > 19 ) {
                     if ( ( entityNR % fivePercentOfEntities ) == 0 ) {
@@ -691,7 +693,7 @@ class StokesPass
                     double H2_j = 0.0;
 #ifndef NLOG
 //                    if ( ( j == logBaseJ ) ) H2output = true;
-//                    H2output = true;
+                    H2output = true;
                     if ( entityOutput && H2output ) debugStream.Resume(); // enable logging
                     debugStream << "    = H2 =======================" << std::endl;
                     debugStream << "    basefunction " << " " << j << std::endl;
@@ -701,6 +703,8 @@ class StokesPass
                     for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
                         // get x
                         const ElementCoordinateType x = volumeQuadratureElement.point( quad );
+                        const VelocityRangeType xWorld = geometry.global( x );
+
                         // get the integration factor
                         const double elementVolume = geometry.integrationElement( x );
                         // get the quadrature weight
@@ -709,7 +713,7 @@ class StokesPass
                         VelocityRangeType v_j( 0.0 );
                         VelocityRangeType f( 0.0 );
                         velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-                        discreteModel_.force( 0.0, x, f );
+                        discreteModel_.force( 0.0, xWorld, f );
                         const double f_times_v_j = f * v_j;
                         H2_j += elementVolume
                             * integrationWeight
@@ -717,6 +721,7 @@ class StokesPass
 #ifndef NLOG
                         debugStream << "    - quadPoint " << quad;
                         Stuff::printFieldVector( x, "x", debugStream, "      " );
+                        Stuff::printFieldVector( xWorld, "xWorld", debugStream, "      " );
                         debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
                         debugStream << "        - integrationWeight: " << integrationWeight;
                         Stuff::printFieldVector( f, "f", debugStream, "      " );
@@ -1805,7 +1810,6 @@ class StokesPass
                                 discreteModel_. velocitySigmaBoundaryFlux(  intIt,
                                                                             0.0,
                                                                             localX,
-                                                                            globalX,
                                                                             u_sigma_rhs_flux );
                                 const double flux_times_tau_j_times_n_t = u_sigma_rhs_flux * tau_j_times_n_t;
                                 H1_j += elementVolume
@@ -1815,6 +1819,7 @@ class StokesPass
                                 debugStream << "      - quadPoint " << quad;
                                 Stuff::printFieldVector( x, "x", debugStream, "        " );
                                 Stuff::printFieldVector( localX, "localX", debugStream, "        " );
+                                Stuff::printFieldVector( globalX, "globalX", debugStream, "        " );
                                 Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "        " );
                                 debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
                                 debugStream << "        - integrationWeight: " << integrationWeight;
@@ -2416,34 +2421,6 @@ class StokesPass
             }
             return ret;
         }
-
-        /**
-         *  \todo   doc
-         **/
-//        VelocityRangeType sigmaDivergenceOf( const SigmaRangeType& arg ) const
-//        {
-//            VelocityRangeType ret( 0.0 );
-//            typedef typename SigmaRangeType::ConstRowIterator
-//                ArgConstRowIteratorType;
-//            typedef typename SigmaRangeType::row_type::ConstIterator
-//                ArgConstIteratorType;
-//            typedef typename VelocityRangeType::Iterator
-//                RetIteratorType;
-//            ArgConstRowIteratorType argRowItEnd = arg.end();
-//            RetIteratorType retItEnd = ret.end();
-//            RetIteratorType retIt = ret.begin();
-//            for (   ArgConstRowIteratorType argRowIt = arg.begin();
-//                    argRowIt != argRowItEnd, retIt != retItEnd;
-//                    ++argRowIt, ++retIt ) {
-//                ArgConstIteratorType argItEnd = argRowIt->end();
-//                for (   ArgConstIteratorType argIt = argRowIt->begin();
-//                        argIt != argItEnd;
-//                        ++argIt ) {
-//                            *retIt += *argIt;
-//                }
-//            }
-//            return ret;
-//        }
 
         /**
          *  \todo   doc
