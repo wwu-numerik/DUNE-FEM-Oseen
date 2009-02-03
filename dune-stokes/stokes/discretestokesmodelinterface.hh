@@ -1365,6 +1365,23 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             rhsReturn = 0.0;
             dirichletData_.evaluate( global,  rhsReturn );
         }
+        template < class FaceDomainType, class DomainType >
+        void velocitySigmaBoundaryFlux( const IntersectionIteratorType& it,
+                                        const double time,
+                                        const FaceDomainType& x,
+                                        const DomainType& globalX,
+                                        VelocityRangeType& rhsReturn ) const
+        {
+            // some preparations
+            Stuff::printFieldVector( x, "arg x", std::cout, "=============== " );
+            VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            VelocityRangeType global = it->intersectionSelfLocal().global( x );
+            Stuff::printFieldVector( global, "global", std::cout, "=============== " );
+            Stuff::printFieldVector( globalX, "globalX", std::cout, "=============== " );
+            // contribution to rhs ( from inside entity )
+            rhsReturn = 0.0;
+            dirichletData_.evaluate( globalX,  rhsReturn );
+        }
 
         /**
          *  \brief  implementation of \f$\hat{u}_{p}\f$
