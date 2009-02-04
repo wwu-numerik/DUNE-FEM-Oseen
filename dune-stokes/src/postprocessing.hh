@@ -123,8 +123,6 @@ class PostProcessor
 			VTK_WRITE( discreteExactDirichlet_ );
 			VTK_WRITE( errorFunc_pressure_ );
 			VTK_WRITE( errorFunc_velocity_ );
-			VTK_WRITE( wrapper.discretePressure()  );
-			VTK_WRITE( wrapper.discreteVelocity() );
 
 			entityColoration();
 

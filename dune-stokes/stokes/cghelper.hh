@@ -1,7 +1,6 @@
 #ifndef INNERCG_HH_INCLUDED
 #define INNERCG_HH_INCLUDED
-//! using the memprovider from FEM currently results in assertion failed
-#define USE_MEMPROVIDER
+
 #include <dune/fem/solver/oemsolver.hh>
 #include "../src/logging.hh"
 #include "../src/stuff.hh"
@@ -73,7 +72,7 @@ class MatrixA_Operator {
 };
 
 
-template <  class A_OperatorType,
+template <  class A_SolverType,
             class B_t_matrixType,
             class CmatrixType,
             class BmatrixType,
@@ -84,7 +83,7 @@ class SchurkomplementOperator
 {
     public:
 
-        typedef SchurkomplementOperator <   A_OperatorType,
+        typedef SchurkomplementOperator <   A_SolverType,
                                             B_t_matrixType,
                                             CmatrixType,
                                             BmatrixType,
@@ -93,14 +92,14 @@ class SchurkomplementOperator
                                             DiscretePressureFunctionType>
                 ThisType;
 
-        SchurkomplementOperator( A_OperatorType& a_op,
+        SchurkomplementOperator( A_SolverType& a_solver,
                                 const B_t_matrixType& b_t_mat,
                                 const CmatrixType& c_mat,
                                 const BmatrixType& b_mat,
                                 const MmatrixType& m_mat,
                                 const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& velocity_space,
                                 const typename DiscretePressureFunctionType::DiscreteFunctionSpaceType& pressure_space )
-            : a_op_(a_op),
+            : a_solver_(a_solver),
             b_t_mat_(b_t_mat),
             c_mat_(c_mat),
             b_mat_(b_mat),
@@ -117,15 +116,14 @@ class SchurkomplementOperator
             const double absLimit = Parameters().getParam( "absLimit", 1e-3 );
             const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
 
-            typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
-                AufSolver;
-            AufSolver auf_solver( a_op_, relLimit, absLimit, 2000, solverVerbosity );
             tmp1.clear();
             tmp2.clear();
 
 			// ret = ( ( B_t * ( A^-1 * ( B * x ) ) ) + ( C * x ) )
             b_mat_.multOEM( x, tmp1.leakPointer() );
-            auf_solver( tmp1, tmp2 );
+            Stuff::oneLinePrint( dbg, tmp1 ) ;
+            Stuff::printDoubleVec( dbg, x, b_mat_.cols() );
+            a_solver_.apply( tmp1, tmp2 );
             b_t_mat_.multOEM( tmp2.leakPointer(), ret );
             c_mat_.multOEMAdd( x, ret );
 			//
@@ -138,13 +136,71 @@ class SchurkomplementOperator
         }
 
     private:
-         A_OperatorType& a_op_;
+        A_SolverType& a_solver_;
         const B_t_matrixType& b_t_mat_;
         const CmatrixType& c_mat_;
         const BmatrixType& b_mat_;
         const MmatrixType& m_mat_;
         mutable DiscreteVelocityFunctionType tmp1;
         mutable DiscreteVelocityFunctionType tmp2;
+};
+
+template <  class WMatType,
+            class MMatType,
+            class XMatType,
+            class YMatType,
+            class DiscreteSigmaFunctionType,
+            class DiscreteVelocityFunctionType >
+class A_SolverCaller {
+    public:
+        typedef MatrixA_Operator<   WMatType,
+                                    MMatType,
+                                    XMatType,
+                                    YMatType,
+                                    DiscreteSigmaFunctionType >
+                A_OperatorType;
+
+        typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
+            CG_SolverType;
+
+        A_SolverCaller( const WMatType& w_mat,
+                const MMatType& m_mat,
+                const XMatType& x_mat,
+                const YMatType& y_mat,
+                const typename DiscreteSigmaFunctionType::DiscreteFunctionSpaceType& sig_space )
+            :  w_mat_(w_mat),
+            m_mat_(m_mat),
+            x_mat_(x_mat),
+            y_mat_(y_mat),
+            sig_tmp1( "sig_tmp1", sig_space ),
+            sig_tmp2( "sig_tmp2", sig_space ),
+            a_op_( w_mat, m_mat, x_mat, y_mat, sig_space ),
+            cg_solver( a_op_,   Parameters().getParam( "relLimit", 1e-6 ),
+                                Parameters().getParam( "absLimit", 1e-7 ),
+                                2000, //inconsequential anyways
+                                Parameters().getParam( "solverVerbosity", true ) )
+        {}
+
+        void apply ( const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest )
+        {
+            cg_solver(arg,dest);
+        }
+
+        const A_OperatorType& getA_operator( )
+        {
+            return a_op_;
+        }
+
+    private:
+        const MMatType precond_;
+        const WMatType& w_mat_;
+        const MMatType& m_mat_;
+        const XMatType& x_mat_;
+        const YMatType& y_mat_;
+        mutable DiscreteSigmaFunctionType sig_tmp1;
+        mutable DiscreteSigmaFunctionType sig_tmp2;
+        A_OperatorType a_op_;
+        CG_SolverType cg_solver;
 };
 
 }

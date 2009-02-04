@@ -11,7 +11,8 @@
 #define POLORDER 0
 
 //#define SIMPLE_PROBLEM
-//#define CONSTANT_PROBLEM
+#define CONSTANT_PROBLEM
+//#define NLOG
 
 #include <iostream>
 #include <dune/common/mpihelper.hh> // An initializer of MPI
