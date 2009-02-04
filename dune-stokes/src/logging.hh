@@ -195,6 +195,7 @@ class Logging
 
             // delete the MatlabLogStream
             matlabLogStreamPtr->Flush();
+            matlabLogFile_.close();
             Stuff::safe_delete( matlabLogStreamPtr );
         }
 
@@ -224,6 +225,30 @@ class Logging
             matlabLogFile_.open( matlabLogFileName.c_str() );
             assert( matlabLogFile_.is_open() );
             matlabLogStreamPtr = new MatlabLogStream( matlabLogFile_ );
+        }
+
+        void SetPrefix( std::string prefix )
+        {
+            /// begin dtor
+            IdVecCIter it = streamIDs_.end();
+            for ( ; it != streamIDs_.begin(); --it ) {
+                Stuff::safe_delete( streammap_[*it] );
+            }
+
+            if ( ( logflags_ & LOG_FILE ) != 0 ) {
+                logfile_ << '\n' << TimeString() << ": LOG END" << std::endl;
+                logfileWoTime_ << std::endl;
+                logfile_.close();
+                logfileWoTime_.close();
+            }
+
+            // delete the MatlabLogStream
+            matlabLogStreamPtr->Flush();
+            matlabLogFile_.close();
+            Stuff::safe_delete( matlabLogStreamPtr );
+            /// end dtor
+
+            Create ( logflags_, prefix );
         }
 
         void SetStreamFlags( LogFlags stream, int flags )

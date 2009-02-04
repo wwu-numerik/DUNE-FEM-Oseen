@@ -51,9 +51,11 @@ typedef std::vector<std::string> ErrorColumnHeaders;
 const std::string errheaders[] = { "Velocity L2 Error", "Pressure L2 Error" };
 const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
 
-int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPtr,
-                L2ErrorVector& l2_errors );
-
+template < class GridPartType >
+int singleRun(  CollectiveCommunication mpicomm,
+                Dune::GridPtr< GridType > gridPtr,
+                GridPartType& gridPart,
+                L2ErrorVector& l2_errors, int pow1, int pow2  );
 /**
  *  \brief  main function
  *
@@ -94,20 +96,34 @@ int main( int argc, char** argv )
     L2ErrorVector l2_errors;
     ErrorColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
 
-    Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
-    long el = gridPtr->size(0);
-    profiler().Reset( 1 ); //prepare for one single run
-    int err = singleRun( mpicomm, gridPtr, l2_errors );
-    profiler().NextRun( l2_errors[0][0] ); //finish this run
+//
+//
+    long el = 0;//gridPtr->size(0);
+    profiler().Reset( 9 ); //prepare for one single run
+    int err = 0;
+    for ( int i = 0; i < 3; ++i ) {
+        for ( int j = 0; j < 3; ++j ) {
+            Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
+            el = gridPtr->size(0);
+            typedef Dune::AdaptiveLeafGridPart< GridType >
+                GridPartType;
+            GridPartType gridPart( *gridPtr );
+            std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
+            Logger().SetPrefix( ff );
+            err += singleRun( mpicomm, gridPtr, gridPart, l2_errors, i, j );
+            profiler().NextRun( l2_errors[0][0] ); //finish this run
+        }
+    }
+
 
     err += chdir( "data" );
-    Dune::EocOutput eoc_output ( "eoc", "info" );
-    Stuff::TexOutput texOP;
-    eoc_output.printInput( *gridPtr, texOP );
+//    Dune::EocOutput eoc_output ( "eoc", "info" );
+//    Stuff::TexOutput texOP;
+//    eoc_output.printInput( *gridPtr, texOP );
 
     long prof_time = profiler().Output( mpicomm, 0, el );
-    eoc_output.printTexAddError( el, l2_errors[0], errorColumnHeaders, 150, 0 );
-    eoc_output.printTexEnd( prof_time );
+//    eoc_output.printTexAddError( el, l2_errors[0], errorColumnHeaders, 150, 0 );
+//    eoc_output.printTexEnd( prof_time );
 
     return err;
   }
@@ -119,8 +135,11 @@ int main( int argc, char** argv )
   }
 }
 
-int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPtr,
-                L2ErrorVector& l2_errors )
+template < class GridPartType >
+int singleRun(  CollectiveCommunication mpicomm,
+                Dune::GridPtr< GridType > gridPtr,
+                GridPartType& gridPart,
+                L2ErrorVector& l2_errors, int pow1, int pow2  )
 {
     Logging::LogStream& infoStream = Logger().Info();
     ParameterContainer& parameters = Parameters();
@@ -130,9 +149,6 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
      * ********************************************************************** */
     infoStream << "\ninitialising grid..." << std::endl;
 
-    typedef Dune::LeafGridPart< GridType >
-        GridPartType;
-    GridPartType gridPart( *gridPtr );
     const int gridDim = GridType::dimensionworld;
     const int polOrder = POLORDER;
     const double viscosity = Parameters().getParam( "viscosity", 1.0 );
@@ -181,9 +197,9 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
     Dune::FieldVector< double, gridDim > zeros( 0.0 );
     double h_fac = Parameters().getParam( "h-factor", 1.0 );
 
-    StokesModelImpType stokesModel( h_fac / ( grid_width) ,
+    StokesModelImpType stokesModel( std::pow( grid_width, pow1 ),
                                     zeros,
-                                    h_fac * grid_width,
+                                    std::pow( grid_width, pow2 ),
                                     zeros,
                                     analyticalForce,
                                     analyticalDirichletData,
@@ -198,10 +214,10 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
                     polOrder > >
         StokesModelType;
 
-    typedef StokesModelType::DiscreteVelocityFunctionSpaceType
+    typedef typename StokesModelType::DiscreteVelocityFunctionSpaceType
         DiscreteVelocityFunctionSpaceType;
 
-    typedef StokesModelType::DiscretePressureFunctionSpaceType
+    typedef typename StokesModelType::DiscretePressureFunctionSpaceType
         DiscretePressureFunctionSpaceType;
 
     typedef Dune::DiscreteStokesFunctionSpaceWrapper< Dune::DiscreteStokesFunctionSpaceWrapperTraits<
@@ -213,8 +229,8 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
 
     typedef Dune::DiscreteStokesFunctionWrapper< Dune::DiscreteStokesFunctionWrapperTraits<
                 DiscreteStokesFunctionSpaceWrapperType,
-                StokesModelType::DiscreteVelocityFunctionType,
-                StokesModelType::DiscretePressureFunctionType > >
+                typename StokesModelType::DiscreteVelocityFunctionType,
+                typename StokesModelType::DiscretePressureFunctionType > >
         DiscreteStokesFunctionWrapperType;
 
     DiscreteStokesFunctionWrapperType discreteStokesFunctionWrapper(    "wrapped",
