@@ -12,11 +12,11 @@
 namespace Dune
 {
 
-/**  
+/**
     @ingroup HelperClasses
-    \brief Write a self contained tex table 
+    \brief Write a self contained tex table
     for eoc runs with timing information.
-    
+
     Constructor takes base name (filename) of file and
     generates two files:
     filename.tex and filename_body.tex.
@@ -68,7 +68,7 @@ class FemEoc
       std::ofstream main((name+"_main.tex").c_str());
       if (!main) {
         std::cerr << "Could not open file : "
-                  << (name+"_main.tex").c_str() 
+                  << (name+"_main.tex").c_str()
                   << " ... ABORTING" << std::endl;
         abort();
       }
@@ -87,37 +87,37 @@ class FemEoc
 	         << "\\makeatother\n"
 	         << "\\begin{document}\n"
            << "\\begin{center}\\large\n"
-           << descript 
+           << descript
            << "\n\\end{center}\n\n"
            << "\\input{"
-           << filestreamBody.str() 
+           << filestreamBody.str().substr( filestreamBody.str().find( '/' ) != std::string::npos ? filestreamBody.str().find( '/' ) +1 : 0  )
            << "}\n";
       main << "\\end{tabular}\\\\\n\n"
 	         << "\\end{document}\n" << std::endl;
-      main.close();	
+      main.close();
     } else {
       abort();
     }
   }
   template <class StrVectorType>
   size_t addentry(const StrVectorType& descript,size_t size) {
-    if (!initial_) 
+    if (!initial_)
       abort();
     pos_.push_back(error_.size());
     for (size_t i=0;i<size;++i) {
       error_.push_back(0);
       prevError_.push_back(0);
-      description_.push_back(descript[i]);  
+      description_.push_back(descript[i]);
     }
     return pos_.size()-1;
   }
   size_t addentry(const std::string& descript) {
-    if (!initial_) 
+    if (!initial_)
       abort();
     pos_.push_back(error_.size());
     error_.push_back(0);
     prevError_.push_back(0);
-    description_.push_back(descript);  
+    description_.push_back(descript);
     return pos_.size()-1;
   }
   template <class VectorType>
@@ -157,7 +157,7 @@ class FemEoc
 	              << level_ << " & "
                 << h      << " & "
                 << size   << " & "
-                << time   << " & " 
+                << time   << " & "
                 << counter;
     for (unsigned int i=0;i<error_.size();++i) {
       outputFile_ << " & " << error_[i] << " & ";
@@ -192,44 +192,44 @@ class FemEoc
   static void initialize(const std::string& name, const std::string& descript) {
     instance().init(name,descript);
   }
-  /** \brief add a vector of new eoc values  
+  /** \brief add a vector of new eoc values
    *
-   *  \tparam  StrVectorType a vector type with operator[] 
+   *  \tparam  StrVectorType a vector type with operator[]
    *           returning a string (a C style array can be used)
    *           the size of the vector is given as parameter
-   *  \return  a unique index used to add the error values 
+   *  \return  a unique index used to add the error values
    */
   template <class StrVectorType>
   static size_t addEntry(const StrVectorType& descript,size_t size) {
     return instance().addentry(descript,size);
   }
-  /** \brief add a vector of new eoc values  
+  /** \brief add a vector of new eoc values
    *
    *  \tparam  StrVectorType a vector type with size() and operator[]
    *           returning a string
-   *  \return  a unique index used to add the error values 
+   *  \return  a unique index used to add the error values
    */
   template <class StrVectorType>
   static size_t addEntry(const StrVectorType& descript) {
     return instance().addentry(descript,descript.size());
   }
-  /** \brief add a single new eoc output  
+  /** \brief add a single new eoc output
    *
-   *  \return  a unique index used to add the error values 
+   *  \return  a unique index used to add the error values
    */
   static size_t addEntry(const std::string& descript) {
     return instance().addentry(descript);
   }
-  /** \brief add a single new eoc output  
+  /** \brief add a single new eoc output
    *
-   *  \return  a unique index used to add the error values 
+   *  \return  a unique index used to add the error values
    */
   static size_t addEntry(const char* descript) {
     return addEntry(std::string(descript));
   }
   /** \brief add a vector of error values for the given id (returned by
    *         addEntry)
-   *  \tparam  VectorType a vector type with an operator[] 
+   *  \tparam  VectorType a vector type with an operator[]
    *           returning a double (C style array can be used)
    */
   template <class VectorType>
@@ -238,8 +238,8 @@ class FemEoc
   }
   /** \brief add a vector of error values for the given id (returned by
    *         addEntry)
-   *  \tparam  VectorType a vector type with a size() and an operator[] 
-   *           returning a double 
+   *  \tparam  VectorType a vector type with a size() and an operator[]
+   *           returning a double
    */
   template <class VectorType>
   static void setErrors(size_t id,const VectorType& err) {
@@ -258,7 +258,7 @@ class FemEoc
   static void setErrors(size_t id,const double& err) {
     instance().seterrors(id,err);
   }
-  /** \brief commit a line to the eoc file 
+  /** \brief commit a line to the eoc file
    */
   static void write(double h,double size,double time,int counter) {
     instance().writeerr(h,size,time,counter);
