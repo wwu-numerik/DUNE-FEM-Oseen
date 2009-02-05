@@ -116,14 +116,16 @@ int main( int argc, char** argv )
     }
 
 
+    Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
+    el = gridPtr->size(0);
     err += chdir( "data" );
-//    Dune::EocOutput eoc_output ( "eoc", "info" );
-//    Stuff::TexOutput texOP;
-//    eoc_output.printInput( *gridPtr, texOP );
+    Dune::EocOutput eoc_output ( "eoc", "info" );
+    Stuff::TexOutput texOP;
+    eoc_output.printInput( *gridPtr, texOP );
 
     long prof_time = profiler().Output( mpicomm, 0, el );
-//    eoc_output.printTexAddError( el, l2_errors[0], errorColumnHeaders, 150, 0 );
-//    eoc_output.printTexEnd( prof_time );
+    eoc_output.printTexAddError( el, l2_errors[0], errorColumnHeaders, 150, 0 );
+    eoc_output.printTexEnd( prof_time );
 
     return err;
   }
