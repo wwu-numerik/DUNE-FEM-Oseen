@@ -12,7 +12,7 @@
 
 //#define SIMPLE_PROBLEM
 #define CONSTANT_PROBLEM
-//#define NLOG
+#define NLOG
 
 #include <iostream>
 #include <dune/common/mpihelper.hh> // An initializer of MPI
@@ -26,7 +26,7 @@
 //#include <dune/fem/grid/gridpart.hh>
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
-#include <dune/fem/misc/eoc.hh>
+#include <dune/fem/misc/femeoc.hh>
 #include <dune/fem/misc/gridwidth.hh>
 
 #include <dune/stokes/discretestokesfunctionspacewrapper.hh>
@@ -96,13 +96,16 @@ int main( int argc, char** argv )
     L2ErrorVector l2_errors;
     ErrorColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
 
-//
-//
+    int err = 0;
+    Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
+    eoc_output.initialize( "data","eoc-file", "eoc-desc" );
+    size_t idx = eoc_output.addEntry( errorColumnHeaders );
+
     long el = 0;//gridPtr->size(0);
     profiler().Reset( 9 ); //prepare for one single run
-    int err = 0;
-    for ( int i = 0; i < 3; ++i ) {
-        for ( int j = 0; j < 3; ++j ) {
+
+    for ( int i = 0, num = 0; i < 3; ++i,++num ) {
+        for ( int j = 0; j < 3; ++j,++num ) {
             Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
             el = gridPtr->size(0);
             typedef Dune::AdaptiveLeafGridPart< GridType >
@@ -112,18 +115,18 @@ int main( int argc, char** argv )
             Logger().SetPrefix( ff );
             err += singleRun( mpicomm, gridPtr, gridPart, l2_errors, i, j );
             profiler().NextRun( l2_errors[0][0] ); //finish this run
+
+            eoc_output.setErrors( num,l2_errors[0] );
+            eoc_output.write(num,i,j,num);
         }
     }
 
 
-    err += chdir( "data" );
-//    Dune::EocOutput eoc_output ( "eoc", "info" );
 //    Stuff::TexOutput texOP;
 //    eoc_output.printInput( *gridPtr, texOP );
+//
+//    long prof_time = profiler().Output( mpicomm, 0, el );
 
-    long prof_time = profiler().Output( mpicomm, 0, el );
-//    eoc_output.printTexAddError( el, l2_errors[0], errorColumnHeaders, 150, 0 );
-//    eoc_output.printTexEnd( prof_time );
 
     return err;
   }
@@ -281,7 +284,7 @@ int singleRun(  CollectiveCommunication mpicomm,
 
     PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );
 
-    postProcessor.save( *gridPtr, discreteStokesFunctionWrapper ); //dummy params, should be computed solutions );
+    postProcessor.save( *gridPtr, discreteStokesFunctionWrapper );
     l2_errors.push_back( postProcessor.getError() );
 
     profiler().StopTiming( "Problem/Postprocessing" );
