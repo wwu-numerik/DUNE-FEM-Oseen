@@ -124,7 +124,7 @@ class FemEoc
   void seterrors(size_t id,const VectorType& err,size_t size) {
     int pos = pos_[id];
     for (size_t i=0;i<size;++i)
-      error_[pos+i] = err[i];
+      error_[pos+i] = 1;//err[i];
   }
   template <int SIZE>
   void seterrors(size_t id,const FieldVector<double,SIZE>& err) {

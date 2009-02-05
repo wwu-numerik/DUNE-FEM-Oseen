@@ -102,7 +102,7 @@ int main( int argc, char** argv )
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
 
     long el = 0;//gridPtr->size(0);
-    profiler().Reset( 9 ); //prepare for one single run
+    profiler().Reset( 9 ); //prepare for 9 single runs
 
     for ( int i = 0, num = 0; i < 3; ++i,++num ) {
         for ( int j = 0; j < 3; ++j,++num ) {
@@ -116,8 +116,9 @@ int main( int argc, char** argv )
             err += singleRun( mpicomm, gridPtr, gridPart, l2_errors, i, j );
             profiler().NextRun( l2_errors[0][0] ); //finish this run
 
-            eoc_output.setErrors( num,l2_errors[0] );
-            eoc_output.write(num,i,j,num);
+            eoc_output.setErrors( idx,l2_errors[0] );
+            eoc_output.write( 0.5, el,num,0);
+
         }
     }
 
