@@ -51,11 +51,20 @@ typedef std::vector<std::string> ErrorColumnHeaders;
 const std::string errheaders[] = { "Velocity L2 Error", "Pressure L2 Error" };
 const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
 
+struct RunInfo
+{
+    std::vector< double > L2Errors;
+    double grid_width;
+    int refine_level;
+    double run_time;
+    long codim0;
+};
+
 template < class GridPartType >
-int singleRun(  CollectiveCommunication mpicomm,
+RunInfo singleRun(  CollectiveCommunication mpicomm,
                 Dune::GridPtr< GridType > gridPtr,
                 GridPartType& gridPart,
-                L2ErrorVector& l2_errors, int pow1, int pow2  );
+                int pow1, int pow2  );
 /**
  *  \brief  main function
  *
@@ -98,30 +107,32 @@ int main( int argc, char** argv )
 
     int err = 0;
     Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
-    eoc_output.initialize( "data","eoc-file", "eoc-desc" );
+    eoc_output.initialize( "data","eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
 
     long el = 0;//gridPtr->size(0);
     profiler().Reset( 9 ); //prepare for 9 single runs
 
-    for ( int i = 0, num = 0; i < 3; ++i,++num ) {
-        for ( int j = 0; j < 3; ++j,++num ) {
-            Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
-            el = gridPtr->size(0);
-            typedef Dune::AdaptiveLeafGridPart< GridType >
-                GridPartType;
-            GridPartType gridPart( *gridPtr );
-            std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
-            Logger().SetPrefix( ff );
-            err += singleRun( mpicomm, gridPtr, gridPart, l2_errors, i, j );
-            profiler().NextRun( l2_errors[0][0] ); //finish this run
+    for ( int ref = 0; ref < 6 ; ++ref ) {
+        for ( int i = 0, num = 0; i < 3; ++i ) {
+            for ( int j = 0; j < 3; ++j,++num ) {
+                Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
+                gridPtr->globalRefine( ref );
+                typedef Dune::AdaptiveLeafGridPart< GridType >
+                    GridPartType;
+                GridPartType gridPart( *gridPtr );
+                std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
+                Logger().SetPrefix( ff );
+                RunInfo info = singleRun( mpicomm, gridPtr, gridPart, i, j );
+                l2_errors.push_back( info.L2Errors );
+    //            profiler().NextRun( info.L2Errors ); //finish this run
 
-            eoc_output.setErrors( idx,l2_errors[0] );
-            eoc_output.write( 0.5, el,num,0);
+                eoc_output.setErrors( idx,info.L2Errors );
+                eoc_output.write( info.grid_width, info.codim0 ,num,num);
 
+            }
         }
     }
-
 
 //    Stuff::TexOutput texOP;
 //    eoc_output.printInput( *gridPtr, texOP );
@@ -140,13 +151,14 @@ int main( int argc, char** argv )
 }
 
 template < class GridPartType >
-int singleRun(  CollectiveCommunication mpicomm,
+RunInfo singleRun(  CollectiveCommunication mpicomm,
                 Dune::GridPtr< GridType > gridPtr,
                 GridPartType& gridPart,
-                L2ErrorVector& l2_errors, int pow1, int pow2  )
+                int pow1, int pow2  )
 {
     Logging::LogStream& infoStream = Logger().Info();
     ParameterContainer& parameters = Parameters();
+    RunInfo info;
 
     /* ********************************************************************** *
      * initialize the grid                                                    *
@@ -156,6 +168,9 @@ int singleRun(  CollectiveCommunication mpicomm,
     const int gridDim = GridType::dimensionworld;
     const int polOrder = POLORDER;
     const double viscosity = Parameters().getParam( "viscosity", 1.0 );
+    info.codim0 = gridPtr->size( 0 );
+    info.codim0 = gridPart.grid().size( 0 );
+
 
 
     infoStream << "...done." << std::endl;
@@ -191,9 +206,9 @@ int singleRun(  CollectiveCommunication mpicomm,
         StokesModelImpType;
 
     Dune::GridWidthProvider< GridType > gw ( *gridPtr );
-
     double grid_width = gw.gridWidth();
     infoStream << " \n max grid width: " << grid_width << std::endl;
+    info.grid_width = grid_width;
 
     Dune::FieldVector< double, gridDim > ones( 1.0 );
     Dune::FieldVector< double, gridDim > vec_1_h( 1 - grid_width );
@@ -286,11 +301,12 @@ int singleRun(  CollectiveCommunication mpicomm,
     PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );
 
     postProcessor.save( *gridPtr, discreteStokesFunctionWrapper );
-    l2_errors.push_back( postProcessor.getError() );
+    info.L2Errors = postProcessor.getError();
 
     profiler().StopTiming( "Problem/Postprocessing" );
 
     infoStream << "...done." << std::endl;
 
-    return 0;
+    return info;
 }
+

@@ -8,7 +8,7 @@
 #define SEGFAULT int*i=0;*i=9;
 
 #include <iomanip>
-
+#include <vector>
 
 namespace Stuff
 {

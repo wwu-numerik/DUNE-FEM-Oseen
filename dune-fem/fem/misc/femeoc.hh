@@ -59,24 +59,34 @@ class FemEoc
     outputFile_.close();
   }
   void init(const std::string& path,
-            const std::string& name, const std::string& descript) {
+            const std::string& name, const std::string& descript, const std::string& inputFile ) {
     IOInterface::createPath(path);
-    init(path+"/"+name,descript);
+    init(path+"/"+name,descript, path+"/"+inputFile );
   }
-  void init(const std::string& name, const std::string& descript) {
+  void init(const std::string& name, const std::string& descript, const std::string& inputFile ) {
     if (!outputFile_.is_open()) {
       std::ofstream main((name+"_main.tex").c_str());
+      std::ifstream input( inputFile.c_str() );
       if (!main) {
         std::cerr << "Could not open file : "
                   << (name+"_main.tex").c_str()
                   << " ... ABORTING" << std::endl;
         abort();
       }
+
       std::ostringstream filestreamBody;
       filestreamBody << name << "_body.tex";
       outputFile_.open(filestreamBody.str().c_str(), std::ios::out);
-      main << "\\documentclass[12pt,english]{article}\n"
+        std::string bodyfile = filestreamBody.str().substr( filestreamBody.str().find( '/' ) != std::string::npos ? filestreamBody.str().find( '/' ) +1 : 0  );
+
+        if (!input) {
+        std::cerr << "Could not open file : "
+                  << inputFile
+                  << " ... using default template" << std::endl;
+          main << "\\documentclass[10pt,english]{article}\n"
            << "\\usepackage[T1]{fontenc}\n"
+           << "\\usepackage[T1]{vmargin}\n"
+           << "\\setpapersize[landscape]{A4}\n"
 	         << "\\usepackage[latin1]{inputenc}\n"
 	         << "\\usepackage{setspace}\n"
 	         << "\\onehalfspacing\n"
@@ -90,10 +100,29 @@ class FemEoc
            << descript
            << "\n\\end{center}\n\n"
            << "\\input{"
-           << filestreamBody.str().substr( filestreamBody.str().find( '/' ) != std::string::npos ? filestreamBody.str().find( '/' ) +1 : 0  )
+           << bodyfile
            << "}\n";
-      main << "\\end{tabular}\\\\\n\n"
-	         << "\\end{document}\n" << std::endl;
+          main << "\\end{tabular}\\\\\n\n"
+                 << "\\end{document}\n" << std::endl;
+
+      }
+      else {
+
+        std::stringstream inputTex;
+        while ( input.good() ) {
+            inputTex << (char) input.get();
+        }
+        std::string input = inputTex.str();
+        int pos = input.find( "DESCRIPTION", 0 );
+        input.replace ( pos, 11, "" );
+        input.insert ( pos, descript );
+
+        pos = input.find( "BODYFILE", 0 );
+        input.replace ( pos, 8, "" );
+        input.insert ( pos, bodyfile );
+
+        main << input;
+      }
       main.close();
     } else {
       abort();
@@ -124,7 +153,7 @@ class FemEoc
   void seterrors(size_t id,const VectorType& err,size_t size) {
     int pos = pos_[id];
     for (size_t i=0;i<size;++i)
-      error_[pos+i] = 1;//err[i];
+      error_[pos+i] = err[i];
   }
   template <int SIZE>
   void seterrors(size_t id,const FieldVector<double,SIZE>& err) {
@@ -185,12 +214,17 @@ class FemEoc
     return instance_;
   }
   //! open file path/name and write a description string into tex file
-  static void initialize(const std::string& path, const std::string& name, const std::string& descript) {
-    instance().init(path,name,descript);
+  static void initialize(const std::string& path,
+            const std::string& name,
+            const std::string& descript,
+            const std::string& templateFilename ) {
+    instance().init(path,name,descript,templateFilename);
   }
   //! open file name and write description string into tex file
-  static void initialize(const std::string& name, const std::string& descript) {
-    instance().init(name,descript);
+  static void initialize(const std::string& name,
+            const std::string& descript,
+            const std::string& templateFilename  ) {
+    instance().init(name,descript,templateFilename);
   }
   /** \brief add a vector of new eoc values
    *
@@ -209,6 +243,7 @@ class FemEoc
    *           returning a string
    *  \return  a unique index used to add the error values
    */
+
   template <class StrVectorType>
   static size_t addEntry(const StrVectorType& descript) {
     return instance().addentry(descript,descript.size());
@@ -236,7 +271,9 @@ class FemEoc
   static void setErrors(size_t id,const VectorType& err,int size) {
     instance().seterrors(id,err,size);
   }
-  /** \brief add a vector of error values for the given id (returned by
+  /** \brief add a vector of error values for the given id (returned bywrite(GridWidth::calcGridWidth(gridPart),
+                     grid.size(0),runTime,0);
+
    *         addEntry)
    *  \tparam  VectorType a vector type with a size() and an operator[]
    *           returning a double
