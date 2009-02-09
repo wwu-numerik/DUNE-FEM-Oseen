@@ -11,7 +11,7 @@
 #define POLORDER 0
 
 //#define SIMPLE_PROBLEM
-#define CONSTANT_PROBLEM
+//#define CONSTANT_PROBLEM
 #define NLOG
 
 #include <iostream>
@@ -47,8 +47,8 @@
 #endif
 
 typedef std::vector< std::vector<double> > L2ErrorVector;
-typedef std::vector<std::string> ErrorColumnHeaders;
-const std::string errheaders[] = { "Velocity L2 Error", "Pressure L2 Error" };
+typedef std::vector<std::string> ColumnHeaders;
+const std::string errheaders[] = { "h", "tris","C11","C12","D11","D12","Velocity L2 Error", "Pressure L2 Error" };
 const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
 
 struct RunInfo
@@ -58,13 +58,14 @@ struct RunInfo
     int refine_level;
     double run_time;
     long codim0;
+    double c11,d11,c12,d12;
 };
 
 template < class GridPartType >
 RunInfo singleRun(  CollectiveCommunication mpicomm,
                 Dune::GridPtr< GridType > gridPtr,
                 GridPartType& gridPart,
-                int pow1, int pow2  );
+                int pow1, int pow2, int pow3, int pow4  );
 /**
  *  \brief  main function
  *
@@ -103,14 +104,14 @@ int main( int argc, char** argv )
                      Parameters().getParam( "logfile", std::string("dune_stokes") ) );
 
     L2ErrorVector l2_errors;
-    ErrorColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
+    ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
 
     int err = 0;
     Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
     eoc_output.initialize( "data","eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
+    Stuff::TexOutput< RunInfo > texwriter( errorColumnHeaders );
 
-    long el = 0;//gridPtr->size(0);
     profiler().Reset( 9 ); //prepare for 9 single runs
 
     for ( int ref = 0; ref < 6 ; ++ref ) {
@@ -123,12 +124,14 @@ int main( int argc, char** argv )
                 GridPartType gridPart( *gridPtr );
                 std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
                 Logger().SetPrefix( ff );
-                RunInfo info = singleRun( mpicomm, gridPtr, gridPart, i, j );
+                RunInfo info = singleRun( mpicomm, gridPtr, gridPart, i, j, -2, -2 );
                 l2_errors.push_back( info.L2Errors );
     //            profiler().NextRun( info.L2Errors ); //finish this run
 
                 eoc_output.setErrors( idx,info.L2Errors );
                 eoc_output.write( info.grid_width, info.codim0 ,num,num);
+                texwriter.setInfo( info );
+                eoc_output.write( texwriter );
 
             }
         }
@@ -154,7 +157,7 @@ template < class GridPartType >
 RunInfo singleRun(  CollectiveCommunication mpicomm,
                 Dune::GridPtr< GridType > gridPtr,
                 GridPartType& gridPart,
-                int pow1, int pow2  )
+                int pow1, int pow2, int pow3, int pow4  )
 {
     Logging::LogStream& infoStream = Logger().Info();
     ParameterContainer& parameters = Parameters();
@@ -210,16 +213,18 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     infoStream << " \n max grid width: " << grid_width << std::endl;
     info.grid_width = grid_width;
 
-    Dune::FieldVector< double, gridDim > ones( 1.0 );
-    Dune::FieldVector< double, gridDim > vec_1_h( 1 - grid_width );
-    //ones /= grid_width;
-    Dune::FieldVector< double, gridDim > zeros( 0.0 );
-    double h_fac = Parameters().getParam( "h-factor", 1.0 );
+    typedef Dune::FieldVector< double, gridDim >
+        ConstVec;
 
-    StokesModelImpType stokesModel( std::pow( grid_width, pow1 ),
-                                    zeros,
-                                    std::pow( grid_width, pow2 ),
-                                    zeros,
+    const double minpow = -2;
+    double c11 = pow1 > minpow ? std::pow( grid_width, pow1 ) :0;
+    double d11 = pow2 > minpow ? std::pow( grid_width, pow2 ) :0;
+    double c12 = pow3 > minpow ? std::pow( grid_width, pow3 ) :0;
+    double d12 = pow4 > minpow ? std::pow( grid_width, pow4 ) :0;
+    StokesModelImpType stokesModel( c11,
+                                    ConstVec ( c12 ),
+                                    d11,
+                                    ConstVec ( d12 ),
                                     analyticalForce,
                                     analyticalDirichletData,
                                     viscosity  );
@@ -302,6 +307,10 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
 
     postProcessor.save( *gridPtr, discreteStokesFunctionWrapper );
     info.L2Errors = postProcessor.getError();
+    info.c11 = c11;
+    info.c12 = c12;
+    info.d11 = d11;
+    info.d12 = d12;
 
     profiler().StopTiming( "Problem/Postprocessing" );
 

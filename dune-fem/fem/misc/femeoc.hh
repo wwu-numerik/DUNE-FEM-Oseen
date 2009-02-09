@@ -208,6 +208,26 @@ class FemEoc
     level_++;
     initial_ = false;
   }
+  template < class Writer >
+  void writeerr( Writer& writer )
+  {
+      if (initial_) {
+	    writer.putHeader( outputFile_ );
+      }
+
+      writer.putStaticCols( outputFile_ );
+
+    for (unsigned int i=0;i<error_.size();++i) {
+        writer.putErrorCol( outputFile_, prevError_[i],error_[i], prevh_, initial_ );
+        prevError_[i]=error_[i];
+        error_[i] = -1;  // uninitialized
+    }
+
+    writer.putLineEnd( outputFile_ );
+    prevh_ = writer.get_h();
+    level_++;
+    initial_ = false;
+  }
  public:
   static FemEoc& instance() {
     static FemEoc instance_;
@@ -300,6 +320,12 @@ class FemEoc
   static void write(double h,double size,double time,int counter) {
     instance().writeerr(h,size,time,counter);
   }
+
+    template < class Writer >
+    static void write( Writer& writer )
+    {
+        instance().writeerr(writer);
+    }
 };
 
 }
