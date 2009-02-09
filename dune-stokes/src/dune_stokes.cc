@@ -113,10 +113,13 @@ int main( int argc, char** argv )
     Stuff::TexOutput< RunInfo > texwriter( errorColumnHeaders );
 
     profiler().Reset( 9 ); //prepare for 9 single runs
+    int maxref = 1;
+    int maxpow = 2;
+    int minpow = -2;
 
-    for ( int ref = 0; ref < 6 ; ++ref ) {
-        for ( int i = 0, num = 0; i < 3; ++i ) {
-            for ( int j = 0; j < 3; ++j,++num ) {
+    for ( int ref = 0, num = 0; ref < maxref; ++ref ) {
+        for ( int i = minpow; i < maxpow; ++i ) {
+            for ( int j = minpow; j < maxpow; ++j,++num ) {
                 Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
                 gridPtr->globalRefine( ref );
                 typedef Dune::AdaptiveLeafGridPart< GridType >
@@ -129,9 +132,12 @@ int main( int argc, char** argv )
     //            profiler().NextRun( info.L2Errors ); //finish this run
 
                 eoc_output.setErrors( idx,info.L2Errors );
-                eoc_output.write( info.grid_width, info.codim0 ,num,num);
                 texwriter.setInfo( info );
-                eoc_output.write( texwriter );
+                bool lastrun = (
+                    ( ref == ( maxref - 1 ) ) &&
+                    ( j == ( maxpow - 1 ) ) &&
+                    ( i == ( maxpow - 1 ) ) );
+                eoc_output.write( texwriter, lastrun );
 
             }
         }

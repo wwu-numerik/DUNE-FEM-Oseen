@@ -209,7 +209,7 @@ class FemEoc
     initial_ = false;
   }
   template < class Writer >
-  void writeerr( Writer& writer )
+  void writeerr( Writer& writer, bool last )
   {
       if (initial_) {
 	    writer.putHeader( outputFile_ );
@@ -217,13 +217,17 @@ class FemEoc
 
       writer.putStaticCols( outputFile_ );
 
-    for (unsigned int i=0;i<error_.size();++i) {
+    for (unsigned int i=0;i<2;++i) {
         writer.putErrorCol( outputFile_, prevError_[i],error_[i], prevh_, initial_ );
         prevError_[i]=error_[i];
         error_[i] = -1;  // uninitialized
     }
 
     writer.putLineEnd( outputFile_ );
+
+    if ( last )
+        writer.endTable( outputFile_ );
+
     prevh_ = writer.get_h();
     level_++;
     initial_ = false;
@@ -322,9 +326,9 @@ class FemEoc
   }
 
     template < class Writer >
-    static void write( Writer& writer )
+    static void write( Writer& writer, bool last = false )
     {
-        instance().writeerr(writer);
+        instance().writeerr(writer, last);
     }
 };
 

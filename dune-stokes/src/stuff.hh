@@ -70,6 +70,9 @@ class TexOutput
 
         void putLineEnd( std::ofstream& outputFile_ )
         {
+            outputFile_ << "\n"
+                << "\\tabularnewline\n"
+	              << "\\hline \n";
             outputFile_.flush();
         }
 
@@ -78,13 +81,17 @@ class TexOutput
             current_h_ = info_.grid_width;
             double factor = prevh_/current_h_;
             double eoc = log(prevError_/error_)/log(factor);
+            outputFile_ << " & " << error_ << " & " << eoc;
         }
 
         void putHeader( std::ofstream& outputFile_ )
         {
             const unsigned int dynColSize = 2;
-            const unsigned int statColSize = 2;
-            outputFile_ << "\\begin{longtable}{|c|c|c|c|c|cc|cc";
+            const unsigned int statColSize = headers_.size() - 2;
+            outputFile_ << "\\begin{longtable}{";
+            for (unsigned int i=0;i<statColSize;i++) {
+                outputFile_ << "|c|";
+            }
             for (unsigned int i=0;i<dynColSize;i++) {
                 outputFile_ << "|cc|";
             }
@@ -96,7 +103,8 @@ class TexOutput
                     outputFile_ << " & ";
             }
             for (unsigned int i=0;i<dynColSize;i++) {
-                outputFile_ << " & " << headers_[i+statColSize];
+                outputFile_ << " & " << headers_[i+statColSize]
+                    << " & EOC ";
             }
             outputFile_ << "\n \\tabularnewline\n"
                         << "\\hline\n"
@@ -105,7 +113,20 @@ class TexOutput
 
         void putStaticCols( std::ofstream& outputFile_ )
         {
+            outputFile_
+                << info_.grid_width << " & "
+                << info_.codim0 << " & "
+                << info_.c11 << " & "
+                << info_.d11 << " & "
+                << info_.c12 << " & "
+                << info_.d12 ;
 
+        }
+
+        void endTable( std::ofstream& outputFile_ )
+        {
+            outputFile_ << "\\end{longtable}";
+            outputFile_.flush();
         }
 
         double get_h ()
