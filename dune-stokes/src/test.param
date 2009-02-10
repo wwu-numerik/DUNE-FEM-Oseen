@@ -8,6 +8,9 @@ fem.io.datafileprefix: data_
 fem.io.savestep: -1
 fem.io.savecount: 1
 fem.io.outputformat: 1
+maxref: 1
+maxpow: 2
+minpow: -2
 
 #
 dgf_file_2d: grid_2d.dgf

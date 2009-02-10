@@ -113,9 +113,9 @@ int main( int argc, char** argv )
     Stuff::TexOutput< RunInfo > texwriter( errorColumnHeaders );
 
     profiler().Reset( 9 ); //prepare for 9 single runs
-    int maxref = 1;
-    int maxpow = 2;
-    int minpow = -2;
+    int maxref = Parameters().getParam( "maxref", 1 );
+    int maxpow = Parameters().getParam( "maxpow", 2 );
+    int minpow = Parameters().getParam( "minpow", -2 );
 
     for ( int ref = 0, num = 0; ref < maxref; ++ref ) {
         for ( int i = minpow; i < maxpow; ++i ) {
