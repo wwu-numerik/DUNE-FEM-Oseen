@@ -6,3 +6,5 @@ pdflatex eoc-file_main.tex
 #run it again in case col spacing changed
 pdflatex eoc-file_main.tex
 evince eoc-file_main.pdf &
+echo quit >> dune_stokes_matlab.m
+matlab -nojvm -nodisplay -r dune_stokes_matlab 1> matlab.log
