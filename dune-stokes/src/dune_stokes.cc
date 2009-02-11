@@ -138,7 +138,7 @@ int main( int argc, char** argv )
 								<< j << " " << k << " "
 								<< l << "') \n" << std::endl;
 						RunInfo info = singleRun( mpicomm, gridPtr, gridPart, i, j, k, l );
-						matlabLogStream << "\ncatch\ndisp('errors here');\nend\ntoc\ndisp('');\n" << std::endl;
+						matlabLogStream << "\ncatch\ndisp('errors here');\nend\ntoc\ndisp(' ');\n" << std::endl;
 						l2_errors.push_back( info.L2Errors );
 //			            profiler().NextRun( info.L2Errors ); //finish this run
 
