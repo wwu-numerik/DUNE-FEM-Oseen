@@ -12,7 +12,7 @@
 
 //#define SIMPLE_PROBLEM
 //#define CONSTANT_PROBLEM
-#define NLOG
+//#define NLOG
 
 #include <iostream>
 #include <dune/common/mpihelper.hh> // An initializer of MPI
@@ -102,6 +102,7 @@ int main( int argc, char** argv )
     //--> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_CONSOLE | LOG_FILE = 46
     Logger().Create( Parameters().getParam( "loglevel", 62 ),
                      Parameters().getParam( "logfile", std::string("dune_stokes") ) );
+    bool per_run_log_target = Parameters().getParam( "per-run-log-target", true );
 
     L2ErrorVector l2_errors;
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
@@ -127,17 +128,19 @@ int main( int argc, char** argv )
 						typedef Dune::AdaptiveLeafGridPart< GridType >
 							GridPartType;
 						GridPartType gridPart( *gridPtr );
-						std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
-						Logger().SetPrefix( ff );
+						if ( per_run_log_target ) {
+                            std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
+                            Logger().SetPrefix( ff );
+						}
 						Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-						matlabLogStream << "tic;" << std::endl;
-						matlabLogStream << "\" "<< i << " " 
-								<< j << " " << k << " " 
-								<< l << " \"" << std::endl;
+						matlabLogStream <<std::endl<< "\nclear;\ntry\ntic;warning off all;" << std::endl;
+						matlabLogStream << "disp(' c/d-11/12 h powers: "<< i << " "
+								<< j << " " << k << " "
+								<< l << "') \n" << std::endl;
 						RunInfo info = singleRun( mpicomm, gridPtr, gridPart, i, j, k, l );
-						matlabLogStream << "toc" << std::endl;
+						matlabLogStream << "\ncatch\ndisp('errors here');\nend\ntoc\ndisp('');\n" << std::endl;
 						l2_errors.push_back( info.L2Errors );
-			//            profiler().NextRun( info.L2Errors ); //finish this run
+//			            profiler().NextRun( info.L2Errors ); //finish this run
 
 						eoc_output.setErrors( idx,info.L2Errors );
 						texwriter.setInfo( info );

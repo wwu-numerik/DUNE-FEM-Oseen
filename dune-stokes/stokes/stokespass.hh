@@ -2361,9 +2361,9 @@ class StokesPass
             matlabLogStream << "schur_S = B_T * A_invers * B + C;" << std::endl;
             matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
             matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
-            matlabLogStream << "u = A_invers * ( F - B * p );" << std::endl;
-            matlabLogStream << "cond( A )" << std::endl;
-            matlabLogStream << "cond( schur_S )" << std::endl;
+            matlabLogStream << "u = A_invers * ( F - B * p );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'Condition A: %d\\n', cond( A ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'Condition S: %d\\n', cond( schur_S ) );\n" << std::endl;
 #endif
 //            profiler().StopTiming("Pass -- ASSEMBLE");
 //            profiler().StartTiming("Pass -- SOLVER");
