@@ -106,14 +106,14 @@ class TexOutput
                 outputFile_ << " & " << headers_[i+statColSize]
                     << " & EOC ";
             }
-            outputFile_ << "\n \\tabularnewline\n"
+            outputFile_ << "\n \\endhead\n"
                         << "\\hline\n"
                         << "\\hline\n";
         }
 
         void putStaticCols( std::ofstream& outputFile_ )
         {
-            outputFile_
+            outputFile_ << std::setw( 4 )
                 << info_.grid_width << " & "
                 << info_.codim0 << " & "
                 << info_.c11 << " & "

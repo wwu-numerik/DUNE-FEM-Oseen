@@ -48,7 +48,7 @@
 
 typedef std::vector< std::vector<double> > L2ErrorVector;
 typedef std::vector<std::string> ColumnHeaders;
-const std::string errheaders[] = { "h", "tris","C11","C12","D11","D12","Velocity L2 Error", "Pressure L2 Error" };
+const std::string errheaders[] = { "h", "tris","C11","C12","D11","D12","Velocity", "Pressure" };
 const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
 
 struct RunInfo
@@ -119,26 +119,31 @@ int main( int argc, char** argv )
 
     for ( int ref = 0, num = 0; ref < maxref; ++ref ) {
         for ( int i = minpow; i < maxpow; ++i ) {
-            for ( int j = minpow; j < maxpow; ++j,++num ) {
-                Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
-                gridPtr->globalRefine( ref );
-                typedef Dune::AdaptiveLeafGridPart< GridType >
-                    GridPartType;
-                GridPartType gridPart( *gridPtr );
-                std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
-                Logger().SetPrefix( ff );
-                RunInfo info = singleRun( mpicomm, gridPtr, gridPart, i, j, -2, -2 );
-                l2_errors.push_back( info.L2Errors );
-    //            profiler().NextRun( info.L2Errors ); //finish this run
+            for ( int j = minpow; j < maxpow; ++j ) {
+				for ( int k = minpow; k < maxpow; ++k ) {
+					for ( int l = minpow; l < maxpow; ++l ) {
+						Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
+						gridPtr->globalRefine( ref );
+						typedef Dune::AdaptiveLeafGridPart< GridType >
+							GridPartType;
+						GridPartType gridPart( *gridPtr );
+						std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
+						Logger().SetPrefix( ff );
+						RunInfo info = singleRun( mpicomm, gridPtr, gridPart, i, j, k, l );
+						l2_errors.push_back( info.L2Errors );
+			//            profiler().NextRun( info.L2Errors ); //finish this run
 
-                eoc_output.setErrors( idx,info.L2Errors );
-                texwriter.setInfo( info );
-                bool lastrun = (
-                    ( ref == ( maxref - 1 ) ) &&
-                    ( j == ( maxpow - 1 ) ) &&
-                    ( i == ( maxpow - 1 ) ) );
-                eoc_output.write( texwriter, lastrun );
-
+						eoc_output.setErrors( idx,info.L2Errors );
+						texwriter.setInfo( info );
+						bool lastrun = (
+							( ref == ( maxref - 1 ) ) &&
+							( j == ( maxpow - 1 ) ) &&
+							( k == ( maxpow - 1 ) ) &&
+							( l == ( maxpow - 1 ) ) &&
+							( i == ( maxpow - 1 ) ) );
+						eoc_output.write( texwriter, lastrun );
+					}
+				}
             }
         }
     }
