@@ -129,7 +129,13 @@ int main( int argc, char** argv )
 						GridPartType gridPart( *gridPtr );
 						std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
 						Logger().SetPrefix( ff );
+						Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+						matlabLogStream << "tic;" << std::endl;
+						matlabLogStream << "\" "<< i << " " 
+								<< j << " " << k << " " 
+								<< l << " \"" << std::endl;
 						RunInfo info = singleRun( mpicomm, gridPtr, gridPart, i, j, k, l );
+						matlabLogStream << "toc" << std::endl;
 						l2_errors.push_back( info.L2Errors );
 			//            profiler().NextRun( info.L2Errors ); //finish this run
 

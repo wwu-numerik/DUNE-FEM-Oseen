@@ -2351,7 +2351,6 @@ class StokesPass
             Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
             Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
 
-            matlabLogStream << "tic;" << std::endl;
             matlabLogStream << "\nA = Y - X * M_invers * W;" << std::endl;
             matlabLogStream << "B = Z;" << std::endl;
             matlabLogStream << "B_T = - E;" << std::endl;
@@ -2365,7 +2364,6 @@ class StokesPass
             matlabLogStream << "u = A_invers * ( F - B * p );" << std::endl;
             matlabLogStream << "cond( A )" << std::endl;
             matlabLogStream << "cond( schur_S )" << std::endl;
-            matlabLogStream << "toc" << std::endl;
 #endif
 //            profiler().StopTiming("Pass -- ASSEMBLE");
 //            profiler().StartTiming("Pass -- SOLVER");
