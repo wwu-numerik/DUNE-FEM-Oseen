@@ -419,10 +419,10 @@ class StokesPass
                 const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
 
                 // get quadrature
-//                const VolumeQuadratureType volumeQuadratureElement( entity,
-//                                                                    ( 2 * pressureSpaceOrder ) + 1 );
                 const VolumeQuadratureType volumeQuadratureElement( entity,
-                                                                    5 );
+                                                                    ( 2 * pressureSpaceOrder ) + 1 );
+//                const VolumeQuadratureType volumeQuadratureElement( entity,
+//                                                                    5 );
 #ifndef NLOG
                 if ( numberOfEntities > 19 ) {
                     if ( ( entityNR % fivePercentOfEntities ) == 0 ) {
@@ -829,14 +829,14 @@ class StokesPass
 #endif
 
                     // get intersection quadrature, seen from inside
-//                    const FaceQuadratureType faceQuadratureElement( gridPart_,
-//                                                                    intIt,
-//                                                                    ( 2 * pressureSpaceOrder ) + 1,
-//                                                                    FaceQuadratureType::INSIDE );
                     const FaceQuadratureType faceQuadratureElement( gridPart_,
                                                                     intIt,
-                                                                    4,
+                                                                    ( 2 * pressureSpaceOrder ) + 1,
                                                                     FaceQuadratureType::INSIDE );
+//                    const FaceQuadratureType faceQuadratureElement( gridPart_,
+//                                                                    intIt,
+//                                                                    4,
+//                                                                    FaceQuadratureType::INSIDE );
 
                     // if we are inside the grid
                     if ( intIt.neighbor() && !intIt.boundary() ) {
@@ -862,14 +862,14 @@ class StokesPass
                         const int numPressureBaseFunctionsNeighbour = pressureBaseFunctionSetNeighbour.numBaseFunctions();
 
                         // get intersection quadrature, seen from outside
-//                        const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
-//                                                                            intIt,
-//                                                                            ( 2 * pressureSpaceOrder ) + 1,
-//                                                                            FaceQuadratureType::OUTSIDE );
                         const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
                                                                             intIt,
-                                                                            4,
+                                                                            ( 2 * pressureSpaceOrder ) + 1,
                                                                             FaceQuadratureType::OUTSIDE );
+//                        const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
+//                                                                            intIt,
+//                                                                            4,
+//                                                                            FaceQuadratureType::OUTSIDE );
 
                         // compute the surface integrals
 
