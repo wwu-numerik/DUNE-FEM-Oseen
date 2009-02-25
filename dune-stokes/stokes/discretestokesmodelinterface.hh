@@ -1843,7 +1843,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         template < class FaceDomainType >
         void sigmaBoundaryFlux( const IntersectionIteratorType& it,
                                 const double time,
-                                const FaceDomainType& x,
+                                const FaceDomainType& c,
                                 SigmaRangeType& rhsReturn ) const
         {
             // some preparations
@@ -1852,6 +1852,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // contribution to rhs
             VelocityRangeType gD( 0.0 );
             dirichletData_.evaluate( global, gD );
+            Stuff::printFieldVector( x, "x in sigmaBoundaryFlux", Logger().Info(), "        " );
+            Stuff::printFieldVector( global, "global in sigmaBoundaryFlux", Logger().Info(), "        " );
             Stuff::printFieldVector( gD, "gD in sigmaBoundaryFlux", Logger().Info(), "        " );
             rhsReturn = dyadicProduct( gD, outerNormal );
             Stuff::printFieldMatrix( rhsReturn, "rhsReturn in sigmaBoundaryFlux", Logger().Info(), "        " );
