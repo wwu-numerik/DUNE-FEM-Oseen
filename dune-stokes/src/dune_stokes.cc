@@ -5,7 +5,7 @@
  **/
 
 #ifdef HAVE_CONFIG_H
-# include "config.h"
+#include "config.h"
 #endif
 
 #define POLORDER 0
@@ -43,7 +43,7 @@
 #if ENABLE_MPI
         typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
 #else
-        typedef Dune::CollectiveCommunication<double > CollectiveCommunication;
+        typedef Dune::CollectiveCommunication< double > CollectiveCommunication;
 #endif
 
 typedef std::vector< std::vector<double> > L2ErrorVector;
@@ -87,7 +87,7 @@ int main( int argc, char** argv )
     }
 
     // LOG_NONE = 1, LOG_ERR = 2, LOG_INFO = 4,LOG_DEBUG = 8,LOG_CONSOLE = 16,LOG_FILE = 32
-    //--> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_CONSOLE | LOG_FILE = 46
+    //--> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_CONSOLE | LOG_FILE = 62
     Logger().Create( Parameters().getParam( "loglevel", 62 ),
                      Parameters().getParam( "logfile", std::string("dune_stokes") ) );
 
