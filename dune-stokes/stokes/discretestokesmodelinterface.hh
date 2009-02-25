@@ -1843,7 +1843,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         template < class FaceDomainType >
         void sigmaBoundaryFlux( const IntersectionIteratorType& it,
                                 const double time,
-                                const FaceDomainType& c,
+                                const FaceDomainType& x,
                                 SigmaRangeType& rhsReturn ) const
         {
             // some preparations
