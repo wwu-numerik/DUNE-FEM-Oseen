@@ -440,6 +440,12 @@ class StokesPass
                 debugStream << "  - numVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
                 debugStream << "  - numPressureBaseFunctionsElement: " << numPressureBaseFunctionsElement << std::endl;
                 debugStream << "  - == start calculations on entity " << entityNR << std::endl;
+                debugStream << "    - entity " << entityNR << " has " << geometry.corners() << " corners:" << std::endl;
+                for ( int i = 0; i < geometry.corners(); ++i ) {
+                    const VelocityRangeType corner = geometry[i];
+                    Stuff::printFieldVector( corner, "corner_"+Stuff::toString(i), debugStream, "      " );
+                }
+                debugStream << std::endl;
                 bool Moutput = false;
                 bool Woutput = false;
                 bool Xoutput = false;
