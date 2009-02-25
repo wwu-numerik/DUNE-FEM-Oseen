@@ -2020,7 +2020,7 @@ class StokesPass
                                 SigmaRangeType sigma_rhs_flux( 0.0 );
                                 discreteModel_.sigmaBoundaryFlux(   intIt,
                                                                     0.0,
-                                                                    localX,
+                                                                    x,
                                                                     sigma_rhs_flux );
                                 VelocityRangeType flux_times_n_t( 0.0 );
                                 sigma_rhs_flux.mv( outerNormal, flux_times_n_t );

@@ -1847,13 +1847,15 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                 SigmaRangeType& rhsReturn ) const
         {
             // some preparations
-            const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             const VelocityRangeType global = it->intersectionSelfLocal().global( x );
+            const VelocityRangeType local = it->intersectionSelfLocal().local( x );
+            const VelocityRangeType outerNormal = it.unitOuterNormal( local );
             // contribution to rhs
             VelocityRangeType gD( 0.0 );
             dirichletData_.evaluate( global, gD );
             Stuff::printFieldVector( x, "x in sigmaBoundaryFlux", Logger().Info(), "        " );
             Stuff::printFieldVector( global, "global in sigmaBoundaryFlux", Logger().Info(), "        " );
+            Stuff::printFieldVector( local, "local in sigmaBoundaryFlux", Logger().Info(), "        " );
             Stuff::printFieldVector( gD, "gD in sigmaBoundaryFlux", Logger().Info(), "        " );
             rhsReturn = dyadicProduct( gD, outerNormal );
             Stuff::printFieldMatrix( rhsReturn, "rhsReturn in sigmaBoundaryFlux", Logger().Info(), "        " );
