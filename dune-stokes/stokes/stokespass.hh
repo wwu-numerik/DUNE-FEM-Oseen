@@ -440,7 +440,7 @@ class StokesPass
                 debugStream << "  - numVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
                 debugStream << "  - numPressureBaseFunctionsElement: " << numPressureBaseFunctionsElement << std::endl;
                 debugStream << "  - == start calculations on entity " << entityNR << std::endl;
-                debugStream << "    - entity " << entityNR << " has " << geometry.corners() << " corners:" << std::endl;
+                debugStream << "    - entity " << entityNR << " has " << geometry.corners() << " corners:";
                 for ( int i = 0; i < geometry.corners(); ++i ) {
                     const VelocityRangeType corner = geometry[i];
                     Stuff::printFieldVector( corner, "corner_"+Stuff::toString(i), debugStream, "      " );
@@ -2007,6 +2007,7 @@ class StokesPass
                                 // get x codim<0> and codim<1> coordinates
                                 const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                 const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
+                                const VelocityRangeType globalX = geometry.global( x );
                                 // get the integration factor
                                 const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                 // get the quadrature weight
@@ -2033,6 +2034,7 @@ class StokesPass
                                 debugStream << "      - quadPoint " << quad;
                                 Stuff::printFieldVector( x, "x", debugStream, "        " );
                                 Stuff::printFieldVector( localX, "localX", debugStream, "        " );
+                                Stuff::printFieldVector( globalX, "globalX", debugStream, "        " );
                                 Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "        " );
                                 debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
                                 debugStream << "        - integrationWeight: " << integrationWeight;
