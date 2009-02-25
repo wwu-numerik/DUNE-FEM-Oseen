@@ -1852,7 +1852,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // contribution to rhs
             VelocityRangeType gD( 0.0 );
             dirichletData_.evaluate( global, gD );
+            Stuff::printFieldVector( gD, "gD in sigmaBoundaryFlux", Logger().Info(), "        " );
             rhsReturn = dyadicProduct( gD, outerNormal );
+            Stuff::printFieldMatrix( rhsReturn, "rhsReturn in sigmaBoundaryFlux", Logger().Info(), "        " );
             rhsReturn *= C_11_;
         }
 
