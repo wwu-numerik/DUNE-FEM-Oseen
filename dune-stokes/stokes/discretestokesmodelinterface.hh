@@ -1306,7 +1306,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 uReturn -= u_plus_tensor_n_plus_times_c_12;
             }
             // contribution to u vector ( from outside entity )
-            if ( side == BaseType::outside ) {
+            else if ( side == BaseType::outside ) {
                 //some preparations
                 VelocityRangeType innerNormal = outerNormal;
                 innerNormal *= -1.0;
@@ -1437,7 +1437,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 uReturn += d_12_times_u_plus_times_n_plus;
             }
             // contribution to u vector ( from outside entity )
-            if ( side == BaseType::outside ) {
+            else if ( side == BaseType::outside ) {
                 // some preparations
                 VelocityRangeType innerNormal = outerNormal;
                 innerNormal *= -1.0;
@@ -1471,7 +1471,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 pReturn *= d_11_times_p_plus;
             }
             // contribution to p vector ( from outside entity )
-            if ( side == BaseType::outside ) {
+            else if ( side == BaseType::outside ) {
                 //some preperations
                 VelocityRangeType innerNormal = outerNormal;
                 innerNormal *= -1.0;
@@ -1609,7 +1609,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 pReturn -= p * d_12_times_n_plus;
             }
             // contribution to p vector ( from outside entity )
-            if ( side == BaseType::outside) {
+            else if ( side == BaseType::outside) {
                 // some preperations
                 VelocityRangeType innerNormal = outerNormal;
                 innerNormal *= -1.0;
@@ -1728,7 +1728,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 uReturn *= ( -1.0 * C_11_ );
             }
             // contribution to u vector ( from outside entity )
-            if ( side == BaseType::outside ) {
+            else if ( side == BaseType::outside ) {
                 // some preparations
                 VelocityRangeType innerNormal = outerNormal;
                 innerNormal *= -1.0;
@@ -1763,7 +1763,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 sigmaReturn += sigma_plus_times_n_plus_times_c_12;
             }
             // contribution to sigma vector ( from outside entity )
-            if ( side == BaseType::outside ) {
+            else if ( side == BaseType::outside ) {
                 // some preparations
                 VelocityRangeType innerNormal = outerNormal;
                 innerNormal *= -1.0;
@@ -1847,23 +1847,16 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                 SigmaRangeType& rhsReturn ) const
         {
             // some preparations
-            const typename IntersectionIteratorType::EntityPointer entityPtr = it.inside();
-            const EntityType& entity = *entityPtr;
-            typedef typename EntityType::Geometry
-                    EntityGeometryType;
+            const EntityPointer entityPt = it.inside();
+            const EntityType& entity = *entityPt;
             const EntityGeometryType& geometry = entity.geometry();
-            const VelocityRangeType globalReference = it->intersectionSelfLocal().global( x );
-            const VelocityRangeType globalWorld = geometry.global( globalReference );
+            const VelocityRangeType xIntersectionGlobal = it->intersectionSelfLocal().global( x );
+            const VelocityRangeType xWorld = geometry.global( xIntersectionGlobal );
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             // contribution to rhs
             VelocityRangeType gD( 0.0 );
-            dirichletData_.evaluate( globalWorld, gD );
-            Stuff::printFieldVector( x, "x in sigmaBoundaryFlux", Logger().Info(), "        " );
-            Stuff::printFieldVector( globalReference, "global in sigmaBoundaryFlux", Logger().Info(), "        " );
-            Stuff::printFieldVector( globalWorld, "global in sigmaBoundaryFlux", Logger().Info(), "        " );
-            Stuff::printFieldVector( gD, "gD in sigmaBoundaryFlux", Logger().Info(), "        " );
+            dirichletData_.evaluate( xWorld, gD );
             rhsReturn = dyadicProduct( gD, outerNormal );
-            Stuff::printFieldMatrix( rhsReturn, "rhsReturn in sigmaBoundaryFlux", Logger().Info(), "        " );
             rhsReturn *= C_11_;
         }
 
