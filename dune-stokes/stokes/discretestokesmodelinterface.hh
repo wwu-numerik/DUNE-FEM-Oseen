@@ -1847,15 +1847,20 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                 SigmaRangeType& rhsReturn ) const
         {
             // some preparations
-            const VelocityRangeType global = it->intersectionSelfLocal().global( x );
-//            const VelocityRangeType local = it->intersectionSelfLocal().local( x );
+            const typename IntersectionIteratorType::EntityPointer entityPtr = it.inside();
+            const EntityType& entity = *entityPtr;
+            typedef typename EntityType::Geometry
+                    EntityGeometryType;
+            const EntityGeometryType& geometry = entity.geometry();
+            const VelocityRangeType globalReference = it->intersectionSelfLocal().global( x );
+            const VelocityRangeType globalWorld = geometry.global( globalReference );
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             // contribution to rhs
             VelocityRangeType gD( 0.0 );
-            dirichletData_.evaluate( global, gD );
+            dirichletData_.evaluate( globalWorld, gD );
             Stuff::printFieldVector( x, "x in sigmaBoundaryFlux", Logger().Info(), "        " );
-            Stuff::printFieldVector( global, "global in sigmaBoundaryFlux", Logger().Info(), "        " );
-//            Stuff::printFieldVector( local, "local in sigmaBoundaryFlux", Logger().Info(), "        " );
+            Stuff::printFieldVector( globalReference, "global in sigmaBoundaryFlux", Logger().Info(), "        " );
+            Stuff::printFieldVector( globalWorld, "global in sigmaBoundaryFlux", Logger().Info(), "        " );
             Stuff::printFieldVector( gD, "gD in sigmaBoundaryFlux", Logger().Info(), "        " );
             rhsReturn = dyadicProduct( gD, outerNormal );
             Stuff::printFieldMatrix( rhsReturn, "rhsReturn in sigmaBoundaryFlux", Logger().Info(), "        " );
