@@ -48,3 +48,4 @@ doc/references/stokes.pdf
 src/dune_stokes_matlab.m
 src/logging.hh.bak
 src/matlab
+src/dune_stokes.cc.bak

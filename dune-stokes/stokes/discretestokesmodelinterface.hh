@@ -23,6 +23,23 @@ namespace Dune
 /**
  *  \brief  Interface class for stokes problem definition in the LDG context.
  *
+ *          A discretization of the stokes problem using LDG methods consist of
+ *          several non-independent classes.
+ *          The Dune::DiscreteStokesFunctionSpaceWrapper is a wrapper class to
+ *          combine the discrete function spaces of the velocity and the
+ *          pressure into one discrete function space. The
+ *          Dune::DiscreteStokesFunctionWrapper accordingly is a wrapper class
+ *          to combine the velocity and the pressure itself into one discrete
+ *          function.
+ *          The assembling of the system matrices and right hand sides takes
+ *          place in the Dune::StokesPass. This class also solves for the
+ *          velocity and the pressure (which have to be wrapped inside a
+ *          Dune::DiscreteStokesFunctionWrapper).
+ *          The problem-dependent data (force terms, boundary data, fluxes,
+ *          viscosity) are implemented in a discrete model, which should be
+ *          derived from the Dune::DiscreteStokesModelInterface interface class
+ *          (see Dune::DiscreteStokesModelDefault for example).
+ *
  *          A discrete model implementation of the user should be derived from
  *          this interface class to be compatible with the StokesPass.
  *          In the LDG context a weak discrete formulation of a stokes problem
@@ -46,10 +63,10 @@ namespace Dune
  *                  &-&\int\limits_{T}{u\cdot\nabla q dx}=0,
  *          \f}
  *          where \f$\mathcal{T}\f$ is a triangulation and \f$\Sigma\f$,
- *          \f$V\f$, \f$Q\f$ are discrete function spaces.\n
+ *          \f$V\f$, \f$Q\f$ are discrete function spaces.
  *          (For a detailed description see B. Cockburn, G. Kanschat,
  *          D. Schötzau, C. Schwab: <EM>Local Discontinuous Galerkin Methods
- *          for the Stokes System</EM> (2000).\n
+ *          for the Stokes System</EM> (2000)).\n
  *          The fluxes \f$\hat{u}_{\sigma}\f$, \f$\hat{\sigma}\f$,
  *          \f$\hat{p}\f$, \f$\hat{u}_{p}\f$ in the corresponding surface
  *          integrals are implemented in the methods velocitySigmaFlux(),
@@ -58,13 +75,40 @@ namespace Dune
  *          computation is done by velocitySigmaBoundaryFlux(),
  *          sigmaBoundaryFlux(), pressureBoundaryFlux() and
  *          velocityPressureBoundaryFlux().\n
- *          The fluxes are designed to take values of functions on the
- *          intersection, once seen from the inside (from the entity in
- *          consideration) and once from the outside (the entities neighbour over
- *          the given intersection). Accordingly the fluxes return all
- *          contributions (to coefficients and right hand side) seen from
- *          both entities, thus enabling the StokesPass to save computational
- *          effort on half of the entities.
+ *          The analytical fluxes \f$\hat{\sigma}\f$ and \f$\hat{u}_{p}\f$
+ *          each depend on several functions. This is realized by overloading
+ *          sigmaFlux() and velocityPressureFlux(). All the boundary fluxes need
+ *          to be overloaded as well.\n
+ *          Since the fluxes are linear, they can be decomposed as follows:\n
+ *          - \f$\hat{u}_{\sigma}(u):\Omega\rightarrow R^{d}\f$\n
+ *            \f$
+ *                  \hat{u}_{\sigma}(u) = \hat{u}_{\sigma}^{U^{+}}
+ *                  + \hat{u}_{\sigma}^{U^{-}}
+ *                  + \hat{u}_{\sigma}^{RHS}
+ *             \f$
+ *            - for inner faces
+ *              - \f$\hat{u}_{\sigma}^{U^{+}}\f$ is implemented by velocitySigmaFlux() with arguments: it, time, x, <b>inside</b>, u, uReturn
+ *              - \f$\hat{u}_{\sigma}^{U^{-}}\f$ is implemented by velocitySigmaFlux() with arguments: it, time, x, <b>outside</b>, u, uReturn
+ *            - for faces on the boundary of \f$\Omega\f$
+ *              - \f$\hat{u}_{\sigma}^{U^{+}}\f$ is implemented by velocitySigmaBoundaryFlux() with arguments: it, time, x, <b>u</b>, <b>uReturn</b>
+ *              - \f$\hat{u}_{\sigma}^{RHS}\f$ is implemented by velocitySigmaBoundaryFlux() with arguments: it, time, x, <b>rhsReturn</b>
+ *          - \f$\hat{u}_{p}(u,p):\Omega\rightarrow R^{d}\f$\n
+ *            \f$
+ *                  \hat{u}_{p}(u,p) = \hat{u}_{p}^{U^{+}}
+ *                  + \hat{u}_{p}^{U^{-}}
+ *                  + \hat{u}_{p}^{P^{+}}
+ *                  + \hat{u}_{p}^{P^{-}}
+ *                  + \hat{u}_{p}^{RHS}
+ *            \f$
+ *            - for inner faces
+ *              - \f$\hat{u}_{p}^{U^{+}}\f$ is implemented by velocityPressureFlux() with arguments: it, time, x, <b>inside</b>, u, uReturn
+ *              - \f$\hat{u}_{p}^{U^{-}}\f$ is implemented by velocityPressureFlux() with arguments: it, time, x, <b>outside</b>, u, uReturn
+ *              - \f$\hat{u}_{p}^{P^{+}}\f$ is implemented by velocityPressureFlux() with arguments: it, time, x, <b>inside</b>, p, pReturn
+ *              - \f$\hat{u}_{p}^{P^{+}}\f$ is implemented by velocityPressureFlux() with arguments: it, time, x, <b>outside</b>, p, pReturn
+ *            - for faces on the boundary of \f$\Omega\f$
+ *              - \f$\hat{u}_{p}^{U^{+}}\f$ is implemented by velocityPressureBoundaryFlux() with arguments: it, time, x, <b>u</b>, <b>uReturn</b>
+ *              - \f$\hat{u}_{p}^{P^{+}}\f$ is implemented by velocityPressureBoundaryFlux() with arguments: it, time, x, <b>p</b>, <b>pReturn</b>
+ *              - \f$\hat{u}_{p}^{RHS}\f$ is implemented by velocityPressureBoundaryFlux() with arguments: it, time, x, <b>rhsReturn</b>
  *
  *  \tparam DiscreteStokesModelTraits
  *          traits class defined by the user, should provide all types needed
@@ -204,7 +248,7 @@ class DiscreteStokesModelInterface
         {}
 
         /**
-         *  \todo   doc
+         *  \brief  contains "inside" and "outside", needed for the fluxes
          **/
         enum Side{
             inside,
@@ -260,7 +304,7 @@ class DiscreteStokesModelInterface
          **/
         bool hasSigmaFlux() const
         {
-            return asImp().hasSigmaFlux;
+            return asImp().hasSigmaFlux();
         }
 
         /**
@@ -284,10 +328,13 @@ class DiscreteStokesModelInterface
          *          \f$ for faces, that are inside \f$\Omega\f$.\n
          *          <b>Assumption:</b> the flux can be written as
          *          \f$
-         *              \hat{u}_{\sigma}(u) = \hat{u}_{\sigma}^{U}
+         *              \hat{u}_{\sigma}(u) = \hat{u}_{\sigma}^{U^{+}}
+         *              + \hat{u}_{\sigma}^{U^{-}}
          *              + \hat{u}_{\sigma}^{RHS}
-         *          \f$, where \f$\hat{u}_{\sigma}^{U}\f$ is this fluxes
-         *          contribution to the coefficients of \f$U\f$ and
+         *          \f$, where \f$\hat{u}_{\sigma}^{U^{+}}\f$ is this fluxes
+         *          contribution if \f$u\f$ is from the inside entity,
+         *          \f$\hat{u}_{\sigma}^{U^{-}}\f$, if \f$u\f$ is from the
+         *          outside entity and
          *          \f$\hat{u}_{\sigma}^{RHS}\f$ the contribution
          *          to the right hand side.
          *
@@ -873,13 +920,13 @@ class DiscreteStokesModelInterface
         //! for Barton-Nackmann trick
         DiscreteModelType& asImp()
         {
-            return static_cast<DiscreteModelType&>(*this);
+            return static_cast< DiscreteModelType& >(*this);
         }
 
         //! for Barton-Nackmann trick
         const DiscreteModelType& asImp() const
         {
-            return static_cast<const DiscreteModelType&>(*this);
+            return static_cast< const DiscreteModelType& >(*this);
         }
 
 };
