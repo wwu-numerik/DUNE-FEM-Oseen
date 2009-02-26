@@ -260,7 +260,7 @@ class DiscreteStokesModelInterface
          **/
         bool hasSigmaFlux() const
         {
-            return asImp().hasSigmaFlux;
+            return asImp().hasSigmaFlux();
         }
 
         /**
@@ -873,13 +873,13 @@ class DiscreteStokesModelInterface
         //! for Barton-Nackmann trick
         DiscreteModelType& asImp()
         {
-            return static_cast<DiscreteModelType&>(*this);
+            return static_cast< DiscreteModelType& >(*this);
         }
 
         //! for Barton-Nackmann trick
         const DiscreteModelType& asImp() const
         {
-            return static_cast<const DiscreteModelType&>(*this);
+            return static_cast< const DiscreteModelType& >(*this);
         }
 
 };
