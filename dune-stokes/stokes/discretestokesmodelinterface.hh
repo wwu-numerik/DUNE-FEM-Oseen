@@ -24,7 +24,7 @@ namespace Dune
  *  \brief  Interface class for stokes problem definition in the LDG context.
  *
  *          A discretization of the stokes problem using LDG methods consist of
- *          several non-independent classes.
+ *          several dependent classes.
  *          The Dune::DiscreteStokesFunctionSpaceWrapper is a wrapper class to
  *          combine the discrete function spaces of the velocity and the
  *          pressure into one discrete function space. The
@@ -87,11 +87,24 @@ namespace Dune
  *                  + \hat{u}_{\sigma}^{RHS}
  *             \f$
  *            - for inner faces
- *              - \f$\hat{u}_{\sigma}^{U^{+}}\f$ is implemented by velocitySigmaFlux() with arguments: it, time, x, <b>inside</b>, u, uReturn
- *              - \f$\hat{u}_{\sigma}^{U^{-}}\f$ is implemented by velocitySigmaFlux() with arguments: it, time, x, <b>outside</b>, u, uReturn
+ *              - \f$\hat{u}_{\sigma}^{U^{+}}\f$ and
+ *                \f$\hat{u}_{\sigma}^{U^{-}}\f$ are implemented in
+ *                velocitySigmaFlux() (const IntersectionIteratorType& it, const
+ *                double time, const FaceDomainType& x, const Side side, const
+ *                VelocityRangeType& u, VelocityRangeType& uReturn), where
+ *                <b>side</b> determines, whether \f$\hat{u}_{\sigma}^{U^{+}}\f$
+ *                (side=inside) or \f$\hat{u}_{\sigma}^{U^{-}}\f$
+ *                (side=outside) is returned
  *            - for faces on the boundary of \f$\Omega\f$
- *              - \f$\hat{u}_{\sigma}^{U^{+}}\f$ is implemented by velocitySigmaBoundaryFlux() with arguments: it, time, x, <b>u</b>, <b>uReturn</b>
- *              - \f$\hat{u}_{\sigma}^{RHS}\f$ is implemented by velocitySigmaBoundaryFlux() with arguments: it, time, x, <b>rhsReturn</b>
+ *              - \f$\hat{u}_{\sigma}^{U^{+}}\f$ is implemented in
+ *                velocitySigmaBoundaryFlux() ( const IntersectionIteratorType&
+ *                it, const double time, const FaceDomainType& x,
+ *                const VelocityRangeType& <b>u</b>, VelocityRangeType&
+ *                <b>uReturn</b> )
+ *              - \f$\hat{u}_{\sigma}^{RHS}\f$ is implemented in
+ *                velocitySigmaBoundaryFlux() ( const IntersectionIteratorType&
+ *                it, const double time, const FaceDomainType& x,
+ *                VelocityRangeType& <b>rhsReturn</b> )
  *          - \f$\hat{u}_{p}(u,p):\Omega\rightarrow R^{d}\f$\n
  *            \f$
  *                  \hat{u}_{p}(u,p) = \hat{u}_{p}^{U^{+}}
@@ -101,14 +114,37 @@ namespace Dune
  *                  + \hat{u}_{p}^{RHS}
  *            \f$
  *            - for inner faces
- *              - \f$\hat{u}_{p}^{U^{+}}\f$ is implemented by velocityPressureFlux() with arguments: it, time, x, <b>inside</b>, u, uReturn
- *              - \f$\hat{u}_{p}^{U^{-}}\f$ is implemented by velocityPressureFlux() with arguments: it, time, x, <b>outside</b>, u, uReturn
- *              - \f$\hat{u}_{p}^{P^{+}}\f$ is implemented by velocityPressureFlux() with arguments: it, time, x, <b>inside</b>, p, pReturn
- *              - \f$\hat{u}_{p}^{P^{+}}\f$ is implemented by velocityPressureFlux() with arguments: it, time, x, <b>outside</b>, p, pReturn
+ *              - \f$\hat{u}_{p}^{U^{+}}\f$ and \f$\hat{u}_{p}^{U^{-}}\f$ are
+ *                implemented in velocityPressureFlux() ( const
+ *                IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, const Side side, const VelocityRangeType&
+ *                u, VelocityRangeType& uReturn ), where
+ *                <b>side</b> determines, whether \f$\hat{u}_{p}^{U^{+}}\f$
+ *                (side=inside) or \f$\hat{u}_{p}^{U^{-}}\f$
+ *                (side=outside) is returned
+ *              - \f$\hat{u}_{p}^{P^{+}}\f$ and \f$\hat{u}_{p}^{P^{+}}\f$ are
+ *                implemented by velocityPressureFlux() ( const
+ *                IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, const Side side, const PressureRangeType&
+ *                p, VelocityRangeType& pReturn ), where
+ *                <b>side</b> determines, whether \f$\hat{u}_{p}^{P^{+}}\f$
+ *                (side=inside) or \f$\hat{u}_{p}^{P^{+}}\f$
+ *                (side=outside) is returned
  *            - for faces on the boundary of \f$\Omega\f$
- *              - \f$\hat{u}_{p}^{U^{+}}\f$ is implemented by velocityPressureBoundaryFlux() with arguments: it, time, x, <b>u</b>, <b>uReturn</b>
- *              - \f$\hat{u}_{p}^{P^{+}}\f$ is implemented by velocityPressureBoundaryFlux() with arguments: it, time, x, <b>p</b>, <b>pReturn</b>
- *              - \f$\hat{u}_{p}^{RHS}\f$ is implemented by velocityPressureBoundaryFlux() with arguments: it, time, x, <b>rhsReturn</b>
+ *              - \f$\hat{u}_{p}^{U^{+}}\f$ is implemented in
+ *                velocityPressureBoundaryFlux() ( const
+ *                IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, const VelocityRangeType& <b>u</b>,
+ *                VelocityRangeType& <b>uReturn</b> )
+ *              - \f$\hat{u}_{p}^{P^{+}}\f$ is implemented in
+ *                velocityPressureBoundaryFlux() ( const
+ *                IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, const PressureRangeType& <b>p</b>,
+ *                VelocityRangeType& <b>pReturn</b> )
+ *              - \f$\hat{u}_{p}^{RHS}\f$ is implemented in
+ *                velocityPressureBoundaryFlux() ( const
+ *                IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, VelocityRangeType& <b>rhsReturn</b> )
  *
  *  \tparam DiscreteStokesModelTraits
  *          traits class defined by the user, should provide all types needed
@@ -118,6 +154,8 @@ template < class DiscreteStokesModelTraits >
 class DiscreteStokesModelInterface
 {
     public:
+        void testMe( int i ){};
+        void testMe( double d ){};
 
         typedef DiscreteStokesModelInterface< DiscreteStokesModelTraits >
             ThisType;
