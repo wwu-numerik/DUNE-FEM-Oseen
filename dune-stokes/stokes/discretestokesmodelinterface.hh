@@ -78,7 +78,37 @@ namespace Dune
  *          The analytical fluxes \f$\hat{\sigma}\f$ and \f$\hat{u}_{p}\f$
  *          each depend on several functions. This is realized by overloading
  *          sigmaFlux() and velocityPressureFlux(). All the boundary fluxes need
- *          to be overloaded as well (see the fluxes for details).
+ *          to be overloaded as well.\n
+ *          Since the fluxes are linear, they can be decomposed as follows:\n
+ *          - \f$\hat{u}_{\sigma}(u):\Omega\rightarrow R^{d}\f$\n
+ *            \f$
+ *                  \hat{u}_{\sigma}(u) = \hat{u}_{\sigma}^{U^{+}}
+ *                  + \hat{u}_{\sigma}^{U^{-}}
+ *                  + \hat{u}_{\sigma}^{RHS}
+ *             \f$
+ *            - for inner faces
+ *              - \f$\hat{u}_{\sigma}^{U^{+}}\f$ is implemented by velocitySigmaFlux() with arguments: it, time, x, <b>inside</b>, u, uReturn
+ *              - \f$\hat{u}_{\sigma}^{U^{-}}\f$ is implemented by velocitySigmaFlux() with arguments: it, time, x, <b>outside</b>, u, uReturn
+ *            - for faces on the boundary of \f$\Omega\f$
+ *              - \f$\hat{u}_{\sigma}^{U^{+}}\f$ is implemented by velocitySigmaBoundaryFlux() with arguments: it, time, x, <b>u</b>, <b>uReturn</b>
+ *              - \f$\hat{u}_{\sigma}^{RHS}\f$ is implemented by velocitySigmaBoundaryFlux() with arguments: it, time, x, <b>rhsReturn</b>
+ *          - \f$\hat{u}_{p}(u,p):\Omega\rightarrow R^{d}\f$\n
+ *            \f$
+ *                  \hat{u}_{p}(u,p) = \hat{u}_{p}^{U^{+}}
+ *                  + \hat{u}_{p}^{U^{-}}
+ *                  + \hat{u}_{p}^{P^{+}}
+ *                  + \hat{u}_{p}^{P^{-}}
+ *                  + \hat{u}_{p}^{RHS}
+ *            \f$
+ *            - for inner faces
+ *              - \f$\hat{u}_{p}^{U^{+}}\f$ is implemented by velocityPressureFlux() with arguments: it, time, x, <b>inside</b>, u, uReturn
+ *              - \f$\hat{u}_{p}^{U^{-}}\f$ is implemented by velocityPressureFlux() with arguments: it, time, x, <b>outside</b>, u, uReturn
+ *              - \f$\hat{u}_{p}^{P^{+}}\f$ is implemented by velocityPressureFlux() with arguments: it, time, x, <b>inside</b>, p, pReturn
+ *              - \f$\hat{u}_{p}^{P^{+}}\f$ is implemented by velocityPressureFlux() with arguments: it, time, x, <b>outside</b>, p, pReturn
+ *            - for faces on the boundary of \f$\Omega\f$
+ *              - \f$\hat{u}_{p}^{U^{+}}\f$ is implemented by velocityPressureBoundaryFlux() with arguments: it, time, x, <b>u</b>, <b>uReturn</b>
+ *              - \f$\hat{u}_{p}^{P^{+}}\f$ is implemented by velocityPressureBoundaryFlux() with arguments: it, time, x, <b>p</b>, <b>pReturn</b>
+ *              - \f$\hat{u}_{p}^{RHS}\f$ is implemented by velocityPressureBoundaryFlux() with arguments: it, time, x, <b>rhsReturn</b>
  *
  *  \tparam DiscreteStokesModelTraits
  *          traits class defined by the user, should provide all types needed
