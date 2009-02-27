@@ -1273,8 +1273,8 @@ class DiscreteStokesModelDefaultTraits
 /**
  *  \brief  A default implementation of a discrete stokes model.
  *
- *          Implements the fluxes needed for the ldg method
- *          (see DiscreteStokesModelInterface).
+ *          Implements the fluxes needed for the LDG method
+ *          (see Dune::DiscreteStokesModelInterface for details).\n
  *          The fluxes \f$\hat{u}_{\sigma}\f$, \f$\hat{\sigma}\f$,
  *          \f$\hat{p}\f$ and \f$\hat{u}_{p}\f$ are implemented as proposed in
  *          B. Cockburn, G. Kanschat, D. Schötzau, C. Schwab: <EM>Local
@@ -1283,7 +1283,8 @@ class DiscreteStokesModelDefaultTraits
  *          \f$f\f$ and the dirichlet data \f$g_{D}\f$ as a Dune::Function
  *          (only the method evaluate( arg, ret ) is needed) and specify the
  *          types of this functions as template arguments for the traits class
- *          DiscreteStokesModelDefaultTraits.\n\n
+ *          DiscreteStokesModelDefaultTraits.\n
+ *
  *          <b>Notation:</b> Given simplices \f$T_{+}\f$ and
  *          \f$T_{-}\f$ and a face \f$\varepsilon\f$ between them, the values
  *          of a function \f$u\f$ on the face \f$\varepsilon\f$ are denoted by \f$u^{+}\f$,
@@ -1291,8 +1292,8 @@ class DiscreteStokesModelDefaultTraits
  *          The outer normals of \f$T_{+,-}\f$ in a given point on
  *          the face \f$\varepsilon\f$ are denoted by \f$n_{+,-}\f$,
  *          accordingly.\n
- *          We define\n
- *          the <b>mean values</b>\n
+ *
+ *          We define the <b>mean values</b>\n
  *          - \f$\{\{p\}\}\in R\f$ for a \f$p\in R\f$ as
  *              \f[
  *                  \{\{p\}\}:=\frac{1}{2}\left(p^{+}+p^{-}\right),
@@ -1329,47 +1330,51 @@ class DiscreteStokesModelDefaultTraits
  *          by \f$\mathcal{E}_{I}\f$ those which are inside \f$\Omega\f$.\n
  *          For a detailed definition of this notation see B. Cockburn, G. Kanschat, D. Schötzau, C. Schwab: <EM>Local
  *          Discontinuous Galerkin Methodsfor the Stokes System</EM> (2000), again.\n
+ *
  *          <b>Attention:</b> For reasons of simplicity the assumtion \f$n^{-}=-1\cdot n^{+}\f$ is used.
- *          This may be not true for nonconforming grids.\n\n
+ *          This may be not true for nonconforming grids.\n
+ *
  *          With this notation at hand the fluxes can de described as
- *          - \f$\hat{u}_{\sigma}:\Omega\rightarrow R^{d}\f$ for an inner face (see velocitySigmaFlux() )
+ *          - \f$\hat{u}_{\sigma}:\Omega\rightarrow R^{d}\f$ for an inner face
  *              \f[
- *                  \hat{u}_{\sigma}(u):=\{\{u\}\}+\underline{\left[\left[u\right]\right]}\cdot C_{12}\quad\quad\varepsilon\in\mathcal{E}_{I},
+ *                  \hat{u}_{\sigma}(u):=\{\{u\}\}-\underline{\left[\left[u\right]\right]}\cdot C_{12}\quad\quad\varepsilon\in\mathcal{E}_{I},
  *              \f]
- *          - \f$\hat{u}_{\sigma}:\Omega\rightarrow R^{d}\f$ for a boundary face (see velocitySigmaBoundaryFlux() )
+ *          - \f$\hat{u}_{\sigma}:\Omega\rightarrow R^{d}\f$ for a boundary face
  *              \f[
  *                  \hat{u}_{\sigma}(u):=g_{D}\quad\quad\varepsilon\in\mathcal{E}_{D},
  *              \f]
- *          - \f$\hat{\sigma}:\Omega\rightarrow R^{d\times d}\f$ for an inner face (see sigmaFlux() )
+ *          - \f$\hat{\sigma}:\Omega\rightarrow R^{d\times d}\f$ for an inner face
  *              \f[
- *                  \hat{\sigma}(u,\sigma):=\{\{\sigma\}\}-C_{11}\underline{\left[\left[u\right]\right]}+\left[\left[\sigma\right]\right]\otimes C_{12}\quad\quad\varepsilon\in\mathcal{E}_{I},
+ *                  \hat{\sigma}(u,\sigma):=\{\{\sigma\}\}-C_{11}\underline{\left[\left[u\right]\right]}-\left[\left[\sigma\right]\right]\otimes C_{12}\quad\quad\varepsilon\in\mathcal{E}_{I},
  *              \f]
- *          - \f$\hat{\sigma}:\Omega\rightarrow R^{d\times d}\f$ for a boundary face (see sigmaBoundaryFlux() )
+ *          - \f$\hat{\sigma}:\Omega\rightarrow R^{d\times d}\f$ for a boundary face
  *              \f[
  *                  \hat{\sigma}(u,\sigma):=\sigma^{+}-C_{11}\left(u^{+}-g_{D}\right)\otimes n^{+}\quad\quad\varepsilon\in\mathcal{E}_{D},
  *              \f]
- *          - \f$\hat{p}:\Omega\rightarrow R\f$ for an inner face (see pressureFlux() )
+ *          - \f$\hat{p}:\Omega\rightarrow R\f$ for an inner face
  *              \f[
  *                  \hat{p}(p):=\{\{p\}\}-D_{12}\left[\left[p\right]\right]\quad\quad\varepsilon\in\mathcal{E}_{I},
  *              \f]
- *          - \f$\hat{p}:\Omega\rightarrow R\f$ for a boundary face (see pressureBoundaryFlux() )
+ *          - \f$\hat{p}:\Omega\rightarrow R\f$ for a boundary face
  *              \f[
  *                  \hat{p}(p):=p^{+}\quad\quad\varepsilon\in\mathcal{E}_{D},
  *              \f]
- *          - \f$\hat{u}_{p}:\Omega\rightarrow R^{d}\f$ for an inner face (see velocityPressureFlux() )
+ *          - \f$\hat{u}_{p}:\Omega\rightarrow R^{d}\f$ for an inner face
  *              \f[
- *                  \hat{u}_{p}(u,p):=\{\{u\}\}+D_{11}\left[\left[p\right]\right]+D_{12}\left[\left[u\right]\right]\quad\quad\varepsilon\in\mathcal{E}_{I}
+ *                  \hat{u}_{p}(u,p):=\{\{u\}\}+D_{11}\left[\left[p\right]\right]+D_{12}\left[\left[u\right]\right]\quad\quad\varepsilon\in\mathcal{E}_{I},
  *              \f]
- *
- *          and
- *          - \f$\hat{u}_{p}:\Omega\rightarrow R^{d}\f$ for a boundary face (see velocityPressureBoundaryFlux() )
+ *          - \f$\hat{u}_{p}:\Omega\rightarrow R^{d}\f$ for a boundary face
  *              \f[
  *                  \hat{u}_{p}(u,p):=g_{D}\quad\quad\varepsilon\in\mathcal{E}_{D},
  *              \f]
  *
  *          where \f$C_{11},\;\;D_{11}\in R\f$ are the stability coefficients
  *          and \f$C_{12},\;\;D_{12}\in R^{d}\f$ are the coefficients
- *          concerning efficiency and accuracy.
+ *          concerning efficiency and accuracy.\n
+ *
+ *          These fluxes are decomposed (see Dune::DiscreteStokesModelInterface for
+ *          details) into several numerical fluxes:\n
+ *
  **/
 template < class DiscreteStokesModelDefaultTraitsImp >
 class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< DiscreteStokesModelDefaultTraitsImp >
