@@ -161,13 +161,15 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
      * initialize model (and profiler example)                                *
      * ********************************************************************** */
     infoStream << "\ninitialising model..." << std::endl;
-    typedef Dune::DiscreteStokesModelDefault<
-                Dune::DiscreteStokesModelDefaultTraits<
+
+    typedef Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
                     AnalyticalForceType,
                     AnalyticalDirichletDataType,
                     gridDim,
-                    polOrder > >
+                    polOrder >
+        StokesModelTraitsImp;
+    typedef Dune::DiscreteStokesModelDefault< StokesModelTraitsImp >
         StokesModelImpType;
 
     Dune::GridWidthProvider< GridType > gw ( *gridPtr );
@@ -189,32 +191,32 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
                                     analyticalDirichletData,
                                     viscosity  );
 
-    typedef Dune::DiscreteStokesModelInterface<
-                Dune::DiscreteStokesModelDefaultTraits<
-                    GridPartType,
-                    AnalyticalForceType,
-                    AnalyticalDirichletDataType,
-                    gridDim,
-                    polOrder > >
+    typedef Dune::DiscreteStokesModelInterface< StokesModelTraitsImp >
         StokesModelType;
 
-    typedef StokesModelType::DiscreteVelocityFunctionSpaceType
-        DiscreteVelocityFunctionSpaceType;
+//    typedef StokesModelType::DiscreteVelocityFunctionSpaceType
+//        DiscreteVelocityFunctionSpaceType;
+//
+//    typedef StokesModelType::DiscretePressureFunctionSpaceType
+//        DiscretePressureFunctionSpaceType;
+//
+//    typedef Dune::DiscreteStokesFunctionSpaceWrapper< Dune::DiscreteStokesFunctionSpaceWrapperTraits<
+//                DiscreteVelocityFunctionSpaceType,
+//                DiscretePressureFunctionSpaceType > >
+//        DiscreteStokesFunctionSpaceWrapperType;
 
-    typedef StokesModelType::DiscretePressureFunctionSpaceType
-        DiscretePressureFunctionSpaceType;
-
-    typedef Dune::DiscreteStokesFunctionSpaceWrapper< Dune::DiscreteStokesFunctionSpaceWrapperTraits<
-                DiscreteVelocityFunctionSpaceType,
-                DiscretePressureFunctionSpaceType > >
+    typedef StokesModelTraitsImp::DiscreteStokesFunctionSpaceWrapperType
         DiscreteStokesFunctionSpaceWrapperType;
 
     DiscreteStokesFunctionSpaceWrapperType discreteStokesFunctionSpaceWrapper( gridPart );
 
-    typedef Dune::DiscreteStokesFunctionWrapper< Dune::DiscreteStokesFunctionWrapperTraits<
-                DiscreteStokesFunctionSpaceWrapperType,
-                StokesModelType::DiscreteVelocityFunctionType,
-                StokesModelType::DiscretePressureFunctionType > >
+//    typedef Dune::DiscreteStokesFunctionWrapper< Dune::DiscreteStokesFunctionWrapperTraits<
+//                DiscreteStokesFunctionSpaceWrapperType,
+//                StokesModelType::DiscreteVelocityFunctionType,
+//                StokesModelType::DiscretePressureFunctionType > >
+//        DiscreteStokesFunctionWrapperType;
+
+    typedef StokesModelTraitsImp::DiscreteStokesFunctionWrapperType
         DiscreteStokesFunctionWrapperType;
 
     DiscreteStokesFunctionWrapperType discreteStokesFunctionWrapper(    "wrapped",

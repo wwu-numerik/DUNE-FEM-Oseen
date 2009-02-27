@@ -2,7 +2,7 @@
  *  \file   discretestokesmodelinterface.hh
  *  \brief  contains a class DiscreteStokesModelInterface
  *          and a class DiscreteStokesModelDefault with traits class
- *          DiscreteStokesModelDefaultTraits
+ *          DiscreteStokesModelDefaultTraits.
  **/
 #ifndef DUNE_DISCRESTOKESTEMODELINTERFACE_HH
 #define DUNE_DISCRESTOKESTEMODELINTERFACE_HH
@@ -41,7 +41,7 @@ namespace Dune
  *          (see Dune::DiscreteStokesModelDefault for example).
  *
  *          A discrete model implementation of the user should be derived from
- *          this interface class to be compatible with the StokesPass.
+ *          this interface class to be compatible with the Dune::StokesPass.
  *          In the LDG context a weak discrete formulation of a stokes problem
  *          enforces
  *          \f$
@@ -118,7 +118,7 @@ namespace Dune
  *                implemented in velocityPressureFlux() ( const
  *                IntersectionIteratorType& it, const double time, const
  *                FaceDomainType& x, const Side side, const VelocityRangeType&
- *                u, VelocityRangeType& uReturn ), where
+ *                <b>u</b>, VelocityRangeType& <b>uReturn</b> ), where
  *                <b>side</b> determines, whether \f$\hat{u}_{p}^{U^{+}}\f$
  *                (side=inside) or \f$\hat{u}_{p}^{U^{-}}\f$
  *                (side=outside) is returned
@@ -126,7 +126,7 @@ namespace Dune
  *                implemented by velocityPressureFlux() ( const
  *                IntersectionIteratorType& it, const double time, const
  *                FaceDomainType& x, const Side side, const PressureRangeType&
- *                p, VelocityRangeType& pReturn ), where
+ *                <b>p</b>, VelocityRangeType& <b>pReturn</b> ), where
  *                <b>side</b> determines, whether \f$\hat{u}_{p}^{P^{+}}\f$
  *                (side=inside) or \f$\hat{u}_{p}^{P^{+}}\f$
  *                (side=outside) is returned
@@ -145,6 +145,67 @@ namespace Dune
  *                velocityPressureBoundaryFlux() ( const
  *                IntersectionIteratorType& it, const double time, const
  *                FaceDomainType& x, VelocityRangeType& <b>rhsReturn</b> )
+ *          - \f$\hat{p}(p):\Omega\rightarrow R\f$\n
+ *            \f$
+ *                  \hat{p}(p) = \hat{p}^{P^{+}}
+ *                  + \hat{p}^{P^{-}}
+ *                  + \hat{p}^{RHS}
+ *            \f$
+ *            - for inner faces
+ *              - \f$\hat{p}^{P^{+}}\f$ and \f$\hat{p}^{P^{-}}\f$ are
+ *                implemented in pressureFlux() ( const
+ *                IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, const Side side, const PressureRangeType&
+ *                p, PressureRangeType& pReturn ), where
+ *                <b>side</b> determines, whether \f$\hat{p}^{P^{+}}\f$
+ *                (side=inside) or \f$\hat{p}^{P^{-}}\f$
+ *                (side=outside) is returned
+ *            - for faces on the boundary of \f$\Omega\f$
+ *              - \f$\hat{p}^{P^{+}}\f$ is implemented in pressureBoundaryFlux() (
+ *                const IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, const PressureRangeType& <b>p</b>,
+ *                PressureRangeType& <b>pReturn</b> )
+ *              - \f$\hat{p}^{RHS}\f$ is implemented in pressureBoundaryFlux() (
+ *                const IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, PressureRangeType& <b>rhsReturn</b> )
+ *          - \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$\n
+ *            \f$
+ *                  \hat{\sigma}(u,\sigma) = \hat{\sigma}^{U^{+}}
+ *                  + \hat{\sigma}^{U^{-}}
+ *                  + \hat{\sigma}^{\sigma^{+}}
+ *                  + \hat{\sigma}^{\sigma^{+}}
+ *                  + \hat{\sigma}^{RHS}
+ *            \f$
+ *            - for inner faces
+ *              - \f$\hat{\sigma}^{U^{+}}\f$ and \f$\hat{\sigma}^{U^{-}}\f$ are
+ *                implemented in sigmaFlux() ( const IntersectionIteratorType&
+ *                it, const double time, const FaceDomainType& x, const Side
+ *                side, const VelocityRangeType& <b>u</b>, SigmaRangeType&
+ *                <b>uReturn</b> ), where
+ *                <b>side</b> determines, whether \f$\hat{\sigma}^{U^{+}}\f$
+ *                (side=inside) or \f$\hat{\sigma}^{U^{-}}\f$
+ *                (side=outside) is returned
+ *              - \f$\hat{\sigma}^{\sigma^{+}}\f$ and
+ *                \f$\hat{\sigma}^{\sigma^{-}}\f$ are implemented in sigmaFlux()
+ *                ( const IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, const Side side, const SigmaRangeType&
+ *                <b>sigma</b>, SigmaRangeType& <b>sigmaReturn</b> ), where
+ *                <b>side</b> determines, whether
+ *                \f$\hat{\sigma}^{\sigma^{+}}\f$ (side=inside) or
+ *                \f$\hat{\sigma}^{\sigma^{-}}\f$ (side=outside) is returned
+ *            - for faces on the boundary of \f$\Omega\f$
+ *              - \f$\hat{\sigma}^{U^{+}}\f$ is implemented in
+ *                sigmaBoundaryFlux() ( const IntersectionIteratorType& it,
+ *                const double time, const FaceDomainType& x, const
+ *                VelocityRangeType& <b>u</b>, SigmaRangeType& <b>uReturn</b> )
+ *              - \f$\hat{\sigma}^{\sigma^{+}}\f$ is implemented in
+ *                sigmaBoundaryFlux() ( const IntersectionIteratorType& it,
+ *                const double time, const FaceDomainType& x, const
+ *                SigmaRangeType& <b>sigma</b>, SigmaRangeType&
+ *                <b>sigmaReturn</b> )
+ *              - \f$\hat{\sigma}^{RHS}\f$ is implemented in sigmaBoundaryFlux()
+ *                ( const IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, SigmaRangeType& <b>rhsReturn</b> )
  *
  *  \tparam DiscreteStokesModelTraits
  *          traits class defined by the user, should provide all types needed
@@ -154,38 +215,36 @@ template < class DiscreteStokesModelTraits >
 class DiscreteStokesModelInterface
 {
     public:
-        void testMe( int i ){};
-        void testMe( double d ){};
 
-        typedef DiscreteStokesModelInterface< DiscreteStokesModelTraits >
-            ThisType;
-
-        //! Traits class defined by the user
+        //! traits class defined by the user
         typedef DiscreteStokesModelTraits
             Traits;
 
-        //! Implementation type for CRTP
+    private:
+
+        //! implementation type for CRTP
         typedef typename Traits::DiscreteModelType
             DiscreteModelType;
 
-        //! volume quadrature type used in pass
+    public:
+
+        //! volume quadrature type to be used in pass
         typedef typename Traits::VolumeQuadratureType
             VolumeQuadratureType;
 
-        //! face quadrature type used in pass
+        //! face quadrature type to be used in pass
         typedef typename Traits::FaceQuadratureType
             FaceQuadratureType;
 
-        /**
-         *  \brief  discrete function space wrapper type for the pass
-         *  \todo   should be removed when DiscreteStokesFunctionWrapper complies with DiscreteFunctionInterface
-         **/
+        //! discrete function space wrapper type
         typedef typename Traits::DiscreteStokesFunctionSpaceWrapperType
             DiscreteStokesFunctionSpaceWrapperType;
 
-        //! discrete function wrapper type for the pass
+        //! discrete function wrapper type
         typedef typename Traits::DiscreteStokesFunctionWrapperType
             DiscreteStokesFunctionWrapperType;
+
+    private:
 
         //! discrete function type for the velocity
         typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
@@ -199,9 +258,13 @@ class DiscreteStokesModelInterface
         typedef typename DiscreteVelocityFunctionSpaceType::FunctionSpaceType
             VelocityFunctionSpaceType;
 
+    public:
+
         //! discrete function type for sigma
         typedef typename Traits::DiscreteSigmaFunctionType
             DiscreteSigmaFunctionType;
+
+    private:
 
         //! discrete function space type for sigma
         typedef typename DiscreteSigmaFunctionType::DiscreteFunctionSpaceType
@@ -223,18 +286,25 @@ class DiscreteStokesModelInterface
         typedef typename DiscretePressureFunctionSpaceType::FunctionSpaceType
             PressureFunctionSpaceType;
 
+    protected:
+
         //! function type for analytical force
         typedef typename Traits::AnalyticalForceType
             AnalyticalForceType;
 
+        //! function type for analytical dirichlet data
         typedef typename Traits::AnalyticalDirichletDataType
             AnalyticalDirichletDataType;
 
-        //! Coordinate type (world coordinates)
+    private:
+
+        //! coordinate type (world coordinates)
         typedef typename DiscreteVelocityFunctionSpaceType::DomainType
             DomainType;
 
-        //! Vector type of the velocity's discrete function space's range
+    protected:
+
+        //! vector type of the velocity's discrete function space's range
         typedef typename DiscreteVelocityFunctionSpaceType::RangeType
             VelocityRangeType;
 
@@ -242,25 +312,33 @@ class DiscreteStokesModelInterface
         typedef typename DiscreteSigmaFunctionSpaceType::RangeType
             SigmaRangeType;
 
-        //! Vector type of the pressure's discrete function space's range
+        //! vector type of the pressure's discrete function space's range
         typedef typename DiscretePressureFunctionSpaceType::RangeType
             PressureRangeType;
 
-        //! Type of GridPart
+    private:
+
+        //! type of GridPart
         typedef typename DiscreteVelocityFunctionSpaceType::GridPartType
             GridPartType;
 
-        //! Type of the grid
+        //! type of the grid
         typedef typename GridPartType::GridType
             GridType;
 
-        //! Intersection iterator of the grid
+    protected:
+
+        //! intersection iterator of the grid
         typedef typename GridPartType::IntersectionIteratorType
             IntersectionIteratorType;
 
-        //! Element (codim 0 entity) of the grid
+    private:
+
+        //! element type (codim 0 entity) of the grid
         typedef typename GridType::template Codim<0>::Entity
             EntityType;
+
+    public:
 
         //! polynomial order for the discrete sigma function space
         static const int sigmaSpaceOrder = Traits::sigmaSpaceOrder;
@@ -298,7 +376,7 @@ class DiscreteStokesModelInterface
          *          \f$\hat{u}_{\sigma}\f$.
          *          Calls the implementation of the derived class.
          *  \attention  If you let this method return true, make sure to
-         *              implement <b>both</b> velocitySigmaFlux() and
+         *              implement <b>all</b> versions of velocitySigmaFlux() and
          *              velocitySigmaBoundaryFlux() as well
          **/
         bool hasVelocitySigmaFlux() const
@@ -311,8 +389,8 @@ class DiscreteStokesModelInterface
          *          \f$\hat{u}_{p}\f$.
          *          Calls the implementation of the derived class.
          *  \attention  If you let this method return true, make sure to
-         *              implement <b>both</b> velocityPressureFlux() and
-         *              velocityPressureBoundaryFlux() as well.
+         *              implement <b>all</b> versions of velocityPressureFlux()
+         *              and velocityPressureBoundaryFlux() as well.
          **/
         bool hasVelocityPressureFlux() const
         {
@@ -324,7 +402,7 @@ class DiscreteStokesModelInterface
          *          \f$\hat{p}\f$.
          *          Calls the implementation of the derived class.
          *  \attention  If you let this method return true, make sure to
-         *              implement <b>both</b> pressureFlux() and
+         *              implement <b>all</b> versions of pressureFlux() and
          *              pressureBoundaryFlux() as well.
          **/
         bool hasPressureFlux() const
@@ -337,7 +415,7 @@ class DiscreteStokesModelInterface
          *          \f$\hat{\sigma}\f$.
          *          Calls the implementation of the derived class.
          *  \attention  If you let this method return true, make sure to
-         *              implement <b>both</b> sigmaFlux() and
+         *              implement <b>all</b> versions of sigmaFlux() and
          *              sigmaBoundaryFlux() as well.
          **/
         bool hasSigmaFlux() const
@@ -357,46 +435,35 @@ class DiscreteStokesModelInterface
         }
 
         /**
-         *  \brief  implementation of \f$\hat{u}_{\sigma}\f$.
-         *          Calls the implementation of the derived class.
+         *  \brief  Implementation of \f$\hat{u}_{\sigma}^{U^{+}}\f$ and
+         *          \f$\hat{u}_{\sigma}^{U^{-}}\f$ for a face inside
+         *          \f$\Omega\f$. Calls the implementation of the derived class.
          *
-         *          Implements
-         *          \f$
-         *              \hat{u}_{\sigma}(u):\Omega\rightarrow R^{d}
-         *          \f$ for faces, that are inside \f$\Omega\f$.\n
-         *          <b>Assumption:</b> the flux can be written as
-         *          \f$
-         *              \hat{u}_{\sigma}(u) = \hat{u}_{\sigma}^{U^{+}}
-         *              + \hat{u}_{\sigma}^{U^{-}}
-         *              + \hat{u}_{\sigma}^{RHS}
-         *          \f$, where \f$\hat{u}_{\sigma}^{U^{+}}\f$ is this fluxes
-         *          contribution if \f$u\f$ is from the inside entity,
-         *          \f$\hat{u}_{\sigma}^{U^{-}}\f$, if \f$u\f$ is from the
-         *          outside entity and
-         *          \f$\hat{u}_{\sigma}^{RHS}\f$ the contribution
-         *          to the right hand side.
+         *          For the docomposition of
+         *          \f$\hat{u}_{\sigma}(u):\Omega\rightarrow R^{d}\f$, see the
+         *          documentation of the Dune::DiscreteStokesModelInterface.
          *
          *  \tparam FaceDomainType
-         *          domain type on given face
+         *          domain type on given face (codim 1 coordinates)
          *  \param[in]  it
          *          faceiterator
          *  \param[in]  time
          *          global time
          *  \param[in]  x
-         *          point to evaluate at (on the face)
-         *  \param[in]  uInner
-         *          value of \f$u\f$ in \f$x\f$ (seen from the inside)
-         *  \param[in]  uOuter
-         *          value of \f$u\f$ in \f$x\f$ (seen from the outside)
-         *  \param[out]  uContribInner
-         *          \f$\hat{u}_{\sigma}^{U}\f$ (seen from the inside)
-         *  \param[out]  uContribOuter
-         *          \f$\hat{u}_{\sigma}^{U}\f$ (seen from the outside)
-         *  \param[out]  rhsContribInner
-         *          \f$\hat{u}_{\sigma}^{RHS}\f$ (seen from the inside)
-         *  \param[out]  rhsContribOuter
-         *          \f$\hat{u}_{\sigma}^{RHS}\f$ (seen from the outside)
-         *  \todo   correct doc
+         *          point to evaluate at (on the face) in face coordiantes
+         *          (codim 1) (eg. as returned by Dune::CachingPointList::localPoint())
+         *  \param[in]  side
+         *          determines the interpretation of <i>u</i> and
+         *          <i>uReturn</i>\n
+         *          legal values are DiscreteStokesModelInterface::inside and
+         *          DiscreteStokesModelInterface::outside
+         *  \param[in]  u
+         *          value of \f$u\f$ in \f$x\f$, interpreted once as seen from
+         *          the inside entity (side==inside), once as seen from the
+         *          neighbouring entity (side==outside)
+         *  \param[out]  uReturn
+         *          \f$\hat{u}_{\sigma}^{U^{+}}\f$, if (side==inside) or
+         *          \f$\hat{u}_{\sigma}^{U^{-}}\f$, if (side==outside)
          **/
         template < class FaceDomainType >
         void velocitySigmaFlux( const IntersectionIteratorType& it,
@@ -416,37 +483,27 @@ class DiscreteStokesModelInterface
         }
 
         /**
-         *  \brief  implementation of \f$\hat{u}_{\sigma}\f$.
-         *          Calls the implementation of the derived class.
+         *  \brief  Implementation of \f$\hat{u}_{\sigma}^{U^{+}}\f$ for a face
+         *          on the boundary of \f$\Omega\f$. Calls the implementation of
+         *          the derived class.
          *
-         *          Implements
-         *          \f$
-         *              \hat{u}_{\sigma}(u):\Omega\rightarrow R^{d}
-         *          \f$ for faces on \f$\partial\Omega\f$.\n
-         *          <b>Assumption:</b> the flux can be written as
-         *          \f$
-         *              \hat{u}_{\sigma}(u) = \hat{u}_{\sigma}^{U}
-         *              + \hat{u}_{\sigma}^{RHS}
-         *          \f$, where \f$\hat{u}_{\sigma}^{U}\f$ is this fluxes
-         *          contribution to the coefficients of \f$U\f$ and
-         *          \f$\hat{u}_{\sigma}^{RHS}\f$ the contribution
-         *          to the right hand side.
+         *          For the docomposition of
+         *          \f$\hat{u}_{\sigma}(u):\Omega\rightarrow R^{d}\f$, see the
+         *          documentation of the Dune::DiscreteStokesModelInterface.
          *
          *  \tparam FaceDomainType
-         *          domain type on given face
+         *          domain type on given face (codim 1 coordinates)
          *  \param[in]  it
          *          faceiterator
          *  \param[in]  time
          *          global time
          *  \param[in]  x
-         *          point to evaluate at (on the face)
-         *  \param[in]  uInner
+         *          point to evaluate at (on the face) in face coordiantes
+         *          (codim 1) (eg. as returned by Dune::CachingPointList::localPoint())
+         *  \param[in]  u
          *          value of \f$u\f$ in \f$x\f$
-         *  \param[out]  uContribInner
-         *          \f$\hat{u}_{\sigma}^{U}\f$
-         *  \param[out]  rhsContribInner
-         *          \f$\hat{u}_{\sigma}^{RHS}\f$
-         *  \todo   correct doc
+         *  \param[out]  uReturn
+         *          \f$\hat{u}_{\sigma}^{U^{+}}\f$
          **/
         template < class FaceDomainType >
         void velocitySigmaBoundaryFlux( const IntersectionIteratorType& it,
@@ -462,6 +519,28 @@ class DiscreteStokesModelInterface
                                                     u,
                                                     uReturn ) );
         }
+
+        /**
+         *  \brief  Implementation of \f$\hat{u}_{\sigma}^{RHS}\f$ for a face
+         *          on the boundary of \f$\Omega\f$. Calls the implementation of
+         *          the derived class.
+         *
+         *          For the docomposition of
+         *          \f$\hat{u}_{\sigma}(u):\Omega\rightarrow R^{d}\f$, see the
+         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *
+         *  \tparam FaceDomainType
+         *          domain type on given face (codim 1 coordinates)
+         *  \param[in]  it
+         *          faceiterator
+         *  \param[in]  time
+         *          global time
+         *  \param[in]  x
+         *          point to evaluate at (on the face) in face coordiantes
+         *          (codim 1) (eg. as returned by Dune::CachingPointList::localPoint())
+         *  \param[out]  rhsReturn
+         *          \f$\hat{u}_{\sigma}^{RHS}\f$
+         **/
         template < class FaceDomainType >
         void velocitySigmaBoundaryFlux( const IntersectionIteratorType& it,
                                         const double time,
@@ -476,52 +555,35 @@ class DiscreteStokesModelInterface
         }
 
         /**
-         *  \brief  implementation of \f$\hat{u}_{p}\f$.
-         *          Calls the implementation of the derived class.
+         *  \brief  Implementation of \f$\hat{u}_{p}^{U^{+}}\f$ and
+         *          \f$\hat{u}_{p}^{U^{-}}\f$ for a face inside
+         *          \f$\Omega\f$. Calls the implementation of the derived class.
          *
-         *          Implements
-         *          \f$
-         *              \hat{u}_{p}(u,p):\Omega\rightarrow R^{d}
-         *          \f$ for faces, that are inside \f$\Omega\f$.\n
-         *          <b>Assumption:</b> the flux can be written as
-         *          \f$
-         *              \hat{u}_{p}(u,p) = \hat{u}_{p}^{U}
-         *              + \hat{u}_{p}^{P} + \hat{u}_{p}^{RHS}
-         *          \f$, where \f$\hat{u}_{p}^{U}\f$ is this fluxes
-         *          contribution to the coefficients of \f$U\f$,
-         *          \f$\hat{u}_{p}^{P}\f$ the contribution to the
-         *          coefficients of \f$P\f$ and
-         *          \f$\hat{u}_{p}^{RHS}\f$ the contribution
-         *          to the right hand side.
+         *          For the docomposition of
+         *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
+         *          documentation of the Dune::DiscreteStokesModelInterface.
          *
          *  \tparam FaceDomainType
-         *          domain type on given face
+         *          domain type on given face (codim 1 coordinates)
          *  \param[in]  it
          *          faceiterator
          *  \param[in]  time
          *          global time
          *  \param[in]  x
-         *          point to evaluate at (on the face)
-         *  \param[in]  uInner
-         *          value of \f$u\f$ in \f$x\f$ (seen from the inside)
-         *  \param[in]  uOuter
-         *          value of \f$u\f$ in \f$x\f$ (seen from the outside)
-         *  \param[in]  pInner
-         *          value of \f$p\f$ in \f$x\f$ (seen from the inside)
-         *  \param[in]  pOuter
-         *          value of \f$p\f$ in \f$x\f$ (seen from the outside)
-         *  \param[out]  uContribInner
-         *          \f$\hat{u}_{p}^{U}\f$ (seen from the inside)
-         *  \param[out]  uContribOuter
-         *          \f$\hat{u}_{p}^{U}\f$ (seen from the outside)
-         *  \param[out]  pContribInner
-         *          \f$\hat{u}_{p}^{P}\f$ (seen from the inside)
-         *  \param[out]  pContribOuter
-         *          \f$\hat{u}_{p}^{P}\f$ (seen from the outside)
-         *  \param[out]  rhsContribInner
-         *          \f$\hat{u}_{p}^{RHS}\f$ (seen from the inside)
-         *  \param[out]  rhsContribOuter
-         *          \f$\hat{u}_{p}^{RHS}\f$ (seen from the outside)
+         *          point to evaluate at (on the face) in face coordiantes
+         *          (codim 1) (eg. as returned by Dune::CachingPointList::localPoint())
+         *  \param[in]  side
+         *          determines the interpretation of <i>u</i> and
+         *          <i>uReturn</i>\n
+         *          legal values are DiscreteStokesModelInterface::inside and
+         *          DiscreteStokesModelInterface::outside
+         *  \param[in]  u
+         *          value of \f$u\f$ in \f$x\f$, interpreted once as seen from
+         *          the inside entity (side==inside), once as seen from the
+         *          neighbouring entity (side==outside)
+         *  \param[out]  uReturn
+         *          \f$\hat{u}_{p}^{U^{+}}\f$, if (side==inside) or
+         *          \f$\hat{u}_{p}^{U^{-}}\f$, if (side==outside)
          **/
         template < class FaceDomainType >
         void velocityPressureFlux(  const IntersectionIteratorType& it,
@@ -540,6 +602,37 @@ class DiscreteStokesModelInterface
                                                 uReturn ) );
         }
 
+        /**
+         *  \brief  Implementation of \f$\hat{u}_{p}^{P^{+}}\f$ and
+         *          \f$\hat{u}_{p}^{P^{-}}\f$ for a face inside
+         *          \f$\Omega\f$. Calls the implementation of the derived class.
+         *
+         *          For the docomposition of
+         *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
+         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *
+         *  \tparam FaceDomainType
+         *          domain type on given face (codim 1 coordinates)
+         *  \param[in]  it
+         *          faceiterator
+         *  \param[in]  time
+         *          global time
+         *  \param[in]  x
+         *          point to evaluate at (on the face) in face coordiantes
+         *          (codim 1) (eg. as returned by Dune::CachingPointList::localPoint())
+         *  \param[in]  side
+         *          determines the interpretation of <i>p</i> and
+         *          <i>pReturn</i>\n
+         *          legal values are DiscreteStokesModelInterface::inside and
+         *          DiscreteStokesModelInterface::outside
+         *  \param[in]  p
+         *          value of \f$u\f$ in \f$x\f$, interpreted once as seen from
+         *          the inside entity (side==inside), once as seen from the
+         *          neighbouring entity (side==outside)
+         *  \param[out]  pReturn
+         *          \f$\hat{u}_{p}^{P^{+}}\f$, if (side==inside) or
+         *          \f$\hat{u}_{p}^{P^{-}}\f$, if (side==outside)
+         **/
         template < class FaceDomainType >
         void velocityPressureFlux(  const IntersectionIteratorType& it,
                                     const double time,
@@ -558,42 +651,27 @@ class DiscreteStokesModelInterface
         }
 
         /**
-         *  \brief  implementation of \f$\hat{u}_{p}\f$.
-         *          Calls the implementation of the derived class.
+         *  \brief  Implementation of \f$\hat{u}_{p}^{U^{+}}\f$ for a face on
+         *          the boundary of \f$\Omega\f$. Calls the implementation of
+         *          the derived class.
          *
-         *          Implements
-         *          \f$
-         *              \hat{u}_{p}(u,p):\Omega\rightarrow R^{d}
-         *          \f$ for faces on \f$\partial\Omega\f$.\n
-         *          <b>Assumption:</b> the flux can be written as
-         *          \f$
-         *              \hat{u}_{p}(u,p) = \hat{u}_{p}^{U}
-         *              + \hat{u}_{p}^{P} + \hat{u}_{p}^{RHS}
-         *          \f$, where \f$\hat{u}_{p}^{U}\f$ is this fluxes
-         *          contribution to the coefficients of \f$U\f$,
-         *          \f$\hat{u}_{p}^{P}\f$ the contribution to the
-         *          coefficients of \f$P\f$ and
-         *          \f$\hat{u}_{p}^{RHS}\f$ the contribution
-         *          to the right hand side.
+         *          For the docomposition of
+         *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
+         *          documentation of the Dune::DiscreteStokesModelInterface.
          *
          *  \tparam FaceDomainType
-         *          domain type on given face
+         *          domain type on given face (codim 1 coordinates)
          *  \param[in]  it
          *          faceiterator
          *  \param[in]  time
          *          global time
          *  \param[in]  x
-         *          point to evaluate at (on the face)
-         *  \param[in]  uInner
+         *          point to evaluate at (on the face) in face coordiantes
+         *          (codim 1) (eg. as returned by Dune::CachingPointList::localPoint())
+         *  \param[in]  u
          *          value of \f$u\f$ in \f$x\f$
-         *  \param[in]  pInner
-         *          value of \f$p\f$ in \f$x\f$
-         *  \param[out]  uContribInner
-         *          \f$\hat{u}_{p}^{U}\f$
-         *  \param[out]  pContribInner
-         *          \f$\hat{u}_{p}^{P}\f$
-         *  \param[out]  rhsContribInner
-         *          \f$\hat{u}_{p}^{RHS}\f$
+         *  \param[out]  uReturn
+         *          \f$\hat{u}_{p}^{U^{+}}\f$
          **/
         template < class FaceDomainType >
         void velocityPressureBoundaryFlux(
@@ -611,6 +689,29 @@ class DiscreteStokesModelInterface
                                                         uReturn ) );
         }
 
+        /**
+         *  \brief  Implementation of \f$\hat{u}_{p}^{P^{+}}\f$ for a face on
+         *          the boundary of \f$\Omega\f$. Calls the implementation of
+         *          the derived class.
+         *
+         *          For the docomposition of
+         *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
+         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *
+         *  \tparam FaceDomainType
+         *          domain type on given face (codim 1 coordinates)
+         *  \param[in]  it
+         *          faceiterator
+         *  \param[in]  time
+         *          global time
+         *  \param[in]  x
+         *          point to evaluate at (on the face) in face coordiantes
+         *          (codim 1) (eg. as returned by Dune::CachingPointList::localPoint())
+         *  \param[in]  p
+         *          value of \f$u\f$ in \f$x\f$
+         *  \param[out] pReturn
+         *          \f$\hat{u}_{p}^{P^{+}}\f$
+         **/
         template < class FaceDomainType >
         void velocityPressureBoundaryFlux(
                                     const IntersectionIteratorType& it,
@@ -627,6 +728,27 @@ class DiscreteStokesModelInterface
                                                         pReturn ) );
         }
 
+        /**
+         *  \brief  Implementation of \f$\hat{u}_{p}^{RHS}\f$ for a face on
+         *          the boundary of \f$\Omega\f$. Calls the implementation of
+         *          the derived class.
+         *
+         *          For the docomposition of
+         *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
+         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *
+         *  \tparam FaceDomainType
+         *          domain type on given face (codim 1 coordinates)
+         *  \param[in]  it
+         *          faceiterator
+         *  \param[in]  time
+         *          global time
+         *  \param[in]  x
+         *          point to evaluate at (on the face) in face coordiantes
+         *          (codim 1) (eg. as returned by Dune::CachingPointList::localPoint())
+         *  \param[out] rhsReturn
+         *          \f$\hat{u}_{p}^{RHS}\f$
+         **/
         template < class FaceDomainType >
         void velocityPressureBoundaryFlux(
                                     const IntersectionIteratorType& it,
@@ -642,42 +764,35 @@ class DiscreteStokesModelInterface
         }
 
         /**
-         *  \brief  implementation of \f$\hat{p}\f$.
-         *          Calls the implementation of the derived class.
+         *  \brief  Implementation of \f$\hat{p}^{P^{+}}\f$ and
+         *          \f$\hat{p}^{P^{-}}\f$ for a face inside
+         *          \f$\Omega\f$. Calls the implementation of the derived class.
          *
-         *          Implements
-         *          \f$
-         *              \hat{p}(p):\Omega\rightarrow R
-         *          \f$ for faces, that are inside \f$\Omega\f$.\n
-         *          <b>Assumption:</b> the flux can be written as
-         *          \f$
-         *              \hat{p}(p) = \hat{p}^{P}
-         *              + \hat{p}^{RHS}
-         *          \f$, where \f$\hat{p}^{P}\f$ is this fluxes
-         *          contribution to the coefficients of \f$P\f$ and
-         *          \f$\hat{p}^{RHS}\f$ the contribution
-         *          to the right hand side.
+         *          For the docomposition of
+         *          \f$\hat{p}(p):\Omega\rightarrow R\f$, see the
+         *          documentation of the Dune::DiscreteStokesModelInterface.
          *
          *  \tparam FaceDomainType
-         *          domain type on given face
+         *          domain type on given face (codim 1 coordinates)
          *  \param[in]  it
          *          faceiterator
          *  \param[in]  time
          *          global time
          *  \param[in]  x
-         *          point to evaluate at (on the face)
-         *  \param[in]  pInner
-         *          value of \f$p\f$ in \f$x\f$ (seen from the inside)
-         *  \param[in]  pOuter
-         *          value of \f$p\f$ in \f$x\f$ (seen from the outside)
-         *  \param[out]  pContribInner
-         *          \f$\hat{p}^{P}\f$ (seen from the inside)
-         *  \param[out]  pContribOuter
-         *          \f$\hat{p}^{P}\f$ (seen from the outside)
-         *  \param[out]  rhsContribInner
-         *          \f$\hat{p}^{RHS}\f$ (seen from the inside)
-         *  \param[out]  rhsContribOuter
-         *          \f$\hat{p}^{RHS}\f$ (seen from the outside)
+         *          point to evaluate at (on the face) in face coordiantes
+         *          (codim 1) (eg. as returned by Dune::CachingPointList::localPoint())
+         *  \param[in]  side
+         *          determines the interpretation of <i>p</i> and
+         *          <i>pReturn</i>\n
+         *          legal values are DiscreteStokesModelInterface::inside and
+         *          DiscreteStokesModelInterface::outside
+         *  \param[in]  p
+         *          value of \f$p\f$ in \f$x\f$, interpreted once as seen from
+         *          the inside entity (side==inside), once as seen from the
+         *          neighbouring entity (side==outside)
+         *  \param[out]  pReturn
+         *          \f$\hat{p}^{P^{+}}\f$, if (side==inside) or
+         *          \f$\hat{p}^{P^{+}}\f$, if (side==outside)
          **/
         template < class FaceDomainType >
         void pressureFlux(  const IntersectionIteratorType& it,
@@ -697,36 +812,27 @@ class DiscreteStokesModelInterface
         }
 
         /**
-         *  \brief  implementation of \f$\hat{p}\f$.
-         *          Calls the implementation of the derived class.
+         *  \brief  Implementation of \f$\hat{p}^{P^{+}}\f$ for a face on the
+         *          boundary of \f$\Omega\f$. Calls the implementation of the
+         *          derived class.
          *
-         *          Implements
-         *          \f$
-         *              \hat{p}(p):\Omega\rightarrow R
-         *          \f$ for faces on \f$\partial\Omega\f$.\n
-         *          <b>Assumption:</b> the flux can be written as
-         *          \f$
-         *              \hat{p}(p) = \hat{p}^{P}
-         *              + \hat{p}^{RHS}
-         *          \f$, where \f$\hat{p}^{P}\f$ is this fluxes
-         *          contribution to the coefficients of \f$P\f$ and
-         *          \f$\hat{p}^{RHS}\f$ the contribution
-         *          to the right hand side.
+         *          For the docomposition of
+         *          \f$\hat{p}(p):\Omega\rightarrow R\f$, see the
+         *          documentation of the Dune::DiscreteStokesModelInterface.
          *
          *  \tparam FaceDomainType
-         *          domain type on given face
+         *          domain type on given face (codim 1 coordinates)
          *  \param[in]  it
          *          faceiterator
          *  \param[in]  time
          *          global time
          *  \param[in]  x
-         *          point to evaluate at (on the face)
-         *  \param[in]  pInner
-         *          value of \f$p\f$ in \f$x\f$ (seen from the inside)
-         *  \param[out]  pContribInner
-         *          \f$\hat{p}^{P}\f$
-         *  \param[out]  rhsContribInner
-         *          \f$\hat{p}^{RHS}\f$
+         *          point to evaluate at (on the face) in face coordiantes
+         *          (codim 1) (eg. as returned by Dune::CachingPointList::localPoint())
+         *  \param[in]  p
+         *          value of \f$p\f$ in \f$x\f$
+         *  \param[out]  pReturn
+         *          \f$\hat{p}^{P^{+}}\f$
          **/
         template < class FaceDomainType >
         void pressureBoundaryFlux(  const IntersectionIteratorType& it,
@@ -743,6 +849,27 @@ class DiscreteStokesModelInterface
                                                 pReturn ) );
         }
 
+        /**
+         *  \brief  Implementation of \f$\hat{p}^{RHS}\f$ for a face on the
+         *          boundary of \f$\Omega\f$. Calls the implementation of the
+         *          derived class.
+         *
+         *          For the docomposition of
+         *          \f$\hat{p}(p):\Omega\rightarrow R\f$, see the
+         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *
+         *  \tparam FaceDomainType
+         *          domain type on given face (codim 1 coordinates)
+         *  \param[in]  it
+         *          faceiterator
+         *  \param[in]  time
+         *          global time
+         *  \param[in]  x
+         *          point to evaluate at (on the face) in face coordiantes
+         *          (codim 1) (eg. as returned by Dune::CachingPointList::localPoint())
+         *  \param[out]  rhsReturn
+         *          \f$\hat{p}^{RHS}\f$
+         **/
         template < class FaceDomainType >
         void pressureBoundaryFlux(  const IntersectionIteratorType& it,
                                     const double time,
@@ -757,52 +884,36 @@ class DiscreteStokesModelInterface
         }
 
         /**
-         *  \brief  implementation of \f$\hat{\sigma}\f$.
-         *          Calls the implementation of the derived class.
+         *  \brief  Implementation of \f$\hat{\sigma}^{U^{+}}\f$ and
+         *          \f$\hat{\sigma}^{U^{-}}\f$ for a face inside
+         *          \f$\Omega\f$. Calls the implementation of the derived class.
          *
-         *          Implements
-         *          \f$
-         *              \hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}
-         *          \f$ for faces, that are inside \f$\Omega\f$.\n
-         *          <b>Assumption:</b> the flux can be written as
-         *          \f$
-         *              \hat{\sigma}(u,\sigma) = \hat{\sigma}^{\sigma}
-         *              + \hat{\sigma}^{U} + \hat{\sigma}^{RHS}
-         *          \f$, where \f$\hat{\sigma}^{\sigma}\f$ is this fluxes
-         *          contribution to the coefficients of \f$\sigma\f$,
-         *          \f$\hat{\sigma}^{U}\f$ the contribution to the
-         *          coefficients of \f$U\f$ and
-         *          \f$\hat{\sigma}^{RHS}\f$ the contribution
-         *          to the right hand side.
+         *          For the docomposition of
+         *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
+         *          , see the documentation of the
+         *          Dune::DiscreteStokesModelInterface.
          *
          *  \tparam FaceDomainType
-         *          domain type on given face
+         *          domain type on given face (codim 1 coordinates)
          *  \param[in]  it
          *          faceiterator
          *  \param[in]  time
          *          global time
          *  \param[in]  x
-         *          point to evaluate at (on the face)
-         *  \param[in]  uInner
-         *          value of \f$u\f$ in \f$x\f$ (seen from the inside)
-         *  \param[in]  uOuter
-         *          value of \f$u\f$ in \f$x\f$ (seen from the outside)
-         *  \param[in]  sigmaInner
-         *          value of \f$\sigma\f$ in \f$x\f$ (seen from the inside)
-         *  \param[in]  sigmaOuter
-         *          value of \f$\sigma\f$ in \f$x\f$ (seen from the outside)
-         *  \param[out]  sigmaContribInner
-         *          \f$\hat{\sigma}^{\sigma}\f$ (seen from the inside)
-         *  \param[out]  sigmaContribOuter
-         *          \f$\hat{\sigma}^{\sigma}\f$ (seen from the outside)
-         *  \param[out]  uContribInner
-         *          \f$\hat{\sigma}^{U}\f$ (seen from the inside)
-         *  \param[out]  uContribOuter
-         *          \f$\hat{\sigma}^{U}\f$ (seen from the outside)
-         *  \param[out]  rhsContribInner
-         *          \f$\hat{\sigma}^{RHS}\f$ (seen from the inside)
-         *  \param[out]  rhsContribOuter
-         *          \f$\hat{\sigma}^{RHS}\f$ (seen from the outside)
+         *          point to evaluate at (on the face) in face coordiantes
+         *          (codim 1) (eg. as returned by Dune::CachingPointList::localPoint())
+         *  \param[in]  side
+         *          determines the interpretation of <i>u</i> and
+         *          <i>uReturn</i>\n
+         *          legal values are DiscreteStokesModelInterface::inside and
+         *          DiscreteStokesModelInterface::outside
+         *  \param[in]  u
+         *          value of \f$u\f$ in \f$x\f$, interpreted once as seen from
+         *          the inside entity (side==inside), once as seen from the
+         *          neighbouring entity (side==outside)
+         *  \param[out]  uReturn
+         *          \f$\hat{\sigma}^{U^{+}}\f$, if (side==inside) or
+         *          \f$\hat{\sigma}^{U^{-}}\f$, if (side==outside)
          **/
         template < class FaceDomainType >
         void sigmaFlux( const IntersectionIteratorType& it,
@@ -821,6 +932,38 @@ class DiscreteStokesModelInterface
                                     uReturn ) );
         }
 
+        /**
+         *  \brief  Implementation of \f$\hat{\sigma}^{\sigma^{+}}\f$ and
+         *          \f$\hat{\sigma}^{\sigma^{-}}\f$ for a face inside
+         *          \f$\Omega\f$. Calls the implementation of the derived class.
+         *
+         *          For the docomposition of
+         *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
+         *          , see the documentation of the
+         *          Dune::DiscreteStokesModelInterface.
+         *
+         *  \tparam FaceDomainType
+         *          domain type on given face (codim 1 coordinates)
+         *  \param[in]  it
+         *          faceiterator
+         *  \param[in]  time
+         *          global time
+         *  \param[in]  x
+         *          point to evaluate at (on the face) in face coordiantes
+         *          (codim 1) (eg. as returned by Dune::CachingPointList::localPoint())
+         *  \param[in]  side
+         *          determines the interpretation of <i>sigma</i> and
+         *          <i>sigmaReturn</i>\n
+         *          legal values are DiscreteStokesModelInterface::inside and
+         *          DiscreteStokesModelInterface::outside
+         *  \param[in]  sigma
+         *          value of \f$\sigma\f$ in \f$x\f$, interpreted once as seen
+         *          from the inside entity (side==inside), once as seen from the
+         *          neighbouring entity (side==outside)
+         *  \param[out]  sigmaReturn
+         *          \f$\hat{\sigma}^{\sigma^{+}}\f$, if (side==inside) or
+         *          \f$\hat{\sigma}^{\sigma^{-}}\f$, if (side==outside)
+         **/
         template < class FaceDomainType >
         void sigmaFlux( const IntersectionIteratorType& it,
                         const double time,
@@ -839,42 +982,28 @@ class DiscreteStokesModelInterface
         }
 
         /**
-         *  \brief  implementation of \f$\hat{\sigma}\f$.
-         *          Calls the implementation of the derived class.
+         *  \brief  Implementation of \f$\hat{\sigma}^{U^{+}}\f$ for a face on
+         *          the boundary of \f$\Omega\f$. Calls the implementation of
+         *          the derived class.
          *
-         *          Implements
-         *          \f$
-         *              \hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}
-         *          \f$ for faces on \f$\partial\Omega\f$.\n
-         *          <b>Assumption:</b> the flux can be written as
-         *          \f$
-         *              \hat{\sigma}(u,\sigma) = \hat{\sigma}^{\sigma}
-         *              + \hat{\sigma}^{U} + \hat{\sigma}^{RHS}
-         *          \f$, where \f$\hat{\sigma}^{\sigma}\f$ is this fluxes
-         *          contribution to the coefficients of \f$\sigma\f$,
-         *          \f$\hat{\sigma}^{U}\f$ the contribution to the
-         *          coefficients of \f$U\f$ and
-         *          \f$\hat{\sigma}^{RHS}\f$ the contribution
-         *          to the right hand side.
+         *          For the docomposition of
+         *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
+         *          , see the documentation of the
+         *          Dune::DiscreteStokesModelInterface.
          *
          *  \tparam FaceDomainType
-         *          domain type on given face
+         *          domain type on given face (codim 1 coordinates)
          *  \param[in]  it
          *          faceiterator
          *  \param[in]  time
          *          global time
          *  \param[in]  x
-         *          point to evaluate at (on the face)
-         *  \param[in]  uInner
-         *          value of \f$u\f$ in \f$x\f$ (seen from the inside)
-         *  \param[in]  sigmaInner
-         *          value of \f$\sigma\f$ in \f$x\f$ (seen from the inside)
-         *  \param[out]  sigmaContribInner
-         *          \f$\hat{\sigma}^{\sigma}\f$
-         *  \param[out]  uContribInner
-         *          \f$\hat{\sigma}^{U}\f$
-         *  \param[out]  rhsContribInner
-         *          \f$\hat{\sigma}^{RHS}\f$
+         *          point to evaluate at (on the face) in face coordiantes
+         *          (codim 1) (eg. as returned by Dune::CachingPointList::localPoint())
+         *  \param[in]  u
+         *          value of \f$u\f$ in \f$x\f$
+         *  \param[out]  uReturn
+         *          \f$\hat{\sigma}^{U^{+}}\f$
          **/
         template < class FaceDomainType >
         void sigmaBoundaryFlux( const IntersectionIteratorType& it,
@@ -891,6 +1020,30 @@ class DiscreteStokesModelInterface
                                             uReturn ) );
         }
 
+        /**
+         *  \brief  Implementation of \f$\hat{\sigma}^{\sigma^{+}}\f$ for a face
+         *          on the boundary of \f$\Omega\f$. Calls the implementation of
+         *          the derived class.
+         *
+         *          For the docomposition of
+         *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
+         *          , see the documentation of the
+         *          Dune::DiscreteStokesModelInterface.
+         *
+         *  \tparam FaceDomainType
+         *          domain type on given face (codim 1 coordinates)
+         *  \param[in]  it
+         *          faceiterator
+         *  \param[in]  time
+         *          global time
+         *  \param[in]  x
+         *          point to evaluate at (on the face) in face coordiantes
+         *          (codim 1) (eg. as returned by Dune::CachingPointList::localPoint())
+         *  \param[in]  sigma
+         *          value of \f$\sigma\f$ in \f$x\f$
+         *  \param[out]  sigmaReturn
+         *          \f$\hat{\sigma}^{\sigma^{+}}\f$
+         **/
         template < class FaceDomainType >
         void sigmaBoundaryFlux( const IntersectionIteratorType& it,
                                 const double time,
@@ -906,6 +1059,28 @@ class DiscreteStokesModelInterface
                                             sigmaReturn ) );
         }
 
+        /**
+         *  \brief  Implementation of \f$\hat{\sigma}^{RHS}\f$ for a face
+         *          on the boundary of \f$\Omega\f$. Calls the implementation of
+         *          the derived class.
+         *
+         *          For the docomposition of
+         *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
+         *          , see the documentation of the
+         *          Dune::DiscreteStokesModelInterface.
+         *
+         *  \tparam FaceDomainType
+         *          domain type on given face (codim 1 coordinates)
+         *  \param[in]  it
+         *          faceiterator
+         *  \param[in]  time
+         *          global time
+         *  \param[in]  x
+         *          point to evaluate at (on the face) in face coordiantes
+         *          (codim 1) (eg. as returned by Dune::CachingPointList::localPoint())
+         *  \param[out]  uReturn
+         *          \f$\hat{\sigma}^{RHS}\f$
+         **/
         template < class FaceDomainType >
         void sigmaBoundaryFlux( const IntersectionIteratorType& it,
                                 const double time,
@@ -920,27 +1095,27 @@ class DiscreteStokesModelInterface
         }
 
         /**
-         *  \brief  implementation of \f$f\f$.
+         *  \brief  Implementation of \f$f\f$.
          *          Calls the implementation of the derived class.
          *
          *  \tparam DomainType
-         *          domain type in entity
+         *          domain type in entity (codim 0)
          *  \param[in]  time
          *          global time
          *  \param[in]  x
-         *          point to evaluate at
-         *  \param[out]  forceContrib
+         *          point to evaluate at (in world coordinates)
+         *  \param[out]  forceReturn
          *          value of \f$f\f$ in \f$x\f$
          **/
         template < class DomainType >
         void force( const double time,
                     const DomainType& x,
-                    VelocityRangeType& forceContrib ) const
+                    VelocityRangeType& forceReturn ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
                 asImp().force(  time,
                                 x,
-                                forceContrib ) );
+                                forceReturn ) );
         }
 
         /**
@@ -955,13 +1130,13 @@ class DiscreteStokesModelInterface
         }
 
     protected:
-        //! for Barton-Nackmann trick
+        //! for CRTP trick
         DiscreteModelType& asImp()
         {
             return static_cast< DiscreteModelType& >(*this);
         }
 
-        //! for Barton-Nackmann trick
+        //! for CRTP trick
         const DiscreteModelType& asImp() const
         {
             return static_cast< const DiscreteModelType& >(*this);
@@ -989,7 +1164,7 @@ class DiscreteStokesModelDefaultTraits
         typedef Dune::CachingQuadrature< GridPartImp, 0 >
             VolumeQuadratureType;
 
-        //! and we use for the faces
+        //! and for the faces
         typedef Dune::CachingQuadrature< GridPartImp, 1 >
             FaceQuadratureType;
 
@@ -1006,23 +1181,27 @@ class DiscreteStokesModelDefaultTraits
         typedef Dune::FunctionSpace< double, double, gridDim, gridDim >
             VelocityFunctionSpaceType;
 
+    public:
+
         //! discrete function type space for the velocity
         typedef Dune::DiscontinuousGalerkinSpace<   VelocityFunctionSpaceType,
                                                     GridPartImp,
                                                     velocitySpaceOrder >
             DiscreteVelocityFunctionSpaceType;
 
+    private:
+
         //! function space type for the pressure
         typedef Dune::FunctionSpace< double, double, gridDim, 1 >
             PressureFunctionSpaceType;
+
+    public:
 
         //! discrete function space type for the pressure
         typedef Dune::DiscontinuousGalerkinSpace<   PressureFunctionSpaceType,
                                                     GridPartImp,
                                                     pressureSpaceOrder >
             DiscretePressureFunctionSpaceType;
-
-    public:
 
         //! discrete function space wrapper type for the pass
         typedef Dune::DiscreteStokesFunctionSpaceWrapper< Dune::DiscreteStokesFunctionSpaceWrapperTraits<
@@ -1962,9 +2141,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         template < class DomainType >
         void force( const double time,
                     const DomainType& x,
-                    VelocityRangeType& forceContrib ) const
+                    VelocityRangeType& forceReturn ) const
         {
-            force_.evaluate( x, forceContrib );
+            force_.evaluate( x, forceReturn );
         }
 
         /**
@@ -1982,50 +2161,6 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         const VelocityRangeType C_12_, D_12_;
         const AnalyticalForceType& force_;
         const AnalyticalDirichletDataType& dirichletData_;
-
-//        /**
-//         *  \brief  jump for pressure-type functions
-//         *
-//         *  \f$\left[\left[\p\right]\right]:=\left(p^{+} + p^{-}\right)n^{+}\in R^{d}\f$,
-//         *  where \f$n^{+}\f4 is the unit outer normal,
-//         *  \f$p^{+}\f$ is the value of p on the inside and
-//         *  \f$p^{-}\f$ the value of p at the outside
-//         *  \attention  assumption: \f$n_{inner}=-1*n_{outer}\f$
-//         **/
-//        template < class NormalType >
-//        VelocityRangeType pTypeJump(    const PressureRangeType& pInner,
-//                                        const PressureRangeType& pOuter,
-//                                        const NormalType& outerNormal ) const
-//        {
-//            VelocityRangeType ret = outerNormal;
-//            ret *= ( pInner - pOuter );
-//            return ret;
-//        }
-
-//        /**
-//         *  \brief  jump for velocity-type functions
-//         *  \todo doc like pTypeJump
-//         **/
-//        double uTypeJump(   const VelocityRangeType& uInner,
-//                            const VelocityRangeType& uOuter,
-//                            const VelocityRangeType& outerNormal ) const
-//        {
-//            return ( uInner - uOuter ) * outerNormal;
-//        }
-
-//        /**
-//         *  \brief  matrix valued jump for velocity-type functions
-//         *  \todo   doc like pTypeJump
-//         **/
-//        SigmaRangeType uTypeMatrixJump( const VelocityRangeType& uInner,
-//                                        const VelocityRangeType& uOuter,
-//                                        const VelocityRangeType& outerNormal ) const
-//        {
-//            SigmaRangeType ret( 0.0 );
-//            VelocityRangeType uDiff = uInner - uOuter;
-//            ret = dyadicProduct( uDiff, outerNormal );
-//            return ret;
-//        }
 
         /**
          *  \brief  dyadic product
@@ -2056,37 +2191,6 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             }
             return ret;
         }
-
-//        /**
-//         *  \brief  jump for sigma-type functions
-//         *  \todo   doc
-//         **/
-//        VelocityRangeType sigmaTypeJump(    const SigmaRangeType& sInner,
-//                                            const SigmaRangeType& sOuter,
-//                                            const VelocityRangeType& outerNormal ) const
-//        {
-//            VelocityRangeType ret( 0.0 );
-//            SigmaRangeType sDiff = sInner;
-//            sDiff -= sOuter;
-//            sDiff.mv( outerNormal, ret );
-//            return ret;
-//        }
-
-//        /**
-//         *  \brief  mean value of two functions (of same type)
-//         *  \todo   texdoc example
-//         **/
-//        template < class DiscreteFunctionImp >
-//        DiscreteFunctionImp meanValue( const DiscreteFunctionImp& funcInner,
-//                                    const DiscreteFunctionImp& funcOuter ) const
-//        {
-//            DiscreteFunctionImp ret( 0.0 );
-//            ret += funcInner;
-//            ret += funcOuter;
-//            ret *= 0.5;
-//            return ret;
-//        }
-
 
 };
 
