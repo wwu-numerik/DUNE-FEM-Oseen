@@ -1129,7 +1129,7 @@ class DiscreteStokesModelInterface
             return asImp().viscosity();
         }
 
-    protected:
+    private:
         //! for CRTP trick
         DiscreteModelType& asImp()
         {
