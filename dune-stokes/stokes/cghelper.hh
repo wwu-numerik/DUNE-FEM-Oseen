@@ -120,9 +120,10 @@ class SchurkomplementOperator
             tmp2.clear();
 
 			// ret = ( ( B_t * ( A^-1 * ( B * x ) ) ) + ( C * x ) )
-            b_mat_.multOEM( x, tmp1.leakPointer() );
-            Stuff::oneLinePrint( dbg, tmp1 ) ;
-            Stuff::printDoubleVec( dbg, x, b_mat_.cols() );
+			Stuff::oneLinePrint( std::cout, tmp1 ) ;
+            b_t_mat_.multOEM_t( x, tmp1.leakPointer() );
+            Stuff::oneLinePrint( std::cout, tmp1 ) ;
+            Stuff::printDoubleVec( std::cout, x, b_mat_.cols() );
             a_solver_.apply( tmp1, tmp2 );
             b_t_mat_.multOEM( tmp2.leakPointer(), ret );
             c_mat_.multOEMAdd( x, ret );

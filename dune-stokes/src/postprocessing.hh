@@ -144,7 +144,8 @@ class PostProcessor
             l2_error_velocity_ =
                 l2_Error.norm( errorFunc_velocity_ );
 
-            Logger().Info()  << "L2-Error Pressure: " << std::setw(8) << l2_error_pressure_ << "\n"
+            Logger().Info().Resume();
+            std::cout  << "L2-Error Pressure: " << std::setw(8) << l2_error_pressure_ << "\n"
                                 << "L2-Error Velocity: " << std::setw(8) << l2_error_velocity_ << "\n"
                                 << "L2-Error Pressure (sqrt): " << std::setw(8) << std::sqrt( l2_error_pressure_ ) << "\n"
                                 << "L2-Error Velocity (sqrt): " << std::setw(8) << std::sqrt( l2_error_velocity_ ) << std::endl;

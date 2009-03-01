@@ -1,6 +1,6 @@
 # LOG_NONE = 1, LOG_ERR = 2, LOG_INFO = 4,LOG_DEBUG = 8,LOG_CONSOLE = 16,LOG_FILE = 32
 # --> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_FILE = 46
-loglevel: 46
+loglevel: 460
 
 #only prefix
 logfile: dune_stokes
@@ -9,8 +9,8 @@ fem.io.savestep: -1
 fem.io.savecount: 1
 fem.io.outputformat: 1
 maxref: 1
-maxpow: 2
-minpow: -2
+maxpow: 1
+minpow: -1
 per-run-log-target: 0
 
 #
