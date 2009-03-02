@@ -1378,33 +1378,33 @@ class DiscreteStokesModelDefaultTraits
  *          \f{tabular}{l||l}
  *              on $\mathcal{E}_{I}$ & on $\mathcal{E}_{I}$ \\
  *                  \hline\hline
- *              $\boldsymbol{\hat{u}_{\sigma}^{U^{+}}(u)} := \frac{1}{2} u - \left( u \otimes n^{+} \right) \cdot C_{12}$
+ *              $\boldsymbol{\hat{u}_{\sigma}^{U^{+}}(u)} := \frac{1}{2} u + \left( u \otimes n^{+} \right) \cdot C_{12}$
  *                  & $\boldsymbol{\hat{u}_{\sigma}^{U^{+}}(u)} := 0$ \\
- *              $\boldsymbol{\hat{u}_{\sigma}^{U^{-}}(u)} := \frac{1}{2} u + \left( u \otimes n^{+} \right) \cdot C_{12}$
+ *              $\boldsymbol{\hat{u}_{\sigma}^{U^{-}}(u)} := \frac{1}{2} u + \left( u \otimes n^{-} \right) \cdot C_{12}$
  *                  & $\boldsymbol{\hat{u}_{\sigma}^{RHS}} := g_{D}$ \\
  *                  \hline
  *              $\boldsymbol{\hat{u}_{p}^{U^{+}}(u)} := \frac{1}{2} u + D_{12} u \cdot n^{+}$
  *                  & $\boldsymbol{\hat{u}_{p}^{U^{+}}(u)} := 0$ \\
- *              $\boldsymbol{\hat{u}_{p}^{U^{-}}(u)} := \frac{1}{2} u - D_{12} u \cdot n^{+}$
+ *              $\boldsymbol{\hat{u}_{p}^{U^{-}}(u)} := \frac{1}{2} u + D_{12} u \cdot n^{-}$
  *                  & $\quad$ \\
  *              $\boldsymbol{\hat{u}_{p}^{P^{+}}(p)} := D_{11} p n^{+}$
  *                  & $\boldsymbol{\hat{u}_{p}^{P^{+}}(p)} := 0$ \\
- *              $\boldsymbol{\hat{u}_{p}^{P^{-}}(p)} := -D_{11} p n^{+}$
+ *              $\boldsymbol{\hat{u}_{p}^{P^{-}}(p)} := D_{11} p n^{-}$
  *                  & $\boldsymbol{\hat{u}_{p}^{RHS}} := g_{D}$\\
  *                  \hline
  *              $\boldsymbol{\hat{p}^{P^{+}}(p)} := \frac{1}{2} p - p D_{12} \cdot n^{+}$
  *                  & $\boldsymbol{\hat{p}^{P^{+}}(p)} := p$ \\
- *              $\boldsymbol{\hat{p}^{P^{-}}(p)} := \frac{1}{2} p + p D_{12} \cdot n^{+}$
+ *              $\boldsymbol{\hat{p}^{P^{-}}(p)} := \frac{1}{2} p - p D_{12} \cdot n^{-}$
  *                  & $\boldsymbol{\hat{p}^{RHS}} := 0$ \\
  *                  \hline
  *              $\boldsymbol{\hat{\sigma}^{U^{+}}(u)} := -C_{11} u \otimes n^{+}$
  *                  & $\boldsymbol{\hat{\sigma}^{U^{+}}(u)} := -C_{11} u \otimes n^{+}$ \\
- *              $\boldsymbol{\hat{\sigma}^{U^{-}}(u)} := -C_{11} u \otimes n^{+}$
+ *              $\boldsymbol{\hat{\sigma}^{U^{-}}(u)} := -C_{11} u \otimes n^{-}$
  *                  & $\quad$ \\
  *              $\boldsymbol{\hat{\sigma}^{\sigma^{+}}(u)} := \frac{1}{2} \sigma - \left( \sigma \cdot n^{+} \right)$
  *                  & $\boldsymbol{\hat{\sigma}^{\sigma^{+}}(u)} := \sigma$ \\
- *              $\boldsymbol{\hat{\sigma}^{\sigma^{-}}(u)} := \frac{1}{2} \sigma + \left( \sigma \cdot n^{+} \right)$
- *                  & $\boldsymbol{\hat{\sigma}^{RHS}} := C_{11} g_{D} \otimes n^{+}$
+ *              $\boldsymbol{\hat{\sigma}^{\sigma^{-}}(u)} := \frac{1}{2} \sigma - \left( \sigma \cdot n^{-} \right)$
+ *                  & $\boldsymbol{\hat{\sigma}^{RHS}} := -C_{11} g_{D} \otimes n^{+}$
  *          \f}
  *
  *          The implementation is as follows:\n
@@ -1701,8 +1701,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *          \f$\Omega\f$.
          *
          *          Implements\n
-         *          - \f$\hat{u}_{\sigma}^{U^{+}}(u) = \frac{1}{2} - \left( u \otimes n^{+} \right) \cdot C_{12}\f$
-         *          - \f$\hat{u}_{\sigma}^{U^{-}}(u) = \frac{1}{2} + \left( u \otimes n^{+} \right) \cdot C_{12}\f$
+         *          - \f$\hat{u}_{\sigma}^{U^{+}}(u) = \frac{1}{2} + \left( u \otimes n^{+} \right) \cdot C_{12}\f$
+         *          - \f$\hat{u}_{\sigma}^{U^{-}}(u) = \frac{1}{2} + \left( u \otimes n^{-} \right) \cdot C_{12}\f$
          *
          *          For the docomposition of
          *          \f$\hat{u}_{\sigma}(u):\Omega\rightarrow R^{d}\f$, see the
@@ -1845,7 +1845,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          Implements\n
          *          - \f$\hat{u}_{p}^{U^{+}}(u) = \frac{1}{2}u + D_{12} u \cdot n^{+}\f$
-         *          - \f$\hat{u}_{p}^{U^{-}}(u) = \frac{1}{2}u - D_{12} u \cdot n^{+}\f$
+         *          - \f$\hat{u}_{p}^{U^{-}}(u) = \frac{1}{2}u + D_{12} u \cdot n^{-}\f$
          *
          *          For the docomposition of
          *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
@@ -1914,7 +1914,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          Implements\n
          *          - \f$\hat{u}_{p}^{P^{+}}(p) = D_{11} p n^{+}\f$
-         *          - \f$\hat{u}_{p}^{P^{-}}(p) = -D_{11} p n^{+}\f$
+         *          - \f$\hat{u}_{p}^{P^{-}}(p) = D_{11} p n^{-}\f$
          *
          *          For the docomposition of
          *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
@@ -2089,7 +2089,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          Implements\n
          *          - \f$\hat{p}^{P^{+}}(p) = \frac{1}{2} p - p D_{12} \cdot n^{+}\f$
-         *          - \f$\hat{p}^{P^{-}}(p) = \frac{1}{2} p + p D_{12} \cdot n^{+}\f$
+         *          - \f$\hat{p}^{P^{-}}(p) = \frac{1}{2} p - p D_{12} \cdot n^{-}\f$
          *
          *          For the docomposition of
          *          \f$\hat{p}(p):\Omega\rightarrow R\f$, see the
