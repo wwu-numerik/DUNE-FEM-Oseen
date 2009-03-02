@@ -152,7 +152,7 @@ class StokesPass
 
 
         /**
-         *  \name typedefs for interface compliance
+         *  \name typedefs needed for interface compliance
          *  \{
          **/
         typedef typename BaseType::DestinationType
