@@ -11,7 +11,7 @@
 #define POLORDER 0
 
 //#define SIMPLE_PROBLEM
-//#define CONSTANT_PROBLEM
+#define CONSTANT_PROBLEM
 //#define NLOG
 
 #include <iostream>
@@ -159,6 +159,7 @@ int main( int argc, char** argv )
         }
     }
     else {
+        Logger().SetPrefix( "fucker" );
         Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
         typedef Dune::AdaptiveLeafGridPart< GridType >
             GridPartType;

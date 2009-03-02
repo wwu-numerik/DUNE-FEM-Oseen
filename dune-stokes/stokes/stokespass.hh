@@ -337,7 +337,7 @@ class StokesPass
             const bool Xprint = false;
             const bool Yprint = false;
             const bool Zprint = false;
-            const bool Eprint = true;
+            const bool Eprint = false;
             const bool Rprint = false;
             const bool H1print = false;
             const bool H2print = false;
