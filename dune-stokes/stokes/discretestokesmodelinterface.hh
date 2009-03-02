@@ -1747,7 +1747,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 u_plus_tensor_n_plus.mv( C_12_, u_plus_tensor_n_plus_times_c_12 );
                 uReturn = u;
                 uReturn *= 0.5;
-                uReturn -= u_plus_tensor_n_plus_times_c_12;
+                uReturn += u_plus_tensor_n_plus_times_c_12;
             }
             // contribution to u vector ( from outside entity )
             else if ( side == BaseType::outside ) {
@@ -1760,7 +1760,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 u_minus_tensor_n_minus.mv( C_12_, u_minus_tensor_n_minus_times_c_12 );
                 uReturn = u;
                 uReturn *= 0.5;
-                uReturn -= u_minus_tensor_n_minus_times_c_12;
+                uReturn += u_minus_tensor_n_minus_times_c_12;
             }
         }
 
@@ -1885,7 +1885,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             // contribution to u vector ( from inside entity )
             if ( side == BaseType::inside ) {
-                double u_plus_times_n_plus = u * outerNormal;
+                const double u_plus_times_n_plus = u * outerNormal;
                 VelocityRangeType d_12_times_u_plus_times_n_plus = D_12_;
                 d_12_times_u_plus_times_n_plus *= u_plus_times_n_plus;
                 uReturn = u;
@@ -1898,7 +1898,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 VelocityRangeType innerNormal = outerNormal;
                 innerNormal *= -1.0;
                 // calculations
-                double u_minus_times_n_minus = u * innerNormal;
+                const double u_minus_times_n_minus = u * innerNormal;
                 VelocityRangeType d_12_times_u_minus_times_n_minus = D_12_;
                 d_12_times_u_minus_times_n_minus *= u_minus_times_n_minus;
                 uReturn = u;
@@ -2272,7 +2272,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 innerNormal *= -1.0;
                 // calculations
                 uReturn = dyadicProduct( u, innerNormal );
-                uReturn *= C_11_;
+                uReturn *= ( -1.0 * C_11_ );
             }
         }
 
@@ -2346,7 +2346,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                         dyadicProduct( sigma_minus_times_n_minus, C_12_ );
                 sigmaReturn = sigma;
                 sigmaReturn *= 0.5;
-                sigmaReturn += sigma_minus_times_n_minus_times_c_12;
+                sigmaReturn -= sigma_minus_times_n_minus_times_c_12;
             }
         }
 
