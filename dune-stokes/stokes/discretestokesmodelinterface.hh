@@ -1149,7 +1149,7 @@ template < class DiscreteStokesModelDefaultTraits >
 class DiscreteStokesModelDefault;
 
 /**
- *  \brief  traits class for DiscreteStokesModelDefault
+ *  \brief  Traits class for DiscreteStokesModelDefault
  **/
 template < class GridPartImp, class AnalyticalForceImp, class AnalyticalDirichletDataImp, int gridDim, int polOrder >
 class DiscreteStokesModelDefaultTraits
@@ -1372,31 +1372,204 @@ class DiscreteStokesModelDefaultTraits
  *          and \f$C_{12},\;\;D_{12}\in R^{d}\f$ are the coefficients
  *          concerning efficiency and accuracy.\n
  *
- *          These fluxes are decomposed (see Dune::DiscreteStokesModelInterface for
- *          details) into several numerical fluxes:\n
+ *          These fluxes are then decomposed into several numerical fluxes (see
+ *          Dune::DiscreteStokesModelInterface for details):\n
  *
+ *          \f{tabular}{l||l}
+ *              on $\mathcal{E}_{I}$ & on $\mathcal{E}_{I}$ \\
+ *                  \hline\hline
+ *              $\boldsymbol{\hat{u}_{\sigma}^{U^{+}}(u)} := \frac{1}{2} u - \left( u \otimes n^{+} \right) \cdot C_{12}$
+ *                  & $\boldsymbol{\hat{u}_{\sigma}^{U^{+}}(u)} := 0$ \\
+ *              $\boldsymbol{\hat{u}_{\sigma}^{U^{-}}(u)} := \frac{1}{2} u + \left( u \otimes n^{+} \right) \cdot C_{12}$
+ *                  & $\boldsymbol{\hat{u}_{\sigma}^{RHS}} := g_{D}$ \\
+ *                  \hline
+ *              $\boldsymbol{\hat{u}_{p}^{U^{+}}(u)} := \frac{1}{2} u + D_{12} u \cdot n^{+}$
+ *                  & $\boldsymbol{\hat{u}_{p}^{U^{+}}(u)} := 0$ \\
+ *              $\boldsymbol{\hat{u}_{p}^{U^{-}}(u)} := \frac{1}{2} u - D_{12} u \cdot n^{+}$
+ *                  & $\quad$ \\
+ *              $\boldsymbol{\hat{u}_{p}^{P^{+}}(p)} := D_{11} p n^{+}$
+ *                  & $\boldsymbol{\hat{u}_{p}^{P^{+}}(p)} := 0$ \\
+ *              $\boldsymbol{\hat{u}_{p}^{P^{-}}(p)} := -D_{11} p n^{+}$
+ *                  & $\boldsymbol{\hat{u}_{p}^{RHS}} := g_{D}$\\
+ *                  \hline
+ *              $\boldsymbol{\hat{p}^{P^{+}}(p)} := \frac{1}{2} p - p D_{12} \cdot n^{+}$
+ *                  & $\boldsymbol{\hat{p}^{P^{+}}(p)} := p$ \\
+ *              $\boldsymbol{\hat{p}^{P^{-}}(p)} := \frac{1}{2} p + p D_{12} \cdot n^{+}$
+ *                  & $\boldsymbol{\hat{p}^{RHS}} := 0$ \\
+ *                  \hline
+ *              $\boldsymbol{\hat{\sigma}^{U^{+}}(u)} := -C_{11} u \otimes n^{+}$
+ *                  & $\boldsymbol{\hat{\sigma}^{U^{+}}(u)} := -C_{11} u \otimes n^{+}$ \\
+ *              $\boldsymbol{\hat{\sigma}^{U^{-}}(u)} := -C_{11} u \otimes n^{+}$
+ *                  & $\quad$ \\
+ *              $\boldsymbol{\hat{\sigma}^{\sigma^{+}}(u)} := \frac{1}{2} \sigma - \left( \sigma \cdot n^{+} \right)$
+ *                  & $\boldsymbol{\hat{\sigma}^{\sigma^{+}}(u)} := \sigma$ \\
+ *              $\boldsymbol{\hat{\sigma}^{\sigma^{-}}(u)} := \frac{1}{2} \sigma + \left( \sigma \cdot n^{+} \right)$
+ *                  & $\boldsymbol{\hat{\sigma}^{RHS}} := C_{11} g_{D} \otimes n^{+}$
+ *          \f}
+ *
+ *          The implementation is as follows:\n
+ *
+ *          - \f$\hat{u}_{\sigma}(u):\Omega\rightarrow R^{d}\f$\n
+ *            - for inner faces
+ *              - \f$\hat{u}_{\sigma}^{U^{+}}\f$ and
+ *                \f$\hat{u}_{\sigma}^{U^{-}}\f$ are implemented in
+ *                velocitySigmaFlux() (const IntersectionIteratorType& it, const
+ *                double time, const FaceDomainType& x, const Side side, const
+ *                VelocityRangeType& u, VelocityRangeType& uReturn), where
+ *                <b>side</b> determines, whether \f$\hat{u}_{\sigma}^{U^{+}}\f$
+ *                (side=inside) or \f$\hat{u}_{\sigma}^{U^{-}}\f$
+ *                (side=outside) is returned
+ *            - for faces on the boundary of \f$\Omega\f$
+ *              - \f$\hat{u}_{\sigma}^{U^{+}}\f$ is implemented in
+ *                velocitySigmaBoundaryFlux() ( const IntersectionIteratorType&
+ *                it, const double time, const FaceDomainType& x,
+ *                const VelocityRangeType& <b>u</b>, VelocityRangeType&
+ *                <b>uReturn</b> )
+ *              - \f$\hat{u}_{\sigma}^{RHS}\f$ is implemented in
+ *                velocitySigmaBoundaryFlux() ( const IntersectionIteratorType&
+ *                it, const double time, const FaceDomainType& x,
+ *                VelocityRangeType& <b>rhsReturn</b> )
+ *          - \f$\hat{u}_{p}(u,p):\Omega\rightarrow R^{d}\f$\n
+ *            - for inner faces
+ *              - \f$\hat{u}_{p}^{U^{+}}\f$ and \f$\hat{u}_{p}^{U^{-}}\f$ are
+ *                implemented in velocityPressureFlux() ( const
+ *                IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, const Side side, const VelocityRangeType&
+ *                <b>u</b>, VelocityRangeType& <b>uReturn</b> ), where
+ *                <b>side</b> determines, whether \f$\hat{u}_{p}^{U^{+}}\f$
+ *                (side=inside) or \f$\hat{u}_{p}^{U^{-}}\f$
+ *                (side=outside) is returned
+ *              - \f$\hat{u}_{p}^{P^{+}}\f$ and \f$\hat{u}_{p}^{P^{+}}\f$ are
+ *                implemented by velocityPressureFlux() ( const
+ *                IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, const Side side, const PressureRangeType&
+ *                <b>p</b>, VelocityRangeType& <b>pReturn</b> ), where
+ *                <b>side</b> determines, whether \f$\hat{u}_{p}^{P^{+}}\f$
+ *                (side=inside) or \f$\hat{u}_{p}^{P^{+}}\f$
+ *                (side=outside) is returned
+ *            - for faces on the boundary of \f$\Omega\f$
+ *              - \f$\hat{u}_{p}^{U^{+}}\f$ is implemented in
+ *                velocityPressureBoundaryFlux() ( const
+ *                IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, const VelocityRangeType& <b>u</b>,
+ *                VelocityRangeType& <b>uReturn</b> )
+ *              - \f$\hat{u}_{p}^{P^{+}}\f$ is implemented in
+ *                velocityPressureBoundaryFlux() ( const
+ *                IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, const PressureRangeType& <b>p</b>,
+ *                VelocityRangeType& <b>pReturn</b> )
+ *              - \f$\hat{u}_{p}^{RHS}\f$ is implemented in
+ *                velocityPressureBoundaryFlux() ( const
+ *                IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, VelocityRangeType& <b>rhsReturn</b> )
+ *          - \f$\hat{p}(p):\Omega\rightarrow R\f$\n
+ *            - for inner faces
+ *              - \f$\hat{p}^{P^{+}}\f$ and \f$\hat{p}^{P^{-}}\f$ are
+ *                implemented in pressureFlux() ( const
+ *                IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, const Side side, const PressureRangeType&
+ *                p, PressureRangeType& pReturn ), where
+ *                <b>side</b> determines, whether \f$\hat{p}^{P^{+}}\f$
+ *                (side=inside) or \f$\hat{p}^{P^{-}}\f$
+ *                (side=outside) is returned
+ *            - for faces on the boundary of \f$\Omega\f$
+ *              - \f$\hat{p}^{P^{+}}\f$ is implemented in pressureBoundaryFlux() (
+ *                const IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, const PressureRangeType& <b>p</b>,
+ *                PressureRangeType& <b>pReturn</b> )
+ *              - \f$\hat{p}^{RHS}\f$ is implemented in pressureBoundaryFlux() (
+ *                const IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, PressureRangeType& <b>rhsReturn</b> )
+ *          - \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$\n
+ *            - for inner faces
+ *              - \f$\hat{\sigma}^{U^{+}}\f$ and \f$\hat{\sigma}^{U^{-}}\f$ are
+ *                implemented in sigmaFlux() ( const IntersectionIteratorType&
+ *                it, const double time, const FaceDomainType& x, const Side
+ *                side, const VelocityRangeType& <b>u</b>, SigmaRangeType&
+ *                <b>uReturn</b> ), where
+ *                <b>side</b> determines, whether \f$\hat{\sigma}^{U^{+}}\f$
+ *                (side=inside) or \f$\hat{\sigma}^{U^{-}}\f$
+ *                (side=outside) is returned
+ *              - \f$\hat{\sigma}^{\sigma^{+}}\f$ and
+ *                \f$\hat{\sigma}^{\sigma^{-}}\f$ are implemented in sigmaFlux()
+ *                ( const IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, const Side side, const SigmaRangeType&
+ *                <b>sigma</b>, SigmaRangeType& <b>sigmaReturn</b> ), where
+ *                <b>side</b> determines, whether
+ *                \f$\hat{\sigma}^{\sigma^{+}}\f$ (side=inside) or
+ *                \f$\hat{\sigma}^{\sigma^{-}}\f$ (side=outside) is returned
+ *            - for faces on the boundary of \f$\Omega\f$
+ *              - \f$\hat{\sigma}^{U^{+}}\f$ is implemented in
+ *                sigmaBoundaryFlux() ( const IntersectionIteratorType& it,
+ *                const double time, const FaceDomainType& x, const
+ *                VelocityRangeType& <b>u</b>, SigmaRangeType& <b>uReturn</b> )
+ *              - \f$\hat{\sigma}^{\sigma^{+}}\f$ is implemented in
+ *                sigmaBoundaryFlux() ( const IntersectionIteratorType& it,
+ *                const double time, const FaceDomainType& x, const
+ *                SigmaRangeType& <b>sigma</b>, SigmaRangeType&
+ *                <b>sigmaReturn</b> )
+ *              - \f$\hat{\sigma}^{RHS}\f$ is implemented in sigmaBoundaryFlux()
+ *                ( const IntersectionIteratorType& it, const double time, const
+ *                FaceDomainType& x, SigmaRangeType& <b>rhsReturn</b> )
  **/
 template < class DiscreteStokesModelDefaultTraitsImp >
 class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< DiscreteStokesModelDefaultTraitsImp >
 {
-    public:
+    private:
 
         //! interface class
         typedef DiscreteStokesModelInterface< DiscreteStokesModelDefaultTraitsImp >
             BaseType;
 
-        //! iterator over intersections
+    public:
+
+        //! \copydoc Dune::DiscreteStokesModelInterface::IntersectionIteratorType
         typedef typename BaseType::IntersectionIteratorType
             IntersectionIteratorType;
 
+        //! \copydoc Dune::DiscreteStokesModelInterface::VolumeQuadratureType
+        typedef typename BaseType::VolumeQuadratureType
+            VolumeQuadratureType;
+
+        //! \copydoc Dune::DiscreteStokesModelInterface::FaceQuadratureType
+        typedef typename BaseType::FaceQuadratureType
+            FaceQuadratureType;
+
+        //! \copydoc Dune::DiscreteStokesModelInterface::DiscreteStokesFunctionSpaceWrapperType
+        typedef typename BaseType::DiscreteStokesFunctionSpaceWrapperType
+            DiscreteStokesFunctionSpaceWrapperType;
+
+        //! \copydoc Dune::DiscreteStokesModelInterface::DiscreteStokesFunctionSpaceWrapperType
+        typedef typename BaseType::DiscreteStokesFunctionWrapperType
+            DiscreteStokesFunctionWrapperType;
+
+        //! \copydoc Dune::DiscreteStokesModelInterface::DiscreteSigmaFunctionType
+        typedef typename BaseType::DiscreteSigmaFunctionType
+            DiscreteSigmaFunctionType;
+
+        //! \copydoc Dune::DiscreteStokesModelInterface::DiscreteSigmaFunctionType
+        typedef typename BaseType::DiscreteSigmaFunctionType
+            DiscreteSigmaFunctionType;
+
+        //! \copydoc Dune::DiscreteStokesModelInterface::sigmaSpaceOrder
+        static const int sigmaSpaceOrder = polOrder;
+        //! \copydoc Dune::DiscreteStokesModelInterface::velocitySpaceOrder
+        static const int velocitySpaceOrder = polOrder;
+        //! \copydoc Dune::DiscreteStokesModelInterface::pressureSpaceOrder
+        static const int pressureSpaceOrder = polOrder;
+
+
     private:
 
+        //! codim 0 entity pointer type
         typedef typename IntersectionIteratorType::EntityPointer
             EntityPointer;
 
+        //! codim 0 entity type
         typedef typename IntersectionIteratorType::Entity
             EntityType;
 
+        //! geometry type of codim 0 entity
         typedef typename EntityType::Geometry
             EntityGeometryType;
 
