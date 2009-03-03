@@ -159,7 +159,7 @@ int main( int argc, char** argv )
         }
     }
     else {
-        Logger().SetPrefix( "fucker" );
+        Logger().SetPrefix( "dune_stokes" );
         Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
         typedef Dune::AdaptiveLeafGridPart< GridType >
             GridPartType;

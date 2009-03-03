@@ -184,7 +184,7 @@ inline void Velocity< TraitsImp >::evaluate(
     ret[0] = -1 * x1*x1;
     ret[1] = x2*x2;
 #elif defined(CONSTANT_PROBLEM)
-    ret[0] = -1;
+    ret[0] = 0;
     ret[1] = 0;
 #else
     double exp_of_x1 = std::exp( x1 );
