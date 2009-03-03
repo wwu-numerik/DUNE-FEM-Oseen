@@ -332,16 +332,16 @@ class StokesPass
             int numberOfIntersections = 0;
             int numberOfBoundaryIntersections = 0;
             int numberOfInnerIntersections = 0;
-            const bool Mprint = false;
-            const bool Wprint = false;
-            const bool Xprint = false;
-            const bool Yprint = false;
-            const bool Zprint = false;
-            const bool Eprint = false;
-            const bool Rprint = false;
-            const bool H1print = false;
-            const bool H2print = false;
-            const bool H3print = false;
+            const bool Mprint = true;
+            const bool Wprint = true;
+            const bool Xprint = true;
+            const bool Yprint = true;
+            const bool Zprint = true;
+            const bool Eprint = true;
+            const bool Rprint = true;
+            const bool H1print = true;
+            const bool H2print = true;
+            const bool H3print = true;
             const bool allOutput = false;
             int fivePercentOfEntities = 0;
             int fivePercents = 0;
@@ -440,8 +440,9 @@ class StokesPass
                         }
                     }
                 }
+                debugStream.Suspend(); // disable logging
 //                if ( outputEntity == entityNR ) entityOutput = true;
-                if ( allOutput ) entityOutput = true;
+//                if ( allOutput ) entityOutput = true;
                 if ( entityOutput ) debugStream.Resume(); // enable logging
                 debugStream << "  - numSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
                 debugStream << "  - numVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
@@ -2385,35 +2386,36 @@ class StokesPass
                     debugStream << " - = H3 ===========" << std::endl;
                     debugStream.Log( &DiscretePressureFunctionType::print, H3rhs );
                 }
+                debugStream << std::endl;
             }
 
             // do the matlab logging stuff
-//            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-//            Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Xmatrix.matrix(), "X", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Ymatrix.matrix(), "Y", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Zmatrix.matrix(), "Z", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Ematrix.matrix(), "E", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Rmatrix.matrix(), "R", matlabLogStream );
-//
-//            Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
-//            Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
-//            Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
-//
-//            matlabLogStream << "\nA = Y - X * M_invers * W;" << std::endl;
-//            matlabLogStream << "B = Z;" << std::endl;
-//            matlabLogStream << "B_T = - E;" << std::endl;
-//            matlabLogStream << "C = R;" << std::endl;
-//            matlabLogStream << "F = H2 - X * M_invers * H1;" << std::endl;
-//            matlabLogStream << "G = - H3;" << std::endl;
-//            matlabLogStream << "A_invers = inv( A );" << std::endl;
-//            matlabLogStream << "schur_S = B_T * A_invers * B + C;" << std::endl;
-//            matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
-//            matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
-//            matlabLogStream << "u = A_invers * ( F - B * p );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'Condition A: %d\\n', cond( A ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'Condition S: %d\\n', cond( schur_S ) );\n" << std::endl;
+            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+            Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Xmatrix.matrix(), "X", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Ymatrix.matrix(), "Y", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Zmatrix.matrix(), "Z", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Ematrix.matrix(), "E", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Rmatrix.matrix(), "R", matlabLogStream );
+
+            Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
+            Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
+            Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
+
+            matlabLogStream << "\nA = Y - X * M_invers * W;" << std::endl;
+            matlabLogStream << "B = Z;" << std::endl;
+            matlabLogStream << "B_T = - E;" << std::endl;
+            matlabLogStream << "C = R;" << std::endl;
+            matlabLogStream << "F = H2 - X * M_invers * H1;" << std::endl;
+            matlabLogStream << "G = - H3;" << std::endl;
+            matlabLogStream << "A_invers = inv( A );" << std::endl;
+            matlabLogStream << "schur_S = B_T * A_invers * B + C;" << std::endl;
+            matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
+            matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
+            matlabLogStream << "u = A_invers * ( F - B * p );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'Condition A: %d\\n', cond( A ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'Condition S: %d\\n', cond( schur_S ) );\n" << std::endl;
 #endif
 //            profiler().StopTiming("Pass -- ASSEMBLE");
 //            profiler().StartTiming("Pass -- SOLVER");
