@@ -179,16 +179,21 @@ int main( int argc, char** argv )
         }
     }
     else { //we don't do any variation here, just one simple run, no eoc, nothing
-        Logger().SetPrefix( "dune_stokes" );
-        Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
-        gridPtr->globalRefine( 0 );
-        gridPtr->globalRefine( maxref );
-        typedef Dune::AdaptiveLeafGridPart< GridType >
-            GridPartType;
-        GridPartType gridPart( *gridPtr );
-        RunInfo info = singleRun( mpicomm, gridPtr, gridPart, minpow, maxpow, -3, -3 );
-        l2_errors.push_back( info.L2Errors );
 
+        for ( int ref = 0; ref <= maxref; ++ref ) {
+            Logger().SetPrefix( "dune_stokes" );
+            Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
+            gridPtr->globalRefine( ref );
+            gridPtr->globalRefine( maxref );
+            typedef Dune::AdaptiveLeafGridPart< GridType >
+                GridPartType;
+            GridPartType gridPart( *gridPtr );
+            RunInfo info = singleRun( mpicomm, gridPtr, gridPart, minpow, maxpow, -30, -30 );
+            l2_errors.push_back( info.L2Errors );
+            eoc_output.setErrors( idx,info.L2Errors );
+            texwriter.setInfo( info );
+            eoc_output.write( texwriter, ( ref == maxref ) );
+        }
     }
 
 //    Stuff::TexOutput texOP;
