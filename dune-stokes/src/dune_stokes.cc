@@ -409,7 +409,7 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     Stuff::getMinMaxOfDiscreteFunction( computedPressure,
                                         computedPressureMin,
                                         computedPressureMax );
-    infoStream  << "  - computed velocity" << std::endl
+    infoStream  << "  - computed pressure" << std::endl
                 << "    min: " << computedPressureMin << std::endl
                 << "    max: " << computedPressureMax << std::endl;
 
