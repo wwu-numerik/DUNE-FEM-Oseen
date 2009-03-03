@@ -2403,19 +2403,19 @@ class StokesPass
             Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
             Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
 
-            matlabLogStream << "\nA = Y - X * M_invers * W;" << std::endl;
-            matlabLogStream << "B = Z;" << std::endl;
-            matlabLogStream << "B_T = - E;" << std::endl;
-            matlabLogStream << "C = R;" << std::endl;
-            matlabLogStream << "F = H2 - X * M_invers * H1;" << std::endl;
-            matlabLogStream << "G = - H3;" << std::endl;
-            matlabLogStream << "%A_invers = inv( A );" << std::endl;
-            matlabLogStream << "%schur_S = B_T * A_invers * B + C;" << std::endl;
-            matlabLogStream << "%schur_f = B_T * A_invers * F - G;" << std::endl;
-            matlabLogStream << "%p = schur_S \\ schur_f;" << std::endl;
-            matlabLogStream << "%u = A_invers * ( F - B * p );\n" << std::endl;
-            matlabLogStream << "%fprintf(1, 'Condition A: %d\\n', cond( A ) );\n" << std::endl;
-            matlabLogStream << "%fprintf(1, 'Condition S: %d\\n', cond( schur_S ) );\n" << std::endl;
+//            matlabLogStream << "\nA = Y - X * M_invers * W;" << std::endl;
+//            matlabLogStream << "B = Z;" << std::endl;
+//            matlabLogStream << "B_T = - E;" << std::endl;
+//            matlabLogStream << "C = R;" << std::endl;
+//            matlabLogStream << "F = H2 - X * M_invers * H1;" << std::endl;
+//            matlabLogStream << "G = - H3;" << std::endl;
+//            matlabLogStream << "%A_invers = inv( A );" << std::endl;
+//            matlabLogStream << "%schur_S = B_T * A_invers * B + C;" << std::endl;
+//            matlabLogStream << "%schur_f = B_T * A_invers * F - G;" << std::endl;
+//            matlabLogStream << "%p = schur_S \\ schur_f;" << std::endl;
+//            matlabLogStream << "%u = A_invers * ( F - B * p );\n" << std::endl;
+//            matlabLogStream << "%fprintf(1, 'Condition A: %d\\n', cond( A ) );\n" << std::endl;
+//            matlabLogStream << "%fprintf(1, 'Condition S: %d\\n', cond( schur_S ) );\n" << std::endl;
 #endif
             profiler().StopTiming("Pass -- ASSEMBLE");
             profiler().StartTiming("Pass -- SOLVER");
