@@ -383,9 +383,36 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     stokesPass.apply( discreteStokesFunctionWrapper, discreteStokesFunctionWrapper );
 
     /* ********************************************************************** *
-     * Problem postprocessing (with profiler example)                                 *
+     * Problem postprocessing (with profiler example)                         *
      * ********************************************************************** */
     infoStream << "\n- postprocesing" << std::endl;
+
+    typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
+        DiscreteVelocityFunctionType;
+    DiscreteVelocityFunctionType& computedVelocity = discreteStokesFunctionWrapper.discreteVelocity();
+    typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
+        DiscretePressureFunctionType;
+    DiscretePressureFunctionType& computedPressure = discreteStokesFunctionWrapper.discretePressure();
+
+    double computedVelocityMin = 0.0;
+    double computedVelocityMax = 0.0;
+    Stuff::getMinMaxOfDiscreteFunction( computedVelocity,
+                                        computedVelocityMin,
+                                        computedVelocityMax );
+    infoStream  << "  - computed velocity" << std::endl
+                << "    min: " << computedVelocityMin << std::endl
+                << "    max: " << computedVelocityMax << std::endl;
+
+    double computedPressureMin = 0.0;
+    double computedPressureMax = 0.0;
+
+    Stuff::getMinMaxOfDiscreteFunction( computedPressure,
+                                        computedPressureMin,
+                                        computedPressureMax );
+    infoStream  << "  - computed velocity" << std::endl
+                << "    min: " << computedPressureMin << std::endl
+                << "    max: " << computedPressureMax << std::endl;
+
 
     profiler().StartTiming( "Problem/Postprocessing" );
 

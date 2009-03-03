@@ -2389,6 +2389,27 @@ class StokesPass
                 debugStream << std::endl;
             }
 
+            double H1Min = 0.0;
+            double H1Max = 0.0;
+            double H2Min = 0.0;
+            double H2Max = 0.0;
+            double H3Min = 0.0;
+            double H3Max = 0.0;
+            Stuff::getMinMaxOfDiscreteFunction( H1rhs, H1Min, H1Max );
+            Stuff::getMinMaxOfDiscreteFunction( H2rhs, H2Min, H2Max );
+            Stuff::getMinMaxOfDiscreteFunction( H3rhs, H3Min, H3Max );
+
+            infoStream  << "- printing infos" << std::endl
+                        << "  - H1" << std::endl
+                        << "    min: " << H1Min << std::endl
+                        << "    max: " << H1Max << std::endl
+                        << "  - H2" << std::endl
+                        << "    min: " << H2Min << std::endl
+                        << "    max: " << H2Max << std::endl
+                        << "  - H3" << std::endl
+                        << "    min: " << H3Min << std::endl
+                        << "    max: " << H3Max << std::endl;
+
             // do the matlab logging stuff
 //            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
 //            Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
