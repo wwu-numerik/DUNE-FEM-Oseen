@@ -2390,19 +2390,17 @@ class StokesPass
             }
 
             // do the matlab logging stuff
-            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-            Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
-            Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
-            Stuff::printSparseRowMatrixMatlabStyle( Xmatrix.matrix(), "X", matlabLogStream );
-            Stuff::printSparseRowMatrixMatlabStyle( Ymatrix.matrix(), "Y", matlabLogStream );
-            Stuff::printSparseRowMatrixMatlabStyle( Zmatrix.matrix(), "Z", matlabLogStream );
-            Stuff::printSparseRowMatrixMatlabStyle( Ematrix.matrix(), "E", matlabLogStream );
-            Stuff::printSparseRowMatrixMatlabStyle( Rmatrix.matrix(), "R", matlabLogStream );
-
-            Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
-            Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
-            Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
-
+//            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+//            Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
+//            Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
+//            Stuff::printSparseRowMatrixMatlabStyle( Xmatrix.matrix(), "X", matlabLogStream );
+//            Stuff::printSparseRowMatrixMatlabStyle( Ymatrix.matrix(), "Y", matlabLogStream );
+//            Stuff::printSparseRowMatrixMatlabStyle( Zmatrix.matrix(), "Z", matlabLogStream );
+//            Stuff::printSparseRowMatrixMatlabStyle( Ematrix.matrix(), "E", matlabLogStream );
+//            Stuff::printSparseRowMatrixMatlabStyle( Rmatrix.matrix(), "R", matlabLogStream );
+//            Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
+//            Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
+//            Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
 //            matlabLogStream << "\nA = Y - X * M_invers * W;" << std::endl;
 //            matlabLogStream << "B = Z;" << std::endl;
 //            matlabLogStream << "B_T = - E;" << std::endl;
