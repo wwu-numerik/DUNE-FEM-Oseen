@@ -708,7 +708,7 @@ class StokesPass
                         double H2_j = 0.0;
 #ifndef NLOG
     //                    if ( ( j == logBaseJ ) ) H2output = true;
-                        if ( allOutput ) H2output = true;
+//                        if ( allOutput ) H2output = true;
                         if ( entityOutput && H2output ) debugStream.Resume(); // enable logging
                         debugStream << "    = H2 =======================" << std::endl;
                         debugStream << "    basefunction " << " " << j << std::endl;
@@ -1815,7 +1815,7 @@ class StokesPass
                                 double H1_j = 0.0;
 #ifndef NLOG
     //                            if ( j == logBaseJ ) H1output = true;
-                                if ( allOutput ) H1output = true;
+//                                if ( allOutput ) H1output = true;
                                 if ( intersectionOutput && H1output ) debugStream.Resume(); // enable logging
                                 debugStream << "      = H1 boundary ====================" << std::endl;
                                 debugStream << "      basefunction " << j << std::endl;
@@ -2026,7 +2026,7 @@ class StokesPass
                                 double H2_j = 0.0;
 #ifndef NLOG
     //                            if ( j == logBaseJ ) H2output = true;
-                                if ( allOutput ) H2output = true;
+//                                if ( allOutput ) H2output = true;
                                 if ( intersectionOutput && H2output ) debugStream.Resume(); // enable logging
                                 debugStream << "      = H2 boundary ====================" << std::endl;
                                 debugStream << "      basefunction " << j << std::endl;
@@ -2259,7 +2259,7 @@ class StokesPass
                                 double H3_j = 0.0;
 #ifndef NLOG
     //                            if ( j == logBaseJ ) H3output = true;
-                                if ( allOutput ) H3output = true;
+//                                if ( allOutput ) H3output = true;
                                 if ( intersectionOutput && H3output ) debugStream.Resume(); // enable logging
                                 debugStream << "      = H3 boundary ====================" << std::endl;
                                 debugStream << "      basefunction " << j << std::endl;
