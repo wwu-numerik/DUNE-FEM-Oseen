@@ -121,6 +121,7 @@ int main( int argc, char** argv )
     //the outermost loop counts from 0 to this
     //also sets the refinelevel in non-variation context
     int maxref = Parameters().getParam( "maxref", 0 );
+    int minref = Parameters().getParam( "minref", 0 );
 
     // the min andmax exponent that will be used in stabilizing terms
     // ie c11 = ( h_^minpow ) .. ( h^maxpow )
@@ -128,13 +129,14 @@ int main( int argc, char** argv )
     // in non-variation context minpow is used for c12 exp and maxpow for d12,
     //      c11 and D11 are set to zero
     int maxpow = Parameters().getParam( "maxpow", 2 );
+    //set minref == maxref to get only a single run in non variation part
     int minpow = Parameters().getParam( "minpow", -2 );
 
     if ( false ) {
         /** all four stab parameters are permutated in [ minpow ; maxpow ]
             inside an outer loop that increments the grid's refine level
         **/
-        for ( int ref = 0; ref < maxref; ++ref ) {
+        for ( int ref = minref; ref < maxref; ++ref ) {
             for ( int i = minpow; i < maxpow; ++i ) {
                 for ( int j = minpow; j < maxpow; ++j ) {
                     for ( int k = minpow; k < maxpow; ++k ) {
@@ -180,11 +182,10 @@ int main( int argc, char** argv )
     }
     else { //we don't do any variation here, just one simple run, no eoc, nothing
 
-        for ( int ref = 0; ref <= maxref; ++ref ) {
+        for ( int ref = minref; ref <= maxref; ++ref ) {
             Logger().SetPrefix( "dune_stokes" );
             Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
             gridPtr->globalRefine( ref );
-            gridPtr->globalRefine( maxref );
             typedef Dune::AdaptiveLeafGridPart< GridType >
                 GridPartType;
             GridPartType gridPart( *gridPtr );
