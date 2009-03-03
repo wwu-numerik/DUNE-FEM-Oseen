@@ -78,7 +78,7 @@
 			<Add option="-g" />
 			<Add option="-fexceptions" />
 			<Add option="-DENABLE_ALUGRID" />
-			<Add option="-DALUGRID_SIMPLEX" />
+			<Add option="-DALUGRID_CONFORM" />
 			<Add option="-DGRIDDIM=2" />
 			<Add option="-DPOLORDER=1" />
 			<Add option="-DHAVE_CONFIG_H" />

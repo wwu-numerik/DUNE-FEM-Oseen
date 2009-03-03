@@ -8,7 +8,7 @@
 #include "config.h"
 #endif
 
-#define POLORDER 0
+//#define POLORDER 1
 
 //#define SIMPLE_PROBLEM
 #define CONSTANT_PROBLEM
