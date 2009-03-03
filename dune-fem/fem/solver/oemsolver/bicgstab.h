@@ -33,15 +33,15 @@
 #undef USE_MEMPROVIDER
 // ============================================================================
 #include "tmpmem.hh"
-template < class Stream, class Type >
-void printDoubleVec( Stream& stream, const Type * vec, const unsigned int N )
-{
-    stream << "\n [ " << std::setw( 3 );
-    for ( unsigned int i = 0; i < N ; ++i )
-        stream << vec[i] << "  ";
-
-    stream << " ] " << std::endl;
-}
+//template < class Stream, class Type >
+//void printDoubleVec( Stream& stream, const Type * vec, const unsigned int N )
+//{
+//    stream << "\n [ " << std::setw( 3 );
+//    for ( unsigned int i = 0; i < N ; ++i )
+//        stream << vec[i] << "  ";
+//
+//    stream << " ] " << std::endl;
+//}
 static OEMTmpMem bicgMem;
 
 template<bool usePC,

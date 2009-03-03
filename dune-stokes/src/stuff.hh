@@ -8,7 +8,7 @@
 #define SEGFAULT int*i=0;*i=9;
 
 #include <iomanip>
-
+#include <vector>
 
 namespace Stuff
 {
@@ -39,12 +39,100 @@ std::string toString(const ReturnType& s)
     return r;
 }
 
-struct TexOutput
+template < class Info >
+class TexOutput
 {
-    void printTexInfo(std::ostream&) const
-    {
+    typedef std::vector< std::string >
+        Strings;
 
-    }
+    Info info_;
+    double current_h_;
+    Strings headers_;
+
+
+    public:
+        TexOutput( const Info& info, Strings& headers )
+            : info_(info),
+            current_h_(1.0),
+            headers_(headers)
+        {}
+
+        TexOutput( Strings& headers )
+            : info_(Info()),
+            current_h_(1.0),
+            headers_(headers)
+        {}
+
+        void setInfo( const Info& info )
+        {
+            info_ = info;
+        }
+
+        void putLineEnd( std::ofstream& outputFile_ )
+        {
+            outputFile_ << "\n"
+                << "\\tabularnewline\n"
+	              << "\\hline \n";
+            outputFile_.flush();
+        }
+
+        void putErrorCol( std::ofstream& outputFile_, const double prevError_, const double error_, const double prevh_,  const bool initial  )
+        {
+            current_h_ = info_.grid_width;
+            double factor = prevh_/current_h_;
+            double eoc = log(prevError_/error_)/log(factor);
+            outputFile_ << " & " << error_ << " & " << eoc;
+        }
+
+        void putHeader( std::ofstream& outputFile_ )
+        {
+            const unsigned int dynColSize = 2;
+            const unsigned int statColSize = headers_.size() - 2;
+            outputFile_ << "\\begin{longtable}{";
+            for (unsigned int i=0;i<statColSize;i++) {
+                outputFile_ << "|c|";
+            }
+            for (unsigned int i=0;i<dynColSize;i++) {
+                outputFile_ << "|cc|";
+            }
+            outputFile_ << "}\n"
+                << "\\hline \n";
+            for (unsigned int i=0;i<statColSize;i++) {
+                outputFile_ << headers_[i];
+                if ( i <  statColSize - 1 )
+                    outputFile_ << " & ";
+            }
+            for (unsigned int i=0;i<dynColSize;i++) {
+                outputFile_ << " & " << headers_[i+statColSize]
+                    << " & EOC ";
+            }
+            outputFile_ << "\n \\endhead\n"
+                        << "\\hline\n"
+                        << "\\hline\n";
+        }
+
+        void putStaticCols( std::ofstream& outputFile_ )
+        {
+            outputFile_ << std::setw( 4 )
+                << info_.grid_width << " & "
+                << info_.codim0 << " & "
+                << info_.c11 << " & "
+                << info_.d11 << " & "
+                << info_.c12 << " & "
+                << info_.d12 ;
+
+        }
+
+        void endTable( std::ofstream& outputFile_ )
+        {
+            outputFile_ << "\\end{longtable}";
+            outputFile_.flush();
+        }
+
+        double get_h ()
+        {
+            return current_h_;
+        }
 };
 
 /**
@@ -197,6 +285,8 @@ void addScalarToFunc( Function& f, double sc )
         *it += sc;
     return;
 }
+
+
 
 } // end namepspace stuff
 

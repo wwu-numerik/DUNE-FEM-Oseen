@@ -342,7 +342,7 @@ class StokesPass
             const bool H1print = true;
             const bool H2print = true;
             const bool H3print = true;
-            const bool allOutput = true;
+            const bool allOutput = false;
             int fivePercentOfEntities = 0;
             int fivePercents = 0;
             infoStream << "\nthis is StokesPass::apply()" << std::endl;
@@ -440,8 +440,9 @@ class StokesPass
                         }
                     }
                 }
+                debugStream.Suspend(); // disable logging
 //                if ( outputEntity == entityNR ) entityOutput = true;
-                if ( allOutput ) entityOutput = true;
+//                if ( allOutput ) entityOutput = true;
                 if ( entityOutput ) debugStream.Resume(); // enable logging
                 debugStream << "  - numSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
                 debugStream << "  - numVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
@@ -708,7 +709,7 @@ class StokesPass
                         double H2_j = 0.0;
 #ifndef NLOG
     //                    if ( ( j == logBaseJ ) ) H2output = true;
-                        if ( allOutput ) H2output = true;
+//                        if ( allOutput ) H2output = true;
                         if ( entityOutput && H2output ) debugStream.Resume(); // enable logging
                         debugStream << "    = H2 =======================" << std::endl;
                         debugStream << "    basefunction " << " " << j << std::endl;
@@ -1815,7 +1816,7 @@ class StokesPass
                                 double H1_j = 0.0;
 #ifndef NLOG
     //                            if ( j == logBaseJ ) H1output = true;
-                                if ( allOutput ) H1output = true;
+//                                if ( allOutput ) H1output = true;
                                 if ( intersectionOutput && H1output ) debugStream.Resume(); // enable logging
                                 debugStream << "      = H1 boundary ====================" << std::endl;
                                 debugStream << "      basefunction " << j << std::endl;
@@ -2026,7 +2027,7 @@ class StokesPass
                                 double H2_j = 0.0;
 #ifndef NLOG
     //                            if ( j == logBaseJ ) H2output = true;
-                                if ( allOutput ) H2output = true;
+//                                if ( allOutput ) H2output = true;
                                 if ( intersectionOutput && H2output ) debugStream.Resume(); // enable logging
                                 debugStream << "      = H2 boundary ====================" << std::endl;
                                 debugStream << "      basefunction " << j << std::endl;
@@ -2259,7 +2260,7 @@ class StokesPass
                                 double H3_j = 0.0;
 #ifndef NLOG
     //                            if ( j == logBaseJ ) H3output = true;
-                                if ( allOutput ) H3output = true;
+//                                if ( allOutput ) H3output = true;
                                 if ( intersectionOutput && H3output ) debugStream.Resume(); // enable logging
                                 debugStream << "      = H3 boundary ====================" << std::endl;
                                 debugStream << "      basefunction " << j << std::endl;
@@ -2385,6 +2386,7 @@ class StokesPass
                     debugStream << " - = H3 ===========" << std::endl;
                     debugStream.Log( &DiscretePressureFunctionType::print, H3rhs );
                 }
+                debugStream << std::endl;
             }
 
             // do the matlab logging stuff
@@ -2411,12 +2413,14 @@ class StokesPass
             matlabLogStream << "schur_S = B_T * A_invers * B + C;" << std::endl;
             matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
             matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
-            matlabLogStream << "u = A_invers * ( F - B * p );" << std::endl;
+            matlabLogStream << "u = A_invers * ( F - B * p );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'Condition A: %d\\n', cond( A ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'Condition S: %d\\n', cond( schur_S ) );\n" << std::endl;
 #endif
 //            profiler().StopTiming("Pass -- ASSEMBLE");
 //            profiler().StartTiming("Pass -- SOLVER");
-//            InvOpType op;
-//            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+            InvOpType op;
+            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 //            profiler().StopTiming("Pass -- SOLVER");
 //            profiler().StopTiming("Pass");
 #ifndef NLOG

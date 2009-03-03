@@ -11,7 +11,7 @@
 #define POLORDER 0
 
 //#define SIMPLE_PROBLEM
-//#define CONSTANT_PROBLEM
+#define CONSTANT_PROBLEM
 //#define NLOG
 
 #include <iostream>
@@ -26,7 +26,7 @@
 //#include <dune/fem/grid/gridpart.hh>
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
-#include <dune/fem/misc/eoc.hh>
+#include <dune/fem/misc/femeoc.hh>
 #include <dune/fem/misc/gridwidth.hh>
 
 #include <dune/stokes/discretestokesfunctionspacewrapper.hh>
@@ -47,13 +47,25 @@
 #endif
 
 typedef std::vector< std::vector<double> > L2ErrorVector;
-typedef std::vector<std::string> ErrorColumnHeaders;
-const std::string errheaders[] = { "Velocity L2 Error", "Pressure L2 Error" };
+typedef std::vector<std::string> ColumnHeaders;
+const std::string errheaders[] = { "h", "tris","C11","C12","D11","D12","Velocity", "Pressure" };
 const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
 
-int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPtr,
-                L2ErrorVector& l2_errors );
+struct RunInfo
+{
+    std::vector< double > L2Errors;
+    double grid_width;
+    int refine_level;
+    double run_time;
+    long codim0;
+    double c11,d11,c12,d12;
+};
 
+template < class GridPartType >
+RunInfo singleRun(  CollectiveCommunication mpicomm,
+                Dune::GridPtr< GridType > gridPtr,
+                GridPartType& gridPart,
+                int pow1, int pow2, int pow3, int pow4  );
 /**
  *  \brief  main function
  *
@@ -90,24 +102,78 @@ int main( int argc, char** argv )
     //--> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_CONSOLE | LOG_FILE = 62
     Logger().Create( Parameters().getParam( "loglevel", 62 ),
                      Parameters().getParam( "logfile", std::string("dune_stokes") ) );
+    bool per_run_log_target = Parameters().getParam( "per-run-log-target", true );
 
     L2ErrorVector l2_errors;
-    ErrorColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
+    ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
 
-    Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
-    long el = gridPtr->size(0);
-    profiler().Reset( 1 ); //prepare for one single run
-    int err = singleRun( mpicomm, gridPtr, l2_errors );
-    profiler().NextRun( l2_errors[0][0] ); //finish this run
+    int err = 0;
+    Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
+    eoc_output.initialize( "data","eoc-file", "eoc-desc", "eoc-template.tex" );
+    size_t idx = eoc_output.addEntry( errorColumnHeaders );
+    Stuff::TexOutput< RunInfo > texwriter( errorColumnHeaders );
 
-    err += chdir( "data" );
-    Dune::EocOutput eoc_output ( "eoc", "info" );
-    Stuff::TexOutput texOP;
-    eoc_output.printInput( *gridPtr, texOP );
+    profiler().Reset( 9 ); //prepare for 9 single runs
+    int maxref = Parameters().getParam( "maxref", 1 );
+    int maxpow = Parameters().getParam( "maxpow", 2 );
+    int minpow = Parameters().getParam( "minpow", -2 );
 
-    long prof_time = profiler().Output( mpicomm, 0, el );
-    eoc_output.printTexAddError( el, l2_errors[0], errorColumnHeaders, 150, 0 );
-    eoc_output.printTexEnd( prof_time );
+    if ( false ) {
+        for ( int ref = 0; ref < maxref; ++ref ) {
+            for ( int i = minpow; i < maxpow; ++i ) {
+                for ( int j = minpow; j < maxpow; ++j ) {
+                    for ( int k = minpow; k < maxpow; ++k ) {
+                        for ( int l = minpow; l < maxpow; ++l ) {
+                            Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
+                            gridPtr->globalRefine( ref );
+                            typedef Dune::AdaptiveLeafGridPart< GridType >
+                                GridPartType;
+                            GridPartType gridPart( *gridPtr );
+                            if ( per_run_log_target ) {
+                                std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
+                                Logger().SetPrefix( ff );
+                            }
+                            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+                            matlabLogStream <<std::endl<< "\nclear;\ntry\ntic;warning off all;" << std::endl;
+                            matlabLogStream << "disp(' c/d-11/12 h powers: "<< i << " "
+                                    << j << " " << k << " "
+                                    << l << "') \n" << std::endl;
+                            RunInfo info = singleRun( mpicomm, gridPtr, gridPart, i, j, k, l );
+                            matlabLogStream << "\ncatch\ndisp('errors here');\nend\ntoc\ndisp(' ');\n" << std::endl;
+                            l2_errors.push_back( info.L2Errors );
+    //			            profiler().NextRun( info.L2Errors ); //finish this run
+
+                            eoc_output.setErrors( idx,info.L2Errors );
+                            texwriter.setInfo( info );
+                            bool lastrun = (
+                                ( ref == ( maxref - 1 ) ) &&
+                                ( j == ( maxpow - 1 ) ) &&
+                                ( k == ( maxpow - 1 ) ) &&
+                                ( l == ( maxpow - 1 ) ) &&
+                                ( i == ( maxpow - 1 ) ) );
+                            eoc_output.write( texwriter, lastrun );
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else {
+        Logger().SetPrefix( "fucker" );
+        Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
+        typedef Dune::AdaptiveLeafGridPart< GridType >
+            GridPartType;
+        GridPartType gridPart( *gridPtr );
+        RunInfo info = singleRun( mpicomm, gridPtr, gridPart, minpow, maxpow, -2, -2 );
+        l2_errors.push_back( info.L2Errors );
+
+    }
+
+//    Stuff::TexOutput texOP;
+//    eoc_output.printInput( *gridPtr, texOP );
+//
+//    long prof_time = profiler().Output( mpicomm, 0, el );
+
 
     return err;
   }
@@ -119,23 +185,27 @@ int main( int argc, char** argv )
   }
 }
 
-int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPtr,
-                L2ErrorVector& l2_errors )
+template < class GridPartType >
+RunInfo singleRun(  CollectiveCommunication mpicomm,
+                Dune::GridPtr< GridType > gridPtr,
+                GridPartType& gridPart,
+                int pow1, int pow2, int pow3, int pow4  )
 {
     Logging::LogStream& infoStream = Logger().Info();
     ParameterContainer& parameters = Parameters();
+    RunInfo info;
 
     /* ********************************************************************** *
      * initialize the grid                                                    *
      * ********************************************************************** */
     infoStream << "\ninitialising grid..." << std::endl;
 
-    typedef Dune::LeafGridPart< GridType >
-        GridPartType;
-    GridPartType gridPart( *gridPtr );
     const int gridDim = GridType::dimensionworld;
     const int polOrder = POLORDER;
     const double viscosity = Parameters().getParam( "viscosity", 1.0 );
+    info.codim0 = gridPtr->size( 0 );
+    info.codim0 = gridPart.grid().size( 0 );
+
 
 
     infoStream << "...done." << std::endl;
@@ -173,20 +243,22 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
         StokesModelImpType;
 
     Dune::GridWidthProvider< GridType > gw ( *gridPtr );
-
     double grid_width = gw.gridWidth();
     infoStream << " \n max grid width: " << grid_width << std::endl;
+    info.grid_width = grid_width;
 
-    Dune::FieldVector< double, gridDim > ones( 1.0 );
-    Dune::FieldVector< double, gridDim > vec_1_h( 1 - grid_width );
-    //ones /= grid_width;
-    Dune::FieldVector< double, gridDim > zeros( 0.0 );
-    double h_fac = Parameters().getParam( "h-factor", 1.0 );
+    typedef Dune::FieldVector< double, gridDim >
+        ConstVec;
 
-    StokesModelImpType stokesModel( h_fac / ( grid_width) ,
-                                    zeros,
-                                    h_fac * grid_width,
-                                    zeros,
+    const double minpow = -2;
+    double c11 = pow1 > minpow ? std::pow( grid_width, pow1 ) :0;
+    double d11 = pow2 > minpow ? std::pow( grid_width, pow2 ) :0;
+    double c12 = pow3 > minpow ? std::pow( grid_width, pow3 ) :0;
+    double d12 = pow4 > minpow ? std::pow( grid_width, pow4 ) :0;
+    StokesModelImpType stokesModel( c11,
+                                    ConstVec ( c12 ),
+                                    d11,
+                                    ConstVec ( d12 ),
                                     analyticalForce,
                                     analyticalDirichletData,
                                     viscosity  );
@@ -205,7 +277,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
 //                DiscretePressureFunctionSpaceType > >
 //        DiscreteStokesFunctionSpaceWrapperType;
 
-    typedef StokesModelTraitsImp::DiscreteStokesFunctionSpaceWrapperType
+    typedef typename StokesModelTraitsImp::DiscreteStokesFunctionSpaceWrapperType
         DiscreteStokesFunctionSpaceWrapperType;
 
     DiscreteStokesFunctionSpaceWrapperType discreteStokesFunctionSpaceWrapper( gridPart );
@@ -216,7 +288,7 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
 //                StokesModelType::DiscretePressureFunctionType > >
 //        DiscreteStokesFunctionWrapperType;
 
-    typedef StokesModelTraitsImp::DiscreteStokesFunctionWrapperType
+    typedef typename StokesModelTraitsImp::DiscreteStokesFunctionWrapperType
         DiscreteStokesFunctionWrapperType;
 
     DiscreteStokesFunctionWrapperType discreteStokesFunctionWrapper(    "wrapped",
@@ -267,12 +339,17 @@ int singleRun( CollectiveCommunication mpicomm, Dune::GridPtr< GridType > gridPt
 
     PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );
 
-    postProcessor.save( *gridPtr, discreteStokesFunctionWrapper ); //dummy params, should be computed solutions );
-    l2_errors.push_back( postProcessor.getError() );
+    postProcessor.save( *gridPtr, discreteStokesFunctionWrapper );
+    info.L2Errors = postProcessor.getError();
+    info.c11 = c11;
+    info.c12 = c12;
+    info.d11 = d11;
+    info.d12 = d12;
 
     profiler().StopTiming( "Problem/Postprocessing" );
 
     infoStream << "...done." << std::endl;
 
-    return 0;
+    return info;
 }
+

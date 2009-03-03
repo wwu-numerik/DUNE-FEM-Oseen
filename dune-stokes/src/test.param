@@ -8,6 +8,10 @@ fem.io.datafileprefix: data_
 fem.io.savestep: -1
 fem.io.savecount: 1
 fem.io.outputformat: 1
+maxref: 1
+maxpow: 1
+minpow: -1
+per-run-log-target: 0
 
 #
 dgf_file_2d: grid_2d.dgf
@@ -15,8 +19,8 @@ dgf_file_3d: grid_3d.dgf
 
 #
 viscosity: 1
-relLimit: 1e-6
-absLimit: 1e-8
+relLimit: 1e-3
+absLimit: 1e-3
 solverVerbosity: 0
 maxSKIterations: -500
 h-factor: 1.0

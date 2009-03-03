@@ -6,7 +6,7 @@
  */
 
 
-//#define CG_SOLVERTYPE OEMGMRESOp
+#define CG_SOLVERTYPE OEMCGOp
 #ifndef CG_SOLVERTYPE
     #define CG_SOLVERTYPE OEMBICGSTABOp
 #endif
@@ -182,7 +182,7 @@ namespace Dune {
                             velocity.space(), pressure.space() );
         Sk_Solver sk_solver( sk_op, relLimit, absLimit, 2000, solverVerbosity );
         pressure.clear();
-        Stuff::addScalarToFunc( pressure, 0.1 );
+//        Stuff::addScalarToFunc( pressure, 0.1 );
 		// p = S^-1 * new_f = ( B_t * A^-1 * B + rhs3 )^-1 * new_f
 		sk_solver( new_f, pressure );
 		//

@@ -123,9 +123,9 @@ class PostProcessor
 			VTK_WRITE( discreteExactDirichlet_ );
 			VTK_WRITE( errorFunc_pressure_ );
 			VTK_WRITE( errorFunc_velocity_ );
-
+#ifndef NLOG
 			entityColoration();
-
+#endif
         }
 
         void calcError( const DiscretePressureFunctionType& pressure, const DiscreteVelocityFunctionType& velocity )
@@ -144,7 +144,8 @@ class PostProcessor
             l2_error_velocity_ =
                 l2_Error.norm( errorFunc_velocity_ );
 
-            Logger().Info()  << "L2-Error Pressure: " << std::setw(8) << l2_error_pressure_ << "\n"
+            Logger().Info().Resume();
+            Logger().Info() << "L2-Error Pressure: " << std::setw(8) << l2_error_pressure_ << "\n"
                                 << "L2-Error Velocity: " << std::setw(8) << l2_error_velocity_ << "\n"
                                 << "L2-Error Pressure (sqrt): " << std::setw(8) << std::sqrt( l2_error_pressure_ ) << "\n"
                                 << "L2-Error Velocity (sqrt): " << std::setw(8) << std::sqrt( l2_error_velocity_ ) << std::endl;

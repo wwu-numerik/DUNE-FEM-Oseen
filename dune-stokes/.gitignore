@@ -39,6 +39,7 @@ src/dune_stokes-dune_stokes.o
 src/grid_2d.dgf.ALUgrid
 src/stuff.hh.bak
 src/stuff.hh.orig
+src/*matlab.m
 stamp-h1
 stokes/discretestokesfunctionspacewrapper.hh.bak
 stokes/discretestokesmodelinterface.hh.bak
