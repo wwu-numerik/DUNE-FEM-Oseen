@@ -32,6 +32,7 @@
 				<Compiler>
 					<Add option="-w" />
 					<Add option="-g" />
+					<Add directory="/usr/local/grape" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
