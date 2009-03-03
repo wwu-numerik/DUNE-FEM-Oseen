@@ -1168,8 +1168,6 @@ class DiscreteStokesModelDefaultTraits
         typedef Dune::CachingQuadrature< GridPartImp, 1 >
             FaceQuadratureType;
 
-    private:
-
         //! polynomial order for the discrete sigma function space
         static const int sigmaSpaceOrder = polOrder;
         //! polynomial order for the discrete velocity function space
