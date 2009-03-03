@@ -102,8 +102,11 @@ int main( int argc, char** argv )
     //--> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_CONSOLE | LOG_FILE = 62
     Logger().Create( Parameters().getParam( "loglevel", 62 ),
                      Parameters().getParam( "logfile", std::string("dune_stokes") ) );
+
+    // setting this to true will give each run a unique logilfe name
     bool per_run_log_target = Parameters().getParam( "per-run-log-target", true );
 
+    // coloumn headers for eoc table output
     L2ErrorVector l2_errors;
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
 
@@ -114,11 +117,23 @@ int main( int argc, char** argv )
     Stuff::TexOutput< RunInfo > texwriter( errorColumnHeaders );
 
     profiler().Reset( 9 ); //prepare for 9 single runs
-    int maxref = Parameters().getParam( "maxref", 1 );
+
+    //the outermost loop counts from 0 to this
+    //also sets the refinelevel in non-variation context
+    int maxref = Parameters().getParam( "maxref", 0 );
+
+    // the min andmax exponent that will be used in stabilizing terms
+    // ie c11 = ( h_^minpow ) .. ( h^maxpow )
+    // pow = -2 is interpreted as 0
+    //in non-variation context minpow is used for c12 exp and maxpow for d12,
+    //      c11 and D11 are set to zero
     int maxpow = Parameters().getParam( "maxpow", 2 );
     int minpow = Parameters().getParam( "minpow", -2 );
 
     if ( false ) {
+        /** all four stab parameters are permutated in [ minpow ; maxpow ]
+            inside an outer loop that increments the grid's refine level
+        **/
         for ( int ref = 0; ref < maxref; ++ref ) {
             for ( int i = minpow; i < maxpow; ++i ) {
                 for ( int j = minpow; j < maxpow; ++j ) {
@@ -129,28 +144,33 @@ int main( int argc, char** argv )
                             typedef Dune::AdaptiveLeafGridPart< GridType >
                                 GridPartType;
                             GridPartType gridPart( *gridPtr );
-                            if ( per_run_log_target ) {
+                            if ( per_run_log_target ) { //sets unique per run filename if requested
                                 std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
                                 Logger().SetPrefix( ff );
                             }
                             Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+                            //do some matlab magic to suppress errors and display a little info baout current params
                             matlabLogStream <<std::endl<< "\nclear;\ntry\ntic;warning off all;" << std::endl;
                             matlabLogStream << "disp(' c/d-11/12 h powers: "<< i << " "
                                     << j << " " << k << " "
                                     << l << "') \n" << std::endl;
+                            //actual work
                             RunInfo info = singleRun( mpicomm, gridPtr, gridPart, i, j, k, l );
+                            // new line and closing try/catch in m-file
                             matlabLogStream << "\ncatch\ndisp('errors here');\nend\ntoc\ndisp(' ');\n" << std::endl;
                             l2_errors.push_back( info.L2Errors );
-    //			            profiler().NextRun( info.L2Errors ); //finish this run
+    			            profiler().NextRun( info.L2Errors ); //finish this run
 
+                            //push errors to eoc-outputter class
                             eoc_output.setErrors( idx,info.L2Errors );
                             texwriter.setInfo( info );
-                            bool lastrun = (
+                            bool lastrun = ( //this test is somewhat stupid, make it smart!!
                                 ( ref == ( maxref - 1 ) ) &&
                                 ( j == ( maxpow - 1 ) ) &&
                                 ( k == ( maxpow - 1 ) ) &&
                                 ( l == ( maxpow - 1 ) ) &&
                                 ( i == ( maxpow - 1 ) ) );
+                            //the writer needs to know if it should close the table etc.
                             eoc_output.write( texwriter, lastrun );
                         }
                     }
@@ -158,9 +178,10 @@ int main( int argc, char** argv )
             }
         }
     }
-    else {
+    else { //we don't do any variation here, just one simple run, no eoc, nothing
         Logger().SetPrefix( "dune_stokes" );
         Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
+        gridPtr->globalRefine( maxref );
         typedef Dune::AdaptiveLeafGridPart< GridType >
             GridPartType;
         GridPartType gridPart( *gridPtr );
