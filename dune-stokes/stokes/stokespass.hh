@@ -320,8 +320,8 @@ class StokesPass
 #ifndef NLOG
             // logging stuff
             Logging::LogStream& infoStream = Logger().Info();
-            Logging::LogStream& debugStream = Logger().Info();
-//            Logging::LogStream& debugStream = Logger().Dbg();
+//            Logging::LogStream& debugStream = Logger().Info();
+            Logging::LogStream& debugStream = Logger().Dbg();
             bool entityOutput = false;
             bool intersectionOutput = false;
             const int outputEntity = 0;
@@ -332,20 +332,20 @@ class StokesPass
             int numberOfIntersections = 0;
             int numberOfBoundaryIntersections = 0;
             int numberOfInnerIntersections = 0;
-            const bool Mprint = true;
-            const bool Wprint = true;
-            const bool Xprint = true;
-            const bool Yprint = true;
-            const bool Zprint = true;
-            const bool Eprint = true;
-            const bool Rprint = true;
-            const bool H1print = true;
-            const bool H2print = true;
-            const bool H3print = true;
+            const bool Mprint = false;
+            const bool Wprint = false;
+            const bool Xprint = false;
+            const bool Yprint = false;
+            const bool Zprint = false;
+            const bool Eprint = false;
+            const bool Rprint = false;
+            const bool H1print = false;
+            const bool H2print = false;
+            const bool H3print = false;
             const bool allOutput = false;
             int fivePercentOfEntities = 0;
             int fivePercents = 0;
-            infoStream << "\nthis is StokesPass::apply()" << std::endl;
+            infoStream << "this is StokesPass::apply()" << std::endl;
 
             // do an empty grid walk to get informations
             EntityIteratorType entityItEndLog = velocitySpace_.end();
@@ -426,10 +426,10 @@ class StokesPass
                 const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
 
                 // get quadrature
-//                const VolumeQuadratureType volumeQuadratureElement( entity,
-//                                                                    ( 2 * pressureSpaceOrder ) + 1 );
                 const VolumeQuadratureType volumeQuadratureElement( entity,
-                                                                    3 );
+                                                                    ( 2 * pressureSpaceOrder ) + 1 );
+//                const VolumeQuadratureType volumeQuadratureElement( entity,
+//                                                                    3 );
 #ifndef NLOG
                 if ( numberOfEntities > 19 ) {
                     if ( ( entityNR % fivePercentOfEntities ) == 0 ) {
@@ -845,14 +845,14 @@ class StokesPass
 #endif
 
                     // get intersection quadrature, seen from inside
-//                    const FaceQuadratureType faceQuadratureElement( gridPart_,
-//                                                                    intIt,
-//                                                                    ( 2 * pressureSpaceOrder ) + 1,
-//                                                                    FaceQuadratureType::INSIDE );
                     const FaceQuadratureType faceQuadratureElement( gridPart_,
                                                                     intIt,
-                                                                    3,
+                                                                    ( 2 * pressureSpaceOrder ) + 1,
                                                                     FaceQuadratureType::INSIDE );
+//                    const FaceQuadratureType faceQuadratureElement( gridPart_,
+//                                                                    intIt,
+//                                                                    3,
+//                                                                    FaceQuadratureType::INSIDE );
 
                     // if we are inside the grid
                     if ( intIt.neighbor() && !intIt.boundary() ) {
@@ -878,14 +878,14 @@ class StokesPass
                         const int numPressureBaseFunctionsNeighbour = pressureBaseFunctionSetNeighbour.numBaseFunctions();
 
                         // get intersection quadrature, seen from outside
-//                        const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
-//                                                                            intIt,
-//                                                                            ( 2 * pressureSpaceOrder ) + 1,
-//                                                                            FaceQuadratureType::OUTSIDE );
                         const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
                                                                             intIt,
-                                                                            3,
+                                                                            ( 2 * pressureSpaceOrder ) + 1,
                                                                             FaceQuadratureType::OUTSIDE );
+//                        const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
+//                                                                            intIt,
+//                                                                            3,
+//                                                                            FaceQuadratureType::OUTSIDE );
 
                         // compute the surface integrals
 
@@ -2341,7 +2341,7 @@ class StokesPass
             if ( numberOfEntities > 19 ) {
                 infoStream << "]";
             }
-            infoStream << "\n- gridwalk done" << std::endl;
+            infoStream << "\n- gridwalk done" << std::endl << std::endl;
 
             if ( Mprint || Wprint || Xprint || Yprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
                 debugStream.Resume();
@@ -2409,20 +2409,20 @@ class StokesPass
             matlabLogStream << "C = R;" << std::endl;
             matlabLogStream << "F = H2 - X * M_invers * H1;" << std::endl;
             matlabLogStream << "G = - H3;" << std::endl;
-            matlabLogStream << "A_invers = inv( A );" << std::endl;
-            matlabLogStream << "schur_S = B_T * A_invers * B + C;" << std::endl;
-            matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
-            matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
-            matlabLogStream << "u = A_invers * ( F - B * p );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'Condition A: %d\\n', cond( A ) );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'Condition S: %d\\n', cond( schur_S ) );\n" << std::endl;
+            matlabLogStream << "%A_invers = inv( A );" << std::endl;
+            matlabLogStream << "%schur_S = B_T * A_invers * B + C;" << std::endl;
+            matlabLogStream << "%schur_f = B_T * A_invers * F - G;" << std::endl;
+            matlabLogStream << "%p = schur_S \\ schur_f;" << std::endl;
+            matlabLogStream << "%u = A_invers * ( F - B * p );\n" << std::endl;
+            matlabLogStream << "%fprintf(1, 'Condition A: %d\\n', cond( A ) );\n" << std::endl;
+            matlabLogStream << "%fprintf(1, 'Condition S: %d\\n', cond( schur_S ) );\n" << std::endl;
 #endif
-//            profiler().StopTiming("Pass -- ASSEMBLE");
-//            profiler().StartTiming("Pass -- SOLVER");
+            profiler().StopTiming("Pass -- ASSEMBLE");
+            profiler().StartTiming("Pass -- SOLVER");
             InvOpType op;
             op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-//            profiler().StopTiming("Pass -- SOLVER");
-//            profiler().StopTiming("Pass");
+            profiler().StopTiming("Pass -- SOLVER");
+            profiler().StopTiming("Pass");
 #ifndef NLOG
 //            debugStream.Resume();
 //            Stuff::oneLinePrint( debugStream, dest.discretePressure() );
