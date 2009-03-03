@@ -126,7 +126,7 @@ class Logging
                     if ( logflags_ & loglevel_ )
                     { //flush buffer into stream
                         if ( ( logflags_ & LOG_CONSOLE ) != 0 ) {
-                            std::cout << buffer_.str() << std::endl;
+                            std::cout << buffer_.str();// << std::endl;
                             std::cout .flush();
                         }
                         if ( ( logflags_ & LOG_FILE ) != 0 ) {
@@ -154,6 +154,7 @@ class Logging
                     if ( logflags_ & loglevel_ ) {
                         if ( pf == (std::ostream& ( * )(std::ostream&))std::endl )
                         { //flush buffer into stream
+                            buffer_ << "\n";
                             Flush();
                         }
                         else
