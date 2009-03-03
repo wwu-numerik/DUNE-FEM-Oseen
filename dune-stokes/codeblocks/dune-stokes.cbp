@@ -36,6 +36,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add library="blas" />
 					<Add directory="/usr/local/grape" />
 				</Linker>
 			</Target>
