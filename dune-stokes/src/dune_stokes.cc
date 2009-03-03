@@ -181,7 +181,7 @@ int main( int argc, char** argv )
     else { //we don't do any variation here, just one simple run, no eoc, nothing
         Logger().SetPrefix( "dune_stokes" );
         Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
-        gridPtr->globalRefine( 1 );
+        gridPtr->globalRefine( 2 );
         gridPtr->globalRefine( maxref );
         typedef Dune::AdaptiveLeafGridPart< GridType >
             GridPartType;
