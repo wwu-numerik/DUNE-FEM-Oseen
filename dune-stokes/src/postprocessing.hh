@@ -179,11 +179,11 @@ class PostProcessor
                 const EntityType& entity = *entityItLog;
                 const typename EntityType::Geometry& geo = entity .geometry();
 
-                dbg << "entity: " << numberOfEntities <<"\n";
+//                dbg << "entity: " << numberOfEntities <<"\n";
                 for ( int i = 0; i < geo.corners(); ++i ){
-                    Stuff::printFieldVector( geo[i], "  corner", dbg );
+//                    Stuff::printFieldVector( geo[i], "  corner", dbg );
                 }
-                dbg << std::endl;
+//                dbg << std::endl;
 
                 typename DiscretePressureFunctionType::LocalFunctionType
                     lf = cl.localFunction( entity );
