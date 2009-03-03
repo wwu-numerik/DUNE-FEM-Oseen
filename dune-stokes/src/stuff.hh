@@ -1,5 +1,5 @@
 /**
- *  \file stuff.hh
+ *  \file   stuff.hh
  *  \brief  contains some stuff
  **/
 #ifndef STUFF_HH_INCLUDED
@@ -156,12 +156,16 @@ void safe_delete ( T t )
  *  or anything compatible in terms of Iterators
  *  \tparam T
  *          should be Dune::FieldVector or compatible
- *  \tparam out
+ *  \tparam stream
  *          std::ostream or compatible
- *  \param  arg
- *          Vector to be printed
- *  \param  name
+ *  \param[in]  arg
+ *          vector to be printed
+ *  \param[in]  name
  *          name to be printed along
+ *  \param[in]  out
+ *          where to print
+ *  \param[opt] prefix
+ *          prefix to be printed before every line
  **/
 template < class T, class stream >
 void printFieldVector( T& arg, std::string name, stream& out, std::string prefix = "" )
@@ -180,13 +184,17 @@ void printFieldVector( T& arg, std::string name, stream& out, std::string prefix
  *
  *  or anything compatible in terms of Iterators
  *  \tparam T
- *          should be Dune::FieldMatrix or compatible
- *  \tparam out
+ *          should be Dune::FieldVector or compatible
+ *  \tparam stream
  *          std::ostream or compatible
- *  \param  arg
- *          Matrix to be printed
- *  \param  name
+ *  \param[in]  arg
+ *          matrix to be printed
+ *  \param[in]  name
  *          name to be printed along
+ *  \param[in]  out
+ *          where to print
+ *  \param[opt] prefix
+ *          prefix to be printed before every line
  **/
 template < class T, class stream >
 void printFieldMatrix( T& arg, std::string name, stream& out, std::string prefix = "" )
@@ -275,6 +283,31 @@ void oneLinePrint( Stream& stream, const DiscFunc& func )
 
     stream << " ] " << std::endl;
 }
+
+/**
+ *  \brief  gets min and max of a Dune::DiscreteFunction
+ *
+ *          or compatible in terms of iterators
+ *  \todo   doc
+ **/
+template < class FunctionType >
+void getMinMaxOfDiscreteFunction(   const FunctionType& function,
+                                    double& min,
+                                    double& max )
+{
+    // preparations
+    min = 0.0;
+    max = 0.0;
+    typedef typename FunctionType::ConstDofIteratorType
+        ConstDofIteratorType;
+    ConstDofIteratorType  itEnd = function.dend();
+    // find minimum and maximum
+    for ( ConstDofIteratorType it = function.dbegin(); it != itEnd; ++it ) {
+        min = *it < min ? *it : min;
+        max = *it > max ? *it : max;
+    }
+}
+
 
 template < class Function >
 void addScalarToFunc( Function& f, double sc )
