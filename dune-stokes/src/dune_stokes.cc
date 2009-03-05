@@ -337,14 +337,14 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
                                 AnalyticalForceType,
                                 DiscreteAnalyticalDataFunctionType >
         AnalyticalForceProjectionType;
-    AnalyticalForceProjectionType analyticalForceProjection;
+    AnalyticalForceProjectionType analyticalForceProjection( 0 );
     analyticalForceProjection( analyticalForce, discreteAnalyticalForce );
     typedef Dune::L2Projection< double,
                                 double,
                                 AnalyticalDirichletDataType,
                                 DiscreteAnalyticalDataFunctionType >
         AnalyticalDirichletDataProjectionType;
-    AnalyticalDirichletDataProjectionType analyticalDirichletDataProjection;
+    AnalyticalDirichletDataProjectionType analyticalDirichletDataProjection( 0 );
     analyticalDirichletDataProjection(  analyticalDirichletData,
                                         discreteAnalyticalDirichletData );
     double analyticalForceMin = 0.0;

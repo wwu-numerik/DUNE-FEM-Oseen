@@ -289,6 +289,7 @@ void oneLinePrint( Stream& stream, const DiscFunc& func )
  *
  *          or compatible in terms of iterators
  *  \todo   doc
+ *  \attention  works only for constant base function = sqrt(2) atm
  **/
 template < class FunctionType >
 void getMinMaxOfDiscreteFunction(   const FunctionType& function,
@@ -306,6 +307,8 @@ void getMinMaxOfDiscreteFunction(   const FunctionType& function,
         min = *it < min ? *it : min;
         max = *it > max ? *it : max;
     }
+    min *= std::sqrt( 2.0 );
+    max *= std::sqrt( 2.0 );
 }
 
 
