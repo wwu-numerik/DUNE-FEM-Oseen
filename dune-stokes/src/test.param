@@ -8,9 +8,10 @@ fem.io.datafileprefix: data_
 fem.io.savestep: -1
 fem.io.savecount: 1
 fem.io.outputformat: 1
-maxref: 8
-maxpow: 1
-minpow: -1
+minref: 1
+maxref: 1
+maxpow: 2
+minpow: -2
 per-run-log-target: 0
 
 #
