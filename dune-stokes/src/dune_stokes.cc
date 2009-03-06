@@ -283,10 +283,10 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
 //    typedef Dune::FieldVector< double, gridDim >
 //        ConstVec;
 //    const double minpow = -9; // all less or equal treatet as zero
-    double c11 = pow1;// > minpow ? std::pow( grid_width, pow1 ) : 0;
-    double d11 = pow2;// > minpow ? std::pow( grid_width, pow2 ) : 0;
-    double c12 = pow3;// > minpow ? std::pow( grid_width, pow3 ) : 0;
-    double d12 = pow4;// > minpow ? std::pow( grid_width, pow4 ) : 0;
+    const int c11 = pow1;// > minpow ? std::pow( grid_width, pow1 ) : 0;
+    const int d11 = pow2;// > minpow ? std::pow( grid_width, pow2 ) : 0;
+    const int c12 = pow3;// > minpow ? std::pow( grid_width, pow3 ) : 0;
+    const int d12 = pow4;// > minpow ? std::pow( grid_width, pow4 ) : 0;
 
     infoStream  << "  - flux constants" << std::endl
                 << "    C_11: " << c11 << std::endl
