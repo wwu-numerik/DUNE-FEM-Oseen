@@ -1614,10 +1614,10 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *  \param[in]  viscosity
          *          viscosity of the fluid
          **/
-        DiscreteStokesModelDefault( const double C_11,
-                                    const VelocityRangeType& C_12,
-                                    const double D_11,
-                                    const VelocityRangeType& D_12,
+        DiscreteStokesModelDefault( const int C_11,
+                                    const int C_12,
+                                    const int D_11,
+                                    const int D_12,
                                     const AnalyticalForceType& force,
                                     const AnalyticalDirichletDataType& dirichletData,
                                     const double viscosity )
@@ -1738,11 +1738,21 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         {
             // some preparations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            VelocityRangeType C_12( 1.0 );
+            if ( C_12_ == -9 ) {
+                C_12 = 0.0;
+            }
+            else if ( C_12_ == 0 ) {
+                C_12 = 1.0;
+            }
+            else {
+                C_12 *= std::pow( getLenghtOfIntersection( it ), C_12_ );
+            }
             // contribution to u vector ( from inside entity )
             if ( side == BaseType::inside ) {
                 SigmaRangeType u_plus_tensor_n_plus = dyadicProduct( u, outerNormal );
                 VelocityRangeType u_plus_tensor_n_plus_times_c_12( 0.0 );
-                u_plus_tensor_n_plus.mv( C_12_, u_plus_tensor_n_plus_times_c_12 );
+                u_plus_tensor_n_plus.mv( C_12, u_plus_tensor_n_plus_times_c_12 );
                 uReturn = u;
                 uReturn *= 0.5;
                 uReturn += u_plus_tensor_n_plus_times_c_12;
@@ -1755,7 +1765,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 // calculation
                 SigmaRangeType u_minus_tensor_n_minus = dyadicProduct( u, innerNormal );
                 VelocityRangeType u_minus_tensor_n_minus_times_c_12( 0.0 );
-                u_minus_tensor_n_minus.mv( C_12_, u_minus_tensor_n_minus_times_c_12 );
+                u_minus_tensor_n_minus.mv( C_12, u_minus_tensor_n_minus_times_c_12 );
                 uReturn = u;
                 uReturn *= 0.5;
                 uReturn += u_minus_tensor_n_minus_times_c_12;
@@ -1881,10 +1891,20 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         {
             //some preparations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            VelocityRangeType D_12( 1.0 );
+            if ( D_12_ == -9 ) {
+                D_12 = 0.0;
+            }
+            else if ( D_12_ == 0 ) {
+                D_12 = 1.0 ;
+            }
+            else {
+                D_12 *= std::pow( getLenghtOfIntersection( it ), D_12_ );
+            }
             // contribution to u vector ( from inside entity )
             if ( side == BaseType::inside ) {
                 const double u_plus_times_n_plus = u * outerNormal;
-                VelocityRangeType d_12_times_u_plus_times_n_plus = D_12_;
+                VelocityRangeType d_12_times_u_plus_times_n_plus = D_12;
                 d_12_times_u_plus_times_n_plus *= u_plus_times_n_plus;
                 uReturn = u;
                 uReturn *= 0.5;
@@ -1897,7 +1917,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 innerNormal *= -1.0;
                 // calculations
                 const double u_minus_times_n_minus = u * innerNormal;
-                VelocityRangeType d_12_times_u_minus_times_n_minus = D_12_;
+                VelocityRangeType d_12_times_u_minus_times_n_minus = D_12;
                 d_12_times_u_minus_times_n_minus *= u_minus_times_n_minus;
                 uReturn = u;
                 uReturn *= 0.5;
@@ -1950,9 +1970,19 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         {
             //some preperations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            double D_11( 1.0 );
+            if ( D_11_ == -9 ) {
+                D_11 = 0.0;
+            }
+            else if ( D_11_ == 0 ) {
+                D_11 = 1.0;
+            }
+            else {
+                D_11 *= std::pow( getLenghtOfIntersection( it ), D_11_ );
+            }
             // contribution to p vector ( from inside entity )
             if ( side == BaseType::inside ) {
-                const double d_11_times_p_plus = D_11_ * p;
+                const double d_11_times_p_plus = D_11 * p;
                 pReturn = outerNormal;
                 pReturn *= d_11_times_p_plus;
             }
@@ -1962,7 +1992,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 VelocityRangeType innerNormal = outerNormal;
                 innerNormal *= -1.0;
                 // calculations
-                const double d_11_times_p_minus = D_11_ * p;
+                const double d_11_times_p_minus = D_11 * p;
                 pReturn = innerNormal;
                 pReturn *= d_11_times_p_minus;
             }
@@ -2125,9 +2155,19 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         {
             // some preperations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            VelocityRangeType D_12( 1.0 );
+            if ( D_12_ == -9 ) {
+                D_12 = 0.0;
+            }
+            else if ( D_12_ == 0 ) {
+                D_12 = 1.0;
+            }
+            else {
+                D_12 *= std::pow( getLenghtOfIntersection( it ), D_12_ );
+            }
             // contribution to p vector ( from inside entity )
             if ( side == BaseType::inside ) {
-                const double d_12_times_n_plus = D_12_ * outerNormal;
+                const double d_12_times_n_plus = D_12 * outerNormal;
                 pReturn = 0.5 * p;
                 pReturn -= p * d_12_times_n_plus;
             }
@@ -2137,7 +2177,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 VelocityRangeType innerNormal = outerNormal;
                 innerNormal *= -1.0;
                 // claculations
-                const double d_12_times_n_minus = D_12_ * innerNormal;
+                const double d_12_times_n_minus = D_12 * innerNormal;
                 pReturn = 0.5 * p;
                 pReturn -= p * d_12_times_n_minus;
             }
@@ -2258,10 +2298,20 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         {
             // some preparations
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            double C_11( 1.0 );
+            if ( C_11_ == -9 ) {
+                C_11 = 0.0;
+            }
+            else if ( C_11_ == 0 ) {
+                C_11 = 1.0;
+            }
+            else {
+                C_11 *= std::pow( getLenghtOfIntersection( it ), C_11_ );
+            }
             // contribution to u vector ( from inside entity )
             if ( side == BaseType::inside ) {
                 uReturn = dyadicProduct( u, outerNormal );
-                uReturn *= ( -1.0 * C_11_ );
+                uReturn *= ( -1.0 * C_11 );
             }
             // contribution to u vector ( from outside entity )
             else if ( side == BaseType::outside ) {
@@ -2270,7 +2320,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 innerNormal *= -1.0;
                 // calculations
                 uReturn = dyadicProduct( u, innerNormal );
-                uReturn *= ( -1.0 * C_11_ );
+                uReturn *= ( -1.0 * C_11 );
             }
         }
 
@@ -2320,13 +2370,23 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         {
             // some preparations
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            VelocityRangeType C_12( 1.0 );
+            if ( C_12_ == -9 ) {
+                C_12 = 0.0;
+            }
+            else if ( C_12_ == 0 ) {
+                C_12 = 1.0;
+            }
+            else {
+                C_12 *= std::pow( getLenghtOfIntersection( it ), C_12_ );
+            }
             // contribution to sigma vector ( from inside entity )
             if ( side == BaseType::inside ) {
                 VelocityRangeType sigma_plus_times_n_plus( 0.0 );
                 sigma.mv( outerNormal, sigma_plus_times_n_plus );
                 const SigmaRangeType
                     sigma_plus_times_n_plus_times_c_12 =
-                        dyadicProduct( sigma_plus_times_n_plus, C_12_ );
+                        dyadicProduct( sigma_plus_times_n_plus, C_12 );
                 sigmaReturn = sigma;
                 sigmaReturn *= 0.5;
                 sigmaReturn -= sigma_plus_times_n_plus_times_c_12;
@@ -2341,7 +2401,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 sigma.mv( innerNormal, sigma_minus_times_n_minus );
                 const SigmaRangeType
                     sigma_minus_times_n_minus_times_c_12 =
-                        dyadicProduct( sigma_minus_times_n_minus, C_12_ );
+                        dyadicProduct( sigma_minus_times_n_minus, C_12 );
                 sigmaReturn = sigma;
                 sigmaReturn *= 0.5;
                 sigmaReturn -= sigma_minus_times_n_minus_times_c_12;
@@ -2382,9 +2442,19 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         {
             // some preparations
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            double C_11( 1.0 );
+            if ( C_11_ == -9 ) {
+                C_11 = 0.0;
+            }
+            else if ( C_11_ == 0 ) {
+                C_11 = 1.0;
+            }
+            else {
+                C_11 *= std::pow( getLenghtOfIntersection( it ), C_11_ );
+            }
             // contribution to u vector
             uReturn = dyadicProduct( u, outerNormal );
-            uReturn *= ( -1.0 * C_11_ );
+            uReturn *= ( -1.0 * C_11 );
         }
 
         /**
@@ -2459,11 +2529,21 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             const VelocityRangeType xIntersectionGlobal = it->intersectionSelfLocal().global( x );
             const VelocityRangeType xWorld = geometry.global( xIntersectionGlobal );
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
+            double C_11( 1.0 );
+            if ( C_11_ == -9 ) {
+                C_11 = 0.0;
+            }
+            else if ( C_11_ == 0 ) {
+                C_11 = 1.0;
+            }
+            else {
+                C_11 *= std::pow( getLenghtOfIntersection( it ), C_11_ );
+            }
             // contribution to rhs
             VelocityRangeType gD( 0.0 );
             dirichletData_.evaluate( xWorld, gD );
             rhsReturn = dyadicProduct( gD, outerNormal );
-            rhsReturn *= C_11_;
+            rhsReturn *= C_11;
         }
 
         /**
@@ -2499,8 +2579,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
 
     private:
 
-        double C_11_, D_11_, viscosity_;
-        const VelocityRangeType C_12_, D_12_;
+        const double viscosity_;
+        const int C_11_, C_12_, D_11_, D_12_;
         const AnalyticalForceType& force_;
         const AnalyticalDirichletDataType& dirichletData_;
 
@@ -2533,6 +2613,32 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 ++arg1It;
             }
             return ret;
+        }
+
+        /**
+         *  \brief  calculates length of given intersection in world coordinates
+         *  \tparam IntersectionIteratorType
+         *          IntersectionIteratorType
+         *  \param[in]  intIt
+         *          intersection
+         *  \return length of intersection
+         **/
+        template < class IntersectionIteratorType >
+        double getLenghtOfIntersection( const IntersectionIteratorType& intIt ) const
+        {
+            typedef typename IntersectionIteratorType::Geometry
+                IntersectionGeometryType;
+            const IntersectionGeometryType& intersectionGeoemtry = intIt.intersectionGlobal();
+            assert( intersectionGeoemtry.corners() == 2 );
+            typedef typename IntersectionIteratorType::ctype
+                ctype;
+            const int dimworld = IntersectionIteratorType::dimensionworld;
+            typedef Dune::FieldVector< ctype, dimworld >
+                DomainType;
+            const DomainType cornerOne = intersectionGeoemtry[0];
+            const DomainType cornerTwo = intersectionGeoemtry[1];
+            const DomainType difference = cornerOne - cornerTwo;
+            return difference.two_norm();
         }
 
 };

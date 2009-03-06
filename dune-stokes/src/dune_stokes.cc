@@ -191,7 +191,7 @@ int main( int argc, char** argv )
             typedef Dune::AdaptiveLeafGridPart< GridType >
                 GridPartType;
             GridPartType gridPart( *gridPtr );
-            RunInfo info = singleRun( mpicomm, gridPtr, gridPart, minpow, maxpow, -30, -30 );
+            RunInfo info = singleRun( mpicomm, gridPtr, gridPart, minpow, maxpow, -9, -9 );
             l2_errors.push_back( info.L2Errors );
             eoc_output.setErrors( idx,info.L2Errors );
             texwriter.setInfo( info );
@@ -280,25 +280,25 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
         StokesModelImpType;
 
     // determine pows
-    typedef Dune::FieldVector< double, gridDim >
-        ConstVec;
-    const double minpow = -3; // all less or equal treatet as zero
-    double c11 = pow1 > minpow ? std::pow( grid_width, pow1 ) : 0;
-    double d11 = pow2 > minpow ? std::pow( grid_width, pow2 ) : 0;
-    double c12 = pow3 > minpow ? std::pow( grid_width, pow3 ) : 0;
-    double d12 = pow4 > minpow ? std::pow( grid_width, pow4 ) : 0;
+//    typedef Dune::FieldVector< double, gridDim >
+//        ConstVec;
+//    const double minpow = -9; // all less or equal treatet as zero
+    double c11 = pow1;// > minpow ? std::pow( grid_width, pow1 ) : 0;
+    double d11 = pow2;// > minpow ? std::pow( grid_width, pow2 ) : 0;
+    double c12 = pow3;// > minpow ? std::pow( grid_width, pow3 ) : 0;
+    double d12 = pow4;// > minpow ? std::pow( grid_width, pow4 ) : 0;
 
     infoStream  << "  - flux constants" << std::endl
                 << "    C_11: " << c11 << std::endl
-                << "    C_12: " << c12 << " * ones" << std::endl
+                << "    C_12: " << c12 << std::endl
                 << "    D_11: " << d11 << std::endl
-                << "    D_12: " << d12 << " * ones" << std::endl;
+                << "    D_12: " << d12 << std::endl;
 
     // model
     StokesModelImpType stokesModel( c11,
-                                    ConstVec ( c12 ),
+                                    c12,
                                     d11,
-                                    ConstVec ( d12 ),
+                                    d12,
                                     analyticalForce,
                                     analyticalDirichletData,
                                     viscosity  );
