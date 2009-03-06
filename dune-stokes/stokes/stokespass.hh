@@ -2408,7 +2408,8 @@ class StokesPass
                         << "    max: " << H2Max << std::endl
                         << "  - H3" << std::endl
                         << "    min: " << H3Min << std::endl
-                        << "    max: " << H3Max << std::endl;
+                        << "    max: " << H3Max << std::endl
+                        << std::endl;
 
             // do the matlab logging stuff
 //            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
