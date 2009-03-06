@@ -60,8 +60,11 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
             ret[0] = -2*x2;//arg[1];
             ret[1] = -2*x1;//arg[0];
 #elif defined(CONSTANT_PROBLEM)
-            ret[0] = 0;//arg[1];
-            ret[1] = -1;//arg[0];
+            ret[0] = 0.0;//arg[1];
+            ret[1] = -1.0;//arg[0];
+#elif defined(ROTATE_PROBLEM)
+            ret[0] = arg[1];
+            ret[1] = -1.0 * arg[0];
 #else
             ret = 0.0;
 #endif
@@ -128,8 +131,11 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
             ret[0] = -1 * x1*x1;
             ret[1] = x2*x2;
 #elif defined(CONSTANT_PROBLEM)
-            ret[0] = 0;
-            ret[1] = 0;
+            ret[0] = 0.0;
+            ret[1] = 0.0;
+#elif defined(ROTATE_PROBLEM)
+            ret[0] = 0.0;
+            ret[1] = 0.0;
 #else
             double exp_of_x1 = std::exp( x1 );
             double sin_of_x2 = std::sin( x2 );
