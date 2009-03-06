@@ -309,13 +309,6 @@ void getMinMaxOfDiscreteFunction(   const FunctionType& function,
     }
 }
 
-/**
- *  \brief  calculates length of given intersection in world coordinates
- **/
-double getLenghtOfIntersection( const Intersection& it )
-{
-}
-
 template < class Function >
 void addScalarToFunc( Function& f, double sc )
 {
@@ -326,7 +319,31 @@ void addScalarToFunc( Function& f, double sc )
     return;
 }
 
-
+/**
+ *  \brief  calculates length of given intersection in world coordinates
+ *  \tparam IntersectionIteratorType
+ *          IntersectionIteratorType
+ *  \param[in]  intIt
+ *          intersection
+ *  \return length of intersection
+ **/
+template < class IntersectionIteratorType >
+double getLenghtOfIntersection( const IntersectionIteratorType& intIt )
+{
+    typedef typename IntersectionIteratorType::Geometry
+        IntersectionGeometryType;
+    const IntersectionGeometryType& intersectionGeoemtry = intIt.intersectionGlobal();
+    assert( intersectionGeoemtry.corners() == 2 );
+    typedef typename IntersectionIteratorType::ctype
+        ctype;
+    const int dimworld = IntersectionIteratorType::dimensionworld;
+    typedef Dune::FieldVector< ctype, dimworld >
+        DomainType;
+    const DomainType cornerOne = intersectionGeoemtry[0];
+    const DomainType cornerTwo = intersectionGeoemtry[1];
+    const DomainType difference = cornerOne - cornerTwo;
+    return difference.two_norm();
+}
 
 } // end namepspace stuff
 
