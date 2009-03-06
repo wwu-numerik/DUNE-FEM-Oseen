@@ -11,10 +11,12 @@
 //#define POLORDER 1
 
 //#define SIMPLE_PROBLEM
-#define CONSTANT_PROBLEM
+//#define CONSTANT_PROBLEM
+//#define ROTATE_PROBLEM
 //#define NLOG
 
 #include <iostream>
+#include <cmath>
 #include <dune/common/mpihelper.hh> // An initializer of MPI
 #include <dune/common/exceptions.hh> // We use exceptions
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
@@ -239,7 +241,7 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     info.codim0 = gridPtr->size( 0 );
     info.codim0 = gridPart.grid().size( 0 );
     Dune::GridWidthProvider< GridType > gw ( *gridPtr );
-    double grid_width = gw.gridWidth();
+    double grid_width = 0.125;//gw.gridWidth();
     infoStream << "  - max grid width: " << grid_width << std::endl;
     info.grid_width = grid_width;
 
@@ -353,16 +355,16 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
                                         analyticalForceMin,
                                         analyticalForceMax );
     infoStream  << "  - force" << std::endl
-                << "    min: " << analyticalForceMin << std::endl
-                << "    max: " << analyticalForceMax << std::endl;
+                << "    min: " << std::sqrt( 2.0 ) * analyticalForceMin << std::endl
+                << "    max: " << std::sqrt( 2.0 ) * analyticalForceMax << std::endl;
     double analyticalDirichletDataMin = 0.0;
     double analyticalDirichletDataMax = 0.0;
     Stuff::getMinMaxOfDiscreteFunction( discreteAnalyticalDirichletData,
                                         analyticalDirichletDataMin,
                                         analyticalDirichletDataMax );
     infoStream  << "  - dirichlet data" << std::endl
-                << "    min: " << analyticalDirichletDataMin << std::endl
-                << "    max: " << analyticalDirichletDataMax << std::endl;
+                << "    min: " << std::sqrt( 2.0 ) * analyticalDirichletDataMin << std::endl
+                << "    max: " << std::sqrt( 2.0 ) * analyticalDirichletDataMax << std::endl;
 
 
 
@@ -417,7 +419,8 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
                                         computedPressureMax );
     infoStream  << "  - computed pressure" << std::endl
                 << "    min: " << computedPressureMin << std::endl
-                << "    max: " << computedPressureMax << std::endl;
+                << "    max: " << computedPressureMax << std::endl
+                << std::endl;
 
 
     profiler().StartTiming( "Problem/Postprocessing" );

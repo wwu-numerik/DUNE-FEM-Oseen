@@ -307,10 +307,14 @@ void getMinMaxOfDiscreteFunction(   const FunctionType& function,
         min = *it < min ? *it : min;
         max = *it > max ? *it : max;
     }
-    min *= std::sqrt( 2.0 );
-    max *= std::sqrt( 2.0 );
 }
 
+/**
+ *  \brief  calculates length of given intersection in world coordinates
+ **/
+double getLenghtOfIntersection( const Intersection& it )
+{
+}
 
 template < class Function >
 void addScalarToFunc( Function& f, double sc )
