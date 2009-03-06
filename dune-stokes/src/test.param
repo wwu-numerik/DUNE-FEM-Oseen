@@ -20,8 +20,8 @@ dgf_file_3d: grid_3d.dgf
 
 #
 viscosity: 1
-relLimit: 1e-3
-absLimit: 1e-3
+relLimit: 1e-8
+absLimit: 1e-8
 solverVerbosity: 0
 h-factor: 1.0
 
