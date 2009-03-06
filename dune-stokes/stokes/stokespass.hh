@@ -342,7 +342,7 @@ class StokesPass
             const bool H1print = false;
             const bool H2print = false;
             const bool H3print = false;
-            const bool allOutput = false;
+            const bool allOutput = true;
             int fivePercentOfEntities = 0;
             int fivePercents = 0;
             infoStream << "this is StokesPass::apply()" << std::endl;
@@ -442,7 +442,7 @@ class StokesPass
                 }
                 debugStream.Suspend(); // disable logging
 //                if ( outputEntity == entityNR ) entityOutput = true;
-//                if ( allOutput ) entityOutput = true;
+                if ( allOutput ) entityOutput = true;
                 if ( entityOutput ) debugStream.Resume(); // enable logging
                 debugStream << "  - numSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
                 debugStream << "  - numVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
@@ -840,7 +840,7 @@ class StokesPass
                         const VelocityRangeType corner = intersectionGeoemtry[i];
                         Stuff::printFieldVector( corner, "corner_"+Stuff::toString(i), debugStream, "        " );
                     }
-                    debugStream << std::endl;
+                    debugStream << "\n        length of intersection " << intersectionNR << " is " << Stuff::getLenghtOfIntersection( intIt ) << std::endl;
                     debugStream.Suspend(); // disable logging
 #endif
 
