@@ -18,6 +18,10 @@
     #include "../src/logging.hh"
 #endif
 
+#if( POLORDER != 0 )
+    #warning "discrete gradient method is only defined for constant functions!"
+#endif
+
 namespace Dune{
 
 // forward decraration
@@ -126,18 +130,23 @@ class DiscreteGradientPass
         typedef typename DiscreteFunctionType::DiscreteFunctionSpaceType
             DiscreteFunctionSpaceType;
 
+        typedef RangeType
+            DiscreteGradientType;
+
+        typedef typename DiscreteGradientType::DiscreteFunctionSpaceType
+            DiscreteGradientSpaceType;
+
+
         /**
          *  \brief  constructor
          *  \todo   doc
          **/
         DiscreteGradientPass(   PreviousPassType& prevPass,
                                 DiscreteModelType& discreteModel,
-                                GridPartType& gridPart,
-                                DiscreteFunctionSpaceType& space )
+                                GridPartType& gridPart )
             : BaseType( prevPass ),
             discreteModel_( discreteModel ),
-            gridPart_( gridPart ),
-            space_( space ){}
+            gridPart_( gridPart ){}
 
         /**
          *  \brief destructor
@@ -156,33 +165,52 @@ class DiscreteGradientPass
             // logging stuff
             Logging::LogStream& infoStream = Logger().Info();
             Logging::LogStream& debugStream = Logger().Dbg();
+            infoStream << "  - entering DiscreteGradientPass::apply()" << std::endl;
 #endif
-
             //! type of the grid
             typedef typename GridPartType::GridType
                 GridType;
-
-            //! entity iterator of the gridpart
-            typedef typename GridPartType::template Codim< 0 >::IteratorType
-                EntityIteratorType;
 
             //! type of codim 0 entity
             typedef typename GridType::template Codim< 0 >::Entity
                 EntityType;
 
+            //! entity geometry type
+            typedef typename EntityType::Geometry
+                EntityGeometryType;
+
+            //! entity iterator of the gridpart
+            typedef typename GridPartType::template Codim< 0 >::IteratorType
+                EntityIteratorType;
+
             //! Intersection iterator of the gridpart
             typedef typename GridPartType::IntersectionIteratorType
                 IntersectionIteratorType;
 
-#ifndef NLOG
-            infoStream << "  \nthis is DiscreteGradientPass::apply()" << std::endl;
+            //! argument local function type
+            typedef typename DomainType::LocalFunctionType
+                LocalFunctionType;
+
+            //! return local function type
+            typedef typename RangeType::LocalFunctionType
+                LocalGradientType;
+
+            // get the spaces
+            const DiscreteFunctionSpaceType& discreteFunctionSpace_ = arg.space();
+            const DiscreteGradientSpaceType& discreteGradientSpace_ = dest.space();
 
             // walk the grid
-            EntityIteratorType entityItEnd = space_.end();
-            for (   EntityIteratorType entityIt = space_.begin();
+            EntityIteratorType entityItEnd = discreteFunctionSpace_.end();
+            for (   EntityIteratorType entityIt = discreteFunctionSpace_.begin();
                     entityIt != entityItEnd;
                     ++entityIt ) {
+                // get some infos about the entity
                 const EntityType& entity = *entityIt;
+                const EntityGeometryType& geometry = entity.geometry();
+                const double one_over_volume = 1.0 / geometry.volume();
+                // get the local functions
+                LocalFunctionType localFunction = arg.localFunction( entity );
+                LocalGradientType localGradient = dest.localFunction( entity );
                 // walk the intersections
                 IntersectionIteratorType intItEnd = gridPart_.iend( entity );
                 for (   IntersectionIteratorType intIt = gridPart_.ibegin( entity );
@@ -197,6 +225,10 @@ class DiscreteGradientPass
                 }
             }
 
+#ifndef NLOG
+            infoStream  << "  - leaving DiscreteGradientPass::apply()" << std::endl
+                        << std::endl;
+#endif
         } // end of apply()
 
         /**
@@ -217,7 +249,6 @@ class DiscreteGradientPass
 
         DiscreteModelType& discreteModel_;
         GridPartType& gridPart_;
-        DiscreteFunctionSpaceType& space_;
 }; // end of DiscreteGradientPass
 
 }

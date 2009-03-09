@@ -41,6 +41,8 @@
 #include "postprocessing.hh"
 #include "profiler.hh"
 #include "stuff.hh"
+#include "velocity.hh"
+#include "pressure.hh"
 
 #if ENABLE_MPI
         typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
@@ -366,6 +368,46 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
                 << "    min: " << std::sqrt( 2.0 ) * analyticalDirichletDataMin << std::endl
                 << "    max: " << std::sqrt( 2.0 ) * analyticalDirichletDataMax << std::endl;
 
+    // exact solution, for testing
+    typedef Velocity< VelocityTraits< gridDim, VelocityFunctionSpaceType > >
+        AnalyticalExactVelocityType;
+    AnalyticalExactVelocityType analyticalExactVelocity( velocitySpace );
+    typedef typename StokesModelType::DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
+        DiscreteVelocityFunctionType;
+    typedef Dune::L2Projection< double,
+                                double,
+                                AnalyticalExactVelocityType,
+                                DiscreteVelocityFunctionType >
+        AnalyticalVelocityProjectionType;
+    AnalyticalVelocityProjectionType analyticalVelocityProjection( 0 );
+    DiscreteVelocityFunctionType discreteExactVelocity( "discrete exact velocity",
+                                                        discreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
+    analyticalVelocityProjection(   analyticalExactVelocity,
+                                    discreteExactVelocity );
+
+    typedef Dune::FunctionSpace< double, double, gridDim, 1 >
+        PressureFunctionSpaceType;
+    PressureFunctionSpaceType pressureSpace;
+    typedef Pressure< PressureTraits< gridDim, PressureFunctionSpaceType > >
+        AnalyticalExactPressureType;
+    AnalyticalExactPressureType analyticalExactPressure( pressureSpace );
+    typedef typename StokesModelType::DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
+        DiscretePressureFunctionType;
+    typedef Dune::L2Projection< double,
+                                double,
+                                AnalyticalExactPressureType,
+                                DiscretePressureFunctionType >
+        AnalyticalPressureProjectionType;
+    AnalyticalPressureProjectionType analyticalPressureProjection( 0 );
+    DiscretePressureFunctionType discreteExactPressure( "discrete exact pressure",
+                                                        discreteStokesFunctionSpaceWrapper.discretePressureSpace() );
+    analyticalPressureProjection(   analyticalExactPressure,
+                                    discreteExactPressure );
+
+    DiscreteStokesFunctionWrapperType discreteExactSolutions(   discreteStokesFunctionSpaceWrapper,
+                                                                discreteExactVelocity,
+                                                                discreteExactPressure );
+
 
 
     /* ********************************************************************** *
@@ -388,18 +430,18 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     discreteStokesFunctionWrapper.discretePressure().clear();
     discreteStokesFunctionWrapper.discreteVelocity().clear();
 
-    stokesPass.apply( discreteStokesFunctionWrapper, discreteStokesFunctionWrapper );
+    stokesPass.apply( discreteExactSolutions, discreteStokesFunctionWrapper );
 
     /* ********************************************************************** *
      * Problem postprocessing (with profiler example)                         *
      * ********************************************************************** */
     infoStream << "\n- postprocesing" << std::endl;
 
-    typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
-        DiscreteVelocityFunctionType;
+//    typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
+//        DiscreteVelocityFunctionType;
     DiscreteVelocityFunctionType& computedVelocity = discreteStokesFunctionWrapper.discreteVelocity();
-    typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
-        DiscretePressureFunctionType;
+//    typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
+//        DiscretePressureFunctionType;
     DiscretePressureFunctionType& computedPressure = discreteStokesFunctionWrapper.discretePressure();
 
     double computedVelocityMin = 0.0;

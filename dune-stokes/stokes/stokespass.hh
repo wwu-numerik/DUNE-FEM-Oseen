@@ -341,10 +341,38 @@ class StokesPass
             const bool H1print = false;
             const bool H2print = false;
             const bool H3print = false;
-            const bool allOutput = true;
+            const bool allOutput = false;
             int fivePercentOfEntities = 0;
             int fivePercents = 0;
             infoStream << "this is StokesPass::apply()" << std::endl;
+
+            // init the gradient pass
+            typedef Dune::DiscreteGradientModelTraits<  GridPartType,
+                                                        DiscreteSigmaFunctionType >
+                DiscreteGradientModelTraitsImp;
+
+            typedef Dune::DiscreteGradientModel< DiscreteGradientModelTraitsImp >
+                DiscreteGradientModelType;
+
+
+            typedef Dune::StartPass< DiscreteVelocityFunctionType, -1 >
+                StartPassType;
+
+            typedef Dune::DiscreteGradientPass< DiscreteGradientModelType,
+                                                StartPassType,
+                                                0 >
+                DiscreteGradientPassType;
+            DiscreteGradientModelType discreteGradientModel;
+            StartPassType startPass;
+            DiscreteGradientPassType discreteGradientPass(  startPass,
+                                                            discreteGradientModel,
+                                                            gridPart_ );
+            // get the exact solution out of the argument
+            DiscreteVelocityFunctionType discreteExactVelocity = arg.discreteVelocity();
+            DiscreteSigmaFunctionType computedVelocityGradient( "computed velocity gradient", sigmaSpace_ );
+            computedVelocityGradient.clear();
+            discreteGradientPass.apply( discreteExactVelocity, computedVelocityGradient );
+
 
             // do an empty grid walk to get informations
             EntityIteratorType entityItEndLog = velocitySpace_.end();
@@ -468,30 +496,6 @@ class StokesPass
                 const int logBaseJ = 0;
                 debugStream.Suspend(); // disable logging
 #endif
-
-                // init the gradient pass
-                typedef Dune::DiscreteGradientModelTraits<  GridPartType,
-                                                            DiscreteSigmaFunctionType >
-                    DiscreteGradientModelTraitsImp;
-
-                typedef Dune::DiscreteGradientModel< DiscreteGradientModelTraitsImp >
-                    DiscreteGradientModelType;
-
-
-                typedef Dune::StartPass< DiscreteVelocityFunctionType, -1 >
-                    StartPassType;
-
-                typedef Dune::DiscreteGradientPass< DiscreteGradientModelType,
-                                                    StartPassType,
-                                                    0 >
-                    DiscreteGradientPassType;
-                DiscreteGradientModelType discreteGradientModel;
-                StartPassType startPass;
-                DiscreteGradientPassType discreteGradientPass(  startPass,
-                                                                discreteGradientModel,
-                                                                gridPart_,
-                                                                velocitySpace_ );
-
                 // compute volume integrals
 
                 //                                                     // we will call this one
@@ -2471,9 +2475,6 @@ class StokesPass
 //            debugStream.Resume();
 //            Stuff::oneLinePrint( debugStream, dest.discretePressure() );
 #endif
-
-
-
         } // end of apply
 
         virtual void compute( const TotalArgumentType &arg, DestinationType &dest) const
