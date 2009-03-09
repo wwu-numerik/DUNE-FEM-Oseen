@@ -461,6 +461,20 @@ class DiscreteStokesFunctionWrapper
         {}
 
         /**
+         *  \brief      constructor
+         *
+         *              wrappes existing velocity and pressure
+         *  \attention  by copying
+         **/
+        DiscreteStokesFunctionWrapper(  DiscreteFunctionSpaceType& space,
+                                        DiscreteVelocityFunctionType& velocity,
+                                        DiscretePressureFunctionType& pressure )
+            : space_( space ),
+            velocity_( velocity ),
+            pressure_( pressure )
+        {}
+
+        /**
          *  \brief  destructor
          *  \todo   doc
          **/
