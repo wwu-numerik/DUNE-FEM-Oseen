@@ -19,6 +19,7 @@
 #endif
 
 #include "../src/profiler.hh"
+#include "discretegradientpass.hh"
 
 namespace Dune
 {
@@ -170,7 +171,6 @@ class StokesPass
          *  \}
          **/
 
-
         /**
          *  \brief  constructor
          *  \todo   doc
@@ -206,7 +206,6 @@ class StokesPass
          **/
         virtual void apply( const DomainType &arg, RangeType &dest) const
         {
-
             profiler().StartTiming("Pass");
             profiler().StartTiming("Pass -- ASSEMBLE");
             // viscosity
@@ -469,6 +468,30 @@ class StokesPass
                 const int logBaseJ = 0;
                 debugStream.Suspend(); // disable logging
 #endif
+
+                // init the gradient pass
+                typedef Dune::DiscreteGradientModelTraits<  GridPartType,
+                                                            DiscreteSigmaFunctionType >
+                    DiscreteGradientModelTraitsImp;
+
+                typedef Dune::DiscreteGradientModel< DiscreteGradientModelTraitsImp >
+                    DiscreteGradientModelType;
+
+
+                typedef Dune::StartPass< DiscreteVelocityFunctionType, -1 >
+                    StartPassType;
+
+                typedef Dune::DiscreteGradientPass< DiscreteGradientModelType,
+                                                    StartPassType,
+                                                    0 >
+                    DiscreteGradientPassType;
+                DiscreteGradientModelType discreteGradientModel;
+                StartPassType startPass;
+                DiscreteGradientPassType discreteGradientPass(  startPass,
+                                                                discreteGradientModel,
+                                                                gridPart_,
+                                                                velocitySpace_ );
+
                 // compute volume integrals
 
                 //                                                     // we will call this one
@@ -2410,6 +2433,7 @@ class StokesPass
                         << "    min: " << H3Min << std::endl
                         << "    max: " << H3Max << std::endl
                         << std::endl;
+#endif
 
             // do the matlab logging stuff
 //            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
@@ -2436,7 +2460,7 @@ class StokesPass
 //            matlabLogStream << "%u = A_invers * ( F - B * p );\n" << std::endl;
 //            matlabLogStream << "%fprintf(1, 'Condition A: %d\\n', cond( A ) );\n" << std::endl;
 //            matlabLogStream << "%fprintf(1, 'Condition S: %d\\n', cond( schur_S ) );\n" << std::endl;
-#endif
+//#endif
             profiler().StopTiming("Pass -- ASSEMBLE");
             profiler().StartTiming("Pass -- SOLVER");
             InvOpType op;
