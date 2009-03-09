@@ -1145,7 +1145,7 @@ class DiscreteStokesModelInterface
 };
 
 // forward declaration
-template < class DiscreteStokesModelDefaultTraits >
+template < class DiscreteStokesModelDefaultTraitsImp >
 class DiscreteStokesModelDefault;
 
 /**
