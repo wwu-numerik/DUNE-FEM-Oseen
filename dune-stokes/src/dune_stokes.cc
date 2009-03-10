@@ -476,6 +476,10 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
 
     PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );
 
+//      howto add fucntions to output, fucntions name need to be unique from already present ones
+//    postProcessor.addPressureFunctionToOutput( computedPressure );
+//    postProcessor.addVelocityFunctionToOutput( computedVelocity );
+
     postProcessor.save( *gridPtr, discreteStokesFunctionWrapper );
     info.L2Errors = postProcessor.getError();
     info.c11 = c11;

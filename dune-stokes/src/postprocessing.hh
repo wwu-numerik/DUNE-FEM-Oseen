@@ -86,6 +86,15 @@ class PostProcessor
 
         ~PostProcessor()
         {
+            typename DiscretePressureFunctionVector::iterator p_it =
+                discretePressureFunctionVector_.begin();
+			for ( ; p_it != discretePressureFunctionVector_.end(); ++p_it )
+                delete ( *p_it );
+
+            typename DiscreteVelocityFunctionVector::iterator v_it =
+                discreteVelocityFunctionVector_.begin();
+			for ( ; v_it != discreteVelocityFunctionVector_.end(); ++v_it )
+                delete ( *v_it );
         }
 
         void assembleExactSolution()
@@ -135,12 +144,12 @@ class PostProcessor
 			typename DiscretePressureFunctionVector::const_iterator p_it =
                 discretePressureFunctionVector_.begin();
 			for ( ; p_it != discretePressureFunctionVector_.end(); ++p_it )
-                vtk_write( *p_it);
+                vtk_write( **p_it);
 
             typename DiscreteVelocityFunctionVector::const_iterator v_it =
                 discreteVelocityFunctionVector_.begin();
 			for ( ; v_it != discreteVelocityFunctionVector_.end(); ++v_it )
-                vtk_write( *v_it );
+                vtk_write( **v_it );
 #ifndef NLOG
 			entityColoration();
 #endif
@@ -233,21 +242,25 @@ class PostProcessor
 
         void addPressureFunctionToOutput( const DiscretePressureFunctionType& function )
         {
-            discretePressureFunctionVector_.push_back( function );
+            DiscretePressureFunctionType* tmp = new DiscretePressureFunctionType ( function.name() , function.space() );
+            tmp->assign( function ) ;
+            discretePressureFunctionVector_.push_back( tmp );
         }
 
 
         void addVelocityFunctionToOutput( const DiscreteVelocityFunctionType& function )
         {
-            discreteVelocityFunctionVector_.push_back( function );
+            DiscreteVelocityFunctionType* tmp = new DiscreteVelocityFunctionType( function.name() , function.space() );
+            tmp->assign( function ) ;
+            discreteVelocityFunctionVector_.push_back( tmp );
         }
 
 
     private:
 
-        typedef std::vector<DiscretePressureFunctionType>
+        typedef std::vector<DiscretePressureFunctionType*>
             DiscretePressureFunctionVector;
-        typedef std::vector<DiscreteVelocityFunctionType>
+        typedef std::vector<DiscreteVelocityFunctionType*>
             DiscreteVelocityFunctionVector;
 
         const ProblemType& problem_;
