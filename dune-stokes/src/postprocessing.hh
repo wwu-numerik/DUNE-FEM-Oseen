@@ -18,9 +18,7 @@
 #include <cmath>
 
 //! simple macro that uses member vtkWriter instance to write file according to variable name
-#define VTK_WRITE(z)    vtkWriter_.addVertexData(z); \
-                        vtkWriter_.write(( "data/"#z ) ); \
-                        vtkWriter_.clear();
+
 
 
 template <  class StokesPassImp, class ProblemImp >
@@ -80,7 +78,8 @@ class PostProcessor
             solutionAssembled_( false ),
             l2_error_pressure_( - std::numeric_limits<double>::max() ),
             l2_error_velocity_( - std::numeric_limits<double>::max() ),
-            vtkWriter_( wrapper.gridPart() )
+            vtkWriter_( wrapper.gridPart() ),
+            data_prefix_( "data/" )
         {
 
         }
@@ -108,6 +107,15 @@ class PostProcessor
             projectionP( problem_.pressure(), discreteExactPressure_ );
         }
 
+        template < class Functiontype >
+        void vtk_write( const Functiontype& func )
+        {
+            vtkWriter_.addVertexData( func );
+            std::string gz = data_prefix_ + func.name();
+            vtkWriter_.write( gz.c_str() );
+            vtkWriter_.clear();
+        }
+
         void save( const GridType& grid, const DiscreteStokesFunctionWrapperType& wrapper )
         {
             if ( !solutionAssembled_ )
@@ -115,14 +123,24 @@ class PostProcessor
 
             calcError( wrapper.discretePressure() , wrapper.discreteVelocity() );
 
-            VTK_WRITE( wrapper.discretePressure() );
-            VTK_WRITE( wrapper.discreteVelocity() );
-            VTK_WRITE( discreteExactVelocity_ );
-			VTK_WRITE( discreteExactPressure_ );
-            VTK_WRITE( discreteExactForce_ );
-			VTK_WRITE( discreteExactDirichlet_ );
-			VTK_WRITE( errorFunc_pressure_ );
-			VTK_WRITE( errorFunc_velocity_ );
+            vtk_write( wrapper.discretePressure() );
+            vtk_write( wrapper.discreteVelocity() );
+            vtk_write( discreteExactVelocity_ );
+			vtk_write( discreteExactPressure_ );
+            vtk_write( discreteExactForce_ );
+			vtk_write( discreteExactDirichlet_ );
+			vtk_write( errorFunc_pressure_ );
+			vtk_write( errorFunc_velocity_ );
+
+			typename DiscretePressureFunctionVector::const_iterator p_it =
+                discretePressureFunctionVector_.begin();
+			for ( ; p_it != discretePressureFunctionVector_.end(); ++p_it )
+                vtk_write( *p_it);
+
+            typename DiscreteVelocityFunctionVector::const_iterator v_it =
+                discreteVelocityFunctionVector_.begin();
+			for ( ; v_it != discreteVelocityFunctionVector_.end(); ++v_it )
+                vtk_write( *v_it );
 #ifndef NLOG
 			entityColoration();
 #endif
@@ -210,10 +228,27 @@ class PostProcessor
                 }
             }
 
-            VTK_WRITE( cl );
+            vtk_write( cl );
         }
 
+        void addPressureFunctionToOutput( const DiscretePressureFunctionType& function )
+        {
+            discretePressureFunctionVector_.push_back( function );
+        }
+
+
+        void addVelocityFunctionToOutput( const DiscreteVelocityFunctionType& function )
+        {
+            discreteVelocityFunctionVector_.push_back( function );
+        }
+
+
     private:
+
+        typedef std::vector<DiscretePressureFunctionType>
+            DiscretePressureFunctionVector;
+        typedef std::vector<DiscreteVelocityFunctionType>
+            DiscreteVelocityFunctionVector;
 
         const ProblemType& problem_;
         const DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
@@ -229,8 +264,12 @@ class PostProcessor
         double l2_error_pressure_;
         double l2_error_velocity_;
         VTKWriterType vtkWriter_;
-
+        DiscreteVelocityFunctionVector discreteVelocityFunctionVector_;
+        DiscretePressureFunctionVector discretePressureFunctionVector_;
+        std::string data_prefix_;
 };
+
+
 
 #undef VTK_WRITE
 
