@@ -226,10 +226,11 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
                     const int pow4  )
 {
     Logging::LogStream& infoStream = Logger().Info();
+    Logging::LogStream& debugStream = Logger().Dbg();
     ParameterContainer& parameters = Parameters();
     RunInfo info;
 
-    infoStream  << "\nsingleRun( pow1: " << pow1 << ","
+    debugStream << "\nsingleRun( pow1: " << pow1 << ","
                 << "\n           pow2: " << pow2 << ","
                 << "\n           pow3: " << pow3 << ","
                 << "\n           pow4: " << pow4 << " )" << std::endl;
@@ -253,9 +254,9 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     infoStream << "\n- initialising problem" << std::endl;
 
     const int polOrder = POLORDER;
-    infoStream << "  - polOrder: " << polOrder << std::endl;
+    debugStream << "  - polOrder: " << polOrder << std::endl;
     const double viscosity = Parameters().getParam( "viscosity", 1.0 );
-    infoStream << "  - viscosity: " << viscosity << std::endl;
+    debugStream << "  - viscosity: " << viscosity << std::endl;
 
     // analytical data
     typedef Dune::FunctionSpace< double, double, gridDim, gridDim >
@@ -290,7 +291,7 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     const int c12 = pow3;// > minpow ? std::pow( grid_width, pow3 ) : 0;
     const int d12 = pow4;// > minpow ? std::pow( grid_width, pow4 ) : 0;
 
-    infoStream  << "  - flux constants" << std::endl
+    debugStream << "  - flux constants" << std::endl
                 << "    C_11: " << c11 << std::endl
                 << "    C_12: " << c12 << std::endl
                 << "    D_11: " << d11 << std::endl
@@ -356,7 +357,7 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     Stuff::getMinMaxOfDiscreteFunction( discreteAnalyticalForce,
                                         analyticalForceMin,
                                         analyticalForceMax );
-    infoStream  << "  - force" << std::endl
+    debugStream << "  - force" << std::endl
                 << "    min: " << std::sqrt( 2.0 ) * analyticalForceMin << std::endl
                 << "    max: " << std::sqrt( 2.0 ) * analyticalForceMax << std::endl;
     double analyticalDirichletDataMin = 0.0;
@@ -364,7 +365,7 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     Stuff::getMinMaxOfDiscreteFunction( discreteAnalyticalDirichletData,
                                         analyticalDirichletDataMin,
                                         analyticalDirichletDataMax );
-    infoStream  << "  - dirichlet data" << std::endl
+    debugStream << "  - dirichlet data" << std::endl
                 << "    min: " << std::sqrt( 2.0 ) * analyticalDirichletDataMin << std::endl
                 << "    max: " << std::sqrt( 2.0 ) * analyticalDirichletDataMax << std::endl;
 
@@ -408,13 +409,10 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
                                                                 discreteExactVelocity,
                                                                 discreteExactPressure );
 
-
-
     /* ********************************************************************** *
      * initialize passes                                                      *
      * ********************************************************************** */
     infoStream << "\n- starting pass" << std::endl;
-
 
     typedef Dune::StartPass< DiscreteStokesFunctionWrapperType, -1 >
         StartPassType;
@@ -449,7 +447,7 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     Stuff::getMinMaxOfDiscreteFunction( computedVelocity,
                                         computedVelocityMin,
                                         computedVelocityMax );
-    infoStream  << "  - computed velocity" << std::endl
+    debugStream << "  - computed velocity" << std::endl
                 << "    min: " << computedVelocityMin << std::endl
                 << "    max: " << computedVelocityMax << std::endl;
 
@@ -459,7 +457,7 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     Stuff::getMinMaxOfDiscreteFunction( computedPressure,
                                         computedPressureMin,
                                         computedPressureMax );
-    infoStream  << "  - computed pressure" << std::endl
+    debugStream << "  - computed pressure" << std::endl
                 << "    min: " << computedPressureMin << std::endl
                 << "    max: " << computedPressureMax << std::endl
                 << std::endl;
