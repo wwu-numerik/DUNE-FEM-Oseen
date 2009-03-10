@@ -255,6 +255,11 @@ class PostProcessor
             discreteVelocityFunctionVector_.push_back( tmp );
         }
 
+        void setPrefix( const std::string prefix )
+        {
+            data_prefix_ = prefix;
+        }
+
 
     private:
 
