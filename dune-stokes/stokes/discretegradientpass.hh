@@ -363,9 +363,9 @@ class DiscreteGradientPass
                             sum *= ( volumeIntersection / volumeEntity );
                             sum *= ( localFunctionNeighbour[i] - localFunctionEntity[i] );
                             // add to gradient vector
-//                            for ( int j = 0; j < dimWorld; ++j ) {
-//                                localGradientEntity[ ] +=
-//                            }
+                            for ( int j = 0; j < dimWorld; ++j ) {
+                                localGradientEntity[ ( dimWorld * i ) + j ] += sum[ j ];
+                            }
                         }
 
                     } // end if we are inside
@@ -380,6 +380,9 @@ class DiscreteGradientPass
                             sum *= ( volumeIntersection / volumeEntity );
                             sum *= localFunctionEntity[i];
                             // add to gradient vector
+                            for ( int j = 0; j < dimWorld; ++j ) {
+                                localGradientEntity[ ( dimWorld * i ) + j ] += sum[ j ];
+                            }
                         }
 
                     } // end if we are on the boundary
