@@ -390,6 +390,7 @@ MMatrix.reserve();
 
 
             // do an empty grid walk to get informations
+            double maxGridWidth( 0.0 );
             EntityIteratorType entityItEndLog = velocitySpace_.end();
             for (   EntityIteratorType entityItLog = velocitySpace_.begin();
                     entityItLog != entityItEndLog;
@@ -404,6 +405,7 @@ MMatrix.reserve();
                         ++intIt ) {
                     // count intersections
                     ++numberOfIntersections;
+                    maxGridWidth = Stuff::getLenghtOfIntersection( intIt ) > maxGridWidth ? Stuff::getLenghtOfIntersection( intIt ) : maxGridWidth;
                     // if we are inside the grid
                     if ( intIt.neighbor() && !intIt.boundary() ) {
                         // count inner intersections
@@ -421,6 +423,7 @@ MMatrix.reserve();
                 infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
                 infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
                 infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
+                infoStream << "maxGridWidth is " << maxGridWidth << std::endl;
                 infoStream << "- starting gridwalk" << std::endl;
                 fivePercentOfEntities = int( std::floor(double(numberOfEntities) / double(20)));
                 infoStream << "  [ assembling         ]" << std::endl;
@@ -430,6 +433,7 @@ MMatrix.reserve();
                 infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
                 infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
                 infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
+                infoStream << "maxGridWidth is " << maxGridWidth << std::endl;
                 infoStream << "- starting gridwalk" << std::endl;
             }
 #endif
