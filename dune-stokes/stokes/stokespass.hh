@@ -2507,7 +2507,7 @@ Stuff::getMinMaxOfDiscreteFunction( exactH1rhs, exactH1Min, exactH1Max );
 Stuff::getMinMaxOfDiscreteFunction( exactH2rhs, exactH2Min, exactH2Max );
 Stuff::getMinMaxOfDiscreteFunction( exactH3rhs, exactH3Min, exactH3Max );
 
-            infoStream  << "- printing infos" << std::endl
+            debugStream  << "- printing infos" << std::endl
                         << "  - H1" << std::endl
                         << "    min: " << H1Min << std::endl
                         << "    max: " << H1Max << std::endl
