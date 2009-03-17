@@ -5,7 +5,7 @@
 #ifndef STUFF_HH_INCLUDED
 #define STUFF_HH_INCLUDED
 
-#define SEGFAULT int*i=0;*i=9;
+#define SEGFAULT {int*J=0;*J=9;}
 
 #include <iomanip>
 #include <vector>
