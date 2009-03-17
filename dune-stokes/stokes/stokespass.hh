@@ -2598,8 +2598,14 @@ if ( Mprint ) {
 #ifndef CHEAT
             op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 #else
-//            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, exactH1rhs, exactH2rhs, exactH3rhs );
-            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, exactH1rhs, exactH2rhs, exactH3rhs );
+            if ( Parameters().getParam( "use-cheat", true ) ) {
+                infoStream << "solving with cheated rhs" << std::endl;
+                op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, exactH1rhs, exactH2rhs, exactH3rhs );
+            }
+            else {
+                infoStream << "solving with \"normal\" rhs" << std::endl;
+                op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+            }
 #endif
             profiler().StopTiming("Pass -- SOLVER");
             profiler().StopTiming("Pass");
