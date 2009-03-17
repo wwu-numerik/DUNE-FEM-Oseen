@@ -359,7 +359,7 @@ MMatrix.reserve();
             const bool Eprint = false;
             const bool Rprint = false;
             const bool H1print = false;
-            const bool H2print = false;
+            const bool H2print = true;
             const bool H3print = false;
             const bool allOutput = false;
             int fivePercentOfEntities = 0;
@@ -516,7 +516,7 @@ MMatrix.reserve();
                 bool Eoutput = false;
                 bool Routput = false;
                 bool H1output = false;
-                bool H2output = true;
+                bool H2output = false;
                 bool H3output = false;
                 // we want logging at the following base functions
                 const int logBaseI = 0;
@@ -2537,23 +2537,27 @@ if ( Mprint ) {
                         << "    min: " << H1Min << std::endl
                         << "    max: " << H1Max << std::endl
                         << "    avg: " << H1avg << std::endl
-                        << "  - H2" << std::endl
-                        << "    min: " << H2Min << std::endl
-                        << "    max: " << H2Max << std::endl
-                        << "    avg: " << H2avg << std::endl
-                        << "  - H3" << std::endl
-                        << "    min: " << H3Min << std::endl
-                        << "    max: " << H3Max << std::endl
-                        << "    avg: " << H3avg << std::endl
 #ifdef CHEAT
                         << "  - exact H1" << std::endl
                         << "    min: " << exactH1Min << std::endl
                         << "    max: " << exactH1Max << std::endl
                         << "    avg: " << eH1avg << std::endl
+#endif
+                        << "  - H2" << std::endl
+                        << "    min: " << H2Min << std::endl
+                        << "    max: " << H2Max << std::endl
+                        << "    avg: " << H2avg << std::endl
+#ifdef CHEAT
                         << "  - exact H2" << std::endl
                         << "    min: " << exactH2Min << std::endl
                         << "    max: " << exactH2Max << std::endl
                         << "    avg: " << eH2avg << std::endl
+#endif
+                        << "  - H3" << std::endl
+                        << "    min: " << H3Min << std::endl
+                        << "    max: " << H3Max << std::endl
+                        << "    avg: " << H3avg << std::endl
+#ifdef CHEAT
                         << "  - exact H3" << std::endl
                         << "    min: " << exactH3Min << std::endl
                         << "    max: " << exactH3Max << std::endl
