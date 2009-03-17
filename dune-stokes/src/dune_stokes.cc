@@ -11,7 +11,7 @@
 //#define POLORDER 1
 
 //#define SIMPLE_PROBLEM
-#define CONSTANT_PROBLEM
+//#define CONSTANT_PROBLEM
 //#define ROTATE_PROBLEM
 //#define NLOG
 
