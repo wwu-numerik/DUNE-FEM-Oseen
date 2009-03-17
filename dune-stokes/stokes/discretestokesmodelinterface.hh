@@ -1621,10 +1621,10 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                     const AnalyticalForceType& force,
                                     const AnalyticalDirichletDataType& dirichletData,
                                     const double viscosity )
-            : C_11_( C_11 ),
-            D_11_( D_11 ),
-            viscosity_( viscosity ),
+            : viscosity_( viscosity ),
+            C_11_( C_11 ),
             C_12_( C_12 ),
+            D_11_( D_11 ),
             D_12_( D_12 ),
             force_( force ),
             dirichletData_( dirichletData )
