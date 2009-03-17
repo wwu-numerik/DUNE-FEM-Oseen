@@ -2398,6 +2398,8 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifdef CHEAT
             // compute the artificial right hand sides, should be the right ones
             // H1
+//            debugStream = Logger().Info();
+            debugStream.Resume();
             debugStream << "  - computing artificial right hand sides" << std::endl;
             debugStream << "    - H1" << std::endl;
             Wmatrix.matrix().apply( discreteExactVelocity, tmpH1rhs );
@@ -2507,6 +2509,9 @@ if ( Mprint ) {
             Stuff::getMinMaxOfDiscreteFunction( H1rhs, H1Min, H1Max );
             Stuff::getMinMaxOfDiscreteFunction( H2rhs, H2Min, H2Max );
             Stuff::getMinMaxOfDiscreteFunction( H3rhs, H3Min, H3Max );
+            double H1avg = Stuff::getFuncAvg( H1rhs );
+            double H2avg = Stuff::getFuncAvg( H2rhs );
+            double H3avg = Stuff::getFuncAvg( H3rhs );
 
 #ifdef CHEAT
             double exactH1Min = 0.0;
@@ -2518,28 +2523,37 @@ if ( Mprint ) {
             Stuff::getMinMaxOfDiscreteFunction( exactH1rhs, exactH1Min, exactH1Max );
             Stuff::getMinMaxOfDiscreteFunction( exactH2rhs, exactH2Min, exactH2Max );
             Stuff::getMinMaxOfDiscreteFunction( exactH3rhs, exactH3Min, exactH3Max );
+            double eH1avg = Stuff::getFuncAvg( exactH1rhs );
+            double eH2avg = Stuff::getFuncAvg( exactH2rhs );
+            double eH3avg = Stuff::getFuncAvg( exactH3rhs );
 #endif
 
             debugStream << "- printing infos" << std::endl
                         << "  - H1" << std::endl
                         << "    min: " << H1Min << std::endl
                         << "    max: " << H1Max << std::endl
+                        << "    avg: " << H1avg << std::endl
                         << "  - H2" << std::endl
                         << "    min: " << H2Min << std::endl
                         << "    max: " << H2Max << std::endl
+                        << "    avg: " << H2avg << std::endl
                         << "  - H3" << std::endl
                         << "    min: " << H3Min << std::endl
                         << "    max: " << H3Max << std::endl
+                        << "    avg: " << H3avg << std::endl
 #ifdef CHEAT
                         << "  - exact H1" << std::endl
                         << "    min: " << exactH1Min << std::endl
                         << "    max: " << exactH1Max << std::endl
+                        << "    avg: " << eH1avg << std::endl
                         << "  - exact H2" << std::endl
                         << "    min: " << exactH2Min << std::endl
                         << "    max: " << exactH2Max << std::endl
+                        << "    avg: " << eH2avg << std::endl
                         << "  - exact H3" << std::endl
                         << "    min: " << exactH3Min << std::endl
                         << "    max: " << exactH3Max << std::endl
+                        << "    avg: " << eH3avg << std::endl
 #endif
                         << std::endl;
 #endif
@@ -2576,6 +2590,7 @@ if ( Mprint ) {
 #ifndef CHEAT
             op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 #else
+//            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, exactH1rhs, exactH2rhs, exactH3rhs );
             op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, exactH1rhs, exactH2rhs, exactH3rhs );
 #endif
             profiler().StopTiming("Pass -- SOLVER");

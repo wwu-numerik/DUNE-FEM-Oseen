@@ -185,6 +185,31 @@ namespace Dune {
 //        Stuff::addScalarToFunc( pressure, 0.1 );
 		// p = S^-1 * new_f = ( B_t * A^-1 * B + rhs3 )^-1 * new_f
 		sk_solver( new_f, pressure );
+#ifdef ADAPTIVE_SOLVER
+        logInfo << "\n\t\t NaNs detected, lowering error tolerance" << std::endl;
+        int max_adaptions = Parameters().getParam( "max_adaptions", 8 );
+        int adapt_step = 1;
+        double a_relLimit = relLimit;
+        double a_absLimit = absLimit;
+        while ( true ) {
+            if ( adapt_step > max_adaptions ) {
+                logInfo << "\n\t\t max adaption depth reached, aborting" << std::endl;
+                break;
+            }
+            a_relLimit /= 10.0;
+            a_absLimit /= 10.0;
+            logInfo << "\n\t\t\t trying with relLimit " << a_relLimit
+                    << " and absLimit " << a_absLimit << std::endl;
+            Sk_Solver sk_solver_adapt( sk_op, a_relLimit, a_absLimit, 2000, solverVerbosity );
+            pressure.clear();
+            sk_solver_adapt( new_f, pressure );
+            if ( pressure.dofsValid() ) {
+                logInfo << "\n\t\t adaption produced NaN-free solution" << std::endl;
+                break;
+            }
+            adapt_step++;
+        }
+#endif
 		//
 		logInfo << "\n\tend  S*p=new_f" << std::endl;
 

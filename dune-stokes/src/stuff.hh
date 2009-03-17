@@ -319,6 +319,35 @@ void addScalarToFunc( Function& f, double sc )
     return;
 }
 
+template < class Function >
+double getFuncAvg( const Function& f )
+{
+    typedef typename Function::ConstDofIteratorType DofIteratorType;
+    DofIteratorType it = f.dbegin();
+    const unsigned int numdofs = f.size();
+    double sum = 0;
+    for ( ; it != f.dend(); ++it )
+        sum += *it;
+    sum /= double(numdofs);
+    return sum;
+}
+
+template < class Function >
+void switchDofs( Function& f )
+{
+    typedef typename Function::DofIteratorType DofIteratorType;
+    DofIteratorType front = f.dbegin();
+    DofIteratorType back = f.dend();
+    const unsigned int numdofs = f.size();
+    for ( unsigned int i = 0; i < numdofs / 2; ++i ) {
+        double tmp = *back;
+        *back = *front;
+        *front = tmp;
+    }
+    return;
+}
+
+
 /**
  *  \brief  calculates length of given intersection in world coordinates
  *  \tparam IntersectionIteratorType

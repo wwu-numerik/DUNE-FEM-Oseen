@@ -80,9 +80,10 @@
 			<Add option="-DENABLE_ALUGRID" />
 			<Add option="-DALUGRID_CONFORM" />
 			<Add option="-DGRIDDIM=2" />
-			<Add option="-DPOLORDER=1" />
+			<Add option="-DPOLORDER=0" />
 			<Add option="-DHAVE_CONFIG_H" />
 			<Add option="-DDUNE_FEM_COMPATIBILITY" />
+			<Add option="-DADAPTIVE_SOLVER" />
 			<Add directory="../../dune-common/" />
 			<Add directory="../../dune-grid/" />
 			<Add directory="../../dune-istl/" />
