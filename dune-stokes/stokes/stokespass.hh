@@ -334,7 +334,7 @@ MMatrix.reserve();
                 PressureBaseFunctionSetType;
 
             // eps
-            const double eps = 1.0e-14;
+            const double eps = Parameters().getParam( "eps", 1.0e-14 );
 
 #ifndef NLOG
             // logging stuff
