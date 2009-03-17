@@ -516,7 +516,7 @@ MMatrix.reserve();
                 bool Eoutput = false;
                 bool Routput = false;
                 bool H1output = false;
-                bool H2output = false;
+                bool H2output = true;
                 bool H3output = false;
                 // we want logging at the following base functions
                 const int logBaseI = 0;
@@ -2476,26 +2476,30 @@ if ( Mprint ) {
                     debugStream.Log( &DiscreteSigmaFunctionType::print, H1rhs );
                 }
 #ifdef CHEAT
-            if ( H1print ) {
-                debugStream << " - = exact H1 =====" << std::endl;
-                debugStream.Log( &DiscreteSigmaFunctionType::print, exactH1rhs );
-            }
-                            if ( H2print ) {
-                                debugStream << " - = H2 ===========" << std::endl;
-                                debugStream.Log( &DiscreteVelocityFunctionType::print, H2rhs );
-                            }
-            if ( H2print ) {
-                debugStream << " - = exact H2 =====" << std::endl;
-                debugStream.Log( &DiscreteVelocityFunctionType::print, exactH2rhs );
-            }
-                            if ( H3print ) {
-                                debugStream << " - = H3 ===========" << std::endl;
-                                debugStream.Log( &DiscretePressureFunctionType::print, H3rhs );
-                            }
-            if ( H3print ) {
-                debugStream << " - = exact H3 =====" << std::endl;
-                debugStream.Log( &DiscretePressureFunctionType::print, exactH3rhs );
-            }
+                if ( H1print ) {
+                    debugStream << " - = exact H1 =====" << std::endl;
+                    debugStream.Log( &DiscreteSigmaFunctionType::print, exactH1rhs );
+                }
+#endif
+                if ( H2print ) {
+                    debugStream << " - = H2 ===========" << std::endl;
+                    debugStream.Log( &DiscreteVelocityFunctionType::print, H2rhs );
+                }
+#ifdef CHEAT
+                if ( H2print ) {
+                    debugStream << " - = exact H2 =====" << std::endl;
+                    debugStream.Log( &DiscreteVelocityFunctionType::print, exactH2rhs );
+                }
+#endif
+                if ( H3print ) {
+                    debugStream << " - = H3 ===========" << std::endl;
+                    debugStream.Log( &DiscretePressureFunctionType::print, H3rhs );
+                }
+#ifdef CHEAT
+                if ( H3print ) {
+                    debugStream << " - = exact H3 =====" << std::endl;
+                    debugStream.Log( &DiscretePressureFunctionType::print, exactH3rhs );
+                }
 #endif
                 debugStream << std::endl;
             }
