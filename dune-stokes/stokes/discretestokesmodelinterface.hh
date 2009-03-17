@@ -1770,6 +1770,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 uReturn *= 0.5;
                 uReturn += u_minus_tensor_n_minus_times_c_12;
             }
+            else {
+                SEGFAULT
+            }
         }
 
         /**
@@ -1923,6 +1926,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 uReturn *= 0.5;
                 uReturn += d_12_times_u_minus_times_n_minus;
             }
+            else {
+                SEGFAULT
+            }
         }
 
         /**
@@ -1995,6 +2001,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 const double d_11_times_p_minus = D_11 * p;
                 pReturn = innerNormal;
                 pReturn *= d_11_times_p_minus;
+            }
+            else {
+                SEGFAULT
             }
         }
 
@@ -2181,6 +2190,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 pReturn = 0.5 * p;
                 pReturn -= p * d_12_times_n_minus;
             }
+            else {
+                SEGFAULT
+            }
 
         }
 
@@ -2322,6 +2334,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 uReturn = dyadicProduct( u, innerNormal );
                 uReturn *= ( -1.0 * C_11 );
             }
+            else {
+                SEGFAULT
+            }
         }
 
         /**
@@ -2405,6 +2420,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 sigmaReturn = sigma;
                 sigmaReturn *= 0.5;
                 sigmaReturn -= sigma_minus_times_n_minus_times_c_12;
+            }
+            else {
+                SEGFAULT
             }
         }
 
