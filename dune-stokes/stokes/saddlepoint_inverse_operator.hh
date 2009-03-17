@@ -5,7 +5,7 @@
     \brief SPinverseoperator_original.hh
  */
 
-
+// OEMBICGSQOp will NOT compile
 #define CG_SOLVERTYPE OEMCGOp
 #ifndef CG_SOLVERTYPE
     #define CG_SOLVERTYPE OEMBICGSTABOp
@@ -148,7 +148,7 @@ namespace Dune {
                                 DiscreteSigmaFunctionType,
                                 DiscreteVelocityFunctionType >
             A_Solver;
-        A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space() );
+        A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit, solverVerbosity );
 
 //		typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
 //		F_Solver;
@@ -176,38 +176,47 @@ namespace Dune {
 
         typedef CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
                 Sk_Solver;
+        typedef typename Sk_Solver::ReturnValueType
+                SolverReturnType;
 
         logInfo << " \n\tbegin S*p=new_f " << std::endl;
         Sk_Operator sk_op(  a_solver, b_t_mat, c_mat, b_mat, m_inv_mat,
                             velocity.space(), pressure.space() );
         Sk_Solver sk_solver( sk_op, relLimit, absLimit, 2000, solverVerbosity );
         pressure.clear();
-//        Stuff::addScalarToFunc( pressure, 0.1 );
+
 		// p = S^-1 * new_f = ( B_t * A^-1 * B + rhs3 )^-1 * new_f
-		sk_solver( new_f, pressure );
+		SolverReturnType ret;
+		sk_solver.apply( new_f, pressure, ret );
 #ifdef ADAPTIVE_SOLVER
-        logInfo << "\n\t\t NaNs detected, lowering error tolerance" << std::endl;
-        int max_adaptions = Parameters().getParam( "max_adaptions", 8 );
-        int adapt_step = 1;
-        double a_relLimit = relLimit;
-        double a_absLimit = absLimit;
-        while ( true ) {
-            if ( adapt_step > max_adaptions ) {
-                logInfo << "\n\t\t max adaption depth reached, aborting" << std::endl;
-                break;
+        if ( isnan(ret.second) ) {
+            logInfo << "\n\t\t NaNs detected, lowering error tolerance" << std::endl;
+            int max_adaptions = Parameters().getParam( "max_adaptions", 8 );
+            int adapt_step = 1;
+            double a_relLimit = relLimit;
+            double a_absLimit = absLimit;
+            while ( true ) {
+                if ( adapt_step > max_adaptions ) {
+                    logInfo << "\n\t\t max adaption depth reached, aborting" << std::endl;
+                    break;
+                }
+                a_relLimit /= 10.0;
+                a_absLimit /= 10.0;
+                logInfo << "\n\t\t\t trying with relLimit " << a_relLimit
+                        << " and absLimit " << a_absLimit << std::endl;
+
+                A_Solver a_solver_adapt( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit, solverVerbosity );
+                Sk_Operator sk_op_adapt(  a_solver_adapt, b_t_mat, c_mat, b_mat, m_inv_mat,
+                            velocity.space(), pressure.space() );
+                Sk_Solver sk_solver_adapt( sk_op_adapt, a_relLimit, a_absLimit, 2000, solverVerbosity );
+                pressure.clear();
+                sk_solver_adapt.apply( new_f, pressure, ret );
+                if ( !isnan(ret.second) ) {
+                    logInfo << "\n\t\t adaption produced NaN-free solution" << std::endl;
+                    break;
+                }
+                adapt_step++;
             }
-            a_relLimit /= 10.0;
-            a_absLimit /= 10.0;
-            logInfo << "\n\t\t\t trying with relLimit " << a_relLimit
-                    << " and absLimit " << a_absLimit << std::endl;
-            Sk_Solver sk_solver_adapt( sk_op, a_relLimit, a_absLimit, 2000, solverVerbosity );
-            pressure.clear();
-            sk_solver_adapt( new_f, pressure );
-            if ( pressure.dofsValid() ) {
-                logInfo << "\n\t\t adaption produced NaN-free solution" << std::endl;
-                break;
-            }
-            adapt_step++;
         }
 #endif
 		//

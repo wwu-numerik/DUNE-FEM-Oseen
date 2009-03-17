@@ -320,14 +320,15 @@ class OEMCGOp : public Operator<
       typename DiscreteFunctionType::RangeFieldType,
             DiscreteFunctionType,DiscreteFunctionType> {
 
+public:
+    typedef std::pair < int , double > ReturnValueType;
+
 private:
   // no const reference, we make const later
   OperatorType &op_;
   typename DiscreteFunctionType::RangeFieldType epsilon_;
   int maxIter_;
   bool verbose_ ;
-
-  typedef std::pair < int , double > ReturnValueType;
 
   template <class OperatorImp, bool hasPreconditioning>
   struct SolverCaller
@@ -379,7 +380,6 @@ private:
   };
 
 public:
-
   /** \brief constructor of OEM-CG
       \param[in] op Operator to invert
       \param[in] redEps realative tolerance for residual
@@ -418,13 +418,36 @@ public:
                      // call solver, see above
                      call(op_,arg,dest,epsilon_,verbose_);
 
-    if(arg.space().grid().comm().rank() == 0)
+    if( verbose_ && arg.space().grid().comm().rank() == 0 )
     {
       std::cout << "OEM-CG: " << val.first << " iterations! Error: " << val.second << "\n";
     }
 
     // finalize operator
     finalize ();
+  }
+  void apply( const DiscreteFunctionType& arg, DiscreteFunctionType& dest, ReturnValueType& ret) const
+  {
+    // prepare operator
+    prepare ( arg, dest );
+
+    ReturnValueType val =
+      SolverCaller<OperatorType,
+                   // check wheter operator has precondition methods
+                   // to enable preconditioning derive your operator from
+                   // OEMSolver::PreconditionInterface
+                   Conversion<OperatorType, OEMSolver::PreconditionInterface > ::exists >::
+                     // call solver, see above
+                     call(op_,arg,dest,epsilon_,verbose_);
+
+    if( verbose_ && arg.space().grid().comm().rank() == 0 )
+    {
+      std::cout << "OEM-CG: " << val.first << " iterations! Error: " << val.second << "\n";
+    }
+
+    // finalize operator
+    finalize ();
+    ret = val;
   }
 
   /** \brief solve the system
@@ -444,14 +467,15 @@ class OEMBICGSTABOp : public Operator<
       typename DiscreteFunctionType::RangeFieldType,
             DiscreteFunctionType,DiscreteFunctionType> {
 
+public:
+    typedef std::pair < int , double > ReturnValueType;
+
 private:
   // no const reference, we make const later
   OperatorType &op_;
   typename DiscreteFunctionType::RangeFieldType epsilon_;
   int maxIter_;
   bool verbose_ ;
-
-  typedef std::pair < int , double > ReturnValueType;
 
   template <class OperatorImp, bool hasPreconditioning>
   struct SolverCaller
@@ -536,13 +560,38 @@ public:
                      // call solver, see above
                      call(op_,arg,dest,epsilon_,verbose_);
 
-    if(arg.space().grid().comm().rank() == 0)
+    if( verbose_ && arg.space().grid().comm().rank() == 0)
     {
       std::cout << "OEM-BICGstab: " << val.first << " iterations! Error: " << val.second << "\n";
     }
 
     // finalize operator
     finalize ();
+  }
+  void apply( const DiscreteFunctionType& arg, DiscreteFunctionType& dest, ReturnValueType& ret ) const
+  {
+    typedef typename DiscreteFunctionType::FunctionSpaceType FunctionSpaceType;
+
+    // prepare operator
+    prepare ( arg, dest );
+
+    ReturnValueType val =
+      SolverCaller<OperatorType,
+                   // check wheter operator has precondition methods
+                   // to enable preconditioning derive your operator from
+                   // OEMSolver::PreconditionInterface
+                   Conversion<OperatorType, OEMSolver::PreconditionInterface > ::exists >::
+                     // call solver, see above
+                     call(op_,arg,dest,epsilon_,verbose_);
+
+    if( verbose_ && arg.space().grid().comm().rank() == 0)
+    {
+      std::cout << "OEM-BICGstab: " << val.first << " iterations! Error: " << val.second << "\n";
+    }
+
+    // finalize operator
+    finalize ();
+    ret = val;
   }
 
   /** \brief solve the system
@@ -634,6 +683,9 @@ class OEMGMRESOp : public Operator<
       typename DiscreteFunctionType::RangeFieldType,
             DiscreteFunctionType,DiscreteFunctionType> {
 
+public:
+    typedef std::pair < int , double > ReturnValueType;
+
 private:
   // type of internal projector if no preconditioner given
   typedef OEMSolver :: FakeConditioner FakeConditionerType;
@@ -643,8 +695,6 @@ private:
   typename DiscreteFunctionType::RangeFieldType epsilon_;
   int maxIter_;
   bool verbose_ ;
-
-  typedef std::pair < int , double > ReturnValueType;
 
   template <class OperatorImp, bool hasPreconditioning>
   struct SolverCaller
@@ -750,13 +800,39 @@ public:
                      // call solver, see above
                      call(op_,arg,dest,inner,epsilon_,verbose_);
 
-    if(arg.space().grid().comm().rank() == 0)
+    if( verbose_ && arg.space().grid().comm().rank() == 0)
     {
       std::cout << "OEM-GMRES: " << val.first << " iterations! Error: " << val.second << "\n";
     }
 
     // finalize operator
     finalize ();
+  }
+  void apply( const DiscreteFunctionType& arg, DiscreteFunctionType& dest, ReturnValueType& ret  ) const
+  {
+    // prepare operator
+    prepare ( arg, dest );
+
+    int size = arg.space().size();
+    int inner = (size > 20) ? 20 : size;
+
+    ReturnValueType val =
+      SolverCaller<OperatorType,
+                   // check wheter operator has precondition methods
+                   // to enable preconditioning derive your operator from
+                   // OEMSolver::PreconditionInterface
+                   Conversion<OperatorType, OEMSolver::PreconditionInterface > ::exists >::
+                     // call solver, see above
+                     call(op_,arg,dest,inner,epsilon_,verbose_);
+
+    if( verbose_ && arg.space().grid().comm().rank() == 0)
+    {
+      std::cout << "OEM-GMRES: " << val.first << " iterations! Error: " << val.second << "\n";
+    }
+
+    // finalize operator
+    finalize ();
+    ret = val;
   }
 
   /** \brief solve the system

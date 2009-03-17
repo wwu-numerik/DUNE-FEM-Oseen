@@ -112,8 +112,7 @@ class SchurkomplementOperator
         void multOEM(const VECtype *x, VECtype * ret) const
         {
             Logging::LogStream& dbg = Logger().Dbg();
-            const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
-            const double absLimit = Parameters().getParam( "absLimit", 1e-3 );
+
             const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
 
             tmp1.clear();
@@ -168,7 +167,10 @@ class A_SolverCaller {
                 const MMatType& m_mat,
                 const XMatType& x_mat,
                 const YMatType& y_mat,
-                const typename DiscreteSigmaFunctionType::DiscreteFunctionSpaceType& sig_space )
+                const typename DiscreteSigmaFunctionType::DiscreteFunctionSpaceType& sig_space,
+                const double relLimit,
+                const double absLimit,
+                const bool verbose )
             :  w_mat_(w_mat),
             m_mat_(m_mat),
             x_mat_(x_mat),
@@ -176,10 +178,10 @@ class A_SolverCaller {
             sig_tmp1( "sig_tmp1", sig_space ),
             sig_tmp2( "sig_tmp2", sig_space ),
             a_op_( w_mat, m_mat, x_mat, y_mat, sig_space ),
-            cg_solver( a_op_,   Parameters().getParam( "relLimit", 1e-6 ),
-                                Parameters().getParam( "absLimit", 1e-7 ),
+            cg_solver( a_op_,   relLimit,
+                                absLimit,
                                 2000, //inconsequential anyways
-                                Parameters().getParam( "solverVerbosity", true ) )
+                                verbose )
         {}
 
         void apply ( const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest )

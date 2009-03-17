@@ -6,6 +6,7 @@
 #define STUFF_HH_INCLUDED
 
 #define SEGFAULT {int*J=0;*J=9;}
+#define isnan(x) !(x==x)
 
 #include <iomanip>
 #include <vector>
