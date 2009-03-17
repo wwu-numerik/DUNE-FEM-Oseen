@@ -283,26 +283,32 @@ MMatrix.reserve();
             // right hand sides
             // H_{1}\in R^{M}
             DiscreteSigmaFunctionType H1rhs( "H1", sigmaSpace_ );
-            DiscreteSigmaFunctionType exactH1rhs( "exact H1", sigmaSpace_ );
-            DiscreteSigmaFunctionType tmpH1rhs( "tmp H1", sigmaSpace_ );
             H1rhs.clear();
-            exactH1rhs.clear();
-            tmpH1rhs.clear();
+
             // H_{2}\in R^{L}
             DiscreteVelocityFunctionType H2rhs( "H2", velocitySpace_ );
-            DiscreteVelocityFunctionType exactH2rhs( "exact H2", velocitySpace_ );
-            DiscreteVelocityFunctionType tmpH2rhs( "tmp H2", velocitySpace_ );
             H2rhs.clear();
-            exactH2rhs.clear();
-            tmpH2rhs.clear();
+
             // H_{3}\in R^{K}
             DiscretePressureFunctionType H3rhs( "H3", pressureSpace_ );
+            H3rhs.clear();
+
+#ifdef CHEAT
+            DiscreteSigmaFunctionType exactH1rhs( "exact H1", sigmaSpace_ );
+            DiscreteSigmaFunctionType tmpH1rhs( "tmp H1", sigmaSpace_ );
+            exactH1rhs.clear();
+            tmpH1rhs.clear();
+
+            DiscreteVelocityFunctionType exactH2rhs( "exact H2", velocitySpace_ );
+            DiscreteVelocityFunctionType tmpH2rhs( "tmp H2", velocitySpace_ );
+            exactH2rhs.clear();
+            tmpH2rhs.clear();
+
             DiscretePressureFunctionType exactH3rhs( "exact H3", pressureSpace_ );
             DiscretePressureFunctionType tmpH3rhs( "tmp H3", pressureSpace_ );
-            H3rhs.clear();
             exactH3rhs.clear();
             tmpH3rhs.clear();
-
+#endif
             // local right hand sides
             // H_{1}\in R^{M}
             typedef typename DiscreteSigmaFunctionType::LocalFunctionType
@@ -360,6 +366,7 @@ MMatrix.reserve();
             int fivePercents = 0;
             infoStream << "this is StokesPass::apply()" << std::endl;
 
+#ifdef CHEAT
             // init the gradient pass
             typedef Dune::DiscreteGradientModelTraits<  GridPartType,
                                                         DiscreteSigmaFunctionType >
@@ -387,7 +394,7 @@ MMatrix.reserve();
             computedVelocityGradient.clear();
             discreteGradientPass.apply( discreteExactVelocity, computedVelocityGradient );
             DiscretePressureFunctionType discreteExactPressure = arg.discretePressure();
-
+#endif
 
             // do an empty grid walk to get informations
             double maxGridWidth( 0.0 );
@@ -2388,36 +2395,38 @@ localMMatrixElement.add( i, j, M_i_j );
             } // done walking the grid
 #ifndef NLOG
 
-// compute the artificial right hand sides, should be the right ones
-// H1
-debugStream << "  - computing artificial right hand sides" << std::endl;
-debugStream << "    - H1" << std::endl;
-Wmatrix.matrix().apply( discreteExactVelocity, tmpH1rhs );
-exactH1rhs += tmpH1rhs;
-tmpH1rhs.clear();
-MMatrix.matrix().apply( computedVelocityGradient, tmpH1rhs );
-exactH1rhs += tmpH1rhs;
-tmpH1rhs.clear();
-// H2
-debugStream << "    - H2" << std::endl;
-Zmatrix.matrix().apply( discreteExactPressure, tmpH2rhs );
-exactH2rhs += tmpH2rhs;
-tmpH2rhs.clear();
-Ymatrix.matrix().apply( discreteExactVelocity, tmpH2rhs );
-exactH2rhs += tmpH2rhs;
-tmpH2rhs.clear();
-Xmatrix.matrix().apply( computedVelocityGradient, tmpH2rhs );
-exactH2rhs += tmpH2rhs;
-tmpH2rhs.clear();
-// H3
-debugStream << "    - H3" << std::endl;
-Rmatrix.matrix().apply( discreteExactPressure, tmpH3rhs );
-exactH3rhs += tmpH3rhs;
-tmpH3rhs.clear();
-Ematrix.matrix().apply( discreteExactVelocity, tmpH3rhs );
-exactH3rhs += tmpH3rhs;
-tmpH3rhs.clear();
-debugStream << "  - done computing artificial rihgt hand sides" << std::endl;
+#ifdef CHEAT
+            // compute the artificial right hand sides, should be the right ones
+            // H1
+            debugStream << "  - computing artificial right hand sides" << std::endl;
+            debugStream << "    - H1" << std::endl;
+            Wmatrix.matrix().apply( discreteExactVelocity, tmpH1rhs );
+            exactH1rhs += tmpH1rhs;
+            tmpH1rhs.clear();
+            MMatrix.matrix().apply( computedVelocityGradient, tmpH1rhs );
+            exactH1rhs += tmpH1rhs;
+            tmpH1rhs.clear();
+            // H2
+            debugStream << "    - H2" << std::endl;
+            Zmatrix.matrix().apply( discreteExactPressure, tmpH2rhs );
+            exactH2rhs += tmpH2rhs;
+            tmpH2rhs.clear();
+            Ymatrix.matrix().apply( discreteExactVelocity, tmpH2rhs );
+            exactH2rhs += tmpH2rhs;
+            tmpH2rhs.clear();
+            Xmatrix.matrix().apply( computedVelocityGradient, tmpH2rhs );
+            exactH2rhs += tmpH2rhs;
+            tmpH2rhs.clear();
+            // H3
+            debugStream << "    - H3" << std::endl;
+            Rmatrix.matrix().apply( discreteExactPressure, tmpH3rhs );
+            exactH3rhs += tmpH3rhs;
+            tmpH3rhs.clear();
+            Ematrix.matrix().apply( discreteExactVelocity, tmpH3rhs );
+            exactH3rhs += tmpH3rhs;
+            tmpH3rhs.clear();
+            debugStream << "  - done computing artificial rihgt hand sides" << std::endl;
+#endif
 
 
             if ( numberOfEntities > 19 ) {
@@ -2464,26 +2473,28 @@ if ( Mprint ) {
                     debugStream << " - = H1 ===========" << std::endl;
                     debugStream.Log( &DiscreteSigmaFunctionType::print, H1rhs );
                 }
-if ( H1print ) {
-    debugStream << " - = exact H1 =====" << std::endl;
-    debugStream.Log( &DiscreteSigmaFunctionType::print, exactH1rhs );
-}
-                if ( H2print ) {
-                    debugStream << " - = H2 ===========" << std::endl;
-                    debugStream.Log( &DiscreteVelocityFunctionType::print, H2rhs );
-                }
-if ( H2print ) {
-    debugStream << " - = exact H2 =====" << std::endl;
-    debugStream.Log( &DiscreteVelocityFunctionType::print, exactH2rhs );
-}
-                if ( H3print ) {
-                    debugStream << " - = H3 ===========" << std::endl;
-                    debugStream.Log( &DiscretePressureFunctionType::print, H3rhs );
-                }
-if ( H3print ) {
-    debugStream << " - = exact H3 =====" << std::endl;
-    debugStream.Log( &DiscretePressureFunctionType::print, exactH3rhs );
-}
+#ifdef CHEAT
+            if ( H1print ) {
+                debugStream << " - = exact H1 =====" << std::endl;
+                debugStream.Log( &DiscreteSigmaFunctionType::print, exactH1rhs );
+            }
+                            if ( H2print ) {
+                                debugStream << " - = H2 ===========" << std::endl;
+                                debugStream.Log( &DiscreteVelocityFunctionType::print, H2rhs );
+                            }
+            if ( H2print ) {
+                debugStream << " - = exact H2 =====" << std::endl;
+                debugStream.Log( &DiscreteVelocityFunctionType::print, exactH2rhs );
+            }
+                            if ( H3print ) {
+                                debugStream << " - = H3 ===========" << std::endl;
+                                debugStream.Log( &DiscretePressureFunctionType::print, H3rhs );
+                            }
+            if ( H3print ) {
+                debugStream << " - = exact H3 =====" << std::endl;
+                debugStream.Log( &DiscretePressureFunctionType::print, exactH3rhs );
+            }
+#endif
                 debugStream << std::endl;
             }
 
@@ -2497,17 +2508,19 @@ if ( H3print ) {
             Stuff::getMinMaxOfDiscreteFunction( H2rhs, H2Min, H2Max );
             Stuff::getMinMaxOfDiscreteFunction( H3rhs, H3Min, H3Max );
 
-double exactH1Min = 0.0;
-double exactH1Max = 0.0;
-double exactH2Min = 0.0;
-double exactH2Max = 0.0;
-double exactH3Min = 0.0;
-double exactH3Max = 0.0;
-Stuff::getMinMaxOfDiscreteFunction( exactH1rhs, exactH1Min, exactH1Max );
-Stuff::getMinMaxOfDiscreteFunction( exactH2rhs, exactH2Min, exactH2Max );
-Stuff::getMinMaxOfDiscreteFunction( exactH3rhs, exactH3Min, exactH3Max );
+#ifdef CHEAT
+            double exactH1Min = 0.0;
+            double exactH1Max = 0.0;
+            double exactH2Min = 0.0;
+            double exactH2Max = 0.0;
+            double exactH3Min = 0.0;
+            double exactH3Max = 0.0;
+            Stuff::getMinMaxOfDiscreteFunction( exactH1rhs, exactH1Min, exactH1Max );
+            Stuff::getMinMaxOfDiscreteFunction( exactH2rhs, exactH2Min, exactH2Max );
+            Stuff::getMinMaxOfDiscreteFunction( exactH3rhs, exactH3Min, exactH3Max );
+#endif
 
-            debugStream  << "- printing infos" << std::endl
+            debugStream << "- printing infos" << std::endl
                         << "  - H1" << std::endl
                         << "    min: " << H1Min << std::endl
                         << "    max: " << H1Max << std::endl
@@ -2517,15 +2530,17 @@ Stuff::getMinMaxOfDiscreteFunction( exactH3rhs, exactH3Min, exactH3Max );
                         << "  - H3" << std::endl
                         << "    min: " << H3Min << std::endl
                         << "    max: " << H3Max << std::endl
-<< "  - exact H1" << std::endl
-<< "    min: " << exactH1Min << std::endl
-<< "    max: " << exactH1Max << std::endl
-<< "  - exact H2" << std::endl
-<< "    min: " << exactH2Min << std::endl
-<< "    max: " << exactH2Max << std::endl
-<< "  - exact H3" << std::endl
-<< "    min: " << exactH3Min << std::endl
-<< "    max: " << exactH3Max << std::endl
+#ifdef CHEAT
+                        << "  - exact H1" << std::endl
+                        << "    min: " << exactH1Min << std::endl
+                        << "    max: " << exactH1Max << std::endl
+                        << "  - exact H2" << std::endl
+                        << "    min: " << exactH2Min << std::endl
+                        << "    max: " << exactH2Max << std::endl
+                        << "  - exact H3" << std::endl
+                        << "    min: " << exactH3Min << std::endl
+                        << "    max: " << exactH3Max << std::endl
+#endif
                         << std::endl;
 #endif
 
@@ -2558,8 +2573,11 @@ Stuff::getMinMaxOfDiscreteFunction( exactH3rhs, exactH3Min, exactH3Max );
             profiler().StopTiming("Pass -- ASSEMBLE");
             profiler().StartTiming("Pass -- SOLVER");
             InvOpType op;
-//            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+#ifndef CHEAT
+            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+#else
             op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, exactH1rhs, exactH2rhs, exactH3rhs );
+#endif
             profiler().StopTiming("Pass -- SOLVER");
             profiler().StopTiming("Pass");
 #ifndef NLOG
