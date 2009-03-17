@@ -66,7 +66,8 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
             ret[0] = arg[1];
             ret[1] = -1.0 * arg[0];
 #else
-            ret = 0.0;
+            ret[0] = 0.0;//arg[1];
+            ret[1] = 0.0;//arg[0];
 #endif
         }
 

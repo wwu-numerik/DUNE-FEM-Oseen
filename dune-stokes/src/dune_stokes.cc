@@ -11,7 +11,7 @@
 //#define POLORDER 1
 
 //#define SIMPLE_PROBLEM
-//#define CONSTANT_PROBLEM
+#define CONSTANT_PROBLEM
 //#define ROTATE_PROBLEM
 //#define NLOG
 
@@ -448,8 +448,8 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
                                         computedVelocityMin,
                                         computedVelocityMax );
     debugStream << "  - computed velocity" << std::endl
-                << "    min: " << computedVelocityMin << std::endl
-                << "    max: " << computedVelocityMax << std::endl;
+                << "    min: " << std::sqrt( 2.0 ) * computedVelocityMin << std::endl
+                << "    max: " << std::sqrt( 2.0 ) * computedVelocityMax << std::endl;
 
     double computedPressureMin = 0.0;
     double computedPressureMax = 0.0;
@@ -458,8 +458,8 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
                                         computedPressureMin,
                                         computedPressureMax );
     debugStream << "  - computed pressure" << std::endl
-                << "    min: " << computedPressureMin << std::endl
-                << "    max: " << computedPressureMax << std::endl
+                << "    min: " << std::sqrt( 2.0 ) * computedPressureMin << std::endl
+                << "    max: " << std::sqrt( 2.0 ) * computedPressureMax << std::endl
                 << std::endl;
 
 
