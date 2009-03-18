@@ -9,6 +9,7 @@
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/fem/space/dgspace.hh>
 #include <dune/fem/quadrature/caching/twistutility.hh>
+#include <dune/fem/misc/l2norm.hh>
 
 #include <dune/stokes/saddlepoint_inverse_operator.hh>
 
@@ -2530,6 +2531,16 @@ if ( Mprint ) {
             double eH1avg = Stuff::getFuncAvg( exactH1rhs );
             double eH2avg = Stuff::getFuncAvg( exactH2rhs );
             double eH3avg = Stuff::getFuncAvg( exactH3rhs );
+            Dune::L2Norm< GridPartType > l2 ( exactH3rhs.space().gridPart() );
+            tmpH1rhs.assign( exactH1rhs );
+            tmpH1rhs -= H1rhs;
+            double h1_err = l2.norm( tmpH1rhs );
+            tmpH2rhs.assign( exactH2rhs );
+            tmpH2rhs -= H2rhs;
+            double h2_err = l2.norm( tmpH2rhs );
+            tmpH3rhs.assign( exactH3rhs );
+            tmpH3rhs -= H3rhs;
+            double h3_err = l2.norm( tmpH3rhs );
 #endif
 
             debugStream << "- printing infos" << std::endl
@@ -2542,6 +2553,7 @@ if ( Mprint ) {
                         << "    min: " << exactH1Min << std::endl
                         << "    max: " << exactH1Max << std::endl
                         << "    avg: " << eH1avg << std::endl
+                        << "    err: " << h1_err << std::endl
 #endif
                         << "  - H2" << std::endl
                         << "    min: " << H2Min << std::endl
@@ -2552,6 +2564,7 @@ if ( Mprint ) {
                         << "    min: " << exactH2Min << std::endl
                         << "    max: " << exactH2Max << std::endl
                         << "    avg: " << eH2avg << std::endl
+                        << "    err: " << h2_err << std::endl
 #endif
                         << "  - H3" << std::endl
                         << "    min: " << H3Min << std::endl
@@ -2562,6 +2575,7 @@ if ( Mprint ) {
                         << "    min: " << exactH3Min << std::endl
                         << "    max: " << exactH3Max << std::endl
                         << "    avg: " << eH3avg << std::endl
+                        << "    err: " << h3_err << std::endl
 #endif
                         << std::endl;
 #endif
