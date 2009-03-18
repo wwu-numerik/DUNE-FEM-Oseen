@@ -82,9 +82,16 @@ namespace Dune {
                 DiscreteVelocityFunctionType& rhs2,
                 DiscretePressureFunctionType& rhs3 ) const
     {
+
         Logging::LogStream& logDebug = Logger().Dbg();
         Logging::LogStream& logError = Logger().Err();
         Logging::LogStream& logInfo = Logger().Info();
+
+        if ( Parameters().getParam( "disableSolver", false ) ) {
+            logInfo.Resume();
+            logInfo << "solving disabled via parameter file" << std::endl;
+            return;
+        }
 
 		// relative min. error at which cg-solvers will abort
         const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
