@@ -278,9 +278,11 @@ void oneLinePrint( Stream& stream, const DiscFunc& func )
 {
     typedef typename DiscFunc::ConstDofIteratorType DofIteratorType;
     DofIteratorType it = func.dbegin();
-    stream << "\n" << func.name() << ": [ ";
-    for ( ; it != func.dend(); ++it )
-        stream << std::setw(5) << *it << "  ";
+    stream << "\n" << func.name() <<": \n[ ";
+    for ( ; it != func.dend(); ++it ) {
+        //double d = 0.10;// + *it; //stupid hack cause setw/prec ain't working for me
+        stream << std::setw(6) <<  std::setprecision(3) << *it << "  ";
+    }
 
     stream << " ] " << std::endl;
 }

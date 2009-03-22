@@ -352,17 +352,17 @@ MMatrix.reserve();
             int numberOfIntersections = 0;
             int numberOfBoundaryIntersections = 0;
             int numberOfInnerIntersections = 0;
-            const bool Mprint = false;
-            const bool Wprint = false;
-            const bool Xprint = false;
-            const bool Yprint = false;
-            const bool Zprint = false;
-            const bool Eprint = false;
-            const bool Rprint = false;
-            const bool H1print = false;
-            const bool H2print = true;
-            const bool H3print = false;
-            const bool allOutput = false;
+            const bool Mprint = Parameters().getParam( "Mprint", false );
+            const bool Wprint = Parameters().getParam( "Wprint", false );
+            const bool Xprint = Parameters().getParam( "Xprint", false );
+            const bool Yprint = Parameters().getParam( "Yprint", false );
+            const bool Zprint = Parameters().getParam( "Zprint", false );
+            const bool Eprint = Parameters().getParam( "Eprint", false );
+            const bool Rprint = Parameters().getParam( "Rprint", false );
+            const bool H1print = Parameters().getParam( "H1print", false );
+            const bool H2print = Parameters().getParam( "H2print", false );
+            const bool H3print = Parameters().getParam( "H3print", false );
+            const bool allOutput = Parameters().getParam( "allOutput", false );
             int fivePercentOfEntities = 0;
             int fivePercents = 0;
             infoStream << "this is StokesPass::apply()" << std::endl;
@@ -2483,13 +2483,15 @@ if ( Mprint ) {
                 }
 #endif
                 if ( H2print ) {
-                    debugStream << " - = H2 ===========" << std::endl;
-                    debugStream.Log( &DiscreteVelocityFunctionType::print, H2rhs );
+//                    debugStream << " - = H2 ===========" << std::endl;
+//                    debugStream.Log( &DiscreteVelocityFunctionType::print, H2rhs );
+                    Stuff::oneLinePrint( debugStream, H2rhs );
                 }
 #ifdef CHEAT
                 if ( H2print ) {
-                    debugStream << " - = exact H2 =====" << std::endl;
-                    debugStream.Log( &DiscreteVelocityFunctionType::print, exactH2rhs );
+//                    debugStream << " - = exact H2 =====" << std::endl;
+//                    debugStream.Log( &DiscreteVelocityFunctionType::print, exactH2rhs );
+                    Stuff::oneLinePrint( debugStream, exactH2rhs );
                 }
 #endif
                 if ( H3print ) {
