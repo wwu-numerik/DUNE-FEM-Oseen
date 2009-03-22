@@ -2552,7 +2552,6 @@ if ( Mprint ) {
             tmpH3rhs -= H3rhs;
             double h3_err = l2.norm( tmpH3rhs );
 #endif
-
             debugStream << "- printing infos" << std::endl
                         << "  - H1" << std::endl
                         << "    min: " << H1Min << std::endl
@@ -2564,7 +2563,8 @@ if ( Mprint ) {
                         << "    max: " << exactH1Max << std::endl
                         << "    avg: " << eH1avg << std::endl
                         << "    err: " << h1_err << std::endl
-                        << "   #dif: " << h1_diffs << " / " << H1rhs.size() << std::endl
+                        << "   #dif: " << h1_diffs << " / " << H1rhs.size()
+                                << " (" << 100 * h1_diffs / (double) H1rhs.size() << "%)" << std::endl
 #endif
                         << "  - H2" << std::endl
                         << "    min: " << H2Min << std::endl
@@ -2576,7 +2576,8 @@ if ( Mprint ) {
                         << "    max: " << exactH2Max << std::endl
                         << "    avg: " << eH2avg << std::endl
                         << "    err: " << h2_err << std::endl
-                        << "   #dif: " << h2_diffs << " / " << H2rhs.size() << std::endl
+                        << "   #dif: " << h2_diffs << " / " << H2rhs.size()
+                                << " (" << 100 * h2_diffs / (double) H2rhs.size() << "%)" << std::endl
 #endif
                         << "  - H3" << std::endl
                         << "    min: " << H3Min << std::endl
@@ -2588,7 +2589,9 @@ if ( Mprint ) {
                         << "    max: " << exactH3Max << std::endl
                         << "    avg: " << eH3avg << std::endl
                         << "    err: " << h3_err << std::endl
-                        << "   #dif: " << h3_diffs << " / " << H3rhs.size() << std::endl
+                        << "   #dif: " << h3_diffs << " / " << H3rhs.size()
+                                << " (" << 100 * h3_diffs / (double) H3rhs.size() << "%)" << std::endl
+                        << " - " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
 #endif
                         << std::endl;
 #endif
