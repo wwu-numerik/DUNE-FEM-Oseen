@@ -2473,13 +2473,15 @@ if ( Mprint ) {
                     debugStream.Log( &RmatrixType::MatrixType::print,  Rmatrix.matrix() );
                 }
                 if ( H1print ) {
-                    debugStream << " - = H1 ===========" << std::endl;
-                    debugStream.Log( &DiscreteSigmaFunctionType::print, H1rhs );
+//                    debugStream << " - = H1 ===========" << std::endl;
+//                    debugStream.Log( &DiscreteSigmaFunctionType::print, H1rhs );
+                    Stuff::oneLinePrint( debugStream, H1rhs );
                 }
 #ifdef CHEAT
                 if ( H1print ) {
-                    debugStream << " - = exact H1 =====" << std::endl;
-                    debugStream.Log( &DiscreteSigmaFunctionType::print, exactH1rhs );
+//                    debugStream << " - = exact H1 =====" << std::endl;
+//                    debugStream.Log( &DiscreteSigmaFunctionType::print, exactH1rhs );
+                    Stuff::oneLinePrint( debugStream, exactH1rhs );
                 }
 #endif
                 if ( H2print ) {
@@ -2495,13 +2497,15 @@ if ( Mprint ) {
                 }
 #endif
                 if ( H3print ) {
-                    debugStream << " - = H3 ===========" << std::endl;
-                    debugStream.Log( &DiscretePressureFunctionType::print, H3rhs );
+//                    debugStream << " - = H3 ===========" << std::endl;
+//                    debugStream.Log( &DiscretePressureFunctionType::print, H3rhs );
+                    Stuff::oneLinePrint( debugStream, H3rhs );
                 }
 #ifdef CHEAT
                 if ( H3print ) {
-                    debugStream << " - = exact H3 =====" << std::endl;
-                    debugStream.Log( &DiscretePressureFunctionType::print, exactH3rhs );
+//                    debugStream << " - = exact H3 =====" << std::endl;
+//                    debugStream.Log( &DiscretePressureFunctionType::print, exactH3rhs );
+                    Stuff::oneLinePrint( debugStream, exactH3rhs );
                 }
 #endif
                 debugStream << std::endl;
@@ -2533,6 +2537,10 @@ if ( Mprint ) {
             double eH1avg = Stuff::getFuncAvg( exactH1rhs );
             double eH2avg = Stuff::getFuncAvg( exactH2rhs );
             double eH3avg = Stuff::getFuncAvg( exactH3rhs );
+            double tol = Parameters().getParam( "diff-tolerance", 0.01 );
+            double h1_diffs = Stuff::getNumDiffDofs( H1rhs, exactH1rhs, tol );
+            double h2_diffs = Stuff::getNumDiffDofs( H2rhs, exactH2rhs, tol );
+            double h3_diffs = Stuff::getNumDiffDofs( H3rhs, exactH3rhs, tol );
             Dune::L2Norm< GridPartType > l2 ( exactH3rhs.space().gridPart() );
             tmpH1rhs.assign( exactH1rhs );
             tmpH1rhs -= H1rhs;
@@ -2556,6 +2564,7 @@ if ( Mprint ) {
                         << "    max: " << exactH1Max << std::endl
                         << "    avg: " << eH1avg << std::endl
                         << "    err: " << h1_err << std::endl
+                        << "   #dif: " << h1_diffs << " / " << H1rhs.size() << std::endl
 #endif
                         << "  - H2" << std::endl
                         << "    min: " << H2Min << std::endl
@@ -2567,6 +2576,7 @@ if ( Mprint ) {
                         << "    max: " << exactH2Max << std::endl
                         << "    avg: " << eH2avg << std::endl
                         << "    err: " << h2_err << std::endl
+                        << "   #dif: " << h2_diffs << " / " << H2rhs.size() << std::endl
 #endif
                         << "  - H3" << std::endl
                         << "    min: " << H3Min << std::endl
@@ -2578,6 +2588,7 @@ if ( Mprint ) {
                         << "    max: " << exactH3Max << std::endl
                         << "    avg: " << eH3avg << std::endl
                         << "    err: " << h3_err << std::endl
+                        << "   #dif: " << h3_diffs << " / " << H3rhs.size() << std::endl
 #endif
                         << std::endl;
 #endif

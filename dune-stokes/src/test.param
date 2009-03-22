@@ -28,6 +28,7 @@ solverVerbosity: 0
 h-factor: 1.0
 eps: 1.0e-14
 disableSolver: 0
+diff-tolerance: 0.01
 
 #output:
 Mprint: 0
@@ -37,7 +38,7 @@ Yprint: 0
 Zprint: 0
 Eprint: 0
 Rprint: 0
-H1print: 0
+H1print: 1
 H2print: 1
-H3print: 0
+H3print: 1
 allOutput: 0
