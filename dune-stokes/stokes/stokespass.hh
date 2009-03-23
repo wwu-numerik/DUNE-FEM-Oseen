@@ -395,6 +395,11 @@ MMatrix.reserve();
             computedVelocityGradient.clear();
             discreteGradientPass.apply( discreteExactVelocity, computedVelocityGradient );
             DiscretePressureFunctionType discreteExactPressure = arg.discretePressure();
+		double cg_min,cg_max;
+		Stuff::getMinMaxOfDiscreteFunction( computedVelocityGradient, cg_min, cg_max );
+		Stuff::oneLinePrint( infoStream, computedVelocityGradient );
+		Stuff::oneLinePrint( infoStream, arg.discreteVelocity() );
+		Stuff::oneLinePrint( infoStream, arg.discretePressure() );
 #endif
 
             // do an empty grid walk to get informations
@@ -2400,6 +2405,7 @@ localMMatrixElement.add( i, j, M_i_j );
             // compute the artificial right hand sides, should be the right ones
             // H1
 //            debugStream = Logger().Info();
+            H2rhs *= std::sqrt( 2.0 );
             debugStream.Resume();
             debugStream << "  - computing artificial right hand sides" << std::endl;
             debugStream << "    - H1" << std::endl;
@@ -2591,7 +2597,7 @@ if ( Mprint ) {
                         << "    err: " << h3_err << std::endl
                         << "   #dif: " << h3_diffs << " / " << H3rhs.size()
                                 << " (" << 100 * h3_diffs / (double) H3rhs.size() << "%)" << std::endl
-                        << " - " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
+                        << " - " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl
 #endif
                         << std::endl;
 #endif

@@ -31,13 +31,13 @@ disableSolver: 0
 diff-tolerance: 0.01
 
 #output:
-Mprint: 0
-Wprint: 0
-Xprint: 0
-Yprint: 0
-Zprint: 0
-Eprint: 0
-Rprint: 0
+Mprint: 1
+Wprint: 1
+Xprint: 1
+Yprint: 1
+Zprint: 1
+Eprint: 1
+Rprint: 1
 H1print: 1
 H2print: 1
 H3print: 1
