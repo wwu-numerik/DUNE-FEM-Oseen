@@ -2591,7 +2591,7 @@ if ( Mprint ) {
                         << "    err: " << h3_err << std::endl
                         << "   #dif: " << h3_diffs << " / " << H3rhs.size()
                                 << " (" << 100 * h3_diffs / (double) H3rhs.size() << "%)" << std::endl
-                        << " - " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
+                        << " - " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl
 #endif
                         << std::endl;
 #endif
