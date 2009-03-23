@@ -395,6 +395,9 @@ MMatrix.reserve();
             computedVelocityGradient.clear();
             discreteGradientPass.apply( discreteExactVelocity, computedVelocityGradient );
             DiscretePressureFunctionType discreteExactPressure = arg.discretePressure();
+		double cg_min,cg_max;
+		Stuff::getMinMaxOfDiscreteFunction( computedVelocityGradient, cg_min, cg_max );
+		infoStream << "\ncg_min,max " << cg_min << " ; " << cg_max << std::endl;
 #endif
 
             // do an empty grid walk to get informations
@@ -2488,6 +2491,7 @@ if ( Mprint ) {
 //                    debugStream << " - = H2 ===========" << std::endl;
 //                    debugStream.Log( &DiscreteVelocityFunctionType::print, H2rhs );
                     Stuff::oneLinePrint( debugStream, H2rhs );
+                    Stuff::oneLinePrint( debugStream, arg.discretePressure() );
                 }
 #ifdef CHEAT
                 if ( H2print ) {
