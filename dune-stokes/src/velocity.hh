@@ -181,8 +181,8 @@ inline void Velocity< TraitsImp >::evaluate(
     double x1 = arg[0];
     double x2 = arg[1];
 #ifdef SIMPLE_PROBLEM
-    ret[0] = -1 * x1*x1;
-    ret[1] = x2*x2;
+    ret[0] = 1;
+    ret[1] = 0;
 #elif defined(CONSTANT_PROBLEM)
     ret[0] = 0;
     ret[1] = 0;

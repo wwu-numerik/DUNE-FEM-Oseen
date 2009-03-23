@@ -57,8 +57,8 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
             double x1 = arg[0];
             double x2 = arg[1];
 #ifdef SIMPLE_PROBLEM
-            ret[0] = -2*x2;//arg[1];
-            ret[1] = -2*x1;//arg[0];
+            ret[0] = 0.0;//arg[1];
+            ret[1] = 0.0;//-1.0;//arg[0];
 #elif defined(CONSTANT_PROBLEM)
             ret[0] = 0.0;//arg[1];
             ret[1] = -1.0;//arg[0];
@@ -129,8 +129,8 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
             double x2 = arg[1];
             // some computations
 #ifdef SIMPLE_PROBLEM
-            ret[0] = -1 * x1*x1;
-            ret[1] = x2*x2;
+            ret[0] = 1.0;
+            ret[1] = 0.0;
 #elif defined(CONSTANT_PROBLEM)
             ret[0] = 0.0;
             ret[1] = 0.0;

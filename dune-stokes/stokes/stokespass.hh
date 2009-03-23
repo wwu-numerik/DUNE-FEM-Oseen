@@ -2405,7 +2405,7 @@ localMMatrixElement.add( i, j, M_i_j );
             // compute the artificial right hand sides, should be the right ones
             // H1
 //            debugStream = Logger().Info();
-            H2rhs *= std::sqrt( 2.0 );
+
             debugStream.Resume();
             debugStream << "  - computing artificial right hand sides" << std::endl;
             debugStream << "    - H1" << std::endl;
@@ -2643,6 +2643,8 @@ if ( Mprint ) {
                 op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
             }
 #endif
+            Stuff::oneLinePrint( infoStream, dest.discretePressure() );
+            Stuff::oneLinePrint( infoStream, dest.discreteVelocity() );
             profiler().StopTiming("Pass -- SOLVER");
             profiler().StopTiming("Pass");
 #ifndef NLOG
