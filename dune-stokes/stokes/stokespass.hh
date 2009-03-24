@@ -20,7 +20,15 @@
 #endif
 
 #include "../src/profiler.hh"
-#include "discretegradientpass.hh"
+
+#ifdef CHEAT
+    #if (POLORDER > 0)
+        #warning "gradient reconstruction disabled because polorder > 0"
+        #undef CHEAT
+    #else
+        #include "discretegradientpass.hh"
+    #endif
+#endif
 
 namespace Dune
 {
