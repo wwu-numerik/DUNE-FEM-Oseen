@@ -1,9 +1,9 @@
 # use these options for configure if no options a provided on the cmdline
 #AUTOGEN_FLAGS="--ac=2.59 --am=-1.8"
-CONFIGURE_FLAGS="CXX=g++ CC=gcc CXXFLAGS='-O0' \
-	LDFLAGS=/usr/lib64/libgfortran.so.1.0.0 \
+CONFIGURE_FLAGS="CXX=g++ CC=gcc F77=gfortran CXXFLAGS='-g' \
   --prefix=/data/dune_work/private/f_albr01/diplomarbeit_felix_rene \
   --with-metis=/share/dune/Modules/modules_$HOSTTYPE/metis \
+  --with-alberta=/share/dune/Modules/modules_$HOSTTYPE/alberta-1.2 \
   --with-alugrid=/share/dune/Modules/modules_$HOSTTYPE/ALUGrid-1.1_Parallel \
   --x-includes=/usr/X11R6/include \
   --x-libraries=/usr/X11R6/lib64 \
