@@ -79,7 +79,7 @@ template <  class A_SolverType,
             class MmatrixType,
             class DiscreteVelocityFunctionType ,
             class DiscretePressureFunctionType>
-class SchurkomplementOperator
+class SchurkomplementOperator : public OEMSolver::PreconditionInterface
 {
     public:
 
@@ -133,6 +133,27 @@ class SchurkomplementOperator
         ThisType& systemMatrix ()
         {
             return *this;
+        }
+
+        ThisType& preconditionMatrix()
+        {
+            return *this;
+        }
+
+        bool hasPreconditionMatrix () const
+        {
+            return false;
+        }
+
+        bool rightPrecondition() const
+        {
+            return false;
+        }
+
+        template <class VecType>
+        void precondition( const VecType* tmp, VecType* dest ) const
+        {
+
         }
 
     private:
