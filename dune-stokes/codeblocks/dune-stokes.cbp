@@ -53,10 +53,16 @@
 				<Option parameters="test.param" />
 				<Compiler>
 					<Add option="-g" />
+					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/include" />
+					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/include/parallel" />
+					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/include/serial" />
 				</Compiler>
 				<Linker>
+					<Add option="/usr/lib/libSM.so.6" />
 					<Add library="blas" />
 					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
+					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/lib" />
+					<Add directory="/usr/lib" />
 				</Linker>
 			</Target>
 		</Build>
@@ -90,8 +96,6 @@
 			<Add library="../../dune-grid/lib/.libs/libdunegrid.a" />
 			<Add library="../../dune-common/lib/.libs/libdunecommon.a" />
 			<Add library="m" />
-			<Add library="gr" />
-			<Add library="GL" />
 			<Add directory="../../dune-common/lib" />
 			<Add directory="../../dune-grid/lib" />
 			<Add directory="../../dune-fem/lib" />
