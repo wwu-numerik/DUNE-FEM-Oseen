@@ -108,22 +108,30 @@ using namespace DuneCBlas;
 
 //! this method is called from all solvers and is only a wrapper
 //! this method is mainly from SparseRowMatrix
-template <class MatrixImp, class VectorType>
-void mult(const MatrixImp & m, const VectorType * x, VectorType * ret)
+template <class MatrixImp, class VectorType >
+void mult(const MatrixImp & m, const VectorType * x, VectorType * ret, double residuum )
 {
   // call multOEM of the matrix
-  m.multOEM(x,ret);
+  m.multOEM(x,ret, residuum );
+}
+
+template <class MatrixImp, class VectorType>
+void mult(const MatrixImp & m, const VectorType * x, VectorType * ret )
+{
+  // call multOEM of the matrix
+  m.multOEM(x,ret );
 }
 
 //! mult method when given pre conditioning matrix
-template <class Matrix , class PC_Matrix , bool >
+template <class Matrix , class PC_Matrix , bool use_pc >
 struct Mult
 {
   typedef void mult_t(const Matrix &A,
                       const PC_Matrix & C,
                       const double *arg,
                       double *dest ,
-                      double * tmp);
+                      double * tmp,
+                      double residuum );
 
   static bool first_mult(const Matrix &A, const PC_Matrix & C,
               const double *arg, double *dest , double * tmp)
@@ -161,7 +169,7 @@ struct Mult
   }
 
   static void mult_pc (const Matrix &A, const PC_Matrix & C,
-        const double *arg, double *dest , double * tmp)
+        const double *arg, double *dest , double * tmp, double residuum )
   {
     assert( tmp );
 
@@ -172,12 +180,35 @@ struct Mult
       C.precondition(arg,tmp);
 
       // call mult of Matrix A
-      mult(A,tmp,dest);
+      mult<true>(A,tmp,dest, residuum );
     }
     else
     {
       // call mult of Matrix A
-      mult(A,arg,tmp);
+      mult<true>(A,arg,tmp, residuum );
+
+      // call precondition of Matrix PC
+      C.precondition(tmp,dest);
+    }
+  }
+    static void mult_pc (const Matrix &A, const PC_Matrix & C,
+        const double *arg, double *dest , double * tmp )
+  {
+    assert( tmp );
+
+    // check type of preconditioning
+    if( C.rightPrecondition() )
+    {
+      // call precondition of Matrix PC
+      C.precondition(arg,tmp);
+
+      // call mult of Matrix A
+      mult(A,tmp,dest, 0.0 );
+    }
+    else
+    {
+      // call mult of Matrix A
+      mult(A,arg,tmp, 0.0);
 
       // call precondition of Matrix PC
       C.precondition(tmp,dest);
@@ -217,7 +248,7 @@ struct Mult<Matrix,Matrix,false>
   }
 
   static void mult_pc(const Matrix &A, const Matrix & C, const double *arg ,
-                      double *dest , double * tmp)
+                      double *dest , double * tmp, double residuum )
   {
     // tmp has to be 0
     assert( tmp == 0 );
@@ -225,7 +256,19 @@ struct Mult<Matrix,Matrix,false>
     assert( &A == &C );
 
     // call mult of Matrix A
-    mult(A,arg,dest);
+    mult(A,arg,dest,residuum);
+  }
+
+  static void mult_pc(const Matrix &A, const Matrix & C, const double *arg ,
+                      double *dest , double * tmp )
+  {
+    // tmp has to be 0
+    assert( tmp == 0 );
+    // C is just a fake
+    assert( &A == &C );
+
+    // call mult of Matrix A
+    mult(A,arg,dest,0.0);
   }
 };
 
@@ -314,7 +357,7 @@ namespace Dune
    **/
 
 /** \brief OEM-CG scheme after Hestenes and Stiefel */
-template <class DiscreteFunctionType, class OperatorType>
+template <class DiscreteFunctionType, class OperatorType, bool use_bgf_cg_scheme = false >
 class OEMCGOp : public Operator<
       typename DiscreteFunctionType::DomainFieldType,
       typename DiscreteFunctionType::RangeFieldType,
@@ -329,6 +372,7 @@ private:
   typename DiscreteFunctionType::RangeFieldType epsilon_;
   int maxIter_;
   bool verbose_ ;
+
 
   template <class OperatorImp, bool hasPreconditioning>
   struct SolverCaller
@@ -348,13 +392,13 @@ private:
       {
         return OEMSolver::cghs(arg.space().grid().comm(),
                    size,op.systemMatrix(),op.preconditionMatrix(),
-                   arg.leakPointer(),dest.leakPointer(),eps,verbose);
+                   arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
       }
       else
       {
         return OEMSolver::cghs(arg.space().grid().comm(),
                   size,op.systemMatrix(),
-                  arg.leakPointer(),dest.leakPointer(),eps,verbose);
+                  arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
       }
     }
   };
@@ -373,9 +417,10 @@ private:
       // see dune-common/common/collectivecommunication.hh
       // for interface
       int size = arg.space().size();
-      return OEMSolver::cghs(arg.space().grid().comm(),
+      return OEMSolver::cghs
+                (arg.space().grid().comm(),
                 size,op.systemMatrix(),
-                arg.leakPointer(),dest.leakPointer(),eps,verbose);
+                arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
     }
   };
 
@@ -461,7 +506,7 @@ public:
 };
 
 /** \brief BiCG-stab solver */
-template <class DiscreteFunctionType, class OperatorType>
+template <class DiscreteFunctionType, class OperatorType, bool use_bgf_cg_scheme >
 class OEMBICGSTABOp : public Operator<
       typename DiscreteFunctionType::DomainFieldType,
       typename DiscreteFunctionType::RangeFieldType,
@@ -491,13 +536,13 @@ private:
       {
         return OEMSolver::bicgstab(arg.space().grid().comm(),
                   size,op.systemMatrix(),op.preconditionMatrix(),
-                  arg.leakPointer(),dest.leakPointer(),eps,verbose);
+                  arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
       }
       else
       {
         return OEMSolver::bicgstab(arg.space().grid().comm(),
                   size,op.systemMatrix(),
-                  arg.leakPointer(),dest.leakPointer(),eps,verbose);
+                  arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
       }
     }
   };
@@ -515,7 +560,7 @@ private:
       int size = arg.space().size();
       return OEMSolver::bicgstab(arg.space().grid().comm(),
                 size,op.systemMatrix(),
-                arg.leakPointer(),dest.leakPointer(),eps,verbose);
+                arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
     }
   };
 

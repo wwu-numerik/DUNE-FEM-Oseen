@@ -6,9 +6,12 @@
  */
 
 // OEMBICGSQOp will NOT compile
-#define CG_SOLVERTYPE OEMCGOp
-#ifndef CG_SOLVERTYPE
-    #define CG_SOLVERTYPE OEMBICGSTABOp
+#ifndef INNER_CG_SOLVERTYPE
+    #define INNER_CG_SOLVERTYPE OEMCGOp
+#endif
+
+#ifndef OUTER_CG_SOLVERTYPE
+    #define OUTER_CG_SOLVERTYPE OEMCGOp
 #endif
 
 #include <dune/fem/function/common/discretefunction.hh>
@@ -18,6 +21,8 @@
 #include "../src/logging.hh"
 #include "../src/parametercontainer.hh"
 #include "../src/stuff.hh" //DiagonalMult
+
+#define USE_BGF_CG_SCHEME
 
 
 namespace Dune {
@@ -170,6 +175,7 @@ namespace Dune {
 		// new_f := ( B * A^-1 * f_func ) + g_func
 		A_SolverReturnType a_ret;
 		a_solver.apply( f_func, tmp_f, a_ret );
+#ifdef ADAPTIVE_SOLVER
 		if ( isnan(a_ret.second) ) {
 		    logInfo << "\n\t\t NaNs detected, lowering error tolerance" << std::endl;
             int max_adaptions = Parameters().getParam( "max_adaptions", 8 );
@@ -196,6 +202,7 @@ namespace Dune {
                 adapt_step++;
             }
 		}
+#endif
 		b_t_mat.apply( tmp_f, new_f );
         new_f -= g_func;
         Stuff::oneLinePrint( logDebug, new_f );
@@ -211,8 +218,14 @@ namespace Dune {
                                             DiscretePressureFunctionType >
                 Sk_Operator;
 
-        typedef CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
-                Sk_Solver;
+        #ifdef USE_BGF_CG_SCHEME
+            typedef OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator, true >
+                    Sk_Solver;
+        #else
+            typedef OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
+                    Sk_Solver;
+        #endif
+
         typedef typename Sk_Solver::ReturnValueType
                 SolverReturnType;
 

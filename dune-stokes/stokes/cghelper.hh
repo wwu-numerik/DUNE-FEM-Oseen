@@ -56,6 +56,11 @@ class MatrixA_Operator {
             y_mat_.multOEMAdd( x, ret );
 			//
         }
+        template <class VECtype>
+        void multOEM(const VECtype *x, VECtype * ret, double ) const
+        {
+            multOEM(x,ret);
+        }
 
         ThisType& systemMatrix ()
         {
@@ -128,6 +133,26 @@ class SchurkomplementOperator : public OEMSolver::PreconditionInterface
             c_mat_.multOEMAdd( x, ret );
 			//
         }
+        template <class VECtype>
+        void multOEM(const VECtype *x, VECtype * ret, double residuum ) const
+        {
+            Logging::LogStream& dbg = Logger().Dbg();
+
+            const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
+
+            tmp1.clear();
+//            Stuff::addScalarToFunc( tmp2, 0.1 );
+
+			// ret = ( ( B_t * ( A^-1 * ( B * x ) ) ) + ( C * x ) )
+//			Stuff::oneLinePrint( std::cout, tmp1 ) ;
+            b_t_mat_.multOEM_t( x, tmp1.leakPointer() );
+//            Stuff::oneLinePrint( std::cout, tmp1 ) ;
+//            Stuff::printDoubleVec( std::cout, x, b_mat_.cols() );
+            a_solver_.apply( tmp1, tmp2 );
+            b_t_mat_.multOEM( tmp2.leakPointer(), ret );
+            c_mat_.multOEMAdd( x, ret );
+			//
+        }
 
 
         ThisType& systemMatrix ()
@@ -181,10 +206,10 @@ class A_SolverCaller {
                                     DiscreteSigmaFunctionType >
                 A_OperatorType;
 
-        typedef OEMBICGSTABOp< DiscreteVelocityFunctionType, A_OperatorType >
+        typedef INNER_CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
             CG_SolverType;
         typedef typename CG_SolverType::ReturnValueType
-                SolverReturnType;
+            SolverReturnType;
 
         A_SolverCaller( const WMatType& w_mat,
                 const MMatType& m_mat,
