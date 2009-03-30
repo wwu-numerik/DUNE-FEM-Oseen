@@ -180,12 +180,12 @@ struct Mult
       C.precondition(arg,tmp);
 
       // call mult of Matrix A
-      mult<true>(A,tmp,dest, residuum );
+      mult(A,tmp,dest, residuum );
     }
     else
     {
       // call mult of Matrix A
-      mult<true>(A,arg,tmp, residuum );
+      mult(A,arg,tmp, residuum );
 
       // call precondition of Matrix PC
       C.precondition(tmp,dest);
