@@ -1,6 +1,6 @@
 # use these options for configure if no options a provided on the cmdline
 #AUTOGEN_FLAGS="--ac=2.59 --am=-1.8"
-CONFIGURE_FLAGS="CXX=/usr/bin/g++-4.2 CC=/usr/bin/gcc-4.2 CXXFLAGS='-O3 -DNDEBUG' \
+CONFIGURE_FLAGS="CXX=/usr/bin/g++-4.2 CC=/usr/bin/gcc-4.2 CXXFLAGS=' -DDEBUG' \
   --prefix=/share/projekte/uni/diplomarbeit/dune-code \
   --with-metis=/share/dune/Modules/modules_$HOSTTYPE/metis \
   --with-alugrid=/share/dune/Modules/modules_$HOSTTYPE/ALUGrid-1.1_Parallel \

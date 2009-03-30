@@ -254,7 +254,7 @@ class DiscreteGradientPass
 #elif ( dimOfDiscreteFunctionRange == dimWorld )
     #define RANGETYPE_IS_A_VECTOR
 #else
-    #warning "ERROR: dimOfDiscreteFunctionRange != 1 AND dimOfDiscreteFunctionRange != dimWorld"
+    #error "dimOfDiscreteFunctionRange != 1 AND dimOfDiscreteFunctionRange != dimWorld"
 #endif
 
 #ifdef RANGETYPE_IS_A_SCALAR

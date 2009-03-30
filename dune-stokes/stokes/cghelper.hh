@@ -160,8 +160,10 @@ class A_SolverCaller {
                                     DiscreteSigmaFunctionType >
                 A_OperatorType;
 
-        typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
+        typedef OEMBICGSTABOp< DiscreteVelocityFunctionType, A_OperatorType >
             CG_SolverType;
+        typedef typename CG_SolverType::ReturnValueType
+                SolverReturnType;
 
         A_SolverCaller( const WMatType& w_mat,
                 const MMatType& m_mat,
@@ -184,9 +186,14 @@ class A_SolverCaller {
                                 verbose )
         {}
 
+        void apply ( const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest, SolverReturnType& ret )
+        {
+            cg_solver.apply(arg,dest, ret);
+        }
+
         void apply ( const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest )
         {
-            cg_solver(arg,dest);
+            cg_solver.apply(arg,dest);
         }
 
         const A_OperatorType& getA_operator( )

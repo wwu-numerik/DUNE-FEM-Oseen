@@ -99,8 +99,10 @@ class Logging
                 template < typename T >
                 LogStream& operator << ( T in )
                 {
+                    SetColor();
                     if ( logflags_ & loglevel_ )
                         buffer_ << in;
+                    UnsetColor();
                     return *this;
                 }
 
@@ -141,6 +143,17 @@ class Logging
                     }
                 }
 
+                void SetColor()
+                {
+//                    if ( logflags_ & LOG_INFO ) {
+//                        buffer_ << "\033[21;31m";
+//                    }
+                }
+
+                void UnsetColor() {
+//                    buffer_ << "\033[0m";
+                }
+
                 //template < class Class >
                 LogStream& operator << ( LogStream& ( *pf )(LogStream&) )
                 {
@@ -151,6 +164,7 @@ class Logging
 
                 LogStream& operator << ( std::ostream& ( *pf )(std::ostream &) )
                 {
+                    SetColor();
                     if ( logflags_ & loglevel_ ) {
                         if ( pf == (std::ostream& ( * )(std::ostream&))std::endl )
                         { //flush buffer into stream
@@ -160,6 +174,7 @@ class Logging
                         else
                             buffer_ << pf;
                     }
+                    UnsetColor();
                     return *this;
                 }
 

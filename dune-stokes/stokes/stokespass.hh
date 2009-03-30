@@ -20,7 +20,15 @@
 #endif
 
 #include "../src/profiler.hh"
-#include "discretegradientpass.hh"
+
+#ifdef CHEAT
+    #if (POLORDER > 0)
+        #warning "gradient reconstruction disabled because polorder > 0"
+        #undef CHEAT
+    #else
+        #include "discretegradientpass.hh"
+    #endif
+#endif
 
 namespace Dune
 {
@@ -2405,7 +2413,7 @@ localMMatrixElement.add( i, j, M_i_j );
             // compute the artificial right hand sides, should be the right ones
             // H1
 //            debugStream = Logger().Info();
-            H2rhs *= std::sqrt( 2.0 );
+
             debugStream.Resume();
             debugStream << "  - computing artificial right hand sides" << std::endl;
             debugStream << "    - H1" << std::endl;
@@ -2603,17 +2611,17 @@ if ( Mprint ) {
 #endif
 
             // do the matlab logging stuff
-//            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-//            Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Xmatrix.matrix(), "X", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Ymatrix.matrix(), "Y", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Zmatrix.matrix(), "Z", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Ematrix.matrix(), "E", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Rmatrix.matrix(), "R", matlabLogStream );
-//            Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
-//            Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
-//            Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
+            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+            Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Xmatrix.matrix(), "X", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Ymatrix.matrix(), "Y", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Zmatrix.matrix(), "Z", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Ematrix.matrix(), "E", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Rmatrix.matrix(), "R", matlabLogStream );
+            Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
+            Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
+            Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
 //            matlabLogStream << "\nA = Y - X * M_invers * W;" << std::endl;
 //            matlabLogStream << "B = Z;" << std::endl;
 //            matlabLogStream << "B_T = - E;" << std::endl;
@@ -2643,6 +2651,8 @@ if ( Mprint ) {
                 op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
             }
 #endif
+            Stuff::oneLinePrint( infoStream, dest.discretePressure() );
+            Stuff::oneLinePrint( infoStream, dest.discreteVelocity() );
             profiler().StopTiming("Pass -- SOLVER");
             profiler().StopTiming("Pass");
 #ifndef NLOG

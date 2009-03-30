@@ -155,6 +155,8 @@ namespace Dune {
                                 DiscreteSigmaFunctionType,
                                 DiscreteVelocityFunctionType >
             A_Solver;
+        typedef typename A_Solver::SolverReturnType
+                A_SolverReturnType;
         A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit, solverVerbosity );
 
 //		typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
@@ -166,9 +168,37 @@ namespace Dune {
 		new_f.clear();
 
 		// new_f := ( B * A^-1 * f_func ) + g_func
-        a_solver.apply( f_func, tmp_f );
+		A_SolverReturnType a_ret;
+		a_solver.apply( f_func, tmp_f, a_ret );
+		if ( isnan(a_ret.second) ) {
+		    logInfo << "\n\t\t NaNs detected, lowering error tolerance" << std::endl;
+            int max_adaptions = Parameters().getParam( "max_adaptions", 8 );
+            int adapt_step = 1;
+            double a_relLimit = relLimit;
+            double a_absLimit = absLimit;
+            while ( true ) {
+                if ( adapt_step > max_adaptions ) {
+                    logInfo << "\n\t\t max adaption depth reached, aborting" << std::endl;
+                    break;
+                }
+                a_relLimit /= 10.0;
+                a_absLimit /= 10.0;
+                logInfo << "\n\t\t\t trying with relLimit " << a_relLimit
+                        << " and absLimit " << a_absLimit << std::endl;
+
+                A_Solver a_solver_adapt( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit, solverVerbosity );
+                a_solver_adapt.apply( f_func, tmp_f, a_ret );
+
+                if ( !isnan(a_ret.second) ) {
+                    logInfo << "\n\t\t adaption produced NaN-free solution" << std::endl;
+                    break;
+                }
+                adapt_step++;
+            }
+		}
 		b_t_mat.apply( tmp_f, new_f );
         new_f -= g_func;
+        Stuff::oneLinePrint( logDebug, new_f );
 		//
         logInfo << " \n\tend calc new_f,f_func " << std::endl;
 

@@ -134,7 +134,7 @@ inline void Pressure< PressureTraitsImp  >::evaluate( const DomainType& arg, Ran
     double x1 = arg[0];
     double x2 = arg[1];
 #ifdef SIMPLE_PROBLEM
-    ret[0] = x1*x2;
+    ret[0] = -x2;
 #elif defined(CONSTANT_PROBLEM)
     ret[0] = -x2;
 #else
