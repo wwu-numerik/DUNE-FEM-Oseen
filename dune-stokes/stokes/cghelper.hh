@@ -1,6 +1,11 @@
 #ifndef INNERCG_HH_INCLUDED
 #define INNERCG_HH_INCLUDED
 
+#ifdef USE_BFG_CG_SCHEME
+static unsigned long outer_cg_iteration_no = 0;
+static double outer_cg_residuum = 0;
+#endif
+
 #include <dune/fem/solver/oemsolver.hh>
 #include "../src/logging.hh"
 #include "../src/stuff.hh"
@@ -148,6 +153,9 @@ class SchurkomplementOperator : public OEMSolver::PreconditionInterface
             b_t_mat_.multOEM_t( x, tmp1.leakPointer() );
 //            Stuff::oneLinePrint( std::cout, tmp1 ) ;
 //            Stuff::printDoubleVec( std::cout, x, b_mat_.cols() );
+        #ifdef USE_BFG_CG_SCHEME
+            a_solver_.setAbsoluteLimit( 12 );
+        #endif
             a_solver_.apply( tmp1, tmp2 );
             b_t_mat_.multOEM( tmp2.leakPointer(), ret );
             c_mat_.multOEMAdd( x, ret );
@@ -246,6 +254,13 @@ class A_SolverCaller {
         {
             return a_op_;
         }
+
+#ifdef USE_BFG_CG_SCHEME
+        void setAbsoluteLimit( const double abs )
+        {
+            cg_solver.setAbsoluteLimit( abs );
+        }
+#endif
 
     private:
         const MMatType precond_;

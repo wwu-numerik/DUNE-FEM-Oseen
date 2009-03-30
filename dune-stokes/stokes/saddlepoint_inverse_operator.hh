@@ -22,7 +22,7 @@
 #include "../src/parametercontainer.hh"
 #include "../src/stuff.hh" //DiagonalMult
 
-#define USE_BGF_CG_SCHEME
+#define USE_BFG_CG_SCHEME
 
 
 namespace Dune {
@@ -218,7 +218,7 @@ namespace Dune {
                                             DiscretePressureFunctionType >
                 Sk_Operator;
 
-        #ifdef USE_BGF_CG_SCHEME
+        #ifdef USE_BFG_CG_SCHEME
             typedef OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator, true >
                     Sk_Solver;
         #else

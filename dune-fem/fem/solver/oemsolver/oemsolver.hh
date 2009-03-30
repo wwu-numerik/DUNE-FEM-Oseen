@@ -503,6 +503,11 @@ public:
   {
     apply(arg,dest);
   }
+
+  void setAbsoluteLimit( const typename DiscreteFunctionType::RangeFieldType abs )
+  {
+    epsilon_ = abs;
+  }
 };
 
 /** \brief BiCG-stab solver */
@@ -646,6 +651,11 @@ public:
   void operator ()( const DiscreteFunctionType& arg, DiscreteFunctionType& dest ) const
   {
     apply(arg,dest);
+  }
+
+  void setAbsoluteLimit( const typename DiscreteFunctionType::RangeFieldType abs )
+  {
+    epsilon_ = abs;
   }
 
 };
@@ -889,6 +899,10 @@ public:
     apply(arg,dest);
   }
 
+  void setAbsoluteLimit( const typename DiscreteFunctionType::RangeFieldType abs )
+  {
+    epsilon_ = abs;
+  }
 };
 
 /**
