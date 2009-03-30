@@ -14,6 +14,13 @@
     #define OUTER_CG_SOLVERTYPE OEMCGOp
 #endif
 
+#define USE_BFG_CG_SCHEME
+
+#ifdef USE_BFG_CG_SCHEME
+    typedef std::pair<double,int>
+        IterationInfo;
+#endif
+
 #include <dune/fem/function/common/discretefunction.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/stokes/cghelper.hh>
@@ -22,7 +29,6 @@
 #include "../src/parametercontainer.hh"
 #include "../src/stuff.hh" //DiagonalMult
 
-#define USE_BFG_CG_SCHEME
 
 
 namespace Dune {
