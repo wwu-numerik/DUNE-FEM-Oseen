@@ -58,7 +58,7 @@ class Logging
                         Flush();
                     }
                     else {
-                        buffer_ << pf;
+                        buffer_ << "\n" << pf;
                     }
                     return *this;
                 }
