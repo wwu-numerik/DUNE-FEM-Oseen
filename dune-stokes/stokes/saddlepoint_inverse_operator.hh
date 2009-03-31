@@ -14,10 +14,11 @@
     #define OUTER_CG_SOLVERTYPE OEMCGOp
 #endif
 
-#define USE_BFG_CG_SCHEME
 
 #ifdef USE_BFG_CG_SCHEME
-    typedef std::pair<double,int>
+    #include <utility>
+    //< iteration no , < absLimit, residuum > >
+    typedef std::pair<int,std::pair<double,double> >
         IterationInfo;
 #endif
 

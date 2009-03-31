@@ -98,13 +98,23 @@ cghs_algo( const CommunicatorType & comm,
 
   double gg = ddot(N,g,1,g,1);
   double ddo = comm.sum( gg );
+
+  #ifdef USE_BFG_CG_SCHEME
+    IterationInfo info;
+  #endif
   while ( ddo>err )
   {
     // apply multiplication
-    if ( use_bgf_cg_scheme )
-        MultType :: mult_pc(A,C,r,p,tmp,ddo);
+#ifdef USE_BFG_CG_SCHEME
+    if ( use_bgf_cg_scheme ) {
+        info.first = its+1;
+        info.second = std::pair<double,double>(err,ddo);
+        MultType :: mult_pc(A,C,r,p,tmp,info);
+    }
     else
+#else
         MultType :: mult_pc(A,C,r,p,tmp);
+#endif
 
     rho=ddot(N,p,1,p,1);
     sig=ddot(N,r,1,p,1);

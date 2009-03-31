@@ -4,6 +4,12 @@
 //- system includes
 #include <utility>
 
+#ifdef USE_BFG_CG_SCHEME
+    //< iteration no , < absLimit, residuum > >
+    typedef std::pair<int,std::pair<double,double> >
+        IterationInfo;
+    static const IterationInfo dummy_info ( -1,std::pair<double,double>(0.,0.) );
+#endif
 //- Dune includes
 #include <dune/common/typetraits.hh>
 #include <dune/fem/operator/common/operator.hh>
@@ -108,12 +114,14 @@ using namespace DuneCBlas;
 
 //! this method is called from all solvers and is only a wrapper
 //! this method is mainly from SparseRowMatrix
-template <class MatrixImp, class VectorType >
-void mult(const MatrixImp & m, const VectorType * x, VectorType * ret, double residuum )
+#ifdef USE_BFG_CG_SCHEME
+template <class MatrixImp, class VectorType>
+void mult(const MatrixImp & m, const VectorType * x, VectorType * ret, const IterationInfo& info )
 {
   // call multOEM of the matrix
-  m.multOEM(x,ret, residuum );
+  m.multOEM(x,ret, info );
 }
+#endif
 
 template <class MatrixImp, class VectorType>
 void mult(const MatrixImp & m, const VectorType * x, VectorType * ret )
@@ -126,12 +134,20 @@ void mult(const MatrixImp & m, const VectorType * x, VectorType * ret )
 template <class Matrix , class PC_Matrix , bool use_pc >
 struct Mult
 {
+#ifdef USE_BFG_CG_SCHEME
   typedef void mult_t(const Matrix &A,
                       const PC_Matrix & C,
                       const double *arg,
                       double *dest ,
                       double * tmp,
-                      double residuum );
+                      const IterationInfo& info );
+#else
+  typedef void mult_t(const Matrix &A,
+                      const PC_Matrix & C,
+                      const double *arg,
+                      double *dest ,
+                      double * tmp);
+#endif
 
   static bool first_mult(const Matrix &A, const PC_Matrix & C,
               const double *arg, double *dest , double * tmp)
@@ -168,8 +184,9 @@ struct Mult
     }
   }
 
+#ifdef USE_BFG_CG_SCHEME
   static void mult_pc (const Matrix &A, const PC_Matrix & C,
-        const double *arg, double *dest , double * tmp, double residuum )
+        const double *arg, double *dest , double * tmp, const IterationInfo& info )
   {
     assert( tmp );
 
@@ -180,17 +197,19 @@ struct Mult
       C.precondition(arg,tmp);
 
       // call mult of Matrix A
-      mult(A,tmp,dest, residuum );
+      mult(A,tmp,dest, info );
     }
     else
     {
       // call mult of Matrix A
-      mult(A,arg,tmp, residuum );
+      mult(A,arg,tmp, info );
 
       // call precondition of Matrix PC
       C.precondition(tmp,dest);
     }
   }
+#else
+
     static void mult_pc (const Matrix &A, const PC_Matrix & C,
         const double *arg, double *dest , double * tmp )
   {
@@ -203,28 +222,37 @@ struct Mult
       C.precondition(arg,tmp);
 
       // call mult of Matrix A
-      mult(A,tmp,dest, 0.0 );
+      mult(A,tmp,dest);
     }
     else
     {
       // call mult of Matrix A
-      mult(A,arg,tmp, 0.0);
+      mult(A,arg,tmp);
 
       // call precondition of Matrix PC
       C.precondition(tmp,dest);
     }
   }
+#endif
 };
 
 //! mult method when no pre conditioning matrix
 template <class Matrix>
 struct Mult<Matrix,Matrix,false>
 {
+#ifdef USE_BFG_CG_SCHEME
+  typedef void mult_t(const Matrix &A,
+                      const Matrix &C,
+                      const double *arg,
+                      double *dest ,
+                      const IterationInfo& info );
+#else
   typedef void mult_t(const Matrix &A,
                       const Matrix &C,
                       const double *arg,
                       double *dest ,
                       double * tmp);
+#endif
 
   static bool first_mult(const Matrix &A, const Matrix & C,
               const double *arg, double *dest , double * tmp)
@@ -247,8 +275,9 @@ struct Mult<Matrix,Matrix,false>
     // do nothing here
   }
 
+#ifdef USE_BFG_CG_SCHEME
   static void mult_pc(const Matrix &A, const Matrix & C, const double *arg ,
-                      double *dest , double * tmp, double residuum )
+                      double *dest , double * tmp, const IterationInfo& info )
   {
     // tmp has to be 0
     assert( tmp == 0 );
@@ -256,9 +285,9 @@ struct Mult<Matrix,Matrix,false>
     assert( &A == &C );
 
     // call mult of Matrix A
-    mult(A,arg,dest,residuum);
+    mult(A,arg,dest,info);
   }
-
+#else
   static void mult_pc(const Matrix &A, const Matrix & C, const double *arg ,
                       double *dest , double * tmp )
   {
@@ -268,8 +297,10 @@ struct Mult<Matrix,Matrix,false>
     assert( &A == &C );
 
     // call mult of Matrix A
-    mult(A,arg,dest,0.0);
+    mult(A,arg,dest);
   }
+#endif
+
 };
 
 //#define USE_MEMPROVIDER

@@ -1,12 +1,7 @@
 #ifndef INNERCG_HH_INCLUDED
 #define INNERCG_HH_INCLUDED
 
-#ifdef USE_BFG_CG_SCHEME
-static unsigned long outer_cg_iteration_no = 0;
-static double outer_cg_residuum = 0;
-#endif
-
-#include <dune/fem/solver/oemsolver.hh>
+#include <dune/fem/solver/oemsolver/oemsolver.hh>
 #include "../src/logging.hh"
 #include "../src/stuff.hh"
 
@@ -61,11 +56,14 @@ class MatrixA_Operator {
             y_mat_.multOEMAdd( x, ret );
 			//
         }
+
+#ifdef USE_BFG_CG_SCHEME
         template <class VECtype>
-        void multOEM(const VECtype *x, VECtype * ret, double ) const
+        void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& info ) const
         {
             multOEM(x,ret);
         }
+#endif
 
         ThisType& systemMatrix ()
         {
@@ -89,7 +87,7 @@ template <  class A_SolverType,
             class MmatrixType,
             class DiscreteVelocityFunctionType ,
             class DiscretePressureFunctionType>
-class SchurkomplementOperator : public OEMSolver::PreconditionInterface
+class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
 {
     public:
 
@@ -138,30 +136,21 @@ class SchurkomplementOperator : public OEMSolver::PreconditionInterface
             c_mat_.multOEMAdd( x, ret );
 			//
         }
+
+#ifdef USE_BFG_CG_SCHEME
         template <class VECtype>
-        void multOEM(const VECtype *x, VECtype * ret, double residuum ) const
+        void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& info ) const
         {
-            Logging::LogStream& dbg = Logger().Dbg();
-
-            const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
-
-            tmp1.clear();
-//            Stuff::addScalarToFunc( tmp2, 0.1 );
-
-			// ret = ( ( B_t * ( A^-1 * ( B * x ) ) ) + ( C * x ) )
-//			Stuff::oneLinePrint( std::cout, tmp1 ) ;
-            b_t_mat_.multOEM_t( x, tmp1.leakPointer() );
-//            Stuff::oneLinePrint( std::cout, tmp1 ) ;
-//            Stuff::printDoubleVec( std::cout, x, b_mat_.cols() );
-        #ifdef USE_BFG_CG_SCHEME
-            a_solver_.setAbsoluteLimit( 12 );
-        #endif
-            a_solver_.apply( tmp1, tmp2 );
-            b_t_mat_.multOEM( tmp2.leakPointer(), ret );
-            c_mat_.multOEMAdd( x, ret );
-			//
+            static const double tau = Parameters().getParam( "bfg-tau", 0.1 );
+            double limit = info.second.first;
+            const double residuum = info.second.second;
+            const int n = info.first;
+            limit = tau * std::min( 1. , limit / std::min ( std::pow( residuum, n ) , 1.0 ) );
+            a_solver_.setAbsoluteLimit( limit );
+            Logger().Info() << "\t\t\t Set inner error limit to: "<< limit << std::endl;
+            multOEM( x, ret );
         }
-
+#endif
 
         ThisType& systemMatrix ()
         {
@@ -186,11 +175,11 @@ class SchurkomplementOperator : public OEMSolver::PreconditionInterface
         template <class VecType>
         void precondition( const VecType* tmp, VecType* dest ) const
         {
-
+SEGFAULT
         }
 
     private:
-        A_SolverType& a_solver_;
+        mutable A_SolverType& a_solver_;
         const B_t_matrixType& b_t_mat_;
         const CmatrixType& c_mat_;
         const BmatrixType& b_mat_;
