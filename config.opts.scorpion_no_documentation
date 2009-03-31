@@ -9,7 +9,7 @@ CONFIGURE_FLAGS="CXX=g++ CC=gcc F77=gfortran CXXFLAGS='-g' \
   --x-libraries=/usr/X11R6/lib64 \
   --with-grape=/share/dune/Modules/modules_$HOSTTYPE/grape \
   --with-grid-dim=2 \
-  --with-grid-type=ALUGRID_SIMPLEX \
+  --with-grid-type=ALUGRID_CONFORM \
   --disable-documentation "
 MAKE_FLAGS=
 #  --enable-parallel \
