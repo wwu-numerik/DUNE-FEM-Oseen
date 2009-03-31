@@ -348,8 +348,8 @@ MMatrix.reserve();
 #ifndef NLOG
             // logging stuff
             Logging::LogStream& infoStream = Logger().Info();
-//            Logging::LogStream& debugStream = Logger().Info();
-            Logging::LogStream& debugStream = Logger().Dbg();
+            Logging::LogStream& debugStream = Logger().Info();
+//            Logging::LogStream& debugStream = Logger().Dbg();
             bool entityOutput = false;
             bool intersectionOutput = false;
             const int outputEntity = 0;
@@ -1113,7 +1113,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                     double X_i_j = 0.0;
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-    //                                if ( allOutput ) Xoutput = true;
+//                                    if ( allOutput ) Xoutput = true;
                                     if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = X element ======================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1256,7 +1256,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                     double Y_i_j = 0.0;
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Youtput = true;
-                                    if ( allOutput ) Youtput = true;
+//                                    if ( allOutput ) Youtput = true;
                                     if ( intersectionOutput && Youtput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = Y element ======================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1954,7 +1954,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                     double X_i_j = 0.0;
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-    //                                if ( allOutput ) Xoutput = true;
+//                                    if ( allOutput ) Xoutput = true;
                                     if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = X boundary =====================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -2170,7 +2170,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                 double H2_j = 0.0;
 #ifndef NLOG
     //                            if ( j == logBaseJ ) H2output = true;
-//                                if ( allOutput ) H2output = true;
+                                if ( allOutput ) H2output = true;
                                 if ( intersectionOutput && H2output ) debugStream.Resume(); // enable logging
                                 debugStream << "      = H2 boundary ====================" << std::endl;
                                 debugStream << "      basefunction " << j << std::endl;
