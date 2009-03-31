@@ -135,7 +135,7 @@ class Logging
                         if ( ( logflags_ & LOG_FILE ) != 0 ) {
                             logfile_ << "\n" << TimeString()
                                      << buffer_.str() << std::endl;
-                            logfileWoTime_ << buffer_.str() << std::endl;
+                            logfileWoTime_ << buffer_.str();// << std::endl;
                             logfile_.flush();
                             logfileWoTime_.flush();
                         }
