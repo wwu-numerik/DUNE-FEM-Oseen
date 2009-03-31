@@ -55,10 +55,11 @@ class Logging
                 {
                     if ( pf == (std::ostream& ( * )(std::ostream&))std::endl )
                     { //flush buffer into stream
+                        buffer_ << "\n";
                         Flush();
                     }
                     else {
-                        buffer_ << "\n" << pf;
+                        buffer_ << pf;
                     }
                     return *this;
                 }
