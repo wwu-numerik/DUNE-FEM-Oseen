@@ -212,8 +212,9 @@ namespace Dune {
 #endif
 		b_t_mat.apply( tmp_f, new_f );
         new_f -= g_func;
-        Stuff::oneLinePrint( logDebug, new_f );
-		//
+        if ( Parameters().getParam( "solution-print", true ) ) {
+            Stuff::oneLinePrint( logDebug, new_f );
+        }
         logInfo << " \n\tend calc new_f,f_func " << std::endl;
 
         typedef SchurkomplementOperator<    A_Solver,
@@ -245,6 +246,8 @@ namespace Dune {
 		// p = S^-1 * new_f = ( B_t * A^-1 * B + rhs3 )^-1 * new_f
 		SolverReturnType ret;
 		sk_solver.apply( new_f, pressure, ret );
+		long total_inner = sk_op.getTotalInnerIterations();
+		logInfo << "\n\t\t #avg inner iter | #outer iter: " << total_inner / (double)ret.first << " | " << ret.first << std::endl;
 #ifdef ADAPTIVE_SOLVER
         if ( isnan(ret.second) ) {
             logInfo << "\n\t\t NaNs detected, lowering error tolerance" << std::endl;
@@ -268,6 +271,8 @@ namespace Dune {
                 Sk_Solver sk_solver_adapt( sk_op_adapt, a_relLimit, a_absLimit, 2000, solverVerbosity );
                 pressure.clear();
                 sk_solver_adapt.apply( new_f, pressure, ret );
+                long total_inner = sk_op_adapt.getTotalInnerIterations();
+                logInfo << "\n\t\t\t #avg inner iter | #outer iter: " << total_inner / (double)ret.first << " | " << ret.first << std::endl;
                 if ( !isnan(ret.second) ) {
                     logInfo << "\n\t\t adaption produced NaN-free solution" << std::endl;
                     break;

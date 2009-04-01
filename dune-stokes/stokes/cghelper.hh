@@ -116,7 +116,9 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
             b_mat_(b_mat),
             m_mat_(m_mat),
             tmp1 ( "tmp1", velocity_space ),
-            tmp2 ( "tmp2", velocity_space )
+            tmp2 ( "tmp2", velocity_space ),
+            do_bfg( Parameters().getParam( "do-bfg", true ) ),
+            total_inner_iterations( 0 )
         {}
 
         template <class VECtype>
@@ -137,6 +139,7 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
             ReturnValueType cg_info;
             a_solver_.apply( tmp1, tmp2, cg_info );
             info << "\t\t\t\t\t inner iterations: " << cg_info.first << std::endl;
+            total_inner_iterations += cg_info.first;
 
             b_t_mat_.multOEM( tmp2.leakPointer(), ret );
             c_mat_.multOEMAdd( x, ret );
@@ -147,13 +150,15 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& info ) const
         {
-            static const double tau = Parameters().getParam( "bfg-tau", 0.1 );
-            double limit = info.second.first;
-            const double residuum = info.second.second;
-            const int n = info.first;
-            limit = tau * std::min( 1. , limit / std::min ( std::pow( residuum, n ) , 1.0 ) );
-            a_solver_.setAbsoluteLimit( limit );
-            Logger().Info() << "\t\t\t Set inner error limit to: "<< limit << std::endl;
+            if ( do_bfg ) {
+                static const double tau = Parameters().getParam( "bfg-tau", 0.1 );
+                double limit = info.second.first;
+                const double residuum = info.second.second;
+                const int n = info.first;
+                limit = tau * std::min( 1. , limit / std::min ( std::pow( residuum, n ) , 1.0 ) );
+                a_solver_.setAbsoluteLimit( limit );
+                Logger().Info() << "\t\t\t Set inner error limit to: "<< limit << std::endl;
+            }
             multOEM( x, ret );
         }
 #endif
@@ -184,6 +189,11 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
 
         }
 
+        long getTotalInnerIterations()
+        {
+            return total_inner_iterations;
+        }
+
     private:
         mutable A_SolverType& a_solver_;
         const B_t_matrixType& b_t_mat_;
@@ -192,6 +202,8 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
         const MmatrixType& m_mat_;
         mutable DiscreteVelocityFunctionType tmp1;
         mutable DiscreteVelocityFunctionType tmp2;
+        bool do_bfg;
+        mutable long total_inner_iterations;
 };
 
 template <  class WMatType,
