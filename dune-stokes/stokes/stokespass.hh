@@ -2651,8 +2651,10 @@ if ( Mprint ) {
                 op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
             }
 #endif
-            Stuff::oneLinePrint( infoStream, dest.discretePressure() );
-            Stuff::oneLinePrint( infoStream, dest.discreteVelocity() );
+            if ( Parameters().getParam( "solution-print", true ) ) {
+                Stuff::oneLinePrint( infoStream, dest.discretePressure() );
+                Stuff::oneLinePrint( infoStream, dest.discreteVelocity() );
+            }
             profiler().StopTiming("Pass -- SOLVER");
             profiler().StopTiming("Pass");
 #ifndef NLOG
