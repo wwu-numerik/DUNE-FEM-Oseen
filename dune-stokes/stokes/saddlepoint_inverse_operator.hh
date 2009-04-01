@@ -167,7 +167,7 @@ namespace Dune {
                                 DiscreteSigmaFunctionType,
                                 DiscreteVelocityFunctionType >
             A_Solver;
-        typedef typename A_Solver::SolverReturnType
+        typedef typename A_Solver::ReturnValueType
                 A_SolverReturnType;
         A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit, solverVerbosity );
 

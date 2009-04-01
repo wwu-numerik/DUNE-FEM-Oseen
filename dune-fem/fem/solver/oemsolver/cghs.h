@@ -106,12 +106,12 @@ cghs_algo( const CommunicatorType & comm,
   {
     // apply multiplication
 #ifdef USE_BFG_CG_SCHEME
-    if ( use_bgf_cg_scheme ) {
+//    if ( use_bgf_cg_scheme )
         info.first = its+1;
         info.second = std::pair<double,double>(err,ddo);
         MultType :: mult_pc(A,C,r,p,tmp,info);
-    }
-    else
+
+//    else
 #else
         MultType :: mult_pc(A,C,r,p,tmp);
 #endif

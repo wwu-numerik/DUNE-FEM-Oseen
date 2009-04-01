@@ -100,6 +100,9 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
                                             DiscretePressureFunctionType>
                 ThisType;
 
+        typedef typename A_SolverType::ReturnValueType
+                ReturnValueType;
+
         SchurkomplementOperator( A_SolverType& a_solver,
                                 const B_t_matrixType& b_t_mat,
                                 const CmatrixType& c_mat,
@@ -119,7 +122,7 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret) const
         {
-            Logging::LogStream& dbg = Logger().Dbg();
+            Logging::LogStream& info = Logger().Info();
 
             const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
 
@@ -131,7 +134,10 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
             b_t_mat_.multOEM_t( x, tmp1.leakPointer() );
 //            Stuff::oneLinePrint( std::cout, tmp1 ) ;
 //            Stuff::printDoubleVec( std::cout, x, b_mat_.cols() );
-            a_solver_.apply( tmp1, tmp2 );
+            ReturnValueType cg_info;
+            a_solver_.apply( tmp1, tmp2, cg_info );
+            info << "\t\t\t\t\t inner iterations: " << cg_info.first << std::endl;
+
             b_t_mat_.multOEM( tmp2.leakPointer(), ret );
             c_mat_.multOEMAdd( x, ret );
 			//
@@ -175,7 +181,7 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
         template <class VecType>
         void precondition( const VecType* tmp, VecType* dest ) const
         {
-SEGFAULT
+
         }
 
     private:
@@ -206,7 +212,7 @@ class A_SolverCaller {
         typedef INNER_CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
             CG_SolverType;
         typedef typename CG_SolverType::ReturnValueType
-            SolverReturnType;
+            ReturnValueType;
 
         A_SolverCaller( const WMatType& w_mat,
                 const MMatType& m_mat,
@@ -229,7 +235,7 @@ class A_SolverCaller {
                                 verbose )
         {}
 
-        void apply ( const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest, SolverReturnType& ret )
+        void apply ( const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest, ReturnValueType& ret )
         {
             cg_solver.apply(arg,dest, ret);
         }
