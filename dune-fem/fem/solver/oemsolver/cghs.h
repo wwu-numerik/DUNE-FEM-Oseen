@@ -108,7 +108,7 @@ cghs_algo( const CommunicatorType & comm,
 #ifdef USE_BFG_CG_SCHEME
 //    if ( use_bgf_cg_scheme )
         info.first = its+1;
-        info.second = std::pair<double,double>(eps,ddo);
+        info.second = std::pair<double,double>(eps,sqrt(ddo));
         MultType :: mult_pc(A,C,r,p,tmp,info);
 
 //    else

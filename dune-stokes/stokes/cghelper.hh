@@ -153,9 +153,11 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
             if ( do_bfg ) {
                 static const double tau = Parameters().getParam( "bfg-tau", 0.1 );
                 double limit = info.second.first;
-                const double residuum = info.second.second;
+                const double residuum = fabs(info.second.second);
                 const int n = info.first;
-                limit = tau * std::min( 1. , limit / std::min ( std::pow( residuum, n ) , 1.0 ) );
+//		Logger().Info() << "res: "<<residuum<<std::endl;
+                limit = tau * std::min( 1. , limit / std::min ( residuum * n  , 1.0 ) );
+//                limit = tau * std::min( 1. , limit / std::min ( std::pow( residuum, n ) , 1.0 ) );
                 a_solver_.setAbsoluteLimit( limit );
                 Logger().Info() << "\t\t\t Set inner error limit to: "<< limit << std::endl;
             }

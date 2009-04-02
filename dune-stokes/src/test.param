@@ -21,7 +21,7 @@ dgf_file_3d: grid_3d.dgf
 #
 viscosity: 1
 relLimit: 1e-12
-absLimit: 1e-18
+absLimit: 1e-8
 use-cheat: 0
 max_adaptions: 4
 solverVerbosity: 0
