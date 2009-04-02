@@ -67,14 +67,16 @@ class ParameterContainer
                 argv_ = argv;
                 eps_ = 1.0e20;
                 parameter_filename_ = argv[1];
+                Dune::Parameter::append( parameter_filename_ );
                 return true;
             }
             else
             {
-                std::cerr << "\nUsage: " << argv[0] << " parameterfile" << std::endl;
-                PrintParameterSpecs( std::cerr );
-                std::cerr << std::endl;
-                return false;
+                Dune::Parameter::append( argc, argv );
+//                std::cerr << "\nUsage: " << argv[0] << " parameterfile" << std::endl;
+//                PrintParameterSpecs( std::cerr );
+//                std::cerr << std::endl;
+                return true;
             }
         }
 
@@ -87,7 +89,6 @@ class ParameterContainer
          **/
         bool SetUp()
         {
-            Dune::Parameter::append( ParameterFilename() );
             bool has_not_worked = false;
             if ( !( Dune::Parameter::exists( "dgf_file_2d" ) ) ) {
                 std::cerr << "\nError: not all parameters found in " << ParameterFilename() << "!";
