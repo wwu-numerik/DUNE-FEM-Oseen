@@ -92,7 +92,6 @@ class ParameterContainer
             bool has_not_worked = false;
             if ( !( Dune::Parameter::exists( "dgf_file_2d" ) ) ) {
                 std::cerr << "\nError: not all parameters found in " << ParameterFilename() << "!";
-                PrintParameterSpecs( std::cerr );
                 std::cerr << "\nmissing parameters are: dgf_file_2d" << std::endl;
                 has_not_worked = true;
 
@@ -103,7 +102,6 @@ class ParameterContainer
             if ( !( Dune::Parameter::exists( "dgf_file_3d" ) ) ) {
                 if ( !( has_not_worked ) ) {
                     std::cerr << "\nError: not all parameters found in " << ParameterFilename() << "!";
-                    PrintParameterSpecs( std::cerr );
                     std::cerr << "\nmissing parameters are: dgf_file_3d" << std::endl;
                 }
                 else {
@@ -117,7 +115,6 @@ class ParameterContainer
             if ( !( Dune::Parameter::exists( "viscosity" ) ) ) {
                 if ( !( has_not_worked ) ) {
                     std::cerr << "\nError: not all parameters found in " << ParameterFilename() << "!";
-                    PrintParameterSpecs( std::cerr );
                     std::cerr << "\nmissing parameters are: viscosity" << std::endl;
                 }
                 else {

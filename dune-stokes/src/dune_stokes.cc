@@ -94,7 +94,7 @@ int main( int argc, char** argv )
         return 1;
     }
     if ( !(  Parameters().SetUp() ) ) {
-        std::cerr << "\nUsage: " << argv[0] << " parameterfile" << std::endl;
+        std::cerr << "\nUsage: " << argv[0] << " parameterfile \n" << "\t\ --- OR --- \n";
         std::cerr << "\nUsage: " << argv[0] << " paramfile:"<<"file" << " more-opts:val ..." << std::endl;
         Parameters().PrintParameterSpecs( std::cerr );
         std::cerr << std::endl;
