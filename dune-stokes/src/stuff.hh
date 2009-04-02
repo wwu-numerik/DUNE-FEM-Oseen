@@ -8,6 +8,20 @@
 #define SEGFAULT {int*J=0;*J=9;}
 #define isnan(x) !(x==x)
 
+#ifndef NDEBUG
+    #ifndef LOGIC_ERROR
+        #include <stdexcept>
+        #include <sstream>
+        #define LOGIC_ERROR \
+            {\
+                std::stringstream ss; ss << __FILE__ << ":" << __LINE__ << " should never be called"; \
+                throw std::logic_error(ss.str());\
+            }
+    #endif
+#else
+    #define LOGIC_ERROR
+#endif
+
 #include <iomanip>
 #include <vector>
 #include <cmath>
