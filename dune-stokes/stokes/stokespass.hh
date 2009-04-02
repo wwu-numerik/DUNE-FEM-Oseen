@@ -2608,7 +2608,7 @@ if ( Mprint ) {
                         << " - " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl
 #endif
                         << std::endl;
-#endif
+
 
             // do the matlab logging stuff
             Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
@@ -2635,7 +2635,8 @@ if ( Mprint ) {
 //            matlabLogStream << "%u = A_invers * ( F - B * p );\n" << std::endl;
 //            matlabLogStream << "%fprintf(1, 'Condition A: %d\\n', cond( A ) );\n" << std::endl;
 //            matlabLogStream << "%fprintf(1, 'Condition S: %d\\n', cond( schur_S ) );\n" << std::endl;
-//#endif
+#endif //NLOG
+
             profiler().StopTiming("Pass -- ASSEMBLE");
             profiler().StartTiming("Pass -- SOLVER");
             InvOpType op;
@@ -2651,16 +2652,19 @@ if ( Mprint ) {
                 op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
             }
 #endif
+
+#ifndef NLOG
             if ( Parameters().getParam( "solution-print", true ) ) {
                 Stuff::oneLinePrint( infoStream, dest.discretePressure() );
                 Stuff::oneLinePrint( infoStream, dest.discreteVelocity() );
             }
-            profiler().StopTiming("Pass -- SOLVER");
-            profiler().StopTiming("Pass");
-#ifndef NLOG
+
 //            debugStream.Resume();
 //            Stuff::oneLinePrint( debugStream, dest.discretePressure() );
 #endif
+            profiler().StopTiming("Pass -- SOLVER");
+            profiler().StopTiming("Pass");
+
         } // end of apply
 
         virtual void compute( const TotalArgumentType &arg, DestinationType &dest) const
