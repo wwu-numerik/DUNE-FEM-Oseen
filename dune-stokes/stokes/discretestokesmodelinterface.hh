@@ -12,6 +12,20 @@
 
 #include <dune/stokes/discretefunctionspacepair.hh>
 
+#ifndef NDEBUG //copied here for standalone usage
+    #ifndef LOGIC_ERROR
+        #include <stdexcept>
+        #include <sstream>
+        #define LOGIC_ERROR \
+            {\
+                std::stringstream ss; ss << __FILE__ << ":" << __LINE__ << " should never be called"; \
+                throw std::logic_error(ss.str());\
+            }
+    #endif
+#else
+    #define LOGIC_ERROR
+#endif
+
 #ifndef NLOG
     #include "../src/stuff.hh" // should be removed in the end
     #include "../src/logging.hh"
@@ -1771,7 +1785,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 uReturn += u_minus_tensor_n_minus_times_c_12;
             }
             else {
-                SEGFAULT
+                LOGIC_ERROR
             }
         }
 
@@ -1927,7 +1941,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 uReturn += d_12_times_u_minus_times_n_minus;
             }
             else {
-                SEGFAULT
+                LOGIC_ERROR
             }
         }
 
@@ -2003,7 +2017,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 pReturn *= d_11_times_p_minus;
             }
             else {
-                SEGFAULT
+                LOGIC_ERROR
             }
         }
 
@@ -2191,7 +2205,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 pReturn -= p * d_12_times_n_minus;
             }
             else {
-                SEGFAULT
+                LOGIC_ERROR
             }
 
         }
@@ -2335,7 +2349,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 uReturn *= ( -1.0 * C_11 );
             }
             else {
-                SEGFAULT
+                LOGIC_ERROR
             }
         }
 
@@ -2422,7 +2436,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 sigmaReturn -= sigma_minus_times_n_minus_times_c_12;
             }
             else {
-                SEGFAULT
+                LOGIC_ERROR
             }
         }
 
