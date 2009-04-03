@@ -6,9 +6,20 @@
  */
 
 // OEMBICGSQOp will NOT compile
-#define CG_SOLVERTYPE OEMCGOp
-#ifndef CG_SOLVERTYPE
-    #define CG_SOLVERTYPE OEMBICGSTABOp
+#ifndef INNER_CG_SOLVERTYPE
+    #define INNER_CG_SOLVERTYPE OEMCGOp
+#endif
+
+#ifndef OUTER_CG_SOLVERTYPE
+    #define OUTER_CG_SOLVERTYPE OEMCGOp
+#endif
+
+
+#ifdef USE_BFG_CG_SCHEME
+    #include <utility>
+    //< iteration no , < absLimit, residuum > >
+    typedef std::pair<int,std::pair<double,double> >
+        IterationInfo;
 #endif
 
 #include <dune/fem/function/common/discretefunction.hh>
@@ -18,6 +29,7 @@
 #include "../src/logging.hh"
 #include "../src/parametercontainer.hh"
 #include "../src/stuff.hh" //DiagonalMult
+
 
 
 namespace Dune {
@@ -155,7 +167,7 @@ namespace Dune {
                                 DiscreteSigmaFunctionType,
                                 DiscreteVelocityFunctionType >
             A_Solver;
-        typedef typename A_Solver::SolverReturnType
+        typedef typename A_Solver::ReturnValueType
                 A_SolverReturnType;
         A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit, solverVerbosity );
 
@@ -170,6 +182,7 @@ namespace Dune {
 		// new_f := ( B * A^-1 * f_func ) + g_func
 		A_SolverReturnType a_ret;
 		a_solver.apply( f_func, tmp_f, a_ret );
+#ifdef ADAPTIVE_SOLVER
 		if ( isnan(a_ret.second) ) {
 		    logInfo << "\n\t\t NaNs detected, lowering error tolerance" << std::endl;
             int max_adaptions = Parameters().getParam( "max_adaptions", 8 );
@@ -196,10 +209,12 @@ namespace Dune {
                 adapt_step++;
             }
 		}
+#endif
 		b_t_mat.apply( tmp_f, new_f );
         new_f -= g_func;
-        Stuff::oneLinePrint( logDebug, new_f );
-		//
+        if ( Parameters().getParam( "solution-print", true ) ) {
+            Stuff::oneLinePrint( logDebug, new_f );
+        }
         logInfo << " \n\tend calc new_f,f_func " << std::endl;
 
         typedef SchurkomplementOperator<    A_Solver,
@@ -211,8 +226,14 @@ namespace Dune {
                                             DiscretePressureFunctionType >
                 Sk_Operator;
 
-        typedef CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
-                Sk_Solver;
+        #ifdef USE_BFG_CG_SCHEME
+            typedef OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator, true >
+                    Sk_Solver;
+        #else
+            typedef OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
+                    Sk_Solver;
+        #endif
+
         typedef typename Sk_Solver::ReturnValueType
                 SolverReturnType;
 
@@ -225,6 +246,8 @@ namespace Dune {
 		// p = S^-1 * new_f = ( B_t * A^-1 * B + rhs3 )^-1 * new_f
 		SolverReturnType ret;
 		sk_solver.apply( new_f, pressure, ret );
+		long total_inner = sk_op.getTotalInnerIterations();
+		logInfo << "\n\t\t #avg inner iter | #outer iter: " << total_inner / (double)ret.first << " | " << ret.first << std::endl;
 #ifdef ADAPTIVE_SOLVER
         if ( isnan(ret.second) ) {
             logInfo << "\n\t\t NaNs detected, lowering error tolerance" << std::endl;
@@ -248,6 +271,8 @@ namespace Dune {
                 Sk_Solver sk_solver_adapt( sk_op_adapt, a_relLimit, a_absLimit, 2000, solverVerbosity );
                 pressure.clear();
                 sk_solver_adapt.apply( new_f, pressure, ret );
+                long total_inner = sk_op_adapt.getTotalInnerIterations();
+                logInfo << "\n\t\t\t #avg inner iter | #outer iter: " << total_inner / (double)ret.first << " | " << ret.first << std::endl;
                 if ( !isnan(ret.second) ) {
                     logInfo << "\n\t\t adaption produced NaN-free solution" << std::endl;
                     break;

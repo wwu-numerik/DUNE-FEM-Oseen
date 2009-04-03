@@ -52,7 +52,7 @@ inline
 std::pair<int,double>
 bicgstab_algo( const CommunicatorType & comm,
     unsigned int N, const MATRIX &A, const PC_MATRIX & C,
-	  const double *rhs, double *x, double eps, bool detailed )
+	  const double *rhs, double *x, double eps, bool detailed, bool use_bgf_cg_scheme )
 {
   if(N == 0)
   {
@@ -227,14 +227,15 @@ bicgstab_algo( const CommunicatorType & comm,
 
 // bicgstab with pc matrix
 template<class CommunicatorType,
-         class MATRIX >
+         class MATRIX>
 inline
 std::pair<int,double>
 bicgstab( const CommunicatorType & comm,
     unsigned int N, const MATRIX &A,
-	  const double *b, double *x, double eps, bool verbose )
+	  const double *b, double *x, double eps, bool verbose,
+         bool use_bgf_cg_scheme )
 {
-  return bicgstab_algo<false>(comm,N,A,A,b,x,eps,verbose);
+  return bicgstab_algo<false>(comm,N,A,A,b,x,eps,verbose,use_bgf_cg_scheme);
 }
 
 // bicgstab with pc matrix
@@ -245,9 +246,10 @@ inline
 std::pair<int,double>
 bicgstab( const CommunicatorType & comm,
     unsigned int N, const MATRIX &A, const PC_MATRIX & C,
-	  const double *b,double *x, double eps, bool verbose )
+	  const double *b,double *x, double eps, bool verbose,
+         bool use_bgf_cg_scheme )
 {
-  return bicgstab_algo<true>(comm,N,A,C,b,x,eps,verbose);
+  return bicgstab_algo<true>(comm,N,A,C,b,x,eps,verbose,use_bgf_cg_scheme);
 }
 
 #endif // BICGSTAB_BLAS_H

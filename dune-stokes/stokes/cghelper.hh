@@ -1,7 +1,7 @@
 #ifndef INNERCG_HH_INCLUDED
 #define INNERCG_HH_INCLUDED
 
-#include <dune/fem/solver/oemsolver.hh>
+#include <dune/fem/solver/oemsolver/oemsolver.hh>
 #include "../src/logging.hh"
 #include "../src/stuff.hh"
 
@@ -57,6 +57,14 @@ class MatrixA_Operator {
 			//
         }
 
+#ifdef USE_BFG_CG_SCHEME
+        template <class VECtype>
+        void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& info ) const
+        {
+            multOEM(x,ret);
+        }
+#endif
+
         ThisType& systemMatrix ()
         {
             return *this;
@@ -79,7 +87,7 @@ template <  class A_SolverType,
             class MmatrixType,
             class DiscreteVelocityFunctionType ,
             class DiscretePressureFunctionType>
-class SchurkomplementOperator
+class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
 {
     public:
 
@@ -91,6 +99,9 @@ class SchurkomplementOperator
                                             DiscreteVelocityFunctionType,
                                             DiscretePressureFunctionType>
                 ThisType;
+
+        typedef typename A_SolverType::ReturnValueType
+                ReturnValueType;
 
         SchurkomplementOperator( A_SolverType& a_solver,
                                 const B_t_matrixType& b_t_mat,
@@ -105,13 +116,15 @@ class SchurkomplementOperator
             b_mat_(b_mat),
             m_mat_(m_mat),
             tmp1 ( "tmp1", velocity_space ),
-            tmp2 ( "tmp2", velocity_space )
+            tmp2 ( "tmp2", velocity_space ),
+            do_bfg( Parameters().getParam( "do-bfg", true ) ),
+            total_inner_iterations( 0 )
         {}
 
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret) const
         {
-            Logging::LogStream& dbg = Logger().Dbg();
+            Logging::LogStream& info = Logger().Info();
 
             const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
 
@@ -123,26 +136,76 @@ class SchurkomplementOperator
             b_t_mat_.multOEM_t( x, tmp1.leakPointer() );
 //            Stuff::oneLinePrint( std::cout, tmp1 ) ;
 //            Stuff::printDoubleVec( std::cout, x, b_mat_.cols() );
-            a_solver_.apply( tmp1, tmp2 );
+            ReturnValueType cg_info;
+            a_solver_.apply( tmp1, tmp2, cg_info );
+            info << "\t\t\t\t\t inner iterations: " << cg_info.first << std::endl;
+            total_inner_iterations += cg_info.first;
+
             b_t_mat_.multOEM( tmp2.leakPointer(), ret );
             c_mat_.multOEMAdd( x, ret );
 			//
         }
 
+#ifdef USE_BFG_CG_SCHEME
+        template <class VECtype>
+        void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& info ) const
+        {
+            if ( do_bfg ) {
+                static const double tau = Parameters().getParam( "bfg-tau", 0.1 );
+                double limit = info.second.first;
+                const double residuum = fabs(info.second.second);
+                const int n = info.first;
+//		Logger().Info() << "res: "<<residuum<<std::endl;
+                limit = tau * std::min( 1. , limit / std::min ( residuum * n  , 1.0 ) );
+//                limit = tau * std::min( 1. , limit / std::min ( std::pow( residuum, n ) , 1.0 ) );
+                a_solver_.setAbsoluteLimit( limit );
+                Logger().Info() << "\t\t\t Set inner error limit to: "<< limit << std::endl;
+            }
+            multOEM( x, ret );
+        }
+#endif
 
         ThisType& systemMatrix ()
         {
             return *this;
         }
 
+        ThisType& preconditionMatrix()
+        {
+            return *this;
+        }
+
+        bool hasPreconditionMatrix () const
+        {
+            return false;
+        }
+
+        bool rightPrecondition() const
+        {
+            return false;
+        }
+
+        template <class VecType>
+        void precondition( const VecType* tmp, VecType* dest ) const
+        {
+
+        }
+
+        long getTotalInnerIterations()
+        {
+            return total_inner_iterations;
+        }
+
     private:
-        A_SolverType& a_solver_;
+        mutable A_SolverType& a_solver_;
         const B_t_matrixType& b_t_mat_;
         const CmatrixType& c_mat_;
         const BmatrixType& b_mat_;
         const MmatrixType& m_mat_;
         mutable DiscreteVelocityFunctionType tmp1;
         mutable DiscreteVelocityFunctionType tmp2;
+        bool do_bfg;
+        mutable long total_inner_iterations;
 };
 
 template <  class WMatType,
@@ -160,10 +223,10 @@ class A_SolverCaller {
                                     DiscreteSigmaFunctionType >
                 A_OperatorType;
 
-        typedef OEMBICGSTABOp< DiscreteVelocityFunctionType, A_OperatorType >
+        typedef INNER_CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
             CG_SolverType;
         typedef typename CG_SolverType::ReturnValueType
-                SolverReturnType;
+            ReturnValueType;
 
         A_SolverCaller( const WMatType& w_mat,
                 const MMatType& m_mat,
@@ -186,7 +249,7 @@ class A_SolverCaller {
                                 verbose )
         {}
 
-        void apply ( const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest, SolverReturnType& ret )
+        void apply ( const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest, ReturnValueType& ret )
         {
             cg_solver.apply(arg,dest, ret);
         }
@@ -200,6 +263,13 @@ class A_SolverCaller {
         {
             return a_op_;
         }
+
+#ifdef USE_BFG_CG_SCHEME
+        void setAbsoluteLimit( const double abs )
+        {
+            cg_solver.setAbsoluteLimit( abs );
+        }
+#endif
 
     private:
         const MMatType precond_;

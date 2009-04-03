@@ -4,6 +4,12 @@
 //- system includes
 #include <utility>
 
+#ifdef USE_BFG_CG_SCHEME
+    //< iteration no , < absLimit, residuum > >
+    typedef std::pair<int,std::pair<double,double> >
+        IterationInfo;
+    static const IterationInfo dummy_info ( -1,std::pair<double,double>(0.,0.) );
+#endif
 //- Dune includes
 #include <dune/common/typetraits.hh>
 #include <dune/fem/operator/common/operator.hh>
@@ -108,22 +114,40 @@ using namespace DuneCBlas;
 
 //! this method is called from all solvers and is only a wrapper
 //! this method is mainly from SparseRowMatrix
+#ifdef USE_BFG_CG_SCHEME
 template <class MatrixImp, class VectorType>
-void mult(const MatrixImp & m, const VectorType * x, VectorType * ret)
+void mult(const MatrixImp & m, const VectorType * x, VectorType * ret, const IterationInfo& info )
 {
   // call multOEM of the matrix
-  m.multOEM(x,ret);
+  m.multOEM(x,ret, info );
+}
+#endif
+
+template <class MatrixImp, class VectorType>
+void mult(const MatrixImp & m, const VectorType * x, VectorType * ret )
+{
+  // call multOEM of the matrix
+  m.multOEM(x,ret );
 }
 
 //! mult method when given pre conditioning matrix
-template <class Matrix , class PC_Matrix , bool >
+template <class Matrix , class PC_Matrix , bool use_pc >
 struct Mult
 {
+#ifdef USE_BFG_CG_SCHEME
+  typedef void mult_t(const Matrix &A,
+                      const PC_Matrix & C,
+                      const double *arg,
+                      double *dest ,
+                      double * tmp,
+                      const IterationInfo& info );
+#else
   typedef void mult_t(const Matrix &A,
                       const PC_Matrix & C,
                       const double *arg,
                       double *dest ,
                       double * tmp);
+#endif
 
   static bool first_mult(const Matrix &A, const PC_Matrix & C,
               const double *arg, double *dest , double * tmp)
@@ -160,8 +184,34 @@ struct Mult
     }
   }
 
+#ifdef USE_BFG_CG_SCHEME
   static void mult_pc (const Matrix &A, const PC_Matrix & C,
-        const double *arg, double *dest , double * tmp)
+        const double *arg, double *dest , double * tmp, const IterationInfo& info )
+  {
+    assert( tmp );
+
+    // check type of preconditioning
+    if( C.rightPrecondition() )
+    {
+      // call precondition of Matrix PC
+      C.precondition(arg,tmp);
+
+      // call mult of Matrix A
+      mult(A,tmp,dest, info );
+    }
+    else
+    {
+      // call mult of Matrix A
+      mult(A,arg,tmp, info );
+
+      // call precondition of Matrix PC
+      C.precondition(tmp,dest);
+    }
+  }
+#else
+
+    static void mult_pc (const Matrix &A, const PC_Matrix & C,
+        const double *arg, double *dest , double * tmp )
   {
     assert( tmp );
 
@@ -183,17 +233,26 @@ struct Mult
       C.precondition(tmp,dest);
     }
   }
+#endif
 };
 
 //! mult method when no pre conditioning matrix
 template <class Matrix>
 struct Mult<Matrix,Matrix,false>
 {
+#ifdef USE_BFG_CG_SCHEME
+  typedef void mult_t(const Matrix &A,
+                      const Matrix &C,
+                      const double *arg,
+                      double *dest ,
+                      const IterationInfo& info );
+#else
   typedef void mult_t(const Matrix &A,
                       const Matrix &C,
                       const double *arg,
                       double *dest ,
                       double * tmp);
+#endif
 
   static bool first_mult(const Matrix &A, const Matrix & C,
               const double *arg, double *dest , double * tmp)
@@ -216,8 +275,21 @@ struct Mult<Matrix,Matrix,false>
     // do nothing here
   }
 
+#ifdef USE_BFG_CG_SCHEME
   static void mult_pc(const Matrix &A, const Matrix & C, const double *arg ,
-                      double *dest , double * tmp)
+                      double *dest , double * tmp, const IterationInfo& info )
+  {
+    // tmp has to be 0
+    assert( tmp == 0 );
+    // C is just a fake
+    assert( &A == &C );
+
+    // call mult of Matrix A
+    mult(A,arg,dest,info);
+  }
+#else
+  static void mult_pc(const Matrix &A, const Matrix & C, const double *arg ,
+                      double *dest , double * tmp )
   {
     // tmp has to be 0
     assert( tmp == 0 );
@@ -227,6 +299,8 @@ struct Mult<Matrix,Matrix,false>
     // call mult of Matrix A
     mult(A,arg,dest);
   }
+#endif
+
 };
 
 //#define USE_MEMPROVIDER
@@ -314,7 +388,7 @@ namespace Dune
    **/
 
 /** \brief OEM-CG scheme after Hestenes and Stiefel */
-template <class DiscreteFunctionType, class OperatorType>
+template <class DiscreteFunctionType, class OperatorType, bool use_bgf_cg_scheme = false >
 class OEMCGOp : public Operator<
       typename DiscreteFunctionType::DomainFieldType,
       typename DiscreteFunctionType::RangeFieldType,
@@ -329,6 +403,7 @@ private:
   typename DiscreteFunctionType::RangeFieldType epsilon_;
   int maxIter_;
   bool verbose_ ;
+
 
   template <class OperatorImp, bool hasPreconditioning>
   struct SolverCaller
@@ -348,13 +423,13 @@ private:
       {
         return OEMSolver::cghs(arg.space().grid().comm(),
                    size,op.systemMatrix(),op.preconditionMatrix(),
-                   arg.leakPointer(),dest.leakPointer(),eps,verbose);
+                   arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
       }
       else
       {
         return OEMSolver::cghs(arg.space().grid().comm(),
                   size,op.systemMatrix(),
-                  arg.leakPointer(),dest.leakPointer(),eps,verbose);
+                  arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
       }
     }
   };
@@ -373,9 +448,10 @@ private:
       // see dune-common/common/collectivecommunication.hh
       // for interface
       int size = arg.space().size();
-      return OEMSolver::cghs(arg.space().grid().comm(),
+      return OEMSolver::cghs
+                (arg.space().grid().comm(),
                 size,op.systemMatrix(),
-                arg.leakPointer(),dest.leakPointer(),eps,verbose);
+                arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
     }
   };
 
@@ -458,10 +534,15 @@ public:
   {
     apply(arg,dest);
   }
+
+  void setAbsoluteLimit( const typename DiscreteFunctionType::RangeFieldType abs )
+  {
+    epsilon_ = abs;
+  }
 };
 
 /** \brief BiCG-stab solver */
-template <class DiscreteFunctionType, class OperatorType>
+template <class DiscreteFunctionType, class OperatorType, bool use_bgf_cg_scheme >
 class OEMBICGSTABOp : public Operator<
       typename DiscreteFunctionType::DomainFieldType,
       typename DiscreteFunctionType::RangeFieldType,
@@ -491,13 +572,13 @@ private:
       {
         return OEMSolver::bicgstab(arg.space().grid().comm(),
                   size,op.systemMatrix(),op.preconditionMatrix(),
-                  arg.leakPointer(),dest.leakPointer(),eps,verbose);
+                  arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
       }
       else
       {
         return OEMSolver::bicgstab(arg.space().grid().comm(),
                   size,op.systemMatrix(),
-                  arg.leakPointer(),dest.leakPointer(),eps,verbose);
+                  arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
       }
     }
   };
@@ -515,7 +596,7 @@ private:
       int size = arg.space().size();
       return OEMSolver::bicgstab(arg.space().grid().comm(),
                 size,op.systemMatrix(),
-                arg.leakPointer(),dest.leakPointer(),eps,verbose);
+                arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
     }
   };
 
@@ -601,6 +682,11 @@ public:
   void operator ()( const DiscreteFunctionType& arg, DiscreteFunctionType& dest ) const
   {
     apply(arg,dest);
+  }
+
+  void setAbsoluteLimit( const typename DiscreteFunctionType::RangeFieldType abs )
+  {
+    epsilon_ = abs;
   }
 
 };
@@ -844,6 +930,10 @@ public:
     apply(arg,dest);
   }
 
+  void setAbsoluteLimit( const typename DiscreteFunctionType::RangeFieldType abs )
+  {
+    epsilon_ = abs;
+  }
 };
 
 /**
