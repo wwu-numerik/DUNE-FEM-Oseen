@@ -444,7 +444,7 @@ MMatrix.reserve();
                 infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
                 infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
                 infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
-                infoStream << "maxGridWidth is " << maxGridWidth << std::endl;
+                infoStream << "      maxGridWidth is " << maxGridWidth << std::endl;
                 infoStream << "- starting gridwalk" << std::endl;
                 fivePercentOfEntities = int( std::floor(double(numberOfEntities) / double(20)));
                 infoStream << "  [ assembling         ]" << std::endl;
@@ -454,7 +454,7 @@ MMatrix.reserve();
                 infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
                 infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
                 infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
-                infoStream << "maxGridWidth is " << maxGridWidth << std::endl;
+                infoStream << "      maxGridWidth is " << maxGridWidth << std::endl;
                 infoStream << "- starting gridwalk" << std::endl;
             }
 #endif
@@ -779,7 +779,7 @@ localMMatrixElement.add( i, j, M_i_j );
                         double H2_j = 0.0;
 #ifndef NLOG
     //                    if ( ( j == logBaseJ ) ) H2output = true;
-//                        if ( allOutput ) H2output = true;
+                        if ( allOutput ) H2output = true;
                         if ( entityOutput && H2output ) debugStream.Resume(); // enable logging
                         debugStream << "    = H2 =======================" << std::endl;
                         debugStream << "    basefunction " << " " << j << std::endl;
@@ -2695,7 +2695,6 @@ if ( Mprint ) {
             Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
             Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
             Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
-<<<<<<< HEAD:dune-stokes/stokes/stokespass.hh
             matlabLogStream << "\nA = Y - X * M_invers * W;" << std::endl;
             matlabLogStream << "B = Z;" << std::endl;
             matlabLogStream << "B_T = - E;" << std::endl;
@@ -2710,7 +2709,6 @@ if ( Mprint ) {
             matlabLogStream << "fprintf(1, 'Condition A: %d\\n', cond( A ) );\n" << std::endl;
             matlabLogStream << "fprintf(1, 'Condition S: %d\\n', cond( schur_S ) );\n" << std::endl;
 //#endif
-=======
 //            matlabLogStream << "\nA = Y - X * M_invers * W;" << std::endl;
 //            matlabLogStream << "B = Z;" << std::endl;
 //            matlabLogStream << "B_T = - E;" << std::endl;
@@ -2726,7 +2724,6 @@ if ( Mprint ) {
 //            matlabLogStream << "%fprintf(1, 'Condition S: %d\\n', cond( schur_S ) );\n" << std::endl;
 #endif //NLOG
 
->>>>>>> origin/precond:dune-stokes/stokes/stokespass.hh
             profiler().StopTiming("Pass -- ASSEMBLE");
             profiler().StartTiming("Pass -- SOLVER");
             InvOpType op;
