@@ -1,8 +1,8 @@
-#! /bin/sh
+#! /bin/bash
 
 # libtool - Provide generalized library-building support services.
 # Generated automatically by config.status (dune-common) 1.1
-# Libtool was configured on host koshfest:
+# Libtool was configured on host server:
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 #
 #   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005,
@@ -61,7 +61,7 @@ host_os=linux-gnu
 
 # The build system.
 build_alias=
-build=x86_64-unknown-linux-gnu
+build=i686-pc-linux-gnu
 build_os=linux-gnu
 
 # A sed program that does not truncate output.
@@ -126,7 +126,7 @@ old_postinstall_cmds="chmod 644 \$oldlib~\$RANLIB \$oldlib"
 old_postuninstall_cmds=""
 
 # A C compiler.
-LTCC="/usr/bin/gcc-4.2"
+LTCC="gcc"
 
 # LTCC compiler flags.
 LTCFLAGS="-g -O2 -Wall"
@@ -147,7 +147,7 @@ global_symbol_to_c_name_address_lib_prefix="sed -n -e 's/^: \\([^ ]*\\) \$/  {\\
 objdir=.libs
 
 # Shell to use when invoking shell scripts.
-SHELL="/bin/sh"
+SHELL="/bin/bash"
 
 # An echo program that does not interpret backslashes.
 ECHO="echo"
@@ -231,10 +231,10 @@ finish_eval=""
 hardcode_into_libs=yes
 
 # Compile-time system search path for libraries.
-sys_lib_search_path_spec="/usr/lib/gcc/x86_64-linux-gnu/4.2.4 /usr/lib /lib"
+sys_lib_search_path_spec="/usr/lib/gcc/i486-linux-gnu/4.2.4 /usr/lib /lib"
 
 # Run-time system search path for libraries.
-sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/lib32/alsa-lib /usr/lib/alsa-lib /usr/local/lib /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu "
+sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/lib/sse/atlas /usr/lib/sse /usr/lib/sse2/atlas /usr/lib/sse2 /usr/lib/atlas /lib/i486-linux-gnu /usr/lib/i486-linux-gnu /usr/lib/alsa-lib /usr/local/lib /usr/local/lib "
 
 # Whether dlopen is supported.
 dlopen_support=unknown
@@ -251,13 +251,13 @@ striplib="strip --strip-unneeded"
 
 
 # The linker used to build libraries.
-LD="/usr/bin/ld -m elf_x86_64"
+LD="/usr/bin/ld"
 
 # Commands used to build an old-style archive.
 old_archive_cmds="\$AR \$AR_FLAGS \$oldlib\$oldobjs~\$RANLIB \$oldlib"
 
 # A language specific compiler.
-CC="/usr/bin/gcc-4.2"
+CC="gcc"
 
 # Is the compiler the GNU compiler?
 with_gcc=yes
@@ -8380,13 +8380,13 @@ build_old_libs=`case $build_libtool_libs in yes) echo no;; *) echo yes;; esac`
 # ### BEGIN LIBTOOL TAG CONFIG: CXX
 
 # The linker used to build libraries.
-LD="/usr/bin/ld -m elf_x86_64"
+LD="/usr/bin/ld"
 
 # Commands used to build an old-style archive.
 old_archive_cmds="\$AR \$AR_FLAGS \$oldlib\$oldobjs~\$RANLIB \$oldlib"
 
 # A language specific compiler.
-CC="/usr/bin/g++-4.2"
+CC="g++"
 
 # Is the compiler the GNU compiler?
 with_gcc=yes
@@ -8511,25 +8511,25 @@ file_list_spec=""
 hardcode_action=immediate
 
 # The directories searched by this compiler when creating a shared library.
-compiler_lib_search_dirs="/usr/lib/gcc/x86_64-linux-gnu/4.2.4 /usr/lib/gcc/x86_64-linux-gnu/4.2.4 /usr/lib/gcc/x86_64-linux-gnu/4.2.4/../../../../lib /lib/../lib /usr/lib/../lib /usr/lib/gcc/x86_64-linux-gnu/4.2.4/../../.."
+compiler_lib_search_dirs="/usr/lib/gcc/i486-linux-gnu/4.2.4 /usr/lib/gcc/i486-linux-gnu/4.2.4 /usr/lib/gcc/i486-linux-gnu/4.2.4/../../../../lib /lib/../lib /usr/lib/../lib /usr/lib/gcc/i486-linux-gnu/4.2.4/../../.."
 
 # Dependencies to place before and after the objects being linked to
 # create a shared library.
-predep_objects="/usr/lib/gcc/x86_64-linux-gnu/4.2.4/../../../../lib/crti.o /usr/lib/gcc/x86_64-linux-gnu/4.2.4/crtbeginS.o"
-postdep_objects="/usr/lib/gcc/x86_64-linux-gnu/4.2.4/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/4.2.4/../../../../lib/crtn.o"
+predep_objects="/usr/lib/gcc/i486-linux-gnu/4.2.4/../../../../lib/crti.o /usr/lib/gcc/i486-linux-gnu/4.2.4/crtbeginS.o"
+postdep_objects="/usr/lib/gcc/i486-linux-gnu/4.2.4/crtendS.o /usr/lib/gcc/i486-linux-gnu/4.2.4/../../../../lib/crtn.o"
 predeps=""
 postdeps="-lstdc++ -lm -lgcc_s -lc -lgcc_s"
 
 # The library search path used internally by the compiler when linking
 # a shared library.
-compiler_lib_search_path="-L/usr/lib/gcc/x86_64-linux-gnu/4.2.4 -L/usr/lib/gcc/x86_64-linux-gnu/4.2.4 -L/usr/lib/gcc/x86_64-linux-gnu/4.2.4/../../../../lib -L/lib/../lib -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/4.2.4/../../.."
+compiler_lib_search_path="-L/usr/lib/gcc/i486-linux-gnu/4.2.4 -L/usr/lib/gcc/i486-linux-gnu/4.2.4 -L/usr/lib/gcc/i486-linux-gnu/4.2.4/../../../../lib -L/lib/../lib -L/usr/lib/../lib -L/usr/lib/gcc/i486-linux-gnu/4.2.4/../../.."
 
 # ### END LIBTOOL TAG CONFIG: CXX
 
 # ### BEGIN LIBTOOL TAG CONFIG: F77
 
 # The linker used to build libraries.
-LD="/usr/bin/ld -m elf_x86_64"
+LD="/usr/bin/ld"
 
 # Commands used to build an old-style archive.
 old_archive_cmds="\$AR \$AR_FLAGS \$oldlib\$oldobjs~\$RANLIB \$oldlib"

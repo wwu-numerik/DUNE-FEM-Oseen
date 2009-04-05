@@ -25,11 +25,11 @@ MAKEFILE=$BASEFILE.make
 CCFILE=$BASEFILE.cc
 OFILE=$BASEFILE.o
 
-echo "GRIDTYPE=ALUGRID_SIMPLEX" >> $MAKEFILE
+echo "GRIDTYPE=ALUGRID_CONFORM" >> $MAKEFILE
 echo "GRIDDIM=2" >> $MAKEFILE
 echo ".cc.o:" >> $MAKEFILE
 echo -e -n "\t$CXX -c -I$FEMDIR" >> $MAKEFILE
-echo ' -I/data/dune_work/private/f_albr01/diplomarbeit_felix_rene/dune-common -I/data/dune_work/private/f_albr01/diplomarbeit_felix_rene/dune-grid -I/data/dune_work/private/f_albr01/diplomarbeit_felix_rene/dune-istl   -I/data/dune_work/private/f_albr01/diplomarbeit_felix_rene/dune-common -I/data/dune_work/private/f_albr01/diplomarbeit_felix_rene/dune-grid -I/data/dune_work/private/f_albr01/diplomarbeit_felix_rene/dune-istl -DGRIDDIM=$(GRIDDIM) -D$(GRIDTYPE) -I/share/dune/Modules/modules_x86_64/grape -I/usr/X11R6/include -pthread -I/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include -I/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include/serial -I/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include/duneinterface -DENABLE_ALUGRID -O0 -o $@ $<' >> $MAKEFILE
+echo ' -I/usr/local/diplomarbeit_felix_rene/dune-common -I/usr/local/diplomarbeit_felix_rene/dune-grid -I/usr/local/diplomarbeit_felix_rene/dune-istl   -I/usr/local/diplomarbeit_felix_rene/dune-common -I/usr/local/diplomarbeit_felix_rene/dune-grid -I/usr/local/diplomarbeit_felix_rene/dune-istl -DGRIDDIM=$(GRIDDIM) -D$(GRIDTYPE) -I/usr/local/grape -I/usr/include/X11 -pthread -I/usr/local/alberta-1.2/include -DENABLE_ALBERTA -I/usr/local/alugrid-1.14/include -I/usr/local/alugrid-1.14/include/serial -I/usr/local/alugrid-1.14/include/duneinterface -DENABLE_ALUGRID -g -o $@ $<' >> $MAKEFILE
 
 echo "#include <config.h>" >> $CCFILE
 echo "#include <${HEADER}>" >> $CCFILE
