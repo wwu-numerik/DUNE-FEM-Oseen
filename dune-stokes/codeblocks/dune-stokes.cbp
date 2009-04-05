@@ -34,14 +34,16 @@
 					<Add option="-g" />
 					<Add directory="/usr/local/grape" />
 					<Add directory="/usr/local/alberta-1.2/include" />
-					<Add directory="/usr/local/alugrid-1.1/include" />
-					<Add directory="/usr/local/alugrid-1.1/include/parallel" />
-					<Add directory="/usr/local/alugrid-1.1/include/serial" />
+					<Add directory="/usr/local/alugrid-1.14/include" />
+					<Add directory="/usr/local/alugrid-1.14/include/parallel" />
+					<Add directory="/usr/local/alugrid-1.14/include/serial" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
 					<Add library="blas" />
 					<Add directory="/usr/local/grape" />
+					<Add directory="/usr/local/alugrid-1.14/lib" />
+					<Add directory="/usr/local/alberta-2.0.1/lib" />
 				</Linker>
 			</Target>
 			<Target title="rene">
