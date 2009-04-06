@@ -423,10 +423,8 @@ class MirkoSaddlepointInverseOperator
                                 DiscreteSigmaFunctionType,
                                 DiscreteVelocityFunctionType >
             A_Solver;
-        typedef typename A_Solver::ReturnValueType
-                A_SolverReturnType;
-        A_SolverReturnType dummy_cg_info;
-        A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit, solverVerbosity );
+
+        A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit*0.001, solverVerbosity );
 
 /*****************************************************************************************/
 
