@@ -191,7 +191,7 @@ int main( int argc, char** argv )
     else { //we don't do any variation here, just one simple run, no eoc, nothing
 
         for ( int ref = minref; ref <= maxref; ++ref ) {
-            Logger().SetPrefix( "dune_stokes_ref-"+Stuff::toString(ref) );
+            Logger().SetPrefix( "dune_stokes_ref_"+Stuff::toString(ref) );
             Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
             gridPtr->globalRefine( ref );
             typedef Dune::AdaptiveLeafGridPart< GridType >

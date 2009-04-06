@@ -2560,8 +2560,8 @@ if ( Mprint ) {
                     debugStream.Log( &RmatrixType::MatrixType::print,  Rmatrix.matrix() );
                 }
                 if ( H1print ) {
-//                    debugStream << " - = H1 ===========" << std::endl;
-//                    debugStream.Log( &DiscreteSigmaFunctionType::print, H1rhs );
+                    debugStream << " - = H1 ===========" << std::endl;
+                    debugStream.Log( &DiscreteSigmaFunctionType::print, H1rhs );
                     Stuff::oneLinePrint( debugStream, H1rhs );
                 }
 #ifdef CHEAT
@@ -2572,8 +2572,8 @@ if ( Mprint ) {
                 }
 #endif
                 if ( H2print ) {
-//                    debugStream << " - = H2 ===========" << std::endl;
-//                    debugStream.Log( &DiscreteVelocityFunctionType::print, H2rhs );
+                    debugStream << " - = H2 ===========" << std::endl;
+                    debugStream.Log( &DiscreteVelocityFunctionType::print, H2rhs );
                     Stuff::oneLinePrint( debugStream, H2rhs );
                 }
 #ifdef CHEAT
@@ -2584,8 +2584,8 @@ if ( Mprint ) {
                 }
 #endif
                 if ( H3print ) {
-//                    debugStream << " - = H3 ===========" << std::endl;
-//                    debugStream.Log( &DiscretePressureFunctionType::print, H3rhs );
+                    debugStream << " - = H3 ===========" << std::endl;
+                    debugStream.Log( &DiscretePressureFunctionType::print, H3rhs );
                     Stuff::oneLinePrint( debugStream, H3rhs );
                 }
 #ifdef CHEAT
@@ -2639,48 +2639,48 @@ if ( Mprint ) {
             tmpH3rhs -= H3rhs;
             double h3_err = l2.norm( tmpH3rhs );
 #endif
-            debugStream << "- printing infos" << std::endl
-                        << "  - H1" << std::endl
-                        << "    min: " << H1Min << std::endl
-                        << "    max: " << H1Max << std::endl
-                        << "    avg: " << H1avg << std::endl
-#ifdef CHEAT
-                        << "  - exact H1" << std::endl
-                        << "    min: " << exactH1Min << std::endl
-                        << "    max: " << exactH1Max << std::endl
-                        << "    avg: " << eH1avg << std::endl
-                        << "    err: " << h1_err << std::endl
-                        << "   #dif: " << h1_diffs << " / " << H1rhs.size()
-                                << " (" << 100 * h1_diffs / (double) H1rhs.size() << "%)" << std::endl
-#endif
-                        << "  - H2" << std::endl
-                        << "    min: " << H2Min << std::endl
-                        << "    max: " << H2Max << std::endl
-                        << "    avg: " << H2avg << std::endl
-#ifdef CHEAT
-                        << "  - exact H2" << std::endl
-                        << "    min: " << exactH2Min << std::endl
-                        << "    max: " << exactH2Max << std::endl
-                        << "    avg: " << eH2avg << std::endl
-                        << "    err: " << h2_err << std::endl
-                        << "   #dif: " << h2_diffs << " / " << H2rhs.size()
-                                << " (" << 100 * h2_diffs / (double) H2rhs.size() << "%)" << std::endl
-#endif
-                        << "  - H3" << std::endl
-                        << "    min: " << H3Min << std::endl
-                        << "    max: " << H3Max << std::endl
-                        << "    avg: " << H3avg << std::endl
-#ifdef CHEAT
-                        << "  - exact H3" << std::endl
-                        << "    min: " << exactH3Min << std::endl
-                        << "    max: " << exactH3Max << std::endl
-                        << "    avg: " << eH3avg << std::endl
-                        << "    err: " << h3_err << std::endl
-                        << "   #dif: " << h3_diffs << " / " << H3rhs.size()
-                                << " (" << 100 * h3_diffs / (double) H3rhs.size() << "%)" << std::endl
-                        << " - " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl
-#endif
-                        << std::endl;
+//            debugStream << "- printing infos" << std::endl
+//                        << "  - H1" << std::endl
+//                        << "    min: " << H1Min << std::endl
+//                        << "    max: " << H1Max << std::endl
+//                        << "    avg: " << H1avg << std::endl
+//#ifdef CHEAT
+//                        << "  - exact H1" << std::endl
+//                        << "    min: " << exactH1Min << std::endl
+//                        << "    max: " << exactH1Max << std::endl
+//                        << "    avg: " << eH1avg << std::endl
+//                        << "    err: " << h1_err << std::endl
+//                        << "   #dif: " << h1_diffs << " / " << H1rhs.size()
+//                                << " (" << 100 * h1_diffs / (double) H1rhs.size() << "%)" << std::endl
+//#endif
+//                        << "  - H2" << std::endl
+//                        << "    min: " << H2Min << std::endl
+//                        << "    max: " << H2Max << std::endl
+//                        << "    avg: " << H2avg << std::endl
+//#ifdef CHEAT
+//                        << "  - exact H2" << std::endl
+//                        << "    min: " << exactH2Min << std::endl
+//                        << "    max: " << exactH2Max << std::endl
+//                        << "    avg: " << eH2avg << std::endl
+//                        << "    err: " << h2_err << std::endl
+//                        << "   #dif: " << h2_diffs << " / " << H2rhs.size()
+//                                << " (" << 100 * h2_diffs / (double) H2rhs.size() << "%)" << std::endl
+//#endif
+//                        << "  - H3" << std::endl
+//                        << "    min: " << H3Min << std::endl
+//                        << "    max: " << H3Max << std::endl
+//                        << "    avg: " << H3avg << std::endl
+//#ifdef CHEAT
+//                        << "  - exact H3" << std::endl
+//                        << "    min: " << exactH3Min << std::endl
+//                        << "    max: " << exactH3Max << std::endl
+//                        << "    avg: " << eH3avg << std::endl
+//                        << "    err: " << h3_err << std::endl
+//                        << "   #dif: " << h3_diffs << " / " << H3rhs.size()
+//                                << " (" << 100 * h3_diffs / (double) H3rhs.size() << "%)" << std::endl
+//                        << " - " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl
+//#endif
+//                        << std::endl;
 
 
             // do the matlab logging stuff
@@ -2701,38 +2701,14 @@ if ( Mprint ) {
             matlabLogStream << "C = R;" << std::endl;
             matlabLogStream << "F = H2 - X * M_invers * H1;" << std::endl;
             matlabLogStream << "G = - H3;" << std::endl;
-
-            XmatrixType xTimesMTimesW( velocitySpace_, sigmaSpace_ );
-            xTimesMTimesW.reserve();
-            xTimesMTimesW.clear();
-            Xmatrix.matrix().multiply( MInversMatrix.matrix(), xTimesMTimesW.matrix() );
-            YmatrixType aMatrix( velocitySpace_, velocitySpace_ );
-            aMatrix.reserve();
-            aMatrix.clear();
-            xTimesMTimesW.matrix().multiply( Wmatrix.matrix(), aMatrix.matrix() );
-            aMatrix.matrix().scale( -1.0 );
-            std::cout << "\nA = " << aMatrix.matrix().rows() << " x " << aMatrix.matrix().cols() << std::endl;
-            std::cout << "\nY = " << Ymatrix.matrix().rows() << " x " << Ymatrix.matrix().cols() << std::endl;
-            aMatrix.matrix().add( Ymatrix.matrix() );
-            Stuff::printSparseRowMatrixMatlabStyle( aMatrix.matrix(), "build_A", matlabLogStream );
-
-            DiscreteVelocityFunctionType F( "build_F", velocitySpace_ );
-            F.clear();
-            xTimesMTimesW.clear();
-            Xmatrix.matrix().multiply( MInversMatrix.matrix(), xTimesMTimesW.matrix() );
-            xTimesMTimesW.matrix().apply( H1rhs, F );
-            F *= -1.0;
-            F += H2rhs;
-            Stuff::printDiscreteFunctionMatlabStyle( F, "build_F", matlabLogStream );
-
-//            matlabLogStream << "A_invers = inv( A );" << std::endl;
-//            matlabLogStream << "schur_S = B_T * A_invers * B + C;" << std::endl;
-//            matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
-//            matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
-//            matlabLogStream << "u = A_invers * ( F - B * p );" << std::endl;
-//            matlabLogStream << "%mirko_W = -(1/M_invers(1,1)) .* (mirko_W);" << std::endl;
-//            matlabLogStream << "%mirko_E = -(mirko_E);" << std::endl;
-//            matlabLogStream << "%mirko_H1 = (1/M_invers(1,1)) .* (mirko_H1);" << std::endl;
+            matlabLogStream << "A_invers = inv( A );" << std::endl;
+            matlabLogStream << "schur_S = B_T * A_invers * B + C;" << std::endl;
+            matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
+            matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
+            matlabLogStream << "u = A_invers * ( F - B * p );" << std::endl;
+//            matlabLogStream << "mirko_W = -(1/M_invers(1,1)) .* (mirko_W);" << std::endl;
+//            matlabLogStream << "mirko_E = -(mirko_E);" << std::endl;
+//            matlabLogStream << "mirko_H1 = (1/M_invers(1,1)) .* (mirko_H1);" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( W - mirko_W ) = %d\\n', norm( W - mirko_W ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( X - mirko_X ) = %d\\n', norm( X - mirko_X ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( Y - mirko_Y ) = %d\\n', norm( Y - mirko_Y ) );\n" << std::endl;
@@ -2742,12 +2718,12 @@ if ( Mprint ) {
 //            matlabLogStream << "fprintf(1, 'norm( H1 - mirko_H1 ) = %d\\n', norm( H1 - mirko_H1 ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( H2 - mirko_H3 ) = %d\\n', norm( H2 - mirko_H2 ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( H3 - mirko_H3 ) = %d\\n', norm( H3 - mirko_H3 ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( A - mirko_A ) = %d\\n', norm( A - mirko_A ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( B - mirko_B ) = %d\\n', norm( B - mirko_B ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( B_T - mirko_B_T ) = %d\\n', norm( B_T - mirko_B_T ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( C - mirko_C ) = %d\\n', norm( C - mirko_C ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( F - mirko_F ) = %d\\n', norm( F - mirko_F ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( G - mirko_G ) = %d\\n', norm( G - mirko_G ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( A - mirko_A ) = %d\\n', norm( A - mirko_A, inf ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( B - mirko_B ) = %d\\n', norm( B - mirko_B, inf ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( B_T - mirko_B_T ) = %d\\n', norm( B_T - mirko_B_T, inf ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( C - mirko_C ) = %d\\n', norm( C - mirko_C, inf ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( F - mirko_F ) = %d\\n', norm( F - mirko_F, inf ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( G - mirko_G ) = %d\\n', norm( G - mirko_G, inf ) );\n" << std::endl;
 //            matlabLogStream << "%fprintf(1, 'norm( schur_S - mirko_schur_S ) = %d\\n', norm( schur_S - mirko_schur_S ) );\n" << std::endl;
 //            matlabLogStream << "%fprintf(1, 'norm( schur_f - mirko_schur_f ) = %d\\n', norm( schur_f - mirko_schur_f ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( p - mirko_p ) = %d\\n', norm( p - p ) );\n" << std::endl;
