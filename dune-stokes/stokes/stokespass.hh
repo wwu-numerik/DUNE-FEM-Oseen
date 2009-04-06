@@ -2810,7 +2810,7 @@ if ( Mprint ) {
             const int dim = arg[0].dim();
             for ( int i = 0; i < dim; ++i ) {
                 for ( int j = 0; j < dim; ++j ) {
-                    const VelocityRangeType gradientRow = arg[( 3 * i ) + j];
+                    const VelocityRangeType gradientRow = arg[( dim * i ) + j];
                     ret[i] += gradientRow[ i ];
                 }
             }
