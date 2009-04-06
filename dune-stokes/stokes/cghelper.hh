@@ -8,7 +8,13 @@
 namespace Dune {
 
 
+/** \brief Operator to evaluate Matrix multiplication
 
+    multOEM method evaluates matrix vector multiplication\n
+    \f$ A := -1 \cdot X  M^{-1} W x  + Yx \f$
+
+
+**/
 template <  class WMatType,
             class MMatType,
             class XMatType,
@@ -24,7 +30,10 @@ class MatrixA_Operator {
                         YMatType,
                         DiscreteSigmaFunctionType >
                     ThisType;
+        /** The operator needs the
 
+
+        **/
         MatrixA_Operator ( const WMatType& w_mat,
                 const MMatType& m_mat,
                 const XMatType& x_mat,
@@ -133,7 +142,7 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
 
 			// ret = ( ( B_t * ( A^-1 * ( B * x ) ) ) + ( C * x ) )
 //			Stuff::oneLinePrint( std::cout, tmp1 ) ;
-            b_t_mat_.multOEM_t( x, tmp1.leakPointer() );
+            b_mat_.multOEM_t( x, tmp1.leakPointer() );
 //            Stuff::oneLinePrint( std::cout, tmp1 ) ;
 //            Stuff::printDoubleVec( std::cout, x, b_mat_.cols() );
             ReturnValueType cg_info;
