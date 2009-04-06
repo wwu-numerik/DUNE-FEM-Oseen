@@ -24,7 +24,7 @@ relLimit: 1e-12
 absLimit: 1e-8
 use-cheat: 0
 max_adaptions: 4
-solverVerbosity: 0
+solverVerbosity: 1
 h-factor: 1.0
 eps: 1.0e-14
 disableSolver: 0

@@ -147,7 +147,11 @@ class StokesPass
             EntityType;
 
         //! type of the used solver
+#ifndef USE_MIRKO
         typedef SaddlepointInverseOperator< ThisType >
+#else
+        typedef MirkoSaddlepointInverseOperator< ThisType >
+#endif
             InvOpType;
 
         //! polynomial order for the discrete sigma function space

@@ -39,8 +39,8 @@ namespace Dune {
         \tparam StokesPassImp discrete function types etc. get extracted from this
    */
 
-    template < class StokesPassImp >
-    class SaddlepointInverseOperator
+template < class StokesPassImp >
+class SaddlepointInverseOperator
 {
   private:
 
@@ -306,6 +306,187 @@ namespace Dune {
         a_solver.apply ( Bp_temp, velocity );
 
         logInfo << "\nEnd SaddlePointInverseOperator " << std::endl;
+    }
+
+  };
+
+template < class StokesPassImp >
+class MirkoSaddlepointInverseOperator
+{
+  private:
+
+    typedef StokesPassImp StokesPassType;
+
+    typedef typename StokesPassType::DiscreteStokesFunctionWrapperType
+        DiscreteStokesFunctionWrapperType;
+
+    typedef typename StokesPassType::DomainType
+        DomainType;
+
+    typedef typename StokesPassType::RangeType
+        RangeType;
+
+    typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
+        PressureDiscreteFunctionType;
+    typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
+        VelocityDiscreteFunctionType;
+
+
+  public:
+    /** \todo Please doc me!
+     * \brief Constructor:
+	*
+	  **/
+    MirkoSaddlepointInverseOperator()
+	{}
+
+    /** takes raw matrices from pass
+    */
+    template <  class XmatrixObjectType,
+                class MmatrixObjectType,
+                class YmatrixObjectType,
+                class EmatrixObjectType,
+                class RmatrixObjectType,
+                class ZmatrixObjectType,
+                class WmatrixObjectType,
+                class DiscreteSigmaFunctionType,
+                class DiscreteVelocityFunctionType,
+                class DiscretePressureFunctionType  >
+    void solve( const DomainType& arg,
+                RangeType& dest,
+                XmatrixObjectType& Xmatrix,
+                MmatrixObjectType& Mmatrix,
+                YmatrixObjectType& Ymatrix,
+                EmatrixObjectType& Ematrix,
+                RmatrixObjectType& Rmatrix,
+                ZmatrixObjectType& Zmatrix,
+                WmatrixObjectType& Wmatrix,
+                const DiscreteSigmaFunctionType& rhs1,
+                DiscreteVelocityFunctionType& rhs2,
+                DiscretePressureFunctionType& rhs3 ) const
+    {
+
+        Logging::LogStream& logDebug = Logger().Dbg();
+        Logging::LogStream& logError = Logger().Err();
+        Logging::LogStream& logInfo = Logger().Info();
+
+        if ( Parameters().getParam( "disableSolver", false ) ) {
+            logInfo.Resume();
+            logInfo << "solving disabled via parameter file" << std::endl;
+            return;
+        }
+
+		// relative min. error at which cg-solvers will abort
+        const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
+		// aboslute min. error at which cg-solvers will abort
+        const double absLimit = Parameters().getParam( "absLimit", 1e-8 );
+        const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
+        const unsigned int maxIter = Parameters().getParam( "maxIter", 500 );
+
+        logInfo.Resume();
+        logInfo << "Begin MirkoSaddlePointInverseOperator " << std::endl;
+
+        logDebug.Resume();
+        //get some refs for more readability
+        PressureDiscreteFunctionType& pressure = dest.discretePressure();
+        VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
+
+        typedef typename  XmatrixObjectType::MatrixType
+            XmatrixType;
+        typedef typename  MmatrixObjectType::MatrixType
+            MmatrixType;
+        typedef typename  YmatrixObjectType::MatrixType
+            YmatrixType;
+        typedef typename  EmatrixObjectType::MatrixType
+            B_t_matrixType;                             //! renamed
+        typedef typename  RmatrixObjectType::MatrixType
+            CmatrixType;                                //! renamed
+        typedef typename  ZmatrixObjectType::MatrixType
+            BmatrixType;                                //! renamed
+        typedef typename  WmatrixObjectType::MatrixType
+            WmatrixType;
+
+        XmatrixType& x_mat      = Xmatrix.matrix();
+        MmatrixType& m_inv_mat  = Mmatrix.matrix();
+        YmatrixType& y_mat      = Ymatrix.matrix();
+        B_t_matrixType& b_t_mat = Ematrix.matrix(); //! renamed
+        CmatrixType& c_mat      = Rmatrix.matrix(); //! renamed
+        BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
+        WmatrixType& w_mat      = Wmatrix.matrix();
+
+        b_t_mat.scale( -1 ); //since B_t = -E
+
+        typedef A_SolverCaller< WmatrixType,
+                                MmatrixType,
+                                XmatrixType,
+                                YmatrixType,
+                                DiscreteSigmaFunctionType,
+                                DiscreteVelocityFunctionType >
+            A_Solver;
+        typedef typename A_Solver::ReturnValueType
+                A_SolverReturnType;
+        A_SolverReturnType dummy_cg_info;
+        A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit, solverVerbosity );
+
+/*****************************************************************************************/
+
+        unsigned int count = 0;
+        double spa=0, spn, q, quad;
+
+        VelocityDiscreteFunctionType f( "f", velocity.space() );
+        f.assign(rhs2);
+        VelocityDiscreteFunctionType u( "u", velocity.space() );
+        u.clear();
+        VelocityDiscreteFunctionType tmp1( "tmp1", velocity.space() );
+        tmp1.clear();
+        VelocityDiscreteFunctionType xi( "xi", velocity.space() );
+        xi.clear();
+        PressureDiscreteFunctionType tmp2( "tmp2", pressure.space() );
+        PressureDiscreteFunctionType r( "r", pressure.space() );
+        r.assign(rhs3);
+
+        PressureDiscreteFunctionType p( "p", pressure.space() );
+        PressureDiscreteFunctionType h( "h", pressure.space() );
+        PressureDiscreteFunctionType g( "g", pressure.space() );
+
+        b_mat.apply( pressure, tmp1 );
+
+        f-=tmp1;
+        a_solver.apply(f,u);
+        b_t_mat.apply( u, tmp2 );
+        r-=tmp2;
+        tmp2.clear();
+        c_mat.apply( pressure, tmp2 );
+        r+=tmp2;
+        p.assign(r);
+        spn = r.scalarProductDofs( r );
+        while( (spn > absLimit ) && (count++ < maxIter ) ) {
+            if(count > 1) {
+                const double e = spn / spa;
+                p *= e;
+                p += r;
+            }
+
+            tmp1.clear();
+            b_mat.apply( p, tmp1 );
+            a_solver.apply( tmp1, xi );
+            b_t_mat.apply( xi, h );
+            tmp2.clear();
+            c_mat.apply( p, tmp2 );
+            h += tmp2;
+            quad = p.scalarProductDofs( h );
+            q    = spn / quad;
+            pressure.addScaled( p, -q );
+            u.addScaled( xi, +q );
+            r.addScaled( h, -q );
+            spa = spn;
+            spn = r.scalarProductDofs( r );
+
+            if( solverVerbosity > 0)
+                std::cerr << count << " SPcg-Iterationen  " << count << " Residuum:" << spn << "\n";
+        }
+
+        velocity.assign(u);
     }
 
   };
