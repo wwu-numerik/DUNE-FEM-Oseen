@@ -142,7 +142,7 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
 
 			// ret = ( ( B_t * ( A^-1 * ( B * x ) ) ) + ( C * x ) )
 //			Stuff::oneLinePrint( std::cout, tmp1 ) ;
-            b_mat_.multOEM_t( x, tmp1.leakPointer() );
+            b_t_mat_.multOEM_t( x, tmp1.leakPointer() );
 //            Stuff::oneLinePrint( std::cout, tmp1 ) ;
 //            Stuff::printDoubleVec( std::cout, x, b_mat_.cols() );
             ReturnValueType cg_info;

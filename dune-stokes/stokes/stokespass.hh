@@ -2701,14 +2701,38 @@ if ( Mprint ) {
             matlabLogStream << "C = R;" << std::endl;
             matlabLogStream << "F = H2 - X * M_invers * H1;" << std::endl;
             matlabLogStream << "G = - H3;" << std::endl;
-            matlabLogStream << "A_invers = inv( A );" << std::endl;
-            matlabLogStream << "schur_S = B_T * A_invers * B + C;" << std::endl;
-            matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
-            matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
-            matlabLogStream << "u = A_invers * ( F - B * p );" << std::endl;
-            matlabLogStream << "%mirko_W = -(1/M_invers(1,1)) .* (mirko_W);" << std::endl;
-            matlabLogStream << "%mirko_E = -(mirko_E);" << std::endl;
-            matlabLogStream << "%mirko_H1 = (1/M_invers(1,1)) .* (mirko_H1);" << std::endl;
+
+            XmatrixType xTimesMTimesW( velocitySpace_, sigmaSpace_ );
+            xTimesMTimesW.reserve();
+            xTimesMTimesW.clear();
+            Xmatrix.matrix().multiply( MInversMatrix.matrix(), xTimesMTimesW.matrix() );
+            YmatrixType aMatrix( velocitySpace_, velocitySpace_ );
+            aMatrix.reserve();
+            aMatrix.clear();
+            xTimesMTimesW.matrix().multiply( Wmatrix.matrix(), aMatrix.matrix() );
+            aMatrix.matrix().scale( -1.0 );
+            std::cout << "\nA = " << aMatrix.matrix().rows() << " x " << aMatrix.matrix().cols() << std::endl;
+            std::cout << "\nY = " << Ymatrix.matrix().rows() << " x " << Ymatrix.matrix().cols() << std::endl;
+            aMatrix.matrix().add( Ymatrix.matrix() );
+            Stuff::printSparseRowMatrixMatlabStyle( aMatrix.matrix(), "build_A", matlabLogStream );
+
+            DiscreteVelocityFunctionType F( "build_F", velocitySpace_ );
+            F.clear();
+            xTimesMTimesW.clear();
+            Xmatrix.matrix().multiply( MInversMatrix.matrix(), xTimesMTimesW.matrix() );
+            xTimesMTimesW.matrix().apply( H1rhs, F );
+            F *= -1.0;
+            F += H2rhs;
+            Stuff::printDiscreteFunctionMatlabStyle( F, "build_F", matlabLogStream );
+
+//            matlabLogStream << "A_invers = inv( A );" << std::endl;
+//            matlabLogStream << "schur_S = B_T * A_invers * B + C;" << std::endl;
+//            matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
+//            matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
+//            matlabLogStream << "u = A_invers * ( F - B * p );" << std::endl;
+//            matlabLogStream << "%mirko_W = -(1/M_invers(1,1)) .* (mirko_W);" << std::endl;
+//            matlabLogStream << "%mirko_E = -(mirko_E);" << std::endl;
+//            matlabLogStream << "%mirko_H1 = (1/M_invers(1,1)) .* (mirko_H1);" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( W - mirko_W ) = %d\\n', norm( W - mirko_W ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( X - mirko_X ) = %d\\n', norm( X - mirko_X ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( Y - mirko_Y ) = %d\\n', norm( Y - mirko_Y ) );\n" << std::endl;
@@ -2724,10 +2748,10 @@ if ( Mprint ) {
 //            matlabLogStream << "fprintf(1, 'norm( C - mirko_C ) = %d\\n', norm( C - mirko_C ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( F - mirko_F ) = %d\\n', norm( F - mirko_F ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( G - mirko_G ) = %d\\n', norm( G - mirko_G ) );\n" << std::endl;
-            matlabLogStream << "%fprintf(1, 'norm( schur_S - mirko_schur_S ) = %d\\n', norm( schur_S - mirko_schur_S ) );\n" << std::endl;
-            matlabLogStream << "%fprintf(1, 'norm( schur_f - mirko_schur_f ) = %d\\n', norm( schur_f - mirko_schur_f ) );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'norm( p - mirko_p ) = %d\\n', norm( p - p ) );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'norm( u - mirko_u ) = %d\\n', norm( u - mirko_u ) );\n" << std::endl;
+//            matlabLogStream << "%fprintf(1, 'norm( schur_S - mirko_schur_S ) = %d\\n', norm( schur_S - mirko_schur_S ) );\n" << std::endl;
+//            matlabLogStream << "%fprintf(1, 'norm( schur_f - mirko_schur_f ) = %d\\n', norm( schur_f - mirko_schur_f ) );\n" << std::endl;
+//            matlabLogStream << "fprintf(1, 'norm( p - mirko_p ) = %d\\n', norm( p - p ) );\n" << std::endl;
+//            matlabLogStream << "fprintf(1, 'norm( u - mirko_u ) = %d\\n', norm( u - mirko_u ) );\n" << std::endl;
 //#endif
 //            matlabLogStream << "\nA = Y - X * M_invers * W;" << std::endl;
 //            matlabLogStream << "B = Z;" << std::endl;
