@@ -421,15 +421,8 @@ class MirkoSaddlepointInverseOperator
 
         //transformation from StokesPass::buildMatrix
         VelocityDiscreteFunctionType v_tmp ( "v_tmp", velocity.space() );
-        divMatrix_.multOEM(stressptr,tmp1ptr);
         x_mat.apply( rhs1, v_tmp );
         rhs2 -= v_tmp;
-
-
-        for(register int i=0;i<spc_.size();++i)
-        {
-          veloptr[i]-=tmp1ptr[i];
-        }
 
         typedef A_SolverCaller< WmatrixType,
                                 MmatrixType,
