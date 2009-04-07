@@ -33,33 +33,40 @@ class Logging
         class MatlabLogStream
         {
             public:
-                MatlabLogStream( std::ofstream& logFile )
-                    : matlabLogFile_( logFile ) {}
+                MatlabLogStream( LogFlags loglevel, int& logflags, std::ofstream& logFile )
+                    : matlabLogFile_( logFile ),
+                    loglevel_(loglevel),
+                    logflags_(logflags),
+                    suspended_logflags_(logflags) {}
 
                 ~MatlabLogStream(){}
 
                 template < typename T >
                 MatlabLogStream& operator << ( T in )
                 {
-                    buffer_ << in;
+                    if ( logflags_ & loglevel_ )
+                        buffer_ << in;
                     return *this;
                 }
 
                 MatlabLogStream& operator << ( MatlabLogStream& ( *pf )(MatlabLogStream&) )
                 {
-                    buffer_ << pf;
+                    if ( logflags_ & loglevel_ )
+                        buffer_ << pf;
                     return *this;
                 }
 
                 MatlabLogStream& operator << ( std::ostream& ( *pf )(std::ostream &) )
                 {
-                    if ( pf == (std::ostream& ( * )(std::ostream&))std::endl )
-                    { //flush buffer into stream
-                        buffer_ << "\n";
-                        Flush();
-                    }
-                    else {
-                        buffer_ << pf;
+                    if ( logflags_ & loglevel_ ) {
+                        if ( pf == (std::ostream& ( * )(std::ostream&))std::endl )
+                        { //flush buffer into stream
+                            buffer_ << "\n";
+                            Flush();
+                        }
+                        else {
+                            buffer_ << pf;
+                        }
                     }
                     return *this;
                 }
@@ -72,10 +79,30 @@ class Logging
                     buffer_.str("");// clear the buffer
                 }
 
+                void Suspend()
+                {
+                    //don't accidentally invalidate flags if already suspended
+                    if ( !is_suspended_ ) {
+                        suspended_logflags_ = logflags_;
+                        logflags_ = 1;
+                    }
+                    is_suspended_ = true;
+                }
+
+                void Resume()
+                {
+                    if ( is_suspended_ )
+                        logflags_ = suspended_logflags_;
+                    is_suspended_ = false;
+                }
 
             private:
                 std::stringstream buffer_;
                 std::ofstream& matlabLogFile_;
+                LogFlags loglevel_;
+                int& logflags_;
+                int suspended_logflags_;
+                bool is_suspended_;
         };
 
         class LogStream //: virtual public std::ostream
@@ -84,7 +111,6 @@ class Logging
                 LogFlags loglevel_;
                 int& logflags_;
                 int suspended_logflags_;
-                bool suspended_;
                 std::stringstream buffer_;
                 std::ofstream& logfile_;
                 std::ofstream& logfileWoTime_;
@@ -241,7 +267,7 @@ class Logging
             std::string matlabLogFileName = logfile + "_matlab.m";
             matlabLogFile_.open( matlabLogFileName.c_str() );
             assert( matlabLogFile_.is_open() );
-            matlabLogStreamPtr = new MatlabLogStream( matlabLogFile_ );
+            matlabLogStreamPtr = new MatlabLogStream( LOG_FILE, logflags_, matlabLogFile_ );
         }
 
         void SetPrefix( std::string prefix )
