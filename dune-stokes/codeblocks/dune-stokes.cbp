@@ -14,7 +14,6 @@
 				<Option compiler="gcc" />
 				<Option parameters="test.param" />
 				<Compiler>
-					<Add option="-Wall" />
 					<Add option="-g" />
 				</Compiler>
 				<Linker>
@@ -69,7 +68,6 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-Wall" />
 			<Add option="-g" />
 			<Add option="-fexceptions" />
 			<Add option="-DENABLE_ALUGRID" />
@@ -85,9 +83,9 @@
 			<Add directory="../../dune-fem/" />
 			<Add directory="../../dune-stokes/" />
 			<Add directory="/share/dune/Modules/modules_x86_64/alberta-1.2/include" />
-			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include" />
-			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include/parallel" />
-			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include/serial" />
+			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.14/include" />
+			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.14/include/parallel" />
+			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.14/include/serial" />
 			<Add directory="/share/dune/Modules/modules_x86_64/grape/" />
 		</Compiler>
 		<Linker>
