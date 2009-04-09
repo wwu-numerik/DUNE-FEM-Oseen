@@ -570,6 +570,7 @@ MMatrix.reserve();
                         for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
                             const ElementCoordinateType x = volumeQuadratureElement.point( quad );
+                            const ElementCoordinateType xGlobal = geometry.global( x );
                             // get the integration factor
                             const double elementVolume = geometry.integrationElement( x );
                             // get the quadrature weight
@@ -587,6 +588,7 @@ MMatrix.reserve();
 #ifndef NLOG
                             debugStream << "    - quadPoint " << quad;
                             Stuff::printFieldVector( x, "x", debugStream, "      " );
+                            Stuff::printFieldVector( xGlobal, "xGlobal", debugStream, "      " );
                             debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
                             debugStream << "        - integrationWeight: " << integrationWeight;
                             Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "      " );
