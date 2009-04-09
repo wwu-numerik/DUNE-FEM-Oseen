@@ -43,5 +43,16 @@ Rprint: 0
 H1print: 0
 H2print: 0
 H3print: 0
-allOutput: 0
+allOutput: 1
+Mdebug: 0
+Wdebug: 0
+Xdebug: 0
+Ydebug: 0
+Zdebug: 0
+Edebug: 0
+Rdebug: 0
+H1debug: 0
+H2debug: 0
+H3debug: 0
+allOutput: 1
 solution-print: 0
