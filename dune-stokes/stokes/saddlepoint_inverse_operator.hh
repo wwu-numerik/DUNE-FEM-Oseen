@@ -380,7 +380,7 @@ class MirkoSaddlepointInverseOperator
         const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
 		// aboslute min. error at which cg-solvers will abort
         const double absLimit = Parameters().getParam( "absLimit", 1e-8 );
-        const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
+        const int solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
         const unsigned int maxIter = Parameters().getParam( "maxIter", 500 );
 
 #ifdef USE_BFG_CG_SCHEME
