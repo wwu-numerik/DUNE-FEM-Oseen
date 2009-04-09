@@ -348,8 +348,8 @@ MMatrix.reserve();
 #ifndef NLOG
             // logging stuff
             Logging::LogStream& infoStream = Logger().Info();
-            Logging::LogStream& debugStream = Logger().Info();
-//            Logging::LogStream& debugStream = Logger().Dbg();
+//            Logging::LogStream& debugStream = Logger().Info();
+            Logging::LogStream& debugStream = Logger().Dbg();
             bool entityOutput = false;
             bool intersectionOutput = false;
             const int outputEntity = 0;
@@ -457,6 +457,7 @@ MMatrix.reserve();
                 infoStream << "      maxGridWidth is " << maxGridWidth << std::endl;
                 infoStream << "- starting gridwalk" << std::endl;
             }
+            infoStream.Suspend();
 #endif
             // walk the grid
             EntityIteratorType entityItEnd = velocitySpace_.end();
@@ -502,9 +503,11 @@ MMatrix.reserve();
                 if ( numberOfEntities > 19 ) {
                     if ( ( entityNR % fivePercentOfEntities ) == 0 ) {
                         if ( fivePercents < 20 ) {
+                            infoStream.Resume();
                             infoStream << "=";
-                            ++fivePercents;
                             infoStream.Flush();
+                            infoStream.Suspend();
+                            ++fivePercents;
                         }
                     }
                 }
@@ -779,7 +782,7 @@ localMMatrixElement.add( i, j, M_i_j );
                         double H2_j = 0.0;
 #ifndef NLOG
     //                    if ( ( j == logBaseJ ) ) H2output = true;
-                        if ( allOutput ) H2output = true;
+//                        if ( allOutput ) H2output = true;
                         if ( entityOutput && H2output ) debugStream.Resume(); // enable logging
                         debugStream << "    = H2 =======================" << std::endl;
                         debugStream << "    basefunction " << " " << j << std::endl;
@@ -2170,7 +2173,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                 double H2_j = 0.0;
 #ifndef NLOG
     //                            if ( j == logBaseJ ) H2output = true;
-                                if ( allOutput ) H2output = true;
+//                                if ( allOutput ) H2output = true;
                                 if ( intersectionOutput && H2output ) debugStream.Resume(); // enable logging
                                 debugStream << "      = H2 boundary ====================" << std::endl;
                                 debugStream << "      basefunction " << j << std::endl;
@@ -2518,11 +2521,12 @@ localMMatrixElement.add( i, j, M_i_j );
             debugStream << "  - done computing artificial rihgt hand sides" << std::endl;
 #endif
 
-
+            infoStream.Resume();
             if ( numberOfEntities > 19 ) {
                 infoStream << "]";
             }
             infoStream << "\n- gridwalk done" << std::endl << std::endl;
+            infoStream.Suspend();
 
             if ( Mprint || Wprint || Xprint || Yprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
                 debugStream.Resume();
@@ -2701,11 +2705,11 @@ if ( Mprint ) {
             matlabLogStream << "C = R;" << std::endl;
             matlabLogStream << "F = H2 - X * M_invers * H1;" << std::endl;
             matlabLogStream << "G = - H3;" << std::endl;
-            matlabLogStream << "A_invers = inv( A );" << std::endl;
-            matlabLogStream << "schur_S = B_T * A_invers * B + C;" << std::endl;
-            matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
-            matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
-            matlabLogStream << "u = A_invers * ( F - B * p );" << std::endl;
+//            matlabLogStream << "A_invers = inv( A );" << std::endl;
+//            matlabLogStream << "schur_S = B_T * A_invers * B + C;" << std::endl;
+//            matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
+//            matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
+//            matlabLogStream << "u = A_invers * ( F - B * p );" << std::endl;
 //            matlabLogStream << "mirko_W = -(1/M_invers(1,1)) .* (mirko_W);" << std::endl;
 //            matlabLogStream << "mirko_E = -(mirko_E);" << std::endl;
 //            matlabLogStream << "mirko_H1 = (1/M_invers(1,1)) .* (mirko_H1);" << std::endl;
@@ -2718,12 +2722,12 @@ if ( Mprint ) {
 //            matlabLogStream << "fprintf(1, 'norm( H1 - mirko_H1 ) = %d\\n', norm( H1 - mirko_H1 ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( H2 - mirko_H3 ) = %d\\n', norm( H2 - mirko_H2 ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( H3 - mirko_H3 ) = %d\\n', norm( H3 - mirko_H3 ) );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'norm( A - mirko_A ) = %d\\n', norm( A - mirko_A, inf ) );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'norm( B - mirko_B ) = %d\\n', norm( B - mirko_B, inf ) );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'norm( B_T - mirko_B_T ) = %d\\n', norm( B_T - mirko_B_T, inf ) );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'norm( C - mirko_C ) = %d\\n', norm( C - mirko_C, inf ) );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'norm( F - mirko_F ) = %d\\n', norm( F - mirko_F, inf ) );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'norm( G - mirko_G ) = %d\\n', norm( G - mirko_G, inf ) );\n" << std::endl;
+//            matlabLogStream << "fprintf(1, 'norm( A - mirko_A ) = %d\\n', norm( A - mirko_A, inf ) );\n" << std::endl;
+//            matlabLogStream << "fprintf(1, 'norm( B - mirko_B ) = %d\\n', norm( B - mirko_B, inf ) );\n" << std::endl;
+//            matlabLogStream << "fprintf(1, 'norm( B_T - mirko_B_T ) = %d\\n', norm( B_T - mirko_B_T, inf ) );\n" << std::endl;
+//            matlabLogStream << "fprintf(1, 'norm( C - mirko_C ) = %d\\n', norm( C - mirko_C, inf ) );\n" << std::endl;
+//            matlabLogStream << "fprintf(1, 'norm( F - mirko_F ) = %d\\n', norm( F - mirko_F, inf ) );\n" << std::endl;
+//            matlabLogStream << "fprintf(1, 'norm( G - mirko_G ) = %d\\n', norm( G - mirko_G, inf ) );\n" << std::endl;
 //            matlabLogStream << "%fprintf(1, 'norm( schur_S - mirko_schur_S ) = %d\\n', norm( schur_S - mirko_schur_S ) );\n" << std::endl;
 //            matlabLogStream << "%fprintf(1, 'norm( schur_f - mirko_schur_f ) = %d\\n', norm( schur_f - mirko_schur_f ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( p - mirko_p ) = %d\\n', norm( p - p ) );\n" << std::endl;
@@ -2751,11 +2755,19 @@ if ( Mprint ) {
             op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 #else
             if ( Parameters().getParam( "use-cheat", true ) ) {
+#ifndef NLOG
+                infoStream.Resume();
                 infoStream << "solving with cheated rhs" << std::endl;
+                infoStream.Suspend();
+#endif
                 op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, exactH1rhs, exactH2rhs, exactH3rhs );
             }
             else {
+#ifndef NLOG
+                infoStream.Resume();
                 infoStream << "solving with \"normal\" rhs" << std::endl;
+                infoStream.Suspend();
+#endif
                 op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
             }
 #endif
