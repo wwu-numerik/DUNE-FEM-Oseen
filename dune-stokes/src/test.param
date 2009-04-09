@@ -8,8 +8,8 @@ fem.io.datafileprefix: data_
 fem.io.savestep: -1
 fem.io.savecount: 1
 fem.io.outputformat: 1
-minref: 4
-maxref: 4
+minref: 0
+maxref: 0
 minpow: -1
 maxpow: 1
 per-run-log-target: 0
@@ -43,7 +43,7 @@ Rprint: 0
 H1print: 0
 H2print: 0
 H3print: 0
-allOutput: 1
+allOutput: 0
 Mdebug: 0
 Wdebug: 0
 Xdebug: 0
@@ -54,5 +54,4 @@ Rdebug: 0
 H1debug: 0
 H2debug: 0
 H3debug: 0
-allOutput: 1
 solution-print: 0
