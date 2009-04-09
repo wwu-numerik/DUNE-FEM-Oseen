@@ -414,6 +414,7 @@ class MirkoSaddlepointInverseOperator
         BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
         WmatrixType& w_mat      = Wmatrix.matrix();
 
+/*** making our matrices mirko compatible ****/
         b_t_mat.scale( -1 ); //since B_t = -E
         w_mat.scale( m_inv_mat(0,0) );
         rhs1 *=  m_inv_mat(0,0);
@@ -423,6 +424,7 @@ class MirkoSaddlepointInverseOperator
         VelocityDiscreteFunctionType v_tmp ( "v_tmp", velocity.space() );
         x_mat.apply( rhs1, v_tmp );
         rhs2 -= v_tmp;
+/***********/
 
         typedef A_SolverCaller< WmatrixType,
                                 MmatrixType,
@@ -437,62 +439,80 @@ class MirkoSaddlepointInverseOperator
 /*****************************************************************************************/
 
         unsigned int count = 0;
-        double spa=0, spn, q, quad;
+        double delta; //norm of residuum
+        double gamma=0;
+        double rho;
 
-        VelocityDiscreteFunctionType f( "f", velocity.space() );
-        f.assign(rhs2);
-        VelocityDiscreteFunctionType u( "u", velocity.space() );
-        u.clear();
+        VelocityDiscreteFunctionType F( "f", velocity.space() );
+        F.assign(rhs2);
         VelocityDiscreteFunctionType tmp1( "tmp1", velocity.space() );
         tmp1.clear();
         VelocityDiscreteFunctionType xi( "xi", velocity.space() );
         xi.clear();
         PressureDiscreteFunctionType tmp2( "tmp2", pressure.space() );
-        PressureDiscreteFunctionType r( "r", pressure.space() );
-        r.assign(rhs3);
+        PressureDiscreteFunctionType residuum( "residuum", pressure.space() );
+        residuum.assign(rhs3);
 
-        PressureDiscreteFunctionType p( "p", pressure.space() );
+        PressureDiscreteFunctionType d( "d", pressure.space() );
         PressureDiscreteFunctionType h( "h", pressure.space() );
-        PressureDiscreteFunctionType g( "g", pressure.space() );
 
+        // u^0 = A^{-1} ( F - B * p^0 )
         b_mat.apply( pressure, tmp1 );
+        F-=tmp1; // F ^= rhs2 - B * p
+        a_solver.apply(F,velocity);
 
-        f-=tmp1;
-        a_solver.apply(f,u);
-        b_t_mat.apply( u, tmp2 );
-        r-=tmp2;
+        // r^0 = G - B_t * u^0 + C * p^0
+        b_t_mat.apply( velocity, tmp2 );
+        residuum -= tmp2;
         tmp2.clear();
         c_mat.apply( pressure, tmp2 );
-        r+=tmp2;
-        p.assign(r);
-        spn = r.scalarProductDofs( r );
-        while( (spn > absLimit ) && (count++ < maxIter ) ) {
-            if(count > 1) {
-                const double e = spn / spa;
-                p *= e;
-                p += r;
+        residuum += tmp2;
+
+        // d^0 = r^0
+        d.assign( residuum );
+
+        delta = residuum.scalarProductDofs( residuum );
+        while( (delta > absLimit ) && (count++ < maxIter ) ) {
+            if ( count > 1 ) {
+                // gamma_{m+1} = delta_{m+1} / delta_m
+                gamma = delta / gamma;
+                // d_{m+1} = r_{m+1} + gamma_m * d_m
+                d *= gamma;
+                d += residuum;
             }
 
+            // xi = A^{-1} ( B * d )
             tmp1.clear();
-            b_mat.apply( p, tmp1 );
+            b_mat.apply( d, tmp1 );
             a_solver.apply( tmp1, xi );
+
+            // h = B_t * xi  + C * d
             b_t_mat.apply( xi, h );
             tmp2.clear();
-            c_mat.apply( p, tmp2 );
+            c_mat.apply( d, tmp2 );
             h += tmp2;
-            quad = p.scalarProductDofs( h );
-            q    = spn / quad;
-            pressure.addScaled( p, -q );
-            u.addScaled( xi, +q );
-            r.addScaled( h, -q );
-            spa = spn;
-            spn = r.scalarProductDofs( r );
 
-            if( solverVerbosity > 0)
-                std::cerr << count << " SPcg-Iterationen  " << count << " Residuum:" << spn << "\n";
+            rho = delta / d.scalarProductDofs( h );
+
+            // p_{m+1} = p_m - ( rho_m * d_m )
+            pressure.addScaled( d, -rho );
+
+            // u_{m+1} = u_m + ( rho_m * xi_m )
+            velocity.addScaled( xi, +rho );
+
+            // r_{m+1} = r_m - rho_m * h_m
+            residuum.addScaled( h, -rho );
+
+            //save old delta for new gamma calc in next iter
+            gamma = delta;
+
+            // d_{m+1} = < r_{m+1} ,r_{m+1} >
+            delta = residuum.scalarProductDofs( residuum );
+
+            if( solverVerbosity > 0 )
+                std::cerr << count << " SPcg-Iterationen  " << count << " Residuum:" << delta << "\n";
         }
 
-        velocity.assign(u);
     }
 
   };
