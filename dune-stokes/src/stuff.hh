@@ -239,7 +239,7 @@ void printSparseRowMatrixMatlabStyle( const T& arg, const std::string name, stre
     out << "\n" << name << " = [ " << std::endl;
     for ( int row = 0; row < arg.rows(); row++ ) {
         for ( int col = 0; col < arg.cols(); col++ ) {
-            out << std::setw( 18 ) << std::setprecision( 12 ) << arg(row,col);
+            out << std::setw( 19 ) << std::setprecision( 12 ) << arg(row,col);
         }
         out << ";" << std::endl;
     }
