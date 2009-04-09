@@ -383,6 +383,10 @@ class MirkoSaddlepointInverseOperator
         const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
         const unsigned int maxIter = Parameters().getParam( "maxIter", 500 );
 
+#ifdef USE_BFG_CG_SCHEME
+        const double tau = Parameters().getParam( "bfg-tau", 0.1 );
+        const bool do_bfg = Parameters().getParam( "do-bfg", true );
+#endif
         logInfo.Resume();
         logInfo << "Begin MirkoSaddlePointInverseOperator " << std::endl;
 
@@ -433,12 +437,15 @@ class MirkoSaddlepointInverseOperator
                                 DiscreteSigmaFunctionType,
                                 DiscreteVelocityFunctionType >
             A_Solver;
+        typedef typename A_Solver::ReturnValueType
+            ReturnValueType;
 
-        A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit*0.001, solverVerbosity );
-
+        A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit*0.01, solverVerbosity > 3 );
+        ReturnValueType a_solver_info;
 /*****************************************************************************************/
 
-        unsigned int count = 0;
+        unsigned int iteration = 0;
+        unsigned int total_inner_iterations = 0;
         double delta; //norm of residuum
         double gamma=0;
         double rho;
@@ -472,8 +479,8 @@ class MirkoSaddlepointInverseOperator
         d.assign( residuum );
 
         delta = residuum.scalarProductDofs( residuum );
-        while( (delta > absLimit ) && (count++ < maxIter ) ) {
-            if ( count > 1 ) {
+        while( (delta > absLimit ) && (iteration++ < maxIter ) ) {
+            if ( iteration > 1 ) {
                 // gamma_{m+1} = delta_{m+1} / delta_m
                 gamma = delta / gamma;
                 // d_{m+1} = r_{m+1} + gamma_m * d_m
@@ -481,10 +488,24 @@ class MirkoSaddlepointInverseOperator
                 d += residuum;
             }
 
+#ifdef USE_BFG_CG_SCHEME
+                if ( do_bfg ) {
+                    double limit = tau * std::min( 1. , absLimit / std::min ( delta * iteration, 1.0 ) );
+                    a_solver.setAbsoluteLimit( limit );
+                    if( solverVerbosity > 1 )
+                        logInfo << "\t\t\t set inner limit to: " << limit << "\n";
+                }
+#endif
             // xi = A^{-1} ( B * d )
             tmp1.clear();
             b_mat.apply( d, tmp1 );
-            a_solver.apply( tmp1, xi );
+            a_solver.apply( tmp1, xi, a_solver_info );
+
+#ifdef USE_BFG_CG_SCHEME
+            if( solverVerbosity > 1 )
+                logInfo << "\t\t inner iterations: " << a_solver_info.first << std::endl;
+            total_inner_iterations += a_solver_info.first;
+#endif
 
             // h = B_t * xi  + C * d
             b_t_mat.apply( xi, h );
@@ -509,10 +530,14 @@ class MirkoSaddlepointInverseOperator
             // d_{m+1} = < r_{m+1} ,r_{m+1} >
             delta = residuum.scalarProductDofs( residuum );
 
-            if( solverVerbosity > 0 )
-                std::cerr << count << " SPcg-Iterationen  " << count << " Residuum:" << delta << "\n";
+            if( solverVerbosity > 2 )
+                logInfo << "\t" << iteration << " SPcg-Iterationen  " << iteration << " Residuum:" << delta << std::endl;
         }
-
+#ifdef USE_BFG_CG_SCHEME
+        if( solverVerbosity > 0 )
+            logInfo << "\n #avg inner iter | #outer iter: "
+                    << total_inner_iterations / (double)iteration << " | " << iteration << std::endl;
+#endif
     }
 
   };
