@@ -1,10 +1,10 @@
 \chapter{Stokes}
 \section{Problemdefinition}
 
-\begin{definition}\textbf{Stationäres Stokes Problem}
+\begin{definition}\textbf{StationÃ¤res Stokes Problem}
 	\label{def:stat_stokes_prob}
 	\index{Stokes}
-    Mit $\Omega \in  \subseteq \R^d , d = 2,3$ beschränkt:
+    Mit $\Omega \in  \subseteq \R^d , d = 2,3$ beschrÃ¤nkt:
     \begin{align}\label{eq:stat_stokes_prob}
         \nabla p - \mu \Delta u &= f & & \text{in } \Omega \notag \\
         \nabla \cdot u &= 0 & & \text{in } \Omega \\
@@ -18,7 +18,7 @@
         u,f,g_D &: \Omega \longrightarrow \R^d \\
         p &: \Omega \longrightarrow \R \\
         \mu &\in \R^{\geq 0} \\
-        \int_{\partial \Omega}{g_D \cdot n \ds} &= 0 \quad\text{n äussere Einheitsnormale}\\
+        \int_{\partial \Omega}{g_D \cdot n \ds} &= 0 \quad\text{n Ã¤ussere Einheitsnormale}\\
     \end{align*}
 
 \end{bemerkung}
@@ -123,7 +123,7 @@ mit $ \omega \in \Omega, q \in D(\omega), v \in D(\omega)^d, \tau \in D(\omega)^
     \end{item}
 \end{itemize}
 
-\begin {definition}\textbf{Funktionenräume}\label{def:kont_funk_räume}
+\begin {definition}\textbf{FunktionenrÃ¤ume}\label{def:kont_funk_rï¿½ume}
     \begin{align}
         \Sigma &:= \{\sigma \in L^2(\Omega)^{dxd} \,\lvert\; \sigma_{ij}|_T \in H^1(T), \forall T \in \mathcal{T} ,\forall i,j\} \\
         V &:= \{v \in L^2(\Omega)^{d} \,\lvert\; v_{i} |_T \in H^1(T), \forall T \in \mathcal{T} ,\forall i\} \\
@@ -131,7 +131,7 @@ mit $ \omega \in \Omega, q \in D(\omega), v \in D(\omega)^d, \tau \in D(\omega)^
     \end{align}    
 \end {definition}
 
-\begin {definition}\textbf{Diskrete Funktionenräume}\label{def:disk_funk_räume}
+\begin {definition}\textbf{Diskrete FunktionenrÃ¤ume}\label{def:disk_funk_rï¿½ume}
     \begin{align}
         \Sigma_N &:= \{\sigma \in L^2(\Omega)^{dxd} \,\lvert\; \sigma_{ij} |_T \in \delta(T), \forall T \in \mathcal{T} ,\forall i,j\} \\
         V_N &:= \{v \in L^2(\Omega)^{d} \,\lvert\; v_{i} |_T \in \mathcal{V}(T), \forall T \in \mathcal{T} ,\forall i\} \\
@@ -139,7 +139,7 @@ mit $ \omega \in \Omega, q \in D(\omega), v \in D(\omega)^d, \tau \in D(\omega)^
     \end{align}    
 \end {definition}
 
-\begin{definition}\textbf{diskrete schwache Lösung}\label{def:disk_schw_lsg}
+\begin{definition}\textbf{diskrete schwache LÃ¶sung}\label{def:disk_schw_lsg}
     $(\sigma_N,u_N,p_N) \in (\Sigma_N \times V_N \times Q_N ) \forall T \in \mathcal{T}$ :
     \begin{align}
         \int_T \sigma_N : \tau \dx = -\int_T u_N \cdot \nabla \cdot \tau \dx 
@@ -152,7 +152,7 @@ mit $ \omega \in \Omega, q \in D(\omega), v \in D(\omega)^d, \tau \in D(\omega)^
 
 \end{definition}
 
-%inser normalen erkläruings bild thingy
+%inser normalen erklï¿½ruings bild thingy
 
 \begin{definition}\textbf{Mittelwert, Sprung}\label{def:mw_sprung}
     \begin{align}
@@ -167,7 +167,7 @@ mit $ \omega \in \Omega, q \in D(\omega), v \in D(\omega)^d, \tau \in D(\omega)^
 
 \end{definition}
 
-\begin{definition}\textbf{Numerische Flüsse}\label{def:num_flusse}
+\begin{definition}\textbf{Numerische FlÃ¼sse}\label{def:num_flusse}
     $C_{11},D_{11} \in \R$ und $C_{12},D_{12} \in \Rd$
     \begin{align}
         \begin{bmatrix} \hat{\sigma} \\ \hat{u}_\sigma \end{bmatrix} &:= 
@@ -250,6 +250,55 @@ mit $ \omega \in \Omega, q \in D(\omega), v \in D(\omega)^d, \tau \in D(\omega)^
         \end{align*}
     \end{definition}
 
+
+\section{SattelpunktlÃ¶sungsalgorithmus}
+\begin{itemize}
+ \begin{item}{WÃ¤hle}
+	\begin{align*}
+		p^0 = 0	 
+	\end{align*}
+ \end{item}
+ \begin{item}{LÃ¶se}
+	\begin{align*}
+	 	u^0 &= A^{-1} ( F - B p^0)
+	\end{align*}
+ \end{item} 
+ \begin{item}{Setze}
+	\begin{align*}
+	 	r^0 &= G - B_T u^0 + C p^0 \\
+		d^0 &= r^0 \\
+		\delta^0 &= < r^0, r^0 >
+	\end{align*}
+ \end{item} 
+ \begin{item}{Wiederhole:}
+	\begin{itemize}
+		\begin{item}{LÃ¶se:}
+			\begin{align*}
+				\chi^m &= A^{-1} B d^m \\
+			\end{align*}
+		\end{item} 
+		\begin{item}{setze:}
+			\begin{align*}
+				h^m &= B_T \chi^m + C d^m \\
+				\rho^m &= \delta^m / < h^m,d^m> \\
+				p^{m+1} &= p^m - \rho^m d^m \\
+				u^{m+1} &= u^m + \rho^m \chi^m \\
+				r^{m+1} &= r^m - \rho^m h^m \\
+				\delta^{m+1} &= < r^{m+1} , r^{m+1} >
+			\end{align*}
+		\end{item} 
+		\begin{item}
+			{falls $\delta^{m+1} < \epsilon $ STOP}
+		\end{item} 
+		\begin{item}{setze:}
+			\begin{align*}
+				\gamma^m &= \delta^{m+1} / \delta^m \\
+				d^{m+1} &= r^{m+1} + \gamma^m d^m
+			\end{align*}
+		\end{item}
+	\end{itemize}
+\end{item}
+\end{itemize}
 
 
 
