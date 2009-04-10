@@ -388,7 +388,7 @@ namespace Dune
    **/
 
 /** \brief OEM-CG scheme after Hestenes and Stiefel */
-template <class DiscreteFunctionType, class OperatorType, bool use_bgf_cg_scheme = false >
+template <class DiscreteFunctionType, class OperatorType >
 class OEMCGOp : public Operator<
       typename DiscreteFunctionType::DomainFieldType,
       typename DiscreteFunctionType::RangeFieldType,
@@ -423,13 +423,13 @@ private:
       {
         return OEMSolver::cghs(arg.space().grid().comm(),
                    size,op.systemMatrix(),op.preconditionMatrix(),
-                   arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
+                   arg.leakPointer(),dest.leakPointer(),eps,verbose );
       }
       else
       {
         return OEMSolver::cghs(arg.space().grid().comm(),
                   size,op.systemMatrix(),
-                  arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
+                  arg.leakPointer(),dest.leakPointer(),eps,verbose );
       }
     }
   };
@@ -451,7 +451,7 @@ private:
       return OEMSolver::cghs
                 (arg.space().grid().comm(),
                 size,op.systemMatrix(),
-                arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
+                arg.leakPointer(),dest.leakPointer(),eps,verbose );
     }
   };
 
@@ -542,7 +542,7 @@ public:
 };
 
 /** \brief BiCG-stab solver */
-template <class DiscreteFunctionType, class OperatorType, bool use_bgf_cg_scheme >
+template <class DiscreteFunctionType, class OperatorType >
 class OEMBICGSTABOp : public Operator<
       typename DiscreteFunctionType::DomainFieldType,
       typename DiscreteFunctionType::RangeFieldType,
@@ -572,13 +572,13 @@ private:
       {
         return OEMSolver::bicgstab(arg.space().grid().comm(),
                   size,op.systemMatrix(),op.preconditionMatrix(),
-                  arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
+                  arg.leakPointer(),dest.leakPointer(),eps,verbose );
       }
       else
       {
         return OEMSolver::bicgstab(arg.space().grid().comm(),
                   size,op.systemMatrix(),
-                  arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
+                  arg.leakPointer(),dest.leakPointer(),eps,verbose );
       }
     }
   };
@@ -596,7 +596,7 @@ private:
       int size = arg.space().size();
       return OEMSolver::bicgstab(arg.space().grid().comm(),
                 size,op.systemMatrix(),
-                arg.leakPointer(),dest.leakPointer(),eps,verbose,use_bgf_cg_scheme);
+                arg.leakPointer(),dest.leakPointer(),eps,verbose );
     }
   };
 

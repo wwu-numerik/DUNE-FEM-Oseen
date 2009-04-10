@@ -40,7 +40,7 @@ std::pair < int , double >
 cghs_algo( const CommunicatorType & comm,
       unsigned int N, const MATRIX &A, const PC_MATRIX& C,
       const double *b, double *x, double eps,
-      bool detailed, bool use_bgf_cg_scheme = false )
+      bool detailed )
 {
   if ( N==0 )
   {
@@ -106,12 +106,9 @@ cghs_algo( const CommunicatorType & comm,
   {
     // apply multiplication
 #ifdef USE_BFG_CG_SCHEME
-//    if ( use_bgf_cg_scheme )
         info.first = its+1;
         info.second = std::pair<double,double>(eps,sqrt(ddo));
         MultType :: mult_pc(A,C,r,p,tmp,info);
-
-//    else
 #else
         MultType :: mult_pc(A,C,r,p,tmp);
 #endif
@@ -163,9 +160,9 @@ inline
 std::pair < int , double >
 cghs( const CommunicatorType & comm,
       unsigned int N, const MATRIX &A, const PC_MATRIX &C,
-      const double *b, double *x, double eps, bool detailed, bool use_bgf_cg_scheme )
+      const double *b, double *x, double eps, bool detailed )
 {
-  return cghs_algo<true> (comm,N,A,C,b,x,eps,detailed, use_bgf_cg_scheme);
+  return cghs_algo<true> (comm,N,A,C,b,x,eps,detailed );
 }
 
 // cghs without preconditioning
@@ -174,9 +171,9 @@ inline
 std::pair < int , double >
 cghs( const CommunicatorType & comm,
       unsigned int N, const MATRIX &A,
-      const double *b, double *x, double eps, bool detailed, bool use_bgf_cg_scheme  )
+      const double *b, double *x, double eps, bool detailed )
 {
-  return cghs_algo<false> (comm,N,A,A,b,x,eps,detailed, use_bgf_cg_scheme );
+  return cghs_algo<false> (comm,N,A,A,b,x,eps,detailed );
 }
 
 #endif // CGHS_BLAS_H

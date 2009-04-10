@@ -7,7 +7,7 @@
 
 // OEMBICGSQOp will NOT compile
 #ifndef INNER_CG_SOLVERTYPE
-    #define INNER_CG_SOLVERTYPE OEMCGOp
+    #define INNER_CG_SOLVERTYPE OEMBICGSTABOp
 #endif
 
 #ifndef OUTER_CG_SOLVERTYPE
@@ -20,6 +20,7 @@
     //< iteration no , < absLimit, residuum > >
     typedef std::pair<int,std::pair<double,double> >
         IterationInfo;
+
 #endif
 
 #include <dune/fem/function/common/discretefunction.hh>
@@ -234,13 +235,8 @@ class SaddlepointInverseOperator
                                             DiscretePressureFunctionType >
                 Sk_Operator;
 
-        #ifdef USE_BFG_CG_SCHEME
-            typedef OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator, true >
-                    Sk_Solver;
-        #else
-            typedef OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
-                    Sk_Solver;
-        #endif
+        typedef OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
+                Sk_Solver;
 
         typedef typename Sk_Solver::ReturnValueType
                 SolverReturnType;
