@@ -52,7 +52,7 @@ inline
 std::pair<int,double>
 bicgstab_algo( const CommunicatorType & comm,
     unsigned int N, const MATRIX &A, const PC_MATRIX & C,
-	  const double *rhs, double *x, double eps, bool detailed, bool use_bgf_cg_scheme )
+	  const double *rhs, double *x, double eps, bool detailed )
 {
   if(N == 0)
   {
@@ -63,7 +63,7 @@ bicgstab_algo( const CommunicatorType & comm,
   typedef Mult<MATRIX,PC_MATRIX,usePC> MultType;
   typedef typename MultType :: mult_t mult_t;
   // get appropriate mult method
-  mult_t * mult_pc = MultType :: mult_pc;
+//  mult_t * mult_pc = MultType :: mult_pc;
 
   double * tmp = 0;
 #ifdef USE_MEMPROVIDER
@@ -139,10 +139,20 @@ bicgstab_algo( const CommunicatorType & comm,
   // communicate rTr and rTh
   comm.sum( rtBuff, 2 );
 
+  #ifdef USE_BFG_CG_SCHEME
+    IterationInfo info;
+  #endif
+
   while( rTr>err )
   {
     // do multiply
-    mult_pc(A,C,d,Ad,tmp);
+#ifdef USE_BFG_CG_SCHEME
+    info.first = its+1;
+    info.second = std::pair<double,double>(eps,sqrt(rTr));
+    MultType :: mult_pc(A,C,d,Ad,tmp,info);
+#else
+    MultType :: mult_pc(A,C,d,Ad,tmp);
+#endif
     rtTmp = ddot(N,rT,1,Ad,1);
 
     // communicate rTAd
@@ -158,7 +168,11 @@ bicgstab_algo( const CommunicatorType & comm,
     daxpy(N,-alpha,Ad,1,s,1);
 
     // do multiply
-    mult_pc(A,C,s,t,tmp);
+#ifdef USE_BFG_CG_SCHEME
+    MultType :: mult_pc(A,C,s,t,tmp,info);
+#else
+    MultType :: mult_pc(A,C,s,t,tmp);
+#endif
 
     daxpy(N,1.,t,1,u,1);
     dscal(N,alpha,u,1);
@@ -232,10 +246,9 @@ inline
 std::pair<int,double>
 bicgstab( const CommunicatorType & comm,
     unsigned int N, const MATRIX &A,
-	  const double *b, double *x, double eps, bool verbose,
-         bool use_bgf_cg_scheme )
+	  const double *b, double *x, double eps, bool verbose )
 {
-  return bicgstab_algo<false>(comm,N,A,A,b,x,eps,verbose,use_bgf_cg_scheme);
+  return bicgstab_algo<false>(comm,N,A,A,b,x,eps,verbose);
 }
 
 // bicgstab with pc matrix
@@ -246,10 +259,9 @@ inline
 std::pair<int,double>
 bicgstab( const CommunicatorType & comm,
     unsigned int N, const MATRIX &A, const PC_MATRIX & C,
-	  const double *b,double *x, double eps, bool verbose,
-         bool use_bgf_cg_scheme )
+	  const double *b,double *x, double eps, bool verbose )
 {
-  return bicgstab_algo<true>(comm,N,A,C,b,x,eps,verbose,use_bgf_cg_scheme);
+  return bicgstab_algo<true>(comm,N,A,C,b,x,eps,verbose);
 }
 
 #endif // BICGSTAB_BLAS_H

@@ -150,6 +150,11 @@ class StokesPass
         typedef SaddlepointInverseOperator< ThisType >
             InvOpType;
 
+#ifdef USE_MIRKO
+        typedef MirkoSaddlepointInverseOperator< ThisType >
+            MirkoInvOpType;
+#endif
+
         //! polynomial order for the discrete sigma function space
         static const int sigmaSpaceOrder
             = DiscreteModelType::sigmaSpaceOrder;
@@ -2790,6 +2795,15 @@ if ( Mprint ) {
             profiler().StopTiming("Pass -- ASSEMBLE");
             profiler().StartTiming("Pass -- SOLVER");
             InvOpType op;
+#ifdef USE_MIRKO
+            MirkoInvOpType m_op;
+            if ( Parameters().getParam( "mirko-solve", false ) )
+                m_op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+            else
+#endif
+                op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+
+#if 0 //too complex to incorporate right now
 #ifndef CHEAT
             op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 #else
@@ -2810,6 +2824,7 @@ if ( Mprint ) {
                 op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
             }
 #endif
+#endif //end if 0
 
 #ifndef NLOG
             if ( Parameters().getParam( "solution-print", true ) ) {

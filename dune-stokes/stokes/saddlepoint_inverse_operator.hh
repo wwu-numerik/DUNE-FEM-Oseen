@@ -7,7 +7,7 @@
 
 // OEMBICGSQOp will NOT compile
 #ifndef INNER_CG_SOLVERTYPE
-    #define INNER_CG_SOLVERTYPE OEMCGOp
+    #define INNER_CG_SOLVERTYPE OEMBICGSTABOp
 #endif
 
 #ifndef OUTER_CG_SOLVERTYPE
@@ -20,6 +20,7 @@
     //< iteration no , < absLimit, residuum > >
     typedef std::pair<int,std::pair<double,double> >
         IterationInfo;
+
 #endif
 
 #include <dune/fem/function/common/discretefunction.hh>
@@ -39,8 +40,8 @@ namespace Dune {
         \tparam StokesPassImp discrete function types etc. get extracted from this
    */
 
-    template < class StokesPassImp >
-    class SaddlepointInverseOperator
+template < class StokesPassImp >
+class SaddlepointInverseOperator
 {
   private:
 
@@ -234,13 +235,8 @@ namespace Dune {
                                             DiscretePressureFunctionType >
                 Sk_Operator;
 
-        #ifdef USE_BFG_CG_SCHEME
-            typedef OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator, true >
-                    Sk_Solver;
-        #else
-            typedef OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
-                    Sk_Solver;
-        #endif
+        typedef OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
+                Sk_Solver;
 
         typedef typename Sk_Solver::ReturnValueType
                 SolverReturnType;
@@ -306,6 +302,238 @@ namespace Dune {
         a_solver.apply ( Bp_temp, velocity );
 
         logInfo << "\nEnd SaddlePointInverseOperator " << std::endl;
+    }
+
+  };
+
+template < class StokesPassImp >
+class MirkoSaddlepointInverseOperator
+{
+  private:
+
+    typedef StokesPassImp StokesPassType;
+
+    typedef typename StokesPassType::DiscreteStokesFunctionWrapperType
+        DiscreteStokesFunctionWrapperType;
+
+    typedef typename StokesPassType::DomainType
+        DomainType;
+
+    typedef typename StokesPassType::RangeType
+        RangeType;
+
+    typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
+        PressureDiscreteFunctionType;
+    typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
+        VelocityDiscreteFunctionType;
+
+
+  public:
+    /** \todo Please doc me!
+     * \brief Constructor:
+	*
+	  **/
+    MirkoSaddlepointInverseOperator()
+	{}
+
+    /** takes raw matrices from pass
+    */
+    template <  class XmatrixObjectType,
+                class MmatrixObjectType,
+                class YmatrixObjectType,
+                class EmatrixObjectType,
+                class RmatrixObjectType,
+                class ZmatrixObjectType,
+                class WmatrixObjectType,
+                class DiscreteSigmaFunctionType,
+                class DiscreteVelocityFunctionType,
+                class DiscretePressureFunctionType  >
+    void solve( const DomainType& arg,
+                RangeType& dest,
+                XmatrixObjectType& Xmatrix,
+                MmatrixObjectType& Mmatrix,
+                YmatrixObjectType& Ymatrix,
+                EmatrixObjectType& Ematrix,
+                RmatrixObjectType& Rmatrix,
+                ZmatrixObjectType& Zmatrix,
+                WmatrixObjectType& Wmatrix,
+                DiscreteSigmaFunctionType& rhs1,
+                DiscreteVelocityFunctionType& rhs2,
+                DiscretePressureFunctionType& rhs3 ) const
+    {
+
+        Logging::LogStream& logDebug = Logger().Dbg();
+        Logging::LogStream& logError = Logger().Err();
+        Logging::LogStream& logInfo = Logger().Info();
+
+        if ( Parameters().getParam( "disableSolver", false ) ) {
+            logInfo.Resume();
+            logInfo << "solving disabled via parameter file" << std::endl;
+            return;
+        }
+
+		// relative min. error at which cg-solvers will abort
+        const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
+		// aboslute min. error at which cg-solvers will abort
+        const double absLimit = Parameters().getParam( "absLimit", 1e-8 );
+        const int solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
+        const unsigned int maxIter = Parameters().getParam( "maxIter", 500 );
+
+#ifdef USE_BFG_CG_SCHEME
+        const double tau = Parameters().getParam( "bfg-tau", 0.1 );
+        const bool do_bfg = Parameters().getParam( "do-bfg", true );
+#endif
+        logInfo.Resume();
+        logInfo << "Begin MirkoSaddlePointInverseOperator " << std::endl;
+
+        logDebug.Resume();
+        //get some refs for more readability
+        PressureDiscreteFunctionType& pressure = dest.discretePressure();
+        VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
+
+        typedef typename  XmatrixObjectType::MatrixType
+            XmatrixType;
+        typedef typename  MmatrixObjectType::MatrixType
+            MmatrixType;
+        typedef typename  YmatrixObjectType::MatrixType
+            YmatrixType;
+        typedef typename  EmatrixObjectType::MatrixType
+            B_t_matrixType;                             //! renamed
+        typedef typename  RmatrixObjectType::MatrixType
+            CmatrixType;                                //! renamed
+        typedef typename  ZmatrixObjectType::MatrixType
+            BmatrixType;                                //! renamed
+        typedef typename  WmatrixObjectType::MatrixType
+            WmatrixType;
+
+        XmatrixType& x_mat      = Xmatrix.matrix();
+        MmatrixType& m_inv_mat  = Mmatrix.matrix();
+        YmatrixType& y_mat      = Ymatrix.matrix();
+        B_t_matrixType& b_t_mat = Ematrix.matrix(); //! renamed
+        CmatrixType& c_mat      = Rmatrix.matrix(); //! renamed
+        BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
+        WmatrixType& w_mat      = Wmatrix.matrix();
+
+/*** making our matrices mirko compatible ****/
+        b_t_mat.scale( -1 ); //since B_t = -E
+        w_mat.scale( m_inv_mat(0,0) );
+        rhs1 *=  m_inv_mat(0,0);
+        m_inv_mat.scale( 1 / m_inv_mat(0,0) );
+
+        //transformation from StokesPass::buildMatrix
+        VelocityDiscreteFunctionType v_tmp ( "v_tmp", velocity.space() );
+        x_mat.apply( rhs1, v_tmp );
+        rhs2 -= v_tmp;
+/***********/
+
+        typedef A_SolverCaller< WmatrixType,
+                                MmatrixType,
+                                XmatrixType,
+                                YmatrixType,
+                                DiscreteSigmaFunctionType,
+                                DiscreteVelocityFunctionType >
+            A_Solver;
+        typedef typename A_Solver::ReturnValueType
+            ReturnValueType;
+
+        A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit*0.01, solverVerbosity > 3 );
+        ReturnValueType a_solver_info;
+/*****************************************************************************************/
+
+        unsigned int iteration = 0;
+        unsigned int total_inner_iterations = 0;
+        double delta; //norm of residuum
+        double gamma=0;
+        double rho;
+
+        VelocityDiscreteFunctionType F( "f", velocity.space() );
+        F.assign(rhs2);
+        VelocityDiscreteFunctionType tmp1( "tmp1", velocity.space() );
+        tmp1.clear();
+        VelocityDiscreteFunctionType xi( "xi", velocity.space() );
+        xi.clear();
+        PressureDiscreteFunctionType tmp2( "tmp2", pressure.space() );
+        PressureDiscreteFunctionType residuum( "residuum", pressure.space() );
+        residuum.assign(rhs3);
+
+        PressureDiscreteFunctionType d( "d", pressure.space() );
+        PressureDiscreteFunctionType h( "h", pressure.space() );
+
+        // u^0 = A^{-1} ( F - B * p^0 )
+        b_mat.apply( pressure, tmp1 );
+        F-=tmp1; // F ^= rhs2 - B * p
+        a_solver.apply(F,velocity);
+
+        // r^0 = G - B_t * u^0 + C * p^0
+        b_t_mat.apply( velocity, tmp2 );
+        residuum -= tmp2;
+        tmp2.clear();
+        c_mat.apply( pressure, tmp2 );
+        residuum += tmp2;
+
+        // d^0 = r^0
+        d.assign( residuum );
+
+        delta = residuum.scalarProductDofs( residuum );
+        while( (delta > absLimit ) && (iteration++ < maxIter ) ) {
+            if ( iteration > 1 ) {
+                // gamma_{m+1} = delta_{m+1} / delta_m
+                gamma = delta / gamma;
+                // d_{m+1} = r_{m+1} + gamma_m * d_m
+                d *= gamma;
+                d += residuum;
+            }
+
+#ifdef USE_BFG_CG_SCHEME
+                if ( do_bfg ) {
+                    double limit = tau * std::min( 1. , absLimit / std::min ( delta * iteration, 1.0 ) );
+                    a_solver.setAbsoluteLimit( limit );
+                    if( solverVerbosity > 1 )
+                        logInfo << "\t\t\t set inner limit to: " << limit << "\n";
+                }
+#endif
+            // xi = A^{-1} ( B * d )
+            tmp1.clear();
+            b_mat.apply( d, tmp1 );
+            a_solver.apply( tmp1, xi, a_solver_info );
+
+#ifdef USE_BFG_CG_SCHEME
+            if( solverVerbosity > 1 )
+                logInfo << "\t\t inner iterations: " << a_solver_info.first << std::endl;
+            total_inner_iterations += a_solver_info.first;
+#endif
+
+            // h = B_t * xi  + C * d
+            b_t_mat.apply( xi, h );
+            tmp2.clear();
+            c_mat.apply( d, tmp2 );
+            h += tmp2;
+
+            rho = delta / d.scalarProductDofs( h );
+
+            // p_{m+1} = p_m - ( rho_m * d_m )
+            pressure.addScaled( d, -rho );
+
+            // u_{m+1} = u_m + ( rho_m * xi_m )
+            velocity.addScaled( xi, +rho );
+
+            // r_{m+1} = r_m - rho_m * h_m
+            residuum.addScaled( h, -rho );
+
+            //save old delta for new gamma calc in next iter
+            gamma = delta;
+
+            // d_{m+1} = < r_{m+1} ,r_{m+1} >
+            delta = residuum.scalarProductDofs( residuum );
+
+            if( solverVerbosity > 2 )
+                logInfo << "\t" << iteration << " SPcg-Iterationen  " << iteration << " Residuum:" << delta << std::endl;
+        }
+#ifdef USE_BFG_CG_SCHEME
+        if( solverVerbosity > 0 )
+            logInfo << "\n #avg inner iter | #outer iter: "
+                    << total_inner_iterations / (double)iteration << " | " << iteration << std::endl;
+#endif
     }
 
   };

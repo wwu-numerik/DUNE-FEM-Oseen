@@ -1753,15 +1753,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preparations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType C_12( 1.0 );
-            if ( C_12_ == -9 ) {
-                C_12 = 0.0;
-            }
-            else if ( C_12_ == 0 ) {
-                C_12 = 1.0;
-            }
-            else {
-                C_12 *= std::pow( getLenghtOfIntersection( it ), C_12_ );
-            }
+            C_12 *= getStabScalar( x, it , C_12_ );
+
             // contribution to u vector ( from inside entity )
             if ( side == BaseType::inside ) {
                 SigmaRangeType u_plus_tensor_n_plus = dyadicProduct( u, outerNormal );
@@ -1909,15 +1902,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             //some preparations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType D_12( 1.0 );
-            if ( D_12_ == -9 ) {
-                D_12 = 0.0;
-            }
-            else if ( D_12_ == 0 ) {
-                D_12 = 1.0 ;
-            }
-            else {
-                D_12 *= std::pow( getLenghtOfIntersection( it ), D_12_ );
-            }
+            D_12 *= getStabScalar( x, it , D_12_ );
+
             // contribution to u vector ( from inside entity )
             if ( side == BaseType::inside ) {
                 const double u_plus_times_n_plus = u * outerNormal;
@@ -1991,15 +1977,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             //some preperations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             double D_11( 1.0 );
-            if ( D_11_ == -9 ) {
-                D_11 = 0.0;
-            }
-            else if ( D_11_ == 0 ) {
-                D_11 = 1.0;
-            }
-            else {
-                D_11 *= std::pow( getLenghtOfIntersection( it ), D_11_ );
-            }
+            D_11 *= getStabScalar( x, it , D_11_ );
+
             // contribution to p vector ( from inside entity )
             if ( side == BaseType::inside ) {
                 const double d_11_times_p_plus = D_11 * p;
@@ -2179,15 +2158,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preperations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType D_12( 1.0 );
-            if ( D_12_ == -9 ) {
-                D_12 = 0.0;
-            }
-            else if ( D_12_ == 0 ) {
-                D_12 = 1.0;
-            }
-            else {
-                D_12 *= std::pow( getLenghtOfIntersection( it ), D_12_ );
-            }
+            D_12 *= getStabScalar( x, it , D_12_ );
+
             // contribution to p vector ( from inside entity )
             if ( side == BaseType::inside ) {
                 const double d_12_times_n_plus = D_12 * outerNormal;
@@ -2208,6 +2180,21 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 LOGIC_ERROR
             }
 
+        }
+
+        template < class LocalPoint >
+        double getStabScalar( const LocalPoint& x , const IntersectionIteratorType& it, const double param ) const
+        {
+            if ( param == -9 ) {
+                return 0.0;
+            }
+            else if ( param == 0 ) {
+                return 1.0;
+            }
+            else {
+//                return std::pow( it.intersectionGlobal().integrationElement( x ), param );
+                return std::pow( getLenghtOfIntersection( it ), param );
+            }
         }
 
         /**
@@ -2325,15 +2312,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preparations
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             double C_11( 1.0 );
-            if ( C_11_ == -9 ) {
-                C_11 = 0.0;
-            }
-            else if ( C_11_ == 0 ) {
-                C_11 = 1.0;
-            }
-            else {
-                C_11 *= std::pow( getLenghtOfIntersection( it ), C_11_ );
-            }
+            C_11 *= getStabScalar( x, it , C_11_ );
+
             // contribution to u vector ( from inside entity )
             if ( side == BaseType::inside ) {
                 uReturn = dyadicProduct( u, outerNormal );
@@ -2400,15 +2380,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preparations
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType C_12( 1.0 );
-            if ( C_12_ == -9 ) {
-                C_12 = 0.0;
-            }
-            else if ( C_12_ == 0 ) {
-                C_12 = 1.0;
-            }
-            else {
-                C_12 *= std::pow( getLenghtOfIntersection( it ), C_12_ );
-            }
+            C_12 *= getStabScalar( x, it , C_12_ );
+
             // contribution to sigma vector ( from inside entity )
             if ( side == BaseType::inside ) {
                 VelocityRangeType sigma_plus_times_n_plus( 0.0 );
@@ -2475,15 +2448,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preparations
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             double C_11( 1.0 );
-            if ( C_11_ == -9 ) {
-                C_11 = 0.0;
-            }
-            else if ( C_11_ == 0 ) {
-                C_11 = 1.0;
-            }
-            else {
-                C_11 *= std::pow( getLenghtOfIntersection( it ), C_11_ );
-            }
+            C_11 *= getStabScalar( x, it , C_11_ );
+
             // contribution to u vector
             uReturn = dyadicProduct( u, outerNormal );
             uReturn *= ( -1.0 * C_11 );
@@ -2562,15 +2528,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             const VelocityRangeType xWorld = geometry.global( xIntersectionGlobal );
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             double C_11( 1.0 );
-            if ( C_11_ == -9 ) {
-                C_11 = 0.0;
-            }
-            else if ( C_11_ == 0 ) {
-                C_11 = 1.0;
-            }
-            else {
-                C_11 *= std::pow( getLenghtOfIntersection( it ), C_11_ );
-            }
+            C_11 *= getStabScalar( x, it , C_11_ );
+
             // contribution to rhs
             VelocityRangeType gD( 0.0 );
             dirichletData_.evaluate( xWorld, gD );
@@ -2625,7 +2584,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                         const VelocityRangeType& arg2 ) const
         {
             SigmaRangeType ret( 0.0 );
-            typedef typename SigmaRangeType::RowIterator
+#if 0
+	    typedef typename SigmaRangeType::RowIterator
                 MatrixRowIteratorType;
             typedef typename VelocityRangeType::ConstIterator
                 ConstVectorIteratorType;
@@ -2644,6 +2604,11 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 }
                 ++arg1It;
             }
+#endif
+  ret(0,0)= arg1[0]*arg2[0];
+      ret(0,1)= arg1[0]*arg2[1];
+      ret(1,0)= arg1[1]*arg2[0];
+      ret(1,1)= arg1[1]*arg2[1];
             return ret;
         }
 
