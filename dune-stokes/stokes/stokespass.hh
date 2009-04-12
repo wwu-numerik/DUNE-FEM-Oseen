@@ -353,8 +353,8 @@ MMatrix.reserve();
 #ifndef NLOG
             // logging stuff
             Logging::LogStream& infoStream = Logger().Info();
-//            Logging::LogStream& debugStream = Logger().Info();
-            Logging::LogStream& debugStream = Logger().Dbg();
+            Logging::LogStream& debugStream = Logger().Info();
+//            Logging::LogStream& debugStream = Logger().Dbg();
             bool entityOutput = false;
             bool intersectionOutput = false;
             const int outputEntity = 0;
@@ -559,13 +559,20 @@ MMatrix.reserve();
 
                 //                                                     // we will call this one
                 // (M^{-1})_{i,j} = (\int_{T}\tau_{j}:\tau_{i}dx)^{-1} // Minvs' volume integral
+#ifndef NLOG
+                if ( Mdebug ) {
+                    debugStream.Resume(); // enable logging
+                    debugStream << "    = M volume =================" << std::endl;
+                    debugStream.Suspend();
+                }
+#endif
                 for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
                         double M_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Moutput = true;
 //                        if ( allOutput ) Moutput = true;
-                        if ( Mdebug ) Moutput = true;
+//                        if ( Mdebug ) Moutput = true;
                         if ( entityOutput && Moutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = M ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
@@ -611,9 +618,19 @@ localMMatrixElement.add( i, j, M_i_j );
 localMMatrixElement.add( i, j, M_i_j );
                             M_i_j = 1.0 / M_i_j;
                         }
+#ifndef NLOG
+                        if ( Mdebug && ( M_i_j > 0.0 ) ) {
+                            debugStream.Resume();
+                            debugStream << "      tau_" << i << ", tau_" << j << std::endl
+                                        << "        M( ";
+                        }
+#endif
                         // add to matrix
                         localMInversMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
+                        if ( Mdebug && ( M_i_j > 0.0 ) ) {
+                            debugStream << " ) += " << M_i_j << std::endl;
+                        }
                         Moutput = false;
                         debugStream.Suspend(); // disable logging
 #endif
@@ -623,13 +640,20 @@ localMMatrixElement.add( i, j, M_i_j );
                 //                                                        // we will call this one
                 // (W)_{i,j} += \int_{T}v_{j}\cdot(\nabla\cdot\tau_{i})dx // W's volume integral
                 //                                                        // see also "W's entitity surface integral", "W's neighbour surface integral" and "W's boundary integral" below
+#ifndef NLOG
+                if ( Wdebug ) {
+                    debugStream.Resume(); // enable logging
+                    debugStream << "    = W volume =================" << std::endl;
+                    debugStream.Suspend();
+                }
+#endif
                 for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                         double W_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
 //                        if ( allOutput ) Woutput = true;
-                        if ( Wdebug ) Woutput = true;
+//                        if ( Wdebug ) Woutput = true;
                         if ( entityOutput && Woutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = W ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
@@ -670,9 +694,19 @@ localMMatrixElement.add( i, j, M_i_j );
                         if ( fabs( W_i_j ) < eps ) {
                             W_i_j = 0.0;
                         }
+#ifndef NLOG
+                        if ( Wdebug && ( W_i_j > 0.0 ) ) {
+                            debugStream.Resume();
+                            debugStream << "      tau_" << i << ", v_" << j << std::endl
+                                        << "        W( ";
+                        }
+#endif
                         // add to matrix
                         localWmatrixElement.add( i, j, W_i_j );
 #ifndef NLOG
+                        if ( Wdebug && ( W_i_j > 0.0 ) ) {
+                            debugStream << " ) += " << W_i_j << std::endl;
+                        }
                         Woutput = false;
                         debugStream.Suspend(); // disable logging
 #endif
@@ -682,13 +716,20 @@ localMMatrixElement.add( i, j, M_i_j );
                 //                                                  // we will call this one
                 // (X)_{i,j} += \mu\int_{T}\tau_{j}:\nabla v_{i} dx // X's volume integral
                 //                                                  // see also "X's entitity surface integral", "X's neighbour surface integral" and "X's boundary integral" below
+#ifndef NLOG
+                if ( Xdebug ) {
+                    debugStream.Resume(); // enable logging
+                    debugStream << "    = X volume =================" << std::endl;
+                    debugStream.Suspend();
+                }
+#endif
                 for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
                         double X_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
 //                        if ( allOutput ) Xoutput = true;
-                        if ( Xdebug ) Xoutput = true;
+//                        if ( Xdebug ) Xoutput = true;
                         if ( entityOutput && Xoutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = X ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
@@ -728,9 +769,19 @@ localMMatrixElement.add( i, j, M_i_j );
                         if ( fabs( X_i_j ) < eps ) {
                             X_i_j = 0.0;
                         }
+#ifndef NLOG
+                        if ( Xdebug && ( X_i_j > 0.0 ) ) {
+                            debugStream.Resume();
+                            debugStream << "      v_" << i << ", tau_" << j << std::endl
+                                        << "        X( ";
+                        }
+#endif
                         // add to matrix
                         localXmatrixElement.add( i, j, X_i_j );
 #ifndef NLOG
+                        if ( Xdebug && ( X_i_j > 0.0 ) ) {
+                            debugStream << " ) += " << X_i_j << std::endl;
+                        }
                         Xoutput = false;
                         debugStream.Suspend(); // disable logging
 #endif
@@ -740,13 +791,20 @@ localMMatrixElement.add( i, j, M_i_j );
                 //                                                  // we will call this one
                 // (Z)_{i,j} += -\int_{T}q_{j}(\nabla\cdot v_{i})dx // Z's volume integral
                 //                                                  // see also "Z's entitity surface integral", "Z's neighbour surface integral" and "Z's boundary integral" below
+#ifndef NLOG
+                if ( Zdebug ) {
+                    debugStream.Resume(); // enable logging
+                    debugStream << "    = Z volume =================" << std::endl;
+                    debugStream.Suspend();
+                }
+#endif
                 for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
                         double Z_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
 //                        if ( allOutput ) Zoutput = true;
-                        if ( Zdebug ) Zoutput = true;
+//                        if ( Zdebug ) Zoutput = true;
                         if ( entityOutput && Zoutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = Z ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
@@ -786,9 +844,19 @@ localMMatrixElement.add( i, j, M_i_j );
                         if ( fabs( Z_i_j ) < eps ) {
                             Z_i_j = 0.0;
                         }
+#ifndef NLOG
+                        if ( Zdebug && ( Z_i_j > 0.0 ) ) {
+                            debugStream.Resume();
+                            debugStream << "      v_" << i << ", q_" << j << std::endl
+                                        << "        Z( ";
+                        }
+#endif
                         // add to matrix
                         localZmatrixElement.add( i, j, Z_i_j );
 #ifndef NLOG
+                        if ( Zdebug && ( Z_i_j > 0.0 ) ) {
+                            debugStream << " ) += " << Z_i_j << std::endl;
+                        }
                         Zoutput = false;
                         debugStream.Suspend(); // disable logging
 #endif
@@ -802,9 +870,9 @@ localMMatrixElement.add( i, j, M_i_j );
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                         double H2_j = 0.0;
 #ifndef NLOG
-    //                    if ( ( j == logBaseJ ) ) H2output = true;
+//                        if ( ( j == logBaseJ ) ) H2output = true;
 //                        if ( allOutput ) H2output = true;
-                        if ( H2debug ) H2output = true;
+//                        if ( H2debug ) H2output = true;
                         if ( entityOutput && H2output ) debugStream.Resume(); // enable logging
                         debugStream << "    = H2 =======================" << std::endl;
                         debugStream << "    basefunction " << " " << j << std::endl;
@@ -857,13 +925,20 @@ localMMatrixElement.add( i, j, M_i_j );
                 //                                                // we will call this one
                 // (E)_{i,j} += -\int_{T}v_{j}\cdot\nabla q_{i}dx // E's volume integral
                 //                                                // see also "E's entitity surface integral", "E's neighbour surface integral" and "E's boundary integral" below
+#ifndef NLOG
+                if ( Edebug ) {
+                    debugStream.Resume(); // enable logging
+                    debugStream << "    = E volume =================" << std::endl;
+                    debugStream.Suspend();
+                }
+#endif
                 for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                         double E_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
 //                        if ( allOutput ) Eoutput = true;
-                        if ( Edebug ) Eoutput = true;
+//                        if ( Edebug ) Eoutput = true;
                         if ( entityOutput && Eoutput ) debugStream.Resume(); // enable logging
                         debugStream << "    = E ========================" << std::endl;
                         debugStream << "    basefunctions " << i << " " << j << std::endl;
@@ -903,9 +978,19 @@ localMMatrixElement.add( i, j, M_i_j );
                         if ( fabs( E_i_j ) < eps ) {
                             E_i_j = 0.0;
                         }
+#ifndef NLOG
+                        if ( Edebug && ( E_i_j > 0.0 ) ) {
+                            debugStream.Resume();
+                            debugStream << "      q_" << i << ", v_" << j << std::endl
+                                        << "        E( ";
+                        }
+#endif
                         // add to matrix
                         localEmatrixElement.add( i, j, E_i_j );
 #ifndef NLOG
+                        if ( Edebug && ( E_i_j > 0.0 ) ) {
+                            debugStream << " ) += " << E_i_j << std::endl;
+                        }
                         Eoutput = false;
                         debugStream.Suspend(); // disable logging
 #endif
@@ -990,6 +1075,13 @@ localMMatrixElement.add( i, j, M_i_j );
                         //           += \int_{\varepsilon\in \Epsilon_{I}^{T}}-\hat{u}_{\sigma}^{U^{-}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // W's neighbour surface integral
                         //                                                                                                               // see also "W's boundary integral" below
                         //                                                                                                               // and "W's volume integral" above
+#ifndef NLOG
+                        if ( Wdebug ) {
+                            debugStream.Resume(); // enable logging
+                            debugStream << "      = W surface =======================" << std::endl;
+                            debugStream.Suspend();
+                        }
+#endif
                         if ( discreteModel_.hasVelocitySigmaFlux() ) {
                             for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                                 // compute W's element surface integral
@@ -998,7 +1090,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
     //                                if ( allOutput ) Woutput = true;
-                                    if ( Wdebug ) Woutput = true;
+//                                    if ( Wdebug ) Woutput = true;
                                     if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = W element ======================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1052,9 +1144,19 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( W_i_j ) < eps ) {
                                         W_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Wdebug && ( W_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      tau_" << i << ", v_" << j << " (element)" << std::endl
+                                                    << "        W( ";
+                                    }
+#endif
                                     // add to matrix
                                     localWmatrixElement.add( i, j, W_i_j );
 #ifndef NLOG
+                                    if ( Wdebug && ( W_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << W_i_j << std::endl;
+                                    }
                                     Woutput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -1065,7 +1167,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
     //                                if ( allOutput ) Woutput = true;
-                                    if ( Wdebug ) Woutput = true;
+//                                    if ( Wdebug ) Woutput = true;
                                     if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = W neighbour ====================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1119,9 +1221,19 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( W_i_j ) < eps ) {
                                         W_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Wdebug && ( W_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      tau_" << i << ", v_" << j << " (neighbour)" << std::endl
+                                                    << "        W( ";
+                                    }
+#endif
                                     // add to matrix
                                     localWmatrixNeighbour.add( i, j, W_i_j );
 #ifndef NLOG
+                                    if ( Wdebug && ( W_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << W_i_j << std::endl;
+                                    }
                                     Woutput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -1134,6 +1246,13 @@ localMMatrixElement.add( i, j, M_i_j );
                         //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}ds // X's neighbour sourface integral
                         //                                                                                                                   // see also "X's boundary integral" below
                         //                                                                                                                   // and "X's volume integral" above
+#ifndef NLOG
+                        if ( Xdebug ) {
+                            debugStream.Resume(); // enable logging
+                            debugStream << "      = X surface =======================" << std::endl;
+                            debugStream.Suspend();
+                        }
+#endif
                         if ( discreteModel_.hasSigmaFlux() ) {
                             for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                                 // compute X's element sourface integral
@@ -1142,7 +1261,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
 //                                    if ( allOutput ) Xoutput = true;
-                                    if ( Xdebug ) Xoutput = true;
+//                                    if ( Xdebug ) Xoutput = true;
                                     if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = X element ======================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1197,9 +1316,19 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( X_i_j ) < eps ) {
                                         X_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Xdebug && ( X_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      v_" << i << ", tau_" << j << " (element)" << std::endl
+                                                    << "        X( ";
+                                    }
+#endif
                                     // add to matrix
                                     localXmatrixElement.add( i, j, X_i_j );
 #ifndef NLOG
+                                    if ( Xdebug && ( X_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << X_i_j << std::endl;
+                                    }
                                     Xoutput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -1210,7 +1339,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
     //                                if ( allOutput ) Xoutput = true;
-                                    if ( Xdebug ) Xoutput = true;
+//                                    if ( Xdebug ) Xoutput = true;
                                     if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = X neighbour ====================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1265,9 +1394,19 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( X_i_j ) < eps ) {
                                         X_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Xdebug && ( X_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      v_" << i << ", tau_" << j << " (neighbour)" << std::endl
+                                                    << "        X( ";
+                                    }
+#endif
                                     // add to matrix
                                     localXmatrixNeighbour.add( i, j, X_i_j );
 #ifndef NLOG
+                                    if ( Xdebug && ( X_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << X_i_j << std::endl;
+                                    }
                                     Xoutput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -1279,6 +1418,13 @@ localMMatrixElement.add( i, j, M_i_j );
                         // (Y)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U{+}}(v{j})\cdot n_{t}ds // Y's element surface integral
                         //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}ds // Y's neighbour surface integral
                         //                                                                                                         // see also "Y's boundary integral" below
+#ifndef NLOG
+                        if ( Ydebug ) {
+                            debugStream.Resume(); // enable logging
+                            debugStream << "      = Y surface =======================" << std::endl;
+                            debugStream.Suspend();
+                        }
+#endif
                         if ( discreteModel_.hasSigmaFlux() ) {
                             for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                                 // compute Y's element surface integral
@@ -1287,7 +1433,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Youtput = true;
 //                                    if ( allOutput ) Youtput = true;
-                                    if ( Ydebug ) Youtput = true;
+//                                    if ( Ydebug ) Youtput = true;
                                     if ( intersectionOutput && Youtput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = Y element ======================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1342,9 +1488,19 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( Y_i_j ) < eps ) {
                                         Y_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Ydebug && ( Y_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      v_" << i << ", v_" << j << " (element)" << std::endl
+                                                    << "        Y( ";
+                                    }
+#endif
                                     // add to matrix
                                     localYmatrixElement.add( i, j, Y_i_j );
 #ifndef NLOG
+                                    if ( Ydebug && ( Y_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << Y_i_j << std::endl;
+                                    }
                                     Youtput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -1355,7 +1511,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Youtput = true;
     //                                if ( allOutput ) Youtput = true;
-                                    if ( Ydebug ) Youtput = true;
+//                                    if ( Ydebug ) Youtput = true;
                                     if ( intersectionOutput && Youtput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = Y neighbour ====================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1410,9 +1566,19 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( Y_i_j ) < eps ) {
                                         Y_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Ydebug && ( Y_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      v_" << i << ", v_" << j << " (neighbour)" << std::endl
+                                                    << "        Y( ";
+                                    }
+#endif
                                     // add to matrix
                                     localYmatrixNeighbour.add( i, j, Y_i_j );
 #ifndef NLOG
+                                    if ( Ydebug && ( Y_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << Y_i_j << std::endl;
+                                    }
                                     Youtput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -1425,6 +1591,13 @@ localMMatrixElement.add( i, j, M_i_j );
                         //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{p}^{P^{-}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's neighbour surface integral
                         //                                                                                                  // see also "Z's boundary integral" below
                         //                                                                                                  // and "Z's volume integral" above
+#ifndef NLOG
+                        if ( Zdebug ) {
+                            debugStream.Resume(); // enable logging
+                            debugStream << "      = Z surface =======================" << std::endl;
+                            debugStream.Suspend();
+                        }
+#endif
                         if ( discreteModel_.hasPressureFlux() ) {
                             for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                                 // compute Z's element surface integral
@@ -1433,7 +1606,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
     //                                if ( allOutput ) Zoutput = true;
-                                    if ( Zdebug ) Zoutput = true;
+//                                    if ( Zdebug ) Zoutput = true;
                                     if ( intersectionOutput && Zoutput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = Z element ======================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1484,9 +1657,19 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( Z_i_j ) < eps ) {
                                         Z_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Zdebug && ( Z_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      v_" << i << ", q_" << j << " (element)" << std::endl
+                                                    << "        Z( ";
+                                    }
+#endif
                                     // add to matrix
                                     localZmatrixElement.add( i, j, Z_i_j );
 #ifndef NLOG
+                                    if ( Zdebug && ( Z_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << Z_i_j << std::endl;
+                                    }
                                     Zoutput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -1497,7 +1680,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
     //                                if ( allOutput ) Zoutput = true;
-                                    if ( Zdebug ) Zoutput = true;
+//                                    if ( Zdebug ) Zoutput = true;
                                     if ( intersectionOutput && Zoutput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = Z neighbour ====================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1548,9 +1731,19 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( Z_i_j ) < eps ) {
                                         Z_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Zdebug && ( Z_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      v_" << i << ", q_" << j << " (neighbour)" << std::endl
+                                                    << "        Z( ";
+                                    }
+#endif
                                     // add to matrix
                                     localZmatrixNeighbour.add( i, j, Z_i_j );
 #ifndef NLOG
+                                    if ( Zdebug && ( Z_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << Z_i_j << std::endl;
+                                    }
                                     Zoutput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -1563,6 +1756,13 @@ localMMatrixElement.add( i, j, M_i_j );
                         //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{U^{-}}(v_{j})\cdot n_{T}q_{i}ds // E's neighbour surface integral
                         //                                                                                                // see also "E's boundary integral" below
                         //                                                                                                // and "E's volume integral" above
+#ifndef NLOG
+                        if ( Edebug ) {
+                            debugStream.Resume(); // enable logging
+                            debugStream << "      = E surface =======================" << std::endl;
+                            debugStream.Suspend();
+                        }
+#endif
                         if ( discreteModel_.hasVelocityPressureFlux() ) {
                             for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
                                 // compute E's element surface integral
@@ -1571,7 +1771,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
     //                                if ( allOutput ) Eoutput = true;
-                                    if ( Edebug ) Eoutput = true;
+//                                    if ( Edebug ) Eoutput = true;
                                     if ( intersectionOutput && Eoutput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = E element ======================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1623,9 +1823,19 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( E_i_j ) < eps ) {
                                         E_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Edebug && ( E_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      q_" << i << ", v_" << j << " (element)" << std::endl
+                                                    << "        E( ";
+                                    }
+#endif
                                     // add to matrix
                                     localEmatrixElement.add( i, j, E_i_j );
 #ifndef NLOG
+                                    if ( Edebug && ( E_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << E_i_j << std::endl;
+                                    }
                                     Eoutput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -1636,7 +1846,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
     //                                if ( allOutput ) Eoutput = true;
-                                    if ( Edebug ) Eoutput = true;
+//                                    if ( Edebug ) Eoutput = true;
                                     if ( intersectionOutput && Eoutput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = E neighbour ====================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1688,9 +1898,19 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( E_i_j ) < eps ) {
                                         E_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Edebug && ( E_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      q_" << i << ", v_" << j << " (neighbour)" << std::endl
+                                                    << "        E( ";
+                                    }
+#endif
                                     // add to matrix
                                     localEmatrixNeighbour.add( i, j, E_i_j );
 #ifndef NLOG
+                                    if ( Edebug && ( E_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << E_i_j << std::endl;
+                                    }
                                     Eoutput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -1702,6 +1922,13 @@ localMMatrixElement.add( i, j, M_i_j );
                         // (R)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}ds // R's element surface integral
                         //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}ds // R's neighbour surface integral
                         //                                                                                                // see also "R's boundary integral" below
+#ifndef NLOG
+                        if ( Rdebug ) {
+                            debugStream.Resume(); // enable logging
+                            debugStream << "      = R surface =======================" << std::endl;
+                            debugStream.Suspend();
+                        }
+#endif
                         if ( discreteModel_.hasVelocityPressureFlux() ) {
                             for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
                                 // compute R's element surface integral
@@ -1710,7 +1937,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Routput = true;
     //                                if ( allOutput ) Routput = true;
-                                    if ( Rdebug ) Routput = true;
+//                                    if ( Rdebug ) Routput = true;
                                     if ( intersectionOutput && Routput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = R element ======================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1763,9 +1990,19 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( R_i_j ) < eps ) {
                                         R_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Rdebug && ( R_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      q_" << i << ", q_" << j << " (element)" << std::endl
+                                                    << "        R( ";
+                                    }
+#endif
                                     // add to matrix
                                     localRmatrixElement.add( i, j, R_i_j );
 #ifndef NLOG
+                                    if ( Rdebug && ( R_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << R_i_j << std::endl;
+                                    }
                                     Routput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -1776,7 +2013,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Routput = true;
     //                                if ( allOutput ) Routput = true;
-                                    if ( Rdebug ) Routput = true;
+//                                    if ( Rdebug ) Routput = true;
                                     if ( intersectionOutput && Routput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = R neighbour ====================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1829,16 +2066,25 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( R_i_j ) < eps ) {
                                         R_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Rdebug && ( R_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      q_" << i << ", q_" << j << " (neighbour)" << std::endl
+                                                    << "        R( ";
+                                    }
+#endif
                                     // add to matrix
                                     localRmatrixNeighbour.add( i, j, R_i_j );
 #ifndef NLOG
+                                    if ( Rdebug && ( R_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << R_i_j << std::endl;
+                                    }
                                     Routput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
                                 } // done computing R's neighbour surface integral
                             } // done computing R's surface integrals
                         }
-
                     } // done with those inside the grid
 
                     // if we are on the boundary of the grid
@@ -1848,6 +2094,13 @@ localMMatrixElement.add( i, j, M_i_j );
                         //                                                                                                               // we wil call this one
                         // (W)_{i,j} += \int_{\varepsilon\in \Epsilon_{D}^{T}}-\hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // W's boundary integral
                         //                                                                                                               // see also "W's volume integral", "W's element surface integral" and "W's neighbour surface integral" above
+#ifndef NLOG
+                        if ( Wdebug ) {
+                            debugStream.Resume(); // enable logging
+                            debugStream << "      = W boundary =====================" << std::endl;
+                            debugStream.Suspend();
+                        }
+#endif
                         if ( discreteModel_.hasVelocitySigmaFlux() ) {
                             for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                                 for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
@@ -1855,7 +2108,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
     //                                if ( allOutput ) Woutput = true;
-                                    if ( Wprint ) Woutput = true;
+//                                    if ( Wprint ) Woutput = true;
                                     if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = W boundary =====================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -1908,11 +2161,21 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( W_i_j ) < eps ) {
                                         W_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Wdebug && ( W_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      tau_" << i << ", v_" << j << std::endl
+                                                    << "        W( ";
+                                    }
+#endif
                                     // add to matrix
                                     localWmatrixElement.add( i, j, W_i_j );
 #ifndef NLOG
+                                    if ( Wdebug && ( W_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << W_i_j << std::endl;
+                                    }
                                     Woutput = false;
-                                    Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+                                    debugStream.Suspend(); // disable logging
 #endif
                                 }
                             } // done computing W's boundary integral
@@ -1926,7 +2189,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                            if ( j == logBaseJ ) H1output = true;
 //                                if ( allOutput ) H1output = true;
-                                if ( H1debug ) H1output = true;
+//                                if ( H1debug ) H1output = true;
                                 if ( intersectionOutput && H1output ) debugStream.Resume(); // enable logging
                                 debugStream << "      = H1 boundary ====================" << std::endl;
                                 debugStream << "      basefunction " << j << std::endl;
@@ -1988,6 +2251,13 @@ localMMatrixElement.add( i, j, M_i_j );
                         //                                                                                                                   // we will call this one
                         // (X)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}ds // X's boundary integral
                         //                                                                                                                   // see also "X's volume integral", "X's element surface integral" and "X's neighbour surface integral" above
+#ifndef NLOG
+                        if ( Xdebug ) {
+                            debugStream.Resume(); // enable logging
+                            debugStream << "      = X boundary =====================" << std::endl;
+                            debugStream.Suspend();
+                        }
+#endif
                         if ( discreteModel_.hasSigmaFlux() ) {
                             for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                                 for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
@@ -1995,7 +2265,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
 //                                    if ( allOutput ) Xoutput = true;
-                                    if ( Xdebug ) Xoutput = true;
+//                                    if ( Xdebug ) Xoutput = true;
                                     if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = X boundary =====================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -2049,11 +2319,21 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( X_i_j ) < eps ) {
                                         X_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Xdebug && ( X_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      v_" << i << ", tau_" << j << std::endl
+                                                    << "        X( ";
+                                    }
+#endif
                                     // add to matrix
                                     localXmatrixElement.add( i, j, X_i_j );
 #ifndef NLOG
+                                    if ( Xdebug && ( X_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << X_i_j << std::endl;
+                                    }
                                     Xoutput = false;
-                                    Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+                                    debugStream.Suspend(); // disable logging
 #endif
                                 }
                             } // done computing X's boundary integral
@@ -2062,6 +2342,13 @@ localMMatrixElement.add( i, j, M_i_j );
                         //                                                                                                           // we will call this one
                         // (Y)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U^{+}}(v_{j})\cdot n_{t}ds // Y's boundary integral
                         //                                                                                                           // see also "Y's element surface integral" and "Y's neighbour surface integral" above
+#ifndef NLOG
+                        if ( Ydebug ) {
+                            debugStream.Resume(); // enable logging
+                            debugStream << "      = Y boundary =====================" << std::endl;
+                            debugStream.Suspend();
+                        }
+#endif
                         if ( discreteModel_.hasSigmaFlux() ) {
                             for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                                 for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
@@ -2069,7 +2356,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Youtput = true;
     //                                if ( allOutput ) Youtput = true;
-                                    if ( Ydebug ) Youtput = true;
+//                                    if ( Ydebug ) Youtput = true;
                                     if ( intersectionOutput && Youtput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = Y boundary =====================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -2123,11 +2410,21 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( Y_i_j ) < eps ) {
                                         Y_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Ydebug && ( Y_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      v_" << i << ", v_" << j << std::endl
+                                                    << "        Y( ";
+                                    }
+#endif
                                     // add to matrix
                                     localYmatrixElement.add( i, j, Y_i_j );
 #ifndef NLOG
+                                    if ( Ydebug && ( Y_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << Y_i_j << std::endl;
+                                    }
                                     Youtput = false;
-                                    Logger().SetStreamFlags( Logging::LOG_DEBUG, Logging::LOG_NONE ); // disable logging
+                                    debugStream.Suspend(); // disable logging
 #endif
                                 }
                             } // done computing Y's boundary integral
@@ -2136,6 +2433,13 @@ localMMatrixElement.add( i, j, M_i_j );
                         //                                                                                                  // we will call this one
                         // (Z)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's boundary integral
                         //                                                                                                  // see also "Z's volume integral", "Z's element surface integral" and "Z's neighbour surface integral" above
+#ifndef NLOG
+                        if ( Zdebug ) {
+                            debugStream.Resume(); // enable logging
+                            debugStream << "      = Z boundary =====================" << std::endl;
+                            debugStream.Suspend();
+                        }
+#endif
                         if ( discreteModel_.hasPressureFlux() ) {
                             for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                                 // compute the boundary integral
@@ -2144,7 +2448,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
     //                                if ( allOutput ) Zoutput = true;
-                                    if ( Zdebug ) Zoutput = true;
+//                                    if ( Zdebug ) Zoutput = true;
                                     if ( intersectionOutput && Zoutput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = Z boundary =====================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -2194,9 +2498,19 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( Z_i_j ) < eps ) {
                                         Z_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Zdebug && ( Z_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      v_" << i << ", q_" << j << std::endl
+                                                    << "        Z( ";
+                                    }
+#endif
                                     // add to matrix
                                     localZmatrixElement.add( i, j, Z_i_j );
 #ifndef NLOG
+                                    if ( Zdebug && ( Z_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << Z_i_j << std::endl;
+                                    }
                                     Zoutput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -2214,7 +2528,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                            if ( j == logBaseJ ) H2output = true;
 //                                if ( allOutput ) H2output = true;
-                                if ( H2debug ) H2output = true;
+//                                if ( H2debug ) H2output = true;
                                 if ( intersectionOutput && H2output ) debugStream.Resume(); // enable logging
                                 debugStream << "      = H2 boundary ====================" << std::endl;
                                 debugStream << "      basefunction " << j << std::endl;
@@ -2301,6 +2615,13 @@ localMMatrixElement.add( i, j, M_i_j );
                         //                                                                                               // we will call this one
                         // (E)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{u}_{p}^{U^{+}}(v_{j}\cdot n_{T}q_{i}ds // E's boundary integral
                         //                                                                                               // see also "E's volume integral", "E's element surface integral" and "E's neighbour surface integral" above
+#ifndef NLOG
+                        if ( Edebug ) {
+                            debugStream.Resume(); // enable logging
+                            debugStream << "      = E boundary =====================" << std::endl;
+                            debugStream.Suspend();
+                        }
+#endif
                         if ( discreteModel_.hasVelocityPressureFlux() ) {
                             for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
                                 // compute the boundary integral
@@ -2309,7 +2630,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
     //                                if ( allOutput ) Eoutput = true;
-                                    if ( Edebug ) Eoutput = true;
+//                                    if ( Edebug ) Eoutput = true;
                                     if ( intersectionOutput && Eoutput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = E boundary =====================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -2360,9 +2681,19 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( E_i_j ) < eps ) {
                                         E_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Edebug && ( E_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      q_" << i << ", v_" << j << std::endl
+                                                    << "        E( ";
+                                    }
+#endif
                                     // add to matrix
                                     localEmatrixElement.add( i, j, E_i_j );
 #ifndef NLOG
+                                    if ( Edebug && ( E_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << E_i_j << std::endl;
+                                    }
                                     Eoutput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -2373,6 +2704,13 @@ localMMatrixElement.add( i, j, M_i_j );
                         //                                                                                                // we call this one
                         // (R)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{t}q_{i}ds // R's boundary integral
                         //                                                                                                // see also "R's element surface integral" and "R's neighbour surface integral" above
+#ifndef NLOG
+                        if ( Rdebug ) {
+                            debugStream.Resume(); // enable logging
+                            debugStream << "      = R boundary =====================" << std::endl;
+                            debugStream.Suspend();
+                        }
+#endif
                         if ( discreteModel_.hasVelocityPressureFlux() ) {
                             for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
                                 for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
@@ -2380,7 +2718,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Routput = true;
     //                                if ( allOutput ) Routput = true;
-                                    if ( Rdebug ) Routput = true;
+//                                    if ( Rdebug ) Routput = true;
                                     if ( intersectionOutput && Routput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = R boundary =====================" << std::endl;
                                     debugStream << "      basefunctions " << i << " " << j << std::endl;
@@ -2432,9 +2770,19 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( fabs( R_i_j ) < eps ) {
                                         R_i_j = 0.0;
                                     }
+#ifndef NLOG
+                                    if ( Rdebug && ( R_i_j > 0.0 ) ) {
+                                        debugStream.Resume();
+                                        debugStream << "      q_" << i << ", q_" << j << std::endl
+                                                    << "        R( ";
+                                    }
+#endif
                                     // add to matrix
                                     localRmatrixElement.add( i, j, R_i_j );
 #ifndef NLOG
+                                    if ( Rdebug && ( R_i_j > 0.0 ) ) {
+                                        debugStream << " ) += " << R_i_j << std::endl;
+                                    }
                                     Routput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -2450,7 +2798,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
     //                            if ( j == logBaseJ ) H3output = true;
 //                                if ( allOutput ) H3output = true;
-                                if ( H3debug ) H3output = true;
+//                                if ( H3debug ) H3output = true;
                                 if ( intersectionOutput && H3output ) debugStream.Resume(); // enable logging
                                 debugStream << "      = H3 boundary ====================" << std::endl;
                                 debugStream << "      basefunction " << j << std::endl;
