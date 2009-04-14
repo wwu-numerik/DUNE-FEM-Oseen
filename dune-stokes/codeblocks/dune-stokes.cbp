@@ -36,6 +36,9 @@
 					<Add directory="/usr/local/alugrid-1.1/include" />
 					<Add directory="/usr/local/alugrid-1.1/include/parallel" />
 					<Add directory="/usr/local/alugrid-1.1/include/serial" />
+					<Add directory="/usr/local/alugrid-1.14/include" />
+					<Add directory="/usr/local/alugrid-1.14/include/parallel" />
+					<Add directory="/usr/local/alugrid-1.14/include/serial" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -45,6 +48,7 @@
 					<Add directory="/usr/local/grape" />
 					<Add directory="/usr/local/alugrid-1.1/lib" />
 					<Add directory="/usr/local/alberta-1.2/lib" />
+					<Add directory="/usr/local/alugrid-1.14/lib" />
 				</Linker>
 			</Target>
 			<Target title="rene">
