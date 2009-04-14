@@ -295,11 +295,11 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     const int c12 = pow3;// > minpow ? std::pow( grid_width, pow3 ) : 0;
     const int d12 = pow4;// > minpow ? std::pow( grid_width, pow4 ) : 0;
 
-    debugStream << "  - flux constants" << std::endl
-                << "    C_11: " << c11 << std::endl
-                << "    C_12: " << c12 << std::endl
-                << "    D_11: " << d11 << std::endl
-                << "    D_12: " << d12 << std::endl;
+//    debugStream << "  - flux constants" << std::endl
+//                << "    C_11: " << c11 << std::endl
+//                << "    C_12: " << c12 << std::endl
+//                << "    D_11: " << d11 << std::endl
+//                << "    D_12: " << d12 << std::endl;
 
     // model
     StokesModelImpType stokesModel( c11,
