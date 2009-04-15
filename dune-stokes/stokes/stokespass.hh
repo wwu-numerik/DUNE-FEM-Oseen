@@ -551,8 +551,8 @@ MMatrix.reserve();
                 bool H2output = false;
                 bool H3output = false;
                 // we want logging at the following base functions
-                const int logBaseI = 0;
-                const int logBaseJ = 0;
+                const int logBaseI = Parameters().getParam( "logBaseI", 0 );
+                const int logBaseJ = Parameters().getParam( "logBaseJ", 0 );
                 debugStream.Suspend(); // disable logging
 #endif
                 // compute volume integrals
@@ -651,7 +651,7 @@ localMMatrixElement.add( i, j, M_i_j );
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                         double W_i_j = 0.0;
 #ifndef NLOG
-//                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
+                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
 //                        if ( allOutput ) Woutput = true;
 //                        if ( Wdebug ) Woutput = true;
                         if ( entityOutput && Woutput ) debugStream.Resume(); // enable logging
@@ -663,14 +663,15 @@ localMMatrixElement.add( i, j, M_i_j );
                         for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
                             const ElementCoordinateType x = volumeQuadratureElement.point( quad );
+                            const ElementCoordinateType xGlobal = geometry.global( x );
                             // get the integration factor
                             const double elementVolume = geometry.integrationElement( x );
                             // get the quadrature weight
                             const double integrationWeight = volumeQuadratureElement.weight( quad );
-                            // compute \tau_{i}:\tau_{j}
-                            SigmaRangeType tau_i( 0.0 );
+                            // compute v_{j}\cdot(\nabla\cdot\tau_{i})
+//                            SigmaRangeType tau_i( 0.0 );
                             VelocityRangeType v_j( 0.0 );
-                            sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
+//                            sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
                             SigmaJacobianRangeType gradient_of_tau_i( 0.0 );
                             sigmaBaseFunctionSetElement.jacobian( i, x, gradient_of_tau_i );
                             velocityBaseFunctionSetElement.evaluate( j, x, v_j );
@@ -682,10 +683,13 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
                             debugStream << "    - quadPoint " << quad;
                             Stuff::printFieldVector( x, "x", debugStream, "      " );
+                            Stuff::printFieldVector( xGlobal, "xGlobal", debugStream, "      " );
                             debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
                             debugStream << "        - integrationWeight: " << integrationWeight;
-                            Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "      " );
+//                            Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "      " );
+                            Stuff::printFieldMatrix( gradient_of_tau_i, "gradient_of_tau_i", debugStream, "      " );
                             Stuff::printFieldVector( v_j, "v_j", debugStream, "      " );
+                            Stuff::printFieldVector( divergence_of_tau_i, "divergence_of_tau_i", debugStream, "      " );
                             debugStream << "\n        - v_j_times_divergence_of_tau_i: " << v_j_times_divergence_of_tau_i << std::endl;
                             debugStream << "        - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
 #endif
@@ -701,7 +705,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                         << "        W( ";
                         }
 #ifdef LOTS_OF_DEBUG
-                        else {
+                        else if ( Wdebug ) {
                             debugStream.Resume();
                             debugStream << "      tau_" << i << ", v_" << j << std::endl
                                         << "        W( ";
@@ -715,7 +719,7 @@ localMMatrixElement.add( i, j, M_i_j );
                             debugStream << " ) += " << W_i_j << std::endl;
                         }
 #ifdef LOTS_OF_DEBUG
-                        else {
+                        else if ( Wdebug ) {
                             debugStream << " ) += " << W_i_j << std::endl;
                         }
 #endif
@@ -788,7 +792,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                         << "        X( ";
                         }
 #ifdef LOTS_OF_DEBUG
-                        else {
+                        else if ( Xdebug ) {
                             debugStream.Resume();
                             debugStream << "      v_" << i << ", tau_" << j << std::endl
                                         << "        X( ";
@@ -802,7 +806,7 @@ localMMatrixElement.add( i, j, M_i_j );
                             debugStream << " ) += " << X_i_j << std::endl;
                         }
 #ifdef LOTS_OF_DEBUG
-                        else {
+                        else if ( Xdebug ) {
                             debugStream << " ) += " << X_i_j << std::endl;
                         }
 #endif
@@ -874,6 +878,13 @@ localMMatrixElement.add( i, j, M_i_j );
                             debugStream << "      v_" << i << ", q_" << j << std::endl
                                         << "        Z( ";
                         }
+#ifdef LOTS_OF_DEBUG
+                        else if ( Zdebug ) {
+                            debugStream.Resume();
+                            debugStream << "      v_" << i << ", q_" << j << std::endl
+                                        << "        Z( ";
+                        }
+#endif
 #endif
                         // add to matrix
                         localZmatrixElement.add( i, j, Z_i_j );
@@ -881,6 +892,11 @@ localMMatrixElement.add( i, j, M_i_j );
                         if ( Zdebug && ( Z_i_j > 0.0 ) ) {
                             debugStream << " ) += " << Z_i_j << std::endl;
                         }
+#ifdef LOTS_OF_DEBUG
+                        else if ( Zdebug ) {
+                            debugStream << " ) += " << Z_i_j << std::endl;
+                        }
+#endif
                         Zoutput = false;
                         debugStream.Suspend(); // disable logging
 #endif
@@ -1008,6 +1024,13 @@ localMMatrixElement.add( i, j, M_i_j );
                             debugStream << "      q_" << i << ", v_" << j << std::endl
                                         << "        E( ";
                         }
+#ifdef LOTS_OF_DEBUG
+                        else if ( Edebug ) {
+                            debugStream.Resume();
+                            debugStream << "      q_" << i << ", v_" << j << std::endl
+                                        << "        E( ";
+                        }
+#endif
 #endif
                         // add to matrix
                         localEmatrixElement.add( i, j, E_i_j );
@@ -1015,6 +1038,11 @@ localMMatrixElement.add( i, j, M_i_j );
                         if ( Edebug && ( E_i_j > 0.0 ) ) {
                             debugStream << " ) += " << E_i_j << std::endl;
                         }
+#ifdef LOTS_OF_DEBUG
+                        else if ( Edebug ) {
+                            debugStream << " ) += " << E_i_j << std::endl;
+                        }
+#endif
                         Eoutput = false;
                         debugStream.Suspend(); // disable logging
 #endif
@@ -1175,7 +1203,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                                     << "        W( ";
                                     }
 #ifdef LOTS_OF_DEBUG
-                                    else {
+                                    else if ( Wdebug ) {
                                         debugStream.Resume();
                                         debugStream << "      tau_" << i << ", v_" << j << " (element)" << std::endl
                                                     << "        W( ";
@@ -1189,7 +1217,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << " ) += " << W_i_j << std::endl;
                                     }
 #ifdef LOTS_OF_DEBUG
-                                    else {
+                                    else if ( Wdebug ) {
                                         debugStream << " ) += " << W_i_j << std::endl;
                                     }
 #endif
@@ -1263,6 +1291,13 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << "      tau_" << i << ", v_" << j << " (neighbour)" << std::endl
                                                     << "        W( ";
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Wdebug ) {
+                                        debugStream.Resume();
+                                        debugStream << "      tau_" << i << ", v_" << j << " (neighbour)" << std::endl
+                                                    << "        W( ";
+                                    }
+#endif
 #endif
                                     // add to matrix
                                     localWmatrixNeighbour.add( i, j, W_i_j );
@@ -1270,6 +1305,11 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( Wdebug && ( W_i_j > 0.0 ) ) {
                                         debugStream << " ) += " << W_i_j << std::endl;
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Wdebug ) {
+                                        debugStream << " ) += " << W_i_j << std::endl;
+                                    }
+#endif
                                     Woutput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -1359,7 +1399,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                                     << "        X( ";
                                     }
 #ifdef LOTS_OF_DEBUG
-                                    else {
+                                    else if ( Xdebug ) {
                                         debugStream.Resume();
                                         debugStream << "      v_" << i << ", tau_" << j << " (element)" << std::endl
                                                     << "        X( ";
@@ -1373,7 +1413,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << " ) += " << X_i_j << std::endl;
                                     }
 #ifdef LOTS_OF_DEBUG
-                                    else {
+                                    else if ( Xdebug ) {
                                         debugStream << " ) += " << X_i_j << std::endl;
                                     }
 #endif
@@ -1449,7 +1489,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                                     << "        X( ";
                                     }
 #ifdef LOTS_OF_DEBUG
-                                    else {
+                                    else if ( Xdebug ) {
                                         debugStream.Resume();
                                         debugStream << "      v_" << i << ", tau_" << j << " (neighbour)" << std::endl
                                                     << "        X( ";
@@ -1463,7 +1503,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << " ) += " << X_i_j << std::endl;
                                     }
 #ifdef LOTS_OF_DEBUG
-                                    else {
+                                    else if ( Xdebug ) {
                                         debugStream << " ) += " << X_i_j << std::endl;
                                     }
 #endif
@@ -1554,6 +1594,13 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << "      v_" << i << ", v_" << j << " (element)" << std::endl
                                                     << "        Y( ";
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Ydebug ) {
+                                        debugStream.Resume();
+                                        debugStream << "      v_" << i << ", v_" << j << " (element)" << std::endl
+                                                    << "        Y( ";
+                                    }
+#endif
 #endif
                                     // add to matrix
                                     localYmatrixElement.add( i, j, Y_i_j );
@@ -1561,6 +1608,11 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( Ydebug && ( Y_i_j > 0.0 ) ) {
                                         debugStream << " ) += " << Y_i_j << std::endl;
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Ydebug ) {
+                                        debugStream << " ) += " << Y_i_j << std::endl;
+                                    }
+#endif
                                     Youtput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -1632,6 +1684,13 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << "      v_" << i << ", v_" << j << " (neighbour)" << std::endl
                                                     << "        Y( ";
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Ydebug ) {
+                                        debugStream.Resume();
+                                        debugStream << "      v_" << i << ", v_" << j << " (neighbour)" << std::endl
+                                                    << "        Y( ";
+                                    }
+#endif
 #endif
                                     // add to matrix
                                     localYmatrixNeighbour.add( i, j, Y_i_j );
@@ -1639,6 +1698,11 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( Ydebug && ( Y_i_j > 0.0 ) ) {
                                         debugStream << " ) += " << Y_i_j << std::endl;
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Ydebug ) {
+                                        debugStream << " ) += " << Y_i_j << std::endl;
+                                    }
+#endif
                                     Youtput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -1723,6 +1787,13 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << "      v_" << i << ", q_" << j << " (element)" << std::endl
                                                     << "        Z( ";
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Zdebug ) {
+                                        debugStream.Resume();
+                                        debugStream << "      v_" << i << ", q_" << j << " (element)" << std::endl
+                                                    << "        Z( ";
+                                    }
+#endif
 #endif
                                     // add to matrix
                                     localZmatrixElement.add( i, j, Z_i_j );
@@ -1730,6 +1801,11 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( Zdebug && ( Z_i_j > 0.0 ) ) {
                                         debugStream << " ) += " << Z_i_j << std::endl;
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Zdebug ) {
+                                        debugStream << " ) += " << Z_i_j << std::endl;
+                                    }
+#endif
                                     Zoutput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -1797,6 +1873,13 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << "      v_" << i << ", q_" << j << " (neighbour)" << std::endl
                                                     << "        Z( ";
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Zdebug ) {
+                                        debugStream.Resume();
+                                        debugStream << "      v_" << i << ", q_" << j << " (neighbour)" << std::endl
+                                                    << "        Z( ";
+                                    }
+#endif
 #endif
                                     // add to matrix
                                     localZmatrixNeighbour.add( i, j, Z_i_j );
@@ -1804,6 +1887,11 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( Zdebug && ( Z_i_j > 0.0 ) ) {
                                         debugStream << " ) += " << Z_i_j << std::endl;
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Zdebug ) {
+                                        debugStream << " ) += " << Z_i_j << std::endl;
+                                    }
+#endif
                                     Zoutput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -1889,6 +1977,13 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << "      q_" << i << ", v_" << j << " (element)" << std::endl
                                                     << "        E( ";
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Edebug ) {
+                                        debugStream.Resume();
+                                        debugStream << "      q_" << i << ", v_" << j << " (element)" << std::endl
+                                                    << "        E( ";
+                                    }
+#endif
 #endif
                                     // add to matrix
                                     localEmatrixElement.add( i, j, E_i_j );
@@ -1896,6 +1991,11 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( Edebug && ( E_i_j > 0.0 ) ) {
                                         debugStream << " ) += " << E_i_j << std::endl;
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Edebug ) {
+                                        debugStream << " ) += " << E_i_j << std::endl;
+                                    }
+#endif
                                     Eoutput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -1964,6 +2064,13 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << "      q_" << i << ", v_" << j << " (neighbour)" << std::endl
                                                     << "        E( ";
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Edebug ) {
+                                        debugStream.Resume();
+                                        debugStream << "      q_" << i << ", v_" << j << " (neighbour)" << std::endl
+                                                    << "        E( ";
+                                    }
+#endif
 #endif
                                     // add to matrix
                                     localEmatrixNeighbour.add( i, j, E_i_j );
@@ -1971,6 +2078,11 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( Edebug && ( E_i_j > 0.0 ) ) {
                                         debugStream << " ) += " << E_i_j << std::endl;
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Edebug ) {
+                                        debugStream << " ) += " << E_i_j << std::endl;
+                                    }
+#endif
                                     Eoutput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -2056,6 +2168,13 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << "      q_" << i << ", q_" << j << " (element)" << std::endl
                                                     << "        R( ";
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Rdebug ) {
+                                        debugStream.Resume();
+                                        debugStream << "      q_" << i << ", q_" << j << " (element)" << std::endl
+                                                    << "        R( ";
+                                    }
+#endif
 #endif
                                     // add to matrix
                                     localRmatrixElement.add( i, j, R_i_j );
@@ -2063,6 +2182,11 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( Rdebug && ( R_i_j > 0.0 ) ) {
                                         debugStream << " ) += " << R_i_j << std::endl;
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Rdebug ) {
+                                        debugStream << " ) += " << R_i_j << std::endl;
+                                    }
+#endif
                                     Routput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -2132,6 +2256,13 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << "      q_" << i << ", q_" << j << " (neighbour)" << std::endl
                                                     << "        R( ";
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Rdebug ) {
+                                        debugStream.Resume();
+                                        debugStream << "      q_" << i << ", q_" << j << " (neighbour)" << std::endl
+                                                    << "        R( ";
+                                    }
+#endif
 #endif
                                     // add to matrix
                                     localRmatrixNeighbour.add( i, j, R_i_j );
@@ -2139,6 +2270,11 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( Rdebug && ( R_i_j > 0.0 ) ) {
                                         debugStream << " ) += " << R_i_j << std::endl;
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Rdebug ) {
+                                        debugStream << " ) += " << R_i_j << std::endl;
+                                    }
+#endif
                                     Routput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -2228,7 +2364,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                                     << "        W( ";
                                     }
 #ifdef LOTS_OF_DEBUG
-                                    else {
+                                    else if ( Wdebug ) {
                                         debugStream.Resume();
                                         debugStream << "      tau_" << i << ", v_" << j << std::endl
                                                     << "        W( ";
@@ -2242,7 +2378,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << " ) += " << W_i_j << std::endl;
                                     }
 #ifdef LOTS_OF_DEBUG
-                                    else {
+                                    else if ( Wdebug ) {
                                         debugStream << " ) += " << W_i_j << std::endl;
                                     }
 #endif
@@ -2398,7 +2534,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                                     << "        X( ";
                                     }
 #ifdef LOTS_OF_DEBUG
-                                    else {
+                                    else if ( Xdebug ) {
                                         debugStream.Resume();
                                         debugStream << "      v_" << i << ", tau_" << j << std::endl
                                                     << "        X( ";
@@ -2412,7 +2548,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << " ) += " << X_i_j << std::endl;
                                     }
 #ifdef LOTS_OF_DEBUG
-                                    else {
+                                    else if ( Xdebug ) {
                                         debugStream << " ) += " << X_i_j << std::endl;
                                     }
 #endif
@@ -2500,6 +2636,13 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << "      v_" << i << ", v_" << j << std::endl
                                                     << "        Y( ";
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Ydebug ) {
+                                        debugStream.Resume();
+                                        debugStream << "      v_" << i << ", v_" << j << std::endl
+                                                    << "        Y( ";
+                                    }
+#endif
 #endif
                                     // add to matrix
                                     localYmatrixElement.add( i, j, Y_i_j );
@@ -2507,6 +2650,11 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( Ydebug && ( Y_i_j > 0.0 ) ) {
                                         debugStream << " ) += " << Y_i_j << std::endl;
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Ydebug ) {
+                                        debugStream << " ) += " << Y_i_j << std::endl;
+                                    }
+#endif
                                     Youtput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -2588,6 +2736,13 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << "      v_" << i << ", q_" << j << std::endl
                                                     << "        Z( ";
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Zdebug ) {
+                                        debugStream.Resume();
+                                        debugStream << "      v_" << i << ", q_" << j << std::endl
+                                                    << "        Z( ";
+                                    }
+#endif
 #endif
                                     // add to matrix
                                     localZmatrixElement.add( i, j, Z_i_j );
@@ -2595,6 +2750,11 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( Zdebug && ( Z_i_j > 0.0 ) ) {
                                         debugStream << " ) += " << Z_i_j << std::endl;
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Zdebug ) {
+                                        debugStream << " ) += " << Z_i_j << std::endl;
+                                    }
+#endif
                                     Zoutput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -2771,6 +2931,13 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << "      q_" << i << ", v_" << j << std::endl
                                                     << "        E( ";
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Edebug ) {
+                                        debugStream.Resume();
+                                        debugStream << "      q_" << i << ", v_" << j << std::endl
+                                                    << "        E( ";
+                                    }
+#endif
 #endif
                                     // add to matrix
                                     localEmatrixElement.add( i, j, E_i_j );
@@ -2778,6 +2945,11 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( Edebug && ( E_i_j > 0.0 ) ) {
                                         debugStream << " ) += " << E_i_j << std::endl;
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Edebug ) {
+                                        debugStream << " ) += " << E_i_j << std::endl;
+                                    }
+#endif
                                     Eoutput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
@@ -2860,6 +3032,13 @@ localMMatrixElement.add( i, j, M_i_j );
                                         debugStream << "      q_" << i << ", q_" << j << std::endl
                                                     << "        R( ";
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Rdebug ) {
+                                        debugStream.Resume();
+                                        debugStream << "      q_" << i << ", q_" << j << std::endl
+                                                    << "        R( ";
+                                    }
+#endif
 #endif
                                     // add to matrix
                                     localRmatrixElement.add( i, j, R_i_j );
@@ -2867,6 +3046,11 @@ localMMatrixElement.add( i, j, M_i_j );
                                     if ( Rdebug && ( R_i_j > 0.0 ) ) {
                                         debugStream << " ) += " << R_i_j << std::endl;
                                     }
+#ifdef LOTS_OF_DEBUG
+                                    else if ( Rdebug ) {
+                                        debugStream << " ) += " << R_i_j << std::endl;
+                                    }
+#endif
                                     Routput = false;
                                     debugStream.Suspend(); // disable logging
 #endif
