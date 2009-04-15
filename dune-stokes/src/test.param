@@ -45,9 +45,9 @@ Rprint: 0
 H1print: 0
 H2print: 0
 H3print: 0
-allOutput: 0
+allOutput: 1
 Mdebug: 0
-Wdebug: 0
+Wdebug: 1
 Xdebug: 0
 Ydebug: 0
 Zdebug: 0
