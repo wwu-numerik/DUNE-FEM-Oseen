@@ -12,7 +12,7 @@ if ( size_felix == size_mirko )
                 numberOfWrongEntries = numberOfWrongEntries + 1;
                 y( numberOfWrongEntries, 1 ) = i;
                 y( numberOfWrongEntries, 2 ) = j;
-                fprintf( 1, '%2d, %2d: %6f - %6f = %6f\n', i - 1, j - 1, felix_i_j, mirko_i_j, tmp );
+                fprintf( 1, '%2d, %2d: is %6f but should be %6f\n', i - 1, j - 1, felix_i_j, mirko_i_j );
             end
         end
     end
