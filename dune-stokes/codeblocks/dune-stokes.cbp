@@ -39,16 +39,22 @@
 					<Add directory="/usr/local/alugrid-1.14/include" />
 					<Add directory="/usr/local/alugrid-1.14/include/parallel" />
 					<Add directory="/usr/local/alugrid-1.14/include/serial" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/grape" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alberta-2.01/include" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include/parallel" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include/serial" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
 					<Add library="blas" />
-					<Add library="gr" />
-					<Add library="GL" />
 					<Add directory="/usr/local/grape" />
 					<Add directory="/usr/local/alugrid-1.1/lib" />
 					<Add directory="/usr/local/alberta-1.2/lib" />
 					<Add directory="/usr/local/alugrid-1.14/lib" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/grape" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alberta-2.01/lib" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/lib" />
 				</Linker>
 			</Target>
 			<Target title="rene">
