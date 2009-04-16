@@ -220,6 +220,15 @@ class StokesPass
          **/
         virtual void apply( const DomainType &arg, RangeType &dest) const
         {
+
+            // entity and geometry tapes
+            typedef typename EntityType::Geometry
+                EntityGeometryType;
+            typedef typename Dune::FieldMatrix< typename EntityGeometryType::ctype,
+                                                EntityGeometryType::coorddimension,
+                                                EntityGeometryType::mydimension >
+                JacobianInverseTransposedType;
+
             profiler().StartTiming("Pass");
             profiler().StartTiming("Pass -- ASSEMBLE");
             // viscosity
@@ -482,8 +491,6 @@ MMatrix.reserve();
 
                 // get entity and geometry
                 const EntityType& entity = *entityIt;
-                typedef typename EntityType::Geometry
-                    EntityGeometryType;
                 const EntityGeometryType& geometry = entity.geometry();
 
                 // get local matrices for the volume integral
@@ -674,7 +681,10 @@ localMMatrixElement.add( i, j, M_i_j );
                             SigmaJacobianRangeType gradient_of_tau_i( 0.0 );
                             sigmaBaseFunctionSetElement.jacobian( i, x, gradient_of_tau_i );
                             velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-                            const VelocityRangeType divergence_of_tau_i = sigmaDivergenceOutOfGradient( gradient_of_tau_i );
+                            const VelocityRangeType divergence_of_tau_i_untransposed = sigmaDivergenceOutOfGradient( gradient_of_tau_i );
+                            VelocityRangeType divergence_of_tau_i( 0.0 );
+                            const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
+                            jacobianInverseTransposed.umv( divergence_of_tau_i_untransposed, divergence_of_tau_i );
                             const double v_j_times_divergence_of_tau_i = v_j * divergence_of_tau_i;
                             W_i_j += elementVolume
                                 * integrationWeight
@@ -756,9 +766,12 @@ localMMatrixElement.add( i, j, M_i_j );
                             // get the quadrature weight
                             const double integrationWeight = volumeQuadratureElement.weight( quad );
                             // compute \tau_{j}:\nabla v_{i}
-                            SigmaRangeType gradient_of_v_i( 0.0 );
+                            SigmaRangeType gradient_of_v_i_untransposed( 0.0 );
                             SigmaRangeType tau_j( 0.0 );
-                            velocityBaseFunctionSetElement.jacobian( i, x, gradient_of_v_i );
+                            velocityBaseFunctionSetElement.jacobian( i, x, gradient_of_v_i_untransposed );
+                            const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
+                            SigmaRangeType gradient_of_v_i( 0.0 );
+                            jacobianInverseTransposed.umv( gradient_of_v_i_untransposed, gradient_of_v_i );
                             sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
                             const double tau_j_times_gradient_v_i =
                                 colonProduct( tau_j, gradient_of_v_i );
@@ -844,8 +857,11 @@ localMMatrixElement.add( i, j, M_i_j );
                             const double integrationWeight = volumeQuadratureElement.weight( quad );
                             // compute q_{j}\cdot(\nabla\cdot v_i)
                             SigmaRangeType gradient_of_v_i( 0.0 );
+                            SigmaRangeType gradient_of_v_i_untransposed( 0.0 );
                             PressureRangeType q_j( 0.0 );
-                            velocityBaseFunctionSetElement.jacobian( i, x, gradient_of_v_i );
+                            velocityBaseFunctionSetElement.jacobian( i, x, gradient_of_v_i_untransposed );
+                            const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
+                            jacobianInverseTransposed.umv( gradient_of_v_i_untransposed, gradient_of_v_i );
                             const double divergence_of_v_i = velocityDivergenceOutOfGradient( gradient_of_v_i );
                             pressureBaseFunctionSetElement.evaluate( j, x, q_j );
                             const double q_j_times_divergence_of_v_i = q_j * divergence_of_v_i;
@@ -981,7 +997,10 @@ localMMatrixElement.add( i, j, M_i_j );
                             VelocityRangeType v_j( 0.0 );
                             pressureBaseFunctionSetElement.jacobian( i, x, jacobian_of_q_i );
                             velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-                            VelocityRangeType gradient_of_q_i( jacobian_of_q_i[0] );
+                            VelocityRangeType gradient_of_q_i( 0.0 );
+                            const VelocityRangeType gradient_of_q_i_untransposed( jacobian_of_q_i[0] );
+                            const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
+                            jacobianInverseTransposed.umv( gradient_of_q_i_untransposed, gradient_of_q_i );
                             double v_j_times_gradient_of_q_i = v_j * gradient_of_q_i;
                             E_i_j += -1.0
                                 * elementVolume
