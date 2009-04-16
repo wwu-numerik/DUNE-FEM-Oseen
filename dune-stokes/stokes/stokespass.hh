@@ -676,7 +676,6 @@ localMMatrixElement.add( i, j, M_i_j );
                             // get the quadrature weight
                             const double integrationWeight = volumeQuadratureElement.weight( quad );
                             // compute v_{j}\cdot(\nabla\cdot\tau_{i})
-//                            SigmaRangeType tau_i( 0.0 );
                             VelocityRangeType v_j( 0.0 );
 //                            sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
                             SigmaJacobianRangeType gradient_of_tau_i( 0.0 );
@@ -693,12 +692,12 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
                             debugStream << "    - quadPoint " << quad;
                             Stuff::printFieldVector( x, "x", debugStream, "      " );
-                            Stuff::printFieldVector( xGlobal, "xGlobal", debugStream, "      " );
+//                            Stuff::printFieldVector( xGlobal, "xGlobal", debugStream, "      " );
                             debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
                             debugStream << "        - integrationWeight: " << integrationWeight;
-//                            Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "      " );
                             Stuff::printFieldMatrix( gradient_of_tau_i, "gradient_of_tau_i", debugStream, "      " );
                             Stuff::printFieldVector( v_j, "v_j", debugStream, "      " );
+                            Stuff::printFieldVector( divergence_of_tau_i_untransposed, "divergence_of_tau_i_untransposed", debugStream, "      " );
                             Stuff::printFieldVector( divergence_of_tau_i, "divergence_of_tau_i", debugStream, "      " );
                             debugStream << "\n        - v_j_times_divergence_of_tau_i: " << v_j_times_divergence_of_tau_i << std::endl;
                             debugStream << "        - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;

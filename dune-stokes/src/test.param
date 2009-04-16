@@ -58,5 +58,5 @@ H2debug: 0
 H3debug: 0
 solution-print: 0
 
-logBaseI: 6
-logBaseJ: 0
+logBaseI: 4
+logBaseJ: 1
