@@ -639,6 +639,7 @@ private:
       assert( (localCol >= 0) && (localCol < columns()) );
 #ifndef NLOG
         Logging::LogStream& debugStream = Logger().Info();
+//        Logging::LogStream& debugStream = Logger().Dbg();
         debugStream << row_[ localRow ] << ", " << col_[ localCol ];
 #endif
       matrix_.add( row_[ localRow ], col_[ localCol ], value );

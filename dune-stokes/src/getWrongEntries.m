@@ -8,7 +8,7 @@ if ( size_felix == size_mirko )
             mirko_i_j =  mirko( i, j );
             tmp = felix_i_j - mirko_i_j;
             if ( abs( tmp ) > 1e-10 )
-                fprintf( 1, '%2d, %2d: is %6f but should be %6f\n', i - 1, j - 1, felix_i_j, mirko_i_j );
+                fprintf( 1, '%2d, %2d: is %4f but should be %4f\n', i - 1, j - 1, felix_i_j, mirko_i_j );
             end
         end
     end

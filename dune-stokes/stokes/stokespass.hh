@@ -658,7 +658,7 @@ localMMatrixElement.add( i, j, M_i_j );
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                         double W_i_j = 0.0;
 #ifndef NLOG
-                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
+//                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
 //                        if ( allOutput ) Woutput = true;
 //                        if ( Wdebug ) Woutput = true;
                         if ( entityOutput && Woutput ) debugStream.Resume(); // enable logging
@@ -710,14 +710,12 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
                         if ( Wdebug && ( W_i_j > 0.0 ) ) {
                             debugStream.Resume();
-                            debugStream << "      tau_" << i << ", v_" << j << std::endl
-                                        << "        W( ";
+                            debugStream << "      W( ";
                         }
 #ifdef LOTS_OF_DEBUG
                         else if ( Wdebug ) {
                             debugStream.Resume();
-                            debugStream << "      tau_" << i << ", v_" << j << std::endl
-                                        << "        W( ";
+                            debugStream << "      W( ";
                         }
 #endif
 #endif
@@ -725,11 +723,13 @@ localMMatrixElement.add( i, j, M_i_j );
                         localWmatrixElement.add( i, j, W_i_j );
 #ifndef NLOG
                         if ( Wdebug && ( W_i_j > 0.0 ) ) {
-                            debugStream << " ) += " << W_i_j << std::endl;
+                            debugStream << " ) += " << W_i_j << std::endl
+                                        << "                 entity " << entityNR << ", tau_" << i << ", v_" << j << ", W volume" << std::endl;
                         }
 #ifdef LOTS_OF_DEBUG
                         else if ( Wdebug ) {
-                            debugStream << " ) += " << W_i_j << std::endl;
+                            debugStream << " ) += " << W_i_j << std::endl
+                                        << "                 entity " << entityNR << ", tau_" << i << ", v_" << j << ", W volume" << std::endl;
                         }
 #endif
                         Woutput = false;
@@ -1217,14 +1217,12 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
                                     if ( Wdebug && ( W_i_j > 0.0 ) ) {
                                         debugStream.Resume();
-                                        debugStream << "      tau_" << i << ", v_" << j << " (element)" << std::endl
-                                                    << "        W( ";
+                                        debugStream << "      W( ";
                                     }
 #ifdef LOTS_OF_DEBUG
                                     else if ( Wdebug ) {
                                         debugStream.Resume();
-                                        debugStream << "      tau_" << i << ", v_" << j << " (element)" << std::endl
-                                                    << "        W( ";
+                                        debugStream << "      W( ";
                                     }
 #endif
 #endif
@@ -1232,11 +1230,13 @@ localMMatrixElement.add( i, j, M_i_j );
                                     localWmatrixElement.add( i, j, W_i_j );
 #ifndef NLOG
                                     if ( Wdebug && ( W_i_j > 0.0 ) ) {
-                                        debugStream << " ) += " << W_i_j << std::endl;
+                                        debugStream << " ) += " << W_i_j << std::endl
+                                                    << "                 entity " << entityNR << ", intersection " << intersectionNR << ", tau_" << i << ", v_" << j << ", W element" << std::endl;
                                     }
 #ifdef LOTS_OF_DEBUG
                                     else if ( Wdebug ) {
-                                        debugStream << " ) += " << W_i_j << std::endl;
+                                        debugStream << " ) += " << W_i_j << std::endl
+                                                    << "                 entity " << entityNR << ", intersection " << intersectionNR << ", tau_" << i << ", v_" << j << ", W element" << std::endl;
                                     }
 #endif
                                     Woutput = false;
@@ -1247,8 +1247,8 @@ localMMatrixElement.add( i, j, M_i_j );
                                 for ( int j = 0; j < numVelocityBaseFunctionsNeighbour; ++j ) {
                                     double W_i_j = 0.0;
 #ifndef NLOG
-    //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
-    //                                if ( allOutput ) Woutput = true;
+                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
+//                                    if ( allOutput ) Woutput = true;
 //                                    if ( Wdebug ) Woutput = true;
                                     if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
                                     debugStream << "      = W neighbour ====================" << std::endl;
@@ -1306,14 +1306,12 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
                                     if ( Wdebug && ( W_i_j > 0.0 ) ) {
                                         debugStream.Resume();
-                                        debugStream << "      tau_" << i << ", v_" << j << " (neighbour)" << std::endl
-                                                    << "        W( ";
+                                        debugStream << "      W( ";
                                     }
 #ifdef LOTS_OF_DEBUG
                                     else if ( Wdebug ) {
                                         debugStream.Resume();
-                                        debugStream << "      tau_" << i << ", v_" << j << " (neighbour)" << std::endl
-                                                    << "        W( ";
+                                        debugStream << "      W( ";
                                     }
 #endif
 #endif
@@ -1321,11 +1319,13 @@ localMMatrixElement.add( i, j, M_i_j );
                                     localWmatrixNeighbour.add( i, j, W_i_j );
 #ifndef NLOG
                                     if ( Wdebug && ( W_i_j > 0.0 ) ) {
-                                        debugStream << " ) += " << W_i_j << std::endl;
+                                        debugStream << " ) += " << W_i_j << std::endl
+                                                    << "                 entity " << entityNR << ", intersection " << intersectionNR << ", tau_" << i << ", v_" << j << ", W neighbour" << std::endl;
                                     }
 #ifdef LOTS_OF_DEBUG
                                     else if ( Wdebug ) {
-                                        debugStream << " ) += " << W_i_j << std::endl;
+                                        debugStream << " ) += " << W_i_j << std::endl
+                                                    << "                 entity " << entityNR << ", intersection " << intersectionNR << ", tau_" << i << ", v_" << j << ", W neighbour" << std::endl;
                                     }
 #endif
                                     Woutput = false;
@@ -2378,14 +2378,12 @@ localMMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
                                     if ( Wdebug && ( W_i_j > 0.0 ) ) {
                                         debugStream.Resume();
-                                        debugStream << "      tau_" << i << ", v_" << j << std::endl
-                                                    << "        W( ";
+                                        debugStream << "      W( ";
                                     }
 #ifdef LOTS_OF_DEBUG
                                     else if ( Wdebug ) {
                                         debugStream.Resume();
-                                        debugStream << "      tau_" << i << ", v_" << j << std::endl
-                                                    << "        W( ";
+                                        debugStream << "      W( ";
                                     }
 #endif
 #endif
@@ -2393,11 +2391,13 @@ localMMatrixElement.add( i, j, M_i_j );
                                     localWmatrixElement.add( i, j, W_i_j );
 #ifndef NLOG
                                     if ( Wdebug && ( W_i_j > 0.0 ) ) {
-                                        debugStream << " ) += " << W_i_j << std::endl;
+                                        debugStream << " ) += " << W_i_j << std::endl
+                                                    << "                 entity " << entityNR << ", intersection " << intersectionNR << ", tau_" << i << ", v_" << j << ", W boundary" << std::endl;
                                     }
 #ifdef LOTS_OF_DEBUG
                                     else if ( Wdebug ) {
-                                        debugStream << " ) += " << W_i_j << std::endl;
+                                        debugStream << " ) += " << W_i_j << std::endl
+                                                    << "                 entity " << entityNR << ", intersection " << intersectionNR << ", tau_" << i << ", v_" << j << ", W neighbour" << std::endl;
                                     }
 #endif
                                     Woutput = false;
