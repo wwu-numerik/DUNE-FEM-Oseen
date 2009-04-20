@@ -59,4 +59,4 @@ H3debug: 0
 solution-print: 0
 
 logBaseI: 4
-logBaseJ: 2
+logBaseJ: 1

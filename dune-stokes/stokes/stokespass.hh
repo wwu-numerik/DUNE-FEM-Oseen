@@ -659,6 +659,7 @@ localMMatrixElement.add( i, j, M_i_j );
                         double W_i_j = 0.0;
 #ifndef NLOG
 //                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
+                        if ( ( ( i == logBaseI ) && ( j == logBaseJ ) ) && Wdebug ) Woutput = true;
 //                        if ( allOutput ) Woutput = true;
 //                        if ( Wdebug ) Woutput = true;
                         if ( entityOutput && Woutput ) debugStream.Resume(); // enable logging
@@ -1159,6 +1160,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                     double W_i_j = 0.0;
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
+                                    if ( ( ( i == logBaseI ) && ( j == logBaseJ ) ) && Wdebug ) Woutput = true;
     //                                if ( allOutput ) Woutput = true;
 //                                    if ( Wdebug ) Woutput = true;
                                     if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
@@ -1247,7 +1249,8 @@ localMMatrixElement.add( i, j, M_i_j );
                                 for ( int j = 0; j < numVelocityBaseFunctionsNeighbour; ++j ) {
                                     double W_i_j = 0.0;
 #ifndef NLOG
-                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
+//                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
+                                    if ( ( ( i == logBaseI ) && ( j == logBaseJ ) ) && Wdebug ) Woutput = true;
 //                                    if ( allOutput ) Woutput = true;
 //                                    if ( Wdebug ) Woutput = true;
                                     if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
@@ -2320,7 +2323,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                 for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                                     double W_i_j = 0.0;
 #ifndef NLOG
-    //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
+                                    if ( ( ( i == logBaseI ) && ( j == logBaseJ ) ) && Wdebug ) Woutput = true;
     //                                if ( allOutput ) Woutput = true;
 //                                    if ( Wprint ) Woutput = true;
                                     if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging

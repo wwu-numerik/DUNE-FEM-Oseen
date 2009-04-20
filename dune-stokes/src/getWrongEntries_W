@@ -1,0 +1,157 @@
+getWrongEntries( W, mirko_W );
+ 4,  1: is  8.485281 but should be -0.000000
+      W( 4, 1 ) += 8.48528
+                 entity 0, tau_4, v_1, W volume
+      W( 4, 1 ) += 0
+                 entity 0, intersection 0, tau_4, v_1, W element
+      W( 4, 1 ) += 0
+                 entity 0, intersection 1, tau_4, v_1, W neighbour
+      W( 4, 1 ) += 0
+                 entity 0, intersection 2, tau_4, v_1, W neighbour
+ 4,  8: is  4.000000 but should be -2.000000
+      W( 4, 8 ) += 4
+                 entity 0, intersection 0, tau_4, v_2, W neighbour
+ 4, 10: is  0.000000 but should be  3.464102
+      W( 4, 10 ) += 0
+                 entity 0, intersection 0, tau_4, v_4, W neighbour
+ 5,  0: is -1.414214 but should be  7.071068
+      W( 5, 0 ) += 0
+                 entity 0, tau_5, v_0, W volume
+      W( 5, 0 ) += -1.41421
+                 entity 0, intersection 0, tau_5, v_0, W element
+      W( 5, 0 ) += 0
+                 entity 0, intersection 1, tau_5, v_0, W neighbour
+      W( 5, 0 ) += 0
+                 entity 0, intersection 2, tau_5, v_0, W neighbour
+ 5,  1: is  8.485281 but should be -0.000000
+      W( 5, 1 ) += 8.48528
+                 entity 0, tau_5, v_1, W volume
+      W( 5, 1 ) += 0
+                 entity 0, intersection 0, tau_5, v_1, W element
+      W( 5, 1 ) += 0
+                 entity 0, intersection 1, tau_5, v_1, W neighbour
+      W( 5, 1 ) += 0
+                 entity 0, intersection 2, tau_5, v_1, W neighbour
+ 5,  8: is -4.000000 but should be  2.000000
+      W( 5, 8 ) += -4
+                 entity 0, intersection 0, tau_5, v_2, W neighbour
+ 5, 10: is  0.000000 but should be -3.464102
+      W( 5, 10 ) += 0
+                 entity 0, intersection 0, tau_5, v_4, W neighbour
+ 6,  9: is  4.000000 but should be -2.000000
+      W( 6, 9 ) += 4
+                 entity 0, intersection 0, tau_6, v_3, W neighbour
+ 6, 11: is  0.000000 but should be  3.464102
+      W( 6, 11 ) += 0
+                 entity 0, intersection 0, tau_6, v_5, W neighbour
+ 7,  1: is -1.414214 but should be  7.071068
+      W( 7, 1 ) += 0
+                 entity 0, tau_7, v_1, W volume
+      W( 7, 1 ) += -1.41421
+                 entity 0, intersection 0, tau_7, v_1, W element
+      W( 7, 1 ) += 0
+                 entity 0, intersection 1, tau_7, v_1, W neighbour
+      W( 7, 1 ) += 0
+                 entity 0, intersection 2, tau_7, v_1, W neighbour
+ 7,  9: is -4.000000 but should be  2.000000
+      W( 7, 9 ) += -4
+                 entity 0, intersection 0, tau_7, v_3, W neighbour
+ 7, 11: is  0.000000 but should be -3.464102
+      W( 7, 11 ) += 0
+                 entity 0, intersection 0, tau_7, v_5, W neighbour
+ 8,  0: is  2.449490 but should be -7.348469
+      W( 8, 0 ) += 0
+                 entity 0, tau_8, v_0, W volume
+      W( 8, 0 ) += 2.44949
+                 entity 0, intersection 0, tau_8, v_0, W element
+      W( 8, 0 ) += 0
+                 entity 0, intersection 1, tau_8, v_0, W neighbour
+      W( 8, 0 ) += 0
+                 entity 0, intersection 2, tau_8, v_0, W neighbour
+ 8,  1: is  4.898979 but should be -0.000000
+      W( 8, 1 ) += 4.89898
+                 entity 0, tau_8, v_1, W volume
+      W( 8, 1 ) += 0
+                 entity 0, intersection 0, tau_8, v_1, W element
+      W( 8, 1 ) += 0
+                 entity 0, intersection 1, tau_8, v_1, W neighbour
+      W( 8, 1 ) += 0
+                 entity 0, intersection 2, tau_8, v_1, W neighbour
+ 8,  8: is  0.000000 but should be  3.464102
+      W( 8, 8 ) += 0
+                 entity 0, intersection 0, tau_8, v_2, W neighbour
+ 8, 10: is  4.000000 but should be  2.000000
+      W( 8, 10 ) += 4
+                 entity 0, intersection 0, tau_8, v_4, W neighbour
+ 9,  0: is -2.449490 but should be  2.449490
+      W( 9, 0 ) += 0
+                 entity 0, tau_9, v_0, W volume
+      W( 9, 0 ) += -2.44949
+                 entity 0, intersection 0, tau_9, v_0, W element
+      W( 9, 0 ) += 0
+                 entity 0, intersection 1, tau_9, v_0, W neighbour
+      W( 9, 0 ) += 0
+                 entity 0, intersection 2, tau_9, v_0, W neighbour
+ 9,  1: is  4.898979 but should be -0.000000
+      W( 9, 1 ) += 4.89898
+                 entity 0, tau_9, v_1, W volume
+      W( 9, 1 ) += 0
+                 entity 0, intersection 0, tau_9, v_1, W element
+      W( 9, 1 ) += 0
+                 entity 0, intersection 1, tau_9, v_1, W neighbour
+      W( 9, 1 ) += 0
+                 entity 0, intersection 2, tau_9, v_1, W neighbour
+ 9,  8: is  0.000000 but should be -3.464102
+      W( 9, 8 ) += 0
+                 entity 0, intersection 0, tau_9, v_2, W neighbour
+ 9, 10: is -4.000000 but should be -2.000000
+      W( 9, 10 ) += -4
+                 entity 0, intersection 0, tau_9, v_4, W neighbour
+10,  0: is -9.797959 but should be -0.000000
+      W( 10, 0 ) += -9.79796
+                 entity 0, tau_10, v_0, W volume
+      W( 10, 0 ) += 0
+                 entity 0, intersection 0, tau_10, v_0, W element
+      W( 10, 0 ) += 0
+                 entity 0, intersection 1, tau_10, v_0, W neighbour
+      W( 10, 0 ) += 0
+                 entity 0, intersection 2, tau_10, v_0, W neighbour
+10,  1: is  2.449490 but should be -7.348469
+      W( 10, 1 ) += 0
+                 entity 0, tau_10, v_1, W volume
+      W( 10, 1 ) += 2.44949
+                 entity 0, intersection 0, tau_10, v_1, W element
+      W( 10, 1 ) += 0
+                 entity 0, intersection 1, tau_10, v_1, W neighbour
+      W( 10, 1 ) += 0
+                 entity 0, intersection 2, tau_10, v_1, W neighbour
+10,  9: is  0.000000 but should be  3.464102
+      W( 10, 9 ) += 0
+                 entity 0, intersection 0, tau_10, v_3, W neighbour
+10, 11: is  4.000000 but should be  2.000000
+      W( 10, 11 ) += 4
+                 entity 0, intersection 0, tau_10, v_5, W neighbour
+11,  0: is -9.797959 but should be -0.000000
+      W( 11, 0 ) += -9.79796
+                 entity 0, tau_11, v_0, W volume
+      W( 11, 0 ) += 0
+                 entity 0, intersection 0, tau_11, v_0, W element
+      W( 11, 0 ) += 0
+                 entity 0, intersection 1, tau_11, v_0, W neighbour
+      W( 11, 0 ) += 0
+                 entity 0, intersection 2, tau_11, v_0, W neighbour
+11,  1: is -2.449490 but should be  2.449490
+      W( 11, 1 ) += 0
+                 entity 0, tau_11, v_1, W volume
+      W( 11, 1 ) += -2.44949
+                 entity 0, intersection 0, tau_11, v_1, W element
+      W( 11, 1 ) += 0
+                 entity 0, intersection 1, tau_11, v_1, W neighbour
+      W( 11, 1 ) += 0
+                 entity 0, intersection 2, tau_11, v_1, W neighbour
+11,  9: is  0.000000 but should be -3.464102
+      W( 11, 9 ) += 0
+                 entity 0, intersection 0, tau_11, v_3, W neighbour
+11, 11: is -4.000000 but should be -2.000000
+      W( 11, 11 ) += -4
+                 entity 0, intersection 0, tau_11, v_5, W neighbour
