@@ -211,9 +211,9 @@ Gesucht sind Funktionen $\left(\sigma_{N},u_{N},p_{N}\right)\in\left(\Sigma_{N},
 \end{align}
 \end{subequations}
 $\forall \left(\tau,v,q\right) \in \Sigma_{N},V_{N},Q_{N}$ und $\forall T \in \T$.
-Dabei werden die in \eqref{equ::ldg_stokes::schwache_form::zur_schwachen_form::1}-\eqref{equ::ldg_stokes::schwache_form::zur_schwachen_form::3}
-auftretenden Spuren von $\sigma, u, p$ auf den Elementkanten $\partial T$ approximiert durch die Flüsse
-$\hat{u}_{N_{\sigma}}$, $\hat{\sigma}_{N}$, $\hat{p}_{N}$ und $\hat{u}_{N_{p}}$.
+% Dabei werden die in \eqref{equ::ldg_stokes::schwache_form::zur_schwachen_form::1}-\eqref{equ::ldg_stokes::schwache_form::zur_schwachen_form::3}
+% auftretenden Spuren von $\sigma, u, p$ auf den Elementkanten $\partial T$ approximiert durch die Flüsse
+% $\hat{u}_{N_{\sigma}}$, $\hat{\sigma}_{N}$, $\hat{p}_{N}$ und $\hat{u}_{N_{p}}$.
 \end{definition}
 
 \begin{bemerkung}[Spur von $\sigma$, $u$, $p$]\label{bemerkung::ldg_stokes::spuren}
@@ -234,6 +234,9 @@ genauer definieren zu können, benötigen wir noch einige Notation.
     T_{i} &\cap T_{j} = \emptyset \quad\quad \forall i \neq j,\notag
 \end{align}
 und $E_{I}$, etc...
+ Wir bezeichnen
+die inneren Kanten mit $\mathcal{E}_{I}$ und solche auf dem Rand von $\Omega$
+mit $\mathcal{E}_{D}$.
 \end{definition}
 
 \begin{definition}[Mittelwert, Sprung]\label{definition::ldg_stokes::mittelwerte_spruenge}
@@ -278,11 +281,9 @@ Mit dieser Notation können wir nun eine Wahl der Flüsse definieren, welche sich 
 durchgesetzt hat (siehe auch Cockburn).\\
 
 \begin{beispiel}[Analytische Flüsse]\label{definition::ldg_stokes::analytische_fluesse}
-Seien $C_{11}, D_{11} \in \R$, $C_{12}, D_{12} \in \R^{d}$. Wir bezeichnen
-die inneren Kanten mit $\mathcal{E}_{I}$ und solche auf dem Rand von $\Omega$
-mit $\mathcal{E}_{D}$. Dann sind die Flüsse gegeben durch\\
-$\hat{\sigma}\left(u,\sigma\right): \Omega \rightarrow \R^{d \times d}$
-\begin{align}%\label{equ::ldg_stokes::analytische_fluesse}
+Seien $C_{11}, D_{11} \in \R$, $C_{12}, D_{12} \in \R^{d}$. Dann sind die Flüsse gegeben durch\\
+$\hat{\sigma}\left(u,\sigma\right): \R^{d} \times \R^{d \times d} \rightarrow \R^{d \times d}$
+\begin{align}%\label{equ::ldg_stokes::analytische_fluesse::sigma_flux}
 	\hat{\sigma}\left(u,\sigma\right) := \begin{cases}
 			\meanLeft \sigma \meanRight - C_{11} \underline{\jumpLeft u \jumpRight} - \jumpLeft \sigma \jumpRight \otimes C_{12}
 				&\text{auf } \mathcal{E}_{I}\\
@@ -290,4 +291,60 @@ $\hat{\sigma}\left(u,\sigma\right): \Omega \rightarrow \R^{d \times d}$
 				&\text{auf } \mathcal{E}_{D},
 		\end{cases}
 \end{align}
+$\hat{u}_{\sigma}\left(u\right): \Rd \rightarrow \Rd$\\
+\begin{align}%\label{equ::ldg_stokes::analytische_fluesse::velocita_sigma_flux}
+	\hat{u}_{\sigma}\left(u\right) :=
+		\begin{cases}
+			\meanLeft u \meanRight + \underline{\jumpLeft u \jumpRight} \cdot C_{12}
+				&\text{auf } \mathcal{E}_{I}\\
+			g_{D}
+				&\text{auf } \mathcal{E}_{D},
+		\end{cases}
+\end{align}
+$\hat{u}_{p}\left(u,p\right): \Rd \times \R \rightarrow \Rd$\\
+\begin{align}%\label{equ::ldg_stokes::analytische_fluesse::velocita_pressure_flux}
+	\hat{u}_{p}\left(u,p\right) :=
+		\begin{cases}
+			\meanLeft u \meanRight + D_{11} \jumpLeft p \jumpRight + \jumpLeft u \jumpRight D_{12}
+				&\text{auf } \mathcal{E}_{I}\\
+			g_{D}
+				&\text{auf } \mathcal{E}_{D}
+		\end{cases}
+\end{align}
+und $\hat{p}\left(p\right): \R \rightarrow \R$\\
+\begin{align}%\label{equ::ldg_stokes::analytische_fluesse::pressure_flux}
+	\hat{p}\left(p\right) :=
+		\begin{cases}
+			\meanLeft p \meanRight - D_{12} \cdot \jumpLeft p \jumpRight
+				&\text{auf } \mathcal{E}_{I}\\
+			p^{+}
+				&\text{auf } \mathcal{E}_{D}.
+		\end{cases}
+\end{align}
+
 \end{beispiel}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
