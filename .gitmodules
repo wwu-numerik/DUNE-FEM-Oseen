@@ -1,0 +1,3 @@
+[submodule "dune-stokes/doc/dune_stokes_howto"]
+	path = dune-stokes/doc/dune_stokes_howto
+	url = duneadm:git/dune/diplomarbeit_felix_rene/dune_stokes_howto

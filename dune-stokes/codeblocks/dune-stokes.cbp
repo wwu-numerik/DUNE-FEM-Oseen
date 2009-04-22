@@ -29,11 +29,32 @@
 				<Option compiler="gcc" />
 				<Option parameters="test.param" />
 				<Compiler>
-					<Add option="-O2" />
+					<Add option="-w" />
+					<Add option="-g" />
+					<Add directory="/usr/local/grape" />
+					<Add directory="/usr/local/alberta-1.2/include" />
+					<Add directory="/usr/local/alugrid-1.1/include" />
+					<Add directory="/usr/local/alugrid-1.1/include/parallel" />
+					<Add directory="/usr/local/alugrid-1.1/include/serial" />
+					<Add directory="/usr/local/alugrid-1.14/include" />
+					<Add directory="/usr/local/alugrid-1.14/include/parallel" />
+					<Add directory="/usr/local/alugrid-1.14/include/serial" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/grape" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alberta-2.01/include" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include/parallel" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include/serial" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add library="blas" />
 					<Add directory="/usr/local/grape" />
+					<Add directory="/usr/local/alugrid-1.1/lib" />
+					<Add directory="/usr/local/alberta-1.2/lib" />
+					<Add directory="/usr/local/alugrid-1.14/lib" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/grape" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alberta-2.01/lib" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/lib" />
 				</Linker>
 			</Target>
 			<Target title="rene">
@@ -45,70 +66,48 @@
 				<Option parameters="test.param" />
 				<Compiler>
 					<Add option="-g" />
+					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/include" />
+					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/include/parallel" />
+					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/include/serial" />
 				</Compiler>
 				<Linker>
-					<Add library="blas" />
-					<Add library="gfortran" />
-					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
-				</Linker>
-			</Target>
-			<Target title="uni_10.2">
-				<Option output="bin/Debug/dune-stokes" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="../src/" />
-				<Option object_output="obj/Debug/" />
-				<Option type="1" />
-				<Option compiler="gcc" />
-				<Option parameters="test.param" />
-				<Compiler>
-					<Add option="-g" />
-				</Compiler>
-				<Linker>
-					<Add option="/usr/lib64/libgfortran.so.1.0.0" />
+					<Add option="/usr/lib/libSM.so.6" />
 					<Add library="blas" />
 					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
+					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/lib" />
+					<Add directory="/usr/lib" />
 				</Linker>
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-Wall" />
 			<Add option="-g" />
 			<Add option="-fexceptions" />
 			<Add option="-DENABLE_ALUGRID" />
-			<Add option="-DALUGRID_SIMPLEX" />
+			<Add option="-DALUGRID_CONFORM" />
 			<Add option="-DGRIDDIM=2" />
 			<Add option="-DPOLORDER=1" />
-			<Add option="-DENABLE_ALBERTA" />
 			<Add option="-DHAVE_CONFIG_H" />
 			<Add option="-DDUNE_FEM_COMPATIBILITY" />
+			<Add option="-DADAPTIVE_SOLVER" />
 			<Add directory="../../dune-common/" />
 			<Add directory="../../dune-grid/" />
 			<Add directory="../../dune-istl/" />
 			<Add directory="../../dune-fem/" />
 			<Add directory="../../dune-stokes/" />
-			<Add directory="/usr/local/alberta-1.2/include" />
 			<Add directory="/share/dune/Modules/modules_x86_64/alberta-1.2/include" />
-			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include" />
-			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include/parallel" />
-			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/include/serial" />
-			<Add directory="/usr/local/alugrid-1.1/include" />
-			<Add directory="/usr/local/alugrid-1.1/include/parallel" />
-			<Add directory="/usr/local/alugrid-1.1/include/serial" />
+			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.14/include" />
+			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.14/include/parallel" />
+			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.14/include/serial" />
 			<Add directory="/share/dune/Modules/modules_x86_64/grape/" />
 		</Compiler>
 		<Linker>
-			<Add library="ALBERTA33_0" />
-			<Add library="alberta_util" />
 			<Add library="libalugrid.a" />
-			<Add library="libALBERTA33_0.a" />
-			<Add library="libalberta_util.a" />
 			<Add library="SM" />
 			<Add library="ICE" />
 			<Add library="../../dune-fem/lib/.libs/libdunefem.a" />
 			<Add library="../../dune-grid/lib/.libs/libdunegrid.a" />
 			<Add library="../../dune-common/lib/.libs/libdunecommon.a" />
 			<Add library="m" />
-			<Add library="gr" />
-			<Add library="GL" />
 			<Add directory="../../dune-common/lib" />
 			<Add directory="../../dune-grid/lib" />
 			<Add directory="../../dune-fem/lib" />
@@ -119,25 +118,25 @@
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/lib" />
 			<Add directory="/usr/lib64" />
 		</Linker>
-		<Unit filename="../src/dirichletdata.hh" />
-		<Unit filename="../src/discretemodel.hh" />
-		<Unit filename="../src/discretization.hh" />
+		<Unit filename="../../dune-fem/fem/operator/matrix/spmatrix.hh" />
+		<Unit filename="../../dune-fem/fem/space/dgspace/orthonormalbase_2d.cc" />
+		<Unit filename="../src/Makefile.am" />
+		<Unit filename="../src/analyticaldata.hh" />
 		<Unit filename="../src/dune_stokes.cc" />
-		<Unit filename="../src/fluxes.hh" />
-		<Unit filename="../src/force.hh" />
 		<Unit filename="../src/logging.hh" />
-		<Unit filename="../src/model.hh" />
 		<Unit filename="../src/parametercontainer.hh" />
 		<Unit filename="../src/postprocessing.hh" />
 		<Unit filename="../src/pressure.hh" />
 		<Unit filename="../src/problem.hh" />
 		<Unit filename="../src/profiler.hh" />
-		<Unit filename="../src/saddlepoint_inverse_operator.hh" />
 		<Unit filename="../src/stuff.hh" />
-		<Unit filename="../src/traits.hh" />
+		<Unit filename="../src/test.param" />
 		<Unit filename="../src/velocity.hh" />
+		<Unit filename="../stokes/cghelper.hh" />
+		<Unit filename="../stokes/discretegradientpass.hh" />
+		<Unit filename="../stokes/discretestokesfunctionspacewrapper.hh" />
 		<Unit filename="../stokes/discretestokesmodelinterface.hh" />
-		<Unit filename="../stokes/spinverseoperator.hh" />
+		<Unit filename="../stokes/saddlepoint_inverse_operator.hh" />
 		<Unit filename="../stokes/stokespass.hh" />
 		<Extensions>
 			<code_completion />

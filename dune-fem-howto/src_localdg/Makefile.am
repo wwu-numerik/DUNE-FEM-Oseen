@@ -1,10 +1,10 @@
 # IGNORE_HEADERS
 
 LDADD = $(ALL_PKG_LDFLAGS) $(ALL_PKG_LIBS) $(LOCAL_LIBS) 
-noinst_PROGRAMS = dgtest datadisp 
+#noinst_PROGRAMS = dgtest datadisp 
 #euler_SOURCES = euler.cc
-dgtest_SOURCES = dgtest.cc
-datadisp_SOURCES = datadisp.cc
+#dgtest_SOURCES = dgtest.cc
+#datadisp_SOURCES = datadisp.cc
 
 if BUILD_DOCS
 SUBDIRS = doc

@@ -15,22 +15,28 @@
 #include "parametercontainer.hh"
 
 #include <dune/fem/misc/l2norm.hh>
+#include <cmath>
 
 //! simple macro that uses member vtkWriter instance to write file according to variable name
 #define VTK_WRITE(z)    vtkWriter_.addVertexData(z); \
-                        vtkWriter_.write(( "data/z" ) ); \
+                        vtkWriter_.write(( "data/"#z ) ); \
                         vtkWriter_.clear();
 
 
-template <  class ProblemImp,
-            class GridPartImp,
-            class DiscreteVelocityFunctionImp,
-            class DiscretePressureFunctionImp >
+template <  class StokesPassImp, class ProblemImp >
 class PostProcessor
 {
     public:
         typedef ProblemImp
             ProblemType;
+
+        typedef StokesPassImp
+            StokesPassType;
+        typedef typename StokesPassType::DiscreteStokesFunctionSpaceWrapperType
+            DiscreteStokesFunctionSpaceWrapperType;
+        typedef typename StokesPassType::DiscreteStokesFunctionWrapperType
+            DiscreteStokesFunctionWrapperType;
+
         typedef typename ProblemType::VelocityType
             ContinuousVelocityType;
         typedef typename ProblemType::PressureType
@@ -40,7 +46,7 @@ class PostProcessor
         typedef typename ProblemType::DirichletDataType
             DirichletDataType;
 
-        typedef GridPartImp
+        typedef typename StokesPassType::GridPartType
             GridPartType;
         typedef typename GridPartType::GridType
             GridType;
@@ -48,34 +54,33 @@ class PostProcessor
         typedef Dune::VTKIO<GridPartType>
             VTKWriterType;
 
-        typedef DiscreteVelocityFunctionImp
+        typedef typename StokesPassType::DiscreteVelocityFunctionType
             DiscreteVelocityFunctionType;
-        typedef typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType
+        typedef typename StokesPassType::DiscreteVelocityFunctionSpaceType
             DiscreteVelocityFunctionSpaceType;
 
-        typedef DiscretePressureFunctionImp
+        typedef typename StokesPassType::DiscretePressureFunctionType
             DiscretePressureFunctionType;
-        typedef typename DiscretePressureFunctionType::DiscreteFunctionSpaceType
+        typedef typename StokesPassType::DiscretePressureFunctionSpaceType
             DiscretePressureFunctionSpaceType;
 
 
-
-        PostProcessor( const ProblemType& problem, const GridPartType& gridPart,
-                        const DiscreteVelocityFunctionSpaceType& velocity_space,
-                        const DiscretePressureFunctionSpaceType& press_space)
-            : problem_( problem ),
-            gridPart_( gridPart ),
-            velocitySpace_ ( velocity_space ),
-            discreteExactVelocity_( "u_exact", velocity_space ),
-            discreteExactForce_( "f_exact", velocity_space ),
-            discreteExactDirichlet_( "gd_exact", velocity_space ),
-            discreteExactPressure_( "p_exact", press_space ),
-            errorFunc_velocity_( "err_velocity", velocity_space ),
-            errorFunc_pressure_( "err_pressure", press_space ),
-            solutionAssembled_(false),
+        PostProcessor( const DiscreteStokesFunctionSpaceWrapperType& wrapper, const ProblemType& prob )
+            : //pass_( pass ),
+            problem_( prob ),
+            spaceWrapper_( wrapper ),
+            gridPart_( wrapper.gridPart() ),
+            velocitySpace_ ( wrapper.discreteVelocitySpace() ),
+            discreteExactVelocity_( "u_exact", wrapper.discreteVelocitySpace() ),
+            discreteExactForce_( "f_exact", wrapper.discreteVelocitySpace() ),
+            discreteExactDirichlet_( "gd_exact", wrapper.discreteVelocitySpace() ),
+            discreteExactPressure_( "p_exact", wrapper.discretePressureSpace() ),
+            errorFunc_velocity_( "err_velocity", wrapper.discreteVelocitySpace() ),
+            errorFunc_pressure_( "err_pressure", wrapper.discretePressureSpace() ),
+            solutionAssembled_( false ),
             l2_error_pressure_( - std::numeric_limits<double>::max() ),
             l2_error_velocity_( - std::numeric_limits<double>::max() ),
-            vtkWriter_( gridPart )
+            vtkWriter_( wrapper.gridPart() )
         {
 
         }
@@ -103,20 +108,24 @@ class PostProcessor
             projectionP( problem_.pressure(), discreteExactPressure_ );
         }
 
-        void save( const GridType& grid, const DiscretePressureFunctionType& pressure, const DiscreteVelocityFunctionType& velocity )
+        void save( const GridType& grid, const DiscreteStokesFunctionWrapperType& wrapper )
         {
             if ( !solutionAssembled_ )
                 assembleExactSolution();
 
-            calcError( pressure, velocity );
+            calcError( wrapper.discretePressure() , wrapper.discreteVelocity() );
 
+            VTK_WRITE( wrapper.discretePressure() );
+            VTK_WRITE( wrapper.discreteVelocity() );
             VTK_WRITE( discreteExactVelocity_ );
 			VTK_WRITE( discreteExactPressure_ );
             VTK_WRITE( discreteExactForce_ );
 			VTK_WRITE( discreteExactDirichlet_ );
 			VTK_WRITE( errorFunc_pressure_ );
 			VTK_WRITE( errorFunc_velocity_ );
-
+#ifndef NLOG
+			entityColoration();
+#endif
         }
 
         void calcError( const DiscretePressureFunctionType& pressure, const DiscreteVelocityFunctionType& velocity )
@@ -135,17 +144,79 @@ class PostProcessor
             l2_error_velocity_ =
                 l2_Error.norm( errorFunc_velocity_ );
 
-            Logger().Info()  << "L2-Error Pressure: " << std::setw(8) << l2_error_pressure_ << "\n"
-                                << "L2-Error Velocity: " << std::setw(8) << l2_error_velocity_ << std::endl;
+            Logger().Info().Resume();
+            Logger().Info() << "L2-Error Pressure: " << std::setw(8) << l2_error_pressure_ << "\n"
+                                << "L2-Error Velocity: " << std::setw(8) << l2_error_velocity_ << "\n"
+                                << "L2-Error Pressure (sqrt): " << std::setw(8) << std::sqrt( l2_error_pressure_ ) << "\n"
+                                << "L2-Error Velocity (sqrt): " << std::setw(8) << std::sqrt( l2_error_velocity_ ) << std::endl;
         }
 
-        std::pair<double,double> getError()
+        std::vector<double> getError()
         {
-            return std::pair<double,double> ( l2_error_velocity_, l2_error_pressure_ );
+            std::vector<double> ret;
+            ret.push_back( l2_error_velocity_ );
+            ret.push_back( l2_error_pressure_ );
+            return ret;
+        }
+
+        void entityColoration()
+        {
+            Logging::LogStream& dbg = Logger().Dbg();
+            DiscretePressureFunctionType cl ( "entitiy-num", spaceWrapper_.discretePressureSpace() );
+            unsigned long numberOfEntities = 0;
+
+            typedef typename GridPartType::GridType::template Codim< 0 >::Entity
+                EntityType;
+            typedef typename GridPartType::template Codim< 0 >::IteratorType
+                EntityIteratorType;
+            typedef typename GridPartType::IntersectionIteratorType
+                IntersectionIteratorType;
+
+            EntityIteratorType entityItEndLog = velocitySpace_.end();
+            for (   EntityIteratorType entityItLog = velocitySpace_.begin();
+                    entityItLog != entityItEndLog;
+                    ++entityItLog, ++numberOfEntities ) {
+                const EntityType& entity = *entityItLog;
+                const typename EntityType::Geometry& geo = entity .geometry();
+
+//                dbg << "entity: " << numberOfEntities <<"\n";
+                for ( int i = 0; i < geo.corners(); ++i ){
+//                    Stuff::printFieldVector( geo[i], "  corner", dbg );
+                }
+//                dbg << std::endl;
+
+                typename DiscretePressureFunctionType::LocalFunctionType
+                    lf = cl.localFunction( entity );
+
+                for ( int i = 0; i < lf.numDofs(); ++i ){
+                    lf[i] = numberOfEntities;
+                }
+
+                unsigned long numberOfIntersections =0;
+                IntersectionIteratorType intItEnd = gridPart_.iend( entity );
+                for (   IntersectionIteratorType intIt = gridPart_.ibegin( entity );
+                        intIt != intItEnd;
+                        ++intIt,++numberOfIntersections ) {
+                    // if we are inside the grid
+                    if ( intIt.neighbor() && !intIt.boundary() ) {
+                        // count inner intersections
+
+                    }
+                    // if we are on the boundary of the grid
+                    if ( !intIt.neighbor() && intIt.boundary() ) {
+                        // count boundary intersections
+
+                    }
+                }
+            }
+
+            VTK_WRITE( cl );
         }
 
     private:
+
         const ProblemType& problem_;
+        const DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
         const GridPartType& gridPart_;
         const DiscreteVelocityFunctionSpaceType& velocitySpace_;
         DiscreteVelocityFunctionType discreteExactVelocity_;

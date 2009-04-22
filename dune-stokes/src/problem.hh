@@ -14,34 +14,9 @@
 #include "logging.hh"
 #include "velocity.hh"
 #include "pressure.hh"
-#include "force.hh"
-#include "dirichletdata.hh"
-
-/**
- *  \brief  containing typedefs needed by Problem
- *
- *  \tparam gridDim
- *          dimension of the grid
- **/
-template < int griddim, class VelocityFunctionSpaceImp, class PressureFunctionSpaceImp >
-class ProblemTraits
-{
-    public:
-        static const unsigned int gridDim = griddim;
-        typedef VelocityFunctionSpaceImp
-            VelocityFunctionSpaceType;
-        typedef Velocity< VelocityTraits < gridDim, VelocityFunctionSpaceType > >
-            VelocityType;
-        typedef PressureFunctionSpaceImp
-            PressureFunctionSpaceType;
-        typedef Pressure< PressureTraits< gridDim, PressureFunctionSpaceType > >
-            PressureType;
-        typedef Force< ForceTraits< gridDim, VelocityFunctionSpaceType > >
-            ForceType;
-        typedef DirichletData< DirichletDataTraits< gridDim, VelocityFunctionSpaceType > >
-            DirichletDataType;
-
-};
+#include "analyticaldata.hh"
+//#include "force.hh"
+//#include "dirichletdata.hh"
 
 /**
  *  \brief  a collection of some analytical functions solving a stokes problem
@@ -53,36 +28,48 @@ class ProblemTraits
  *
  *  \todo   extensive docu with latex
  **/
-template < class TraitsImp >
+template < int griddim, class DiscreteFunctionWrapperImp >
 class Problem
 {
     public:
-        typedef TraitsImp
-            Traits;
-        typedef typename Traits::VelocityType
+        static const unsigned int gridDim = griddim;
+
+        typedef DiscreteFunctionWrapperImp
+            DiscreteFunctionWrapperType;
+
+        typedef typename DiscreteFunctionWrapperType::DiscreteFunctionSpaceType
+            DiscreteFunctionSpaceWrapperType;
+
+        typedef typename DiscreteFunctionSpaceWrapperType
+                ::DiscreteVelocityFunctionSpaceType
+                ::FunctionSpaceType
+        VelocityFunctionSpaceType;
+
+        typedef Velocity< VelocityTraits < gridDim, VelocityFunctionSpaceType > >
             VelocityType;
-        typedef typename Traits::PressureType
-            PressureType;
-        typedef typename Traits::ForceType
-            ForceType;
-        typedef typename Traits::DirichletDataType
-            DirichletDataType;
-        typedef typename VelocityType::FunctionSpaceType
-            VelocityFunctionSpaceType;
-        typedef typename PressureType::FunctionSpaceType
+
+        typedef typename DiscreteFunctionSpaceWrapperType
+                ::DiscretePressureFunctionSpaceType
+                ::FunctionSpaceType
             PressureFunctionSpaceType;
 
-        static const unsigned int gridDim = Traits::gridDim;
+        typedef Pressure< PressureTraits< gridDim, PressureFunctionSpaceType > >
+            PressureType;
+        typedef Force< VelocityFunctionSpaceType >
+            ForceType;
+        typedef DirichletData< VelocityFunctionSpaceType >
+            DirichletDataType;
+
     /**
      *  \brief  constructor
      *
      *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
      **/
-    Problem( const double viscosity, const VelocityFunctionSpaceType& velocity_space, const PressureFunctionSpaceType& press_space )
-        : velocity_( velocity_space ),
-          pressure_ ( press_space ),
-          force_( viscosity, velocity_space ),
-          dirichletData_( velocity_space )
+    Problem( const double viscosity, const DiscreteFunctionWrapperType& funcWrapper )
+        : velocity_( funcWrapper.discreteVelocity().space() ),
+          pressure_ ( funcWrapper.discretePressure().space() ),
+          force_( viscosity, funcWrapper.discreteVelocity().space() ),
+          dirichletData_( funcWrapper.discreteVelocity().space() )
 
     {
     }
@@ -147,8 +134,8 @@ class Problem
         //tests
         velocity_.testMe();
         pressure_.testMe();
-        force_.testMe();
-        dirichletData_.testMe();
+//        force_.testMe();
+//        dirichletData_.testMe();
         // happy
         infoStream << "...test passed!" << std::endl;
     }

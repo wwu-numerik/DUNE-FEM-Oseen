@@ -7,7 +7,7 @@
 #ifndef PARAMETERCONTAINER_HH_INCLUDED
 #define PARAMETERCONTAINER_HH_INCLUDED
 
-#include "dune/fem/io/parameter.hh"
+#include <dune/fem/io/parameter.hh>
 
 #include "stuff.hh"
 #include "logging.hh"
@@ -67,14 +67,16 @@ class ParameterContainer
                 argv_ = argv;
                 eps_ = 1.0e20;
                 parameter_filename_ = argv[1];
+                Dune::Parameter::append( parameter_filename_ );
                 return true;
             }
             else
             {
-                std::cerr << "\nUsage: " << argv[0] << " parameterfile" << std::endl;
-                PrintParameterSpecs( std::cerr );
-                std::cerr << std::endl;
-                return false;
+                Dune::Parameter::append( argc, argv );
+//                std::cerr << "\nUsage: " << argv[0] << " parameterfile" << std::endl;
+//                PrintParameterSpecs( std::cerr );
+//                std::cerr << std::endl;
+                return true;
             }
         }
 
@@ -87,11 +89,9 @@ class ParameterContainer
          **/
         bool SetUp()
         {
-            Dune::Parameter::append( ParameterFilename() );
             bool has_not_worked = false;
             if ( !( Dune::Parameter::exists( "dgf_file_2d" ) ) ) {
                 std::cerr << "\nError: not all parameters found in " << ParameterFilename() << "!";
-                PrintParameterSpecs( std::cerr );
                 std::cerr << "\nmissing parameters are: dgf_file_2d" << std::endl;
                 has_not_worked = true;
 
@@ -102,7 +102,6 @@ class ParameterContainer
             if ( !( Dune::Parameter::exists( "dgf_file_3d" ) ) ) {
                 if ( !( has_not_worked ) ) {
                     std::cerr << "\nError: not all parameters found in " << ParameterFilename() << "!";
-                    PrintParameterSpecs( std::cerr );
                     std::cerr << "\nmissing parameters are: dgf_file_3d" << std::endl;
                 }
                 else {
@@ -116,7 +115,6 @@ class ParameterContainer
             if ( !( Dune::Parameter::exists( "viscosity" ) ) ) {
                 if ( !( has_not_worked ) ) {
                     std::cerr << "\nError: not all parameters found in " << ParameterFilename() << "!";
-                    PrintParameterSpecs( std::cerr );
                     std::cerr << "\nmissing parameters are: viscosity" << std::endl;
                 }
                 else {
@@ -217,6 +215,13 @@ class ParameterContainer
         double viscosity() const
         {
             return viscosity_;
+        }
+
+        //! passthrough to underlying Dune::Parameter
+        template< typename T >
+        T getParam( std::string name, T def )
+        {
+            return Dune::Parameter::getValue( name, def );
         }
 
     private:
