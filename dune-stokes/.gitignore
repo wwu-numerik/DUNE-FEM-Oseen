@@ -50,3 +50,14 @@ src/dune_stokes_matlab.m
 src/logging.hh.bak
 src/matlab
 src/dune_stokes.cc.bak
+doc/dune-stokes-howto/dune_stokes_howto.aux
+doc/dune-stokes-howto/dune_stokes_howto.idx
+doc/dune-stokes-howto/dune_stokes_howto.ilg
+doc/dune-stokes-howto/dune_stokes_howto.ind
+doc/dune-stokes-howto/dune_stokes_howto.out
+doc/dune-stokes-howto/dune_stokes_howto.pdf
+doc/dune-stokes-howto/dune_stokes_howto.toc
+doc/dune-stokes-howto/includes/saddelpunkt.aux
+doc/dune-stokes-howto/includes/sattelpunkt.aux
+doc/dune-stokes-howto/includes/stokes.aux
+doc/dune-stokes-howto/includes/stokes_mit_ldg.aux
