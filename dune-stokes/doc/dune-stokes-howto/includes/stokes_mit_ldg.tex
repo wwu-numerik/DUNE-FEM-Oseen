@@ -216,11 +216,15 @@ auftretenden Spuren von $\sigma, u, p$ auf den Elementkanten $\partial T$ approx
 $\hat{u}_{N_{\sigma}}$, $\hat{\sigma}_{N}$, $\hat{p}_{N}$ und $\hat{u}_{N_{p}}$.
 \end{definition}
 
-\begin{bemerkung}[Flüsse]\label{bemerkung::ldg_stokes::fluesse}
-Diese Flüsse ergeben sich natürlich aus der schwachen Formulierung. Mehr dazu hier noch.
+\begin{bemerkung}[Spur von $\sigma$, $u$, $p$]\label{bemerkung::ldg_stokes::spuren}
+Die in den Randintegralen von \eqref{equ::ldg_stokes::schwache_formulierung}
+vorkommende Flüsse $\hat{\sigma}_{N}$, $\hat{u}_{N_{\sigma}}$, $\hat{u}_{N_{p}}$ und $\hat{p}_{N}$
+sind Approximationen der Spuren von $\sigma$, $u$ und $p$. Sie spielen eine zentrale
+Rolle bei der LDG Diskretisierung. 
 \end{bemerkung}
 
-Um ein Beispiel für solche Flüsse angeben zu können, benötigen wir noch einige Notationen.
+Um die Flüsse $\hat{\sigma}_{N}$, $\hat{u}_{N_{\sigma}}$, $\hat{u}_{N_{p}}$ und $\hat{p}_{N}$
+genauer definieren zu können, benötigen wir noch einige Notation.
 
 \begin{definition}[Triangularisierung]\label{definition::ldg_stokes::triangularisierung}
 	Hierhin Infos zur Triangularisierung, incl.
@@ -232,49 +236,58 @@ Um ein Beispiel für solche Flüsse angeben zu können, benötigen wir noch einige N
 und $E_{I}$, etc...
 \end{definition}
 
-\begin{definition}[Mittelwert, Sprung]\label{definition::ldg_stokes_mittelwert_sprung}
-Wir definieren die Mittelwerte\\
-$\meanLeft p \meanRight \in \R$ für $p \in \R$ als
-\begin{align}
-	\meanLeft p \meanRight := \tfrac{1}{2}
-		\left(
-			p^{+} + p^{-}
-		\right),\notag
+\begin{definition}[Mittelwert, Sprung]\label{definition::ldg_stokes::mittelwerte_spruenge}
+Sei $x \in \varepsilon$ ein Punkt auf einer Kante zwischen zwei Elementen $T_{+/-}$ der
+Trinagularisierung $\T$. Sei $n^{+}$ die äussere Normale der Länge $1$ an $T_{+}$ in $x$
+und $u^{+}$ der Wert von $u$ in $x$, gesehen von $T_{+}$ ($n^{-}$, $u^{-}$ entsprechend).\\
+Dann sind die Mittelwerte von $\sigma$, $u$, $p$ definiert durch
+\begin{align}\label{equ::ldg_stokes::mittelwerte}
+    \meanLeft \sigma \meanRight &:= \tfrac{1}{2} \left(
+    		\sigma^{+}+\sigma^{-}
+    	\right) \in \R^{d \times d}
+    	& \text{für } \sigma \in \R^{d \times d},\notag \\
+    \meanLeft u \meanRight &:= \tfrac{1}{2} \left(
+    		u^{+}+u^{-}
+    	\right) \in \R^{d}
+    	& \text{für } u \in \R^{d} \text{ und} \notag \\
+    \meanLeft p \meanRight &:= \tfrac{1}{2} \left(
+    		p^{+}+p^{-}
+    	\right) \in \R
+    	& \text{für } p \in \R \notag
 \end{align}
-$\meanLeft u \meanRight \in \R^{d}$ für $u \in \R^{d}$ als
-\begin{align}
-	\meanLeft u \meanRight := \tfrac{1}{2}
-		\left(
-			u^{+} + u^{-}
-		\right),\notag
-\end{align}
-$\meanLeft \sigma \meanRight \in \R^{d \times d}$ für $\sigma \in \R^{d \times d}$ als
-\begin{align}
-	\meanLeft \sigma \meanRight := \tfrac{1}{2}
-		\left(
-			\sigma^{+} + \sigma^{-}
-		\right)\notag
-\end{align}
-und die Sprünge
-$\jumpLeft p \jumpRight \in \R^{d}$ für $p \in \R^{d}$ als
-\begin{align}
-	\jumpLeft p \jumpRight :=p^{+} n^{+} + p^{-} n^{-},
-		\notag
-\end{align}
-$\jumpLeft u \jumpRight \in \R$ für $u \in \R^{d}$ als
-\begin{align}
-	\jumpLeft u \jumpRight :=u^{+} \cdot n^{+} + u^{-} \cdot n^{-},
-		\notag
-\end{align}
-$\underline{\jumpLeft u \jumpRight} \in \R^{d \times d}$ für $u \in \R^{d}$ als
-\begin{align}
-	\underline{\jumpLeft u \jumpRight} :=u^{+} \otimes n^{+} + u^{-} \otimes n^{-}
-		\notag
-\end{align}
-und $\jumpLeft \sigma \jumpRight \in \R^{d}$ für $\sigma \in \R^{d \times d}$ als
-\begin{align}
-	\jumpLeft \sigma \jumpRight :=\sigma^{+} \cdot n^{+} + \sigma^{-} \cdot n^{-}.
-		\notag
+und ihre Sprünge durch
+\begin{align}%\label{equ::ldg_stokes::spruenge}
+	\jumpLeft \sigma \jumpRight
+		&:= \sigma^{+} \cdot n^{+} + \sigma^{-} \cdot n^{-} \in \R^{d}
+		&\text{für } \sigma \in \R^{d \times d}, \notag \\
+	\jumpLeft u \jumpRight
+		&:= u^{+} \cdot n^{+} + u^{-} \cdot n^{-} \in \R
+		&\text{für } u \in \R^{d}, \notag \\
+	\underline{\jumpLeft u \jumpRight}
+		&:= u^{+} \otimes n^{+} + u^{-} \otimes n^{-} \in \R^{d \times d}
+		&\text{für } u \in \R^{d} \text{ und} \notag \\
+	\jumpLeft p \jumpRight
+		&:= p^{+} n^{+} + p^{-} n^{-} \in \R^{d}
+		&\text{für } p \in \R. \notag
 \end{align}
 \end{definition}
 
+Zu beachten ist, dass es zwei Sprünge für $u$ gibt, einen skalaren und einen
+Matrixwertigen.
+Mit dieser Notation können wir nun eine Wahl der Flüsse definieren, welche sich bei der Implementierung
+durchgesetzt hat (siehe auch Cockburn).\\
+
+\begin{beispiel}[Analytische Flüsse]\label{definition::ldg_stokes::analytische_fluesse}
+Seien $C_{11}, D_{11} \in \R$, $C_{12}, D_{12} \in \R^{d}$. Wir bezeichnen
+die inneren Kanten mit $\mathcal{E}_{I}$ und solche auf dem Rand von $\Omega$
+mit $\mathcal{E}_{D}$. Dann sind die Flüsse gegeben durch\\
+$\hat{\sigma}\left(u,\sigma\right): \Omega \rightarrow \R^{d \times d}$
+\begin{align}%\label{equ::ldg_stokes::analytische_fluesse}
+	\hat{\sigma}\left(u,\sigma\right) := \begin{cases}
+			\meanLeft \sigma \meanRight - C_{11} \underline{\jumpLeft u \jumpRight} - \jumpLeft \sigma \jumpRight \otimes C_{12}
+				&\text{auf } \mathcal{E}_{I}\\
+			\sigma^{+} - C_{11} \left( u^{+} - g_{D} \right) \otimes n^{+}
+				&\text{auf } \mathcal{E}_{D},
+		\end{cases}
+\end{align}
+\end{beispiel}
