@@ -147,12 +147,12 @@ class StokesPass
             EntityType;
 
         //! type of the used solver
-        typedef SaddlepointInverseOperator< ThisType >
+        typedef NestedCgSaddlepointInverseOperator< ThisType >
             InvOpType;
 
-#ifdef USE_MIRKO
-        typedef MirkoSaddlepointInverseOperator< ThisType >
-            MirkoInvOpType;
+#ifdef USE_ALTERNATIVE_SOLVER
+        typedef SaddlepointInverseOperator< ThisType >
+            AltInvOpType;
 #endif
 
         //! polynomial order for the discrete sigma function space
@@ -362,8 +362,8 @@ MMatrix.reserve();
 #ifndef NLOG
             // logging stuff
             Logging::LogStream& infoStream = Logger().Info();
-            Logging::LogStream& debugStream = Logger().Info();
-//            Logging::LogStream& debugStream = Logger().Dbg();
+//            Logging::LogStream& debugStream = Logger().Info();
+            Logging::LogStream& debugStream = Logger().Dbg();
             bool entityOutput = false;
             bool intersectionOutput = false;
             const int outputEntity = 0;
@@ -3432,9 +3432,9 @@ if ( Mprint ) {
             profiler().StopTiming("Pass -- ASSEMBLE");
             profiler().StartTiming("Pass -- SOLVER");
             InvOpType op;
-#ifdef USE_MIRKO
-            MirkoInvOpType m_op;
-            if ( Parameters().getParam( "mirko-solve", false ) )
+#ifdef USE_ALTERNATIVE_SOLVER
+            AltInvOpType m_op;
+            if ( Parameters().getParam( "alternative-solve", false ) )
                 m_op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
             else
 #endif

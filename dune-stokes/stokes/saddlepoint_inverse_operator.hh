@@ -7,7 +7,7 @@
 
 // OEMBICGSQOp will NOT compile
 #ifndef INNER_CG_SOLVERTYPE
-    #define INNER_CG_SOLVERTYPE OEMBICGSTABOp
+    #define INNER_CG_SOLVERTYPE OEMCGOp
 #endif
 
 #ifndef OUTER_CG_SOLVERTYPE
@@ -41,7 +41,7 @@ namespace Dune {
    */
 
 template < class StokesPassImp >
-class SaddlepointInverseOperator
+class NestedCgSaddlepointInverseOperator
 {
   private:
 
@@ -67,7 +67,7 @@ class SaddlepointInverseOperator
      * \brief Constructor:
 	*
 	  **/
-    SaddlepointInverseOperator()
+    NestedCgSaddlepointInverseOperator()
 	{}
 
     /** takes raw matrices from pass
@@ -301,13 +301,13 @@ class SaddlepointInverseOperator
         Bp_temp += f_func;
         a_solver.apply ( Bp_temp, velocity );
 
-        logInfo << "\nEnd SaddlePointInverseOperator " << std::endl;
+        logInfo << "\nEnd NestedCgSaddlePointInverseOperator " << std::endl;
     }
 
   };
 
 template < class StokesPassImp >
-class MirkoSaddlepointInverseOperator
+class SaddlepointInverseOperator
 {
   private:
 
@@ -333,7 +333,7 @@ class MirkoSaddlepointInverseOperator
      * \brief Constructor:
 	*
 	  **/
-    MirkoSaddlepointInverseOperator()
+    SaddlepointInverseOperator()
 	{}
 
     /** takes raw matrices from pass
@@ -384,7 +384,7 @@ class MirkoSaddlepointInverseOperator
         const bool do_bfg = Parameters().getParam( "do-bfg", true );
 #endif
         logInfo.Resume();
-        logInfo << "Begin MirkoSaddlePointInverseOperator " << std::endl;
+        logInfo << "Begin SaddlePointInverseOperator " << std::endl;
 
         logDebug.Resume();
         //get some refs for more readability
@@ -414,7 +414,7 @@ class MirkoSaddlepointInverseOperator
         BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
         WmatrixType& w_mat      = Wmatrix.matrix();
 
-/*** making our matrices mirko compatible ****/
+/*** making our matrices kuhnibert compatible ****/
         b_t_mat.scale( -1 ); //since B_t = -E
         w_mat.scale( m_inv_mat(0,0) );
         rhs1 *=  m_inv_mat(0,0);
@@ -534,6 +534,7 @@ class MirkoSaddlepointInverseOperator
             logInfo << "\n #avg inner iter | #outer iter: "
                     << total_inner_iterations / (double)iteration << " | " << iteration << std::endl;
 #endif
+        logInfo << "End SaddlePointInverseOperator " << std::endl;
     }
 
   };
