@@ -1,5 +1,7 @@
-GRIDTYPE=ALBERTAGRID
-GRIDDIM=2
+GRIDTYPE=ALUGRID_SIMPLEX
+GRIDDIM=3
+
+CXX=g++-4.2
 
 # programs to compile 
 noinst_PROGRAMS = finitevolume
