@@ -562,6 +562,7 @@ MMatrix.reserve();
                 const int logBaseJ = Parameters().getParam( "logBaseJ", 0 );
                 debugStream.Suspend(); // disable logging
 #endif
+#ifndef SKIP_VOLUME_INTEGRALS
                 // compute volume integrals
 
                 //                                                     // we will call this one
@@ -1067,7 +1068,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #endif
                     }
                 } // done computing E's volume integral
-
+#endif
                 // walk the intersections
                 IntersectionIteratorType intItEnd = gridPart_.iend( entity );
                 for (   IntersectionIteratorType intIt = gridPart_.ibegin( entity );
