@@ -1713,8 +1713,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *          \f$\Omega\f$.
          *
          *          Implements\n
-         *          - \f$\hat{u}_{\sigma}^{U^{+}}(u) = \frac{1}{2} + \left( u \otimes n^{+} \right) \cdot C_{12}\f$
-         *          - \f$\hat{u}_{\sigma}^{U^{-}}(u) = \frac{1}{2} + \left( u \otimes n^{-} \right) \cdot C_{12}\f$
+         *          - \f$\hat{u}_{\sigma}^{U^{+}}(u) = \frac{1}{2} u + \left( u \otimes n^{+} \right) \cdot C_{12}\f$
+         *          - \f$\hat{u}_{\sigma}^{U^{-}}(u) = \frac{1}{2} u + \left( u \otimes n^{-} \right) \cdot C_{12}\f$
          *
          *          For the docomposition of
          *          \f$\hat{u}_{\sigma}(u):\Omega\rightarrow R^{d}\f$, see the
@@ -1862,8 +1862,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *          \f$\Omega\f$.
          *
          *          Implements\n
-         *          - \f$\hat{u}_{p}^{U^{+}}(u) = \frac{1}{2}u + D_{12} u \cdot n^{+}\f$
-         *          - \f$\hat{u}_{p}^{U^{-}}(u) = \frac{1}{2}u + D_{12} u \cdot n^{-}\f$
+         *          - \f$\hat{u}_{p}^{U^{+}}(u) = \frac{1}{2} u + D_{12} u \cdot n^{+}\f$
+         *          - \f$\hat{u}_{p}^{U^{-}}(u) = \frac{1}{2} u + D_{12} u \cdot n^{-}\f$
          *
          *          For the docomposition of
          *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
@@ -2272,7 +2272,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          Implements\n
          *          - \f$\hat{\sigma}^{U^{+}}(u) = -C_{11} u \otimes n^{+}\f$
-         *          - \f$\hat{\sigma}^{U^{-}}(u) = -C_{11} u \otimes n^{+}\f$
+         *          - \f$\hat{\sigma}^{U^{-}}(u) = -C_{11} u \otimes n^{-}\f$
          *
          *          For the docomposition of
          *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
@@ -2340,7 +2340,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          Implements\n
          *          - \f$\hat{\sigma}^{\sigma^{+}}(\sigma) = \frac{1}{2} \sigma - \left( \sigma \cdot n^{+} \right) \otimes C_{12}\f$
-         *          - \f$\hat{\sigma}^{\sigma^{+}}(\sigma) = \frac{1}{2} \sigma + \left( \sigma \cdot n^{+} \right) \otimes C_{12}\f$
+         *          - \f$\hat{\sigma}^{\sigma^{+}}(\sigma) = \frac{1}{2} \sigma - \left( \sigma \cdot n^{-} \right) \otimes C_{12}\f$
          *
          *          For the docomposition of
          *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
