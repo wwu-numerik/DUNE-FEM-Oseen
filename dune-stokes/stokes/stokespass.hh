@@ -1356,9 +1356,9 @@ localMMatrixElement.add( i, j, M_i_j );
                         }
 #endif
                         if ( discreteModel_.hasSigmaFlux() ) {
-                            for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+                            for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
                                 // compute X's element sourface integral
-                                for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
+                                for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                                     double X_i_j = 0.0;
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
@@ -1448,7 +1448,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #endif
                                 } // done computing X's element sourface integral
                                 // compute X's neighbour sourface integral
-                                for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
+                                for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
                                     double X_i_j = 0.0;
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
@@ -1462,27 +1462,28 @@ localMMatrixElement.add( i, j, M_i_j );
                                     // sum over all quadrature points
                                     for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
-                                        const ElementCoordinateType x = faceQuadratureNeighbour.point( quad );
+                                        const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
+                                        const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
                                         const LocalIntersectionCoordinateType localX = faceQuadratureNeighbour.localPoint( quad );
                                         // get the integration factor
                                         const double elementVolume = intersectionGeoemtry.integrationElement( localX );
                                         // get the quadrature weight
-                                        const double integrationWeight = faceQuadratureNeighbour.weight( quad );
+                                        const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                         SigmaRangeType tau_j( 0.0 );
-                                        sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
+                                        sigmaBaseFunctionSetElement.evaluate( j, xInside, tau_j );
                                         SigmaRangeType sigma_sigma_minus_flux( 0.0 );
                                         discreteModel_.sigmaFlux(   intIt,
                                                                     0.0,
                                                                     localX,
-                                                                    DiscreteModelType::outside,
+                                                                    DiscreteModelType::inside,
                                                                     tau_j,
                                                                     sigma_sigma_minus_flux );
                                         VelocityRangeType flux_times_n_t( 0.0 );
                                         sigma_sigma_minus_flux.mv( outerNormal, flux_times_n_t );
                                         VelocityRangeType v_i( 0.0 );
-                                        velocityBaseFunctionSetNeighbour.evaluate( i, x, v_i );
+                                        velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
                                         const double v_i_times_flux_times_n_t = v_i * flux_times_n_t;
                                         X_i_j += -1.0
                                             * elementVolume
@@ -1491,7 +1492,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                             * v_i_times_flux_times_n_t;
 #ifndef NLOG
                                         debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
+//                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
                                         Stuff::printFieldVector( localX, "localX", debugStream, "          " );
                                         Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
                                         debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
@@ -1552,9 +1553,9 @@ localMMatrixElement.add( i, j, M_i_j );
                         }
 #endif
                         if ( discreteModel_.hasSigmaFlux() ) {
-                            for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+                            for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                                 // compute Y's element surface integral
-                                for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+                                for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                                     double Y_i_j = 0.0;
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Youtput = true;
@@ -1644,7 +1645,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #endif
                                 } // done computing Y's element surface integral
                                 // compute Y's neighbour surface integral
-                                for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+                                for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
                                     double Y_i_j = 0.0;
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Youtput = true;
@@ -1658,7 +1659,8 @@ localMMatrixElement.add( i, j, M_i_j );
                                     // sum over all quadrature points
                                     for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
-                                        const ElementCoordinateType x = faceQuadratureNeighbour.point( quad );
+                                        const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
+                                        const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
                                         const LocalIntersectionCoordinateType localX = faceQuadratureNeighbour.localPoint( quad );
                                         // get the integration factor
                                         const double elementVolume = intersectionGeoemtry.integrationElement( localX );
@@ -1667,18 +1669,18 @@ localMMatrixElement.add( i, j, M_i_j );
                                         // compute -\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                         VelocityRangeType v_j( 0.0 );
-                                        velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+                                        velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
                                         SigmaRangeType sigma_u_minus_flux( 0.0 );
                                         discreteModel_.sigmaFlux(   intIt,
                                                                     0.0,
                                                                     localX,
-                                                                    DiscreteModelType::outside,
+                                                                    DiscreteModelType::inside,
                                                                     v_j,
                                                                     sigma_u_minus_flux );
                                         VelocityRangeType flux_times_n_t( 0.0 );
                                         sigma_u_minus_flux.mv( outerNormal, flux_times_n_t );
                                         VelocityRangeType v_i( 0.0 );
-                                        velocityBaseFunctionSetNeighbour.evaluate( i, x, v_i );
+                                        velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
                                         const double v_i_times_flux_times_n_t = v_i * flux_times_n_t;
                                         Y_i_j += -1.0
                                             * elementVolume
@@ -1687,7 +1689,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                             * v_i_times_flux_times_n_t;
 #ifndef NLOG
                                         debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
+//                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
                                         Stuff::printFieldVector( localX, "localX", debugStream, "          " );
                                         Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
                                         debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
