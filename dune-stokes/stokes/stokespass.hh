@@ -2132,9 +2132,9 @@ localMMatrixElement.add( i, j, M_i_j );
                         }
 #endif
                         if ( discreteModel_.hasVelocityPressureFlux() ) {
-                            for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
+                            for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
                                 // compute R's element surface integral
-                                for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
+                                for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
                                     double R_i_j = 0.0;
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Routput = true;
@@ -2222,7 +2222,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #endif
                                 } // done computing R's element surface integral
                                 // compute R's neighbour surface integral
-                                for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
+                                for ( int i = 0; i < numPressureBaseFunctionsNeighbour; ++i ) {
                                     double R_i_j = 0.0;
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Routput = true;
@@ -2236,7 +2236,8 @@ localMMatrixElement.add( i, j, M_i_j );
                                     // sum over all quadrature points
                                     for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
-                                        const ElementCoordinateType x = faceQuadratureNeighbour.point( quad );
+                                        const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
+                                        const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
                                         const LocalIntersectionCoordinateType localX = faceQuadratureNeighbour.localPoint( quad );
                                         // get the integration factor
                                         const double elementVolume = intersectionGeoemtry.integrationElement( localX );
@@ -2245,7 +2246,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                         // compute \hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                         PressureRangeType q_j( 0.0 );
-                                        pressureBaseFunctionSetElement.evaluate( j, x, q_j );
+                                        pressureBaseFunctionSetElement.evaluate( j, xInside, q_j );
                                         VelocityRangeType u_p_p_minus_flux( 0.0 );
                                         discreteModel_.velocityPressureFlux(    intIt,
                                                                                 0.0,
@@ -2256,14 +2257,14 @@ localMMatrixElement.add( i, j, M_i_j );
                                         const double flux_times_n_t = u_p_p_minus_flux
                                             * outerNormal;
                                         PressureRangeType q_i( 0.0 );
-                                        pressureBaseFunctionSetNeighbour.evaluate( i, x, q_i );
+                                        pressureBaseFunctionSetNeighbour.evaluate( i, xOutside, q_i );
                                         const double flux_times_n_t_times_q_i = q_i * flux_times_n_t;
                                         R_i_j += elementVolume
                                             * integrationWeight
                                             * flux_times_n_t_times_q_i;
 #ifndef NLOG
                                         debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
+//                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
                                         Stuff::printFieldVector( localX, "localX", debugStream, "          " );
                                         Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
                                         debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
