@@ -1114,12 +1114,12 @@ localMMatrixElement.add( i, j, M_i_j );
 
                         // get local matrices for the surface integrals
                         LocalMInversMatrixType localMInversMatrixNeighbour = MInversMatrix.localMatrix( entity, neighbour );
-                        LocalWmatrixType localWmatrixNeighbour = Wmatrix.localMatrix( entity, neighbour );
-                        LocalXmatrixType localXmatrixNeighbour = Xmatrix.localMatrix( entity, neighbour );
-                        LocalYmatrixType localYmatrixNeighbour = Ymatrix.localMatrix( entity, neighbour );
-                        LocalZmatrixType localZmatrixNeighbour = Zmatrix.localMatrix( entity, neighbour );
-                        LocalEmatrixType localEmatrixNeighbour = Ematrix.localMatrix( entity, neighbour );
-                        LocalRmatrixType localRmatrixNeighbour = Rmatrix.localMatrix( entity, neighbour );
+                        LocalWmatrixType localWmatrixNeighbour = Wmatrix.localMatrix( neighbour, entity );
+                        LocalXmatrixType localXmatrixNeighbour = Xmatrix.localMatrix( neighbour, entity );
+                        LocalYmatrixType localYmatrixNeighbour = Ymatrix.localMatrix( neighbour, entity );
+                        LocalZmatrixType localZmatrixNeighbour = Zmatrix.localMatrix( neighbour, entity );
+                        LocalEmatrixType localEmatrixNeighbour = Ematrix.localMatrix( neighbour, entity );
+                        LocalRmatrixType localRmatrixNeighbour = Rmatrix.localMatrix( neighbour, entity );
 
                         // get basefunctionsets
                         const SigmaBaseFunctionSetType sigmaBaseFunctionSetNeighbour = sigmaSpace_.baseFunctionSet( neighbour );
