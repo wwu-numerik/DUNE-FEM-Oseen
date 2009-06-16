@@ -90,6 +90,7 @@
 			<Add option="-DDUNE_FEM_COMPATIBILITY" />
 			<Add option="-DADAPTIVE_SOLVER" />
 			<Add directory="../../dune-common/" />
+			<Add directory="../../dune-stuff/" />
 			<Add directory="../../dune-grid/" />
 			<Add directory="../../dune-istl/" />
 			<Add directory="../../dune-fem/" />
