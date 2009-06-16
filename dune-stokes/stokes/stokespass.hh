@@ -20,6 +20,9 @@
     #include <dune/stuff/logging.hh>
 #endif
 
+#include <dune/stuff/grid.hh>
+#include <dune/stuff/functions.hh>
+
 #include <dune/stuff/profiler.hh>
 
 #ifdef CHEAT
