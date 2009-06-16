@@ -445,9 +445,9 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
 //    typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
 //        DiscretePressureFunctionType;
     DiscretePressureFunctionType& computedPressure = discreteStokesFunctionWrapper.discretePressure();
-Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-Stuff::printDiscreteFunctionMatlabStyle( computedPressure, "p", matlabLogStream );
-Stuff::printDiscreteFunctionMatlabStyle( computedVelocity, "u", matlabLogStream );
+//Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+//Stuff::printDiscreteFunctionMatlabStyle( computedPressure, "p", matlabLogStream );
+//Stuff::printDiscreteFunctionMatlabStyle( computedVelocity, "u", matlabLogStream );
 
     double computedVelocityMin = 0.0;
     double computedVelocityMax = 0.0;
