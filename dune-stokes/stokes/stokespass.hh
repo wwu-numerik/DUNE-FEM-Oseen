@@ -518,7 +518,7 @@ MMatrix.reserve();
 
                 // get quadrature
                 const VolumeQuadratureType volumeQuadratureElement( entity,
-                                                                    ( 2 * pressureSpaceOrder ) + 1 );
+                                                                    ( 4 * pressureSpaceOrder ) + 1 );
 //                const VolumeQuadratureType volumeQuadratureElement( entity,
 //                                                                    3 );
 #ifndef NLOG
@@ -1099,7 +1099,7 @@ localMMatrixElement.add( i, j, M_i_j );
                     // get intersection quadrature, seen from inside
                     const FaceQuadratureType faceQuadratureElement( gridPart_,
                                                                     intIt,
-                                                                    ( 2 * pressureSpaceOrder ) + 1,
+                                                                    ( 4 * pressureSpaceOrder ) + 1,
                                                                     FaceQuadratureType::INSIDE );
 //                    const FaceQuadratureType faceQuadratureElement( gridPart_,
 //                                                                    intIt,
@@ -1132,7 +1132,7 @@ localMMatrixElement.add( i, j, M_i_j );
                         // get intersection quadrature, seen from outside
                         const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
                                                                             intIt,
-                                                                            ( 2 * pressureSpaceOrder ) + 1,
+                                                                            ( 4 * pressureSpaceOrder ) + 1,
                                                                             FaceQuadratureType::OUTSIDE );
 //                        const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
 //                                                                            intIt,
@@ -1751,9 +1751,9 @@ localMMatrixElement.add( i, j, M_i_j );
                         }
 #endif
                         if ( discreteModel_.hasPressureFlux() ) {
-                            for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+                            for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
                                 // compute Z's element surface integral
-                                for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
+                                for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                                     double Z_i_j = 0.0;
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
@@ -1839,7 +1839,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #endif
                                 } // done computing Z's element surface integral
                                 // compute Z's neighbour surface integral
-                                for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
+                                for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                                     double Z_i_j = 0.0;
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
