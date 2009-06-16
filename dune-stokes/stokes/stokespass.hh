@@ -1068,7 +1068,8 @@ localMMatrixElement.add( i, j, M_i_j );
 #endif
                     }
                 } // done computing E's volume integral
-#endif
+#endif //SKIP VOLUME
+#ifndef SKIP_SURFACE_INTEGRALS
                 // walk the intersections
                 IntersectionIteratorType intItEnd = gridPart_.iend( entity );
                 for (   IntersectionIteratorType intIt = gridPart_.ibegin( entity );
@@ -1106,7 +1107,6 @@ localMMatrixElement.add( i, j, M_i_j );
 //                                                                    intIt,
 //                                                                    3,
 //                                                                    FaceQuadratureType::INSIDE );
-
                     // if we are inside the grid
                     if ( intIt.neighbor() && !intIt.boundary() ) {
                         // get neighbour
@@ -3155,6 +3155,7 @@ localMMatrixElement.add( i, j, M_i_j );
                     ++intersectionNR;
 #endif
                 } // done walking the neighbours
+#endif //no_surface_ints
 
 #ifndef NLOG
                 intersectionNR = 0;
@@ -3165,6 +3166,8 @@ localMMatrixElement.add( i, j, M_i_j );
                 ++entityNR;
 #endif
             } // done walking the grid
+
+
 #ifndef NLOG
 
 #ifdef CHEAT
