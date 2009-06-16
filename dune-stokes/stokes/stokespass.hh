@@ -3381,16 +3381,16 @@ if ( Mprint ) {
 
             // do the matlab logging stuff
             Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-            Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
-            Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
-            Stuff::printSparseRowMatrixMatlabStyle( Xmatrix.matrix(), "X", matlabLogStream );
-            Stuff::printSparseRowMatrixMatlabStyle( Ymatrix.matrix(), "Y", matlabLogStream );
-            Stuff::printSparseRowMatrixMatlabStyle( Zmatrix.matrix(), "Z", matlabLogStream );
-            Stuff::printSparseRowMatrixMatlabStyle( Ematrix.matrix(), "E", matlabLogStream );
-            Stuff::printSparseRowMatrixMatlabStyle( Rmatrix.matrix(), "R", matlabLogStream );
-            Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
-            Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
-            Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
+//            Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
+//            Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
+//            Stuff::printSparseRowMatrixMatlabStyle( Xmatrix.matrix(), "X", matlabLogStream );
+//            Stuff::printSparseRowMatrixMatlabStyle( Ymatrix.matrix(), "Y", matlabLogStream );
+//            Stuff::printSparseRowMatrixMatlabStyle( Zmatrix.matrix(), "Z", matlabLogStream );
+//            Stuff::printSparseRowMatrixMatlabStyle( Ematrix.matrix(), "E", matlabLogStream );
+//            Stuff::printSparseRowMatrixMatlabStyle( Rmatrix.matrix(), "R", matlabLogStream );
+//            Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
+//            Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
+//            Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
 //            matlabLogStream << "\nA = Y - X * M_invers * W;" << std::endl;
 //            matlabLogStream << "B = Z;" << std::endl;
 //            matlabLogStream << "B_T = - E;" << std::endl;
@@ -3402,9 +3402,9 @@ if ( Mprint ) {
 //            matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
 //            matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
 //            matlabLogStream << "u = A_invers * ( F - B * p );" << std::endl;
-            matlabLogStream << "mirko_W = -(1/M_invers(1,1)) .* (mirko_W);" << std::endl;
-            matlabLogStream << "mirko_E = -(mirko_E);" << std::endl;
-            matlabLogStream << "mirko_H1 = (1/M_invers(1,1)) .* (mirko_H1);" << std::endl;
+//            matlabLogStream << "mirko_W = -(1/M_invers(1,1)) .* (mirko_W);" << std::endl;
+//            matlabLogStream << "mirko_E = -(mirko_E);" << std::endl;
+//            matlabLogStream << "mirko_H1 = (1/M_invers(1,1)) .* (mirko_H1);" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( W - mirko_W ) = %d\\n', norm( W - mirko_W ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( X - mirko_X ) = %d\\n', norm( X - mirko_X ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( Y - mirko_Y ) = %d\\n', norm( Y - mirko_Y ) );\n" << std::endl;
@@ -3444,18 +3444,18 @@ if ( Mprint ) {
                 FunctorStream;
             FunctorStream& functorStream = matlabLogStream;
             Stuff::GridWalk<DiscreteVelocityFunctionSpaceType> gw( velocitySpace_ );
-            Stuff::LocalMatrixPrintFunctor< EmatrixType,FunctorStream> f_E ( Ematrix, functorStream );
-            Stuff::LocalMatrixPrintFunctor< WmatrixType,FunctorStream> f_W ( Wmatrix, functorStream );
-            Stuff::LocalMatrixPrintFunctor< XmatrixType,FunctorStream> f_X ( Xmatrix, functorStream );
-            Stuff::LocalMatrixPrintFunctor< YmatrixType,FunctorStream> f_Y ( Ymatrix, functorStream );
-            Stuff::LocalMatrixPrintFunctor< ZmatrixType,FunctorStream> f_Z ( Zmatrix, functorStream );
-            Stuff::LocalMatrixPrintFunctor< RmatrixType,FunctorStream> f_R ( Rmatrix, functorStream );
-            gw( f_E );
+            Stuff::LocalMatrixPrintFunctor< EmatrixType,FunctorStream> f_E ( Ematrix, functorStream, "E" );
+            Stuff::LocalMatrixPrintFunctor< WmatrixType,FunctorStream> f_W ( Wmatrix, functorStream, "W" );
+            Stuff::LocalMatrixPrintFunctor< XmatrixType,FunctorStream> f_X ( Xmatrix, functorStream, "X" );
+            Stuff::LocalMatrixPrintFunctor< YmatrixType,FunctorStream> f_Y ( Ymatrix, functorStream, "Y" );
+            Stuff::LocalMatrixPrintFunctor< ZmatrixType,FunctorStream> f_Z ( Zmatrix, functorStream, "Z" );
+            Stuff::LocalMatrixPrintFunctor< RmatrixType,FunctorStream> f_R ( Rmatrix, functorStream, "R" );
             gw( f_W );
-            gw( f_X );
-            gw( f_Y );
-            gw( f_Z );
-            gw( f_R );
+//            gw( f_X );
+//            gw( f_Y );
+//            gw( f_Z );
+//            gw( f_E );
+//            gw( f_R );
 #endif //NLOG
 
             profiler().StopTiming("Pass -- ASSEMBLE");
