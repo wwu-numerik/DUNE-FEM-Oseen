@@ -422,6 +422,18 @@ double getLenghtOfIntersection( const IntersectionIteratorType& intIt )
     return difference.two_norm();
 }
 
+template < class Container, class Element >
+int getIdx( const Container& ct, Element e )
+{
+    int idx = 0;
+    for ( typename Container::const_iterator it = ct.begin(); it != ct.end(); ++it, ++idx )
+    {
+        if ( *it == e )
+            return idx;
+    }
+    return -1;
+}
+
 template < class Space, int codim = 0 >
 class GridWalk {
     private:
@@ -431,12 +443,22 @@ class GridWalk {
             EntityIteratorType;
         typedef typename GridPart::IntersectionIteratorType
             IntersectionIteratorType;
+        typedef typename IntersectionIteratorType::EntityPointer
+            EntityPointer;
+
     public:
         GridWalk ( Space& gp )
             : space_(gp),
             gridPart_( gp.gridPart() )
         {
-
+            EntityIteratorType entityItEndLog = space_.end();
+            unsigned int en_idx = 0;
+            for (   EntityIteratorType it = space_.begin();
+                    it != entityItEndLog;
+                    ++it,++en_idx )
+            {
+                entityIdxMap_.push_back( it );
+            }
         }
         template < class Functor >
         void operator () ( Functor& f )
@@ -447,11 +469,13 @@ class GridWalk {
                     it != entityItEndLog;
                     ++it )
             {
+                int ent_idx = getIdx( entityIdxMap_, it );
                 f(*it,*it);
                 IntersectionIteratorType intItEnd = gridPart_.iend( *it );
                 for (   IntersectionIteratorType intIt = gridPart_.ibegin( *it );
                         intIt != intItEnd;
                         ++intIt ) {
+                    int neigh_idx = getIdx( entityIdxMap_, intIt.outside() );
                     f( *it, *intIt.outside() );
                 }
             }
@@ -460,6 +484,9 @@ class GridWalk {
     private:
         Space& space_;
         GridPart& gridPart_;
+        typedef std::vector< EntityPointer >
+            EntityIdxMap;
+        EntityIdxMap entityIdxMap_;
 
 };
 
