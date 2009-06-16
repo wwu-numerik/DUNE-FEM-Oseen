@@ -1260,9 +1260,6 @@ localMMatrixElement.add( i, j, M_i_j );
                                     debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
 #endif
                                     // sum over all quadrature points
-                                    std::cout << "\nfaceQuadratureElement.nop(): " << faceQuadratureElement.nop() << std::endl;
-                                    std::cout << "faceQuadratureNeighbour.nop(): " << faceQuadratureNeighbour.nop() << std::endl;
-                                    assert( faceQuadratureElement.nop() == faceQuadratureNeighbour.nop() );
                                     for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x in codim<0> and codim<1> coordinates
                                         const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
