@@ -11,7 +11,7 @@
 
 #include <dune/common/fvector.hh>
 
-#include "logging.hh"
+#include <dune/stuff/logging.hh>
 
 /**
  *  \brief  containing typedefs needed by Pressure

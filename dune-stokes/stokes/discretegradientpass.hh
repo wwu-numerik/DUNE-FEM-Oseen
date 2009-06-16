@@ -14,8 +14,9 @@
 #include <dune/fem/space/dgspace.hh>
 
 #ifndef NLOG
-    #include "../src/stuff.hh"
-    #include "../src/logging.hh"
+    #include <dune/stuff/printing.hh>
+    #include <dune/stuff/misc.hh>
+    #include <dune/stuff/src/logging.hh>
 #endif
 
 #if( POLORDER != 0 )

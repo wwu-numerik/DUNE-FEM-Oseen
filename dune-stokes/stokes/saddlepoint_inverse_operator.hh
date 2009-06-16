@@ -27,9 +27,10 @@
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/stokes/cghelper.hh>
 
-#include "../src/logging.hh"
-#include "../src/parametercontainer.hh"
-#include "../src/stuff.hh" //DiagonalMult
+#include <dune/stuff/parametercontainer.hh>
+#include <dune/stuff/printing.hh>
+#include <dune/stuff/misc.hh>
+#include <dune/stuff/logging.hh>
 
 
 

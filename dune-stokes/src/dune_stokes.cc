@@ -35,14 +35,17 @@
 #include <dune/stokes/discretestokesmodelinterface.hh>
 #include <dune/stokes/stokespass.hh>
 
+#include <dune/stuff/printing.hh>
+#include <dune/stuff/misc.hh>
+#include <dune/stuff/logging.hh>
+#include <dune/stuff/parametercontainer.hh>
+#include <dune/stuff/postprocessing.hh>
+#include <dune/stuff/profiler.hh>
+
 #include "analyticaldata.hh"
-#include "parametercontainer.hh"
-#include "logging.hh"
-#include "postprocessing.hh"
-#include "profiler.hh"
-#include "stuff.hh"
 #include "velocity.hh"
 #include "pressure.hh"
+#include "problem.hh"
 
 #if ENABLE_MPI
         typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;

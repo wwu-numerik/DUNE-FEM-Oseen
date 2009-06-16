@@ -2,8 +2,10 @@
 #define INNERCG_HH_INCLUDED
 
 #include <dune/fem/solver/oemsolver/oemsolver.hh>
-#include "../src/logging.hh"
-#include "../src/stuff.hh"
+    #include <dune/stuff/printing.hh>
+    #include <dune/stuff/misc.hh>
+    #include <dune/stuff/logging.hh>
+
 
 namespace Dune {
 

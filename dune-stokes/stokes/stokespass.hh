@@ -15,11 +15,12 @@
 
 
 #ifndef NLOG // if we want logging, should be removed in the end
-    #include "../src/stuff.hh"
-    #include "../src/logging.hh"
+    #include <dune/stuff/printing.hh>
+    #include <dune/stuff/misc.hh>
+    #include <dune/stuff/logging.hh>
 #endif
 
-#include "../src/profiler.hh"
+#include <dune/stuff/profiler.hh>
 
 #ifdef CHEAT
     #if (POLORDER > 0)

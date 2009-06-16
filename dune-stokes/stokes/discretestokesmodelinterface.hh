@@ -27,8 +27,9 @@
 #endif
 
 #ifndef NLOG
-    #include "../src/stuff.hh" // should be removed in the end
-    #include "../src/logging.hh"
+    #include <dune/stuff/printing.hh>
+    #include <dune/stuff/misc.hh>
+    #include <dune/stuff/logging.hh>
 #endif
 
 namespace Dune

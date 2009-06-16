@@ -11,8 +11,8 @@
 #include <dune/fem/operator/common/localmatrixwrapper.hh>
 
 #ifndef NLOG // if we want logging, should be removed in the end
-    #include "../../../../dune-stokes/src/stuff.hh"
-    #include "../../../../dune-stokes/src/logging.hh"
+    #include <dune/stuff/printing.hh>
+    #include <dune/stuff/logging.hh>
 #endif
 
 
