@@ -1839,7 +1839,7 @@ localMMatrixElement.add( i, j, M_i_j );
 #endif
                                 } // done computing Z's element surface integral
                                 // compute Z's neighbour surface integral
-                                for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+                                for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
                                     double Z_i_j = 0.0;
 #ifndef NLOG
     //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
@@ -1853,7 +1853,8 @@ localMMatrixElement.add( i, j, M_i_j );
                                     // sum over all quadrature points
                                     for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
-                                        const ElementCoordinateType x = faceQuadratureNeighbour.point( quad );
+                                        const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
+                                        const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
                                         const LocalIntersectionCoordinateType localX = faceQuadratureNeighbour.localPoint( quad );
                                         // get the integration factor
                                         const double elementVolume = intersectionGeoemtry.integrationElement( localX );
@@ -1862,15 +1863,15 @@ localMMatrixElement.add( i, j, M_i_j );
                                         // compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                         VelocityRangeType v_i( 0.0 );
-                                        velocityBaseFunctionSetNeighbour.evaluate( i, x, v_i );
+                                        velocityBaseFunctionSetNeighbour.evaluate( i, xInside, v_i );
                                         const double v_i_times_n_t = v_i * outerNormal;
                                         PressureRangeType q_j( 0.0 );
-                                        pressureBaseFunctionSetElement.evaluate( j, x, q_j );
+                                        pressureBaseFunctionSetElement.evaluate( j, xOutside, q_j );
                                         PressureRangeType p_p_minus_flux( 0.0 );
                                         discreteModel_.pressureFlux(    intIt,
                                                                         0.0,
                                                                         localX,
-                                                                        DiscreteModelType::outside,
+                                                                        DiscreteModelType::inside,
                                                                         q_j,
                                                                         p_p_minus_flux );
                                         Z_i_j += elementVolume
@@ -1879,7 +1880,7 @@ localMMatrixElement.add( i, j, M_i_j );
                                             * v_i_times_n_t;
 #ifndef NLOG
                                         debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
+//                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
                                         Stuff::printFieldVector( localX, "localX", debugStream, "          " );
                                         Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
                                         debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
