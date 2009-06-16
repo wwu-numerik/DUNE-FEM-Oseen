@@ -3431,6 +3431,24 @@ if ( Mprint ) {
 //            matlabLogStream << "%u = A_invers * ( F - B * p );\n" << std::endl;
 //            matlabLogStream << "%fprintf(1, 'Condition A: %d\\n', cond( A ) );\n" << std::endl;
 //            matlabLogStream << "%fprintf(1, 'Condition S: %d\\n', cond( schur_S ) );\n" << std::endl;
+
+//            Stuff::GridWalk<GridPartType> gw( gridPart_ );
+            typedef Logging::MatlabLogStream
+                FunctorStream;
+            FunctorStream& functorStream = matlabLogStream;
+            Stuff::GridWalk<DiscreteVelocityFunctionSpaceType> gw( velocitySpace_ );
+            Stuff::LocalMatrixPrintFunctor< EmatrixType,FunctorStream> f_E ( Ematrix, functorStream );
+            Stuff::LocalMatrixPrintFunctor< WmatrixType,FunctorStream> f_W ( Wmatrix, functorStream );
+            Stuff::LocalMatrixPrintFunctor< XmatrixType,FunctorStream> f_X ( Xmatrix, functorStream );
+            Stuff::LocalMatrixPrintFunctor< YmatrixType,FunctorStream> f_Y ( Ymatrix, functorStream );
+            Stuff::LocalMatrixPrintFunctor< ZmatrixType,FunctorStream> f_Z ( Zmatrix, functorStream );
+            Stuff::LocalMatrixPrintFunctor< RmatrixType,FunctorStream> f_R ( Rmatrix, functorStream );
+            gw( f_E );
+            gw( f_W );
+            gw( f_X );
+            gw( f_Y );
+            gw( f_Z );
+            gw( f_R );
 #endif //NLOG
 
             profiler().StopTiming("Pass -- ASSEMBLE");
