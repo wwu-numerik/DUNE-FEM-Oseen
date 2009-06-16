@@ -422,6 +422,78 @@ double getLenghtOfIntersection( const IntersectionIteratorType& intIt )
     return difference.two_norm();
 }
 
+template < class Space, int codim = 0 >
+class GridWalk {
+    private:
+        typedef typename Space::GridPartType
+            GridPart;
+        typedef typename GridPart::template Codim< codim >::IteratorType
+            EntityIteratorType;
+        typedef typename GridPart::IntersectionIteratorType
+            IntersectionIteratorType;
+    public:
+        GridWalk ( Space& gp )
+            : space_(gp),
+            gridPart_( gp.gridPart() )
+        {
+
+        }
+        template < class Functor >
+        void operator () ( Functor& f )
+        {
+            f.preWalk();
+            EntityIteratorType entityItEndLog = space_.end();
+            for (   EntityIteratorType it = space_.begin();
+                    it != entityItEndLog;
+                    ++it )
+            {
+                f(*it,*it);
+                IntersectionIteratorType intItEnd = gridPart_.iend( *it );
+                for (   IntersectionIteratorType intIt = gridPart_.ibegin( *it );
+                        intIt != intItEnd;
+                        ++intIt ) {
+                    f( *it, *intIt.outside() );
+                }
+            }
+            f.postWalk();
+        }
+    private:
+        Space& space_;
+        GridPart& gridPart_;
+
+};
+
+template < class GlobalMatrix, class Stream >
+class LocalMatrixPrintFunctor
+{
+    public:
+        LocalMatrixPrintFunctor( const GlobalMatrix& m, Stream& stream )
+            : matrix_(m),
+            stream_(stream)
+        {}
+
+        template < class Entity >
+        void operator () ( const Entity& en, const Entity& ne )
+        {
+            typename GlobalMatrix::LocalMatrixType localMatrix
+                = matrix_.localMatrix( en, ne );
+        }
+
+        void preWalk()
+        {
+
+        }
+
+        void postWalk()
+        {
+
+        }
+
+    private:
+        const GlobalMatrix& matrix_;
+        Stream& stream_;
+};
+
 } // end namepspace stuff
 
 

@@ -562,6 +562,7 @@ MMatrix.reserve();
                 const int logBaseJ = Parameters().getParam( "logBaseJ", 0 );
                 debugStream.Suspend(); // disable logging
 #endif
+#ifndef SKIP_VOLUME_INTEGRALS
                 // compute volume integrals
 
                 //                                                     // we will call this one
@@ -1067,7 +1068,8 @@ localMMatrixElement.add( i, j, M_i_j );
 #endif
                     }
                 } // done computing E's volume integral
-
+#endif //SKIP VOLUME
+#ifndef SKIP_SURFACE_INTEGRALS
                 // walk the intersections
                 IntersectionIteratorType intItEnd = gridPart_.iend( entity );
                 for (   IntersectionIteratorType intIt = gridPart_.ibegin( entity );
@@ -1105,7 +1107,6 @@ localMMatrixElement.add( i, j, M_i_j );
 //                                                                    intIt,
 //                                                                    3,
 //                                                                    FaceQuadratureType::INSIDE );
-
                     // if we are inside the grid
                     if ( intIt.neighbor() && !intIt.boundary() ) {
                         // get neighbour
@@ -3164,6 +3165,7 @@ localMMatrixElement.add( i, j, M_i_j );
                     ++intersectionNR;
 #endif
                 } // done walking the neighbours
+#endif //no_surface_ints
 
 #ifndef NLOG
                 intersectionNR = 0;
@@ -3174,6 +3176,8 @@ localMMatrixElement.add( i, j, M_i_j );
                 ++entityNR;
 #endif
             } // done walking the grid
+
+
 #ifndef NLOG
 
 #ifdef CHEAT
@@ -3404,15 +3408,15 @@ if ( Mprint ) {
             matlabLogStream << "mirko_W = -(1/M_invers(1,1)) .* (mirko_W);" << std::endl;
             matlabLogStream << "mirko_E = -(mirko_E);" << std::endl;
             matlabLogStream << "mirko_H1 = (1/M_invers(1,1)) .* (mirko_H1);" << std::endl;
-            matlabLogStream << "fprintf(1, 'norm( W - mirko_W ) = %d\\n', norm( W - mirko_W ) );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'norm( X - mirko_X ) = %d\\n', norm( X - mirko_X ) );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'norm( Y - mirko_Y ) = %d\\n', norm( Y - mirko_Y ) );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'norm( Z - mirko_Z ) = %d\\n', norm( Z - mirko_Z ) );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'norm( E - mirko_E ) = %d\\n', norm( E - mirko_E ) );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'norm( R - mirko_R ) = %d\\n', norm( R - mirko_R ) );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'norm( H1 - mirko_H1 ) = %d\\n', norm( H1 - mirko_H1 ) );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'norm( H2 - mirko_H3 ) = %d\\n', norm( H2 - mirko_H2 ) );\n" << std::endl;
-            matlabLogStream << "fprintf(1, 'norm( H3 - mirko_H3 ) = %d\\n', norm( H3 - mirko_H3 ) );\n" << std::endl;
+//            matlabLogStream << "fprintf(1, 'norm( W - mirko_W ) = %d\\n', norm( W - mirko_W ) );\n" << std::endl;
+//            matlabLogStream << "fprintf(1, 'norm( X - mirko_X ) = %d\\n', norm( X - mirko_X ) );\n" << std::endl;
+//            matlabLogStream << "fprintf(1, 'norm( Y - mirko_Y ) = %d\\n', norm( Y - mirko_Y ) );\n" << std::endl;
+//            matlabLogStream << "fprintf(1, 'norm( Z - mirko_Z ) = %d\\n', norm( Z - mirko_Z ) );\n" << std::endl;
+//            matlabLogStream << "fprintf(1, 'norm( E - mirko_E ) = %d\\n', norm( E - mirko_E ) );\n" << std::endl;
+//            matlabLogStream << "fprintf(1, 'norm( R - mirko_R ) = %d\\n', norm( R - mirko_R ) );\n" << std::endl;
+//            matlabLogStream << "fprintf(1, 'norm( H1 - mirko_H1 ) = %d\\n', norm( H1 - mirko_H1 ) );\n" << std::endl;
+//            matlabLogStream << "fprintf(1, 'norm( H2 - mirko_H3 ) = %d\\n', norm( H2 - mirko_H2 ) );\n" << std::endl;
+//            matlabLogStream << "fprintf(1, 'norm( H3 - mirko_H3 ) = %d\\n', norm( H3 - mirko_H3 ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( A - mirko_A ) = %d\\n', norm( A - mirko_A, inf ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( B - mirko_B ) = %d\\n', norm( B - mirko_B, inf ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( B_T - mirko_B_T ) = %d\\n', norm( B_T - mirko_B_T, inf ) );\n" << std::endl;
@@ -3437,6 +3441,24 @@ if ( Mprint ) {
 //            matlabLogStream << "%u = A_invers * ( F - B * p );\n" << std::endl;
 //            matlabLogStream << "%fprintf(1, 'Condition A: %d\\n', cond( A ) );\n" << std::endl;
 //            matlabLogStream << "%fprintf(1, 'Condition S: %d\\n', cond( schur_S ) );\n" << std::endl;
+
+//            Stuff::GridWalk<GridPartType> gw( gridPart_ );
+            typedef Logging::MatlabLogStream
+                FunctorStream;
+            FunctorStream& functorStream = matlabLogStream;
+            Stuff::GridWalk<DiscreteVelocityFunctionSpaceType> gw( velocitySpace_ );
+            Stuff::LocalMatrixPrintFunctor< EmatrixType,FunctorStream> f_E ( Ematrix, functorStream );
+            Stuff::LocalMatrixPrintFunctor< WmatrixType,FunctorStream> f_W ( Wmatrix, functorStream );
+            Stuff::LocalMatrixPrintFunctor< XmatrixType,FunctorStream> f_X ( Xmatrix, functorStream );
+            Stuff::LocalMatrixPrintFunctor< YmatrixType,FunctorStream> f_Y ( Ymatrix, functorStream );
+            Stuff::LocalMatrixPrintFunctor< ZmatrixType,FunctorStream> f_Z ( Zmatrix, functorStream );
+            Stuff::LocalMatrixPrintFunctor< RmatrixType,FunctorStream> f_R ( Rmatrix, functorStream );
+            gw( f_E );
+            gw( f_W );
+            gw( f_X );
+            gw( f_Y );
+            gw( f_Z );
+            gw( f_R );
 #endif //NLOG
 
             profiler().StopTiming("Pass -- ASSEMBLE");
