@@ -4,3 +4,6 @@
 [submodule "dune-stokes/doc/howto"]
 	path = dune-stokes/doc/howto
 	url = duneadm@dune-project.uni-muenster.de:git/projects/dune_stokes_howto
+[submodule "dune-stokes/doc/references"]
+	path = dune-stokes/doc/references
+	url = duneadm@jax.uni-muenster.de:git/projects/dune_stokes_references
