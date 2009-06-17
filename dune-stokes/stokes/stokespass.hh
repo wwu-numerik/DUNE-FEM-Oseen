@@ -3454,12 +3454,24 @@ if ( Mprint ) {
             Stuff::LocalMatrixPrintFunctor< YmatrixType,FunctorStream> f_Y ( Ymatrix, functorStream, "Y" );
             Stuff::LocalMatrixPrintFunctor< ZmatrixType,FunctorStream> f_Z ( Zmatrix, functorStream, "Z" );
             Stuff::LocalMatrixPrintFunctor< RmatrixType,FunctorStream> f_R ( Rmatrix, functorStream, "R" );
-            gw( f_W );
-//            gw( f_X );
-//            gw( f_Y );
-//            gw( f_Z );
-//            gw( f_E );
-//            gw( f_R );
+            if( Wprint ) {
+                gw( f_W );
+            }
+            if( Xprint ) {
+                gw( f_X );
+            }
+            if( Yprint ) {
+                gw( f_Y );
+            }
+            if( Zprint ) {
+                gw( f_Z );
+            }
+            if( Eprint ) {
+                gw( f_E );
+            }
+            if( Rprint ) {
+                gw( f_R );
+            }
 #endif //NLOG
 
             profiler().StopTiming("Pass -- ASSEMBLE");
