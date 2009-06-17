@@ -12,25 +12,12 @@
 
 #include <dune/stokes/discretefunctionspacepair.hh>
 
-#ifndef NDEBUG //copied here for standalone usage
-    #ifndef LOGIC_ERROR
-        #include <stdexcept>
-        #include <sstream>
-        #define LOGIC_ERROR \
-            {\
-                std::stringstream ss; ss << __FILE__ << ":" << __LINE__ << " should never be called"; \
-                throw std::logic_error(ss.str());\
-            }
-    #endif
-#else
-    #define LOGIC_ERROR
-#endif
-
 #ifndef NLOG
     #include <dune/stuff/printing.hh>
-    #include <dune/stuff/misc.hh>
     #include <dune/stuff/logging.hh>
 #endif
+
+#include <dune/stuff/misc.hh>
 
 namespace Dune
 {
