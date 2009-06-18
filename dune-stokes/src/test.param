@@ -36,12 +36,12 @@ maxIter: 5000
 
 #output:
 Mprint: 0
-Wprint: 1
-Xprint: 1
-Yprint: 1
-Zprint: 1
-Eprint: 1
-Rprint: 1
+Wprint: 0
+Xprint: 0
+Yprint: 0
+Zprint: 0
+Eprint: 0
+Rprint: 0
 H1print: 0
 H2print: 0
 H3print: 0
@@ -58,5 +58,5 @@ H2debug: 0
 H3debug: 0
 solution-print: 0
 
-logBaseI: 4
-logBaseJ: 1
+logBaseI: -1
+logBaseJ: -1
