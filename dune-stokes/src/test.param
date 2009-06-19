@@ -36,8 +36,8 @@ maxIter: 5000
 
 #output:
 Mprint: 0
-Wprint: 1
-Xprint: 0
+Wprint: 0
+Xprint: 1
 Yprint: 0
 Zprint: 0
 Eprint: 0
@@ -45,9 +45,9 @@ Rprint: 0
 H1print: 0
 H2print: 0
 H3print: 0
-allOutput: 1
+allOutput: 0
 Mdebug: 0
-Wdebug: 1
+Wdebug: 0
 Xdebug: 0
 Ydebug: 0
 Zdebug: 0
