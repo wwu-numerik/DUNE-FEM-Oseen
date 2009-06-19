@@ -2572,8 +2572,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                         const VelocityRangeType& arg2 ) const
         {
             SigmaRangeType ret( 0.0 );
-#if 0
-	    typedef typename SigmaRangeType::RowIterator
+            typedef typename SigmaRangeType::RowIterator
                 MatrixRowIteratorType;
             typedef typename VelocityRangeType::ConstIterator
                 ConstVectorIteratorType;
@@ -2592,12 +2591,6 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 }
                 ++arg1It;
             }
-#endif
-  ret(0,0)= arg1[0]*arg2[0];
-      ret(0,1)= arg1[0]*arg2[1];
-      ret(1,0)= arg1[1]*arg2[0];
-      ret(1,1)= arg1[1]*arg2[1];
-            return ret;
         }
 
         /**
