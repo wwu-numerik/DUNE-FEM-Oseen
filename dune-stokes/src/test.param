@@ -1,6 +1,6 @@
 # LOG_NONE = 1, LOG_ERR = 2, LOG_INFO = 4,LOG_DEBUG = 8,LOG_CONSOLE = 16,LOG_FILE = 32
 # --> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_FILE = 46
-loglevel: 54
+loglevel: 62
 
 #only prefix
 logfile: dune_stokes
@@ -36,7 +36,7 @@ maxIter: 5000
 
 #output:
 Mprint: 0
-Wprint: 0
+Wprint: 1
 Xprint: 0
 Yprint: 0
 Zprint: 0
@@ -45,9 +45,9 @@ Rprint: 0
 H1print: 0
 H2print: 0
 H3print: 0
-allOutput: 0
+allOutput: 1
 Mdebug: 0
-Wdebug: 0
+Wdebug: 1
 Xdebug: 0
 Ydebug: 0
 Zdebug: 0
