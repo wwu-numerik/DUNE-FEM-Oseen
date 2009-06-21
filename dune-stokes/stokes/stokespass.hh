@@ -2859,8 +2859,8 @@ class StokesPass
                         //                                                         -\hat{p}^{RHS}()\cdot v_{j}\cdot n_{T}ds        \right) // H2's 2nd boundary integral
                         //                                                                                                                 // see also "H2's volume integral" above
 //                        if ( discreteModel_.hasSigmaFlux() && discreteModel_.hasPressureFlux() ) {
-//                            for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
-//                                double H2_j = 0.0;
+                            for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+                                double H2_j = 0.0;
 //#ifndef NLOG
 //    //                            if ( j == logBaseJ ) H2output = true;
 ////                                if ( allOutput ) H2output = true;
@@ -2870,20 +2870,26 @@ class StokesPass
 //                                debugStream << "      basefunction " << j << std::endl;
 //                                debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 //#endif
-//                                // sum over all quadrature points
-//                                for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-//                                    // get x codim<0> and codim<1> coordinates
-//                                    const ElementCoordinateType x = faceQuadratureElement.point( quad );
-//                                    const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
-//                                    const VelocityRangeType globalX = geometry.global( x );
-//                                    // get the integration factor
-//                                    const double elementVolume = intersectionGeoemtry.integrationElement( localX );
-//                                    // get the quadrature weight
-//                                    const double integrationWeight = faceQuadratureElement.weight( quad );
+                                // sum over all quadrature points
+                                for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+                                    // get x codim<0> and codim<1> coordinates
+                                    const ElementCoordinateType x = faceQuadratureElement.point( quad );
+                                    const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
+                                    const VelocityRangeType globalX = geometry.global( x );
+                                    // get the integration factor
+                                    const double elementVolume = intersectionGeoemtry.integrationElement( localX );
+                                    // get the quadrature weight
+                                    const double integrationWeight = faceQuadratureElement.weight( quad );
 //                                    // prepare
-//                                    const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
-//                                    VelocityRangeType v_j( 0.0 );
-//                                    velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+                                    const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                    VelocityRangeType gD( 0.0 );
+                                    discreteModel_.dirichletData( 0.0, globalX, gD );
+                                    const SigmaRangeType gD_otimes_normal = dyadicProduct( gD, outerNormal );
+                                    VelocityRangeType gD_otimes_normal_times_normal( 0.0 );
+                                    gD_otimes_normal.mv( outerNormal, gD_otimes_normal_times_normal );
+                                    VelocityRangeType v_j( 0.0 );
+                                    velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+                                    const double v_times_gD_otimes_normal_times_normal = v_j * gD_otimes_normal_times_normal;
 //                                    // compute \mu v_{j}\cdot\hat{\sigma}^{RHS}()\cdot n_{T}
 //                                    if ( discreteModel_.hasSigmaFlux() ) {
 //                                        SigmaRangeType sigma_rhs_flux( 0.0 );
@@ -2894,10 +2900,11 @@ class StokesPass
 //                                        VelocityRangeType flux_times_n_t( 0.0 );
 //                                        sigma_rhs_flux.mv( outerNormal, flux_times_n_t );
 //                                        const double v_j_times_flux_times_n_t = v_j * flux_times_n_t;
-//                                        H2_j += elementVolume
-//                                            * integrationWeight
-//                                            * mu
-//                                            * v_j_times_flux_times_n_t;
+                                        H2_j += C_11
+                                            * elementVolume
+                                            * integrationWeight
+                                            * mu
+                                            * v_times_gD_otimes_normal_times_normal;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 //                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -2934,18 +2941,18 @@ class StokesPass
 //#endif
 //                                    }
 //                                    // done computing H2's 2nd boundary integral
-//                                } // done sum over all quadrature points
-//                                // if small, should be zero
-//                                if ( fabs( H2_j ) < eps ) {
-//                                    H2_j = 0.0;
-//                                }
-//                                // add to rhs
-//                                LocalH2rhs[ j ] += H2_j;
+                                } // done sum over all quadrature points
+                                // if small, should be zero
+                                if ( fabs( H2_j ) < eps ) {
+                                    H2_j = 0.0;
+                                }
+                                // add to rhs
+                                LocalH2rhs[ j ] += H2_j;
 //#ifndef NLOG
 //                                H2output = false;
 //                                debugStream.Suspend(); // disable logging
 //#endif
-//                            } // done computing H2's boundary integrals
+                            } // done computing H2's boundary integrals
 //                        }
 
                         //                                                                                               // we will call this one
