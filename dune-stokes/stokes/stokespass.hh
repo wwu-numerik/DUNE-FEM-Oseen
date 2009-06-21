@@ -2539,9 +2539,15 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
 //                                        // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
-//                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
-//                                        SigmaRangeType tau_j( 0.0 );
-//                                        sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
+                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                        SigmaRangeType tau_j( 0.0 );
+                                        sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
+                                        VelocityRangeType v_i( 0.0 );
+                                        velocityBaseFunctionSetElement.evaluate( i, x, v_i );
+                                        VelocityRangeType tau_times_normal( 0.0 );
+                                        tau_j.mv( outerNormal, tau_times_normal );
+                                        const double v_times_tau_times_normal
+                                            = v_i * tau_times_normal;
 //                                        SigmaRangeType sigma_sigma_plus_flux( 0.0 );
 //                                        discreteModel_.sigmaBoundaryFlux(   intIt,
 //                                                                            0.0,
@@ -2550,14 +2556,12 @@ class StokesPass
 //                                                                            sigma_sigma_plus_flux );
 //                                        VelocityRangeType flux_times_n_t( 0.0 );
 //                                        sigma_sigma_plus_flux.mv( outerNormal, flux_times_n_t );
-//                                        VelocityRangeType v_i( 0.0 );
-//                                        velocityBaseFunctionSetElement.evaluate( i, x, v_i );
 //                                        const double v_i_times_flux_times_n_t = v_i * flux_times_n_t;
-//                                        X_i_j += -1.0
-//                                            * elementVolume
-//                                            * integrationWeight
-//                                            * mu
-//                                            * v_i_times_flux_times_n_t;
+                                        X_i_j += -1.0
+                                            * elementVolume
+                                            * integrationWeight
+                                            * mu
+                                            * v_times_tau_times_normal;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 //                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
