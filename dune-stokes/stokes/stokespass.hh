@@ -931,8 +931,8 @@ class StokesPass
                 // (H2)_{j} += \int_{T}f\cdot v_{j}dx // H2's volume integral
                 //                                    // see also "H2's boundary integral" further down
 //                if ( discreteModel_.hasForce() ) {
-//                    for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
-//                        double H2_j = 0.0;
+                    for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+                        double H2_j = 0.0;
 //#ifndef NLOG
 ////                        if ( ( j == logBaseJ ) ) H2output = true;
 ////                        if ( allOutput ) H2output = true;
@@ -942,25 +942,24 @@ class StokesPass
 //                        debugStream << "    basefunction " << " " << j << std::endl;
 //                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 //#endif
-//                        // sum over all quadratur points
-//                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
-//                            // get x
-//                            const ElementCoordinateType x = volumeQuadratureElement.point( quad );
-//                            const VelocityRangeType xWorld = geometry.global( x );
-//
-//                            // get the integration factor
-//                            const double elementVolume = geometry.integrationElement( x );
-//                            // get the quadrature weight
-//                            const double integrationWeight = volumeQuadratureElement.weight( quad );
+                        // sum over all quadratur points
+                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
+                            // get x
+                            const ElementCoordinateType x = volumeQuadratureElement.point( quad );
+                            const VelocityRangeType xWorld = geometry.global( x );
+                            // get the integration factor
+                            const double elementVolume = geometry.integrationElement( x );
+                            // get the quadrature weight
+                            const double integrationWeight = volumeQuadratureElement.weight( quad );
 //                            // compute f\cdot v_j
-//                            VelocityRangeType v_j( 0.0 );
-//                            VelocityRangeType f( 0.0 );
-//                            velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-//                            discreteModel_.force( 0.0, xWorld, f );
-//                            const double f_times_v_j = f * v_j;
-//                            H2_j += elementVolume
-//                                * integrationWeight
-//                                * f_times_v_j;
+                            VelocityRangeType v_j( 0.0 );
+                            velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+                            VelocityRangeType f( 0.0 );
+                            discreteModel_.force( 0.0, xWorld, f );
+                            const double f_times_v_j = f * v_j;
+                            H2_j += elementVolume
+                                * integrationWeight
+                                * f_times_v_j;
 //#ifndef NLOG
 //                            debugStream << "    - quadPoint " << quad;
 //                            Stuff::printFieldVector( x, "x", debugStream, "      " );
@@ -972,18 +971,18 @@ class StokesPass
 //                            debugStream << "\n        - f_times_v_j: " << f_times_v_j << std::endl;
 //                            debugStream << "        - H2_" << j << "+=: " << H2_j << std::endl;
 //#endif
-//                        } // done sum over all quadrature points
-//                        // if small, should be zero
-//                        if ( fabs( H2_j ) < eps ) {
-//                            H2_j = 0.0;
-//                        }
-//                        // add to rhs
-//                        LocalH2rhs[ j ] += H2_j;
+                        } // done sum over all quadrature points
+                        // if small, should be zero
+                        if ( fabs( H2_j ) < eps ) {
+                            H2_j = 0.0;
+                        }
+                        // add to rhs
+                        LocalH2rhs[ j ] += H2_j;
 //#ifndef NLOG
 //                        H2output = false;
 //                        debugStream.Suspend(); // disable logging
 //#endif
-//                    } // done computing H2's volume integral
+                    } // done computing H2's volume integral
 //                }
 
                 //                                                // we will call this one
