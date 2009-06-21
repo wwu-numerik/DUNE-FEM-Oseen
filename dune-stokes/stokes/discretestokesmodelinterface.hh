@@ -2547,6 +2547,14 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             force_.evaluate( x, forceReturn );
         }
 
+        template < class DomainType >
+        void dirichletData( const double time,
+                            const DomainType& x,
+                            VelocityRangeType& dirichletDataReturn ) const
+        {
+            dirichletData_.evaluate( x, dirichletDataReturn );
+        }
+
         /**
          *  \brief  Returns the viscosity \f$\mu\f$ of the fluid.
          *  \return \f$\mu\f$
