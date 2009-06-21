@@ -2470,8 +2470,8 @@ class StokesPass
                         //                                                                                                    // we will call this one
                         // (H1)_{j} = \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{u}_{\sigma}^{RHS}()\cdot\tau_{j}\cdot n_{T}ds // H1's boundary integral
 //                        if ( discreteModel_.hasVelocitySigmaFlux() ) {
-//                            for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
-//                                double H1_j = 0.0;
+                            for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
+                                double H1_j = 0.0;
 //#ifndef NLOG
 //    //                            if ( j == logBaseJ ) H1output = true;
 ////                                if ( allOutput ) H1output = true;
@@ -2481,20 +2481,25 @@ class StokesPass
 //                                debugStream << "      basefunction " << j << std::endl;
 //                                debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 //#endif
-//                                // sum over all quadrature points
-//                                for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-//                                    // get x codim<0> and codim<1> coordinates
-//                                    const ElementCoordinateType x = faceQuadratureElement.point( quad );
-//                                    const VelocityRangeType globalX = geometry.global( x );
-//                                    const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
-//                                    // get the integration factor
-//                                    const double elementVolume = intersectionGeoemtry.integrationElement( localX );
-//                                    // get the quadrature weight
-//                                    const double integrationWeight = faceQuadratureElement.weight( quad );
+                                // sum over all quadrature points
+                                for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+                                    // get x codim<0> and codim<1> coordinates
+                                    const ElementCoordinateType x = faceQuadratureElement.point( quad );
+                                    const VelocityRangeType globalX = geometry.global( x );
+                                    const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
+                                    // get the integration factor
+                                    const double elementVolume = intersectionGeoemtry.integrationElement( localX );
+                                    // get the quadrature weight
+                                    const double integrationWeight = faceQuadratureElement.weight( quad );
 //                                    // compute \hat{u}_{\sigma}^{RHS}()\cdot\tau_{j}\cdot n_{T}
-//                                    const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
-//                                    SigmaRangeType tau_j( 0.0 );
-//                                    sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
+                                    const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                    SigmaRangeType tau_j( 0.0 );
+                                    sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
+                                    VelocityRangeType tau_times_normal( 0.0 );
+                                    tau_j.mv( outerNormal, tau_times_normal );
+                                    VelocityRangeType gD( 0.0 );
+                                    discreteModel_.dirichletData( 0.0, globalX, gD );
+                                    const double gD_times_tau_times_normal = gD * tau_times_normal;
 //                                    VelocityRangeType tau_j_times_n_t( 0.0 );
 //                                    tau_j.mv( outerNormal, tau_j_times_n_t );
 //                                    VelocityRangeType u_sigma_rhs_flux( 0.0 );
@@ -2503,9 +2508,9 @@ class StokesPass
 //                                                                                localX,
 //                                                                                u_sigma_rhs_flux );
 //                                    const double flux_times_tau_j_times_n_t = u_sigma_rhs_flux * tau_j_times_n_t;
-//                                    H1_j += elementVolume
-//                                        * integrationWeight
-//                                        * flux_times_tau_j_times_n_t;
+                                    H1_j += elementVolume
+                                        * integrationWeight
+                                        * gD_times_tau_times_normal;
 //#ifndef NLOG
 //                                    debugStream << "      - quadPoint " << quad;
 //                                    Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -2520,18 +2525,18 @@ class StokesPass
 //                                    debugStream << "\n        - flux_times_tau_j_times_n_t: " << flux_times_tau_j_times_n_t << std::endl;
 //                                    debugStream << "        - H1_" << j << "+=: " << H1_j << std::endl;
 //#endif
-//                                } // done sum over all quadrature points
-//                                // if small, should be zero
-//                                if ( fabs( H1_j ) < eps ) {
-//                                    H1_j = 0.0;
-//                                }
-//                                // add to rhs
-//                                LocalH1rhs[ j ] += H1_j;
+                                } // done sum over all quadrature points
+                                // if small, should be zero
+                                if ( fabs( H1_j ) < eps ) {
+                                    H1_j = 0.0;
+                                }
+                                // add to rhs
+                                LocalH1rhs[ j ] += H1_j;
 //#ifndef NLOG
 //                                H1output = false;
 //                                debugStream.Suspend(); // disable logging
 //#endif
-//                            } // done computing H1's boundary integral
+                            } // done computing H1's boundary integral
 //                        }
 
                         //                                                                                                                   // we will call this one
