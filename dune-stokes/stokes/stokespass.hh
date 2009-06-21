@@ -3160,8 +3160,8 @@ class StokesPass
                         //                                                                                        // we will call this one
                         // (H3)_{j} = \int_{\varepsilon\in\Epsilon_{D}^{T}}-\hat{u}_{p}^{RHS}()\cdot n_{T}q_{j}ds // H3's boundary integral
 //                        if ( discreteModel_.hasVelocityPressureFlux() ) {
-//                            for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
-//                                double H3_j = 0.0;
+                            for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
+                                double H3_j = 0.0;
 //#ifndef NLOG
 //    //                            if ( j == logBaseJ ) H3output = true;
 ////                                if ( allOutput ) H3output = true;
@@ -3171,17 +3171,23 @@ class StokesPass
 //                                debugStream << "      basefunction " << j << std::endl;
 //                                debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 //#endif
-//                                // sum over all quadrature points
-//                                for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-//                                    // get x codim<0> and codim<1> coordinates
-//                                    const ElementCoordinateType x = faceQuadratureElement.point( quad );
-//                                    const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
-//                                    // get the integration factor
-//                                    const double elementVolume = intersectionGeoemtry.integrationElement( localX );
-//                                    // get the quadrature weight
-//                                    const double integrationWeight = faceQuadratureElement.weight( quad );
+                                // sum over all quadrature points
+                                for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+                                    // get x codim<0> and codim<1> coordinates
+                                    const ElementCoordinateType x = faceQuadratureElement.point( quad );
+                                    const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
+                                    const VelocityRangeType globalX = geometry.global( x );
+                                    // get the integration factor
+                                    const double elementVolume = intersectionGeoemtry.integrationElement( localX );
+                                    // get the quadrature weight
+                                    const double integrationWeight = faceQuadratureElement.weight( quad );
 //                                    // compute -\hat{u}_{p}^{RHS}()\cdot n_{T}q_{j}
-//                                    const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                    const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                    VelocityRangeType gD( 0.0 );
+                                    discreteModel_.dirichletData( 0.0, globalX, gD );
+                                    const double gD_times_normal = gD * outerNormal;
+                                    PressureRangeType q_j( 0.0 );
+                                    pressureBaseFunctionSetElement.evaluate( j, x, q_j );
 //                                    VelocityRangeType u_p_rhs_flux( 0.0 );
 //                                    discreteModel_.velocityPressureBoundaryFlux( intIt,
 //                                                                                0.0,
@@ -3189,13 +3195,12 @@ class StokesPass
 //                                                                                u_p_rhs_flux );
 //                                    const double flux_times_n_t = u_p_rhs_flux
 //                                        * outerNormal;
-//                                    PressureRangeType q_j( 0.0 );
-//                                    pressureBaseFunctionSetElement.evaluate( j, x, q_j );
 //                                    const double flux_times_n_t_times_q_j = q_j
 //                                        * flux_times_n_t;
-//                                    H3_j += elementVolume
-//                                        * integrationWeight
-//                                        * flux_times_n_t_times_q_j;
+                                    H3_j += elementVolume
+                                        * integrationWeight
+                                        * gD_times_normal
+                                        * q_j;
 //#ifndef NLOG
 //                                    debugStream << "      - quadPoint " << quad;
 //                                    Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -3209,18 +3214,18 @@ class StokesPass
 //                                    debugStream << "\n        - flux_times_n_t_times_q_j: " << flux_times_n_t_times_q_j << std::endl;
 //                                    debugStream << "        - H3_" << j << "+=: " << H3_j << std::endl;
 //#endif
-//                                } // done sum over all quadrature points
-//                                // if small, should be zero
-//                                if ( fabs( H3_j ) < eps ) {
-//                                    H3_j = 0.0;
-//                                }
-//                                // add to rhs
-//                                LocalH3rhs[ j ] += H3_j;
+                                } // done sum over all quadrature points
+                                // if small, should be zero
+                                if ( fabs( H3_j ) < eps ) {
+                                    H3_j = 0.0;
+                                }
+                                // add to rhs
+                                LocalH3rhs[ j ] += H3_j;
 //#ifndef NLOG
 //                                H3output = false;
 //                                debugStream.Suspend(); // disable logging
 //#endif
-//                            } // done computing H3's boundary integral
+                            } // done computing H3's boundary integral
 //                        }
 
                     } // done with those on the boundary
