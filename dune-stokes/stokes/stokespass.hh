@@ -1671,9 +1671,9 @@ class StokesPass
 //                                    debugStream.Suspend(); // disable logging
 //#endif
                                 } // done computing Y's element surface integral
-//                                // compute Y's neighbour surface integral
-//                                for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
-//                                    double Y_i_j = 0.0;
+                                // compute Y's neighbour surface integral
+                                for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
+                                    double Y_i_j = 0.0;
 //#ifndef NLOG
 //    //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Youtput = true;
 //    //                                if ( allOutput ) Youtput = true;
@@ -1683,20 +1683,26 @@ class StokesPass
 //                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
 //                                    debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
 //#endif
-//                                    // sum over all quadrature points
-//                                    for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
-//                                        // get x codim<0> and codim<1> coordinates
-//                                        const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
-//                                        const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
-//                                        const LocalIntersectionCoordinateType localX = faceQuadratureNeighbour.localPoint( quad );
-//                                        // get the integration factor
-//                                        const double elementVolume = intersectionGeoemtry.integrationElement( localX );
-//                                        // get the quadrature weight
-//                                        const double integrationWeight = faceQuadratureNeighbour.weight( quad );
+                                    // sum over all quadrature points
+                                    for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
+                                        // get x codim<0> and codim<1> coordinates
+                                        const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
+                                        const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
+                                        const LocalIntersectionCoordinateType localX = faceQuadratureNeighbour.localPoint( quad );
+                                        // get the integration factor
+                                        const double elementVolume = intersectionGeoemtry.integrationElement( localX );
+                                        // get the quadrature weight
+                                        const double integrationWeight = faceQuadratureNeighbour.weight( quad );
 //                                        // compute -\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}
-//                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
-//                                        VelocityRangeType v_j( 0.0 );
-//                                        velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                        VelocityRangeType v_i( 0.0 );
+                                        velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
+                                        VelocityRangeType v_j( 0.0 );
+                                        velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+                                        const SigmaRangeType v_otimes_normal = dyadicProduct( v_j, outerNormal );
+                                        VelocityRangeType v_otimes_normal_times_normal( 0.0 );
+                                        v_otimes_normal.mv( outerNormal, v_otimes_normal_times_normal );
+                                        const double v_times_v_otimes_normal_times_normal = v_i * v_otimes_normal_times_normal;
 //                                        SigmaRangeType sigma_u_minus_flux( 0.0 );
 //                                        discreteModel_.sigmaFlux(   intIt,
 //                                                                    0.0,
@@ -1706,14 +1712,12 @@ class StokesPass
 //                                                                    sigma_u_minus_flux );
 //                                        VelocityRangeType flux_times_n_t( 0.0 );
 //                                        sigma_u_minus_flux.mv( outerNormal, flux_times_n_t );
-//                                        VelocityRangeType v_i( 0.0 );
-//                                        velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
 //                                        const double v_i_times_flux_times_n_t = v_i * flux_times_n_t;
-//                                        Y_i_j += -1.0
-//                                            * elementVolume
-//                                            * integrationWeight
-//                                            * mu
-//                                            * v_i_times_flux_times_n_t;
+                                        Y_i_j += C_11
+                                            * elementVolume
+                                            * integrationWeight
+                                            * mu
+                                            * v_times_v_otimes_normal_times_normal;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 ////                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -1728,11 +1732,11 @@ class StokesPass
 //                                        debugStream << "\n          - v_i_times_flux_times_n_t: " << v_i_times_flux_times_n_t << std::endl;
 //                                        debugStream << "          - Y_" << i << "_" << j << "+=: " << Y_i_j << std::endl;
 //#endif
-//                                    } // done sum over all quadrature points
-//                                    // if small, should be zero
-//                                    if ( fabs( Y_i_j ) < eps ) {
-//                                        Y_i_j = 0.0;
-//                                    }
+                                    } // done sum over all quadrature points
+                                    // if small, should be zero
+                                    if ( fabs( Y_i_j ) < eps ) {
+                                        Y_i_j = 0.0;
+                                    }
 //#ifndef NLOG
 //                                    if ( Ydebug && ( Y_i_j > 0.0 ) ) {
 //                                        debugStream.Resume();
@@ -1747,8 +1751,8 @@ class StokesPass
 //                                    }
 //#endif
 //#endif
-//                                    // add to matrix
-//                                    localYmatrixNeighbour.add( i, j, Y_i_j );
+                                    // add to matrix
+                                    localYmatrixNeighbour.add( i, j, Y_i_j );
 //#ifndef NLOG
 //                                    if ( Ydebug && ( Y_i_j > 0.0 ) ) {
 //                                        debugStream << " ) += " << Y_i_j << std::endl;
@@ -1761,7 +1765,7 @@ class StokesPass
 //                                    Youtput = false;
 //                                    debugStream.Suspend(); // disable logging
 //#endif
-//                                } // done computing Y's neighbour surface integral
+                                } // done computing Y's neighbour surface integral
                             } // done computing Y's surface integrals
 //                        }
 
