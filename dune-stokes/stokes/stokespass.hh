@@ -2171,10 +2171,10 @@ class StokesPass
 //                        }
 //#endif
 //                        if ( discreteModel_.hasVelocityPressureFlux() ) {
-//                            for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
-//                                // compute R's element surface integral
-//                                for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
-//                                    double R_i_j = 0.0;
+                            for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
+                                // compute R's element surface integral
+                                for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
+                                    double R_i_j = 0.0;
 //#ifndef NLOG
 //    //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Routput = true;
 //    //                                if ( allOutput ) Routput = true;
@@ -2184,19 +2184,22 @@ class StokesPass
 //                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
 //                                    debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 //#endif
-//                                    // sum over all quadrature points
-//                                    for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-//                                        // get x codim<0> and codim<1> coordinates
-//                                        const ElementCoordinateType x = faceQuadratureElement.point( quad );
-//                                        const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
-//                                        // get the integration factor
-//                                        const double elementVolume = intersectionGeoemtry.integrationElement( localX );
-//                                        // get the quadrature weight
-//                                        const double integrationWeight = faceQuadratureElement.weight( quad );
+                                    // sum over all quadrature points
+                                    for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+                                        // get x codim<0> and codim<1> coordinates
+                                        const ElementCoordinateType x = faceQuadratureElement.point( quad );
+                                        const LocalIntersectionCoordinateType localX = faceQuadratureElement.localPoint( quad );
+                                        // get the integration factor
+                                        const double elementVolume = intersectionGeoemtry.integrationElement( localX );
+                                        // get the quadrature weight
+                                        const double integrationWeight = faceQuadratureElement.weight( quad );
 //                                        // compute \hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}
-//                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
-//                                        PressureRangeType q_j( 0.0 );
-//                                        pressureBaseFunctionSetElement.evaluate( j, x, q_j );
+                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                        PressureRangeType q_j( 0.0 );
+                                        pressureBaseFunctionSetElement.evaluate( j, x, q_j );
+                                        PressureRangeType q_i( 0.0 );
+                                        pressureBaseFunctionSetElement.evaluate( i, x, q_i );
+                                        const double normal_times_normal = outerNormal * outerNormal;
 //                                        VelocityRangeType u_p_p_plus_flux( 0.0 );
 //                                        discreteModel_.velocityPressureFlux(    intIt,
 //                                                                                0.0,
@@ -2206,12 +2209,13 @@ class StokesPass
 //                                                                                u_p_p_plus_flux );
 //                                        const double flux_times_n_t = u_p_p_plus_flux
 //                                            * outerNormal;
-//                                        PressureRangeType q_i( 0.0 );
-//                                        pressureBaseFunctionSetElement.evaluate( i, x, q_i );
 //                                        const double flux_times_n_t_times_q_i = q_i * flux_times_n_t;
-//                                        R_i_j += elementVolume
-//                                            * integrationWeight
-//                                            * flux_times_n_t_times_q_i;
+                                        R_i_j += D_11
+                                            * elementVolume
+                                            * integrationWeight
+                                            * q_j
+                                            * normal_times_normal
+                                            * q_j;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 //                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -2226,11 +2230,11 @@ class StokesPass
 //                                        debugStream << "\n          - flux_times_n_t_times_q_i: " << flux_times_n_t_times_q_i << std::endl;
 //                                        debugStream << "          - R_" << i << "_" << j << "+=: " << R_i_j << std::endl;
 //#endif
-//                                    } // done sum over all quadrature points
-//                                    // if small, should be zero
-//                                    if ( fabs( R_i_j ) < eps ) {
-//                                        R_i_j = 0.0;
-//                                    }
+                                    } // done sum over all quadrature points
+                                    // if small, should be zero
+                                    if ( fabs( R_i_j ) < eps ) {
+                                        R_i_j = 0.0;
+                                    }
 //#ifndef NLOG
 //                                    if ( Rdebug && ( R_i_j > 0.0 ) ) {
 //                                        debugStream.Resume();
@@ -2245,8 +2249,8 @@ class StokesPass
 //                                    }
 //#endif
 //#endif
-//                                    // add to matrix
-//                                    localRmatrixElement.add( i, j, R_i_j );
+                                    // add to matrix
+                                    localRmatrixElement.add( i, j, R_i_j );
 //#ifndef NLOG
 //                                    if ( Rdebug && ( R_i_j > 0.0 ) ) {
 //                                        debugStream << " ) += " << R_i_j << std::endl;
@@ -2259,7 +2263,7 @@ class StokesPass
 //                                    Routput = false;
 //                                    debugStream.Suspend(); // disable logging
 //#endif
-//                                } // done computing R's element surface integral
+                                } // done computing R's element surface integral
 //                                // compute R's neighbour surface integral
 //                                for ( int i = 0; i < numPressureBaseFunctionsNeighbour; ++i ) {
 //                                    double R_i_j = 0.0;
@@ -2349,7 +2353,7 @@ class StokesPass
 //                                    debugStream.Suspend(); // disable logging
 //#endif
 //                                } // done computing R's neighbour surface integral
-//                            } // done computing R's surface integrals
+                            } // done computing R's surface integrals
 //                        }
                     } // done with those inside the grid
 
