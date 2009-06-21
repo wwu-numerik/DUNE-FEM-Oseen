@@ -571,25 +571,25 @@ class StokesPass
 
                 //                                                     // we will call this one
                 // (M^{-1})_{i,j} = (\int_{T}\tau_{j}:\tau_{i}dx)^{-1} // Minvs' volume integral
-#ifndef NLOG
-                if ( Mdebug ) {
-                    debugStream.Resume(); // enable logging
-                    debugStream << "    = M volume =================" << std::endl;
-                    debugStream.Suspend();
-                }
-#endif
+//#ifndef NLOG
+//                if ( Mdebug ) {
+//                    debugStream.Resume(); // enable logging
+//                    debugStream << "    = M volume =================" << std::endl;
+//                    debugStream.Suspend();
+//                }
+//#endif
                 for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
                         double M_i_j = 0.0;
-#ifndef NLOG
-//                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Moutput = true;
-//                        if ( allOutput ) Moutput = true;
-//                        if ( Mdebug ) Moutput = true;
-                        if ( entityOutput && Moutput ) debugStream.Resume(); // enable logging
-                        debugStream << "    = M ========================" << std::endl;
-                        debugStream << "    basefunctions " << i << " " << j << std::endl;
-                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
-#endif
+//#ifndef NLOG
+////                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Moutput = true;
+////                        if ( allOutput ) Moutput = true;
+////                        if ( Mdebug ) Moutput = true;
+//                        if ( entityOutput && Moutput ) debugStream.Resume(); // enable logging
+//                        debugStream << "    = M ========================" << std::endl;
+//                        debugStream << "    basefunctions " << i << " " << j << std::endl;
+//                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+//#endif
                         // sum over all quadrature points
                         for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
@@ -609,17 +609,17 @@ class StokesPass
                             M_i_j += elementVolume
                                 * integrationWeight
                                 * tau_j_times_tau_i;
-#ifndef NLOG
-                            debugStream << "    - quadPoint " << quad;
-                            Stuff::printFieldVector( x, "x", debugStream, "      " );
-                            Stuff::printFieldVector( xGlobal, "xGlobal", debugStream, "      " );
-                            debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                            debugStream << "        - integrationWeight: " << integrationWeight;
-                            Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "      " );
-                            Stuff::printFieldMatrix( tau_j, "tau_j", debugStream, "      " );
-                            debugStream << "\n        - tau_j_times_tau_i: " << tau_j_times_tau_i << std::endl;
-                            debugStream << "        - M_" << i << "_" << j << "+=: " << M_i_j << std::endl;
-#endif
+//#ifndef NLOG
+//                            debugStream << "    - quadPoint " << quad;
+//                            Stuff::printFieldVector( x, "x", debugStream, "      " );
+//                            Stuff::printFieldVector( xGlobal, "xGlobal", debugStream, "      " );
+//                            debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
+//                            debugStream << "        - integrationWeight: " << integrationWeight;
+//                            Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "      " );
+//                            Stuff::printFieldMatrix( tau_j, "tau_j", debugStream, "      " );
+//                            debugStream << "\n        - tau_j_times_tau_i: " << tau_j_times_tau_i << std::endl;
+//                            debugStream << "        - M_" << i << "_" << j << "+=: " << M_i_j << std::endl;
+//#endif
                         } // done sum over quadrature points
                         // if small, should be zero
                         if ( fabs( M_i_j ) < eps ) {
@@ -630,22 +630,22 @@ class StokesPass
 //localMMatrixElement.add( i, j, M_i_j );
                             M_i_j = 1.0 / M_i_j;
                         }
-#ifndef NLOG
-                        if ( Mdebug && ( M_i_j > 0.0 ) ) {
-                            debugStream.Resume();
-                            debugStream << "      tau_" << i << ", tau_" << j << std::endl
-                                        << "        M( ";
-                        }
-#endif
+//#ifndef NLOG
+//                        if ( Mdebug && ( M_i_j > 0.0 ) ) {
+//                            debugStream.Resume();
+//                            debugStream << "      tau_" << i << ", tau_" << j << std::endl
+//                                        << "        M( ";
+//                        }
+//#endif
                         // add to matrix
                         localMInversMatrixElement.add( i, j, M_i_j );
-#ifndef NLOG
-                        if ( Mdebug && ( M_i_j > 0.0 ) ) {
-                            debugStream << " ) += " << M_i_j << std::endl;
-                        }
-                        Moutput = false;
-                        debugStream.Suspend(); // disable logging
-#endif
+//#ifndef NLOG
+//                        if ( Mdebug && ( M_i_j > 0.0 ) ) {
+//                            debugStream << " ) += " << M_i_j << std::endl;
+//                        }
+//                        Moutput = false;
+//                        debugStream.Suspend(); // disable logging
+//#endif
                     }
                 } // done computing Minvs' volume integral
 
@@ -847,9 +847,9 @@ class StokesPass
 //                    debugStream.Suspend();
 //                }
 //#endif
-//                for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
-//                    for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
-//                        double Z_i_j = 0.0;
+                for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+                    for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
+                        double Z_i_j = 0.0;
 //#ifndef NLOG
 ////                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
 ////                        if ( allOutput ) Zoutput = true;
@@ -859,28 +859,28 @@ class StokesPass
 //                        debugStream << "    basefunctions " << i << " " << j << std::endl;
 //                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 //#endif
-//                        // sum over all quadratur points
-//                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
-//                            // get x
-//                            const ElementCoordinateType x = volumeQuadratureElement.point( quad );
-//                            // get the integration factor
-//                            const double elementVolume = geometry.integrationElement( x );
-//                            // get the quadrature weight
-//                            const double integrationWeight = volumeQuadratureElement.weight( quad );
+                        // sum over all quadratur points
+                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
+                            // get x
+                            const ElementCoordinateType x = volumeQuadratureElement.point( quad );
+                            // get the integration factor
+                            const double elementVolume = geometry.integrationElement( x );
+                            // get the quadrature weight
+                            const double integrationWeight = volumeQuadratureElement.weight( quad );
 //                            // compute q_{j}\cdot(\nabla\cdot v_i)
-//                            SigmaRangeType gradient_of_v_i( 0.0 );
-//                            SigmaRangeType gradient_of_v_i_untransposed( 0.0 );
-//                            PressureRangeType q_j( 0.0 );
-//                            velocityBaseFunctionSetElement.jacobian( i, x, gradient_of_v_i_untransposed );
-//                            const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
-//                            jacobianInverseTransposed.umv( gradient_of_v_i_untransposed, gradient_of_v_i );
-//                            const double divergence_of_v_i = velocityDivergenceOutOfGradient( gradient_of_v_i );
-//                            pressureBaseFunctionSetElement.evaluate( j, x, q_j );
-//                            const double q_j_times_divergence_of_v_i = q_j * divergence_of_v_i;
-//                            Z_i_j += -1.0
-//                                * elementVolume
-//                                * integrationWeight
-//                                * q_j_times_divergence_of_v_i;
+                            SigmaRangeType gradient_of_v_i_untransposed( 0.0 );
+                            velocityBaseFunctionSetElement.jacobian( i, x, gradient_of_v_i_untransposed );
+                            const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
+                            SigmaRangeType gradient_of_v_i( 0.0 );
+                            jacobianInverseTransposed.umv( gradient_of_v_i_untransposed, gradient_of_v_i );
+                            const double divergence_of_v_i = velocityDivergenceOutOfGradient( gradient_of_v_i );
+                            PressureRangeType q_j( 0.0 );
+                            pressureBaseFunctionSetElement.evaluate( j, x, q_j );
+                            const double q_j_times_divergence_of_v_i = q_j * divergence_of_v_i;
+                            Z_i_j += -1.0
+                                * elementVolume
+                                * integrationWeight
+                                * q_j_times_divergence_of_v_i;
 //#ifndef NLOG
 //                            debugStream << "    - quadPoint " << quad;
 //                            Stuff::printFieldVector( x, "x", debugStream, "      " );
@@ -891,11 +891,11 @@ class StokesPass
 //                            debugStream << "\n        - q_j_times_divergence_of_v_i: " << q_j_times_divergence_of_v_i << std::endl;
 //                            debugStream << "        - Z_" << i << "_" << j << "+=: " << Z_i_j << std::endl;
 //#endif
-//                        } // done sum over all quadrature points
-//                        // if small, should be zero
-//                        if ( fabs( Z_i_j ) < eps ) {
-//                            Z_i_j = 0.0;
-//                        }
+                        } // done sum over all quadrature points
+                        // if small, should be zero
+                        if ( fabs( Z_i_j ) < eps ) {
+                            Z_i_j = 0.0;
+                        }
 //#ifndef NLOG
 //                        if ( Zdebug && ( Z_i_j > 0.0 ) ) {
 //                            debugStream.Resume();
@@ -910,8 +910,8 @@ class StokesPass
 //                        }
 //#endif
 //#endif
-//                        // add to matrix
-//                        localZmatrixElement.add( i, j, Z_i_j );
+                        // add to matrix
+                        localZmatrixElement.add( i, j, Z_i_j );
 //#ifndef NLOG
 //                        if ( Zdebug && ( Z_i_j > 0.0 ) ) {
 //                            debugStream << " ) += " << Z_i_j << std::endl;
@@ -924,8 +924,8 @@ class StokesPass
 //                        Zoutput = false;
 //                        debugStream.Suspend(); // disable logging
 //#endif
-//                    }
-//                } // done computing Z's volume integral
+                    }
+                } // done computing Z's volume integral
 
                 //                                    // we will call this one
                 // (H2)_{j} += \int_{T}f\cdot v_{j}dx // H2's volume integral
