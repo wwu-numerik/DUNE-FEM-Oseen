@@ -995,9 +995,9 @@ class StokesPass
 //                    debugStream.Suspend();
 //                }
 //#endif
-//                for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
-//                    for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
-//                        double E_i_j = 0.0;
+                for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
+                    for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+                        double E_i_j = 0.0;
 //#ifndef NLOG
 ////                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
 ////                        if ( allOutput ) Eoutput = true;
@@ -1007,28 +1007,28 @@ class StokesPass
 //                        debugStream << "    basefunctions " << i << " " << j << std::endl;
 //                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 //#endif
-//                        // sum over all quadratur points
-//                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
-//                            // get x
-//                            ElementCoordinateType x = volumeQuadratureElement.point( quad );
-//                            // get the integration factor
-//                            double elementVolume = geometry.integrationElement( x );
-//                            // get the quadrature weight
-//                            double integrationWeight = volumeQuadratureElement.weight( quad );
+                        // sum over all quadratur points
+                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
+                            // get x
+                            ElementCoordinateType x = volumeQuadratureElement.point( quad );
+                            // get the integration factor
+                            double elementVolume = geometry.integrationElement( x );
+                            // get the quadrature weight
+                            double integrationWeight = volumeQuadratureElement.weight( quad );
 //                            // compute v_{j}\cdot(\nabla q_i)
-//                            typename DiscretePressureFunctionSpaceType::JacobianRangeType jacobian_of_q_i( 0.0 );
-//                            VelocityRangeType v_j( 0.0 );
-//                            pressureBaseFunctionSetElement.jacobian( i, x, jacobian_of_q_i );
-//                            velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-//                            VelocityRangeType gradient_of_q_i( 0.0 );
-//                            const VelocityRangeType gradient_of_q_i_untransposed( jacobian_of_q_i[0] );
-//                            const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
-//                            jacobianInverseTransposed.umv( gradient_of_q_i_untransposed, gradient_of_q_i );
-//                            double v_j_times_gradient_of_q_i = v_j * gradient_of_q_i;
-//                            E_i_j += -1.0
-//                                * elementVolume
-//                                * integrationWeight
-//                                * v_j_times_gradient_of_q_i;
+                            VelocityRangeType v_j( 0.0 );
+                            velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+                            typename DiscretePressureFunctionSpaceType::JacobianRangeType jacobian_of_q_i( 0.0 );
+                            pressureBaseFunctionSetElement.jacobian( i, x, jacobian_of_q_i );
+                            const VelocityRangeType gradient_of_q_i_untransposed( jacobian_of_q_i[0] );
+                            const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
+                            VelocityRangeType gradient_of_q_i( 0.0 );
+                            jacobianInverseTransposed.umv( gradient_of_q_i_untransposed, gradient_of_q_i );
+                            const double v_j_times_gradient_of_q_i = v_j * gradient_of_q_i;
+                            E_i_j += -1.0
+                                * elementVolume
+                                * integrationWeight
+                                * v_j_times_gradient_of_q_i;
 //#ifndef NLOG
 //                            debugStream << "    - quadPoint " << quad;
 //                            Stuff::printFieldVector( x, "x", debugStream, "      " );
@@ -1039,11 +1039,11 @@ class StokesPass
 //                            debugStream << "\n        - v_j_times_gradient_of_q_i: " << v_j_times_gradient_of_q_i << std::endl;
 //                            debugStream << "        - E_" << i << "_" << j << "+=: " << E_i_j << std::endl;
 //#endif
-//                        } // done sum over all quadrature points
-//                        // if small, should be zero
-//                        if ( fabs( E_i_j ) < eps ) {
-//                            E_i_j = 0.0;
-//                        }
+                        } // done sum over all quadrature points
+                        // if small, should be zero
+                        if ( fabs( E_i_j ) < eps ) {
+                            E_i_j = 0.0;
+                        }
 //#ifndef NLOG
 //                        if ( Edebug && ( E_i_j > 0.0 ) ) {
 //                            debugStream.Resume();
@@ -1058,8 +1058,8 @@ class StokesPass
 //                        }
 //#endif
 //#endif
-//                        // add to matrix
-//                        localEmatrixElement.add( i, j, E_i_j );
+                        // add to matrix
+                        localEmatrixElement.add( i, j, E_i_j );
 //#ifndef NLOG
 //                        if ( Edebug && ( E_i_j > 0.0 ) ) {
 //                            debugStream << " ) += " << E_i_j << std::endl;
@@ -1072,8 +1072,8 @@ class StokesPass
 //                        Eoutput = false;
 //                        debugStream.Suspend(); // disable logging
 //#endif
-//                    }
-//                } // done computing E's volume integral
+                    }
+                } // done computing E's volume integral
 //#endif //SKIP VOLUME
 //#ifndef SKIP_SURFACE_INTEGRALS
                 // walk the intersections
