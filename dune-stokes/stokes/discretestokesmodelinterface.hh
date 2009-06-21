@@ -1120,6 +1120,17 @@ class DiscreteStokesModelInterface
                                 forceReturn ) );
         }
 
+        template < class DomainType >
+        void dirichletData( const double time,
+                            const DomainType& x,
+                            VelocityRangeType& dirichletDataReturn ) const
+        {
+            CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
+                asImp().dirichletData(  time,
+                                        x,
+                                        dirichletDataReturn ) );
+        }
+
         /**
          *  \brief  Returns the viscosity \f$\mu\f$ of the fluid.
          *          Calls the implementation of the derived class.
