@@ -3456,27 +3456,27 @@ class StokesPass
 
             // do the matlab logging stuff
             Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-//            Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
             Stuff::printSparseRowMatrixMatlabStyle( Xmatrix.matrix(), "X", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Ymatrix.matrix(), "Y", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Zmatrix.matrix(), "Z", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Ematrix.matrix(), "E", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Rmatrix.matrix(), "R", matlabLogStream );
-//            Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
-//            Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
-//            Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
-//            matlabLogStream << "\nA = Y - X * M_invers * W;" << std::endl;
-//            matlabLogStream << "B = Z;" << std::endl;
-//            matlabLogStream << "B_T = - E;" << std::endl;
-//            matlabLogStream << "C = R;" << std::endl;
-//            matlabLogStream << "F = H2 - X * M_invers * H1;" << std::endl;
-//            matlabLogStream << "G = - H3;" << std::endl;
-//            matlabLogStream << "A_invers = inv( A );" << std::endl;
-//            matlabLogStream << "schur_S = B_T * A_invers * B + C;" << std::endl;
-//            matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
-//            matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
-//            matlabLogStream << "u = A_invers * ( F - B * p );" << std::endl;
+            Stuff::printSparseRowMatrixMatlabStyle( Ymatrix.matrix(), "Y", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Zmatrix.matrix(), "Z", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Ematrix.matrix(), "E", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Rmatrix.matrix(), "R", matlabLogStream );
+            Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
+            Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
+            Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
+            matlabLogStream << "\nA = Y - X * M_invers * W;" << std::endl;
+            matlabLogStream << "B = Z;" << std::endl;
+            matlabLogStream << "B_T = - E;" << std::endl;
+            matlabLogStream << "C = R;" << std::endl;
+            matlabLogStream << "F = H2 - X * M_invers * H1;" << std::endl;
+            matlabLogStream << "G = - H3;" << std::endl;
+            matlabLogStream << "A_invers = inv( A );" << std::endl;
+            matlabLogStream << "schur_S = B_T * A_invers * B + C;" << std::endl;
+            matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
+            matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
+            matlabLogStream << "u = A_invers * ( F - B * p );" << std::endl;
 //            matlabLogStream << "mirko_W = -(1/M_invers(1,1)) .* (mirko_W);" << std::endl;
 //            matlabLogStream << "mirko_E = -(mirko_E);" << std::endl;
 //            matlabLogStream << "mirko_H1 = (1/M_invers(1,1)) .* (mirko_H1);" << std::endl;
@@ -3526,22 +3526,22 @@ class StokesPass
             Stuff::LocalMatrixPrintFunctor< ZmatrixType,FunctorStream> f_Z ( Zmatrix, functorStream, "Z" );
             Stuff::LocalMatrixPrintFunctor< RmatrixType,FunctorStream> f_R ( Rmatrix, functorStream, "R" );
             if( Wprint ) {
-                gw( f_W );
+//                gw( f_W );
             }
             if( Xprint ) {
-                gw( f_X );
+//                gw( f_X );
             }
             if( Yprint ) {
-                gw( f_Y );
+//                gw( f_Y );
             }
             if( Zprint ) {
-                gw( f_Z );
+//                gw( f_Z );
             }
             if( Eprint ) {
-                gw( f_E );
+//                gw( f_E );
             }
             if( Rprint ) {
-                gw( f_R );
+//                gw( f_R );
             }
 #endif //NLOG
 
