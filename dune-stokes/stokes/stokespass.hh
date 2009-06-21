@@ -2065,9 +2065,9 @@ class StokesPass
 //                                    debugStream.Suspend(); // disable logging
 //#endif
                                 } // done computing E's element surface integral
-//                                // compute E's neighbour surface integral
-//                                for ( int i = 0; i < numPressureBaseFunctionsNeighbour; ++i ) {
-//                                    double E_i_j = 0.0;
+                                // compute E's neighbour surface integral
+                                for ( int i = 0; i < numPressureBaseFunctionsNeighbour; ++i ) {
+                                    double E_i_j = 0.0;
 //#ifndef NLOG
 //    //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
 //    //                                if ( allOutput ) Eoutput = true;
@@ -2077,20 +2077,23 @@ class StokesPass
 //                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
 //                                    debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
 //#endif
-//                                    // sum over all quadrature points
-//                                    for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
-//                                        // get x codim<0> and codim<1> coordinates
-//                                        const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
-//                                        const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
-//                                        const LocalIntersectionCoordinateType localX = faceQuadratureNeighbour.localPoint( quad );
-//                                        // get the integration factor
-//                                        const double elementVolume = intersectionGeoemtry.integrationElement( localX );
-//                                        // get the quadrature weight
-//                                        const double integrationWeight = faceQuadratureNeighbour.weight( quad );
+                                    // sum over all quadrature points
+                                    for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
+                                        // get x codim<0> and codim<1> coordinates
+                                        const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
+                                        const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
+                                        const LocalIntersectionCoordinateType localX = faceQuadratureNeighbour.localPoint( quad );
+                                        // get the integration factor
+                                        const double elementVolume = intersectionGeoemtry.integrationElement( localX );
+                                        // get the quadrature weight
+                                        const double integrationWeight = faceQuadratureNeighbour.weight( quad );
 //                                        // compute \hat{u}_{p}^{U^{-}}(v_{j})\cdot n_{T}q_{i}
-//                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
-//                                        VelocityRangeType v_j( 0.0 );
-//                                        velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                        VelocityRangeType v_j( 0.0 );
+                                        velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+                                        const double v_times_normal = v_j * outerNormal;
+                                        PressureRangeType q_i( 0.0 );
+                                        pressureBaseFunctionSetNeighbour.evaluate( i, xOutside, q_i );
 //                                        VelocityRangeType u_p_u_minus_flux( 0.0 );
 //                                        discreteModel_.velocityPressureFlux(    intIt,
 //                                                                                0.0,
@@ -2099,12 +2102,12 @@ class StokesPass
 //                                                                                v_j,
 //                                                                                u_p_u_minus_flux );
 //                                        const double flux_times_n_t = u_p_u_minus_flux * outerNormal;
-//                                        PressureRangeType q_i( 0.0 );
-//                                        pressureBaseFunctionSetNeighbour.evaluate( i, xOutside, q_i );
 //                                        const double flux_times_n_t_times_q_i = q_i * flux_times_n_t;
-//                                        E_i_j += elementVolume
-//                                            * integrationWeight
-//                                            * flux_times_n_t_times_q_i;
+                                        E_i_j += 0.5
+                                            * elementVolume
+                                            * integrationWeight
+                                            * v_times_normal
+                                            * q_i;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 ////                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -2119,11 +2122,11 @@ class StokesPass
 //                                        debugStream << "\n          - flux_times_n_t_times_q_i: " << flux_times_n_t_times_q_i << std::endl;
 //                                        debugStream << "          - E_" << i << "_" << j << "+=: " << E_i_j << std::endl;
 //#endif
-//                                    } // done sum over all quadrature points
-//                                    // if small, should be zero
-//                                    if ( fabs( E_i_j ) < eps ) {
-//                                        E_i_j = 0.0;
-//                                    }
+                                    } // done sum over all quadrature points
+                                    // if small, should be zero
+                                    if ( fabs( E_i_j ) < eps ) {
+                                        E_i_j = 0.0;
+                                    }
 //#ifndef NLOG
 //                                    if ( Edebug && ( E_i_j > 0.0 ) ) {
 //                                        debugStream.Resume();
@@ -2138,8 +2141,8 @@ class StokesPass
 //                                    }
 //#endif
 //#endif
-//                                    // add to matrix
-//                                    localEmatrixNeighbour.add( i, j, E_i_j );
+                                    // add to matrix
+                                    localEmatrixNeighbour.add( i, j, E_i_j );
 //#ifndef NLOG
 //                                    if ( Edebug && ( E_i_j > 0.0 ) ) {
 //                                        debugStream << " ) += " << E_i_j << std::endl;
@@ -2152,7 +2155,7 @@ class StokesPass
 //                                    Eoutput = false;
 //                                    debugStream.Suspend(); // disable logging
 //#endif
-//                                } // done computing E's neighbour surface integral
+                                } // done computing E's neighbour surface integral
                             } // done computing E's surface integrals
 //                        }
 
