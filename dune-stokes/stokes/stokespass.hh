@@ -1191,11 +1191,11 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
 //                                        // compute \hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{j}\cdot n_{T}
+                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                         SigmaRangeType tau_i( 0.0 );
                                         sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
                                         VelocityRangeType v_j( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                         VelocityRangeType tau_times_normal( 0.0 );
                                         tau_i.mv( outerNormal, tau_times_normal );
                                         double v_times_tau_times_n = v_j * tau_times_normal;
@@ -1286,13 +1286,15 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
 //                                        // compute \hat{u}_{\sigma}^{U^{-}}(v_{j})\cdot\tau_{j}\cdot n_{T}
+                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                        VelocityRangeType innerNormal = outerNormal;
+                                        innerNormal *= -1.0;
                                         SigmaRangeType tau_i( 0.0 );
                                         sigmaBaseFunctionSetNeighbour.evaluate( i, xOutside, tau_i );
                                         VelocityRangeType v_j( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
-                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                         VelocityRangeType tau_times_normal( 0.0 );
-                                        tau_i.mv( outerNormal, tau_times_normal );
+                                        tau_i.mv( innerNormal, tau_times_normal );
                                         double v_times_tau_times_n = v_j * tau_times_normal;
                                         v_times_tau_times_n *= 0.5;
 //                                        VelocityRangeType u_sigma_u_plus_flux( 0.0 );
@@ -1492,12 +1494,14 @@ class StokesPass
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
 //                                        // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                        VelocityRangeType innerNormal = outerNormal;
+                                        innerNormal *= -1.0;
                                         SigmaRangeType tau_j( 0.0 );
                                         sigmaBaseFunctionSetElement.evaluate( j, xInside, tau_j );
                                         VelocityRangeType v_i( 0.0 );
                                         velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
                                         VelocityRangeType tau_times_n( 0.0 );
-                                        tau_j.mv( outerNormal, tau_times_n );
+                                        tau_j.mv( innerNormal, tau_times_n );
                                         const double v_times_tau_times_n = v_i * tau_times_n;
 //                                        SigmaRangeType sigma_sigma_minus_flux( 0.0 );
 //                                        discreteModel_.sigmaFlux(   intIt,
@@ -1696,13 +1700,15 @@ class StokesPass
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
 //                                        // compute -\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                        VelocityRangeType innerNormal = outerNormal;
+                                        innerNormal *= -1.0;
                                         VelocityRangeType v_i( 0.0 );
                                         velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
                                         VelocityRangeType v_j( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
                                         const SigmaRangeType v_otimes_normal = dyadicProduct( v_j, outerNormal );
                                         VelocityRangeType v_otimes_normal_times_normal( 0.0 );
-                                        v_otimes_normal.mv( outerNormal, v_otimes_normal_times_normal );
+                                        v_otimes_normal.mv( innerNormal, v_otimes_normal_times_normal );
                                         const double v_times_v_otimes_normal_times_normal = v_i * v_otimes_normal_times_normal;
 //                                        SigmaRangeType sigma_u_minus_flux( 0.0 );
 //                                        discreteModel_.sigmaFlux(   intIt,
@@ -1895,9 +1901,11 @@ class StokesPass
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
 //                                        // compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                        VelocityRangeType innerNormal = outerNormal;
+                                        innerNormal *= -1.0;
                                         VelocityRangeType v_i( 0.0 );
                                         velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
-                                        const double v_times_normal = v_i * outerNormal;
+                                        const double v_times_normal = v_i * innerNormal;
                                         PressureRangeType q_j( 0.0 );
                                         pressureBaseFunctionSetElement.evaluate( j, xInside, q_j );
 //                                        PressureRangeType p_p_minus_flux( 0.0 );
@@ -2090,9 +2098,11 @@ class StokesPass
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
 //                                        // compute \hat{u}_{p}^{U^{-}}(v_{j})\cdot n_{T}q_{i}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                        VelocityRangeType innerNormal = outerNormal;
+                                        innerNormal *= -1.0;
                                         VelocityRangeType v_j( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
-                                        const double v_times_normal = v_j * outerNormal;
+                                        const double v_times_normal = v_j * innerNormal;
                                         PressureRangeType q_i( 0.0 );
                                         pressureBaseFunctionSetNeighbour.evaluate( i, xOutside, q_i );
 //                                        VelocityRangeType u_p_u_minus_flux( 0.0 );
@@ -2289,11 +2299,13 @@ class StokesPass
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
 //                                        // compute \hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
+                                        VelocityRangeType innerNormal = outerNormal;
+                                        innerNormal *= -1.0;
                                         PressureRangeType q_j( 0.0 );
                                         pressureBaseFunctionSetElement.evaluate( j, xInside, q_j );
                                         PressureRangeType q_i( 0.0 );
                                         pressureBaseFunctionSetNeighbour.evaluate( i, xOutside, q_i );
-                                        const double normal_times_normal = outerNormal * outerNormal;
+                                        const double normal_times_normal = outerNormal * innerNormal;
 //                                        VelocityRangeType u_p_p_minus_flux( 0.0 );
 //                                        discreteModel_.velocityPressureFlux(    intIt,
 //                                                                                0.0,
