@@ -604,11 +604,11 @@ class StokesPass
                             SigmaRangeType tau_j( 0.0 );
                             sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
                             sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
-                            const double tau_j_times_tau_i = colonProduct( tau_j, tau_i );
+                            const double tau_times_tau = colonProduct( tau_i, tau_j );
                             // compute M_i_j
                             M_i_j += elementVolume
                                 * integrationWeight
-                                * tau_j_times_tau_i;
+                                * tau_times_tau;
 //#ifndef NLOG
 //                            debugStream << "    - quadPoint " << quad;
 //                            Stuff::printFieldVector( x, "x", debugStream, "      " );
@@ -691,10 +691,10 @@ class StokesPass
                             VelocityRangeType divergence_of_tau_i( 0.0 );
                             const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
                             jacobianInverseTransposed.umv( divergence_of_tau_i_untransposed, divergence_of_tau_i );
-                            const double v_j_times_divergence_of_tau_i = v_j * divergence_of_tau_i;
+                            const double divergence_of_tau_times_v = divergence_of_tau_i * v_j;
                             W_i_j += elementVolume
                                 * integrationWeight
-                                * v_j_times_divergence_of_tau_i;
+                                * divergence_of_tau_times_v;
 //#ifndef NLOG
 //                            debugStream.Resume(); // enable logging
 //                            Stuff::printFieldMatrix( jacobianInverseTransposed, "jacobianInverseTransposed", debugStream, "      " );
@@ -785,12 +785,12 @@ class StokesPass
                             jacobianInverseTransposed.umv( gradient_of_v_i_untransposed, gradient_of_v_i );
                             SigmaRangeType tau_j( 0.0 );
                             sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
-                            const double tau_j_times_gradient_v_i =
-                                colonProduct( tau_j, gradient_of_v_i );
+                            const double gradient_of_v_times_t =
+                                colonProduct( gradient_of_v_i, tau_j );
                             X_i_j += elementVolume
                                 * integrationWeight
                                 * mu
-                                * tau_j_times_gradient_v_i;
+                                * gradient_of_v_times_t;
 //#ifndef NLOG
 //                            debugStream << "    - quadPoint " << quad;
 //                            Stuff::printFieldVector( x, "x", debugStream, "      " );
@@ -876,11 +876,11 @@ class StokesPass
                             const double divergence_of_v_i = velocityDivergenceOutOfGradient( gradient_of_v_i );
                             PressureRangeType q_j( 0.0 );
                             pressureBaseFunctionSetElement.evaluate( j, x, q_j );
-                            const double q_j_times_divergence_of_v_i = q_j * divergence_of_v_i;
+                            const double divergence_of_v_times_q = divergence_of_v_i * q_j;
                             Z_i_j += -1.0
                                 * elementVolume
                                 * integrationWeight
-                                * q_j_times_divergence_of_v_i;
+                                * divergence_of_v_times_q;
 //#ifndef NLOG
 //                            debugStream << "    - quadPoint " << quad;
 //                            Stuff::printFieldVector( x, "x", debugStream, "      " );
@@ -1024,11 +1024,11 @@ class StokesPass
                             const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
                             VelocityRangeType gradient_of_q_i( 0.0 );
                             jacobianInverseTransposed.umv( gradient_of_q_i_untransposed, gradient_of_q_i );
-                            const double v_j_times_gradient_of_q_i = v_j * gradient_of_q_i;
+                            const double gradient_of_q_times_v = gradient_of_q_i * v_j;
                             E_i_j += -1.0
                                 * elementVolume
                                 * integrationWeight
-                                * v_j_times_gradient_of_q_i;
+                                * gradient_of_q_times_v;
 //#ifndef NLOG
 //                            debugStream << "    - quadPoint " << quad;
 //                            Stuff::printFieldVector( x, "x", debugStream, "      " );
@@ -1198,8 +1198,7 @@ class StokesPass
                                         velocityBaseFunctionSetElement.evaluate( j, x, v_j );
                                         VelocityRangeType tau_times_normal( 0.0 );
                                         tau_i.mv( outerNormal, tau_times_normal );
-                                        double v_times_tau_times_n = v_j * tau_times_normal;
-                                        v_times_tau_times_n *= 0.5;
+                                        double v_times_tau_times_normal = v_j * tau_times_normal;
 //                                        VelocityRangeType u_sigma_u_plus_flux( 0.0 );
 //                                        discreteModel_.velocitySigmaFlux(   intIt,
 //                                                                            0.0,
@@ -1210,10 +1209,10 @@ class StokesPass
 //                                        VelocityRangeType tau_i_times_n_t( 0.0 );
 //                                        tau_i.mv( outerNormal, tau_i_times_n_t );
 //                                        const double flux_times_tau_i_times_n_t = u_sigma_u_plus_flux * tau_i_times_n_t;
-                                        W_i_j += -1.0
+                                        W_i_j += -0.5
                                             * elementVolume
                                             * integrationWeight
-                                            * v_times_tau_times_n;
+                                            * v_times_tau_times_normal;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 //                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -1287,16 +1286,13 @@ class StokesPass
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
 //                                        // compute \hat{u}_{\sigma}^{U^{-}}(v_{j})\cdot\tau_{j}\cdot n_{T}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
-                                        VelocityRangeType innerNormal = outerNormal;
-                                        innerNormal *= -1.0;
                                         SigmaRangeType tau_i( 0.0 );
                                         sigmaBaseFunctionSetNeighbour.evaluate( i, xOutside, tau_i );
                                         VelocityRangeType v_j( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
                                         VelocityRangeType tau_times_normal( 0.0 );
-                                        tau_i.mv( innerNormal, tau_times_normal );
-                                        double v_times_tau_times_n = v_j * tau_times_normal;
-                                        v_times_tau_times_n *= 0.5;
+                                        tau_i.mv( outerNormal, tau_times_normal );
+                                        double v_times_tau_times_normal = v_j * tau_times_normal;
 //                                        VelocityRangeType u_sigma_u_plus_flux( 0.0 );
 //                                        discreteModel_.velocitySigmaFlux(   intIt,
 //                                                                            0.0,
@@ -1307,10 +1303,10 @@ class StokesPass
 //                                        VelocityRangeType tau_i_times_n_t( 0.0 );
 //                                        tau_i.mv( outerNormal, tau_i_times_n_t );
 //                                        const double flux_times_tau_i_times_n_t = u_sigma_u_plus_flux * tau_i_times_n_t;
-                                        W_i_j += -1.0
+                                        W_i_j += 0.5
                                             * elementVolume
                                             * integrationWeight
-                                            * v_times_tau_times_n;
+                                            * v_times_tau_times_normal;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 ////                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -1404,9 +1400,9 @@ class StokesPass
                                         sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
                                         VelocityRangeType v_i( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( i, x, v_i );
-                                        VelocityRangeType tau_times_n( 0.0 );
-                                        tau_j.mv( outerNormal, tau_times_n );
-                                        const double v_times_tau_times_n = v_i * tau_times_n;
+                                        VelocityRangeType tau_times_normal( 0.0 );
+                                        tau_j.mv( outerNormal, tau_times_normal );
+                                        const double v_times_tau_times_normal = v_i * tau_times_normal;
 //                                        SigmaRangeType sigma_sigma_plus_flux( 0.0 );
 //                                        discreteModel_.sigmaFlux(   intIt,
 //                                                                    0.0,
@@ -1421,7 +1417,7 @@ class StokesPass
                                             * elementVolume
                                             * integrationWeight
                                             * mu
-                                            * v_times_tau_times_n;
+                                            * v_times_tau_times_normal;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 //                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -1494,15 +1490,13 @@ class StokesPass
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
 //                                        // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
-                                        VelocityRangeType innerNormal = outerNormal;
-                                        innerNormal *= -1.0;
                                         SigmaRangeType tau_j( 0.0 );
                                         sigmaBaseFunctionSetElement.evaluate( j, xInside, tau_j );
                                         VelocityRangeType v_i( 0.0 );
                                         velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
-                                        VelocityRangeType tau_times_n( 0.0 );
-                                        tau_j.mv( innerNormal, tau_times_n );
-                                        const double v_times_tau_times_n = v_i * tau_times_n;
+                                        VelocityRangeType tau_times_normal( 0.0 );
+                                        tau_j.mv( outerNormal, tau_times_normal );
+                                        const double v_times_tau_times_normal = v_i * tau_times_normal;
 //                                        SigmaRangeType sigma_sigma_minus_flux( 0.0 );
 //                                        discreteModel_.sigmaFlux(   intIt,
 //                                                                    0.0,
@@ -1513,11 +1507,11 @@ class StokesPass
 //                                        VelocityRangeType flux_times_n_t( 0.0 );
 //                                        sigma_sigma_minus_flux.mv( outerNormal, flux_times_n_t );
 //                                        const double v_i_times_flux_times_n_t = v_i * flux_times_n_t;
-                                        X_i_j += -0.5
+                                        X_i_j += 0.5
                                             * elementVolume
                                             * integrationWeight
                                             * mu
-                                            * v_times_tau_times_n;
+                                            * v_times_tau_times_normal;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 ////                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -1609,10 +1603,7 @@ class StokesPass
                                         velocityBaseFunctionSetElement.evaluate( j, x, v_j );
                                         VelocityRangeType v_i( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( i, x, v_i );
-                                        const SigmaRangeType v_otimes_normal = dyadicProduct( v_j, outerNormal );
-                                        VelocityRangeType v_otimes_normal_times_normal( 0.0 );
-                                        v_otimes_normal.mv( outerNormal, v_otimes_normal_times_normal );
-                                        const double v_times_v_otimes_normal_times_normal = v_i * v_otimes_normal_times_normal;
+                                        const double v_times_v = v_i * v_j;
 //                                        SigmaRangeType sigma_u_plus_flux( 0.0 );
 //                                        discreteModel_.sigmaFlux(   intIt,
 //                                                                    0.0,
@@ -1623,11 +1614,11 @@ class StokesPass
 //                                        VelocityRangeType flux_times_n_t( 0.0 );
 //                                        sigma_u_plus_flux.mv( outerNormal, flux_times_n_t );
 //                                        const double v_i_times_flux_times_n_t = v_i * flux_times_n_t;
-                                        Y_i_j += C_11
+                                        Y_i_j += ( 1.0 / getLenghtOfIntersection( intIt ) )
                                             * elementVolume
                                             * integrationWeight
                                             * mu
-                                            * v_times_v_otimes_normal_times_normal;
+                                            * v_times_v;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 //                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -1700,16 +1691,11 @@ class StokesPass
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
 //                                        // compute -\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
-                                        VelocityRangeType innerNormal = outerNormal;
-                                        innerNormal *= -1.0;
                                         VelocityRangeType v_i( 0.0 );
                                         velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
                                         VelocityRangeType v_j( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
-                                        const SigmaRangeType v_otimes_normal = dyadicProduct( v_j, outerNormal );
-                                        VelocityRangeType v_otimes_normal_times_normal( 0.0 );
-                                        v_otimes_normal.mv( innerNormal, v_otimes_normal_times_normal );
-                                        const double v_times_v_otimes_normal_times_normal = v_i * v_otimes_normal_times_normal;
+                                        const double v_times_v = v_i * v_j;
 //                                        SigmaRangeType sigma_u_minus_flux( 0.0 );
 //                                        discreteModel_.sigmaFlux(   intIt,
 //                                                                    0.0,
@@ -1720,11 +1706,11 @@ class StokesPass
 //                                        VelocityRangeType flux_times_n_t( 0.0 );
 //                                        sigma_u_minus_flux.mv( outerNormal, flux_times_n_t );
 //                                        const double v_i_times_flux_times_n_t = v_i * flux_times_n_t;
-                                        Y_i_j += C_11
+                                        Y_i_j += ( -1.0 / getLenghtOfIntersection( intIt ) )
                                             * elementVolume
                                             * integrationWeight
                                             * mu
-                                            * v_times_v_otimes_normal_times_normal;
+                                            * v_times_v;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 ////                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -1815,9 +1801,10 @@ class StokesPass
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                         VelocityRangeType v_i( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( i, x, v_i );
-                                        const double v_times_normal = v_i * outerNormal;
                                         PressureRangeType q_j( 0.0 );
                                         pressureBaseFunctionSetElement.evaluate( j, x, q_j );
+                                        const double v_times_normal = v_i * outerNormal;
+                                        const double q_times_v_times_normal = q_j * v_times_normal;
 //                                        PressureRangeType p_p_plus_flux( 0.0 );
 //                                        discreteModel_.pressureFlux(    intIt,
 //                                                                        0.0,
@@ -1828,8 +1815,7 @@ class StokesPass
                                         Z_i_j += 0.5
                                             * elementVolume
                                             * integrationWeight
-                                            * v_times_normal
-                                            * q_j;
+                                            * q_times_v_times_normal;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 //                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -1901,13 +1887,12 @@ class StokesPass
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
 //                                        // compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
-                                        VelocityRangeType innerNormal = outerNormal;
-                                        innerNormal *= -1.0;
                                         VelocityRangeType v_i( 0.0 );
                                         velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
-                                        const double v_times_normal = v_i * innerNormal;
                                         PressureRangeType q_j( 0.0 );
                                         pressureBaseFunctionSetElement.evaluate( j, xInside, q_j );
+                                        const double v_times_normal = v_i * outerNormal;
+                                        const double q_times_v_times_normal = q_j * v_times_normal;
 //                                        PressureRangeType p_p_minus_flux( 0.0 );
 //                                        discreteModel_.pressureFlux(    intIt,
 //                                                                        0.0,
@@ -1915,11 +1900,10 @@ class StokesPass
 //                                                                        DiscreteModelType::inside,
 //                                                                        q_j,
 //                                                                        p_p_minus_flux );
-                                        Z_i_j += 0.5
+                                        Z_i_j += -0.5
                                             * elementVolume
                                             * integrationWeight
-                                            * v_times_normal
-                                            * q_j;
+                                            * q_times_v_times_normal;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 ////                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -2009,9 +1993,10 @@ class StokesPass
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                         VelocityRangeType v_j( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-                                        const double v_times_normal = v_j * outerNormal;
                                         PressureRangeType q_i( 0.0 );
                                         pressureBaseFunctionSetElement.evaluate( i, x, q_i );
+                                        const double v_times_normal = v_j * outerNormal;
+                                        const double q_times_v_times_normal = q_i * v_times_normal;
 //                                        VelocityRangeType u_p_u_plus_flux( 0.0 );
 //                                        discreteModel_.velocityPressureFlux(    intIt,
 //                                                                                0.0,
@@ -2024,8 +2009,7 @@ class StokesPass
                                         E_i_j += 0.5
                                             * elementVolume
                                             * integrationWeight
-                                            * v_times_normal
-                                            * q_i;
+                                            * q_times_v_times_normal;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 //                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -2098,13 +2082,12 @@ class StokesPass
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
 //                                        // compute \hat{u}_{p}^{U^{-}}(v_{j})\cdot n_{T}q_{i}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
-                                        VelocityRangeType innerNormal = outerNormal;
-                                        innerNormal *= -1.0;
                                         VelocityRangeType v_j( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
-                                        const double v_times_normal = v_j * innerNormal;
                                         PressureRangeType q_i( 0.0 );
                                         pressureBaseFunctionSetNeighbour.evaluate( i, xOutside, q_i );
+                                        const double v_times_normal = v_j * outerNormal;
+                                        const double q_times_v_times_normal = q_i * v_times_normal;
 //                                        VelocityRangeType u_p_u_minus_flux( 0.0 );
 //                                        discreteModel_.velocityPressureFlux(    intIt,
 //                                                                                0.0,
@@ -2114,11 +2097,10 @@ class StokesPass
 //                                                                                u_p_u_minus_flux );
 //                                        const double flux_times_n_t = u_p_u_minus_flux * outerNormal;
 //                                        const double flux_times_n_t_times_q_i = q_i * flux_times_n_t;
-                                        E_i_j += 0.5
+                                        E_i_j += -0.5
                                             * elementVolume
                                             * integrationWeight
-                                            * v_times_normal
-                                            * q_i;
+                                            * q_times_v_times_normal;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 ////                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -2210,7 +2192,7 @@ class StokesPass
                                         pressureBaseFunctionSetElement.evaluate( j, x, q_j );
                                         PressureRangeType q_i( 0.0 );
                                         pressureBaseFunctionSetElement.evaluate( i, x, q_i );
-                                        const double normal_times_normal = outerNormal * outerNormal;
+                                        const double q_times_q = q_i * q_j;
 //                                        VelocityRangeType u_p_p_plus_flux( 0.0 );
 //                                        discreteModel_.velocityPressureFlux(    intIt,
 //                                                                                0.0,
@@ -2221,12 +2203,10 @@ class StokesPass
 //                                        const double flux_times_n_t = u_p_p_plus_flux
 //                                            * outerNormal;
 //                                        const double flux_times_n_t_times_q_i = q_i * flux_times_n_t;
-                                        R_i_j += D_11
+                                        R_i_j += getLenghtOfIntersection( intIt )
                                             * elementVolume
                                             * integrationWeight
-                                            * q_j
-                                            * normal_times_normal
-                                            * q_j;
+                                            * q_times_q;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 //                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -2299,13 +2279,11 @@ class StokesPass
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
 //                                        // compute \hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
-                                        VelocityRangeType innerNormal = outerNormal;
-                                        innerNormal *= -1.0;
                                         PressureRangeType q_j( 0.0 );
                                         pressureBaseFunctionSetElement.evaluate( j, xInside, q_j );
                                         PressureRangeType q_i( 0.0 );
                                         pressureBaseFunctionSetNeighbour.evaluate( i, xOutside, q_i );
-                                        const double normal_times_normal = outerNormal * innerNormal;
+                                        const double q_times_q = q_i * q_j;
 //                                        VelocityRangeType u_p_p_minus_flux( 0.0 );
 //                                        discreteModel_.velocityPressureFlux(    intIt,
 //                                                                                0.0,
@@ -2316,12 +2294,10 @@ class StokesPass
 //                                        const double flux_times_n_t = u_p_p_minus_flux
 //                                            * outerNormal;
 //                                        const double flux_times_n_t_times_q_i = q_i * flux_times_n_t;
-                                        R_i_j += D_11
+                                        R_i_j += getLenghtOfIntersection( intIt )
                                             * elementVolume
                                             * integrationWeight
-                                            * q_j
-                                            * normal_times_normal
-                                            * q_i;
+                                            * q_times_q;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 ////                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -2695,12 +2671,9 @@ class StokesPass
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                         VelocityRangeType v_j( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-                                        const SigmaRangeType v_otimes_normal = dyadicProduct( v_j, outerNormal );
-                                        VelocityRangeType v_otimes_normal_times_normal( 0.0 );
-                                        v_otimes_normal.mv( outerNormal, v_otimes_normal_times_normal );
                                         VelocityRangeType v_i( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( i, x, v_i );
-                                        const double v_times_v_otimes_normal_times_normal = v_i * v_otimes_normal_times_normal;
+                                        const double v_times_v = v_i * v_j;
 //                                        SigmaRangeType sigma_u_plus_flux( 0.0 );
 //                                        discreteModel_.sigmaBoundaryFlux(   intIt,
 //                                                                            0.0,
@@ -2710,11 +2683,11 @@ class StokesPass
 //                                        VelocityRangeType flux_times_n_t( 0.0 );
 //                                        sigma_u_plus_flux.mv( outerNormal, flux_times_n_t );
 //                                        const double v_i_times_flux_times_n_t = v_i * flux_times_n_t;
-                                        Y_i_j += C_11
+                                        Y_i_j += ( 1.0 / getLenghtOfIntersection( intIt ) )
                                             * elementVolume
                                             * integrationWeight
                                             * mu
-                                            * v_times_v_otimes_normal_times_normal;
+                                            * v_times_v;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 //                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -2803,9 +2776,10 @@ class StokesPass
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                         VelocityRangeType v_i( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( i, x, v_i );
-                                        const double v_times_normal = v_i * outerNormal;
                                         PressureRangeType q_j( 0.0 );
                                         pressureBaseFunctionSetElement.evaluate( j, x, q_j );
+                                        const double v_times_normal = v_i * outerNormal;
+                                        const double q_times_v_times_normal = q_j * v_times_normal;
 //                                        PressureRangeType p_p_plus_flux( 0.0 );
 //                                        discreteModel_.pressureBoundaryFlux(    intIt,
 //                                                                        0.0,
@@ -2814,8 +2788,7 @@ class StokesPass
 //                                                                        p_p_plus_flux );
                                         Z_i_j += elementVolume
                                             * integrationWeight
-                                            * q_j
-                                            * v_times_normal;
+                                            * q_times_v_times_normal;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 //                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -2896,12 +2869,9 @@ class StokesPass
                                     const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     VelocityRangeType gD( 0.0 );
                                     discreteModel_.dirichletData( 0.0, globalX, gD );
-                                    const SigmaRangeType gD_otimes_normal = dyadicProduct( gD, outerNormal );
-                                    VelocityRangeType gD_otimes_normal_times_normal( 0.0 );
-                                    gD_otimes_normal.mv( outerNormal, gD_otimes_normal_times_normal );
                                     VelocityRangeType v_j( 0.0 );
                                     velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-                                    const double v_times_gD_otimes_normal_times_normal = v_j * gD_otimes_normal_times_normal;
+                                    const double v_times_gD = v_j * gD;
 //                                    // compute \mu v_{j}\cdot\hat{\sigma}^{RHS}()\cdot n_{T}
 //                                    if ( discreteModel_.hasSigmaFlux() ) {
 //                                        SigmaRangeType sigma_rhs_flux( 0.0 );
@@ -2912,11 +2882,11 @@ class StokesPass
 //                                        VelocityRangeType flux_times_n_t( 0.0 );
 //                                        sigma_rhs_flux.mv( outerNormal, flux_times_n_t );
 //                                        const double v_j_times_flux_times_n_t = v_j * flux_times_n_t;
-                                        H2_j += C_11
+                                        H2_j += ( 1.0 / getLenghtOfIntersection( intIt ) )
                                             * elementVolume
                                             * integrationWeight
                                             * mu
-                                            * v_times_gD_otimes_normal_times_normal;
+                                            * v_times_gD;
 //#ifndef NLOG
 //                                        debugStream << "      - quadPoint " << quad;
 //                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -3197,9 +3167,10 @@ class StokesPass
                                     const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
                                     VelocityRangeType gD( 0.0 );
                                     discreteModel_.dirichletData( 0.0, globalX, gD );
-                                    const double gD_times_normal = gD * outerNormal;
                                     PressureRangeType q_j( 0.0 );
                                     pressureBaseFunctionSetElement.evaluate( j, x, q_j );
+                                    const double gD_times_normal = gD * outerNormal;
+                                    const double q_times_gD_times_normal = q_j * gD_times_normal;
 //                                    VelocityRangeType u_p_rhs_flux( 0.0 );
 //                                    discreteModel_.velocityPressureBoundaryFlux( intIt,
 //                                                                                0.0,
@@ -3209,10 +3180,10 @@ class StokesPass
 //                                        * outerNormal;
 //                                    const double flux_times_n_t_times_q_j = q_j
 //                                        * flux_times_n_t;
-                                    H3_j += elementVolume
+                                    H3_j += -1.0
+                                        * elementVolume
                                         * integrationWeight
-                                        * gD_times_normal
-                                        * q_j;
+                                        * q_times_gD_times_normal;
 //#ifndef NLOG
 //                                    debugStream << "      - quadPoint " << quad;
 //                                    Stuff::printFieldVector( x, "x", debugStream, "        " );
