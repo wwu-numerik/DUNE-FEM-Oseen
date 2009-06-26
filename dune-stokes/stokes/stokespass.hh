@@ -566,7 +566,7 @@ class StokesPass
                 const int logBaseJ = Parameters().getParam( "logBaseJ", 0 );
                 debugStream.Suspend(); // disable logging
 #endif
-//#ifndef SKIP_VOLUME_INTEGRALS
+#ifndef SKIP_VOLUME_INTEGRALS
                 // compute volume integrals
 
                 //                                                     // we will call this one
@@ -1074,8 +1074,8 @@ class StokesPass
 //#endif
                     }
                 } // done computing E's volume integral
-//#endif //SKIP VOLUME
-//#ifndef SKIP_SURFACE_INTEGRALS
+#endif //SKIP VOLUME
+#ifndef SKIP_SURFACE_INTEGRALS
                 // walk the intersections
                 IntersectionIteratorType intItEnd = gridPart_.iend( entity );
                 for (   IntersectionIteratorType intIt = gridPart_.ibegin( entity );
@@ -3220,7 +3220,7 @@ class StokesPass
                     ++intersectionNR;
 #endif
                 } // done walking the neighbours
-//#endif //no_surface_ints
+#endif //no_surface_ints
 
 #ifndef NLOG
                 intersectionNR = 0;
@@ -3449,29 +3449,29 @@ class StokesPass
             Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
             Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
             Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
-            matlabLogStream << "\nA = Y - X * M_invers * W;" << std::endl;
-            matlabLogStream << "B = Z;" << std::endl;
-            matlabLogStream << "B_T = - E;" << std::endl;
-            matlabLogStream << "C = R;" << std::endl;
-            matlabLogStream << "F = H2 - X * M_invers * H1;" << std::endl;
-            matlabLogStream << "G = - H3;" << std::endl;
-            matlabLogStream << "A_invers = inv( A );" << std::endl;
-            matlabLogStream << "schur_S = B_T * A_invers * B + C;" << std::endl;
-            matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
-            matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
-            matlabLogStream << "u = A_invers * ( F - B * p );" << std::endl;
-//            matlabLogStream << "mirko_W = -(1/M_invers(1,1)) .* (mirko_W);" << std::endl;
-//            matlabLogStream << "mirko_E = -(mirko_E);" << std::endl;
-//            matlabLogStream << "mirko_H1 = (1/M_invers(1,1)) .* (mirko_H1);" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( W - mirko_W ) = %d\\n', norm( W - mirko_W ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( X - mirko_X ) = %d\\n', norm( X - mirko_X ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( Y - mirko_Y ) = %d\\n', norm( Y - mirko_Y ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( Z - mirko_Z ) = %d\\n', norm( Z - mirko_Z ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( E - mirko_E ) = %d\\n', norm( E - mirko_E ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( R - mirko_R ) = %d\\n', norm( R - mirko_R ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( H1 - mirko_H1 ) = %d\\n', norm( H1 - mirko_H1 ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( H2 - mirko_H3 ) = %d\\n', norm( H2 - mirko_H2 ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( H3 - mirko_H3 ) = %d\\n', norm( H3 - mirko_H3 ) );\n" << std::endl;
+//            matlabLogStream << "\nA = Y - X * M_invers * W;" << std::endl;
+//            matlabLogStream << "B = Z;" << std::endl;
+//            matlabLogStream << "B_T = - E;" << std::endl;
+//            matlabLogStream << "C = R;" << std::endl;
+//            matlabLogStream << "F = H2 - X * M_invers * H1;" << std::endl;
+//            matlabLogStream << "G = - H3;" << std::endl;
+//            matlabLogStream << "A_invers = inv( A );" << std::endl;
+//            matlabLogStream << "schur_S = B_T * A_invers * B + C;" << std::endl;
+//            matlabLogStream << "schur_f = B_T * A_invers * F - G;" << std::endl;
+//            matlabLogStream << "p = schur_S \\ schur_f;" << std::endl;
+//            matlabLogStream << "u = A_invers * ( F - B * p );" << std::endl;
+            matlabLogStream << "mirko_W = -(1/M_invers(1,1)) .* (mirko_W);" << std::endl;
+            matlabLogStream << "mirko_E = -(mirko_E);" << std::endl;
+            matlabLogStream << "mirko_H1 = (1/M_invers(1,1)) .* (mirko_H1);" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( W - mirko_W ) = %d\\n', norm( W - mirko_W ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( X - mirko_X ) = %d\\n', norm( X - mirko_X ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( Y - mirko_Y ) = %d\\n', norm( Y - mirko_Y ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( Z - mirko_Z ) = %d\\n', norm( Z - mirko_Z ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( E - mirko_E ) = %d\\n', norm( E - mirko_E ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( R - mirko_R ) = %d\\n', norm( R - mirko_R ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( H1 - mirko_H1 ) = %d\\n', norm( H1 - mirko_H1 ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( H2 - mirko_H3 ) = %d\\n', norm( H2 - mirko_H2 ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( H3 - mirko_H3 ) = %d\\n', norm( H3 - mirko_H3 ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( A - mirko_A ) = %d\\n', norm( A - mirko_A, inf ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( B - mirko_B ) = %d\\n', norm( B - mirko_B, inf ) );\n" << std::endl;
 //            matlabLogStream << "fprintf(1, 'norm( B_T - mirko_B_T ) = %d\\n', norm( B_T - mirko_B_T, inf ) );\n" << std::endl;
@@ -3713,7 +3713,6 @@ class StokesPass
             const DomainType difference = cornerOne - cornerTwo;
             return difference.two_norm();
         }
-
 
 };
 
