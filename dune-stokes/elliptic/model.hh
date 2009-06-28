@@ -673,6 +673,179 @@ namespace Dune
     }
   }; // end class Elliptic3dExactSolution
 
+  struct AortaModelProperties
+  {
+    enum { hasDirichletValues = false };
+    enum { hasNeumannValues = true };
+    enum { hasRobinValues = false };
+    enum { hasGeneralizedNeumannValues = false };
+    enum { hasConvectiveFlux = false };
+    enum { hasMass = false };
+    enum { hasSource = false };
+  };
+
+  template< class FunctionSpaceImp >
+  class AortaModel
+  : public LinearEllipticModelDefault< FunctionSpaceImp, AortaModel < FunctionSpaceImp >, AortaModelProperties >
+  {
+  public:  
+    typedef FunctionSpaceImp FunctionSpaceType;
+    
+  private:
+    typedef AortaModel< FunctionSpaceType > ThisType;
+    typedef LinearEllipticModelDefault< FunctionSpaceType, ThisType, AortaModelProperties > BaseType;
+
+  public:
+    typedef typename BaseType :: BoundaryType BoundaryType;
+
+    typedef typename FunctionSpaceType :: DomainType DomainType;
+    typedef typename FunctionSpaceType :: RangeType RangeType;
+    typedef typename FunctionSpaceType :: JacobianRangeType JacobianRangeType;
+
+    typedef typename FunctionSpaceType :: DomainFieldType DomainFieldType;
+    typedef typename FunctionSpaceType :: RangeFieldType RangeFieldType;
+    
+  public:
+    using BaseType :: diffusiveFlux;
+    using BaseType :: convectiveFlux;
+    using BaseType :: mass;
+    using BaseType :: source;
+
+  public:
+    //! constructor with functionspace argument such that the space and the 
+    //! grid is available
+    inline AortaModel ()
+    {
+      // currently implementation is fitted to 3 dimensions
+      assert(dimworld==3);
+    }    
+    
+    //! return boundary type of a boundary point p used in a quadrature
+    template< class IntersectionType >
+    inline BoundaryType boundaryType( const IntersectionType &intersection ) const
+    {
+      return BaseType :: Neumann;
+      const int boundaryId = intersection.boundaryId();
+      
+      switch( boundaryId )
+      {
+      case 1:
+        return BaseType :: Dirichlet;
+        
+      case 2:
+        return BaseType :: Neumann;
+        
+      case 3:
+        return BaseType :: Robin;
+        
+      default:
+        DUNE_THROW( RangeError, "Unknown boundary id." );
+      }
+   }
+
+  //! determine dirichlet value in a boundary point used in a quadrature
+    template< class IntersectionType, class QuadratureType >
+    inline void dirichletValues( const IntersectionType &intersection,
+                                 const QuadratureType& quad, int p, 
+                                 RangeType& ret) const
+    {
+      const DomainType& glob = intersection.inside()->geometry().global(quad.point(p)); 
+      ret[0] = glob[0] * ( 1.0 + glob[1]*glob[2]);
+    }
+    
+  //! determine neumann value in a boundary point used in a quadrature
+    template< class IntersectionType, class QuadratureType >
+    inline void neumannValues( const IntersectionType &intersection,
+                               const QuadratureType& quad, int p, 
+                               RangeType& ret) const
+    {
+      const int boundaryId = intersection.boundaryId();
+      double fac = 1.0;
+      switch( boundaryId )
+      {
+      case 1:
+        ret[0] = 0; break;
+        
+      case 2:
+        ret[0] = fac; break;
+        
+      case 3:
+      case 4:
+      case 5:
+      case 6:
+        ret[0] = -1 * fac; break;
+        
+      default:
+        DUNE_THROW( RangeError, "Unknown boundary id." );
+      }
+    }
+
+  //! determine robin value in a boundary point used in a quadrature
+    template< class IntersectionType, class QuadratureType >
+    inline void robinValues( const IntersectionType &intersection,
+                             const QuadratureType& quad, int p, 
+                             RangeType& ret) const
+    {
+      const DomainType& glob = intersection.inside()->geometry().global(quad.point(p)); 
+      ret[0] = 4 * glob[1] * glob[2] - 2* glob[1] - glob[2] + 
+          4.0 - SQR(glob[1])*glob[2];
+    }
+    
+    template< class EntityType, class PointType > 
+    inline void mass ( const EntityType &entity,
+                       const PointType &x,
+                       RangeType &ret ) const
+    {
+      const DomainType &global = entity.geometry().global( coordinate( x ) );
+      ret = global[ 0 ] * global[ 1 ];
+    }
+
+    template< class EntityType, class PointType >
+    inline void source ( const EntityType &entity,
+                         const PointType &x,
+                         RangeType &ret ) const
+    {
+      const DomainType &global = entity.geometry().global( coordinate( x ) ); 
+      ret = 2 * global[2] + 3* global[1] + 3 * global[0] + 
+           SQR(global[1])*global[2] + 2* global[0] * global[1]* global[2] + 
+                global[0] * SQR(global[1]) + SQR(global[0]*global[1]) * global[2] + 
+                SQR(global[0]) * global[1];
+    }
+
+    template< class EntityType, class PointType >
+    inline void diffusiveFlux ( const EntityType &entity,
+                                const PointType &x,
+                                const JacobianRangeType &gradient,
+                                JacobianRangeType &flux ) const
+    {
+      const DomainType &grad = gradient[ 0 ];
+      flux[ 0 ][ 0 ] = 3 * grad[ 0 ] - grad[ 1 ]- grad[ 2 ];
+      flux[ 0 ][ 1 ] = -grad[ 0 ] + 3 * grad[ 1 ] - grad[ 2 ];
+      flux[ 0 ] [2 ] = -grad[ 0 ] - grad[ 1 ] + 3 * grad[ 2 ];
+    }
+
+    template< class EntityType, class PointType >
+    inline void convectiveFlux( const EntityType &entity,
+                                const PointType &x,
+                                const RangeType &phi,
+                                JacobianRangeType &ret ) const
+    {
+      const DomainType global = entity.geometry().global( coordinate( x ) );
+      ret[ 0 ][ 0 ] = -global[ 1 ] * phi[ 0 ];
+      ret[ 0 ][ 1 ] = -global[ 1 ] * phi[ 0 ];
+      ret[ 0 ][ 2 ] = -global[ 1 ] * phi[ 0 ];
+    }
+
+    //! the coefficient for robin boundary condition
+    template< class IntersectionType, class QuadratureType >
+    inline RangeFieldType robinAlpha ( const IntersectionType &intersection,
+                                       const QuadratureType &quadrature,
+                                       int pt ) const
+    { 
+      return 1;
+    }
+  };  // end of AortaModel class
+
 } // end namespace Dune
 
 #endif

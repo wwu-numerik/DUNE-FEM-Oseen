@@ -176,13 +176,15 @@ typedef EllipticElementIntegratorTraits< GridType, polynomialOrder >
 
 typedef ElementIntegratorTraitsType :: FunctionSpaceType FunctionSpaceType;
 */
+#ifdef AORTA
+    typedef AortaModel< FunctionSpaceType > EllipticModelType;
+    typedef Elliptic3dExactSolution< FunctionSpaceType > ExactSolutionType;
 
-#ifdef POISSON
+#elif defined(POISSON)
   typedef PoissonModel< FunctionSpaceType > EllipticModelType;
   typedef PoissonExactSolution< FunctionSpaceType > ExactSolutionType;
-#endif
 
-#ifdef ELLIPTIC
+#elif defined(ELLIPTIC)
   #if PDIM==2
     typedef Elliptic2dModel< FunctionSpaceType > EllipticModelType;
     typedef Elliptic2dExactSolution< FunctionSpaceType > ExactSolutionType;
