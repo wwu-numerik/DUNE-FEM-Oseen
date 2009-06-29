@@ -679,21 +679,21 @@ namespace Dune
     enum { hasNeumannValues = false };
     enum { hasRobinValues = false };
     enum { hasGeneralizedNeumannValues = false };
-    enum { hasConvectiveFlux = false };
-    enum { hasMass = false };
+    enum { hasConvectiveFlux = true };
+    enum { hasMass = true };
     enum { hasSource = false };
   };
 
   template< class FunctionSpaceImp >
   class AortaModel
-  : public LinearEllipticModelDefault< FunctionSpaceImp, AortaModel < FunctionSpaceImp >, AortaModelProperties >
+  : public LinearEllipticModelDefault< FunctionSpaceImp, AortaModel < FunctionSpaceImp > >
   {
   public:
     typedef FunctionSpaceImp FunctionSpaceType;
 
   private:
     typedef AortaModel< FunctionSpaceType > ThisType;
-    typedef LinearEllipticModelDefault< FunctionSpaceType, ThisType, AortaModelProperties > BaseType;
+    typedef LinearEllipticModelDefault< FunctionSpaceType, ThisType > BaseType;
 
   public:
     typedef typename BaseType :: BoundaryType BoundaryType;
@@ -724,8 +724,9 @@ namespace Dune
     template< class IntersectionType >
     inline BoundaryType boundaryType( const IntersectionType &intersection ) const
     {
-//      return BaseType :: Neumann;
-      return BaseType :: Dirichlet;
+      return BaseType :: Neumann;
+//      return BaseType :: Dirichlet;
+
    }
 
   //! determine dirichlet value in a boundary point used in a quadrature
@@ -762,11 +763,8 @@ namespace Dune
                                const QuadratureType& quad, int p,
                                RangeType& ret) const
     {
-//        assert( false );
       const int boundaryId = intersection.boundaryId();
       double fac = 100.0;
-      double f = ret ;
-      ret = 1;
       switch( boundaryId )
       {
       case 1:
@@ -802,7 +800,6 @@ namespace Dune
     {
       const DomainType &global = entity.geometry().global( coordinate( x ) );
       ret = global[ 0 ] * global[ 1 ];
-      assert( false );
     }
 
     template< class EntityType, class PointType >
@@ -810,12 +807,7 @@ namespace Dune
                          const PointType &x,
                          RangeType &ret ) const
     {
-      const DomainType &global = entity.geometry().global( coordinate( x ) );
-      ret = 2 * global[2] + 3* global[1] + 3 * global[0] +
-           SQR(global[1])*global[2] + 2* global[0] * global[1]* global[2] +
-                global[0] * SQR(global[1]) + SQR(global[0]*global[1]) * global[2] +
-                SQR(global[0]) * global[1];
-        assert( false );
+      ret = RangeType( 0.0 );
     }
 
     template< class EntityType, class PointType >

@@ -14,9 +14,9 @@ LDADD = $(ALL_PKG_LDFLAGS) $(ALL_PKG_LIBS)
 noinst_PROGRAMS = elliptic
 elliptic_SOURCES = elliptic.cc
 
-AM_CPPFLAGS = $(ALL_PKG_CPPFLAGS) -DPOLORDER=$(POLORDER) -D$(PROBLEM) -Wall -DNDEBUG -O3 \
+AM_CPPFLAGS = $(ALL_PKG_CPPFLAGS) -DPOLORDER=$(POLORDER) -D$(PROBLEM) -Wall -O0 \
 	--param max-inline-insns-single=1000 --param large-function-growth=1500 \
-	-I../../dune-stuff/ 
+	-I../../dune-stuff/  -DDEBUG -g2
 #AM_CPPFLAGS = $(ALL_PKG_CPPFLAGS) -DPOLORDER=$(POLORDER) -Wall -g --param max-inline-insns-single=1000 --param large-function-growth=1500
 
 include $(top_srcdir)/am/global-rules
