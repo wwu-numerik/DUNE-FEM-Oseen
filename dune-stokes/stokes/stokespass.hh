@@ -122,6 +122,12 @@ class StokesPass
         typedef typename DiscreteSigmaFunctionSpaceType::RangeType
             SigmaRangeType;
 
+        typedef typename DiscreteSigmaFunctionSpaceType::BaseFunctionSetType::JacobianRangeType
+            SigmaJacobianRangeType;
+
+        typedef typename DiscreteVelocityFunctionSpaceType::BaseFunctionSetType::JacobianRangeType
+            VelocityJacobianRangeType;
+
         //! Vector type of the pressure's discrete function space's range
         typedef typename DiscretePressureFunctionSpaceType::RangeType
             PressureRangeType;
@@ -351,8 +357,8 @@ class StokesPass
             // of type sigma
             typedef typename DiscreteSigmaFunctionSpaceType::BaseFunctionSetType
                 SigmaBaseFunctionSetType;
-            typedef typename SigmaBaseFunctionSetType::JacobianRangeType
-                SigmaJacobianRangeType;
+//            typedef typename SigmaBaseFunctionSetType::JacobianRangeType
+//                SigmaJacobianRangeType;
             // of type u
             typedef typename DiscreteVelocityFunctionSpaceType::BaseFunctionSetType
                 VelocityBaseFunctionSetType;
@@ -684,14 +690,13 @@ class StokesPass
                             // compute v_j^t \cdot ( \nabla \cdot \tau_i^t )
                             VelocityRangeType v_j( 0.0 );
                             velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-////                            sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
-                            SigmaJacobianRangeType gradient_of_tau_i( 0.0 );
-                            sigmaBaseFunctionSetElement.jacobian( i, x, gradient_of_tau_i );
-                            const VelocityRangeType divergence_of_tau_i_untransposed = sigmaDivergenceOutOfGradient( gradient_of_tau_i );
-                            VelocityRangeType divergence_of_tau_i( 0.0 );
-                            const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
-                            jacobianInverseTransposed.umv( divergence_of_tau_i_untransposed, divergence_of_tau_i );
-                            const double divergence_of_tau_times_v = divergence_of_tau_i * v_j;
+//                            SigmaJacobianRangeType gradient_of_tau_i( 0.0 );
+//                            sigmaBaseFunctionSetElement.jacobian( i, x, gradient_of_tau_i );
+//                            const VelocityRangeType divergence_of_tau_i_untransposed = sigmaDivergenceOutOfGradient( gradient_of_tau_i );
+//                            VelocityRangeType divergence_of_tau_i( 0.0 );
+//                            const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
+//                            jacobianInverseTransposed.umv( divergence_of_tau_i_untransposed, divergence_of_tau_i );
+                            const double divergence_of_tau_times_v = sigmaBaseFunctionSetElement.evaluateGradientSingle( i, entity, x, prepareVelocityRangeTypeForSigmaDivergence( v_j ) );
                             W_i_j += elementVolume
                                 * integrationWeight
                                 * divergence_of_tau_times_v;
@@ -868,15 +873,15 @@ class StokesPass
                             // get the quadrature weight
                             const double integrationWeight = volumeQuadratureElement.weight( quad );
 //                            // compute q_{j}\cdot(\nabla\cdot v_i)
-                            SigmaRangeType gradient_of_v_i_untransposed( 0.0 );
-                            velocityBaseFunctionSetElement.jacobian( i, x, gradient_of_v_i_untransposed );
-                            const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
-                            SigmaRangeType gradient_of_v_i( 0.0 );
-                            jacobianInverseTransposed.umv( gradient_of_v_i_untransposed, gradient_of_v_i );
-                            const double divergence_of_v_i = velocityDivergenceOutOfGradient( gradient_of_v_i );
                             PressureRangeType q_j( 0.0 );
                             pressureBaseFunctionSetElement.evaluate( j, x, q_j );
-                            const double divergence_of_v_times_q = divergence_of_v_i * q_j;
+//                            SigmaRangeType gradient_of_v_i_untransposed( 0.0 );
+//                            velocityBaseFunctionSetElement.jacobian( i, x, gradient_of_v_i_untransposed );
+//                            const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
+//                            SigmaRangeType gradient_of_v_i( 0.0 );
+//                            jacobianInverseTransposed.umv( gradient_of_v_i_untransposed, gradient_of_v_i );
+//                            const double divergence_of_v_i = velocityDivergenceOutOfGradient( gradient_of_v_i );
+                            const double divergence_of_v_times_q = velocityBaseFunctionSetElement.evaluateGradientSingle( i, entity, x, preparePressureRangeTypeForVelocityDivergence( q_j ) );
                             Z_i_j += -1.0
                                 * elementVolume
                                 * integrationWeight
@@ -3509,22 +3514,22 @@ class StokesPass
             Stuff::LocalMatrixPrintFunctor< ZmatrixType,FunctorStream> f_Z ( Zmatrix, functorStream, "Z" );
             Stuff::LocalMatrixPrintFunctor< RmatrixType,FunctorStream> f_R ( Rmatrix, functorStream, "R" );
             if( Wprint ) {
-//                gw( f_W );
+                gw( f_W );
             }
             if( Xprint ) {
-//                gw( f_X );
+                gw( f_X );
             }
             if( Yprint ) {
-//                gw( f_Y );
+                gw( f_Y );
             }
             if( Zprint ) {
-//                gw( f_Z );
+                gw( f_Z );
             }
             if( Eprint ) {
-//                gw( f_E );
+                gw( f_E );
             }
             if( Rprint ) {
-//                gw( f_R );
+                gw( f_R );
             }
 #endif //NLOG
 
@@ -3713,6 +3718,34 @@ class StokesPass
             const DomainType difference = cornerOne - cornerTwo;
             return difference.two_norm();
         }
+
+        // VelocityRangeType is expected to be a FieldVector,
+        // SigmaJacobianRangeType to be a Matrixmapping and
+        // SigmaJacobianRangeType[i] to be a FieldVector
+        SigmaJacobianRangeType prepareVelocityRangeTypeForSigmaDivergence( const VelocityRangeType& arg ) const
+        {
+            SigmaJacobianRangeType ret( 0.0 );
+            assert( arg.dim() == ret[0].dim() );
+            for ( int i = 0; i < arg.dim() ; ++i ) {
+                for ( int j = 0; j < arg.dim(); ++j ) {
+                    VelocityRangeType row( 0.0 );
+                    row[ j ] = arg[ i ];
+                    ret[ i * arg.dim() + j ] = row;
+                }
+            }
+            return ret;
+        }
+
+        VelocityJacobianRangeType preparePressureRangeTypeForVelocityDivergence( const PressureRangeType& arg ) const
+        {
+            VelocityJacobianRangeType ret( 0.0 );
+            for ( int i = 0; i < ret[0].dim(); ++i ) {
+                VelocityRangeType row( 0.0 );
+                row[ i ] = arg;
+                ret[ i ] = row;
+            }
+        }
+
 
 };
 
