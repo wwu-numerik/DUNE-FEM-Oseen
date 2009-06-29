@@ -1,10 +1,10 @@
 /**************************************************************************
-**       Title: examples of elliptic models 
+**       Title: examples of elliptic models
 **    $RCSfile$
 **   $Revision: 2745 $$Name$
 **       $Date: 2007-12-05 21:08:12 +0100 (Wed, 05 Dec 2007) $
 **   Copyright: GPL $Author: nolte $
-** Description: implementation of default elliptic models for 
+** Description: implementation of default elliptic models for
 **              use in solvers such as FEOp. A model is a class providing
 **              all data functions of a problem. The model is assumed to
 **              be instantiated once and passed to solvers. It is depending
@@ -29,7 +29,7 @@ namespace Dune
     enum { hasMass = false };
     enum { hasSource = true };
   };
-  
+
   /** \class PoissonModel
    *  \brief The PoissonModel class provides a default model for an elliptic
    *  problem to be handled by FEOp
@@ -47,7 +47,7 @@ namespace Dune
   : public LinearEllipticModelDefault
     < FunctionSpaceImp, PoissonModel< FunctionSpaceImp >, PoissonModelProperties >
   {
-  public:  
+  public:
     typedef FunctionSpaceImp FunctionSpaceType;
 
     typedef PoissonModelProperties Properties;
@@ -86,11 +86,11 @@ namespace Dune
                                  RangeType &ret ) const
     {
       typedef typename IntersectionType::Entity EntityType;
-      
+
       const int dimension = DomainType::dimension;
-      
+
       const DomainType &x = intersection.inside()->geometry().global( quadrature.point( p ) );
-      
+
       ret[ 0 ] = 1.0;
       for( int i = 0; i < dimension; ++i )
         ret[ 0 ] *= sin( M_PI * x[ i ] );
@@ -112,14 +112,14 @@ namespace Dune
     template< class IntersectionType, class QuadratureType >
     inline void robinValues( const IntersectionType &intersection,
                              const QuadratureType &quadrature,
-                             int p, 
+                             int p,
                              RangeType &ret ) const
     {
       std :: cout << "Robin boundary values are not implemented." << std :: endl;
       assert( false );
 
-      //const DomainType &x = entity.geometry().global( quadrature.point( p ) ); 
-            
+      //const DomainType &x = entity.geometry().global( quadrature.point( p ) );
+
       ret[ 0 ] = 0.0;
     }
 
@@ -129,9 +129,9 @@ namespace Dune
                          RangeType &ret ) const
     {
       const int dimension = DomainType :: dimension;
-      
+
       const DomainType &global = entity.geometry().global( coordinate( x ) );
-      
+
       ret[ 0 ] = (dimension * M_PI * M_PI);
       for( int i = 0; i < dimension; ++i )
         ret[ 0 ] *= sin( M_PI * global[ i ] );
@@ -140,7 +140,7 @@ namespace Dune
     template< class EntityType, class PointType >
     inline void diffusiveFlux ( const EntityType &entity,
                                 const PointType &x,
-                                const JacobianRangeType &gradient, 
+                                const JacobianRangeType &gradient,
                                 JacobianRangeType &flux ) const
     {
       flux = gradient;
@@ -150,22 +150,22 @@ namespace Dune
     inline double robinAlpha( const IntersectionType &intersection,
                               const QuadratureType &quadrature,
                               int p ) const
-    { 
+    {
       return 1.0;
     }
   };  // end of PoissonModel class
 
 
-  
+
   /*======================================================================*/
   /*!
    *  \class PoissonExactSolution
-   *  \brief The class provides the exact solution for the model given by 
+   *  \brief The class provides the exact solution for the model given by
    *         the PoissonModel class
    *
    *  The function represents u = x(1-x)y(1-y), which is the solution of
    *  the model problem  - div grad u = 2(x(1-x)+ y(1-y)) on
-   *  the unit square with homogeneous Dirichlet boundary values. 
+   *  the unit square with homogeneous Dirichlet boundary values.
    *  The function can be used for EOC calculation
    */
   /*======================================================================*/
@@ -201,7 +201,7 @@ namespace Dune
       ret = 1.0;
       for(int i=0; i<DomainType::dimension; i++)
           ret *= ( x[i] - SQR(x[i]) );
-      //    ret[0] += x[0]+x[1]; 
+      //    ret[0] += x[0]+x[1];
       // ret += 1.0;   // add dirichlet-values!!
     }
     */
@@ -210,7 +210,7 @@ namespace Dune
     inline void evaluate ( const DomainType &x, RangeType &ret ) const
     {
       enum { dimension = DomainType :: dimension };
-      
+
       ret[ 0 ] = 1.0;
       for( int i = 0; i < dimension; ++i )
         ret[ 0 ] *= sin( M_PI * x[ i ] );
@@ -242,7 +242,7 @@ namespace Dune
    *     a = [(1+q), -q; -q,  (1+q)]
    *     b = [1; 1] * s * y
    *     c = xy * r
-   *     f = 2q + r* x^2y^2 + r* x^2y + s * (x+y+y^2 + 2xy) 
+   *     f = 2q + r* x^2y^2 + r* x^2y + s * (x+y+y^2 + 2xy)
    *     g_D = xy+x
    *     g_N = -(1+q)(y+1)
    *     g_R = 2 - s*y^2 + (2+q-s)* y
@@ -257,9 +257,9 @@ namespace Dune
   class Elliptic2dModel
   : public LinearEllipticModelDefault< FunctionSpaceImp, Elliptic2dModel< FunctionSpaceImp > >
   {
-  public:  
+  public:
     typedef FunctionSpaceImp FunctionSpaceType;
-    
+
   private:
     typedef Elliptic2dModel< FunctionSpaceType > ThisType;
     typedef LinearEllipticModelDefault< FunctionSpaceType, ThisType > BaseType;
@@ -273,9 +273,9 @@ namespace Dune
     typedef typename FunctionSpaceType :: RangeFieldType RangeFieldType;
 
     static const double q = 1.0; // q>0 => non-unit diffusivity
-    static const double r = 1.0; // r>0 => mass term activated 
+    static const double r = 1.0; // r>0 => mass term activated
     static const double s = 1.0; // 0.001; // s>0 => convective term activated
-    
+
   public:
     typedef typename BaseType :: BoundaryType BoundaryType;
 
@@ -286,31 +286,31 @@ namespace Dune
     using BaseType :: source;
 
   public:
-    //! constructor with functionspace argument such that the space and the 
+    //! constructor with functionspace argument such that the space and the
     //! grid is available
     Elliptic2dModel()
     {
       // currently implementation is fitted to 2 dimensions
       assert( dimworld == 2 );
-    }    
-    
+    }
+
     //! return boundary type of a boundary point p used in a quadrature
-    template< class IntersectionType > 
+    template< class IntersectionType >
     inline BoundaryType boundaryType ( const IntersectionType &intersection ) const
     {
       const int boundaryId = intersection.boundaryId();
-      
+
       switch( boundaryId )
       {
       case 1:
         return BaseType :: Dirichlet;
-        
+
       case 2:
         return BaseType :: Neumann;
-        
+
       case 3:
         return BaseType :: Robin;
-        
+
       default:
         std :: ostringstream stream;
         stream << "Unknown boundary id: " << boundaryId << ".";
@@ -319,42 +319,42 @@ namespace Dune
     }
 
     //! determine dirichlet value in a boundary point used in a quadrature
-    template <class IntersectionType, class QuadratureType > 
+    template <class IntersectionType, class QuadratureType >
     inline void dirichletValues ( const IntersectionType &intersection,
-                                  const QuadratureType& quad, int p, 
+                                  const QuadratureType& quad, int p,
                                   RangeType& ret ) const
     {
-      const DomainType &x = intersection.inside()->geometry().global( quad.point( p ) ); 
+      const DomainType &x = intersection.inside()->geometry().global( quad.point( p ) );
       ret = x[ 0 ] * (1 + x[ 1 ]);
     }
-    
+
   //! determine neumann value in a boundary point used in a quadrature
-    template <class IntersectionType, class QuadratureType>  
+    template <class IntersectionType, class QuadratureType>
     inline void neumannValues ( const IntersectionType &intersection,
-                                const QuadratureType& quad, int p, 
+                                const QuadratureType& quad, int p,
                                 RangeType& ret) const
     {
-      const DomainType &x = intersection.inside()->geometry().global( quad.point( p ) ); 
+      const DomainType &x = intersection.inside()->geometry().global( quad.point( p ) );
       ret = -(1 + q) * (x[ 1 ] + 1);
     }
 
     //! determine robin value in a boundary point used in a quadrature
-    template <class IntersectionType, class QuadratureType>  
+    template <class IntersectionType, class QuadratureType>
     inline void robinValues ( const IntersectionType &intersection,
-                              const QuadratureType& quad, int p, 
+                              const QuadratureType& quad, int p,
                               RangeType& ret) const
     {
-      const DomainType &x = intersection.inside()->geometry().global( quad.point( p ) ); 
+      const DomainType &x = intersection.inside()->geometry().global( quad.point( p ) );
       ret = 2 - s * SQR( x[ 1 ] ) + (2 + q - s) * x[ 1 ];
       //ret = (2 + q - s * x[ 1 ]) * (1 + x[ 1 ]) - q;
     }
-    
+
     template< class EntityType, class PointType >
     inline void mass ( const EntityType &entity,
                        const PointType &x,
                        RangeType &ret ) const
     {
-      const DomainType &global = entity.geometry().global( coordinate( x ) ); 
+      const DomainType &global = entity.geometry().global( coordinate( x ) );
       ret = r * global[ 0 ] * global[ 1 ];
     }
 
@@ -363,7 +363,7 @@ namespace Dune
                         const PointType &x,
                         RangeType &ret ) const
     {
-      const DomainType &global = entity.geometry().global( coordinate( x ) ); 
+      const DomainType &global = entity.geometry().global( coordinate( x ) );
       ret = 2 * q
             + s * (global[ 0 ] + global[ 1 ]) * (1 + global[ 1 ])
             + s * global[ 0 ] * global[ 1 ]
@@ -377,7 +377,7 @@ namespace Dune
                                 JacobianRangeType &ret ) const
     {
       ret[ 0 ][ 0 ] = (1 + q) * gradphi[ 0 ][ 0 ] - q * gradphi[ 0 ][ 1 ];
-      ret[ 0 ][ 1 ] = (1 + q) * gradphi[ 0 ][ 1 ] - q * gradphi[ 0 ][ 0 ]; 
+      ret[ 0 ][ 1 ] = (1 + q) * gradphi[ 0 ][ 1 ] - q * gradphi[ 0 ][ 0 ];
     }
 
     template< class EntityType, class PointType >
@@ -396,7 +396,7 @@ namespace Dune
     inline RangeFieldType robinAlpha ( const IntersectionType &intersection,
                                        const QuadratureType &quadrature,
                                        int pt ) const
-    { 
+    {
       return 1;
     }
   };  // end of Elliptic2dModel class
@@ -406,12 +406,12 @@ namespace Dune
   /*======================================================================*/
   /*!
    *  \class Elliptic2dExactSolution
-   *  \brief The class provides the exact solution for the model given by 
+   *  \brief The class provides the exact solution for the model given by
    *         the Elliptic2dModel class
    *
    *  The function represents u = x y + x, which is the solution of
-   *  the model problem on the unit square with inhomogeneous Dirichlet 
-   *  Neumann and Dirichlet boundary values. 
+   *  the model problem on the unit square with inhomogeneous Dirichlet
+   *  Neumann and Dirichlet boundary values.
    *  Function can be used for EOC calculation
    */
   /*======================================================================*/
@@ -421,16 +421,16 @@ namespace Dune
   {
   public:
     typedef FunctionSpaceImp FunctionSpaceType;
-   
+
   private:
     typedef Elliptic2dExactSolution< FunctionSpaceType > ThisType;
     typedef Function< FunctionSpaceType, ThisType > BaseType;
-    
+
   public:
     typedef typename FunctionSpaceType :: DomainType DomainType;
     typedef typename FunctionSpaceType :: RangeType RangeType;
     typedef typename FunctionSpaceType :: JacobianRangeType JacobianRangeType;
-    
+
     typedef typename FunctionSpaceType :: DomainFieldType DomainFieldType;
     typedef typename FunctionSpaceType :: RangeFieldType RangeFieldType;
 
@@ -439,7 +439,7 @@ namespace Dune
     : BaseType( functionSpace )
     {
     }
-   
+
     void evaluate ( const DomainType &x, RangeType &ret ) const
     {
       ret = x[0]*x[1] + x[0];
@@ -485,9 +485,9 @@ namespace Dune
   class Elliptic3dModel
   : public LinearEllipticModelDefault< FunctionSpaceImp, Elliptic3dModel< FunctionSpaceImp > >
   {
-  public:  
+  public:
     typedef FunctionSpaceImp FunctionSpaceType;
-    
+
   private:
     typedef Elliptic3dModel< FunctionSpaceType > ThisType;
     typedef LinearEllipticModelDefault< FunctionSpaceType, ThisType > BaseType;
@@ -501,7 +501,7 @@ namespace Dune
 
     typedef typename FunctionSpaceType :: DomainFieldType DomainFieldType;
     typedef typename FunctionSpaceType :: RangeFieldType RangeFieldType;
-    
+
   public:
     using BaseType :: diffusiveFlux;
     using BaseType :: convectiveFlux;
@@ -509,31 +509,31 @@ namespace Dune
     using BaseType :: source;
 
   public:
-    //! constructor with functionspace argument such that the space and the 
+    //! constructor with functionspace argument such that the space and the
     //! grid is available
     inline Elliptic3dModel ()
     {
       // currently implementation is fitted to 3 dimensions
       assert(dimworld==3);
-    }    
-    
+    }
+
     //! return boundary type of a boundary point p used in a quadrature
     template< class IntersectionType >
     inline BoundaryType boundaryType( const IntersectionType &intersection ) const
     {
       const int boundaryId = intersection.boundaryId();
-      
+
       switch( boundaryId )
       {
       case 1:
         return BaseType :: Dirichlet;
-        
+
       case 2:
         return BaseType :: Neumann;
-        
+
       case 3:
         return BaseType :: Robin;
-        
+
       default:
         DUNE_THROW( RangeError, "Unknown boundary id." );
       }
@@ -542,35 +542,35 @@ namespace Dune
   //! determine dirichlet value in a boundary point used in a quadrature
     template< class IntersectionType, class QuadratureType >
     inline void dirichletValues( const IntersectionType &intersection,
-                                 const QuadratureType& quad, int p, 
+                                 const QuadratureType& quad, int p,
                                  RangeType& ret) const
     {
-      const DomainType& glob = intersection.inside()->geometry().global(quad.point(p)); 
+      const DomainType& glob = intersection.inside()->geometry().global(quad.point(p));
       ret[0] = glob[0] * ( 1.0 + glob[1]*glob[2]);
     }
-    
+
   //! determine neumann value in a boundary point used in a quadrature
     template< class IntersectionType, class QuadratureType >
     inline void neumannValues( const IntersectionType &intersection,
-                               const QuadratureType& quad, int p, 
+                               const QuadratureType& quad, int p,
                                RangeType& ret) const
     {
-      const DomainType& glob = intersection.inside()->geometry().global(quad.point(p)); 
+      const DomainType& glob = intersection.inside()->geometry().global(quad.point(p));
       ret[0] = -3.0 * glob[1]*glob[2] - 3.0;
     }
 
   //! determine robin value in a boundary point used in a quadrature
     template< class IntersectionType, class QuadratureType >
     inline void robinValues( const IntersectionType &intersection,
-                             const QuadratureType& quad, int p, 
+                             const QuadratureType& quad, int p,
                              RangeType& ret) const
     {
-      const DomainType& glob = intersection.inside()->geometry().global(quad.point(p)); 
-      ret[0] = 4 * glob[1] * glob[2] - 2* glob[1] - glob[2] + 
+      const DomainType& glob = intersection.inside()->geometry().global(quad.point(p));
+      ret[0] = 4 * glob[1] * glob[2] - 2* glob[1] - glob[2] +
           4.0 - SQR(glob[1])*glob[2];
     }
-    
-    template< class EntityType, class PointType > 
+
+    template< class EntityType, class PointType >
     inline void mass ( const EntityType &entity,
                        const PointType &x,
                        RangeType &ret ) const
@@ -584,10 +584,10 @@ namespace Dune
                          const PointType &x,
                          RangeType &ret ) const
     {
-      const DomainType &global = entity.geometry().global( coordinate( x ) ); 
-      ret = 2 * global[2] + 3* global[1] + 3 * global[0] + 
-           SQR(global[1])*global[2] + 2* global[0] * global[1]* global[2] + 
-                global[0] * SQR(global[1]) + SQR(global[0]*global[1]) * global[2] + 
+      const DomainType &global = entity.geometry().global( coordinate( x ) );
+      ret = 2 * global[2] + 3* global[1] + 3 * global[0] +
+           SQR(global[1])*global[2] + 2* global[0] * global[1]* global[2] +
+                global[0] * SQR(global[1]) + SQR(global[0]*global[1]) * global[2] +
                 SQR(global[0]) * global[1];
     }
 
@@ -620,7 +620,7 @@ namespace Dune
     inline RangeFieldType robinAlpha ( const IntersectionType &intersection,
                                        const QuadratureType &quadrature,
                                        int pt ) const
-    { 
+    {
       return 1;
     }
   };  // end of Elliptic3dModel class
@@ -628,12 +628,12 @@ namespace Dune
   /*======================================================================*/
   /*!
    *  \class Elliptic3dExactSolution
-   *  \brief The class provides the exact solution for the model given by 
+   *  \brief The class provides the exact solution for the model given by
    *         the Elliptic2dModel class
    *
    *  The function represents u = x y z + x, which is the solution of
-   *  the model problem on the unit cube with inhomogeneous Dirichlet 
-   *  Neumann and Dirichlet boundary values. 
+   *  the model problem on the unit cube with inhomogeneous Dirichlet
+   *  Neumann and Dirichlet boundary values.
    *  Function can be used for EOC calculation
    */
   /*======================================================================*/
@@ -661,7 +661,7 @@ namespace Dune
     : BaseType( functionSpace )
     {
     }
-   
+
     inline void evaluate (const DomainType & x , RangeType & ret) const
     {
       ret = x[0]*x[1]*x[2] + x[0];
@@ -675,8 +675,8 @@ namespace Dune
 
   struct AortaModelProperties
   {
-    enum { hasDirichletValues = false };
-    enum { hasNeumannValues = true };
+    enum { hasDirichletValues = true };
+    enum { hasNeumannValues = false };
     enum { hasRobinValues = false };
     enum { hasGeneralizedNeumannValues = false };
     enum { hasConvectiveFlux = false };
@@ -688,9 +688,9 @@ namespace Dune
   class AortaModel
   : public LinearEllipticModelDefault< FunctionSpaceImp, AortaModel < FunctionSpaceImp >, AortaModelProperties >
   {
-  public:  
+  public:
     typedef FunctionSpaceImp FunctionSpaceType;
-    
+
   private:
     typedef AortaModel< FunctionSpaceType > ThisType;
     typedef LinearEllipticModelDefault< FunctionSpaceType, ThisType, AortaModelProperties > BaseType;
@@ -704,7 +704,7 @@ namespace Dune
 
     typedef typename FunctionSpaceType :: DomainFieldType DomainFieldType;
     typedef typename FunctionSpaceType :: RangeFieldType RangeFieldType;
-    
+
   public:
     using BaseType :: diffusiveFlux;
     using BaseType :: convectiveFlux;
@@ -712,69 +712,75 @@ namespace Dune
     using BaseType :: source;
 
   public:
-    //! constructor with functionspace argument such that the space and the 
+    //! constructor with functionspace argument such that the space and the
     //! grid is available
     inline AortaModel ()
     {
       // currently implementation is fitted to 3 dimensions
       assert(dimworld==3);
-    }    
-    
+    }
+
     //! return boundary type of a boundary point p used in a quadrature
     template< class IntersectionType >
     inline BoundaryType boundaryType( const IntersectionType &intersection ) const
     {
-      return BaseType :: Neumann;
-      const int boundaryId = intersection.boundaryId();
-      
-      switch( boundaryId )
-      {
-      case 1:
-        return BaseType :: Dirichlet;
-        
-      case 2:
-        return BaseType :: Neumann;
-        
-      case 3:
-        return BaseType :: Robin;
-        
-      default:
-        DUNE_THROW( RangeError, "Unknown boundary id." );
-      }
+//      return BaseType :: Neumann;
+      return BaseType :: Dirichlet;
    }
 
   //! determine dirichlet value in a boundary point used in a quadrature
     template< class IntersectionType, class QuadratureType >
     inline void dirichletValues( const IntersectionType &intersection,
-                                 const QuadratureType& quad, int p, 
+                                 const QuadratureType& quad, int p,
                                  RangeType& ret) const
     {
-      const DomainType& glob = intersection.inside()->geometry().global(quad.point(p)); 
-      ret[0] = glob[0] * ( 1.0 + glob[1]*glob[2]);
-    }
-    
-  //! determine neumann value in a boundary point used in a quadrature
-    template< class IntersectionType, class QuadratureType >
-    inline void neumannValues( const IntersectionType &intersection,
-                               const QuadratureType& quad, int p, 
-                               RangeType& ret) const
-    {
-      const int boundaryId = intersection.boundaryId();
-      double fac = 1.0;
+        assert( false );
+        const int boundaryId = intersection.boundaryId();
+      double fac = 100.0;
       switch( boundaryId )
       {
       case 1:
         ret[0] = 0; break;
-        
+
       case 2:
         ret[0] = fac; break;
-        
+
       case 3:
       case 4:
       case 5:
       case 6:
         ret[0] = -1 * fac; break;
-        
+
+      default:
+        DUNE_THROW( RangeError, "Unknown boundary id." );
+      }
+    }
+
+  //! determine neumann value in a boundary point used in a quadrature
+    template< class IntersectionType, class QuadratureType >
+    inline void neumannValues( const IntersectionType &intersection,
+                               const QuadratureType& quad, int p,
+                               RangeType& ret) const
+    {
+//        assert( false );
+      const int boundaryId = intersection.boundaryId();
+      double fac = 100.0;
+      double f = ret ;
+      ret = 1;
+      switch( boundaryId )
+      {
+      case 1:
+        ret[0] = 0; break;
+
+      case 2:
+        ret[0] = fac; break;
+
+      case 3:
+      case 4:
+      case 5:
+      case 6:
+        ret[0] = -1 * fac; break;
+
       default:
         DUNE_THROW( RangeError, "Unknown boundary id." );
       }
@@ -783,21 +789,20 @@ namespace Dune
   //! determine robin value in a boundary point used in a quadrature
     template< class IntersectionType, class QuadratureType >
     inline void robinValues( const IntersectionType &intersection,
-                             const QuadratureType& quad, int p, 
+                             const QuadratureType& quad, int p,
                              RangeType& ret) const
     {
-      const DomainType& glob = intersection.inside()->geometry().global(quad.point(p)); 
-      ret[0] = 4 * glob[1] * glob[2] - 2* glob[1] - glob[2] + 
-          4.0 - SQR(glob[1])*glob[2];
+        assert( false );
     }
-    
-    template< class EntityType, class PointType > 
+
+    template< class EntityType, class PointType >
     inline void mass ( const EntityType &entity,
                        const PointType &x,
                        RangeType &ret ) const
     {
       const DomainType &global = entity.geometry().global( coordinate( x ) );
       ret = global[ 0 ] * global[ 1 ];
+      assert( false );
     }
 
     template< class EntityType, class PointType >
@@ -805,11 +810,12 @@ namespace Dune
                          const PointType &x,
                          RangeType &ret ) const
     {
-      const DomainType &global = entity.geometry().global( coordinate( x ) ); 
-      ret = 2 * global[2] + 3* global[1] + 3 * global[0] + 
-           SQR(global[1])*global[2] + 2* global[0] * global[1]* global[2] + 
-                global[0] * SQR(global[1]) + SQR(global[0]*global[1]) * global[2] + 
+      const DomainType &global = entity.geometry().global( coordinate( x ) );
+      ret = 2 * global[2] + 3* global[1] + 3 * global[0] +
+           SQR(global[1])*global[2] + 2* global[0] * global[1]* global[2] +
+                global[0] * SQR(global[1]) + SQR(global[0]*global[1]) * global[2] +
                 SQR(global[0]) * global[1];
+        assert( false );
     }
 
     template< class EntityType, class PointType >
@@ -841,8 +847,8 @@ namespace Dune
     inline RangeFieldType robinAlpha ( const IntersectionType &intersection,
                                        const QuadratureType &quadrature,
                                        int pt ) const
-    { 
-      return 1;
+    {
+        assert( false );
     }
   };  // end of AortaModel class
 

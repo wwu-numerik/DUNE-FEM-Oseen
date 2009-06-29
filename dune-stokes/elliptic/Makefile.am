@@ -3,8 +3,8 @@
 # etc. for overriding these settings  
 
 #Default values:
-GRIDTYPE = YASPGRID
-GRIDDIM = 2
+GRIDTYPE = ALUGRID_SIMPLEX
+GRIDDIM = 3
 POLORDER = 1
 #PROBLEM = POISSON
 PROBLEM = AORTA

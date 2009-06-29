@@ -3,25 +3,25 @@
 **    $RCSfile$
 **   $Revision: 3774 $$Name$
 **       $Date: 2008-06-19 13:38:10 +0200 (Thu, 19 Jun 2008) $
-**   Copyright: GPL Author: R. Kloefkorn & B. Haasdonk 
+**   Copyright: GPL Author: R. Kloefkorn & B. Haasdonk
 ** Description: File demonstrating a simple numerics problem on arbitrary
 **              grids: general elliptic problem with known solution is given
 **              and compared with numerical solution (EOC)
 **              The model treated is specified in ellipticmodel.hh
-**              For setting up the system, ElementMatrixIntegrators and 
+**              For setting up the system, ElementMatrixIntegrators and
 **              ElementRhsIntegrators are used in combination with the FEOp
 **              finite element operator. The general linear problem is
 **
-**     - div ( a grad u - b u) + cu =  f                                   
-**                                u = g_D on Dirichlet-boundary            
-**               (a grad u - bu ) n = g_N on Neuman boundary                
-**     (a grad u - bu ) n + alpha u = g_R on Robin boundary      
+**     - div ( a grad u - b u) + cu =  f
+**                                u = g_D on Dirichlet-boundary
+**               (a grad u - bu ) n = g_N on Neuman boundary
+**     (a grad u - bu ) n + alpha u = g_R on Robin boundary
 **
 **
 **         Three problems of above type are implemented, which can be selected
 **         By setting the defines below appropriately: either #define POISSON
 **         or #define ELLIPTIC
-**         The dimensionality is taken from the gridtype: As the Dune grid 
+**         The dimensionality is taken from the gridtype: As the Dune grid
 **         parser is used, the Gridtype and the dimension can be specified
 **         during compile-time:
 **
@@ -33,10 +33,10 @@
 **
 **              make
 **              make GRIDTYPE=YASPGRID       (default)
-**                   ./elliptic 4 ==> EOC 2.00029 
+**                   ./elliptic 4 ==> EOC 2.00029
 **              make GRIDTYPE=SGRID
 **                    ./elliptic 4 ==> EOC = 2.00029
-**                    ./elliptic 5 ==> correct EOC = 2.00004        
+**                    ./elliptic 5 ==> correct EOC = 2.00004
 **              make GRIDTYPE=ALBERTAGRID
 **                   Compilieren OK, EOC 1.98 bis 2.005
 **              make GRIDTYPE=ALUGRID_SIMPLEX
@@ -49,7 +49,7 @@
 **              and one of the following
 **
 **              make GRIDTYPE=YASPGRID       (default)
-**                   YASPGRID: EOC non-informative, as error is immediately 
+**                   YASPGRID: EOC non-informative, as error is immediately
 **                   small (~1e-14)
 **                   (reason probably: exact solution is polynomial!)
 **              make GRIDTYPE=SGRID
@@ -66,11 +66,11 @@
 **
 **              and one of the following
 **
-**              make GRIDDIM=3 GRIDTYPE=YASPGRID       
-**                   YASPGRID: EOC non-informative, as error is immediately 
+**              make GRIDDIM=3 GRIDTYPE=YASPGRID
+**                   YASPGRID: EOC non-informative, as error is immediately
 **                             small (~1e-14)
 **              make GRIDDIM=3 GRIDTYPE=SGRID
-**                   YASPGRID: EOC non-informative, as error is immediately 
+**                   YASPGRID: EOC non-informative, as error is immediately
 **                             small (~1e-14)
 **              make GRIDDIM=3 GRIDTYPE=ALBERTAGRID
 **                   EOC fine, going down from 3 to 2 with refinement
@@ -84,7 +84,7 @@
 #define SKIP_GRAPE
 
 // select, whether Kronecker-Treatment of Matrix should be performed,
-// i.e. kronecker rows are extended to kronecker columns. For symmetric 
+// i.e. kronecker rows are extended to kronecker columns. For symmetric
 // problems this is beneficial as the matrix gets symmetric
 
 #define ACTIVATE_KRONECKER_TREATMENT 0
@@ -113,12 +113,12 @@
   #define PDIM 2
 #endif
 
-//- dune includes 
+//- dune includes
 #include <dune/common/exceptions.hh>
 #include <dune/common/stdstreams.cc>
 
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh>
-#include <dune/fem/gridpart/gridpart.hh> 
+#include <dune/fem/gridpart/gridpart.hh>
 
 #include <dune/fem/operator/feop.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
@@ -136,7 +136,6 @@
 //- local includes
 #include "model.hh"
 #include "elementintegratortraits.hh"
-
 
 
 // Select the polynomial order of the calculation
@@ -168,7 +167,7 @@ typedef DefaultMatrixElementIntegratorTraits< DiscreteFunctionType, 100 >
   ElementIntegratorTraitsType;
 
 /*
-// definition of traits class, which already defines various 
+// definition of traits class, which already defines various
 // basic settings such as gridparts, etc.
 // if you want another settings, simply generate your own Traits class
 typedef EllipticElementIntegratorTraits< GridType, polynomialOrder >
@@ -195,7 +194,7 @@ typedef ElementIntegratorTraitsType :: FunctionSpaceType FunctionSpaceType;
 #endif // if ELLIPTIC
 
 /*
-//! the grid part we are using 
+//! the grid part we are using
 //typedef LevelGridPart < GridType > GridPartType;
 //typedef LeafGridPart<GridType> GridPartImpType;
 //typedef HierarchicGridPart<GridType> GridPartType;  // the underlying GridPart
@@ -207,12 +206,12 @@ typedef ElementIntegratorTraitsType::GridPartType GridPartType;
 // see dune/common/functionspace.hh
 //typedef FunctionSpace < double , double, dimworld , 1 > FuncSpace;
 
-//! define the function space our unkown belong to 
+//! define the function space our unkown belong to
 //! see dune/fem/lagrangebase.hh
-typedef ElementIntegratorTraitsType::DiscreteFunctionSpaceType 
+typedef ElementIntegratorTraitsType::DiscreteFunctionSpaceType
                                      DiscreteFunctionSpaceType;
 
-//typedef LagrangeDiscreteFunctionSpace < FuncSpace , GridPartType , 1 > 
+//typedef LagrangeDiscreteFunctionSpace < FuncSpace , GridPartType , 1 >
 //        FuncSpaceType ;
 
 //! define the type of discrete function we are using , see
@@ -225,19 +224,27 @@ typedef ElementIntegratorTraitsType::DiscreteFunctionType DiscreteFunctionType;
 //! define the discrete laplace operator, see ./fem.cc
 // typedef LaplaceFEOp< DiscreteFunctionType, Tensor, 1 > LaplaceOperatorType;
 
+#include <dune/fem/io/file/vtkio.hh>
+#define VTK_WRITE(z)    vtkWriter_.addVertexData(z); \
+                        vtkWriter_.write(( "data/"#z ) ); \
+                        vtkWriter_.clear();
+typedef Dune::VTKIO<GridPartType>
+            VTKWriterType;
+
+
 //! definition of the problem specific ElementRhsIntegrator
 class MyElementRhsIntegrator
-: public DefaultElementRhsIntegrator< ElementIntegratorTraitsType, 
-                                      EllipticModelType, 
+: public DefaultElementRhsIntegrator< ElementIntegratorTraitsType,
+                                      EllipticModelType,
                                       MyElementRhsIntegrator >
 {
 private:
   typedef MyElementRhsIntegrator ThisType;
-  typedef DefaultElementRhsIntegrator< ElementIntegratorTraitsType, 
-                                       EllipticModelType, 
-                                       ThisType > 
+  typedef DefaultElementRhsIntegrator< ElementIntegratorTraitsType,
+                                       EllipticModelType,
+                                       ThisType >
     BaseType;
-  
+
 public:
   //! constructor with model must be implemented as a forward to Base class
   MyElementRhsIntegrator(EllipticModelType& model, const DiscreteFunctionSpaceType &dfSpace, int verbose=0)
@@ -245,11 +252,11 @@ public:
   {
   }
 
-  //! access function, which is the essence and can be used to implement 
+  //! access function, which is the essence and can be used to implement
   //! arbitrary operators
   template <class EntityType, class ElementRhsType>
-  void addElementRhs(EntityType &entity, 
-                   ElementRhsType &elRhs, 
+  void addElementRhs(EntityType &entity,
+                   ElementRhsType &elRhs,
                    double coef=1.0) // const
         {
           // arbitrary combination of existing or new methods
@@ -267,24 +274,24 @@ typedef RhsAssembler<ElementRhsIntegratorType> RhsAssemblerType;
 //! Definition of the ElementMatrixIntegrator as derivation of Default class:
 
 /*======================================================================*/
-/*! 
- *   The class provides method for computing the following matrix, 
+/*!
+ *   The class provides method for computing the following matrix,
  +   where i,j run over the local dofs
  *   of base functions, which have support on an entity $E$:
  *
- *            /      \int_E   [a     grad(phi_j) ]^T  grad(phi_i) 
- *    L_ij :=<    +  \int_E   [-  b   phi_j]^T         grad(phi_i) 
+ *            /      \int_E   [a     grad(phi_j) ]^T  grad(phi_i)
+ *    L_ij :=<    +  \int_E   [-  b   phi_j]^T         grad(phi_i)
  *            \   +  \int_E   c          phi_i        phi_j
- *             \  +  \int_{R boundary of entity} alpha      phi_i  phi_j     
+ *             \  +  \int_{R boundary of entity} alpha      phi_i  phi_j
  *
- *   The computation is based on the 4 contributions implemented in the 
- *   Default class. Dirichlet-entries are set to Kronecker-Rows in the 
+ *   The computation is based on the 4 contributions implemented in the
+ *   Default class. Dirichlet-entries are set to Kronecker-Rows in the
  *   FEOp after assembling
  */
 /*======================================================================*/
 class MyElementMatrixIntegrator
 : public DefaultElementMatrixIntegrator
-  < ElementIntegratorTraitsType, 
+  < ElementIntegratorTraitsType,
     EllipticModelType,
     MyElementMatrixIntegrator
   >
@@ -292,30 +299,30 @@ class MyElementMatrixIntegrator
 public:
     typedef ElementIntegratorTraitsType TraitsType;
     typedef EllipticModelType ModelType;
-    
+
     typedef TraitsType :: ElementMatrixType ElementMatrixType;
     typedef TraitsType :: EntityType EntityType;
-    
+
 public:
   //! constructor with model instance is implemented in default-class, so a
   //! similar constructor is required in derived classes, which simply
   //! calls the base-class constructor
   MyElementMatrixIntegrator(ModelType& model, const DiscreteFunctionSpaceType &dfSpace, int verbose=0)
           :   DefaultElementMatrixIntegrator<
-                               ElementIntegratorTraitsType, 
+                               ElementIntegratorTraitsType,
                                EllipticModelType,
-                               MyElementMatrixIntegrator> (model, dfSpace, verbose) 
-        {};  
+                               MyElementMatrixIntegrator> (model, dfSpace, verbose)
+        {};
 
   //! The crucial method for matrix computation: collecting of contributions
-  void addElementMatrix(EntityType& entity, 
-                        ElementMatrixType& mat, 
+  void addElementMatrix(EntityType& entity,
+                        ElementMatrixType& mat,
                         double coef = 1.0) // const
         {
-          addDiffusiveFluxElementMatrix (entity, mat, coef); 
-          addConvectiveFluxElementMatrix(entity, mat, coef); 
-          addMassElementMatrix          (entity, mat, coef); 
-          addRobinElementMatrix         (entity, mat, coef); 
+          addDiffusiveFluxElementMatrix (entity, mat, coef);
+          addConvectiveFluxElementMatrix(entity, mat, coef);
+          addMassElementMatrix          (entity, mat, coef);
+          addRobinElementMatrix         (entity, mat, coef);
         }
 }; // end class MyElementMatrixIntegrator
 
@@ -326,11 +333,11 @@ typedef MyElementMatrixIntegrator ElementMatrixIntegratorType;
 typedef SparseRowMatrix<double> SystemMatrixType;
 
 //! definition of FEM operator, see feop.hh
-typedef FEOp<SystemMatrixType,ElementMatrixIntegratorType> 
+typedef FEOp<SystemMatrixType,ElementMatrixIntegratorType>
         EllipticOperatorType;
 
-//! define the inverse operator we are using to solve the system 
-// see dune/fem/inverseoperators.hh 
+//! define the inverse operator we are using to solve the system
+// see dune/fem/inverseoperators.hh
 typedef CGInverseOp < DiscreteFunctionType, EllipticOperatorType >    InverseOperatorType;
 // or ../../solvers/oemsolver/oemsolvers.hh
 //typedef OEMCGOp<DiscreteFunctionType,EllipticOperatorType> InverseOperatorType;
@@ -340,7 +347,7 @@ typedef CGInverseOp < DiscreteFunctionType, EllipticOperatorType >    InverseOpe
 // GMRES seems to miss some libraries...
 //typedef OEMGMRESOp<DiscreteFunctionType,EllipticOperatorType> InverseOperatorType;
 
-//! define the type of mapping which is used by inverseOperator 
+//! define the type of mapping which is used by inverseOperator
 //typedef Mapping<double ,double,DiscreteFunctionType,DiscreteFunctionType > MappingType;
 
 
@@ -350,7 +357,7 @@ double algorithm( const std :: string &filename, int maxlevel, int turn )
   GridPtr< GridType > gridptr( filename );
   gridptr->globalRefine( maxlevel );
   std::cout << "maxlevel = "<< maxlevel << std :: endl;
-  
+
   // if a filteredgridpart is used
   //Dune::FieldVector<GridType::ctype,GridType::dimension> C(0.5);
   //ElementIntegratorTraitsType::FilterType filter(C, 0.4);
@@ -366,11 +373,11 @@ double algorithm( const std :: string &filename, int maxlevel, int turn )
   solution.clear();
   DiscreteFunctionType rhs( "rhs", linFuncSpace );
   rhs.clear();
-   
-  // decide, whether you want to have detailed verbosity output 
+
+  // decide, whether you want to have detailed verbosity output
   // const int verbose = 1;
   const int verbose = 0;
-   
+
   // initialize Model and Exact solution
   EllipticModelType model;
   std :: cout << "Model initialized." << std :: endl;
@@ -386,9 +393,9 @@ double algorithm( const std :: string &filename, int maxlevel, int turn )
   // initialize RhsAssembler
   RhsAssemblerType rhsAssembler( elRhsInt, verbose );
   std :: cout << "Rhs assembler initialized." << std :: endl;
-   
-  // initialize Operator  
-  // const int numNonZero = 27;   
+
+  // initialize Operator
+  // const int numNonZero = 27;
   const int numNonZero = 200;
   EllipticOperatorType elliptOp( elMatInt,
                                  EllipticOperatorType::ASSEMBLED,
@@ -409,18 +416,18 @@ double algorithm( const std :: string &filename, int maxlevel, int turn )
   std::cout << "Assembled rhs with Dirichlet treatment" << std :: endl;
 
   #ifdef FEOP_SAVE_MATRIX_WANTED
-  {     
+  {
     // save matrix and rhs after kronecker-treatment
     ostringstream oss;
     oss << "linearmatrix_before_symm" << turn << ".bin";
     string matfn(oss.str());
-   
+
     ostringstream oss2;
     oss2 << "rhsdofvector_before_symm" << turn << ".bin";
     string rhsfn(oss2.str());
-   
-    MatlabHelper mhelp; 
-    mhelp.saveSparseMatrixBinary(matfn.c_str(), elliptOp.systemMatrix());  
+
+    MatlabHelper mhelp;
+    mhelp.saveSparseMatrixBinary(matfn.c_str(), elliptOp.systemMatrix());
     mhelp.saveDofVectorBinary(rhsfn.c_str(),rhs);
   }
   #endif
@@ -444,7 +451,7 @@ double algorithm( const std :: string &filename, int maxlevel, int turn )
       assert(elliptOp.systemMatrix().checkConsistency());
       std::cout << "\n";
     }
-   
+
     elliptOp.rhsKroneckerColumnsTreatment(rhs);
     if (verbose)
     {
@@ -455,40 +462,40 @@ double algorithm( const std :: string &filename, int maxlevel, int turn )
 
   #ifdef FEOP_SAVE_MATRIX_WANTED
   // save matrix and rhs after kronecker-treatment
-  {     
+  {
     ostringstream oss;
     oss << "linearmatrix_after_symm" << turn << ".bin";
     string matfn(oss.str());
-    
+
     ostringstream oss2;
     oss2 << "rhsdofvector_after_symm" << turn << ".bin";
     string rhsfn(oss2.str());
-     
-    MatlabHelper mhelp;     
-    mhelp.saveSparseMatrixBinary(matfn.c_str(), elliptOp.systemMatrix());  
+
+    MatlabHelper mhelp;
+    mhelp.saveSparseMatrixBinary(matfn.c_str(), elliptOp.systemMatrix());
     mhelp.saveDofVectorBinary(rhsfn.c_str(),rhs);
   }
   #endif
-   
+
   double dummy = 12345.67890;
   InverseOperatorType cg( elliptOp, dummy, 1e-15, 20000, (verbose > 0) );
-     
-  // solve linear system with cg 
+
+  // solve linear system with cg
   cg( rhs, solution);
 
   // initialize Exactsolution
   ExactSolutionType u( linFuncSpace );
 
-  // calculation of L2 error 
+  // calculation of L2 error
   L2Error< DiscreteFunctionType > l2err;
   DiscreteFunctionType error( "error", linFuncSpace );
 
   LagrangeInterpolation< DiscreteFunctionType > :: interpolateFunction( u, error );
   error -= solution;
-   
-  // pol ord for calculation the error chould by higher than 
-  // pol for evaluation the basefunctions 
-  // double error = l2err.norm<EllipticModelType::TraitsType::quadDegree + 2> 
+
+  // pol ord for calculation the error chould by higher than
+  // pol for evaluation the basefunctions
+  // double error = l2err.norm<EllipticModelType::TraitsType::quadDegree + 2>
   //    (u ,solution, 0.0);
   double l2error
     = l2err.norm( u, solution, ElementIntegratorTraitsType :: quadDegree, 0 );
@@ -497,11 +504,11 @@ double algorithm( const std :: string &filename, int maxlevel, int turn )
   std :: cout << std :: endl;
 
   #if HAVE_GRAPE
-    // if grape was found then display solution 
+    // if grape was found then display solution
     if( turn > 0 )
     {
       #ifndef SKIP_GRAPE
-        GrapeDataDisplay < GridType > grape(*gridptr); 
+        GrapeDataDisplay < GridType > grape(*gridptr);
         // grape.dataDisplay( solution );
         double time = 0.0;
         bool vector = false;
@@ -512,6 +519,9 @@ double algorithm( const std :: string &filename, int maxlevel, int turn )
     }
   #endif
 
+    VTKWriterType vtkWriter_( part );
+    VTK_WRITE( solution );
+
   return l2error;
 }
 
@@ -519,24 +529,24 @@ double algorithm( const std :: string &filename, int maxlevel, int turn )
 
 //**************************************************
 //
-//  main programm, run algorithm twice to calc EOC 
+//  main programm, run algorithm twice to calc EOC
 //
 //**************************************************
 int main ( int argc, char **argv )
 {
-  // initialize MPI 
-  // too new 
+  // initialize MPI
+  // too new
   //MPIManager :: initialize( argc, argv );
-  
+
   	Dune::MPIHelper& mpihelper = Dune::MPIHelper::instance(argc, argv);
-  
+
   try {
     if( argc != 2 )
     {
       std :: cerr << "Usage: " << argv[ 0 ] << " <maxlevel>" << std :: endl;
       exit( 1 );
     }
-    
+
     int level = atoi( argv[ 1 ] );
     level = (level > 0 ? level - 1 : 0);
 
@@ -547,13 +557,15 @@ int main ( int argc, char **argv )
     #endif
     std::cout << "loading dgf " << macroGridName << std :: endl;
 
-    double error[ 2 ];
-    const int steps = DGFGridInfo< GridType > :: refineStepsForHalf();
-    for( int i = 0; i < 2; ++i )
-      error[ i ] = algorithm( macroGridName, (level+i) * steps, i );
+    algorithm( macroGridName, 0, 0 );
 
-    const double eoc = log( error[ 0 ] / error[ 1 ] ) / M_LN2;
-    std :: cout << "EOC = " << eoc << std :: endl;
+//    double error[ 2 ];
+//    const int steps = DGFGridInfo< GridType > :: refineStepsForHalf();
+//    for( int i = 0; i < 2; ++i )
+//      error[ i ] = algorithm( macroGridName, (level+i) * steps, i );
+//
+//    const double eoc = log( error[ 0 ] / error[ 1 ] ) / M_LN2;
+//    std :: cout << "EOC = " << eoc << std :: endl;
     return 0;
   } catch( Exception e ) {
     std :: cerr << e << std :: endl;

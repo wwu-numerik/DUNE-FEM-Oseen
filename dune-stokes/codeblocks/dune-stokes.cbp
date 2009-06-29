@@ -74,6 +74,21 @@
 					<Add directory="/usr/lib" />
 				</Linker>
 			</Target>
+			<Target title="uni_elliptic">
+				<Option output="bin/Debug/dune-stokes" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../src/" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="test.param" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add library="blas" />
+					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
+				</Linker>
+			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-g" />
@@ -121,9 +136,20 @@
 		<Unit filename="../../dune-fem/fem/space/dgspace/orthonormalbase_2d.cc">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="../elliptic/elementintegratortraits.hh" />
+		<Unit filename="../elliptic/elliptic.cc">
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+		</Unit>
+		<Unit filename="../elliptic/model.hh" />
 		<Unit filename="../src/Makefile.am" />
 		<Unit filename="../src/analyticaldata.hh" />
-		<Unit filename="../src/dune_stokes.cc" />
+		<Unit filename="../src/dune_stokes.cc">
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+		</Unit>
 		<Unit filename="../src/pressure.hh" />
 		<Unit filename="../src/problem.hh" />
 		<Unit filename="../src/test.param" />
