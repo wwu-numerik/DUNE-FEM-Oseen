@@ -570,6 +570,7 @@ namespace Dune
           4.0 - SQR(glob[1])*glob[2];
     }
 
+    //! function c from top doc
     template< class EntityType, class PointType >
     inline void mass ( const EntityType &entity,
                        const PointType &x,
@@ -579,6 +580,7 @@ namespace Dune
       ret = global[ 0 ] * global[ 1 ];
     }
 
+    //! function f from top doc
     template< class EntityType, class PointType >
     inline void source ( const EntityType &entity,
                          const PointType &x,
@@ -591,6 +593,7 @@ namespace Dune
                 SQR(global[0]) * global[1];
     }
 
+    //! function a from top doc
     template< class EntityType, class PointType >
     inline void diffusiveFlux ( const EntityType &entity,
                                 const PointType &x,
@@ -603,6 +606,7 @@ namespace Dune
       flux[ 0 ] [2 ] = -grad[ 0 ] - grad[ 1 ] + 3 * grad[ 2 ];
     }
 
+    //! function b from top doc
     template< class EntityType, class PointType >
     inline void convectiveFlux( const EntityType &entity,
                                 const PointType &x,
@@ -793,6 +797,7 @@ namespace Dune
         assert( false );
     }
 
+    //! function c from top doc
     template< class EntityType, class PointType >
     inline void mass ( const EntityType &entity,
                        const PointType &x,
@@ -802,6 +807,7 @@ namespace Dune
       ret = global[ 0 ] * global[ 1 ];
     }
 
+    //! function f from top doc
     template< class EntityType, class PointType >
     inline void source ( const EntityType &entity,
                          const PointType &x,
@@ -810,6 +816,7 @@ namespace Dune
       ret = RangeType( 0.0 );
     }
 
+    //! function a from top doc
     template< class EntityType, class PointType >
     inline void diffusiveFlux ( const EntityType &entity,
                                 const PointType &x,
@@ -822,6 +829,7 @@ namespace Dune
       flux[ 0 ] [2 ] = -grad[ 0 ] - grad[ 1 ] + 3 * grad[ 2 ];
     }
 
+    //! function b from top doc
     template< class EntityType, class PointType >
     inline void convectiveFlux( const EntityType &entity,
                                 const PointType &x,
