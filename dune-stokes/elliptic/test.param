@@ -13,7 +13,8 @@ maxref: 0
 
 #
 dgf_file_2d: grid_2d.dgf
-dgf_file_3d: cube.dgf
+dgf_file_3d: aorta.dgf
+#dgf_file_3d: cube.dgf
 
 #
 viscosity: 1

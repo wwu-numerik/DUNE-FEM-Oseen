@@ -680,11 +680,11 @@ namespace Dune
   struct AortaModelProperties
   {
     enum { hasDirichletValues = true };
-    enum { hasNeumannValues = false };
+    enum { hasNeumannValues = true };
     enum { hasRobinValues = false };
     enum { hasGeneralizedNeumannValues = false };
-    enum { hasConvectiveFlux = true };
-    enum { hasMass = true };
+    enum { hasConvectiveFlux = false };
+    enum { hasMass = false };
     enum { hasSource = false };
   };
 
@@ -728,9 +728,13 @@ namespace Dune
     template< class IntersectionType >
     inline BoundaryType boundaryType( const IntersectionType &intersection ) const
     {
-      return BaseType :: Neumann;
-//      return BaseType :: Dirichlet;
-
+        const int boundaryId = intersection.boundaryId();
+        std:: cout << boundaryId ;
+        switch( boundaryId )
+        {
+            case 2: return BaseType :: Dirichlet;
+            default: return BaseType :: Neumann;
+        }
    }
 
   //! determine dirichlet value in a boundary point used in a quadrature
@@ -740,25 +744,8 @@ namespace Dune
                                  RangeType& ret) const
     {
         assert( false );
-        const int boundaryId = intersection.boundaryId();
-      double fac = 100.0;
-      switch( boundaryId )
-      {
-      case 1:
-        ret[0] = 0; break;
-
-      case 2:
-        ret[0] = fac; break;
-
-      case 3:
-      case 4:
-      case 5:
-      case 6:
-        ret[0] = -1 * fac; break;
-
-      default:
-        DUNE_THROW( RangeError, "Unknown boundary id." );
-      }
+        double fac = 10.0;
+        ret = RangeType( fac );
     }
 
   //! determine neumann value in a boundary point used in a quadrature
