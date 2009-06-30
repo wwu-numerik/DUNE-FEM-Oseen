@@ -155,7 +155,7 @@ using namespace Dune;
 
 typedef LeafGridPart< GridType > GridPartType;
 
-typedef FunctionSpace< double, double, dimworld, 1 > FunctionSpaceType;
+typedef FunctionSpace< double, double, dimworld, 3 > FunctionSpaceType;
 typedef LagrangeDiscreteFunctionSpace
   < FunctionSpaceType, GridPartType, polynomialOrder >
   DiscreteFunctionSpaceType;
@@ -271,63 +271,11 @@ typedef MyElementRhsIntegrator ElementRhsIntegratorType;
 //! Definition of the RhsAssembler
 typedef RhsAssembler<ElementRhsIntegratorType> RhsAssemblerType;
 
-//! Definition of the ElementMatrixIntegrator as derivation of Default class:
-
-/*======================================================================*/
-/*!
- *   The class provides method for computing the following matrix,
- +   where i,j run over the local dofs
- *   of base functions, which have support on an entity $E$:
- *
- *            /      \int_E   [a     grad(phi_j) ]^T  grad(phi_i)
- *    L_ij :=<    +  \int_E   [-  b   phi_j]^T         grad(phi_i)
- *            \   +  \int_E   c          phi_i        phi_j
- *             \  +  \int_{R boundary of entity} alpha      phi_i  phi_j
- *
- *   The computation is based on the 4 contributions implemented in the
- *   Default class. Dirichlet-entries are set to Kronecker-Rows in the
- *   FEOp after assembling
- */
-/*======================================================================*/
-class MyElementMatrixIntegrator
-: public DefaultElementMatrixIntegrator
-  < ElementIntegratorTraitsType,
-    EllipticModelType,
-    MyElementMatrixIntegrator
-  >
-{
-public:
-    typedef ElementIntegratorTraitsType TraitsType;
-    typedef EllipticModelType ModelType;
-
-    typedef TraitsType :: ElementMatrixType ElementMatrixType;
-    typedef TraitsType :: EntityType EntityType;
-
-public:
-  //! constructor with model instance is implemented in default-class, so a
-  //! similar constructor is required in derived classes, which simply
-  //! calls the base-class constructor
-  MyElementMatrixIntegrator(ModelType& model, const DiscreteFunctionSpaceType &dfSpace, int verbose=0)
-          :   DefaultElementMatrixIntegrator<
-                               ElementIntegratorTraitsType,
-                               EllipticModelType,
-                               MyElementMatrixIntegrator> (model, dfSpace, verbose)
-        {};
-
-  //! The crucial method for matrix computation: collecting of contributions
-  void addElementMatrix(EntityType& entity,
-                        ElementMatrixType& mat,
-                        double coef = 1.0) // const
-        {
-          addDiffusiveFluxElementMatrix (entity, mat, coef);
-          addConvectiveFluxElementMatrix(entity, mat, coef);
-          addMassElementMatrix          (entity, mat, coef);
-          addRobinElementMatrix         (entity, mat, coef);
-        }
-}; // end class MyElementMatrixIntegrator
-
+#include "simpleelementintegrator.h"
 //! definition of element-matrix Integrator type providing elementwise matrices
-typedef MyElementMatrixIntegrator ElementMatrixIntegratorType;
+typedef SimpleElementMatrixIntegrator< ElementIntegratorTraitsType,
+                                            EllipticModelType >
+  ElementMatrixIntegratorType;
 
 //! definition of the global matrix type to be used in the FEOp
 typedef SparseRowMatrix<double> SystemMatrixType;
