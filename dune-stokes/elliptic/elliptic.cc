@@ -298,9 +298,56 @@ typedef CGInverseOp < DiscreteFunctionType, EllipticOperatorType >    InverseOpe
 //! define the type of mapping which is used by inverseOperator
 //typedef Mapping<double ,double,DiscreteFunctionType,DiscreteFunctionType > MappingType;
 
+#include <dune/stuff/logging.hh>
+#include <dune/stuff/parametercontainer.hh>
 
 
-double algorithm( const std :: string &filename, int maxlevel, int turn )
+double algorithm( const std :: string &filename, int maxlevel );
+
+int main ( int argc, char **argv )
+{
+  // initialize MPI
+  // too new
+  //MPIManager :: initialize( argc, argv );
+
+  	Dune::MPIHelper& mpihelper = Dune::MPIHelper::instance(argc, argv);
+
+  try {
+    if ( !(  Parameters().ReadCommandLine( argc, argv ) ) ) {
+        return 1;
+    }
+    if ( !(  Parameters().SetUp() ) ) {
+        std::cerr << "\nUsage: " << argv[0] << " parameterfile \n" << "\t --- OR --- \n";
+        std::cerr << "\nUsage: " << argv[0] << " paramfile:"<<"file" << " more-opts:val ..." << std::endl;
+        Parameters().PrintParameterSpecs( std::cerr );
+        std::cerr << std::endl;
+        return 2;
+    }
+    else {
+        Parameters().SetGridDimension( GridType::dimensionworld );
+        Parameters().SetPolOrder( POLORDER );
+//        Parameters().Print( std::cout );
+    }
+
+    // LOG_NONE = 1, LOG_ERR = 2, LOG_INFO = 4,LOG_DEBUG = 8,LOG_CONSOLE = 16,LOG_FILE = 32
+    //--> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_CONSOLE | LOG_FILE = 62
+    Logger().Create( Parameters().getParam( "loglevel", 62 ),
+                     Parameters().getParam( "logfile", std::string("dune_stokes") ) );
+
+    int maxref = Parameters().getParam( "maxref", 0 );
+    int minref = Parameters().getParam( "minref", 0 );
+
+    std::cout << "loading dgf " << Parameters().DgfFilename() << std :: endl;
+
+    algorithm( Parameters().DgfFilename(), maxref );
+
+    return 0;
+  } catch( Exception e ) {
+    std :: cerr << e << std :: endl;
+  }
+}
+
+double algorithm( const std :: string &filename, int maxlevel )
 {
   GridPtr< GridType > gridptr( filename );
   gridptr->globalRefine( maxlevel );
@@ -363,23 +410,6 @@ double algorithm( const std :: string &filename, int maxlevel, int turn )
   rhsAssembler.assemble( rhs );
   std::cout << "Assembled rhs with Dirichlet treatment" << std :: endl;
 
-  #ifdef FEOP_SAVE_MATRIX_WANTED
-  {
-    // save matrix and rhs after kronecker-treatment
-    ostringstream oss;
-    oss << "linearmatrix_before_symm" << turn << ".bin";
-    string matfn(oss.str());
-
-    ostringstream oss2;
-    oss2 << "rhsdofvector_before_symm" << turn << ".bin";
-    string rhsfn(oss2.str());
-
-    MatlabHelper mhelp;
-    mhelp.saveSparseMatrixBinary(matfn.c_str(), elliptOp.systemMatrix());
-    mhelp.saveDofVectorBinary(rhsfn.c_str(),rhs);
-  }
-  #endif
-
   // if symmetrization of system is wanted, execute the following
   #if ACTIVATE_KRONECKER_TREATMENT
   {
@@ -408,117 +438,15 @@ double algorithm( const std :: string &filename, int maxlevel, int turn )
   }
   #endif
 
-  #ifdef FEOP_SAVE_MATRIX_WANTED
-  // save matrix and rhs after kronecker-treatment
-  {
-    ostringstream oss;
-    oss << "linearmatrix_after_symm" << turn << ".bin";
-    string matfn(oss.str());
-
-    ostringstream oss2;
-    oss2 << "rhsdofvector_after_symm" << turn << ".bin";
-    string rhsfn(oss2.str());
-
-    MatlabHelper mhelp;
-    mhelp.saveSparseMatrixBinary(matfn.c_str(), elliptOp.systemMatrix());
-    mhelp.saveDofVectorBinary(rhsfn.c_str(),rhs);
-  }
-  #endif
-
   double dummy = 12345.67890;
   InverseOperatorType cg( elliptOp, dummy, 1e-15, 20000, (verbose > 0) );
 
   // solve linear system with cg
   cg( rhs, solution);
 
-  // initialize Exactsolution
-  ExactSolutionType u( linFuncSpace );
-
-  // calculation of L2 error
-  L2Error< DiscreteFunctionType > l2err;
-  DiscreteFunctionType error( "error", linFuncSpace );
-
-  LagrangeInterpolation< DiscreteFunctionType > :: interpolateFunction( u, error );
-  error -= solution;
-
-  // pol ord for calculation the error chould by higher than
-  // pol for evaluation the basefunctions
-  // double error = l2err.norm<EllipticModelType::TraitsType::quadDegree + 2>
-  //    (u ,solution, 0.0);
-#if 0 //didn't work with new functionspace
-  double l2error
-    = l2err.norm( u, solution, ElementIntegratorTraitsType :: quadDegree, 0 );
-  std :: cout << std :: endl;
-  std :: cout << "L2 Error: " << l2error << std :: endl;
-  std :: cout << std :: endl;
-#endif //didn't work with new functionspace
-  #if HAVE_GRAPE
-    // if grape was found then display solution
-    if( turn > 0 )
-    {
-      #ifndef SKIP_GRAPE
-        GrapeDataDisplay < GridType > grape(*gridptr);
-        // grape.dataDisplay( solution );
-        double time = 0.0;
-        bool vector = false;
-        grape.addData(solution, solution.name(), time, vector);
-        grape.addData(error, "error", time , vector);
-        grape.display();
-      #endif
-    }
-  #endif
-
     VTKWriterType vtkWriter_( part );
     VTK_WRITE( solution );
-#if 0 //didn't work with new functionspace
-  return l2error;
-#endif
-return -1;
+    return -1;
 }
 
 
-
-//**************************************************
-//
-//  main programm, run algorithm twice to calc EOC
-//
-//**************************************************
-int main ( int argc, char **argv )
-{
-  // initialize MPI
-  // too new
-  //MPIManager :: initialize( argc, argv );
-
-  	Dune::MPIHelper& mpihelper = Dune::MPIHelper::instance(argc, argv);
-
-  try {
-    if( argc != 2 )
-    {
-      std :: cerr << "Usage: " << argv[ 0 ] << " <maxlevel>" << std :: endl;
-      exit( 1 );
-    }
-
-    int level = atoi( argv[ 1 ] );
-    level = (level > 0 ? level - 1 : 0);
-
-    #if PDIM == 2
-      std::string macroGridName( "square.dgf" );
-    #else
-      std::string macroGridName( "cube.dgf" );
-    #endif
-    std::cout << "loading dgf " << macroGridName << std :: endl;
-
-    algorithm( macroGridName, 0, 0 );
-
-//    double error[ 2 ];
-//    const int steps = DGFGridInfo< GridType > :: refineStepsForHalf();
-//    for( int i = 0; i < 2; ++i )
-//      error[ i ] = algorithm( macroGridName, (level+i) * steps, i );
-//
-//    const double eoc = log( error[ 0 ] / error[ 1 ] ) / M_LN2;
-//    std :: cout << "EOC = " << eoc << std :: endl;
-    return 0;
-  } catch( Exception e ) {
-    std :: cerr << e << std :: endl;
-  }
-}
