@@ -729,7 +729,6 @@ namespace Dune
     inline BoundaryType boundaryType( const IntersectionType &intersection ) const
     {
         const int boundaryId = intersection.boundaryId();
-        std:: cout << boundaryId ;
         switch( boundaryId )
         {
             case 2: return BaseType :: Dirichlet;
