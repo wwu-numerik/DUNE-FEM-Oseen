@@ -1414,7 +1414,7 @@ private:
             continue;
           if( model.boundaryType( nit ) != ModelType :: Dirichlet )
             continue;
-      assert ( false );
+
           const int faceNumber = nit.numberInSelf();
           LocalFunctionType lf = rhs.localFunction( entity );
 

@@ -742,7 +742,6 @@ namespace Dune
                                  const QuadratureType& quad, int p,
                                  RangeType& ret) const
     {
-        assert( false );
         double fac = 10.0;
         ret = RangeType( fac );
     }
