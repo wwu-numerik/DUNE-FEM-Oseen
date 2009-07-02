@@ -14,6 +14,7 @@ CONFIGURE_FLAGS="CXX=mpic++ CC=mpicc CXXFLAGS='-O3 -DNDEBUG' \
   --with-grid-type=ALUGRID_CUBE \
   --enable-mpi \
   --enable-parallel \
+  --enable-dunedevel \
   --with-mpi=/usr/o0/openmpi-1.2.3/ix86_64-ibm-linux\lib "
 MAKE_FLAGS=
 #  --enable-parallel \
