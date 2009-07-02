@@ -6,6 +6,7 @@ CONFIGURE_FLAGS="CXX=/usr/bin/g++-4.2 CC=/usr/bin/gcc-4.2 CXXFLAGS=' -DDEBUG' \
   --with-alugrid=/share/dune/Modules/modules_$HOSTTYPE/ALUGrid-1.1_Parallel \
   --x-includes=/usr/X11R6/include \
   --x-libraries=/usr/X11R6/lib64 \
+  --enable-dunedevel \
   --with-grid-dim=3 \
   --with-grid-type=ALUGRID_CUBE \
   --disable-documentation "
