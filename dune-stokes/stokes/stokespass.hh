@@ -578,6 +578,9 @@ class StokesPass
 //#ifndef SKIP_VOLUME_INTEGRALS
                 // compute volume integrals
 
+                // needed for element volume during faceloop
+                double elementVolume( 0.0 );
+
                 // do loop over all quadrature points
                 for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
 
@@ -588,7 +591,7 @@ class StokesPass
                     // quadrature weight
                     const double integrationWeight = volumeQuadratureElement.weight( quad );
                     // integration factor
-                    const double elementVolume = geometry.integrationElement( x );
+                    elementVolume = geometry.integrationElement( x );
 
                     // do loop over all SigmaBaseFunctions
                     for ( int m = 0; m < numSigmaBaseFunctionsElement; ++m ) {
@@ -624,22 +627,59 @@ class StokesPass
                             vForDivergenceMult[ 2 ][ 0 ] = v[ 1 ];
                             vForDivergenceMult[ 3 ][ 1 ] = v[ 1 ];
 
+                            // compute \tfrac{1}{|T_{tt}|} \int_{T_{tt}} - \nabla\cdot \tau \cdot v dx
+                            const double MinusDivergenceOfTauTimesV = -1.0
+                                * integrationWeight
+                                * sigmaBaseFunctionSetElement.evaluateGradientSingle( m, entity, x, vForDivergenceMult );
 
+                            // compute \int_{T_{tt}} \tau : \nabla\cdot v
+                            const double GradientOfVTimesTau = integrationWeight
+                                * elementVolume
+                                * velocityBaseFunctionSetElement.evaluateGradientSingle( l, entity, x, tau );
 
+                            // add to local matrices
+                            localXmatrixElement.add( l, m, GradientOfVTimesTau );
+                            localWmatrixElement.add( m, l, MinusDivergenceOfTauTimesV );
 
+                            // do pressure-stuff only once
+                            if ( m == 0 ) {
+
+                                // do loop over all PressureBaseFunctions
+                                for ( int k = 0; k <  numPressureBaseFunctionsElement; ++k ) {
+
+                                    // evaluate the PressureBaseFunctionSet
+                                    PressureRangeType q( 0.0 );
+                                    pressureBaseFunctionSetElement.evaluate( k, x, q );
+
+                                    // prepare q for divergence multiplication
+                                    VelocityJacobianRangeType qForDivergenceMult( 0.0 );
+                                    qForDivergenceMult[ 0 ][ 0 ] = q;
+                                    qForDivergenceMult[ 1 ][ 1 ] = q;
+
+                                    // compute \int_{T_{tt}} - q \nabla\cdot v
+                                    const double minusQTimesDivergenceOfV = -1.0
+                                        * integrationWeight
+                                        * elementVolume
+                                        * velocityBaseFunctionSetElement.evaluateGradientSingle( l, entity, x, qForDivergenceMult );
+
+                                    // compute \int_{T_{tt}} \nabla q \cdot v
+                                    PressureJacobianRangeType vForGradientMult( 0.0 );
+                                    vForGradientMult[ 0 ] = v;
+                                    const double vTimesGradientOfQ = integrationWeight
+                                        * elementVolume
+                                        * pressureBaseFunctionSetElement.evaluateGradientSingle( k, entity, x, vForGradientMult );
+
+                                    // add to local matrices
+                                    localZmatrixElement.add( l, k, minusQTimesDivergenceOfV );
+                                    localEmatrixElement.add( k, l, vTimesGradientOfQ );
+
+                                } // done loop over all PressureBaseFunctions
+
+                            } // done pressure-stuff only once
 
                         } // done loop over all VelocityBaseFunctions
 
-
-
-
-
-
                     } // done loop over all SigmaBaseFunctions
-
-
-
-
 
                 } // done loop over all quadrature points
 
@@ -1177,11 +1217,11 @@ class StokesPass
 //                    debugStream.Suspend(); // disable logging
 //#endif
 //
-//                    // get intersection quadrature, seen from inside
-//                    const FaceQuadratureType faceQuadratureElement( gridPart_,
-//                                                                    intIt,
-//                                                                    ( 4 * pressureSpaceOrder ) + 1,
-//                                                                    FaceQuadratureType::INSIDE );
+                    // get intersection quadrature, seen from inside
+                    const FaceQuadratureType faceQuadratureElement( gridPart_,
+                                                                    intIt,
+                                                                    ( 4 * pressureSpaceOrder ) + 1,
+                                                                    FaceQuadratureType::INSIDE );
 ////                    const FaceQuadratureType faceQuadratureElement( gridPart_,
 ////                                                                    intIt,
 ////                                                                    3,
@@ -1197,7 +1237,7 @@ class StokesPass
                         // get neighbour
                         const typename IntersectionIteratorType::EntityPointer neighbourPtr = intIt.outside();
                         const EntityType& neighbour = *neighbourPtr;
-//
+
                         // get local matrices for the surface integrals
                         LocalMInversMatrixType localMInversMatrixNeighbour = MInversMatrix.localMatrix( entity, neighbour );
                         LocalWmatrixType localWmatrixNeighbour = Wmatrix.localMatrix( entity, neighbour );
@@ -1214,19 +1254,234 @@ class StokesPass
                         const int numSigmaBaseFunctionsNeighbour = sigmaBaseFunctionSetNeighbour.numBaseFunctions();
                         const int numVelocityBaseFunctionsNeighbour = velocityBaseFunctionSetNeighbour.numBaseFunctions();
                         const int numPressureBaseFunctionsNeighbour = pressureBaseFunctionSetNeighbour.numBaseFunctions();
-//
-//                        // get intersection quadrature, seen from outside
-//                        const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
-//                                                                            intIt,
-//                                                                            ( 4 * pressureSpaceOrder ) + 1,
-//                                                                            FaceQuadratureType::OUTSIDE );
+
+                        // get intersection quadrature, seen from outside
+                        const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
+                                                                            intIt,
+                                                                            ( 4 * pressureSpaceOrder ) + 1,
+                                                                            FaceQuadratureType::OUTSIDE );
 ////                        const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
 ////                                                                            intIt,
 ////                                                                            3,
 ////                                                                            FaceQuadratureType::OUTSIDE );
 //
-//                        // compute the surface integrals
-//
+                        // compute surface integrals
+
+                        // do loop over all quadrature points
+                        for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+
+                            // quadrture point in reference element coordinates ssen from inside
+                            const ElementCoordinateType xInner = faceQuadratureElement.point( quad );
+                            // quadrture point in reference element coordinates ssen from outside
+                            const ElementCoordinateType xOuter = faceQuadratureNeighbour.point( quad );
+                            // quadrature point in world coordinates
+                            const ElementCoordinateType xWorld = geometry.global( xInner );
+                            // quadrature point in codim< 1 > reference element coordinates
+                            const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
+                            // quadrature weight
+                            const double integrationWeight = faceQuadratureElement.weight( quad );
+                            // integration factor
+                            const double faceVolume = intersectionGeoemtry.integrationElement( xLocal );
+                            // unit outer normal
+                            const VelocityRangeType normal = intIt.unitOuterNormal( faceQuadratureElement.localPoint( quad ) );
+
+                            // flux constants
+                            const double c11 = 1.0 / faceVolume;
+                            const double d11 = faceVolume;
+
+                            // do loop over all VelocityBaseFunctions
+                            for ( int l = 0; l < numVelocityBaseFunctionsElement; ++l ) {
+
+                                // evaluate VelocityBaseFunctions on Element
+                                VelocityRangeType vElement( 0.0 );
+                                velocityBaseFunctionSetElement.evaluate( l, xInner, vElement );
+                                // evaluate VelocityBaseFunctions on Neighbour
+                                VelocityRangeType vNeighbour( 0.0 );
+                                velocityBaseFunctionSetNeighbour.evaluate( l, xOuter, vNeighbour );
+
+                                //evaluate fluxes
+                                SigmaRangeType normalTensorHalfVElement = dyadicProduct( normal, vElement );
+                                normalTensorHalfVElement *= 0.5;
+
+                                SigmaRangeType normalTensorHalfVNeighbour = dyadicProduct( normal, vNeighbour );
+                                normalTensorHalfVNeighbour *= 0.5;
+
+                                VelocityRangeType minusOneOverHTimesVElement = vElement;
+                                minusOneOverHTimesVElement *= ( -1.0 * c11 );
+
+                                VelocityRangeType minusOneOverHTimesVNeighbour = vNeighbour;
+                                minusOneOverHTimesVNeighbour *= ( -1.0 * c11 );
+
+                                double normalTimesHalfVElement = normal * vElement;
+                                normalTimesHalfVElement *= 0.5;
+
+                                double normalTimesHalfVNeighbour = normal * vNeighbour;
+                                normalTimesHalfVNeighbour *= 0.5;
+
+                                // do loop over all SigmaBaseFunctions
+                                for ( int m = 0; m < numSigmaBaseFunctionsElement; ++m ) {
+
+                                    // evaluate SigmaBaseFunctions on Element
+                                    SigmaRangeType tauElement( 0.0 );
+                                    sigmaBaseFunctionSetElement.evaluate( m, xInner, tauElement );
+
+                                    // evaluate SigmaBaseFunctions on Neighbour
+                                    SigmaRangeType tauNeighbour( 0.0 );
+                                    sigmaBaseFunctionSetElement.evaluate( m, xOuter, tauNeighbour );
+
+                                    // evaluate the fluxes
+                                    VelocityRangeType halfTauElementTimesNormal( 0.0 );
+                                    tauElement.umv( normal, halfTauElementTimesNormal );
+                                    halfTauElementTimesNormal *= 0.5;
+
+                                    VelocityRangeType halfTauNeighbourTimesNormal( 0.0 );
+                                    tauElement.umv( normal, halfTauNeighbourTimesNormal );
+                                    halfTauNeighbourTimesNormal *= 0.5;
+
+                                    // compute |T| * W_en
+                                    const double W_en = integrationWeight
+                                        * faceVolume
+                                        * sigmaBaseFunctionSetElement.evaluateSingle( m, xInner, normalTensorHalfVElement )
+                                        * elementVolume;
+
+                                    // compute |T| * W_nb
+                                    const double W_nb = integrationWeight
+                                        * faceVolume
+                                        * sigmaBaseFunctionSetElement.evaluateSingle( m, xInner, normalTensorHalfVNeighbour )
+                                        * elementVolume;
+
+                                    // add to local matrices
+                                    localWmatrixElement.add( m, l, W_en );
+                                    localWmatrixNeighbour.add( m, l, W_nb );
+
+                                    // compute X_en
+                                    const double X_en = -1.0
+                                        * integrationWeight
+                                        * faceVolume
+                                        * velocityBaseFunctionSetElement.evaluateSingle( l, xInner, halfTauElementTimesNormal );
+
+                                    // compute X_nb
+                                    const double X_nb = -1.0
+                                        * integrationWeight
+                                        * faceVolume
+                                        * velocityBaseFunctionSetElement.evaluateSingle( l, xInner, halfTauNeighbourTimesNormal );
+
+                                    // add to local matrices
+                                    localXmatrixElement.add( l, m, X_en );
+                                    localXmatrixNeighbour.add( l, m, X_nb );
+
+                                } // done loop over all SigmaBaseFunctions
+
+                                // do loop over all PressureBaseFunctions
+                                for ( int k = 0; k < numPressureBaseFunctionsElement; ++k ) {
+
+                                    // evalute PressureBaseFunctions on Element
+                                    PressureRangeType qElement( 0.0 );
+                                    pressureBaseFunctionSetElement.evaluate( k, xInner, qElement );
+
+                                    // evalute PressureBaseFunctions on Neighbour
+                                    PressureRangeType qNeighbour( 0.0 );
+                                    pressureBaseFunctionSetNeighbour.evaluate( k, xOuter, qNeighbour );
+
+                                    // evaluate fluxes
+                                    VelocityRangeType halfQElementTimesNormal = normal;
+                                    halfQElementTimesNormal *= ( qElement * 0.5 );
+
+                                    VelocityRangeType halfQNeighbourTimesNormal = normal;
+                                    halfQNeighbourTimesNormal *= ( qNeighbour * 0.5 );
+
+                                    // compute Z_en
+                                    const double Z_en = integrationWeight
+                                        * faceVolume
+                                        * velocityBaseFunctionSetElement.evaluateSingle( l, xInner, halfQElementTimesNormal );
+
+                                    // compute Z_nb
+                                    const double Z_nb = integrationWeight
+                                        * faceVolume
+                                        * velocityBaseFunctionSetElement.evaluateSingle( l, xInner, halfQNeighbourTimesNormal );
+
+                                    // add to local matrices
+                                    localZmatrixElement.add( l, k, Z_en );
+                                    localZmatrixNeighbour.add( l, k, Z_nb );
+
+                                    // compute E_en
+                                    const double E_en = -1.0
+                                        * integrationWeight
+                                        * faceVolume
+                                        * pressureBaseFunctionSetElement.evaluateSingle( k, xInner, normalTimesHalfVElement );
+
+                                    // compute E_nb
+                                    const double E_nb = -1.0
+                                        * integrationWeight
+                                        * faceVolume
+                                        * pressureBaseFunctionSetElement.evaluateSingle( k, xInner, normalTimesHalfVNeighbour );
+
+                                    // add to local matrices
+                                    localEmatrixElement.add( k, l, E_en );
+                                    localEmatrixNeighbour.add( k, l, E_nb );
+
+                                    // do R calculation only for one l
+                                    if ( l == 0 ) {
+
+                                        // evaluate fluxes
+                                        PressureRangeType d11TimesQElement = qElement;
+                                        d11TimesQElement *= d11;
+
+                                        PressureRangeType d11TimesQNeighbour = qNeighbour;
+                                        d11TimesQNeighbour *= ( -1.0 * d11 );
+
+                                        // do loop over all PressureBaseFunctions
+                                        for ( int kk = 0; kk < numPressureBaseFunctionsElement; ++kk ) {
+
+                                            // compute R_en
+                                            const double R_en = integrationWeight
+                                                * faceVolume
+                                                * pressureBaseFunctionSetElement.evaluateSingle( kk, xInner, d11TimesQElement );
+
+                                            // compute R_nb
+                                            const double R_nb = integrationWeight
+                                                * faceVolume
+                                                * pressureBaseFunctionSetElement.evaluateSingle( kk, xInner, d11TimesQNeighbour );
+
+                                            // add to local matrices
+                                            localRmatrixElement.add( kk, k, R_en );
+                                            localRmatrixNeighbour.add( kk, k, R_nb );
+
+                                        } // done loop over all PressureBaseFunctions
+
+                                    } // done R calculation only for one l
+
+                                } // done loop over all PressureBaseFunctions
+
+                                // do loop over all VelocityBaseFunctions
+                                for ( int ll = 0; ll < numVelocityBaseFunctionsElement; ++ll ) {
+
+                                    // evaluate the VelocityBaseFunctionSet
+                                    VelocityRangeType v( 0.0 );
+                                    velocityBaseFunctionSetElement.evaluate( ll, xInner, v );
+
+                                    // compute Y_en
+                                    const double Y_en = -1.0
+                                        * integrationWeight
+                                        * faceVolume
+                                        * ( minusOneOverHTimesVElement * v );
+
+                                    // compute Y_nb
+                                    const double Y_nb = -1.0
+                                        * integrationWeight
+                                        * faceVolume
+                                        * ( minusOneOverHTimesVNeighbour * v );
+
+                                    // add to local matrices
+                                    localYmatrixElement.add( ll, l, Y_en );
+                                    localYmatrixNeighbour.add( ll, l, Y_nb );
+
+                                } // done loop over all VelocityBaseFunctions
+
+                            } // done loop over all VelocityBaseFunctions
+
+                        } // done loop over all quadrature points
+
 //                        //                                                                                                               // we will call this one
 //                        // (W)_{i,j} += \int_{\varepsilon\in \Epsilon_{I}^{T}}-\hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // W's element surface integral
 //                        //           += \int_{\varepsilon\in \Epsilon_{I}^{T}}-\hat{u}_{\sigma}^{U^{-}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // W's neighbour surface integral
@@ -2425,7 +2680,123 @@ class StokesPass
 
                     // if we are on the boundary of the grid
                     if ( !intIt.neighbor() && intIt.boundary() ) {
-                        // compute the boundary integrals
+
+                        // do loop over all quadrature points
+                        for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+
+                            // quadrture point in reference element coordinates
+                            const ElementCoordinateType x = faceQuadratureElement.point( quad );
+                            // quadrature point in world coordinates
+                            const ElementCoordinateType xWorld = geometry.global( x );
+                            // quadrature point in codim< 1 > reference element coordinates
+                            const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
+                            // quadrature weight
+                            const double integrationWeight = faceQuadratureElement.weight( quad );
+                            // integration factor
+                            const double faceVolume = intersectionGeoemtry.integrationElement( xLocal );
+                            // unit outer normal
+                            const VelocityRangeType normal = intIt.unitOuterNormal( faceQuadratureElement.localPoint( quad ) );
+
+                            // flux constants
+                            const double c11 = 1.0 / faceVolume;
+                            const double d11 = faceVolume;
+
+                            // dirichlet values
+                            VelocityRangeType gD( 0.0 );
+                            discreteModel_.dirichletData( 0.0, xWorld, gD );
+
+                            // evaluate fluxes
+                            VelocityRangeType minusC11TimesgD = gD;
+                            minusC11TimesgD *= c11;
+
+                            // do loop over all VelocityBaseFunctions
+                            for ( int l = 0; l < numVelocityBaseFunctionsElement; ++l ) {
+
+                                // evaluate the VelocityBaseFunctionSet
+                                VelocityRangeType v( 0.0 );
+                                velocityBaseFunctionSetElement.evaluate( l, x, v );
+
+                                // compute H2rhs and add to local function
+                                localH2rhs[ l ] += integrationWeight
+                                    * faceVolume
+                                    * velocityBaseFunctionSetElement.evaluateSingle( l, x, minusC11TimesgD );
+
+                                // do loop over all SigmaBaseFunctions
+                                for ( int m = 0; m < numSigmaBaseFunctionsElement; ++m ) {
+
+                                    // evaluate the SigmaBaseFunctionSet
+                                    SigmaRangeType tau( 0.0 );
+                                    sigmaBaseFunctionSetElement.evaluate( m, x, tau );
+
+                                    // compute X_bnd
+                                    VelocityRangeType tauTimesNormal( 0.0 );
+                                    tau.umv( normal, tauTimesNormal );
+                                    const double X_bnd = -1.0
+                                        * integrationWeight
+                                        * faceVolume
+                                        * velocityBaseFunctionSetElement.evaluateSingle( l, x, tauTimesNormal );
+
+                                    // add to local matrices
+                                    localXmatrixElement.add( l, m, X_bnd );
+
+                                    // compute H1rhs
+                                    localH1rhs[ m ] += integrationWeight
+                                        * faceVolume
+                                        * sigmaBaseFunctionSetElement.evaluateSingle( m, x, dyadicProduct( gD, normal) );
+
+                                } // done loop over all SigmaBaseFunctions
+
+                                // do loop over all VelocityBaseFunction
+                                for ( int ll = 0; ll < numVelocityBaseFunctionsElement; ++ll ) {
+
+                                    // calculate Y_bnd
+                                    const double Y_bnd = c11
+                                        * integrationWeight
+                                        * faceVolume
+                                        * velocityBaseFunctionSetElement.evaluateSingle( ll, x, v );
+
+                                    // add to local matrices
+                                    localYmatrixElement.add( ll, l, Y_bnd );
+
+                                } // done loop over all VelocityBaseFunction
+
+                                // do loop over all PressureBaseFunctions
+                                for ( int k = 0; k < numPressureBaseFunctionsElement; ++k ) {
+
+                                    // evaluate the PressureBaseFunctionSet
+                                    PressureRangeType q( 0.0 );
+                                    pressureBaseFunctionSetElement.evaluate( k, x, q );
+
+                                    // compute Z_bnd
+                                    VelocityRangeType normalTimesQ = normal;
+                                    normalTimesQ *= q;
+                                    const double Z_bnd = integrationWeight
+                                        * faceVolume
+                                        * velocityBaseFunctionSetElement.evaluateSingle( l, x, normalTimesQ );
+
+                                    // add to local matrices
+                                    localZmatrixElement.add( l, k, Z_bnd );
+
+                                    // do H3rhs assembling only once
+                                    if ( l == 0 ) {
+
+                                        // compute H3rhs
+                                        const double gDTimesNormal = gD * normal;
+                                        localH3rhs[ k ] += integrationWeight
+                                            * faceVolume
+                                            * pressureBaseFunctionSetElement.evaluateSingle( k, x, gDTimesNormal );
+
+                                    } // done H3rhs assembling only once
+
+
+
+                                } // done loop over all PressureBaseFunctions
+
+
+                            } // done loop over all VelocityBaseFunctions
+
+                        } // done loop over all quadrature points
+
 //
 //                        //                                                                                                               // we wil call this one
 //                        // (W)_{i,j} += \int_{\varepsilon\in \Epsilon_{D}^{T}}-\hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // W's boundary integral
@@ -3510,18 +3881,18 @@ class StokesPass
 ////                        << std::endl;
 //
 //
-//            // do the matlab logging stuff
-//            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-//            Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Xmatrix.matrix(), "X", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Ymatrix.matrix(), "Y", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Zmatrix.matrix(), "Z", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Ematrix.matrix(), "E", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Rmatrix.matrix(), "R", matlabLogStream );
-//            Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
-//            Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
-//            Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
+            // do the matlab logging stuff
+            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+            Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Xmatrix.matrix(), "X", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Ymatrix.matrix(), "Y", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Zmatrix.matrix(), "Z", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Ematrix.matrix(), "E", matlabLogStream );
+            Stuff::printSparseRowMatrixMatlabStyle( Rmatrix.matrix(), "R", matlabLogStream );
+            Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
+            Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
+            Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
 ////            matlabLogStream << "\nA = Y - X * M_invers * W;" << std::endl;
 ////            matlabLogStream << "B = Z;" << std::endl;
 ////            matlabLogStream << "B_T = - E;" << std::endl;
@@ -3536,15 +3907,15 @@ class StokesPass
 //            matlabLogStream << "mirko_W = -(1/M_invers(1,1)) .* (mirko_W);" << std::endl;
 //            matlabLogStream << "mirko_E = -(mirko_E);" << std::endl;
 //            matlabLogStream << "mirko_H1 = (1/M_invers(1,1)) .* (mirko_H1);" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( W - mirko_W ) = %d\\n', norm( W - mirko_W ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( X - mirko_X ) = %d\\n', norm( X - mirko_X ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( Y - mirko_Y ) = %d\\n', norm( Y - mirko_Y ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( Z - mirko_Z ) = %d\\n', norm( Z - mirko_Z ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( E - mirko_E ) = %d\\n', norm( E - mirko_E ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( R - mirko_R ) = %d\\n', norm( R - mirko_R ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( H1 - mirko_H1 ) = %d\\n', norm( H1 - mirko_H1 ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( H2 - mirko_H3 ) = %d\\n', norm( H2 - mirko_H2 ) );\n" << std::endl;
-//            matlabLogStream << "fprintf(1, 'norm( H3 - mirko_H3 ) = %d\\n', norm( H3 - mirko_H3 ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( W - mirko_W ) = %d\\n', norm( W - mirko_W ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( X - mirko_X ) = %d\\n', norm( X - mirko_X ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( Y - mirko_Y ) = %d\\n', norm( Y - mirko_Y ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( Z - mirko_Z ) = %d\\n', norm( Z - mirko_Z ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( E - mirko_E ) = %d\\n', norm( E - mirko_E ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( R - mirko_R ) = %d\\n', norm( R - mirko_R ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( H1 - mirko_H1 ) = %d\\n', norm( H1 - mirko_H1 ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( H2 - mirko_H3 ) = %d\\n', norm( H2 - mirko_H2 ) );\n" << std::endl;
+            matlabLogStream << "fprintf(1, 'norm( H3 - mirko_H3 ) = %d\\n', norm( H3 - mirko_H3 ) );\n" << std::endl;
 ////            matlabLogStream << "fprintf(1, 'norm( A - mirko_A ) = %d\\n', norm( A - mirko_A, inf ) );\n" << std::endl;
 ////            matlabLogStream << "fprintf(1, 'norm( B - mirko_B ) = %d\\n', norm( B - mirko_B, inf ) );\n" << std::endl;
 ////            matlabLogStream << "fprintf(1, 'norm( B_T - mirko_B_T ) = %d\\n', norm( B_T - mirko_B_T, inf ) );\n" << std::endl;
