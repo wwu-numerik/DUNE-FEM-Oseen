@@ -633,12 +633,12 @@ class StokesPass
                                 * sigmaBaseFunctionSetElement.evaluateGradientSingle( m, entity, x, vForDivergenceMult );
 
                             // compute \int_{T_{tt}} \tau : \nabla\cdot v
-                            const double GradientOfVTimesTau = integrationWeight
+                            const double X_vol = integrationWeight
                                 * elementVolume
                                 * velocityBaseFunctionSetElement.evaluateGradientSingle( l, entity, x, tau );
 
                             // add to local matrices
-                            localXmatrixElement.add( l, m, GradientOfVTimesTau );
+                            localXmatrixElement.add( l, m, X_vol );
 //                            localWmatrixElement.add( m, l, MinusDivergenceOfTauTimesV );
 
                             // do pressure-stuff only once
@@ -859,29 +859,29 @@ class StokesPass
 //#endif
                     }
                 } // done computing W's volume integral
-//
+
 //                //                                                  // we will call this one
 //                // (X)_{i,j} += \mu\int_{T}\tau_{j}:\nabla v_{i} dx // X's volume integral
 //                //                                                  // see also "X's entitity surface integral", "X's neighbour surface integral" and "X's boundary integral" below
-////#ifndef NLOG
-////                if ( Xdebug ) {
-////                    debugStream.Resume(); // enable logging
-////                    debugStream << "    = X volume =================" << std::endl;
-////                    debugStream.Suspend();
-////                }
-////#endif
+//#ifndef NLOG
+//                if ( Xdebug ) {
+//                    debugStream.Resume(); // enable logging
+//                    debugStream << "    = X volume =================" << std::endl;
+//                    debugStream.Suspend();
+//                }
+//#endif
 //                for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
 //                    for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
 //                        double X_i_j = 0.0;
-////#ifndef NLOG
-//////                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-//////                        if ( allOutput ) Xoutput = true;
-//////                        if ( Xdebug ) Xoutput = true;
-////                        if ( entityOutput && Xoutput ) debugStream.Resume(); // enable logging
-////                        debugStream << "    = X ========================" << std::endl;
-////                        debugStream << "    basefunctions " << i << " " << j << std::endl;
-////                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
-////#endif
+//#ifndef NLOG
+////                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
+////                        if ( allOutput ) Xoutput = true;
+////                        if ( Xdebug ) Xoutput = true;
+//                        if ( entityOutput && Xoutput ) debugStream.Resume(); // enable logging
+//                        debugStream << "    = X ========================" << std::endl;
+//                        debugStream << "    basefunctions " << i << " " << j << std::endl;
+//                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+//#endif
 //                        // sum over all quadrature points
 //                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
 //                            // get x
@@ -1331,12 +1331,14 @@ class StokesPass
                                     sigmaBaseFunctionSetElement.evaluate( m, xOuter, tauNeighbour );
 
                                     // evaluate the fluxes
+//                                    tauElement *= 0.5;
                                     VelocityRangeType halfTauElementTimesNormal( 0.0 );
                                     tauElement.umv( normal, halfTauElementTimesNormal );
                                     halfTauElementTimesNormal *= 0.5;
 
+//                                    tauNeighbour *= 0.5;
                                     VelocityRangeType halfTauNeighbourTimesNormal( 0.0 );
-                                    tauElement.umv( normal, halfTauNeighbourTimesNormal );
+                                    tauNeighbour.umv( normal, halfTauNeighbourTimesNormal );
                                     halfTauNeighbourTimesNormal *= 0.5;
 
                                     // compute |T| * W_en
@@ -1693,27 +1695,27 @@ class StokesPass
 //                        //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}ds // X's neighbour sourface integral
 //                        //                                                                                                                   // see also "X's boundary integral" below
 //                        //                                                                                                                   // and "X's volume integral" above
-////#ifndef NLOG
-////                        if ( Xdebug ) {
-////                            debugStream.Resume(); // enable logging
-////                            debugStream << "      = X surface =======================" << std::endl;
-////                            debugStream.Suspend();
-////                        }
-////#endif
+//#ifndef NLOG
+//                        if ( Xdebug ) {
+//                            debugStream.Resume(); // enable logging
+//                            debugStream << "      = X surface =======================" << std::endl;
+//                            debugStream.Suspend();
+//                        }
+//#endif
 ////                        if ( discreteModel_.hasSigmaFlux() ) {
 //                            for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
 //                                // compute X's element sourface integral
 //                                for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
 //                                    double X_i_j = 0.0;
-////#ifndef NLOG
-////    //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-//////                                    if ( allOutput ) Xoutput = true;
-//////                                    if ( Xdebug ) Xoutput = true;
-////                                    if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
-////                                    debugStream << "      = X element ======================" << std::endl;
-////                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-////                                    debugStream << "      volumeQuadratureElement.nop() " << volumeQuadratureElement.nop() << std::endl;
-////#endif
+//#ifndef NLOG
+////                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
+////                                    if ( allOutput ) Xoutput = true;
+////                                    if ( Xdebug ) Xoutput = true;
+//                                    if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
+//                                    debugStream << "      = X element ======================" << std::endl;
+//                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
+//                                    debugStream << "      volumeQuadratureElement.nop() " << volumeQuadratureElement.nop() << std::endl;
+//#endif
 //                                    // sum over all quadrature points
 //                                    for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
 //                                        // get x in codim<0> and codim<1> coordinates
@@ -1723,7 +1725,7 @@ class StokesPass
 //                                        const double elementVolume = intersectionGeoemtry.integrationElement( localX );
 //                                        // get the quadrature weight
 //                                        const double integrationWeight = faceQuadratureElement.weight( quad );
-////                                        // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
+//                                        // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
 //                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
 //                                        SigmaRangeType tau_j( 0.0 );
 //                                        sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
@@ -1798,15 +1800,15 @@ class StokesPass
 //                                // compute X's neighbour sourface integral
 //                                for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
 //                                    double X_i_j = 0.0;
-////#ifndef NLOG
-////    //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-////    //                                if ( allOutput ) Xoutput = true;
-//////                                    if ( Xdebug ) Xoutput = true;
-////                                    if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
-////                                    debugStream << "      = X neighbour ====================" << std::endl;
-////                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-////                                    debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
-////#endif
+//#ifndef NLOG
+////                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
+////                                    if ( allOutput ) Xoutput = true;
+////                                    if ( Xdebug ) Xoutput = true;
+//                                    if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
+//                                    debugStream << "      = X neighbour ====================" << std::endl;
+//                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
+//                                    debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
+//#endif
 //                                    // sum over all quadrature points
 //                                    for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
 //                                        // get x codim<0> and codim<1> coordinates
@@ -1891,7 +1893,7 @@ class StokesPass
 //                                } // done computing X's neighbour sourface integral
 //                            } // done computing X's sourface integrals
 ////                        }
-//
+
                         //                                                                                                         // we call this one
                         // (Y)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U{+}}(v{j})\cdot n_{t}ds // Y's element surface integral
                         //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}ds // Y's neighbour surface integral
@@ -2969,30 +2971,30 @@ class StokesPass
 #endif
                             } // done computing H1's boundary integral
                         }
-//
-//                        //                                                                                                                   // we will call this one
-//                        // (X)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}ds // X's boundary integral
-//                        //                                                                                                                   // see also "X's volume integral", "X's element surface integral" and "X's neighbour surface integral" above
-////#ifndef NLOG
-////                        if ( Xdebug ) {
-////                            debugStream.Resume(); // enable logging
-////                            debugStream << "      = X boundary =====================" << std::endl;
-////                            debugStream.Suspend();
-////                        }
-////#endif
+
+                        //                                                                                                                   // we will call this one
+                        // (X)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}ds // X's boundary integral
+                        //                                                                                                                   // see also "X's volume integral", "X's element surface integral" and "X's neighbour surface integral" above
+//#ifndef NLOG
+//                        if ( Xdebug ) {
+//                            debugStream.Resume(); // enable logging
+//                            debugStream << "      = X boundary =====================" << std::endl;
+//                            debugStream.Suspend();
+//                        }
+//#endif
 ////                        if ( discreteModel_.hasSigmaFlux() ) {
 //                            for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
 //                                for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
 //                                    double X_i_j = 0.0;
-////#ifndef NLOG
-////    //                                if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-//////                                    if ( allOutput ) Xoutput = true;
-//////                                    if ( Xdebug ) Xoutput = true;
-////                                    if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
-////                                    debugStream << "      = X boundary =====================" << std::endl;
-////                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-////                                    debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
-////#endif
+//#ifndef NLOG
+////                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
+////                                    if ( allOutput ) Xoutput = true;
+////                                    if ( Xdebug ) Xoutput = true;
+//                                    if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
+//                                    debugStream << "      = X boundary =====================" << std::endl;
+//                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
+//                                    debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
+//#endif
 //                                    // sum over all quadrature points
 //                                    for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
 //                                        // get x codim<0> and codim<1> coordinates
@@ -3002,7 +3004,7 @@ class StokesPass
 //                                        const double elementVolume = intersectionGeoemtry.integrationElement( localX );
 //                                        // get the quadrature weight
 //                                        const double integrationWeight = faceQuadratureElement.weight( quad );
-////                                        // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
+//                                        // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
 //                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( localX );
 //                                        SigmaRangeType tau_j( 0.0 );
 //                                        sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
@@ -3076,7 +3078,7 @@ class StokesPass
 //                                }
 //                            } // done computing X's boundary integral
 ////                        }
-//
+
                         //                                                                                                           // we will call this one
                         // (Y)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U^{+}}(v_{j})\cdot n_{t}ds // Y's boundary integral
                         //                                                                                                           // see also "Y's element surface integral" and "Y's neighbour surface integral" above
@@ -3972,15 +3974,15 @@ class StokesPass
 //
 //            profiler().StopTiming("Pass -- ASSEMBLE");
 //            profiler().StartTiming("Pass -- SOLVER");
-//            InvOpType op;
-//#ifdef USE_ALTERNATIVE_SOLVER
-//            AltInvOpType m_op;
-//            if ( Parameters().getParam( "alternative-solve", false ) )
-//                m_op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-//            else
-//#endif
-//                op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-//
+            InvOpType op;
+#ifdef USE_ALTERNATIVE_SOLVER
+            AltInvOpType m_op;
+            if ( Parameters().getParam( "alternative-solve", false ) )
+                m_op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+            else
+#endif
+                op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+
 //#if 0 //too complex to incorporate right now
 //#ifndef CHEAT
 //            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
