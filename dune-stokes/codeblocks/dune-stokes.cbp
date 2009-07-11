@@ -29,7 +29,6 @@
 				<Option compiler="gcc" />
 				<Option parameters="test.param" />
 				<Compiler>
-					<Add option="-w" />
 					<Add option="-g" />
 					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include" />
@@ -76,6 +75,7 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-Wall" />
 			<Add option="-g" />
 			<Add option="-fexceptions" />
 			<Add option="-DENABLE_ALUGRID" />
