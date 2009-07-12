@@ -115,12 +115,6 @@
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/lib" />
 			<Add directory="/usr/lib64" />
 		</Linker>
-		<Unit filename="../../dune-fem/fem/operator/matrix/spmatrix.hh">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
-		<Unit filename="../../dune-fem/fem/space/dgspace/orthonormalbase_2d.cc">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
 		<Unit filename="../src/Makefile.am" />
 		<Unit filename="../src/analyticaldata.hh" />
 		<Unit filename="../src/dune_stokes.cc" />
