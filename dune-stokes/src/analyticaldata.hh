@@ -96,8 +96,8 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
         }
 
     private:
-        double viscosity_;
-        int dim_;
+        const double viscosity_;
+        const int dim_;
 };
 
 /**
@@ -200,7 +200,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
         }
 
     private:
-        int dim_;
+        const int dim_;
 
 };
 
