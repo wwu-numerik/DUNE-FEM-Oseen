@@ -3422,28 +3422,7 @@ class StokesPass
 #endif
                 op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 
-//#if 0 //too complex to incorporate right now
-//#ifndef CHEAT
-//            op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-//#else
-//            if ( Parameters().getParam( "use-cheat", true ) ) {
-//#ifndef NLOG
-//                infoStream.Resume();
-//                infoStream << "solving with cheated rhs" << std::endl;
-//                infoStream.Suspend();
-//#endif
-//                op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, exactH1rhs, exactH2rhs, exactH3rhs );
-//            }
-//            else {
-//#ifndef NLOG
-//                infoStream.Resume();
-//                infoStream << "solving with \"normal\" rhs" << std::endl;
-//                infoStream.Suspend();
-//#endif
-//                op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-//            }
-//#endif
-//#endif //end if 0
+
 //
 //#ifndef NLOG
 //            if ( Parameters().getParam( "solution-print", true ) ) {
