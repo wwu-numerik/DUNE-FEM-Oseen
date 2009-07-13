@@ -143,13 +143,13 @@ int main( int argc, char** argv )
     //set minref == maxref to get only a single run in non variation part
     int minpow = Parameters().getParam( "minpow", -2 );
 
-    if ( Parameters().getParam( "multirun", false ) ) {
+    if ( Parameters().getParam( "multirun", true ) ) {
         /** all four stab parameters are permutated in [ minpow ; maxpow ]
             inside an outer loop that increments the grid's refine level
         **/
-        for ( int ref = minref; ref < maxref; ++ref ) {
+        for ( int ref = minref; ref < maxref; ref+=2 ) {
+            std::cout << "WWWWW   " << ref << std::endl;
             int i,j,k,l;
-            i = j = k = l = maxpow - 1;
 //            for ( int i = minpow; i < maxpow; ++i ) {
 //                for ( int j = minpow; j < maxpow; ++j ) {
 //                    for ( int k = minpow; k < maxpow; ++k ) {
