@@ -55,7 +55,7 @@
 
 typedef std::vector< std::vector<double> > L2ErrorVector;
 typedef std::vector<std::string> ColumnHeaders;
-const std::string errheaders[] = { "h", "tris","C11","C12","D11","D12","Velocity", "Pressure" };
+const std::string errheaders[] = { "h", "tris","runtime","C11","C12","D11","D12","Velocity", "Pressure" };
 const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
 
 struct RunInfo
@@ -148,10 +148,12 @@ int main( int argc, char** argv )
             inside an outer loop that increments the grid's refine level
         **/
         for ( int ref = minref; ref < maxref; ++ref ) {
-            for ( int i = minpow; i < maxpow; ++i ) {
-                for ( int j = minpow; j < maxpow; ++j ) {
-                    for ( int k = minpow; k < maxpow; ++k ) {
-                        for ( int l = minpow; l < maxpow; ++l ) {
+            int i,j,k,l;
+            i = j = k = l = maxpow - 1;
+//            for ( int i = minpow; i < maxpow; ++i ) {
+//                for ( int j = minpow; j < maxpow; ++j ) {
+//                    for ( int k = minpow; k < maxpow; ++k ) {
+//                        for ( int l = minpow; l < maxpow; ++l ) {
                             Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
                             gridPtr->globalRefine( ref );
                             typedef Dune::AdaptiveLeafGridPart< GridType >
@@ -168,7 +170,10 @@ int main( int argc, char** argv )
                                     << j << " " << k << " "
                                     << l << "') \n" << std::endl;
                             //actual work
+                            profiler().StartTiming( "SingleRun" );
                             RunInfo info = singleRun( mpicomm, gridPtr, gridPart, i, j, k, l );
+                            profiler().StopTiming( "SingleRun" );
+                            info.run_time = profiler().GetTiming( "SingleRun" );
                             // new line and closing try/catch in m-file
                             matlabLogStream << "\ncatch\ndisp('errors here');\nend\ntoc\ndisp(' ');\n" << std::endl;
                             l2_errors.push_back( info.L2Errors );
@@ -185,10 +190,10 @@ int main( int argc, char** argv )
                                 ( i == ( maxpow - 1 ) ) );
                             //the writer needs to know if it should close the table etc.
                             eoc_output.write( texwriter, lastrun );
-                        }
-                    }
-                }
-            }
+//                        }
+//                    }
+//                }
+//            }
         }
     }
     else { //we don't do any variation here, just one simple run, no eoc, nothing
@@ -251,7 +256,7 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     info.codim0 = gridPtr->size( 0 );
     info.codim0 = gridPart.grid().size( 0 );
     Dune::GridWidthProvider< GridType > gw ( *gridPtr );
-    double grid_width = 0.125;//gw.gridWidth();
+    double grid_width = gw.gridWidth();
 //    infoStream << "  - max grid width: " << grid_width << std::endl;
     info.grid_width = grid_width;
 
