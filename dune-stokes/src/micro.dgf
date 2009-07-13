@@ -1,0 +1,22 @@
+DGF
+Simplexgenerator
+path /share/dune/local/bin/triangle
+
+%file phantom_s.1
+%file half_torus_s02.1
+%file half_torus_s01.1
+%file half_torus_analytical.1
+%file aorta_dune.1
+file micro.1 
+
+dimension 2
+#
+
+#boundarysegments
+#23 911 2011 977
+#
+
+#BOUNDARYDOMAIN
+#default 1
+#
+#
