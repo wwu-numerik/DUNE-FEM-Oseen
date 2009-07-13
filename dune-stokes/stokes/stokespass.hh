@@ -1900,7 +1900,7 @@ class StokesPass
                                     VelocityRangeType tau_j_times_normal( 0.0 );
                                     tau_j.mv( outerNormal, tau_j_times_normal );
                                     VelocityRangeType gD( 0.0 );
-                                    discreteModel_.dirichletData( 0.0, xWorld,  gD );
+                                    discreteModel_.dirichletData( intIt, 0.0, xWorld,  gD );
                                     const double gD_times_tau_j_times_normal = gD * tau_j_times_normal;
                                     H1_j += elementVolume
                                         * integrationWeight
@@ -2184,7 +2184,7 @@ class StokesPass
                                         const VelocityRangeType xIntersectionGlobal = intIt.intersectionSelfLocal().global( xLocal );
                                         const VelocityRangeType xWorld = geometry.global( xIntersectionGlobal );
                                         VelocityRangeType gD( 0.0 );
-                                        discreteModel_.dirichletData( 0.0, xWorld, gD );
+                                        discreteModel_.dirichletData( intIt, 0.0, xWorld, gD );
                                         SigmaRangeType gD_times_normal( 0.0 );
                                         gD_times_normal = dyadicProduct( gD, outerNormal );
                                         VelocityRangeType gD_times_normal_times_normal( 0.0 );
@@ -2470,7 +2470,7 @@ class StokesPass
                                     // compute -\hat{u}_{p}^{RHS}()\cdot n_{T}q_{j}
                                     const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
                                     VelocityRangeType gD( 0.0 );
-                                    discreteModel_.dirichletData( 0.0, xWorld, gD );
+                                    discreteModel_.dirichletData( intIt, 0.0, xWorld, gD );
                                     const double gD_times_normal = gD * outerNormal;
                                     PressureRangeType q_j( 0.0 );
                                     pressureBaseFunctionSetElement.evaluate( j, x, q_j );
