@@ -143,11 +143,11 @@ int main( int argc, char** argv )
     //set minref == maxref to get only a single run in non variation part
     int minpow = Parameters().getParam( "minpow", -2 );
 
-    if ( Parameters().getParam( "multirun", false ) ) {
+    if ( Parameters().getParam( "multirun", true ) ) {
         /** all four stab parameters are permutated in [ minpow ; maxpow ]
             inside an outer loop that increments the grid's refine level
         **/
-        for ( int ref = minref; ref < maxref; ++ref ) {
+        for ( int ref = minref; ref < maxref; ref+=2 ) {
             int i,j,k,l;
             i = j = k = l = maxpow - 1;
 //            for ( int i = minpow; i < maxpow; ++i ) {
@@ -183,11 +183,8 @@ int main( int argc, char** argv )
                             eoc_output.setErrors( idx,info.L2Errors );
                             texwriter.setInfo( info );
                             bool lastrun = ( //this test is somewhat stupid, make it smart!!
-                                ( ref == ( maxref - 1 ) ) &&
-                                ( j == ( maxpow - 1 ) ) &&
-                                ( k == ( maxpow - 1 ) ) &&
-                                ( l == ( maxpow - 1 ) ) &&
-                                ( i == ( maxpow - 1 ) ) );
+                                ( ref >= ( maxref - 1 ) ) &&
+                                ( j + k + l + i >= 4 * ( maxpow - 1 ) ) );
                             //the writer needs to know if it should close the table etc.
                             eoc_output.write( texwriter, lastrun );
 //                        }
