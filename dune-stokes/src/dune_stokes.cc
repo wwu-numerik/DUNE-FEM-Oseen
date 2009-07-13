@@ -143,7 +143,7 @@ int main( int argc, char** argv )
     //set minref == maxref to get only a single run in non variation part
     int minpow = Parameters().getParam( "minpow", -2 );
 
-    if ( false ) {
+    if ( Parameters().getParam( "multirun", false ) ) {
         /** all four stab parameters are permutated in [ minpow ; maxpow ]
             inside an outer loop that increments the grid's refine level
         **/
