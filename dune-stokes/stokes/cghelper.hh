@@ -55,43 +55,16 @@ class MatrixA_Operator {
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret) const
         {
-#ifdef EXTRALOG
-            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-            static unsigned int i = 0;
-            if ( i == 1 ) {
-                Stuff::printDoubleVectorMatlabStyle( x, w_mat_.cols(), "mult_A__x", matlabLogStream );
-            }
-#endif
             sig_tmp1.clear();
             sig_tmp2.clear();
-            Logging::LogStream& dbg = Logger().Dbg();
+
 			// ret = ( ( X * ( -1* ( M_inv * ( W * x ) ) ) ) + ( Y * x ) )
             w_mat_.multOEM( x, sig_tmp1.leakPointer() );
-#ifdef EXTRALOG
-            if ( i == 1 ) {
-                Stuff::printDoubleVectorMatlabStyle( sig_tmp1.leakPointer(), sig_tmp1.size() , "mult_A__W_times_x", matlabLogStream );
-            }
-#endif
             m_mat_.apply( sig_tmp1, sig_tmp2 );//Stuff:DiagmUlt
-#ifdef EXTRALOG
-            if ( i == 1 ) {
-                Stuff::printDoubleVectorMatlabStyle( sig_tmp2.leakPointer(), sig_tmp2.size() , "mult_A__Minvers_times_W_times_x", matlabLogStream );
-            }
-#endif
+
             sig_tmp2 *= ( -1 );
             x_mat_.multOEM( sig_tmp2.leakPointer(), ret );
-#ifdef EXTRALOG
-            if ( i == 1 ) {
-                Stuff::printDoubleVectorMatlabStyle( ret, ( sig_tmp1.size() / 2 ) , "mult_A__minus_X_times_Minvers_times_W_times_x", matlabLogStream );
-            }
-#endif
             y_mat_.multOEMAdd( x, ret );
-#ifdef EXTRALOG
-            if ( i == 1 ) {
-                Stuff::printDoubleVectorMatlabStyle( ret, ( sig_tmp1.size() / 2 ) , "mult_A__Y_times_x_minus_X_times_Minvers_times_W_times_x", matlabLogStream );
-            }
-            i++;
-#endif
         }
 
 #ifdef USE_BFG_CG_SCHEME
@@ -161,53 +134,24 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret) const
         {
-#ifdef EXTRALOG
-            static unsigned int i = 0;
-            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-            if ( i == 1 ) {
-                Stuff::printDoubleVectorMatlabStyle( x, b_mat_.cols(), "mult_S__x", matlabLogStream );
-            }
-#endif
             Logging::LogStream& info = Logger().Info();
-
             const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
-
             tmp1.clear();
-//            Stuff::addScalarToFunc( tmp2, 0.1 );
 
 			// ret = ( ( B_t * ( A^-1 * ( B * x ) ) ) + ( C * x ) )
-//			Stuff::oneLinePrint( std::cout, tmp1 ) ;
+
             b_mat_.multOEM( x, tmp1.leakPointer() );
-#ifdef EXTRALOG
-            if ( i == 1 ) {
-                Stuff::printDoubleVectorMatlabStyle( tmp1.leakPointer(), b_mat_.rows(), "mult_S__B_times_x", matlabLogStream );
-            }
-#endif
-//            Stuff::oneLinePrint( std::cout, tmp1 ) ;
-//            Stuff::printDoubleVec( std::cout, x, b_mat_.cols() );
+
             ReturnValueType cg_info;
             a_solver_.apply( tmp1, tmp2, cg_info );
-#ifdef EXTRALOG
-            if ( i == 1 ) {
-                Stuff::printDoubleVectorMatlabStyle( tmp2.leakPointer(), b_t_mat_.cols(), "mult_S__Ainv_times_B_times_x", matlabLogStream );
-            }
-#endif
-            info << "\t\t\t\t\t inner iterations: " << cg_info.first << std::endl;
+
+            if ( solverVerbosity > 1 )
+                info << "\t\t\t\t\t inner iterations: " << cg_info.first << std::endl;
+
             total_inner_iterations += cg_info.first;
+
             b_t_mat_.multOEM( tmp2.leakPointer(), ret );
-#ifdef EXTRALOG
-            if ( i == 1 ) {
-                Stuff::printDoubleVectorMatlabStyle( ret, b_t_mat_.rows(), "mult_S__Bt_times_Ainv_times_B_times_x", matlabLogStream );
-            }
-#endif
             c_mat_.multOEMAdd( x, ret );
-#ifdef EXTRALOG
-            if ( i == 1 ) {
-                Stuff::printDoubleVectorMatlabStyle( ret, b_t_mat_.rows(), "mult_S__Bt_times_Ainv_times_B_times_x_plus_C_times_x", matlabLogStream );
-            }
-            i++;
-#endif
-			//
         }
 
 #ifdef USE_BFG_CG_SCHEME
@@ -219,9 +163,9 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
                 double limit = info.second.first;
                 const double residuum = fabs(info.second.second);
                 const int n = info.first;
-//		Logger().Info() << "res: "<<residuum<<std::endl;
+
                 limit = tau * std::min( 1. , limit / std::min ( residuum * n  , 1.0 ) );
-//                limit = tau * std::min( 1. , limit / std::min ( std::pow( residuum, n ) , 1.0 ) );
+
                 a_solver_.setAbsoluteLimit( limit );
                 Logger().Info() << "\t\t\t Set inner error limit to: "<< limit << std::endl;
             }

@@ -2646,7 +2646,7 @@ class StokesPass
 
         } // end of apply
 
-        virtual void compute( const TotalArgumentType &arg, DestinationType &dest) const
+        virtual void compute( const TotalArgumentType& /*arg*/, DestinationType& /*dest*/ ) const
         {}
 
         virtual void allocateLocalMemory()
@@ -2771,7 +2771,7 @@ class StokesPass
         VelocityJacobianRangeType preparePressureRangeTypeForVelocityDivergence( const PressureRangeType& arg ) const
         {
             VelocityJacobianRangeType ret( 0.0 );
-            for ( int i = 0; i < ret[0].dim(); ++i ) {
+            for ( unsigned int i = 0; i < ret[0].dim(); ++i ) {
                 VelocityRangeType row( 0.0 );
                 row[ i ] = arg;
                 ret[ i ] = row;
