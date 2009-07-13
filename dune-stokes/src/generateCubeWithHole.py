@@ -9,8 +9,11 @@ circle_radius = 0.25
 square_length = 1.0
 number_of_points_per_side = 1
 dgf_filename = 'cube_with_hole_in_2d.dgf'
-id_of_square_faces = 2
-id_of_circle_faces = 3
+id_of_circle_faces = 2
+id_of_bottom_square_faces = 2
+id_of_right_square_faces = 3
+id_of_top_square_faces = 2
+id_of_left_square_faces = 4
 
 # get command line arguments
 if len( sys.argv ) == 4:
@@ -92,10 +95,21 @@ for i in range( 0, n ):
 	number_of_cubes += 1
 dgf_file.write( '#\n' )
 dgf_file.write( 'BOUNDARYSEGMENTS\t# the boundary ids\n' )
-for i in range( 0, n ):
-	dgf_file.write( '%i %i %i\t\t\t# of the faces of the square\n' %( id_of_square_faces, i, ( i + 1 ) % n ) )
+vertex_number = 0
+for i in range( 0, n / 4 ): 
+	dgf_file.write( '%i %i %i\t\t\t# bottom face of the square\n' %( id_of_bottom_square_faces, vertex_number, ( vertex_number + 1 ) % n ) )
+	vertex_number += 1
+for i in range( n / 4, n / 2 ): 
+	dgf_file.write( '%i %i %i\t\t\t# right face of the square\n' %( id_of_right_square_faces, vertex_number, ( vertex_number + 1 ) % n ) )
+	vertex_number += 1
+for i in range( n / 2, 3 * ( n / 4 ) ): 
+	dgf_file.write( '%i %i %i\t\t\t# top face of the square\n' %( id_of_top_square_faces, vertex_number, ( vertex_number + 1 ) % n ) )
+	vertex_number += 1
+for i in range( 3 * ( n / 4 ), n ): 
+	dgf_file.write( '%i %i %i\t\t\t# left face of the square\n' %( id_of_left_square_faces, vertex_number, ( vertex_number + 1 ) % n ) )
+	vertex_number += 1
 for i in range( n, 2 * n ):
-	dgf_file.write( '%i %i %i\t\t\t# of the faces of the circle\n' %( id_of_circle_faces, i, ( i + 1 ) % n + n) )
+	dgf_file.write( '%i %i %i\t\t\t# of the face of the circle\n' %( id_of_circle_faces, i, ( i + 1 ) % n + n) )
 dgf_file.write( '#\n' )
 dgf_file.write( 'BOUNDARYDOMAIN\n' )
 dgf_file.write( 'default 1\t\t# default value for all other faces (which should not exist)\n' )

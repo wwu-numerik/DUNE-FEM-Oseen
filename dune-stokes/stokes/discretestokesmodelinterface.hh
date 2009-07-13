@@ -1120,13 +1120,15 @@ class DiscreteStokesModelInterface
                                 forceReturn ) );
         }
 
-        template < class DomainType >
-        void dirichletData( const double time,
+        template < class IntersectionIteratorType, class DomainType >
+        void dirichletData( const IntersectionIteratorType intIt,
+                            const double time,
                             const DomainType& x,
                             VelocityRangeType& dirichletDataReturn ) const
         {
             CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
-                asImp().dirichletData(  time,
+                asImp().dirichletData(  intIt,
+                                        time,
                                         x,
                                         dirichletDataReturn ) );
         }
@@ -2555,15 +2557,44 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                     const DomainType& x,
                     VelocityRangeType& forceReturn ) const
         {
+#ifdef MICRO_PROBLEM
+            forceReturn = 0.0;
+#else
             force_.evaluate( x, forceReturn );
+#endif
         }
 
-        template < class DomainType >
-        void dirichletData( const double time,
+        template < class IntersectionIteratorType, class DomainType >
+        void dirichletData( const IntersectionIteratorType intIt,
+                            const double time,
                             const DomainType& x,
                             VelocityRangeType& dirichletDataReturn ) const
         {
+            assert( ( !intIt.neighbor() && intIt.boundary() ) || !"this intersection does not lie on the boundary" );
+#ifdef MICRO_PROBLEM
+            if ( dirichletDataReturn.dim() == 2 ) {
+                const int boundaryId = intIt.boundaryId();
+                if ( boundaryId == 3 ) { // rechts
+                    dirichletDataReturn[ 0 ] = 0.0;
+                    dirichletDataReturn[ 1 ] = 0.0;
+                }
+                else if ( boundaryId == 4 ) { // links
+                    dirichletDataReturn[ 0 ] = 0.0;
+                    dirichletDataReturn[ 1 ] = 0.0;
+                }
+                else {
+                    dirichletDataReturn = 0.0;
+                }
+            }
+            else if ( dirichletDataReturn.dim() == 3 ) {
+                assert( !"not implemented!" );
+            }
+            else {
+                assert( !"not implemented!" );
+            }
+#else
             dirichletData_.evaluate( x, dirichletDataReturn );
+#endif
         }
 
         /**
