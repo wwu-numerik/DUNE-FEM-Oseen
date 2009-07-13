@@ -148,8 +148,8 @@ int main( int argc, char** argv )
             inside an outer loop that increments the grid's refine level
         **/
         for ( int ref = minref; ref < maxref; ref+=2 ) {
-            std::cout << "WWWWW   " << ref << std::endl;
             int i,j,k,l;
+            i = j = k = l = maxpow - 1;
 //            for ( int i = minpow; i < maxpow; ++i ) {
 //                for ( int j = minpow; j < maxpow; ++j ) {
 //                    for ( int k = minpow; k < maxpow; ++k ) {
