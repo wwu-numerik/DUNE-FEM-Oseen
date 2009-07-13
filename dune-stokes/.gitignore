@@ -61,7 +61,5 @@ doc/dune-stokes-howto/includes/saddelpunkt.aux
 doc/dune-stokes-howto/includes/sattelpunkt.aux
 doc/dune-stokes-howto/includes/stokes.aux
 doc/dune-stokes-howto/includes/stokes_mit_ldg.aux
-<<<<<<< HEAD:dune-stokes/.gitignore
 doc/dune-stokes-howto/includes/stokes_mit_ldg.tex.backup
-=======
->>>>>>> documentation:dune-stokes/.gitignore
+build*
