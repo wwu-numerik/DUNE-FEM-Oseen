@@ -569,7 +569,7 @@ class DiscreteStokesFunctionWrapper
          *  \todo   doc
          **/
         template < class DFType >
-        DiscreteFunctionType& operator-=( const DFType& arg )
+        DiscreteFunctionType& operator-=( const DFType& /*arg*/ )
         {
             assert( false );
             return *this;

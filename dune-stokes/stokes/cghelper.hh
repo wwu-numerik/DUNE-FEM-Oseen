@@ -57,7 +57,7 @@ class MatrixA_Operator {
         {
             sig_tmp1.clear();
             sig_tmp2.clear();
-            Logging::LogStream& dbg = Logger().Dbg();
+
 			// ret = ( ( X * ( -1* ( M_inv * ( W * x ) ) ) ) + ( Y * x ) )
             w_mat_.multOEM( x, sig_tmp1.leakPointer() );
             m_mat_.apply( sig_tmp1, sig_tmp2 );//Stuff:DiagmUlt
