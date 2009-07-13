@@ -183,11 +183,8 @@ int main( int argc, char** argv )
                             eoc_output.setErrors( idx,info.L2Errors );
                             texwriter.setInfo( info );
                             bool lastrun = ( //this test is somewhat stupid, make it smart!!
-                                ( ref == ( maxref - 1 ) ) &&
-                                ( j == ( maxpow - 1 ) ) &&
-                                ( k == ( maxpow - 1 ) ) &&
-                                ( l == ( maxpow - 1 ) ) &&
-                                ( i == ( maxpow - 1 ) ) );
+                                ( ref >= ( maxref - 1 ) ) &&
+                                ( j + k + l + i >= 4 * ( maxpow - 1 ) ) );
                             //the writer needs to know if it should close the table etc.
                             eoc_output.write( texwriter, lastrun );
 //                        }
