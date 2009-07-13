@@ -32,7 +32,8 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
          **/
         Force( const double viscosity, const FunctionSpaceImp& space )
             : BaseType ( space ),
-              viscosity_( viscosity )
+              viscosity_( viscosity ),
+              dim_( FunctionSpaceImp::dimDomain )
         {}
 
         /**
@@ -51,28 +52,52 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
          **/
         inline void evaluate( const DomainType& arg, RangeType& ret ) const
         {
-            // play safe
-            assert( arg.dim() == 2 );
-            assert( ret.dim() == 2 );
-            double x1 = arg[0];
-            double x2 = arg[1];
+            if ( dim_ == 1 ) {
+                assert( !"force not implemented in 1D!" );
+            }
+            else if ( dim_ == 2 ) {
+                double x1 = arg[0];
+                double x2 = arg[1];
 #ifdef SIMPLE_PROBLEM
-            ret[0] = 0.0;//arg[1];
-            ret[1] = 0.0;//-1.0;//arg[0];
+                ret[0] = 0.0;//arg[1];
+                ret[1] = 0.0;//-1.0;//arg[0];
 #elif defined(CONSTANT_PROBLEM)
-            ret[0] = 0.0;//arg[1];
-            ret[1] = -1.0;//arg[0];
+                ret[0] = 0.0;//arg[1];
+                ret[1] = -1.0;//arg[0];
 #elif defined(ROTATE_PROBLEM)
-            ret[0] = arg[1];
-            ret[1] = -1.0 * arg[0];
+                ret[0] = arg[1];
+                ret[1] = -1.0 * arg[0];
 #else
-            ret[0] = 0.0;//arg[1];
-            ret[1] = 0.0;//arg[0];
+                ret[0] = 0.0;//arg[1];
+                ret[1] = 0.0;//arg[0];
 #endif
+            }
+            else if ( dim_ == 3 ) {
+                double x1 = arg[0];
+                double x2 = arg[1];
+                double x3 = arg[2];
+#ifdef SIMPLE_PROBLEM
+                ret[0] = 0.0;//arg[1];
+                ret[1] = 0.0;//-1.0;//arg[0];
+                ret[2] = 0.0;
+#elif defined(CONSTANT_PROBLEM)
+                ret[0] = 0.0;//arg[1];
+                ret[1] = 0.0;//arg[0];
+                ret[2] = -1.0;//arg[0];
+#elif defined(ROTATE_PROBLEM)
+                assert( !"ROTATE_PROBLEM not implemented in 3D!" );
+#else
+                assert( !"force not implemented in 3D!" );
+#endif
+            }
+            else {
+                assert( !"force not implemented for more then 3 dimensions!" );
+            }
         }
 
     private:
-        double viscosity_;
+        const double viscosity_;
+        const int dim_;
 };
 
 /**
@@ -102,7 +127,8 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
          *  doing nothing besides Base init
          **/
         DirichletData( const FunctionSpaceImp& space )
-            : BaseType( space )
+            : BaseType( space ),
+              dim_( FunctionSpaceImp::dimDomain )
         {}
 
         /**
@@ -122,32 +148,60 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
           **/
         inline void evaluate( const DomainType& arg, RangeType& ret ) const
         {
-            // play safe
-            assert( arg.dim() == 2 );
-            assert( ret.dim() == 2 );
-            double x1 = arg[0];
-            double x2 = arg[1];
-            // some computations
+            if ( dim_ == 1 ) {
+                assert( !"dirichlet data not implemented in 1D!" );
+            }
+            else if ( dim_ == 2 ) {
+                double x1 = arg[0];
+                double x2 = arg[1];
+                // some computations
 #ifdef SIMPLE_PROBLEM
-            ret[0] = 1.0;
-            ret[1] = 0.0;
+                ret[0] = 1.0;
+                ret[1] = 0.0;
 #elif defined(CONSTANT_PROBLEM)
-            ret[0] = 0.0;
-            ret[1] = 0.0;
+                ret[0] = 0.0;
+                ret[1] = 0.0;
 #elif defined(ROTATE_PROBLEM)
-            ret[0] = 0.0;
-            ret[1] = 0.0;
+                ret[0] = 0.0;
+                ret[1] = 0.0;
 #else
-            double exp_of_x1 = std::exp( x1 );
-            double sin_of_x2 = std::sin( x2 );
-            double cos_of_x2 = std::cos( x2 );
-            //return
-            ret[0] = x2 * cos_of_x2;
-            ret[0] += sin_of_x2;
-            ret[0] *= -1.0 * exp_of_x1;
-            ret[1] = exp_of_x1 * x2 * sin_of_x2;
+                double exp_of_x1 = std::exp( x1 );
+                double sin_of_x2 = std::sin( x2 );
+                double cos_of_x2 = std::cos( x2 );
+                //return
+                ret[0] = x2 * cos_of_x2;
+                ret[0] += sin_of_x2;
+                ret[0] *= -1.0 * exp_of_x1;
+                ret[1] = exp_of_x1 * x2 * sin_of_x2;
 #endif
+            }
+            else if ( dim_ == 3 ) {
+                double x1 = arg[0];
+                double x2 = arg[1];
+                double x3 = arg[2];
+                // some computations
+#ifdef SIMPLE_PROBLEM
+                ret[0] = 1.0;
+                ret[1] = 0.0;
+                ret[2] = 0.0;
+#elif defined(CONSTANT_PROBLEM)
+                ret[0] = 0.0;
+                ret[1] = 0.0;
+                ret[2] = 0.0;
+#elif defined(ROTATE_PROBLEM)
+                assert( !"ROTATE_PROBLEM not implemented in 3D!" );
+#else
+                assert( !"dirichlet data not implemented in 3D!" );
+#endif
+            }
+            else {
+                assert( !"dirichlet data not implemented for more then 3 dimensions!" );
+            }
         }
+
+    private:
+        const int dim_;
+
 };
 
 
