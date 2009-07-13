@@ -65,7 +65,10 @@ struct RunInfo
     int refine_level;
     double run_time;
     long codim0;
+    static const int polorder = POLORDER;
     double c11,d11,c12,d12;
+    bool bfg;
+    std::string gridname;
 };
 
 template < class GridPartType >
@@ -183,7 +186,7 @@ int main( int argc, char** argv )
                             eoc_output.setErrors( idx,info.L2Errors );
                             texwriter.setInfo( info );
                             bool lastrun = ( //this test is somewhat stupid, make it smart!!
-                                ( ref >= ( maxref - 1 ) ) &&
+                                ( ref >= ( maxref - 2 ) ) &&
                                 ( j + k + l + i >= 4 * ( maxpow - 1 ) ) );
                             //the writer needs to know if it should close the table etc.
                             eoc_output.write( texwriter, lastrun );
@@ -492,6 +495,8 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     info.c12 = c12;
     info.d11 = d11;
     info.d12 = d12;
+    info.bfg = Parameters().getParam( "do-bfg", true );
+    info.gridname = gridPart.grid().name();
 
     profiler().StopTiming( "Problem/Postprocessing" );
 
