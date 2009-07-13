@@ -17,8 +17,8 @@ ADD_DEFINITIONS(-Wall -O0 -DPOLORDER=1 )
 #----------------------------------------------------------------------------------------------------
 # Options, that can be changed be the User in order to customise dune-stokes
 #----------------------------------------------------------------------------------------------------
-SET( OPTION_NAME
-	1 CACHE BOOL
+SET( BLAS_LIB
+	"blas" CACHE STRING
 	"DESCRIPTION" )
 
 SET( MODULES common istl grid fem stuff )
@@ -39,4 +39,4 @@ SET(dune-stokesSrc
 
 ADD_EXECUTABLE(dune_stokes ${dune-stokesSrc} )
 
-TARGET_LINK_LIBRARIES(dune_stokes "common" "fem" "grid" "cblas" "f77blas" "atlas")
+TARGET_LINK_LIBRARIES(dune_stokes "common" "fem" "grid" ${BLAS_LIB} )
