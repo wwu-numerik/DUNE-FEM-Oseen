@@ -1,0 +1,20 @@
+DGF
+#
+VERTEX			# the vertices
+0.000000 0.000000	# vertex 0,	 square
+1.000000 0.000000	# vertex 1,	 square
+1.000000 1.000000	# vertex 2,	 square
+0.000000 1.000000	# vertex 3,	 square
+#
+CUBE			# the cubes
+0 1 3 2			# cube 0,	 from vertices 0, 1, 3 and 2
+#
+BOUNDARYSEGMENTS	# the boundary ids
+3 0 1			# bottom face of the square
+4 1 2			# right face of the square
+5 2 3			# top face of the square
+6 3 0			# left face of the square
+#
+BOUNDARYDOMAIN
+default 1		# default value for all other faces (which should not exist)
+#
