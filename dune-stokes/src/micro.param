@@ -8,14 +8,14 @@ fem.io.datafileprefix: data_
 fem.io.savestep: -1
 fem.io.savecount: 1
 fem.io.outputformat: 1
-minref: 0
-maxref: 0
+minref: 1
+maxref: 1
 minpow: -1
 maxpow: 1
 per-run-log-target: 0
-
+multirun: 0
 #
-dgf_file_2d: micro.dgf
+dgf_file_2d: cube_with_hole_in_2d.dgf
 dgf_file_3d: grid_3d.dgf
 
 #

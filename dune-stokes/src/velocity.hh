@@ -136,9 +136,9 @@ class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType ,
 #endif
             }
             else if ( dim_ == 3 ) {
-                double x1 = arg[0];
-                double x2 = arg[1];
-                double x3 = arg[2];
+//                double x1 = arg[0];
+//                double x2 = arg[1];
+//                double x3 = arg[2];
 #ifdef SIMPLE_PROBLEM
                 assert( !"SIMPLE_PROBLEM not implemented in 1D" );
 #elif defined(CONSTANT_PROBLEM)

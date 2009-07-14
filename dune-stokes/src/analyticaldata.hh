@@ -56,8 +56,8 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 assert( !"force not implemented in 1D!" );
             }
             else if ( dim_ == 2 ) {
-                double x1 = arg[0];
-                double x2 = arg[1];
+//                const double x1 = arg[0];
+//                const double x2 = arg[1];
 #ifdef SIMPLE_PROBLEM
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//-1.0;//arg[0];
@@ -67,15 +67,18 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
 #elif defined(ROTATE_PROBLEM)
                 ret[0] = arg[1];
                 ret[1] = -1.0 * arg[0];
+#elif defined(MICRO_PROBLEM)
+                ret[ 0 ] = 0.0;
+                ret[ 1 ] = 0.0;
 #else
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//arg[0];
 #endif
             }
             else if ( dim_ == 3 ) {
-                double x1 = arg[0];
-                double x2 = arg[1];
-                double x3 = arg[2];
+//                const double x1 = arg[0];
+//                const double x2 = arg[1];
+//                const double x3 = arg[2];
 #ifdef SIMPLE_PROBLEM
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//-1.0;//arg[0];
@@ -86,6 +89,8 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 ret[2] = -1.0;//arg[0];
 #elif defined(ROTATE_PROBLEM)
                 assert( !"ROTATE_PROBLEM not implemented in 3D!" );
+#elif defined(MICRO_PROBLEM)
+                assert( !"MICRO_PROBLEM not implemented in 3D!" );
 #else
                 assert( !"force not implemented in 3D!" );
 #endif
@@ -139,21 +144,12 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
          ~DirichletData()
          {}
 
-         /**
-          * \brief  evaluates the dirichlet data
-          * \param  arg
-          *         point to evaluate at
-          * \param  ret
-          *         value of dirichlet boundary data at given point
-          **/
-        inline void evaluate( const DomainType& arg, RangeType& ret ) const
+        void evaluate( const DomainType& arg, RangeType& ret, const int id ) const
         {
             if ( dim_ == 1 ) {
                 assert( !"dirichlet data not implemented in 1D!" );
             }
             else if ( dim_ == 2 ) {
-                double x1 = arg[0];
-                double x2 = arg[1];
                 // some computations
 #ifdef SIMPLE_PROBLEM
                 ret[0] = 1.0;
@@ -164,7 +160,30 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 #elif defined(ROTATE_PROBLEM)
                 ret[0] = 0.0;
                 ret[1] = 0.0;
+#elif defined(MICRO_PROBLEM)
+                if ( id == 2 ) { // faces on inner hole
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( id == 3 ) { // bottom faces
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( id == 4 ) { // right faces
+                    ret[ 0 ] = 1.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( id == 5 ) { // top faces
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( id == 6 ) { // left faces
+                    ret[ 0 ] = 1.0;
+                    ret[ 1 ] = 0.0;
+                }
 #else
+                const double x1 = arg[0];
+                const double x2 = arg[1];
                 double exp_of_x1 = std::exp( x1 );
                 double sin_of_x2 = std::sin( x2 );
                 double cos_of_x2 = std::cos( x2 );
@@ -176,9 +195,9 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 #endif
             }
             else if ( dim_ == 3 ) {
-                double x1 = arg[0];
-                double x2 = arg[1];
-                double x3 = arg[2];
+//                double x1 = arg[0];
+//                double x2 = arg[1];
+//                double x3 = arg[2];
                 // some computations
 #ifdef SIMPLE_PROBLEM
                 ret[0] = 1.0;
@@ -190,14 +209,25 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 ret[2] = 0.0;
 #elif defined(ROTATE_PROBLEM)
                 assert( !"ROTATE_PROBLEM not implemented in 3D!" );
+#elif defined(MICRO_PROBLEM)
+                assert( !"MICRO_PROBLEM not implemented in 3D!" );
 #else
                 assert( !"dirichlet data not implemented in 3D!" );
 #endif
             }
             else {
-                assert( !"dirichlet data not implemented for more then 3 dimensions!" );
+                assert( !"dirichlet data not implemented for more than 3 dimensions!" );
             }
         }
+
+         /**
+          * \brief  evaluates the dirichlet data
+          * \param  arg
+          *         point to evaluate at
+          * \param  ret
+          *         value of dirichlet boundary data at given point
+          **/
+        inline void evaluate( const DomainType& arg, RangeType& ret ) const {}
 
     private:
         const int dim_;

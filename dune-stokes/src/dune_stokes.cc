@@ -271,28 +271,30 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     debugStream << "  - viscosity: " << viscosity << std::endl;
 
     // analytical data
-    typedef Dune::FunctionSpace< double, double, gridDim, gridDim >
-        VelocityFunctionSpaceType;
-    VelocityFunctionSpaceType velocitySpace;
 
-    typedef Force< VelocityFunctionSpaceType >
-        AnalyticalForceType;
-    AnalyticalForceType analyticalForce( viscosity , velocitySpace );
-
-    typedef DirichletData< VelocityFunctionSpaceType >
-        AnalyticalDirichletDataType;
-    AnalyticalDirichletDataType analyticalDirichletData( velocitySpace );
 
     // model traits
     typedef Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
-                    AnalyticalForceType,
-                    AnalyticalDirichletDataType,
+                    Force,
+                    DirichletData,
                     gridDim,
                     polOrder >
         StokesModelTraitsImp;
     typedef Dune::DiscreteStokesModelDefault< StokesModelTraitsImp >
         StokesModelImpType;
+
+    typedef typename StokesModelTraitsImp::VelocityFunctionSpaceType
+        VelocityFunctionSpaceType;
+    VelocityFunctionSpaceType velocitySpace;
+
+    typedef typename StokesModelTraitsImp::AnalyticalForceType
+        AnalyticalForceType;
+    AnalyticalForceType analyticalForce( viscosity , velocitySpace );
+
+    typedef typename StokesModelTraitsImp::AnalyticalDirichletDataType
+        AnalyticalDirichletDataType;
+    AnalyticalDirichletDataType analyticalDirichletData( velocitySpace );
 
     // determine pows
 //    typedef Dune::FieldVector< double, gridDim >

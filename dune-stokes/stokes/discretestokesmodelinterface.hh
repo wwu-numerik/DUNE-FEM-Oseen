@@ -1166,7 +1166,7 @@ class DiscreteStokesModelDefault;
 /**
  *  \brief  Traits class for DiscreteStokesModelDefault
  **/
-template < class GridPartImp, class AnalyticalForceImp, class AnalyticalDirichletDataImp, int gridDim, int polOrder >
+template < class GridPartImp, template <class > class AnalyticalForceImp, template <class > class AnalyticalDirichletDataImp, int gridDim, int polOrder >
 class DiscreteStokesModelDefaultTraits
 {
     public:
@@ -1190,7 +1190,7 @@ class DiscreteStokesModelDefaultTraits
         //! polynomial order for the discrete pressure function space
         static const int pressureSpaceOrder = polOrder;
 
-    private:
+//    private:
 
         //! function space type for the velocity
         typedef Dune::FunctionSpace< double, double, gridDim, gridDim >
@@ -1262,11 +1262,11 @@ class DiscreteStokesModelDefaultTraits
             DiscreteSigmaFunctionType;
 
         //! function type for the analytical force
-        typedef Dune::Function< typename DiscreteStokesFunctionSpaceWrapperType::DiscreteVelocityFunctionSpaceType::FunctionSpaceType, AnalyticalForceImp >
+        typedef AnalyticalForceImp<VelocityFunctionSpaceType>
             AnalyticalForceType;
 
         //! function type for the analytical dirichlet data
-        typedef Dune::Function< typename DiscreteStokesFunctionSpaceWrapperType::DiscreteVelocityFunctionSpaceType::FunctionSpaceType, AnalyticalDirichletDataImp >
+        typedef AnalyticalDirichletDataImp< VelocityFunctionSpaceType >
             AnalyticalDirichletDataType;
 
         /**
@@ -2557,11 +2557,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                     const DomainType& x,
                     VelocityRangeType& forceReturn ) const
         {
-#ifdef MICRO_PROBLEM
-            forceReturn = 0.0;
-#else
             force_.evaluate( x, forceReturn );
-#endif
         }
 
         template < class IntersectionIteratorType, class DomainType >
@@ -2571,30 +2567,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                             VelocityRangeType& dirichletDataReturn ) const
         {
             assert( ( !intIt.neighbor() && intIt.boundary() ) || !"this intersection does not lie on the boundary" );
-#ifdef MICRO_PROBLEM
-            if ( dirichletDataReturn.dim() == 2 ) {
-                const int boundaryId = intIt.boundaryId();
-                if ( boundaryId == 3 ) { // rechts
-                    dirichletDataReturn[ 0 ] = 0.0;
-                    dirichletDataReturn[ 1 ] = 0.0;
-                }
-                else if ( boundaryId == 4 ) { // links
-                    dirichletDataReturn[ 0 ] = 0.0;
-                    dirichletDataReturn[ 1 ] = 0.0;
-                }
-                else {
-                    dirichletDataReturn = 0.0;
-                }
-            }
-            else if ( dirichletDataReturn.dim() == 3 ) {
-                assert( !"not implemented!" );
-            }
-            else {
-                assert( !"not implemented!" );
-            }
-#else
-            dirichletData_.evaluate( x, dirichletDataReturn );
-#endif
+            dirichletData_.evaluate( x, dirichletDataReturn, intIt.boundaryId() );
         }
 
         /**

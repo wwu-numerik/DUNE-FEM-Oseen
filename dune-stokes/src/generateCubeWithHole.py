@@ -10,10 +10,10 @@ square_length = 1.0
 number_of_points_per_side = 1
 dgf_filename = 'cube_with_hole_in_2d.dgf'
 id_of_circle_faces = 2
-id_of_bottom_square_faces = 2
-id_of_right_square_faces = 3
-id_of_top_square_faces = 2
-id_of_left_square_faces = 4
+id_of_bottom_square_faces = 3
+id_of_right_square_faces = 4
+id_of_top_square_faces = 5
+id_of_left_square_faces = 6
 
 # get command line arguments
 if len( sys.argv ) == 4:
