@@ -1,25 +1,25 @@
-#include <config.h>               // know what grids are present
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <iostream>               // for input/output to shell
 #include <sstream>
 #include <fstream>                // for input/output to files
 #include <vector>                 // STL vector class
-#include <dune/common/mpihelper.hh> // include mpi helper class 
-#include <dune/common/timer.hh>   // timer 
 
-#include <dune/grid/common/gridpart.hh> // grid parts 
+
+#include <dune/common/mpihelper.hh> // An initializer of MPI
+#include <dune/common/exceptions.hh> // We use exceptions
+#include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
+
 #include <fem/space/fvspace.hh>             //FiniteVolumeSpace
 //#include <fem/space/common/adaptiveleafgridpart.hh>  //for adaptiveleafgridpart
 //#include <fem/space/dgspace/dgadaptiveleafgridpart.hh>  //for DGAdaptiveLeafGridPart
 #include <dune/fem/function/adaptivefunction.hh>  //Adaptive Function
 #include <dune/fem/function/blockvectorfunction.hh>  //Blockvector Function
 // checks for defined gridtype and includes appropriate dgfparser implementation 
-#include <dune/grid/io/file/dgfparser/dgfgridtype.hh> 
+#include <dune/common/timer.hh>   // timer 
 
-// for Grape output
-#if HAVE_GRAPE
-#include <dune/grid/io/visual/grapedatadisplay.hh>
-#endif
-// VTK 
 #include <dune/fem/io/file/vtkio.hh>
 
 //#include "vtkout.hh"
@@ -35,6 +35,12 @@
 
 #ifndef POLORDER
   #define POLORDER 0
+#endif
+
+#if ENABLE_MPI
+        typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
+#else
+        typedef Dune::CollectiveCommunication< double > CollectiveCommunication;
 #endif
 
 // use namespace Dune 
