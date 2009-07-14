@@ -27,9 +27,10 @@
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/stokes/cghelper.hh>
 
-#include "../src/logging.hh"
-#include "../src/parametercontainer.hh"
-#include "../src/stuff.hh" //DiagonalMult
+#include <dune/stuff/parametercontainer.hh>
+#include <dune/stuff/printing.hh>
+#include <dune/stuff/misc.hh>
+#include <dune/stuff/logging.hh>
 
 
 
@@ -159,11 +160,7 @@ class NestedCgSaddlepointInverseOperator
         x_mat.apply( m_tmp, f_func );
         f_func *= -1;
         f_func += rhs2;
-		//
-//#ifndef NLOG
-//        Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-//        Stuff::printDoubleVectorMatlabStyle( f_func.leakPointer(), f_func.size(), "f_func", matlabLogStream );
-//#endif
+
 
         typedef A_SolverCaller< WmatrixType,
                                 MmatrixType,
@@ -176,9 +173,6 @@ class NestedCgSaddlepointInverseOperator
                 A_SolverReturnType;
         A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit, solverVerbosity );
 
-//		typedef CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
-//		F_Solver;
-//        F_Solver f_solver( a_op, relLimit, absLimit, 2000, solverVerbosity );
         DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
 		DiscretePressureFunctionType new_f ( "new_f", g_func.space() );
         tmp_f.clear();
@@ -217,13 +211,7 @@ class NestedCgSaddlepointInverseOperator
 #endif
 		b_t_mat.apply( tmp_f, new_f );
         new_f -= g_func;
-//#ifndef NLOG
-//        Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-//        Stuff::printDoubleVectorMatlabStyle( new_f.leakPointer(), new_f.size(), "new_f", matlabLogStream );
-//#endif
-        if ( Parameters().getParam( "solution-print", true ) ) {
-            Stuff::oneLinePrint( logDebug, new_f );
-        }
+
         logInfo << " \n\tend calc new_f,f_func " << std::endl;
 
         typedef SchurkomplementOperator<    A_Solver,
@@ -250,10 +238,6 @@ class NestedCgSaddlepointInverseOperator
 		// p = S^-1 * new_f = ( B_t * A^-1 * B + rhs3 )^-1 * new_f
 		SolverReturnType ret;
 		sk_solver.apply( new_f, pressure, ret );
-//#ifndef NLOG
-//        Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-//        Stuff::printDoubleVectorMatlabStyle( pressure.leakPointer(), pressure.size(), "pressure", matlabLogStream );
-//#endif
 
 		long total_inner = sk_op.getTotalInnerIterations();
 		logInfo << "\n\t\t #avg inner iter | #outer iter: " << total_inner / (double)ret.first << " | " << ret.first << std::endl;

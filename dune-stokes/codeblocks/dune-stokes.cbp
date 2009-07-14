@@ -29,32 +29,27 @@
 				<Option compiler="gcc" />
 				<Option parameters="test.param" />
 				<Compiler>
-					<Add option="-w" />
 					<Add option="-g" />
-					<Add directory="/usr/local/grape" />
-					<Add directory="/usr/local/alberta-1.2/include" />
-					<Add directory="/usr/local/alugrid-1.1/include" />
-					<Add directory="/usr/local/alugrid-1.1/include/parallel" />
-					<Add directory="/usr/local/alugrid-1.1/include/serial" />
-					<Add directory="/usr/local/alugrid-1.14/include" />
-					<Add directory="/usr/local/alugrid-1.14/include/parallel" />
-					<Add directory="/usr/local/alugrid-1.14/include/serial" />
+					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/include" />
+					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include" />
+					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include/parallel" />
+					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include/serial" />
 					<Add directory="/data/dune_work/private/f_albr01/modules/grape" />
 					<Add directory="/data/dune_work/private/f_albr01/modules/alberta-2.01/include" />
 					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include" />
 					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include/parallel" />
 					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include/serial" />
+					<Add directory="/usr/local/grape" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
 					<Add library="blas" />
-					<Add directory="/usr/local/grape" />
-					<Add directory="/usr/local/alugrid-1.1/lib" />
-					<Add directory="/usr/local/alberta-1.2/lib" />
-					<Add directory="/usr/local/alugrid-1.14/lib" />
+					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/lib" />
+					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/lib" />
 					<Add directory="/data/dune_work/private/f_albr01/modules/grape" />
 					<Add directory="/data/dune_work/private/f_albr01/modules/alberta-2.01/lib" />
 					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/lib" />
+					<Add directory="/usr/local/grape" />
 				</Linker>
 			</Target>
 			<Target title="rene">
@@ -80,6 +75,7 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-Wall" />
 			<Add option="-g" />
 			<Add option="-fexceptions" />
 			<Add option="-DENABLE_ALUGRID" />
@@ -90,6 +86,7 @@
 			<Add option="-DDUNE_FEM_COMPATIBILITY" />
 			<Add option="-DADAPTIVE_SOLVER" />
 			<Add directory="../../dune-common/" />
+			<Add directory="../../dune-stuff/" />
 			<Add directory="../../dune-grid/" />
 			<Add directory="../../dune-istl/" />
 			<Add directory="../../dune-fem/" />
@@ -118,18 +115,11 @@
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/lib" />
 			<Add directory="/usr/lib64" />
 		</Linker>
-		<Unit filename="../../dune-fem/fem/operator/matrix/spmatrix.hh" />
-		<Unit filename="../../dune-fem/fem/space/dgspace/orthonormalbase_2d.cc" />
 		<Unit filename="../src/Makefile.am" />
 		<Unit filename="../src/analyticaldata.hh" />
 		<Unit filename="../src/dune_stokes.cc" />
-		<Unit filename="../src/logging.hh" />
-		<Unit filename="../src/parametercontainer.hh" />
-		<Unit filename="../src/postprocessing.hh" />
 		<Unit filename="../src/pressure.hh" />
 		<Unit filename="../src/problem.hh" />
-		<Unit filename="../src/profiler.hh" />
-		<Unit filename="../src/stuff.hh" />
 		<Unit filename="../src/test.param" />
 		<Unit filename="../src/velocity.hh" />
 		<Unit filename="../stokes/cghelper.hh" />
@@ -138,6 +128,13 @@
 		<Unit filename="../stokes/discretestokesmodelinterface.hh" />
 		<Unit filename="../stokes/saddlepoint_inverse_operator.hh" />
 		<Unit filename="../stokes/stokespass.hh" />
+		<Unit filename="../../dune-stuff/stuff/functions.hh" />
+		<Unit filename="../../dune-stuff/stuff/grid.hh" />
+		<Unit filename="../../dune-stuff/stuff/logging.hh" />
+		<Unit filename="../../dune-stuff/stuff/misc.hh" />
+		<Unit filename="../../dune-stuff/stuff/postprocessing.hh" />
+		<Unit filename="../../dune-stuff/stuff/printing.hh" />
+		<Unit filename="../../dune-stuff/stuff/profiler.hh" />
 		<Extensions>
 			<code_completion />
 			<envvars />

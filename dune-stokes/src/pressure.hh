@@ -11,7 +11,7 @@
 
 #include <dune/common/fvector.hh>
 
-#include "logging.hh"
+#include <dune/stuff/logging.hh>
 
 /**
  *  \brief  containing typedefs needed by Pressure
@@ -68,9 +68,9 @@ class Pressure : public Dune::Function < typename PressureTraitsImp::FunctionSpa
          *  doing nothing besides Base init
          **/
         Pressure( const PressureFunctionSpaceType& press_space )
-            : BaseType( press_space )
-        {
-        }
+            : BaseType( press_space ),
+            dim_( PressureTraitsImp::FunctionSpaceType::dimDomain )
+        {}
 
         /**
          *  \brief  destructor
@@ -78,8 +78,7 @@ class Pressure : public Dune::Function < typename PressureTraitsImp::FunctionSpa
          *  doing nothing
          **/
         ~Pressure()
-        {
-        }
+        {}
 
         /**
          *  \brief  evaluates the pressure
@@ -89,7 +88,37 @@ class Pressure : public Dune::Function < typename PressureTraitsImp::FunctionSpa
          *  \param  ret
          *          value of pressure at given point
          **/
-        inline void evaluate( const DomainType& arg, RangeType& ret ) const;
+        inline void evaluate( const DomainType& arg, RangeType& ret ) const
+        {
+            if ( dim_ == 1 ) {
+                assert( !"pressure not implemented in 1D" );
+            }
+            else if ( dim_ == 2 ) {
+                double x1 = arg[0];
+                double x2 = arg[1];
+#ifdef SIMPLE_PROBLEM
+                ret[0] = -x2;
+#elif defined(CONSTANT_PROBLEM)
+                ret[0] = -x2;
+#else
+                ret[0] = 2.0 * std::exp( x1 ) * std::sin( x2 );
+#endif
+            }
+            else if ( dim_ == 3 ) {
+                double x1 = arg[0];
+                double x2 = arg[1];
+                double x3 = arg[2];
+#ifdef SIMPLE_PROBLEM
+                assert( !"SIMPLE_PROBLEM not implemented in 1D" );
+#elif defined(CONSTANT_PROBLEM)
+                ret[0] = 0;
+                ret[1] = 0;
+                ret[2] = 0;
+#else
+                assert( !"pressure not implemented in 1D" );
+#endif
+            }
+        }
 
         /**
          *  \brief  evaluates the pressure
@@ -120,27 +149,30 @@ class Pressure : public Dune::Function < typename PressureTraitsImp::FunctionSpa
          *  \brief  a simple test of all class' functionalities
          **/
         void testMe() const;
+
+    private:
+        const int dim_;
  };
 
 /**
  *  \brief  specialization for gridDim = 2
  **/
-template < class PressureTraitsImp  >
-inline void Pressure< PressureTraitsImp  >::evaluate( const DomainType& arg, RangeType& ret ) const
-{
-    // play save
-    assert( arg.dim() == 2 );
-    assert( ret.dim() == 1 );
-    double x1 = arg[0];
-    double x2 = arg[1];
-#ifdef SIMPLE_PROBLEM
-    ret[0] = -x2;
-#elif defined(CONSTANT_PROBLEM)
-    ret[0] = -x2;
-#else
-    ret[0] = 2.0 * std::exp( x1 ) * std::sin( x2 );
-#endif
-}
+//template < class PressureTraitsImp  >
+//inline void Pressure< PressureTraitsImp  >::evaluate( const DomainType& arg, RangeType& ret ) const
+//{
+//    // play save
+//    assert( arg.dim() == 2 );
+//    assert( ret.dim() == 1 );
+//    double x1 = arg[0];
+//    double x2 = arg[1];
+//#ifdef SIMPLE_PROBLEM
+//    ret[0] = -x2;
+//#elif defined(CONSTANT_PROBLEM)
+//    ret[0] = -x2;
+//#else
+//    ret[0] = 2.0 * std::exp( x1 ) * std::sin( x2 );
+//#endif
+//}
 
 /**
  *  \brief  specialization for gridDim = 2
@@ -163,27 +195,27 @@ inline void Pressure< PressureTraitsImp  >::evaluate( const DomainType& arg, Ran
 /**
  *  \brief  specialization for gridDim = 2
  **/
-template < class PressureTraitsImp  >
-void Pressure< PressureTraitsImp >::testMe() const
-{
-    // some logstreams
-    Logging::LogStream& infoStream = Logger().Info();
-    Logging::LogStream& debugStream = Logger().Dbg();
-    infoStream << "- testing class Pressure..." << std::endl;
-    //tests
-    DomainType x;
-    x[0] = 1.0;
-    x[1] = 1.0;
-    debugStream << "  - x: " << x[0] << std::endl;
-    debugStream << "       " << x[1] << std::endl;
-    RangeType p;
-    evaluate( x, p );
-    debugStream << "  - p(x): " << p[0] << std::endl;
-//    GradientRangeType grad_p;
-//    gradient( x, grad_p );
-//    debugStream << "  - grad p(x): " << grad_p[0] << std::endl;
-//    debugStream << "               " << grad_p[1] << std::endl;
-    infoStream << "  ...test passed!" << std::endl;
-}
+//template < class PressureTraitsImp  >
+//void Pressure< PressureTraitsImp >::testMe() const
+//{
+//    // some logstreams
+//    Logging::LogStream& infoStream = Logger().Info();
+//    Logging::LogStream& debugStream = Logger().Dbg();
+//    infoStream << "- testing class Pressure..." << std::endl;
+//    //tests
+//    DomainType x;
+//    x[0] = 1.0;
+//    x[1] = 1.0;
+//    debugStream << "  - x: " << x[0] << std::endl;
+//    debugStream << "       " << x[1] << std::endl;
+//    RangeType p;
+//    evaluate( x, p );
+//    debugStream << "  - p(x): " << p[0] << std::endl;
+////    GradientRangeType grad_p;
+////    gradient( x, grad_p );
+////    debugStream << "  - grad p(x): " << grad_p[0] << std::endl;
+////    debugStream << "               " << grad_p[1] << std::endl;
+//    infoStream << "  ...test passed!" << std::endl;
+//}
 
 #endif // end of pressure.hh

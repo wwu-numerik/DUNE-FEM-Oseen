@@ -35,14 +35,17 @@
 #include <dune/stokes/discretestokesmodelinterface.hh>
 #include <dune/stokes/stokespass.hh>
 
+#include <dune/stuff/printing.hh>
+#include <dune/stuff/misc.hh>
+#include <dune/stuff/logging.hh>
+#include <dune/stuff/parametercontainer.hh>
+#include <dune/stuff/postprocessing.hh>
+#include <dune/stuff/profiler.hh>
+
 #include "analyticaldata.hh"
-#include "parametercontainer.hh"
-#include "logging.hh"
-#include "postprocessing.hh"
-#include "profiler.hh"
-#include "stuff.hh"
 #include "velocity.hh"
 #include "pressure.hh"
+#include "problem.hh"
 
 #if ENABLE_MPI
         typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
@@ -52,7 +55,7 @@
 
 typedef std::vector< std::vector<double> > L2ErrorVector;
 typedef std::vector<std::string> ColumnHeaders;
-const std::string errheaders[] = { "h", "tris","C11","C12","D11","D12","Velocity", "Pressure" };
+const std::string errheaders[] = { "h", "tris","runtime","C11","C12","D11","D12","Velocity", "Pressure" };
 const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
 
 struct RunInfo
@@ -62,7 +65,10 @@ struct RunInfo
     int refine_level;
     double run_time;
     long codim0;
+    static const int polorder = POLORDER;
     double c11,d11,c12,d12;
+    bool bfg;
+    std::string gridname;
 };
 
 template < class GridPartType >
@@ -140,15 +146,17 @@ int main( int argc, char** argv )
     //set minref == maxref to get only a single run in non variation part
     int minpow = Parameters().getParam( "minpow", -2 );
 
-    if ( false ) {
+    if ( Parameters().getParam( "multirun", true ) ) {
         /** all four stab parameters are permutated in [ minpow ; maxpow ]
             inside an outer loop that increments the grid's refine level
         **/
-        for ( int ref = minref; ref < maxref; ++ref ) {
-            for ( int i = minpow; i < maxpow; ++i ) {
-                for ( int j = minpow; j < maxpow; ++j ) {
-                    for ( int k = minpow; k < maxpow; ++k ) {
-                        for ( int l = minpow; l < maxpow; ++l ) {
+        for ( int ref = minref; ref < maxref; ref+=2 ) {
+            int i,j,k,l;
+            i = j = k = l = maxpow - 1;
+//            for ( int i = minpow; i < maxpow; ++i ) {
+//                for ( int j = minpow; j < maxpow; ++j ) {
+//                    for ( int k = minpow; k < maxpow; ++k ) {
+//                        for ( int l = minpow; l < maxpow; ++l ) {
                             Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
                             gridPtr->globalRefine( ref );
                             typedef Dune::AdaptiveLeafGridPart< GridType >
@@ -165,7 +173,10 @@ int main( int argc, char** argv )
                                     << j << " " << k << " "
                                     << l << "') \n" << std::endl;
                             //actual work
+                            profiler().StartTiming( "SingleRun" );
                             RunInfo info = singleRun( mpicomm, gridPtr, gridPart, i, j, k, l );
+                            profiler().StopTiming( "SingleRun" );
+                            info.run_time = profiler().GetTiming( "SingleRun" );
                             // new line and closing try/catch in m-file
                             matlabLogStream << "\ncatch\ndisp('errors here');\nend\ntoc\ndisp(' ');\n" << std::endl;
                             l2_errors.push_back( info.L2Errors );
@@ -175,17 +186,14 @@ int main( int argc, char** argv )
                             eoc_output.setErrors( idx,info.L2Errors );
                             texwriter.setInfo( info );
                             bool lastrun = ( //this test is somewhat stupid, make it smart!!
-                                ( ref == ( maxref - 1 ) ) &&
-                                ( j == ( maxpow - 1 ) ) &&
-                                ( k == ( maxpow - 1 ) ) &&
-                                ( l == ( maxpow - 1 ) ) &&
-                                ( i == ( maxpow - 1 ) ) );
+                                ( ref >= ( maxref - 2 ) ) &&
+                                ( j + k + l + i >= 4 * ( maxpow - 1 ) ) );
                             //the writer needs to know if it should close the table etc.
                             eoc_output.write( texwriter, lastrun );
-                        }
-                    }
-                }
-            }
+//                        }
+//                    }
+//                }
+//            }
         }
     }
     else { //we don't do any variation here, just one simple run, no eoc, nothing
@@ -248,7 +256,7 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     info.codim0 = gridPtr->size( 0 );
     info.codim0 = gridPart.grid().size( 0 );
     Dune::GridWidthProvider< GridType > gw ( *gridPtr );
-    double grid_width = 0.125;//gw.gridWidth();
+    double grid_width = gw.gridWidth();
 //    infoStream << "  - max grid width: " << grid_width << std::endl;
     info.grid_width = grid_width;
 
@@ -445,9 +453,9 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
 //    typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
 //        DiscretePressureFunctionType;
     DiscretePressureFunctionType& computedPressure = discreteStokesFunctionWrapper.discretePressure();
-Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-Stuff::printDiscreteFunctionMatlabStyle( computedPressure, "p", matlabLogStream );
-Stuff::printDiscreteFunctionMatlabStyle( computedVelocity, "u", matlabLogStream );
+//Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+//Stuff::printDiscreteFunctionMatlabStyle( computedPressure, "p", matlabLogStream );
+//Stuff::printDiscreteFunctionMatlabStyle( computedVelocity, "u", matlabLogStream );
 
     double computedVelocityMin = 0.0;
     double computedVelocityMax = 0.0;
@@ -487,6 +495,8 @@ Stuff::printDiscreteFunctionMatlabStyle( computedVelocity, "u", matlabLogStream 
     info.c12 = c12;
     info.d11 = d11;
     info.d12 = d12;
+    info.bfg = Parameters().getParam( "do-bfg", true );
+    info.gridname = gridPart.grid().name();
 
     profiler().StopTiming( "Problem/Postprocessing" );
 

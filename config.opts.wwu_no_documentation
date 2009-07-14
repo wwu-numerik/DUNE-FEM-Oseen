@@ -5,6 +5,7 @@ CONFIGURE_FLAGS="CXX=g++ CC=gcc CXXFLAGS=' -DNDEBUG' F77=gfortran \
   --prefix=/share/dune/Dune/dune_felix-rene_x86_64 \
   --with-metis=/share/dune/Modules/modules_$HOSTTYPE/metis \
   --with-alugrid=/share/dune/Modules/modules_$HOSTTYPE/ALUGrid-1.1_Parallel \
+  --with-ug=/share/dune/Modules/modules_x86_64/ug \
   --x-includes=/usr/X11R6/include \
   --x-libraries=/usr/X11R6/lib64 \
   --disable-documentation \

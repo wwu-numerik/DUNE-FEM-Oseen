@@ -15,7 +15,7 @@ maxpow: 1
 per-run-log-target: 0
 
 #
-dgf_file_2d: grid_2d.dgf
+dgf_file_2d: micro.dgf
 dgf_file_3d: grid_3d.dgf
 
 #
@@ -54,7 +54,7 @@ Zdebug: 0
 Edebug: 0
 Rdebug: 0
 H1debug: 0
-H2debug: 0
+H2debug: 1
 H3debug: 0
 solution-print: 0
 

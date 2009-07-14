@@ -11,12 +11,10 @@
 
 #include <dune/common/fvector.hh>
 
-#include "logging.hh"
+#include <dune/stuff/logging.hh>
 #include "velocity.hh"
 #include "pressure.hh"
 #include "analyticaldata.hh"
-//#include "force.hh"
-//#include "dirichletdata.hh"
 
 /**
  *  \brief  a collection of some analytical functions solving a stokes problem

@@ -12,7 +12,7 @@
 #include <dune/common/fvector.hh>
 
 
-#include "logging.hh"
+#include <dune/stuff/logging.hh>
 
 /**
  *  \brief  containing typedefs needed by Velocity
@@ -93,9 +93,9 @@ class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType ,
          *  doing nothing besides Base init
          **/
         Velocity( const FunctionSpaceType& f_space )
-            : BaseType( f_space )
-        {
-        }
+            : BaseType( f_space ),
+            dim_( FunctionSpaceType::dimDomain )
+        {}
 
         /**
          *  \brief  destructor
@@ -103,8 +103,7 @@ class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType ,
          *  doing nothing
          **/
         ~Velocity()
-        {
-        }
+        {}
 
         /**
          *  \brief  evaluates the velocity
@@ -114,7 +113,47 @@ class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType ,
          *  \param  ret
          *          value of velocity at given point
          **/
-        inline void evaluate( const DomainType& arg, RangeType& ret ) const;
+        inline void evaluate( const DomainType& arg, RangeType& ret ) const
+        {
+            if ( dim_ == 1 ) {
+                assert( !"velocity not implemented in 1D" );
+            }
+            else if ( dim_ == 2 ) {
+                double x1 = arg[0];
+                double x2 = arg[1];
+#ifdef SIMPLE_PROBLEM
+                ret[0] = 1;
+                ret[1] = 0;
+#elif defined(CONSTANT_PROBLEM)
+                ret[0] = 0;
+                ret[1] = 0;
+#else
+                double exp_of_x1 = std::exp( x1 );
+                double sin_of_x2 = std::sin( x2 );
+                // return
+                ret[0] = -1.0 * exp_of_x1 * ( x2 * std::cos( x2 ) + sin_of_x2 );
+                ret[1] = exp_of_x1 * x2 * sin_of_x2;
+#endif
+            }
+            else if ( dim_ == 3 ) {
+                double x1 = arg[0];
+                double x2 = arg[1];
+                double x3 = arg[2];
+#ifdef SIMPLE_PROBLEM
+                assert( !"SIMPLE_PROBLEM not implemented in 1D" );
+#elif defined(CONSTANT_PROBLEM)
+                ret[0] = 0;
+                ret[1] = 0;
+                ret[2] = 0;
+#else
+                assert( !"velocity not implemented in 1D" );
+#endif
+            }
+            else {
+                assert( !"velocity not implemented for more than 3 dimensions" );
+            }
+
+        }
 
         /**
          *  \brief  evaluates the velocity
@@ -165,37 +204,40 @@ class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType ,
          *  \brief  a simple test of all class' functionalities
          **/
         void testMe() const;
+
+    private:
+        const int dim_;
 };
 
 /**
  *  \brief  specialization for gridDim = 2
  **/
-template < class TraitsImp >
-inline void Velocity< TraitsImp >::evaluate(
-        const DomainType& arg,
-        RangeType& ret ) const
-{
-    // play safe
-    assert( arg.dim() == 2 );
-    assert( ret.dim() == 2 );
-    double x1 = arg[0];
-    double x2 = arg[1];
-#ifdef SIMPLE_PROBLEM
-    ret[0] = 1;
-    ret[1] = 0;
-#elif defined(CONSTANT_PROBLEM)
-    ret[0] = 0;
-    ret[1] = 0;
-#else
-    double exp_of_x1 = std::exp( x1 );
-    double sin_of_x2 = std::sin( x2 );
-    // return
-    ret[0] = -1.0 * exp_of_x1 * ( x2 * std::cos( x2 ) + sin_of_x2 );
-    ret[1] = exp_of_x1 * x2 * sin_of_x2;
-
-#endif
-
-}
+//template < class TraitsImp >
+//inline void Velocity< TraitsImp >::evaluate(
+//        const DomainType& arg,
+//        RangeType& ret ) const
+//{
+//    // play safe
+//    assert( arg.dim() == 2 );
+//    assert( ret.dim() == 2 );
+//    double x1 = arg[0];
+//    double x2 = arg[1];
+//#ifdef SIMPLE_PROBLEM
+//    ret[0] = 1;
+//    ret[1] = 0;
+//#elif defined(CONSTANT_PROBLEM)
+//    ret[0] = 0;
+//    ret[1] = 0;
+//#else
+//    double exp_of_x1 = std::exp( x1 );
+//    double sin_of_x2 = std::sin( x2 );
+//    // return
+//    ret[0] = -1.0 * exp_of_x1 * ( x2 * std::cos( x2 ) + sin_of_x2 );
+//    ret[1] = exp_of_x1 * x2 * sin_of_x2;
+//
+//#endif
+//
+//}
 
 /**
  *  \brief  specialization for gridDim = 2
@@ -270,35 +312,35 @@ inline void Velocity< TraitsImp >::evaluate(
 /**
  *  \brief  specialization for gridDim = 2
  **/
-template < class TraitsImp >
-void Velocity< TraitsImp >::testMe() const
-{
-    // some logstreams
-    Logging::LogStream& infoStream = Logger().Info();
-    Logging::LogStream& debugStream = Logger().Dbg();
-    infoStream << "- testing class Velocity..." << std::endl;
-    //tests
-    DomainType x;
-    x[0] = 1.0;
-    x[1] = 1.0;
-    debugStream << "  - x: " << x[0] << std::endl;
-    debugStream << "       " << x[1] << std::endl;
-    RangeType u;
-    evaluate( x, u );
-    debugStream << "  - u(x): " << u[0] << std::endl;
-    debugStream << "          " << u[1] << std::endl;
-//    GradientRangeType grad_u;
-//    gradient( x, grad_u );
-//    debugStream << "  - grad u(x): " << grad_u[0] << std::endl;
-//    debugStream << "               " << grad_u[1] << std::endl;
-//    DivergenceRangeType div_u;
-//    divergence( x, div_u );
-//    debugStream << "  - div u(x): " << div_u[0] << std::endl;
-//    RangeType laplace_u;
-//    laplacian( x, laplace_u );
-//    debugStream << "  - laplacian u(x): " << laplace_u[0] << std::endl;
-//    debugStream <<  "                  " << laplace_u[1] << std::endl;
-    infoStream << "  ...test passed!" << std::endl;
-}
+//template < class TraitsImp >
+//void Velocity< TraitsImp >::testMe() const
+//{
+//    // some logstreams
+//    Logging::LogStream& infoStream = Logger().Info();
+//    Logging::LogStream& debugStream = Logger().Dbg();
+//    infoStream << "- testing class Velocity..." << std::endl;
+//    //tests
+//    DomainType x;
+//    x[0] = 1.0;
+//    x[1] = 1.0;
+//    debugStream << "  - x: " << x[0] << std::endl;
+//    debugStream << "       " << x[1] << std::endl;
+//    RangeType u;
+//    evaluate( x, u );
+//    debugStream << "  - u(x): " << u[0] << std::endl;
+//    debugStream << "          " << u[1] << std::endl;
+////    GradientRangeType grad_u;
+////    gradient( x, grad_u );
+////    debugStream << "  - grad u(x): " << grad_u[0] << std::endl;
+////    debugStream << "               " << grad_u[1] << std::endl;
+////    DivergenceRangeType div_u;
+////    divergence( x, div_u );
+////    debugStream << "  - div u(x): " << div_u[0] << std::endl;
+////    RangeType laplace_u;
+////    laplacian( x, laplace_u );
+////    debugStream << "  - laplacian u(x): " << laplace_u[0] << std::endl;
+////    debugStream <<  "                  " << laplace_u[1] << std::endl;
+//    infoStream << "  ...test passed!" << std::endl;
+//}
 
 #endif // end of velocity.hh

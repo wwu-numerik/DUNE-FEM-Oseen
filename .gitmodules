@@ -1,3 +1,9 @@
-[submodule "dune-stokes/doc/dune_stokes_howto"]
-	path = dune-stokes/doc/dune_stokes_howto
-	url = duneadm:git/dune/diplomarbeit_felix_rene/dune_stokes_howto
+[submodule "dune-stuff"]
+	path = dune-stuff
+	url = duneadm@dune-project.uni-muenster.de:git/projects/dune-stuff
+[submodule "dune-stokes/doc/howto"]
+	path = dune-stokes/doc/howto
+	url = duneadm@dune-project.uni-muenster.de:git/projects/dune_stokes_howto
+[submodule "dune-stokes/doc/references"]
+	path = dune-stokes/doc/references
+	url = duneadm@jax.uni-muenster.de:git/projects/dune_stokes_references

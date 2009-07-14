@@ -1,4 +1,0 @@
-% MakeIndex-Stildatei "german.ist"
-actual '='	% = anstelle von @
-quote '!'	% ! anstelle von "
-level '>'	% > anstelle von !	

@@ -1,0 +1,10 @@
+clear;
+ldg_stokes_matlab;
+dune_stokes_ref_0_matlab;
+diff_E = E - mirko_E;
+diff_R = R - mirko_R;
+diff_W = W - mirko_W;
+diff_X = X - mirko_X;
+diff_Y = Y - mirko_Y;
+diff_Z = Z - mirko_Z;
+save diff.mat;

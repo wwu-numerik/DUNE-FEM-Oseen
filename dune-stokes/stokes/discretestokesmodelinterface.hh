@@ -12,24 +12,12 @@
 
 #include <dune/stokes/discretefunctionspacepair.hh>
 
-#ifndef NDEBUG //copied here for standalone usage
-    #ifndef LOGIC_ERROR
-        #include <stdexcept>
-        #include <sstream>
-        #define LOGIC_ERROR \
-            {\
-                std::stringstream ss; ss << __FILE__ << ":" << __LINE__ << " should never be called"; \
-                throw std::logic_error(ss.str());\
-            }
-    #endif
-#else
-    #define LOGIC_ERROR
+#ifndef NLOG
+    #include <dune/stuff/printing.hh>
+    #include <dune/stuff/logging.hh>
 #endif
 
-#ifndef NLOG
-    #include "../src/stuff.hh" // should be removed in the end
-    #include "../src/logging.hh"
-#endif
+#include <dune/stuff/misc.hh>
 
 namespace Dune
 {
@@ -1132,6 +1120,19 @@ class DiscreteStokesModelInterface
                                 forceReturn ) );
         }
 
+        template < class IntersectionIteratorType, class DomainType >
+        void dirichletData( const IntersectionIteratorType intIt,
+                            const double time,
+                            const DomainType& x,
+                            VelocityRangeType& dirichletDataReturn ) const
+        {
+            CHECK_AND_CALL_INTERFACE_IMPLEMENTATION(
+                asImp().dirichletData(  intIt,
+                                        time,
+                                        x,
+                                        dirichletDataReturn ) );
+        }
+
         /**
          *  \brief  Returns the viscosity \f$\mu\f$ of the fluid.
          *          Calls the implementation of the derived class.
@@ -1713,8 +1714,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *          \f$\Omega\f$.
          *
          *          Implements\n
-         *          - \f$\hat{u}_{\sigma}^{U^{+}}(u) = \frac{1}{2} + \left( u \otimes n^{+} \right) \cdot C_{12}\f$
-         *          - \f$\hat{u}_{\sigma}^{U^{-}}(u) = \frac{1}{2} + \left( u \otimes n^{-} \right) \cdot C_{12}\f$
+         *          - \f$\hat{u}_{\sigma}^{U^{+}}(u) = \frac{1}{2} u + \left( u \otimes n^{+} \right) \cdot C_{12}\f$
+         *          - \f$\hat{u}_{\sigma}^{U^{-}}(u) = \frac{1}{2} u + \left( u \otimes n^{-} \right) \cdot C_{12}\f$
          *
          *          For the docomposition of
          *          \f$\hat{u}_{\sigma}(u):\Omega\rightarrow R^{d}\f$, see the
@@ -1862,8 +1863,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *          \f$\Omega\f$.
          *
          *          Implements\n
-         *          - \f$\hat{u}_{p}^{U^{+}}(u) = \frac{1}{2}u + D_{12} u \cdot n^{+}\f$
-         *          - \f$\hat{u}_{p}^{U^{-}}(u) = \frac{1}{2}u + D_{12} u \cdot n^{-}\f$
+         *          - \f$\hat{u}_{p}^{U^{+}}(u) = \frac{1}{2} u + D_{12} u \cdot n^{+}\f$
+         *          - \f$\hat{u}_{p}^{U^{-}}(u) = \frac{1}{2} u + D_{12} u \cdot n^{-}\f$
          *
          *          For the docomposition of
          *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
@@ -2272,7 +2273,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          Implements\n
          *          - \f$\hat{\sigma}^{U^{+}}(u) = -C_{11} u \otimes n^{+}\f$
-         *          - \f$\hat{\sigma}^{U^{-}}(u) = -C_{11} u \otimes n^{+}\f$
+         *          - \f$\hat{\sigma}^{U^{-}}(u) = -C_{11} u \otimes n^{-}\f$
          *
          *          For the docomposition of
          *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
@@ -2340,7 +2341,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          Implements\n
          *          - \f$\hat{\sigma}^{\sigma^{+}}(\sigma) = \frac{1}{2} \sigma - \left( \sigma \cdot n^{+} \right) \otimes C_{12}\f$
-         *          - \f$\hat{\sigma}^{\sigma^{+}}(\sigma) = \frac{1}{2} \sigma + \left( \sigma \cdot n^{+} \right) \otimes C_{12}\f$
+         *          - \f$\hat{\sigma}^{\sigma^{+}}(\sigma) = \frac{1}{2} \sigma - \left( \sigma \cdot n^{-} \right) \otimes C_{12}\f$
          *
          *          For the docomposition of
          *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
@@ -2556,7 +2557,44 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                     const DomainType& x,
                     VelocityRangeType& forceReturn ) const
         {
+#ifdef MICRO_PROBLEM
+            forceReturn = 0.0;
+#else
             force_.evaluate( x, forceReturn );
+#endif
+        }
+
+        template < class IntersectionIteratorType, class DomainType >
+        void dirichletData( const IntersectionIteratorType intIt,
+                            const double time,
+                            const DomainType& x,
+                            VelocityRangeType& dirichletDataReturn ) const
+        {
+            assert( ( !intIt.neighbor() && intIt.boundary() ) || !"this intersection does not lie on the boundary" );
+#ifdef MICRO_PROBLEM
+            if ( dirichletDataReturn.dim() == 2 ) {
+                const int boundaryId = intIt.boundaryId();
+                if ( boundaryId == 3 ) { // rechts
+                    dirichletDataReturn[ 0 ] = 0.0;
+                    dirichletDataReturn[ 1 ] = 0.0;
+                }
+                else if ( boundaryId == 4 ) { // links
+                    dirichletDataReturn[ 0 ] = 0.0;
+                    dirichletDataReturn[ 1 ] = 0.0;
+                }
+                else {
+                    dirichletDataReturn = 0.0;
+                }
+            }
+            else if ( dirichletDataReturn.dim() == 3 ) {
+                assert( !"not implemented!" );
+            }
+            else {
+                assert( !"not implemented!" );
+            }
+#else
+            dirichletData_.evaluate( x, dirichletDataReturn );
+#endif
         }
 
         /**
@@ -2584,8 +2622,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                         const VelocityRangeType& arg2 ) const
         {
             SigmaRangeType ret( 0.0 );
-#if 0
-	    typedef typename SigmaRangeType::RowIterator
+            typedef typename SigmaRangeType::RowIterator
                 MatrixRowIteratorType;
             typedef typename VelocityRangeType::ConstIterator
                 ConstVectorIteratorType;
@@ -2604,12 +2641,6 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 }
                 ++arg1It;
             }
-#endif
-  ret(0,0)= arg1[0]*arg2[0];
-      ret(0,1)= arg1[0]*arg2[1];
-      ret(1,0)= arg1[1]*arg2[0];
-      ret(1,1)= arg1[1]*arg2[1];
-            return ret;
         }
 
         /**

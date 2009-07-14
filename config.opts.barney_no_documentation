@@ -1,5 +1,5 @@
 CONFIGURE_FLAGS="CXX=g++ CC=gcc CXXFLAGS='-g' F77=gfortran \
-  --prefix=/data/dune_work/private/f_albr01/dune/diplomarbeit_felix_rene \
+  --prefix=$PWD \
   --with-metis=/share/dune/Modules/modules_$HOSTTYPE/metis \
   --with-alugrid=/data/dune_work/private/f_albr01/modules/alugrid-1.14 \
   --with-alberta=/data/dune_work/private/f_albr01/modules/alberta-2.01 \
