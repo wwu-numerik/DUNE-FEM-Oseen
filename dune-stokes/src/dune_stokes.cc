@@ -65,7 +65,9 @@ struct RunInfo
     int refine_level;
     double run_time;
     long codim0;
-    static const int polorder = POLORDER;
+    int polorder_velocity;
+    int polorder_pressure;
+    int polorder_sigma;
     double c11,d11,c12,d12;
     bool bfg;
     std::string gridname;
@@ -497,6 +499,10 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     info.d12 = d12;
     info.bfg = Parameters().getParam( "do-bfg", true );
     info.gridname = gridPart.grid().name();
+
+    info.polorder_pressure = StokesModelTraitsImp::pressureSpaceOrder;
+    info.polorder_sigma = StokesModelTraitsImp::sigmaSpaceOrder;
+    info.polorder_velocity = StokesModelTraitsImp::velocitySpaceOrder;
 
     profiler().StopTiming( "Problem/Postprocessing" );
 
