@@ -148,26 +148,28 @@ int main( int argc, char** argv )
     //set minref == maxref to get only a single run in non variation part
     int minpow = Parameters().getParam( "minpow", -2 );
 
+
+
     if ( Parameters().getParam( "multirun", true ) ) {
         /** all four stab parameters are permutated in [ minpow ; maxpow ]
             inside an outer loop that increments the grid's refine level
         **/
-        for ( int ref = minref; ref < maxref; ref+=2 ) {
+        for ( int ref = minref; ref <= maxref; ++ref ) {
             int i,j,k,l;
             i = j = k = l = maxpow - 1;
 //            for ( int i = minpow; i < maxpow; ++i ) {
 //                for ( int j = minpow; j < maxpow; ++j ) {
 //                    for ( int k = minpow; k < maxpow; ++k ) {
 //                        for ( int l = minpow; l < maxpow; ++l ) {
-                            Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
-                            gridPtr->globalRefine( ref );
-                            typedef Dune::AdaptiveLeafGridPart< GridType >
-                                GridPartType;
-                            GridPartType gridPart( *gridPtr );
                             if ( per_run_log_target ) { //sets unique per run filename if requested
                                 std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
                                 Logger().SetPrefix( ff );
                             }
+                            Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
+                            gridPtr->globalRefine( Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref );
+                            typedef Dune::AdaptiveLeafGridPart< GridType >
+                                GridPartType;
+                            GridPartType gridPart( *gridPtr );
                             Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
                             //do some matlab magic to suppress errors and display a little info baout current params
                             matlabLogStream <<std::endl<< "\nclear;\ntry\ntic;warning off all;" << std::endl;
@@ -188,7 +190,7 @@ int main( int argc, char** argv )
                             eoc_output.setErrors( idx,info.L2Errors );
                             texwriter.setInfo( info );
                             bool lastrun = ( //this test is somewhat stupid, make it smart!!
-                                ( ref >= ( maxref - 2 ) ) &&
+                                ( ref >= ( maxref  ) ) &&
                                 ( j + k + l + i >= 4 * ( maxpow - 1 ) ) );
                             //the writer needs to know if it should close the table etc.
                             eoc_output.write( texwriter, lastrun );
@@ -203,7 +205,7 @@ int main( int argc, char** argv )
         for ( int ref = minref; ref <= maxref; ++ref ) {
             Logger().SetPrefix( "dune_stokes_ref_"+Stuff::toString(ref) );
             Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
-            gridPtr->globalRefine( ref );
+            gridPtr->globalRefine( Dune::DGFGridInfo< GridType >::refineStepsForHalf()*ref );
             typedef Dune::AdaptiveLeafGridPart< GridType >
                 GridPartType;
             GridPartType gridPart( *gridPtr );
