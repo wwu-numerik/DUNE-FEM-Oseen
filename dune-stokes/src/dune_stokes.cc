@@ -8,12 +8,9 @@
 #include "config.h"
 #endif
 
-//#define POLORDER 1
-
-//#define SIMPLE_PROBLEM
-//#define CONSTANT_PROBLEM
-//#define ROTATE_PROBLEM
-//#define NLOG
+#if defined(UGGRID) && defined(DEBUG)
+    #warning ("UGGRID in debug mode is likely to produce a segfault")
+#endif
 
 #include <iostream>
 #include <cmath>
