@@ -77,7 +77,8 @@ template < class GridPartType >
 RunInfo singleRun(  CollectiveCommunication mpicomm,
                 Dune::GridPtr< GridType > gridPtr,
                 GridPartType& gridPart,
-                int pow1, int pow2, int pow3, int pow4  );
+                int pow1, int pow2, int pow3, int pow4,
+                int refine_level  );
 /**
  *  \brief  main function
  *
@@ -166,7 +167,8 @@ int main( int argc, char** argv )
                                 Logger().SetPrefix( ff );
                             }
                             Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
-                            gridPtr->globalRefine( Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref );
+                            const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
+                            gridPtr->globalRefine( refine_level );
                             typedef Dune::AdaptiveLeafGridPart< GridType >
                                 GridPartType;
                             GridPartType gridPart( *gridPtr );
@@ -178,7 +180,7 @@ int main( int argc, char** argv )
                                     << l << "') \n" << std::endl;
                             //actual work
                             profiler().StartTiming( "SingleRun" );
-                            RunInfo info = singleRun( mpicomm, gridPtr, gridPart, i, j, k, l );
+                            RunInfo info = singleRun( mpicomm, gridPtr, gridPart, i, j, k, l, refine_level );
                             profiler().StopTiming( "SingleRun" );
                             info.run_time = profiler().GetTiming( "SingleRun" );
                             // new line and closing try/catch in m-file
@@ -205,12 +207,13 @@ int main( int argc, char** argv )
         for ( int ref = minref; ref <= maxref; ++ref ) {
             Logger().SetPrefix( "dune_stokes_ref_"+Stuff::toString(ref) );
             Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
-            gridPtr->globalRefine( Dune::DGFGridInfo< GridType >::refineStepsForHalf()*ref );
+            const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
+            gridPtr->globalRefine( refine_level );
             typedef Dune::AdaptiveLeafGridPart< GridType >
                 GridPartType;
             GridPartType gridPart( *gridPtr );
             profiler().StartTiming( "SingleRun" );
-            RunInfo info = singleRun( mpicomm, gridPtr, gridPart, minpow, maxpow, -9, -9 );
+            RunInfo info = singleRun( mpicomm, gridPtr, gridPart, minpow, maxpow, -9, -9, refine_level );
             profiler().StopTiming( "SingleRun" );
             info.run_time = profiler().GetTiming( "SingleRun" );
             l2_errors.push_back( info.L2Errors );
@@ -239,10 +242,11 @@ template < class GridPartType >
 RunInfo singleRun(  CollectiveCommunication mpicomm,
                     Dune::GridPtr< GridType > gridPtr,
                     GridPartType& gridPart,
-                    const int pow1,
-                    const int pow2,
-                    const int pow3,
-                    const int pow4  )
+                    int pow1,
+                    int pow2,
+                    int pow3,
+                    int pow4,
+                    int refine_level  )
 {
     Logging::LogStream& infoStream = Logger().Info();
     Logging::LogStream& debugStream = Logger().Dbg();
@@ -496,7 +500,7 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
 
     PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );
 
-    postProcessor.save( *gridPtr, discreteStokesFunctionWrapper );
+    postProcessor.save( *gridPtr, discreteStokesFunctionWrapper, refine_level );
     info.L2Errors = postProcessor.getError();
     info.c11 = c11;
     info.c12 = c12;

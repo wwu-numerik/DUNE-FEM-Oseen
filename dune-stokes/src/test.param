@@ -4,6 +4,7 @@ loglevel: 22
 
 #only prefix
 logfile: dune_stokes
+fem.io.datadir: data
 fem.io.datafileprefix: data_
 fem.io.savestep: -1
 fem.io.savecount: 1
@@ -13,6 +14,7 @@ maxref: 0
 minpow: -1
 maxpow: 1
 per-run-log-target: 0
+per-run-output: 1
 
 #
 dgf_file_2d: grid_2d.dgf
