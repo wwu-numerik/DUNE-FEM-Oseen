@@ -77,6 +77,7 @@ FOREACH( MODULE ${MODULES} )
 ENDFOREACH(MODULE)
 INCLUDE_DIRECTORIES( ${dune-stokes_SOURCE_DIR} )
 LINK_DIRECTORIES( "/usr/lib" "${ALUGRID_BASE_PATH}/lib" )
+ADD_DEFINITIONS( ${CXX_FLAGS} )
 
 #----------------------------------------------------------------------------------------------------
 # Source listing
