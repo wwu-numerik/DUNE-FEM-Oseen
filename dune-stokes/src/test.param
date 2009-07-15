@@ -5,6 +5,7 @@ loglevel: 22
 #only prefix
 logfile: dune_stokes
 fem.io.datadir: data
+fem.io.logdir: log
 fem.io.datafileprefix: data_
 fem.io.savestep: -1
 fem.io.savecount: 1
