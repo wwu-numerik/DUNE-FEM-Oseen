@@ -2757,8 +2757,8 @@ class StokesPass
         {
             SigmaJacobianRangeType ret( 0.0 );
             assert( arg.dim() == ret[0].dim() );
-            for ( int i = 0; i < arg.dim() ; ++i ) {
-                for ( int j = 0; j < arg.dim(); ++j ) {
+            for ( int i = 0; i < int(arg.dim()) ; ++i ) {
+                for ( int j = 0; j < int(arg.dim()); ++j ) {
                     VelocityRangeType row( 0.0 );
                     row[ j ] = arg[ i ];
                     ret[ i * arg.dim() + j ] = row;
