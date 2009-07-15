@@ -55,7 +55,7 @@
 
 typedef std::vector< std::vector<double> > L2ErrorVector;
 typedef std::vector<std::string> ColumnHeaders;
-const std::string errheaders[] = { "h", "tris","runtime","C11","C12","D11","D12","Velocity", "Pressure" };
+const std::string errheaders[] = { "h", "el't","runtime","C11","C12","D11","D12","Velocity", "Pressure" };
 const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
 
 struct RunInfo
@@ -209,7 +209,10 @@ int main( int argc, char** argv )
             typedef Dune::AdaptiveLeafGridPart< GridType >
                 GridPartType;
             GridPartType gridPart( *gridPtr );
+            profiler().StartTiming( "SingleRun" );
             RunInfo info = singleRun( mpicomm, gridPtr, gridPart, minpow, maxpow, -9, -9 );
+            profiler().StopTiming( "SingleRun" );
+            info.run_time = profiler().GetTiming( "SingleRun" );
             l2_errors.push_back( info.L2Errors );
             eoc_output.setErrors( idx,info.L2Errors );
             texwriter.setInfo( info );
