@@ -285,9 +285,7 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     typedef Dune::DiscreteStokesModelDefault< StokesModelTraitsImp >
         StokesModelImpType;
 
-    // determine pows
-//    typedef Dune::FieldVector< double, gridDim >
-//        ConstVec;
+
 //    const double minpow = -9; // all less or equal treatet as zero
     const int c11 = pow1;// > minpow ? std::pow( grid_width, pow1 ) : 0;
     const int d11 = pow2;// > minpow ? std::pow( grid_width, pow2 ) : 0;
@@ -300,7 +298,6 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
 //                << "    D_11: " << d11 << std::endl
 //                << "    D_12: " << d12 << std::endl;
 
-    // model
     StokesModelImpType stokesModel( c11,
                                     c12,
                                     d11,
@@ -324,9 +321,49 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
         DiscreteStokesFunctionWrapperType;
 
     DiscreteStokesFunctionWrapperType
-        discreteStokesFunctionWrapper(  "wrapped",
+        computedSolutions(  "computed_",
                                         discreteStokesFunctionSpaceWrapper );
 
+    DiscreteStokesFunctionWrapperType initArgToPass( "init_", discreteStokesFunctionSpaceWrapper );
+
+    /* ********************************************************************** *
+     * initialize passes                                                      *
+     * ********************************************************************** */
+    infoStream << "\n- starting pass" << std::endl;
+
+    typedef Dune::StartPass< DiscreteStokesFunctionWrapperType, -1 >
+        StartPassType;
+    StartPassType startPass;
+
+    typedef Dune::StokesPass< StokesModelType, StartPassType, 0 >
+        StokesPassType;
+    StokesPassType stokesPass(  startPass,
+                                stokesModel,
+                                gridPart,
+                                discreteStokesFunctionSpaceWrapper );
+
+    computedSolutions.discretePressure().clear();
+    computedSolutions.discreteVelocity().clear();
+
+    Profiler().StartTiming( "Pass:apply" );
+    stokesPass.apply( initArgToPass, computedSolutions );
+    Profiler().StopTiming( "Pass:apply" );
+    info.run_time = profiler().GetTiming( "Pass:apply" );
+
+    /* ********************************************************************** *
+     * Problem postprocessing
+     * ********************************************************************** */
+    infoStream << "\n- postprocesing" << std::endl;
+
+/***************** begin bullshit ***************************/
+    typedef Dune::FunctionSpace< double, double, gridDim, 1 >
+        PressureFunctionSpaceType;
+    PressureFunctionSpaceType pressureSpace;
+    typedef Pressure< PressureTraits< gridDim, PressureFunctionSpaceType > >
+        AnalyticalExactPressureType;
+    AnalyticalExactPressureType analyticalExactPressure( pressureSpace );
+    typedef StokesModelType::DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
+        DiscretePressureFunctionType;
     // some info about the analytical data
     typedef StokesModelType::DiscreteStokesFunctionSpaceWrapperType::DiscreteVelocityFunctionSpaceType
         DiscreteAnalyticalDataFunctionSpaceType;
@@ -359,117 +396,28 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     Stuff::printFunctionMinMax( debugStream, discreteAnalyticalForce );
     Stuff::printFunctionMinMax( debugStream, discreteAnalyticalDirichletData );
 
-    // exact solution, for testing
-    typedef Velocity< VelocityTraits< gridDim, VelocityFunctionSpaceType > >
-        AnalyticalExactVelocityType;
-    AnalyticalExactVelocityType analyticalExactVelocity( velocitySpace );
-    typedef StokesModelType::DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
-        DiscreteVelocityFunctionType;
-    typedef Dune::L2Projection< double,
-                                double,
-                                AnalyticalExactVelocityType,
-                                DiscreteVelocityFunctionType >
-        AnalyticalVelocityProjectionType;
-    AnalyticalVelocityProjectionType analyticalVelocityProjection( 0 );
-    DiscreteVelocityFunctionType discreteExactVelocity( "discrete exact velocity",
-                                                        discreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
-    analyticalVelocityProjection(   analyticalExactVelocity,
-                                    discreteExactVelocity );
+    Stuff::printFunctionMinMax( debugStream, computedSolutions.discreteVelocity() );
+    Stuff::printFunctionMinMax( debugStream, computedSolutions.discretePressure() );
 
-    typedef Dune::FunctionSpace< double, double, gridDim, 1 >
-        PressureFunctionSpaceType;
-    PressureFunctionSpaceType pressureSpace;
-    typedef Pressure< PressureTraits< gridDim, PressureFunctionSpaceType > >
-        AnalyticalExactPressureType;
-    AnalyticalExactPressureType analyticalExactPressure( pressureSpace );
-    typedef StokesModelType::DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
-        DiscretePressureFunctionType;
-    typedef Dune::L2Projection< double,
-                                double,
-                                AnalyticalExactPressureType,
-                                DiscretePressureFunctionType >
-        AnalyticalPressureProjectionType;
-    AnalyticalPressureProjectionType analyticalPressureProjection( 0 );
-    DiscretePressureFunctionType discreteExactPressure( "discrete exact pressure",
-                                                        discreteStokesFunctionSpaceWrapper.discretePressureSpace() );
-    analyticalPressureProjection(   analyticalExactPressure,
-                                    discreteExactPressure );
-
-    DiscreteStokesFunctionWrapperType discreteExactSolutions(   discreteStokesFunctionSpaceWrapper,
-                                                                discreteExactVelocity,
-                                                                discreteExactPressure );
-
-    /* ********************************************************************** *
-     * initialize passes                                                      *
-     * ********************************************************************** */
-    infoStream << "\n- starting pass" << std::endl;
-
-    typedef Dune::StartPass< DiscreteStokesFunctionWrapperType, -1 >
-        StartPassType;
-    StartPassType startPass;
-
-    typedef Dune::StokesPass< StokesModelType, StartPassType, 0 >
-        StokesPassType;
-    StokesPassType stokesPass(  startPass,
-                                stokesModel,
-                                gridPart,
-                                discreteStokesFunctionSpaceWrapper );
-
-    discreteStokesFunctionWrapper.discretePressure().clear();
-    discreteStokesFunctionWrapper.discreteVelocity().clear();
-
-    Profiler().StartTiming( "Pass:apply" );
-    stokesPass.apply( discreteExactSolutions, discreteStokesFunctionWrapper );
-    Profiler().StopTiming( "Pass:apply" );
-    info.run_time = profiler().GetTiming( "Pass:apply" );
-    /* ********************************************************************** *
-     * Problem postprocessing (with profiler example)                         *
-     * ********************************************************************** */
-    infoStream << "\n- postprocesing" << std::endl;
-
-//    typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
-//        DiscreteVelocityFunctionType;
-    DiscreteVelocityFunctionType& computedVelocity = discreteStokesFunctionWrapper.discreteVelocity();
-//    typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
-//        DiscretePressureFunctionType;
-    DiscretePressureFunctionType& computedPressure = discreteStokesFunctionWrapper.discretePressure();
-//Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-//Stuff::printDiscreteFunctionMatlabStyle( computedPressure, "p", matlabLogStream );
-//Stuff::printDiscreteFunctionMatlabStyle( computedVelocity, "u", matlabLogStream );
-
-    double computedVelocityMin = 0.0;
-    double computedVelocityMax = 0.0;
-    Stuff::getMinMaxOfDiscreteFunction( computedVelocity,
-                                        computedVelocityMin,
-                                        computedVelocityMax );
-    debugStream << "  - computed velocity" << std::endl
-                << "    min: " << std::sqrt( 2.0 ) * computedVelocityMin << std::endl
-                << "    max: " << std::sqrt( 2.0 ) * computedVelocityMax << std::endl;
-
-    double computedPressureMin = 0.0;
-    double computedPressureMax = 0.0;
-
-    Stuff::getMinMaxOfDiscreteFunction( computedPressure,
-                                        computedPressureMin,
-                                        computedPressureMax );
-    debugStream << "  - computed pressure" << std::endl
-                << "    min: " << std::sqrt( 2.0 ) * computedPressureMin << std::endl
-                << "    max: " << std::sqrt( 2.0 ) * computedPressureMax << std::endl
-                << std::endl;
-
+/***************** end bullshit **************************/
 
     profiler().StartTiming( "Problem/Postprocessing" );
 
-    typedef Problem< gridDim, DiscreteStokesFunctionWrapperType >
+#ifndef COCKBURN_PROBLEM //bool tpl-param toggles ana-soltion output in post-proc
+    typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, false >
         ProblemType;
-    ProblemType problem( viscosity , discreteStokesFunctionWrapper );
+#else
+    typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, true >
+        ProblemType;
+#endif
+    ProblemType problem( viscosity , computedSolutions );
 
     typedef PostProcessor< StokesPassType, ProblemType >
         PostProcessorType;
 
     PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );
 
-    postProcessor.save( *gridPtr, discreteStokesFunctionWrapper, refine_level );
+    postProcessor.save( *gridPtr, computedSolutions, refine_level );
     info.L2Errors = postProcessor.getError();
     info.c11 = c11;
     info.c12 = c12;
