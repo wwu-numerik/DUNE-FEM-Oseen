@@ -250,7 +250,7 @@ class NestedCgSaddlepointInverseOperator
             double a_absLimit = absLimit;
             while ( true ) {
                 if ( adapt_step > max_adaptions ) {
-                    logInfo << "\n\t\t max adaption depth reached, aborting" << std::endl;
+                    logError << "\n\t\t max adaption depth reached, aborting" << std::endl;
                     break;
                 }
                 a_relLimit /= 10.0;

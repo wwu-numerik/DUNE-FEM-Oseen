@@ -8,12 +8,9 @@
 #include "config.h"
 #endif
 
-//#define POLORDER 1
-
-//#define SIMPLE_PROBLEM
-//#define CONSTANT_PROBLEM
-//#define ROTATE_PROBLEM
-//#define NLOG
+#if defined(UGGRID) && defined(DEBUG)
+    #warning ("UGGRID in debug mode is likely to produce a segfault")
+#endif
 
 #include <iostream>
 #include <cmath>
@@ -55,7 +52,7 @@
 
 typedef std::vector< std::vector<double> > L2ErrorVector;
 typedef std::vector<std::string> ColumnHeaders;
-const std::string errheaders[] = { "h", "tris","runtime","C11","C12","D11","D12","Velocity", "Pressure" };
+const std::string errheaders[] = { "h", "el't","runtime","C11","C12","D11","D12","Velocity", "Pressure" };
 const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
 
 struct RunInfo
@@ -65,17 +62,19 @@ struct RunInfo
     int refine_level;
     double run_time;
     long codim0;
-    static const int polorder = POLORDER;
+    int polorder_velocity;
+    int polorder_pressure;
+    int polorder_sigma;
     double c11,d11,c12,d12;
     bool bfg;
     std::string gridname;
+    double solver_accuracy;
+    double bfg_tau;
 };
 
-template < class GridPartType >
 RunInfo singleRun(  CollectiveCommunication mpicomm,
-                Dune::GridPtr< GridType > gridPtr,
-                GridPartType& gridPart,
-                int pow1, int pow2, int pow3, int pow4  );
+                int pow1, int pow2, int pow3, int pow4,
+                int refine_level  );
 /**
  *  \brief  main function
  *
@@ -146,77 +145,69 @@ int main( int argc, char** argv )
     //set minref == maxref to get only a single run in non variation part
     int minpow = Parameters().getParam( "minpow", -2 );
 
+
+
     if ( Parameters().getParam( "multirun", true ) ) {
         /** all four stab parameters are permutated in [ minpow ; maxpow ]
             inside an outer loop that increments the grid's refine level
         **/
-        for ( int ref = minref; ref < maxref; ref+=2 ) {
-            int i,j,k,l;
-            i = j = k = l = maxpow - 1;
-//            for ( int i = minpow; i < maxpow; ++i ) {
-//                for ( int j = minpow; j < maxpow; ++j ) {
-//                    for ( int k = minpow; k < maxpow; ++k ) {
-//                        for ( int l = minpow; l < maxpow; ++l ) {
-                            Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
-                            gridPtr->globalRefine( ref );
-                            typedef Dune::AdaptiveLeafGridPart< GridType >
-                                GridPartType;
-                            GridPartType gridPart( *gridPtr );
+        for ( int ref = minref; ref <= maxref; ++ref ) {
+            for ( int i = minpow; i <= maxpow; ++i ) {
+                for ( int j = minpow; j <= maxpow; ++j ) {
+                    for ( int k = minpow; k <= maxpow; ++k ) {
+                        for ( int l = minpow; l <= maxpow; ++l ) {
                             if ( per_run_log_target ) { //sets unique per run filename if requested
                                 std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
                                 Logger().SetPrefix( ff );
                             }
+
                             Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
                             //do some matlab magic to suppress errors and display a little info baout current params
                             matlabLogStream <<std::endl<< "\nclear;\ntry\ntic;warning off all;" << std::endl;
                             matlabLogStream << "disp(' c/d-11/12 h powers: "<< i << " "
                                     << j << " " << k << " "
                                     << l << "') \n" << std::endl;
+
                             //actual work
-                            profiler().StartTiming( "SingleRun" );
-                            RunInfo info = singleRun( mpicomm, gridPtr, gridPart, i, j, k, l );
-                            profiler().StopTiming( "SingleRun" );
-                            info.run_time = profiler().GetTiming( "SingleRun" );
+                            const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
+                            RunInfo info = singleRun( mpicomm, i, j, k, l, refine_level );
+
                             // new line and closing try/catch in m-file
                             matlabLogStream << "\ncatch\ndisp('errors here');\nend\ntoc\ndisp(' ');\n" << std::endl;
                             l2_errors.push_back( info.L2Errors );
-//    			            profiler().NextRun( info.L2Errors ); //finish this run
 
                             //push errors to eoc-outputter class
                             eoc_output.setErrors( idx,info.L2Errors );
                             texwriter.setInfo( info );
                             bool lastrun = ( //this test is somewhat stupid, make it smart!!
-                                ( ref >= ( maxref - 2 ) ) &&
-                                ( j + k + l + i >= 4 * ( maxpow - 1 ) ) );
+                                ( ref >= ( maxref  ) ) &&
+                                ( j + k + l + i >= 4 * maxpow ) );
                             //the writer needs to know if it should close the table etc.
                             eoc_output.write( texwriter, lastrun );
-//                        }
-//                    }
-//                }
-//            }
+
+                            profiler().NextRun( info.L2Errors[0] ); //finish this run
+                        }
+                    }
+                }
+            }
         }
     }
-    else { //we don't do any variation here, just one simple run, no eoc, nothing
+    else { //we don't do any variation here
 
         for ( int ref = minref; ref <= maxref; ++ref ) {
-            Logger().SetPrefix( "dune_stokes_ref_"+Stuff::toString(ref) );
-            Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
-            gridPtr->globalRefine( ref );
-            typedef Dune::AdaptiveLeafGridPart< GridType >
-                GridPartType;
-            GridPartType gridPart( *gridPtr );
-            RunInfo info = singleRun( mpicomm, gridPtr, gridPart, minpow, maxpow, -9, -9 );
+            if ( per_run_log_target )
+                Logger().SetPrefix( "dune_stokes_ref_"+Stuff::toString(ref) );
+            const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
+            RunInfo info = singleRun( mpicomm, minpow, maxpow, -9, -9, refine_level );
             l2_errors.push_back( info.L2Errors );
             eoc_output.setErrors( idx,info.L2Errors );
             texwriter.setInfo( info );
-            eoc_output.write( texwriter, ( ref == maxref ) );
+            eoc_output.write( texwriter, ( ref >= maxref ) );
         }
     }
 
-//    Stuff::TexOutput texOP;
-//    eoc_output.printInput( *gridPtr, texOP );
-//
-//    long prof_time = profiler().Output( mpicomm, 0, el );
+    //profiler output in current format is somewhat meaningless
+    long prof_time = profiler().Output( mpicomm, 0, 0 );
 
     return err;
   }
@@ -228,18 +219,16 @@ int main( int argc, char** argv )
   }
 }
 
-template < class GridPartType >
 RunInfo singleRun(  CollectiveCommunication mpicomm,
-                    Dune::GridPtr< GridType > gridPtr,
-                    GridPartType& gridPart,
-                    const int pow1,
-                    const int pow2,
-                    const int pow3,
-                    const int pow4  )
+                    int pow1,
+                    int pow2,
+                    int pow3,
+                    int pow4,
+                    int refine_level  )
 {
+    profiler().StartTiming( "SingleRun" );
     Logging::LogStream& infoStream = Logger().Info();
     Logging::LogStream& debugStream = Logger().Dbg();
-    ParameterContainer& parameters = Parameters();
     RunInfo info;
 
     debugStream << "\nsingleRun( pow1: " << pow1 << ","
@@ -251,13 +240,17 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
      * initialize the grid                                                    *
      * ********************************************************************** */
     infoStream << "\n- initialising grid" << std::endl;
-
+    Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
+    gridPtr->globalRefine( refine_level );
+    typedef Dune::AdaptiveLeafGridPart< GridType >
+        GridPartType;
+    GridPartType gridPart( *gridPtr );
     const int gridDim = GridType::dimensionworld;
     info.codim0 = gridPtr->size( 0 );
     info.codim0 = gridPart.grid().size( 0 );
     Dune::GridWidthProvider< GridType > gw ( *gridPtr );
     double grid_width = gw.gridWidth();
-//    infoStream << "  - max grid width: " << grid_width << std::endl;
+    infoStream << "  - max grid width: " << grid_width << std::endl;
     info.grid_width = grid_width;
 
     /* ********************************************************************** *
@@ -284,21 +277,6 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     typedef Dune::DiscreteStokesModelDefault< StokesModelTraitsImp >
         StokesModelImpType;
 
-    typedef typename StokesModelTraitsImp::VelocityFunctionSpaceType
-        VelocityFunctionSpaceType;
-    VelocityFunctionSpaceType velocitySpace;
-
-    typedef typename StokesModelTraitsImp::AnalyticalForceType
-        AnalyticalForceType;
-    AnalyticalForceType analyticalForce( viscosity , velocitySpace );
-
-    typedef typename StokesModelTraitsImp::AnalyticalDirichletDataType
-        AnalyticalDirichletDataType;
-    AnalyticalDirichletDataType analyticalDirichletData( velocitySpace );
-
-    // determine pows
-//    typedef Dune::FieldVector< double, gridDim >
-//        ConstVec;
 //    const double minpow = -9; // all less or equal treatet as zero
     const int c11 = pow1;// > minpow ? std::pow( grid_width, pow1 ) : 0;
     const int d11 = pow2;// > minpow ? std::pow( grid_width, pow2 ) : 0;
@@ -311,7 +289,35 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
 //                << "    D_11: " << d11 << std::endl
 //                << "    D_12: " << d12 << std::endl;
 
-    // model
+
+    // treat as interface
+    typedef Dune::DiscreteStokesModelInterface< StokesModelTraitsImp >
+        StokesModelType;
+
+    // function wrapper for the solutions
+    typedef StokesModelTraitsImp::DiscreteStokesFunctionSpaceWrapperType
+        DiscreteStokesFunctionSpaceWrapperType;
+
+    DiscreteStokesFunctionSpaceWrapperType
+        discreteStokesFunctionSpaceWrapper( gridPart );
+
+    typedef StokesModelTraitsImp::DiscreteStokesFunctionWrapperType
+        DiscreteStokesFunctionWrapperType;
+
+    DiscreteStokesFunctionWrapperType
+        computedSolutions(  "computed_",
+                                        discreteStokesFunctionSpaceWrapper );
+
+    DiscreteStokesFunctionWrapperType initArgToPass( "init_", discreteStokesFunctionSpaceWrapper );
+
+     typedef StokesModelTraitsImp::AnalyticalForceType
+         AnalyticalForceType;
+     AnalyticalForceType analyticalForce( viscosity , discreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
+
+     typedef StokesModelTraitsImp::AnalyticalDirichletDataType
+         AnalyticalDirichletDataType;
+     AnalyticalDirichletDataType analyticalDirichletData( discreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
+
     StokesModelImpType stokesModel( c11,
                                     c12,
                                     d11,
@@ -319,109 +325,6 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
                                     analyticalForce,
                                     analyticalDirichletData,
                                     viscosity  );
-
-    // treat as interface
-    typedef Dune::DiscreteStokesModelInterface< StokesModelTraitsImp >
-        StokesModelType;
-
-    // function wrapper for the solutions
-    typedef typename StokesModelTraitsImp::DiscreteStokesFunctionSpaceWrapperType
-        DiscreteStokesFunctionSpaceWrapperType;
-
-    DiscreteStokesFunctionSpaceWrapperType
-        discreteStokesFunctionSpaceWrapper( gridPart );
-
-    typedef typename StokesModelTraitsImp::DiscreteStokesFunctionWrapperType
-        DiscreteStokesFunctionWrapperType;
-
-    DiscreteStokesFunctionWrapperType
-        discreteStokesFunctionWrapper(  "wrapped",
-                                        discreteStokesFunctionSpaceWrapper );
-
-    // some info about the analytical data
-    typedef typename StokesModelType::DiscreteStokesFunctionSpaceWrapperType::DiscreteVelocityFunctionSpaceType
-        DiscreteAnalyticalDataFunctionSpaceType;
-    DiscreteAnalyticalDataFunctionSpaceType
-        discreteAnalyticalDataFunctionSpace( gridPart );
-    typedef typename StokesModelType::DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
-        DiscreteAnalyticalDataFunctionType;
-    DiscreteAnalyticalDataFunctionType
-        discreteAnalyticalForce(    "discrete_analytical_force",
-                                    discreteAnalyticalDataFunctionSpace );
-    DiscreteAnalyticalDataFunctionType
-        discreteAnalyticalDirichletData(    "discrete analytical dirichlet data",
-                                            discreteAnalyticalDataFunctionSpace );
-    typedef Dune::L2Projection< double,
-                                double,
-                                AnalyticalForceType,
-                                DiscreteAnalyticalDataFunctionType >
-        AnalyticalForceProjectionType;
-    AnalyticalForceProjectionType analyticalForceProjection( 0 );
-    analyticalForceProjection( analyticalForce, discreteAnalyticalForce );
-    typedef Dune::L2Projection< double,
-                                double,
-                                AnalyticalDirichletDataType,
-                                DiscreteAnalyticalDataFunctionType >
-        AnalyticalDirichletDataProjectionType;
-    AnalyticalDirichletDataProjectionType analyticalDirichletDataProjection( 0 );
-    analyticalDirichletDataProjection(  analyticalDirichletData,
-                                        discreteAnalyticalDirichletData );
-    double analyticalForceMin = 0.0;
-    double analyticalForceMax = 0.0;
-    Stuff::getMinMaxOfDiscreteFunction( discreteAnalyticalForce,
-                                        analyticalForceMin,
-                                        analyticalForceMax );
-    debugStream << "  - force" << std::endl
-                << "    min: " << std::sqrt( 2.0 ) * analyticalForceMin << std::endl
-                << "    max: " << std::sqrt( 2.0 ) * analyticalForceMax << std::endl;
-    double analyticalDirichletDataMin = 0.0;
-    double analyticalDirichletDataMax = 0.0;
-    Stuff::getMinMaxOfDiscreteFunction( discreteAnalyticalDirichletData,
-                                        analyticalDirichletDataMin,
-                                        analyticalDirichletDataMax );
-    debugStream << "  - dirichlet data" << std::endl
-                << "    min: " << std::sqrt( 2.0 ) * analyticalDirichletDataMin << std::endl
-                << "    max: " << std::sqrt( 2.0 ) * analyticalDirichletDataMax << std::endl;
-
-    // exact solution, for testing
-    typedef Velocity< VelocityTraits< gridDim, VelocityFunctionSpaceType > >
-        AnalyticalExactVelocityType;
-    AnalyticalExactVelocityType analyticalExactVelocity( velocitySpace );
-    typedef typename StokesModelType::DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
-        DiscreteVelocityFunctionType;
-    typedef Dune::L2Projection< double,
-                                double,
-                                AnalyticalExactVelocityType,
-                                DiscreteVelocityFunctionType >
-        AnalyticalVelocityProjectionType;
-    AnalyticalVelocityProjectionType analyticalVelocityProjection( 0 );
-    DiscreteVelocityFunctionType discreteExactVelocity( "discrete exact velocity",
-                                                        discreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
-    analyticalVelocityProjection(   analyticalExactVelocity,
-                                    discreteExactVelocity );
-
-    typedef Dune::FunctionSpace< double, double, gridDim, 1 >
-        PressureFunctionSpaceType;
-    PressureFunctionSpaceType pressureSpace;
-    typedef Pressure< PressureTraits< gridDim, PressureFunctionSpaceType > >
-        AnalyticalExactPressureType;
-    AnalyticalExactPressureType analyticalExactPressure( pressureSpace );
-    typedef typename StokesModelType::DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
-        DiscretePressureFunctionType;
-    typedef Dune::L2Projection< double,
-                                double,
-                                AnalyticalExactPressureType,
-                                DiscretePressureFunctionType >
-        AnalyticalPressureProjectionType;
-    AnalyticalPressureProjectionType analyticalPressureProjection( 0 );
-    DiscretePressureFunctionType discreteExactPressure( "discrete exact pressure",
-                                                        discreteStokesFunctionSpaceWrapper.discretePressureSpace() );
-    analyticalPressureProjection(   analyticalExactPressure,
-                                    discreteExactPressure );
-
-    DiscreteStokesFunctionWrapperType discreteExactSolutions(   discreteStokesFunctionSpaceWrapper,
-                                                                discreteExactVelocity,
-                                                                discreteExactPressure );
 
     /* ********************************************************************** *
      * initialize passes                                                      *
@@ -439,59 +342,37 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
                                 gridPart,
                                 discreteStokesFunctionSpaceWrapper );
 
-    discreteStokesFunctionWrapper.discretePressure().clear();
-    discreteStokesFunctionWrapper.discreteVelocity().clear();
+    computedSolutions.discretePressure().clear();
+    computedSolutions.discreteVelocity().clear();
 
-    stokesPass.apply( discreteExactSolutions, discreteStokesFunctionWrapper );
+    Profiler().StartTiming( "Pass:apply" );
+    stokesPass.apply( initArgToPass, computedSolutions );
+    Profiler().StopTiming( "Pass:apply" );
+    info.run_time = profiler().GetTiming( "Pass:apply" );
 
     /* ********************************************************************** *
-     * Problem postprocessing (with profiler example)                         *
+     * Problem postprocessing
      * ********************************************************************** */
     infoStream << "\n- postprocesing" << std::endl;
-
-//    typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
-//        DiscreteVelocityFunctionType;
-    DiscreteVelocityFunctionType& computedVelocity = discreteStokesFunctionWrapper.discreteVelocity();
-//    typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
-//        DiscretePressureFunctionType;
-    DiscretePressureFunctionType& computedPressure = discreteStokesFunctionWrapper.discretePressure();
-//Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-//Stuff::printDiscreteFunctionMatlabStyle( computedPressure, "p", matlabLogStream );
-//Stuff::printDiscreteFunctionMatlabStyle( computedVelocity, "u", matlabLogStream );
-
-    double computedVelocityMin = 0.0;
-    double computedVelocityMax = 0.0;
-    Stuff::getMinMaxOfDiscreteFunction( computedVelocity,
-                                        computedVelocityMin,
-                                        computedVelocityMax );
-    debugStream << "  - computed velocity" << std::endl
-                << "    min: " << std::sqrt( 2.0 ) * computedVelocityMin << std::endl
-                << "    max: " << std::sqrt( 2.0 ) * computedVelocityMax << std::endl;
-
-    double computedPressureMin = 0.0;
-    double computedPressureMax = 0.0;
-
-    Stuff::getMinMaxOfDiscreteFunction( computedPressure,
-                                        computedPressureMin,
-                                        computedPressureMax );
-    debugStream << "  - computed pressure" << std::endl
-                << "    min: " << std::sqrt( 2.0 ) * computedPressureMin << std::endl
-                << "    max: " << std::sqrt( 2.0 ) * computedPressureMax << std::endl
-                << std::endl;
 
 
     profiler().StartTiming( "Problem/Postprocessing" );
 
-    typedef Problem< gridDim, DiscreteStokesFunctionWrapperType >
+#ifndef COCKBURN_PROBLEM //bool tpl-param toggles ana-soltion output in post-proc
+    typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, false >
         ProblemType;
-    ProblemType problem( viscosity , discreteStokesFunctionWrapper );
+#else
+    typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, true >
+        ProblemType;
+#endif
+    ProblemType problem( viscosity , computedSolutions );
 
     typedef PostProcessor< StokesPassType, ProblemType >
         PostProcessorType;
 
     PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );
 
-    postProcessor.save( *gridPtr, discreteStokesFunctionWrapper );
+    postProcessor.save( *gridPtr, computedSolutions, refine_level );
     info.L2Errors = postProcessor.getError();
     info.c11 = c11;
     info.c12 = c12;
@@ -500,7 +381,15 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     info.bfg = Parameters().getParam( "do-bfg", true );
     info.gridname = gridPart.grid().name();
 
+    info.polorder_pressure = StokesModelTraitsImp::pressureSpaceOrder;
+    info.polorder_sigma = StokesModelTraitsImp::sigmaSpaceOrder;
+    info.polorder_velocity = StokesModelTraitsImp::velocitySpaceOrder;
+
+    info.solver_accuracy = Parameters().getParam( "absLimit", 1e-4 );
+    info.bfg_tau = Parameters().getParam( "bfg-tau", 0.1 );
+
     profiler().StopTiming( "Problem/Postprocessing" );
+    profiler().StopTiming( "SingleRun" );
 
     return info;
 }

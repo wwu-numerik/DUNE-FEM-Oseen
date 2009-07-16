@@ -9,10 +9,11 @@ SET( CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true )
 SET( CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".lib" ".la" ".a")
 SET( CMAKE_CXX_COMPILER "g++-4.2" )
 SET( CMAKE_COLOR_MAKEFILE ON)
-SET( CMAKE_VERBOSE_MAKEFILE ON)
+
 
 # Add Definitions, Compiler-Switches, etc.: -Wall -O2 -g3 ...
-ADD_DEFINITIONS(-Wall -O3 -fomit-frame-pointer -funroll-loops  )
+SET( CXX_FLAGS "-Wall -O3 -fomit-frame-pointer -funroll-loops" CACHE STRING
+ 	"" )
 
 #----------------------------------------------------------------------------------------------------
 # Options, that can be changed be the User in order to customise dune-stokes
@@ -76,6 +77,7 @@ FOREACH( MODULE ${MODULES} )
 ENDFOREACH(MODULE)
 INCLUDE_DIRECTORIES( ${dune-stokes_SOURCE_DIR} )
 LINK_DIRECTORIES( "/usr/lib" "${ALUGRID_BASE_PATH}/lib" )
+ADD_DEFINITIONS( ${CXX_FLAGS} )
 
 #----------------------------------------------------------------------------------------------------
 # Source listing

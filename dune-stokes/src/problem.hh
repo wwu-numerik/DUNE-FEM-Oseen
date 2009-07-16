@@ -26,11 +26,12 @@
  *
  *  \todo   extensive docu with latex
  **/
-template < int griddim, class DiscreteFunctionWrapperImp >
+template < int griddim, class DiscreteFunctionWrapperImp, bool hasAnalyticalSolution = false >
 class Problem
 {
     public:
         static const unsigned int gridDim = griddim;
+        static const bool hasMeaningfulAnalyticalSolution = hasAnalyticalSolution;
 
         typedef DiscreteFunctionWrapperImp
             DiscreteFunctionWrapperType;
