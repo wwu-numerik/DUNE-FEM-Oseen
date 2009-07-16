@@ -9,7 +9,7 @@ SET( CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true )
 SET( CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".lib" ".la" ".a")
 SET( CMAKE_CXX_COMPILER "g++-4.2" )
 SET( CMAKE_COLOR_MAKEFILE ON)
-SET( CMAKE_VERBOSE_MAKEFILE ON)
+
 
 # Add Definitions, Compiler-Switches, etc.: -Wall -O2 -g3 ...
 SET( CXX_FLAGS "-Wall -O3 -fomit-frame-pointer -funroll-loops" CACHE STRING
