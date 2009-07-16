@@ -12,13 +12,13 @@ rectangle_length_x = 2.0
 rectangle_length_y = 1.0
 
 # about the inner ellipse
-ellipse_radius_x = 0.2
-ellipse_radius_y = 0.1
-ellipse_center_x = rectangle_length_x / 2.0;
+ellipse_radius_x = 0.45
+ellipse_radius_y = 0.25
+ellipse_center_x = 0.5 #rectangle_length_x / 2.0;
 ellipse_center_y = rectangle_length_y / 2.0;
 
 # about the number of points to approximate
-number_of_points_per_quarter = 1
+number_of_points_per_quarter = 4
 
 # about the boundary ids
 id_of_ellipse_faces = 2
@@ -59,8 +59,8 @@ def generate_rectangle( length_x, length_y, ids ) :
 	rectangle = []
 	rectangle.append( [ [ 0.0, 0.0 ], ids[0] ] )
 	rectangle.append( [ [ length_x, 0.0 ], ids[1] ] )
-	rectangle.append( [ [ 0.0, length_y ], ids[2] ] )
-	rectangle.append( [ [ length_x, length_y ], ids[3] ] )
+	rectangle.append( [ [ length_x, length_y ], ids[2] ] )
+	rectangle.append( [ [ 0.0, length_y ], ids[3] ] )
 	return rectangle
 
 # write to trianlge
