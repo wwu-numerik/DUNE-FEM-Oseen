@@ -68,6 +68,8 @@ struct RunInfo
     double c11,d11,c12,d12;
     bool bfg;
     std::string gridname;
+    double solver_accuracy;
+    double bfg_tau;
 };
 
 RunInfo singleRun(  CollectiveCommunication mpicomm,
@@ -429,6 +431,9 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     info.polorder_pressure = StokesModelTraitsImp::pressureSpaceOrder;
     info.polorder_sigma = StokesModelTraitsImp::sigmaSpaceOrder;
     info.polorder_velocity = StokesModelTraitsImp::velocitySpaceOrder;
+
+    info.solver_accuracy = Parameters().getParam( "absLimit", 1e-4 );
+    info.bfg_tau = Parameters().getParam( "bfg-tau", 0.1 );
 
     profiler().StopTiming( "Problem/Postprocessing" );
     profiler().StopTiming( "SingleRun" );
