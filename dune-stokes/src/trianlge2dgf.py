@@ -13,7 +13,6 @@ triangle_polyfile_incorrect = 0
 triangle_elefile_incorrect = 0
 
 # about the filenames
-dgf_filename = 'cube_with_hole_2d_triangle.dgf'
 
 ## done with global defines
 
@@ -176,6 +175,7 @@ def write_boundary_segments( faces_with_ids, file ) :
 
 ## main
 filename_prefix = sys.argv[ 1 ]
+dgf_filename = '%s.dgf' %( filename_prefix )
 nodefile_filename = filename_prefix + '.node'
 polyfile_filename = filename_prefix + '.poly'
 elefile_filename = filename_prefix + '.ele'
