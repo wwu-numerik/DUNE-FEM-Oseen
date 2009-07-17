@@ -70,6 +70,9 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
 #elif defined(MICRO_PROBLEM)
                 ret[ 0 ] = 0.0;
                 ret[ 1 ] = 0.0;
+#elif defined(MICRO_PROBLEM_WOIDS)
+                ret[ 0 ] = 0.0;
+                ret[ 1 ] = 0.0;
 #else
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//arg[0];
@@ -91,6 +94,8 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 assert( !"ROTATE_PROBLEM not implemented in 3D!" );
 #elif defined(MICRO_PROBLEM)
                 assert( !"MICRO_PROBLEM not implemented in 3D!" );
+#elif defined(MICRO_PROBLEM_WOIDS)
+                assert( !"MICRO_PROBLEM_WOIDS not implemented in 3D!" );
 #else
                 assert( !"force not implemented in 3D!" );
 #endif
@@ -181,6 +186,29 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                     ret[ 0 ] = 1.0;
                     ret[ 1 ] = 0.0;
                 }
+#elif defined(MICRO_PROBLEM_WOIDS)
+                const double x1 = arg[0];
+                const double x2 = arg[1];
+                if ( !( x2 > 0.0 ) ) { // bottom faces
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( !( x1 < 1.0 ) ) { // right faces
+                    ret[ 0 ] = 1.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( !( x2 < 1.0 ) ) { // top faces
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( !( x1 > 0.0 ) ) { // left faces
+                    ret[ 0 ] = 1.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else {
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 0.0;
+                }
 #else
                 const double x1 = arg[0];
                 const double x2 = arg[1];
@@ -211,6 +239,8 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 assert( !"ROTATE_PROBLEM not implemented in 3D!" );
 #elif defined(MICRO_PROBLEM)
                 assert( !"MICRO_PROBLEM not implemented in 3D!" );
+#elif defined(MICRO_PROBLEM_WOIDS)
+                assert( !"MICRO_PROBLEM_WOIDS not implemented in 3D!" );
 #else
                 assert( !"dirichlet data not implemented in 3D!" );
 #endif
