@@ -203,6 +203,7 @@ int main( int argc, char** argv )
             eoc_output.setErrors( idx,info.L2Errors );
             texwriter.setInfo( info );
             eoc_output.write( texwriter, ( ref >= maxref ) );
+            profiler().NextRun( info.L2Errors[0] ); //finish this run
         }
     }
 
@@ -345,10 +346,11 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     computedSolutions.discretePressure().clear();
     computedSolutions.discreteVelocity().clear();
 
-    Profiler().StartTiming( "Pass:apply" );
+    profiler().StartTiming( "Pass:apply" );
     stokesPass.apply( initArgToPass, computedSolutions );
-    Profiler().StopTiming( "Pass:apply" );
+    profiler().StopTiming( "Pass:apply" );
     info.run_time = profiler().GetTiming( "Pass:apply" );
+    long runtime = info.run_time;
 
     /* ********************************************************************** *
      * Problem postprocessing
