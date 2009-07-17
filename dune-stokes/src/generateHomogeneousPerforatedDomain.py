@@ -7,20 +7,44 @@ import time
 
 ## global defines
 
+# about the material
+# porosity = volume_of_fluid_part / overall_volume
+# sand: 0.36 ... 0.43
+# clay soil: 0.51 ... 0.58
+porosity = 0.4
+#print 'porosity is %f' %( porosity )
+
+# about the files to be written
+triangle_filename = 'homogeneous_perforated_domain_2d_sand.poly'
+
+# about the domain
+domain_length_x = 1.0
+domain_length_y = 1.0
+
+# typical size of the standard cell
+standard_cell_size_x = 0.1
+standard_cell_size_y = 0.1
+standard_cell_area = standard_cell_size_x * standard_cell_size_y
+#print 'standard cell size is %f x %f, standard cell area is %f' %( standard_cell_size_x, standard_cell_size_y, standard_cell_area )
+
 # about the rectangles
-rectangle_length_x = 4.0
-rectangle_length_y = 4.0
-number_of_rectangles_x = 2
-number_of_rectangles_y = 2
+number_of_cells_x = int( domain_length_x / standard_cell_size_x )
+number_of_cells_y = int( domain_length_y / standard_cell_size_y )
+computed_length_domain_x = number_of_cells_x * standard_cell_size_x
+computed_length_domain_y = number_of_cells_y * standard_cell_size_y
+#print 'domain size is %f x %f' %( computed_length_domain_x, computed_length_domain_y )
+#print 'there are %i x %i = %i standard cells' %( number_of_cells_x, number_of_cells_y, number_of_cells_x * number_of_cells_y )
 
 # about the ellipses
-ellipse_radius_x = ( rectangle_length_x / 2.0 ) * 0.5
-ellipse_radius_y = ( rectangle_length_y / 2.0 ) * 0.5
-ellipse_center_x = rectangle_length_x / 2.0;
-ellipse_center_y = rectangle_length_y / 2.0;
+standard_circle_radius = math.sqrt( porosity * standard_cell_area * ( 1.0 / math.pi ) )
+ellipse_radius_x = standard_circle_radius
+ellipse_radius_y = standard_circle_radius
+ellipse_center_x = standard_cell_size_x / 2.0;
+ellipse_center_y = standard_cell_size_y / 2.0;
+#print 'standard circle radius is %f, standard circles center is ( %f, %f )' %( standard_circle_radius, ellipse_center_x, ellipse_center_y )
 
 # about the number of points to approximate the ellipses
-number_of_points_per_quarter = 1
+number_of_points_per_quarter = 4
 
 # about the boundary ids
 id_of_ellipse_faces = 2
@@ -28,9 +52,6 @@ id_of_bottom_rectangle_faces = 3
 id_of_right_rectangle_faces = 4
 id_of_top_rectangle_faces = 5
 id_of_left_rectangle_faces = 6
-
-# about the files to be written
-triangle_filename = 'homogeneous_perforated_domain_2d.poly'
 
 ## done with global defines
 
@@ -149,17 +170,17 @@ number_of_points = 4 * number_of_points_per_quarter
 # generate the ellipsoids
 ellipsoids = [ ]
 holes = [ ]
-for i in range( 0, number_of_rectangles_x ) :
-  for j in range( 0, number_of_rectangles_y ) :
-    center_x = ( i * rectangle_length_x ) + ellipse_center_x
-    center_y = ( j * rectangle_length_y ) + ellipse_center_y
-    ellipse = generate_ellipse( center_x, center_y, ellipse_center_x, ellipse_center_y, id_of_ellipse_faces, number_of_points )
+for i in range( 0, number_of_cells_x ) :
+  for j in range( 0, number_of_cells_y ) :
+    center_x = ( i * standard_cell_size_x ) + ellipse_center_x
+    center_y = ( j * standard_cell_size_y ) + ellipse_center_y
+    ellipse = generate_ellipse( center_x, center_y, ellipse_radius_x, ellipse_radius_y, id_of_ellipse_faces, number_of_points )
     ellipsoids.append( ellipse )
     hole = [ center_x, center_y ]
     holes.append( hole )
 
 # generate the outer rectangle
-outer_rectangle = generate_rectangle( rectangle_length_x * number_of_rectangles_x, rectangle_length_y * number_of_rectangles_y, [ id_of_bottom_rectangle_faces, id_of_right_rectangle_faces, id_of_top_rectangle_faces, id_of_left_rectangle_faces ] )
+outer_rectangle = generate_rectangle( computed_length_domain_x, computed_length_domain_y, [ id_of_bottom_rectangle_faces, id_of_right_rectangle_faces, id_of_top_rectangle_faces, id_of_left_rectangle_faces ] )
 
 # write to triangle .poly file
 write_to_triangle( ellipsoids, outer_rectangle, holes, triangle_filename )
