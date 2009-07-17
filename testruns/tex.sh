@@ -11,3 +11,4 @@ done
 cat footer_template.tex >> eoc.tex
 
 pdflatex eoc.tex
+pdflatex eoc.tex
