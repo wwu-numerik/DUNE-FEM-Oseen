@@ -14,17 +14,15 @@ import time
 porosity = 0.4
 #print 'porosity is %f' %( porosity )
 
-# about the files to be written
-triangle_filename = 'homogeneous_perforated_domain_2d_sand.poly'
-
 # about the domain
 domain_length_x = 1.0
 domain_length_y = 1.0
 
 # typical size of the standard cell
-standard_cell_size_x = 0.1
-standard_cell_size_y = 0.1
+standard_cell_size_x = 0.001
+standard_cell_size_y = 0.001
 standard_cell_area = standard_cell_size_x * standard_cell_size_y
+print 'epsilon_suqare is %f' %( standard_cell_area )
 #print 'standard cell size is %f x %f, standard cell area is %f' %( standard_cell_size_x, standard_cell_size_y, standard_cell_area )
 
 # about the rectangles
@@ -35,8 +33,13 @@ computed_length_domain_y = number_of_cells_y * standard_cell_size_y
 #print 'domain size is %f x %f' %( computed_length_domain_x, computed_length_domain_y )
 #print 'there are %i x %i = %i standard cells' %( number_of_cells_x, number_of_cells_y, number_of_cells_x * number_of_cells_y )
 
+# about the files to be written
+triangle_filename = 'homogeneous_perforated_domain_2d_porosity_%s_%i_cells.poly' %( str( porosity ), number_of_cells_x * number_of_cells_y )
+
+
+
 # about the ellipses
-standard_circle_radius = math.sqrt( porosity * standard_cell_area * ( 1.0 / math.pi ) )
+standard_circle_radius = math.sqrt( ( 1.0 - porosity ) * standard_cell_area * ( 1.0 / math.pi ) )
 ellipse_radius_x = standard_circle_radius
 ellipse_radius_y = standard_circle_radius
 ellipse_center_x = standard_cell_size_x / 2.0;
