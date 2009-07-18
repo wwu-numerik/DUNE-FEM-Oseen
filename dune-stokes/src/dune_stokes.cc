@@ -70,6 +70,7 @@ struct RunInfo
     std::string gridname;
     double solver_accuracy;
     double bfg_tau;
+    std::string extra_info;
 };
 
 RunInfo singleRun(  CollectiveCommunication mpicomm,
@@ -146,67 +147,90 @@ int main( int argc, char** argv )
     int minpow = Parameters().getParam( "minpow", -2 );
 
 
+    //a little trickery so felix doesn't scream at me for breaking any of his scripts/parameterfiles
+    const int runtype = Parameters().getParam( "runtype", -1 ) != -1  ? Parameters().getParam( "runtype", -1 ) : Parameters().getParam( "multirun", true );
+    switch ( runtype ) {
+        case 1: {
+            /** all four stab parameters are permutated in [ minpow ; maxpow ]
+                inside an outer loop that increments the grid's refine level
+            **/
+            for ( int ref = minref; ref <= maxref; ++ref ) {
+                for ( int i = minpow; i <= maxpow; ++i ) {
+                    for ( int j = minpow; j <= maxpow; ++j ) {
+                        for ( int k = minpow; k <= maxpow; ++k ) {
+                            for ( int l = minpow; l <= maxpow; ++l ) {
+                                if ( per_run_log_target ) { //sets unique per run filename if requested
+                                    std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
+                                    Logger().SetPrefix( ff );
+                                }
 
-    if ( Parameters().getParam( "multirun", true ) ) {
-        /** all four stab parameters are permutated in [ minpow ; maxpow ]
-            inside an outer loop that increments the grid's refine level
-        **/
-        for ( int ref = minref; ref <= maxref; ++ref ) {
-            for ( int i = minpow; i <= maxpow; ++i ) {
-                for ( int j = minpow; j <= maxpow; ++j ) {
-                    for ( int k = minpow; k <= maxpow; ++k ) {
-                        for ( int l = minpow; l <= maxpow; ++l ) {
-                            if ( per_run_log_target ) { //sets unique per run filename if requested
-                                std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
-                                Logger().SetPrefix( ff );
+                                Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+                                //do some matlab magic to suppress errors and display a little info baout current params
+                                matlabLogStream <<std::endl<< "\nclear;\ntry\ntic;warning off all;" << std::endl;
+                                matlabLogStream << "disp(' c/d-11/12 h powers: "<< i << " "
+                                        << j << " " << k << " "
+                                        << l << "') \n" << std::endl;
+
+                                //actual work
+                                const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
+                                RunInfo info = singleRun( mpicomm, i, j, k, l, refine_level );
+
+                                // new line and closing try/catch in m-file
+                                matlabLogStream << "\ncatch\ndisp('errors here');\nend\ntoc\ndisp(' ');\n" << std::endl;
+                                l2_errors.push_back( info.L2Errors );
+
+                                //push errors to eoc-outputter class
+                                eoc_output.setErrors( idx,info.L2Errors );
+                                texwriter.setInfo( info );
+                                bool lastrun = ( //this test is somewhat stupid, make it smart!!
+                                    ( ref >= ( maxref  ) ) &&
+                                    ( j + k + l + i >= 4 * maxpow ) );
+                                //the writer needs to know if it should close the table etc.
+                                eoc_output.write( texwriter, lastrun );
+
+                                profiler().NextRun( info.L2Errors[0] ); //finish this run
                             }
-
-                            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-                            //do some matlab magic to suppress errors and display a little info baout current params
-                            matlabLogStream <<std::endl<< "\nclear;\ntry\ntic;warning off all;" << std::endl;
-                            matlabLogStream << "disp(' c/d-11/12 h powers: "<< i << " "
-                                    << j << " " << k << " "
-                                    << l << "') \n" << std::endl;
-
-                            //actual work
-                            const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
-                            RunInfo info = singleRun( mpicomm, i, j, k, l, refine_level );
-
-                            // new line and closing try/catch in m-file
-                            matlabLogStream << "\ncatch\ndisp('errors here');\nend\ntoc\ndisp(' ');\n" << std::endl;
-                            l2_errors.push_back( info.L2Errors );
-
-                            //push errors to eoc-outputter class
-                            eoc_output.setErrors( idx,info.L2Errors );
-                            texwriter.setInfo( info );
-                            bool lastrun = ( //this test is somewhat stupid, make it smart!!
-                                ( ref >= ( maxref  ) ) &&
-                                ( j + k + l + i >= 4 * maxpow ) );
-                            //the writer needs to know if it should close the table etc.
-                            eoc_output.write( texwriter, lastrun );
-
-                            profiler().NextRun( info.L2Errors[0] ); //finish this run
                         }
                     }
                 }
             }
+            break;
         }
-    }
-    else { //we don't do any variation here
+        default:
+        case 0: { //we don't do any variation here
 
-        for ( int ref = minref; ref <= maxref; ++ref ) {
-            if ( per_run_log_target )
-                Logger().SetPrefix( "dune_stokes_ref_"+Stuff::toString(ref) );
-            const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
-            RunInfo info = singleRun( mpicomm, minpow, maxpow, -9, -9, refine_level );
-            l2_errors.push_back( info.L2Errors );
-            eoc_output.setErrors( idx,info.L2Errors );
-            texwriter.setInfo( info );
-            eoc_output.write( texwriter, ( ref >= maxref ) );
-            profiler().NextRun( info.L2Errors[0] ); //finish this run
+            for ( int ref = minref; ref <= maxref; ++ref ) {
+                if ( per_run_log_target )
+                    Logger().SetPrefix( "dune_stokes_ref_"+Stuff::toString(ref) );
+                const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
+                RunInfo info = singleRun( mpicomm, minpow, maxpow, -9, -9, refine_level );
+                l2_errors.push_back( info.L2Errors );
+                eoc_output.setErrors( idx,info.L2Errors );
+                texwriter.setInfo( info );
+                eoc_output.write( texwriter, ( ref >= maxref ) );
+                profiler().NextRun( info.L2Errors[0] ); //finish this run
+            }
+            break;
         }
-    }
-
+        case 2: { //bfg-tau variance run on set reflevel
+            const double start_tau = Parameters().getParam( "bfg-tau-start", 0.01 ) ;
+            const double stop_tau = Parameters().getParam( "bfg-tau-stop", 0.4 ) ;
+            const double tau_inc = Parameters().getParam( "bfg-tau-inc", 0.025 ) ;
+            const std::string ext_info = getParameterString( "actual tau values:", start_tau, stop_tau, tau_inc );
+            for ( double tau = start_tau; tau < stop_tau; tau += tau_inc ) {
+                Parameters().setParam( "bfg-tau", tau );
+                const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* minref;
+                RunInfo info = singleRun( mpicomm, minpow, maxpow, -9, -9, refine_level );
+                l2_errors.push_back( info.L2Errors );
+                eoc_output.setErrors( idx,info.L2Errors );
+                info.extra_info = ext_info;
+                texwriter.setInfo( info );
+                eoc_output.write( texwriter, !( tau + tau_inc < stop_tau ) );
+                profiler().NextRun( info.L2Errors[0] ); //finish this run
+            }
+            break;
+        }
+    } // end case
     //profiler output in current format is somewhat meaningless
     long prof_time = profiler().Output( mpicomm, 0, 0 );
 
