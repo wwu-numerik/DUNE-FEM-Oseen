@@ -56,13 +56,6 @@
 typedef std::vector< std::vector<double> > L2ErrorVector;
 typedef std::vector<std::string> ColumnHeaders;
 
-//for eoc output
-const std::string errheaders[] = { "h", "el't","runtime","C11","C12","D11","D12","Velocity", "Pressure" };
-const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
-
-//for bfg output
-const std::string bfgheaders[] = { "h", "el't","runtime","$\\tau$","avg inner","min inner","max inner","total outer","max inner acc.","Velocity", "Pressure" };
-const unsigned int num_bfgheaders = sizeof ( bfgheaders ) / sizeof ( bfgheaders[0] );
 
 RunInfo singleRun(  CollectiveCommunication& mpicomm,
                 int pow1, int pow2, int pow3, int pow4,
@@ -155,12 +148,14 @@ int main( int argc, char** argv )
 void RefineRun( CollectiveCommunication& mpicomm )
 {
     // coloumn headers for eoc table output
+    const std::string errheaders[] = { "h", "el't","runtime","Velocity", "Pressure" };
+    const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
     L2ErrorVector l2_errors;
     Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
     eoc_output.initialize( "data","eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
-    Stuff::EocOutput eoc_texwriter( errorColumnHeaders );
+    Stuff::RefineOutput eoc_texwriter( errorColumnHeaders );
 
     int maxref = Parameters().getParam( "maxref", 0 );
     int minref = Parameters().getParam( "minref", 0 );
@@ -184,6 +179,8 @@ void RefineRun( CollectiveCommunication& mpicomm )
 void StabRun( CollectiveCommunication& mpicomm )
 {
     // coloumn headers for eoc table output
+    const std::string errheaders[] = { "h", "el't","runtime","C11","C12","D11","D12","Velocity", "Pressure" };
+    const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
     L2ErrorVector l2_errors;
     Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
@@ -250,6 +247,8 @@ void BfgRun( CollectiveCommunication& mpicomm )
     RunInfo nobfg_info = singleRun( mpicomm, -9, -9, -9, -9, refine_level );
 
     L2ErrorVector l2_errors;
+    const std::string bfgheaders[] = { "h", "el't","runtime","$\\tau$","avg inner","min inner","max inner","total outer","max inner acc.","Velocity", "Pressure" };
+    const unsigned int num_bfgheaders = sizeof ( bfgheaders ) / sizeof ( bfgheaders[0] );
     ColumnHeaders bfgColumnHeaders ( bfgheaders, bfgheaders + num_bfgheaders ) ;
     l2_errors.push_back( nobfg_info.L2Errors );
 

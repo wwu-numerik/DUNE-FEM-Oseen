@@ -15,6 +15,8 @@ ln -s ../gdbinit .gdbinit
 cp ../test.param .
 echo "do-bfg: $3" >> test.param
 mkdir data
-ln -s ../eoc-template.tex data/eoc-template.tex
+cd data
+ln -s ../../eoc-template.tex
+cd ..
 make
 

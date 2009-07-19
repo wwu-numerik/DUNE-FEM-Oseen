@@ -23,6 +23,7 @@ dgf_file_3d: grid_3d.dgf
 
 #
 viscosity: 1
+runtype: 0
 relLimit: 1e-12
 absLimit: 1e-10
 use-cheat: 0
