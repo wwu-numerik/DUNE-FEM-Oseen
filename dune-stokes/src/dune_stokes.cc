@@ -90,9 +90,15 @@ const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[
 const std::string bfgheaders[] = { "h", "el't","runtime","$\\tau$","avg inner","min inner","max inner","total outer","max inner acc.","Velocity", "Pressure" };
 const unsigned int num_bfgheaders = sizeof ( bfgheaders ) / sizeof ( bfgheaders[0] );
 
-RunInfo singleRun(  CollectiveCommunication mpicomm,
+RunInfo singleRun(  CollectiveCommunication& mpicomm,
                 int pow1, int pow2, int pow3, int pow4,
                 int refine_level  );
+
+
+void BfgRun( CollectiveCommunication& mpicomm );
+void RefineRun( CollectiveCommunication& mpicomm );
+void StabRun( CollectiveCommunication& mpicomm );
+
 /**
  *  \brief  main function
  *
@@ -134,32 +140,10 @@ int main( int argc, char** argv )
     Logger().Create( Parameters().getParam( "loglevel", 62 ),
                      Parameters().getParam( "logfile", std::string("dune_stokes") ) );
 
-    // setting this to true will give each run a unique logilfe name
-    bool per_run_log_target = Parameters().getParam( "per-run-log-target", true );
-
-    // coloumn headers for eoc table output
-    L2ErrorVector l2_errors;
-    ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
-    ColumnHeaders bfgColumnHeaders ( bfgheaders, bfgheaders + num_bfgheaders ) ;
-
     int err = 0;
 
 
     profiler().Reset( 9 ); //prepare for 9 single runs
-
-    //the outermost loop counts from 0 to this
-    //also sets the refinelevel in non-variation context
-    int maxref = Parameters().getParam( "maxref", 0 );
-    int minref = Parameters().getParam( "minref", 0 );
-
-    // the min andmax exponent that will be used in stabilizing terms
-    // ie c11 = ( h_^minpow ) .. ( h^maxpow )
-    // pow = -2 is interpreted as 0
-    // in non-variation context minpow is used for c12 exp and maxpow for d12,
-    //      c11 and D11 are set to zero
-    int maxpow = Parameters().getParam( "maxpow", 2 );
-    //set minref == maxref to get only a single run in non variation part
-    int minpow = Parameters().getParam( "minpow", -2 );
 
 
     //a little trickery so felix doesn't scream at me for breaking any of his scripts/parameterfiles
@@ -169,106 +153,21 @@ int main( int argc, char** argv )
             /** all four stab parameters are permutated in [ minpow ; maxpow ]
                 inside an outer loop that increments the grid's refine level
             **/
-            Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
-            eoc_output.initialize( "data","eoc-file", "eoc-desc", "eoc-template.tex" );
-            size_t idx = eoc_output.addEntry( errorColumnHeaders );
-            Stuff::EocOutput< RunInfo > eoc_texwriter( errorColumnHeaders );
-            for ( int ref = minref; ref <= maxref; ++ref ) {
-                for ( int i = minpow; i <= maxpow; ++i ) {
-                    for ( int j = minpow; j <= maxpow; ++j ) {
-                        for ( int k = minpow; k <= maxpow; ++k ) {
-                            for ( int l = minpow; l <= maxpow; ++l ) {
-                                if ( per_run_log_target ) { //sets unique per run filename if requested
-                                    std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
-                                    Logger().SetPrefix( ff );
-                                }
-
-                                Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-                                //do some matlab magic to suppress errors and display a little info baout current params
-                                matlabLogStream <<std::endl<< "\nclear;\ntry\ntic;warning off all;" << std::endl;
-                                matlabLogStream << "disp(' c/d-11/12 h powers: "<< i << " "
-                                        << j << " " << k << " "
-                                        << l << "') \n" << std::endl;
-
-                                //actual work
-                                const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
-                                RunInfo info = singleRun( mpicomm, i, j, k, l, refine_level );
-
-                                // new line and closing try/catch in m-file
-                                matlabLogStream << "\ncatch\ndisp('errors here');\nend\ntoc\ndisp(' ');\n" << std::endl;
-                                l2_errors.push_back( info.L2Errors );
-
-                                //push errors to eoc-outputter class
-                                eoc_output.setErrors( idx,info.L2Errors );
-                                eoc_texwriter.setInfo( info );
-                                bool lastrun = ( //this test is somewhat stupid, make it smart!!
-                                    ( ref >= ( maxref  ) ) &&
-                                    ( j + k + l + i >= 4 * maxpow ) );
-                                //the writer needs to know if it should close the table etc.
-                                eoc_output.write( eoc_texwriter, lastrun );
-
-                                profiler().NextRun( info.L2Errors[0] ); //finish this run
-                            }
-                        }
-                    }
-                }
-            }
+            StabRun( mpicomm );
             break;
         }
         default:
         case 0: { //we don't do any variation here
-            Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
-            eoc_output.initialize( "data","eoc-file", "eoc-desc", "eoc-template.tex" );
-            size_t idx = eoc_output.addEntry( errorColumnHeaders );
-            Stuff::EocOutput< RunInfo > eoc_texwriter( errorColumnHeaders );
-            for ( int ref = minref; ref <= maxref; ++ref ) {
-                if ( per_run_log_target )
-                    Logger().SetPrefix( "dune_stokes_ref_"+Stuff::toString(ref) );
-                const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
-                RunInfo info = singleRun( mpicomm, minpow, maxpow, -9, -9, refine_level );
-                l2_errors.push_back( info.L2Errors );
-                eoc_output.setErrors( idx,info.L2Errors );
-                eoc_texwriter.setInfo( info );
-                eoc_output.write( eoc_texwriter, ( ref >= maxref ) );
-                profiler().NextRun( info.L2Errors[0] ); //finish this run
-            }
+            RefineRun( mpicomm );
             break;
         }
         case 2: { //bfg-tau variance run on set reflevel
-            //first up a non-bfg run for reference
-            const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* minref;
-            Parameters().setParam( "do-bfg", false );
-            RunInfo nobfg_info = singleRun( mpicomm, minpow, maxpow, -9, -9, refine_level );
-            l2_errors.push_back( nobfg_info.L2Errors );
-
-            Dune::FemEoc& bfg_output = Dune::FemEoc::instance( );
-            bfg_output.initialize( "data","eoc-file", "bfg-desc", "eoc-template.tex" );
-            size_t idx = bfg_output.addEntry( bfgColumnHeaders );
-            Stuff::BfgOutput< RunInfo > bfg_texwriter( bfgColumnHeaders, nobfg_info );
-            bfg_output.setErrors( idx,nobfg_info.L2Errors );
-            bfg_texwriter.setInfo( nobfg_info );
-            bfg_output.write( bfg_texwriter, false );
-            Parameters().setParam( "do-bfg", true );
-
-            const double start_tau = Parameters().getParam( "bfg-tau-start", 0.01 ) ;
-            const double stop_tau = Parameters().getParam( "bfg-tau-stop", 0.4 ) ;
-            const double tau_inc = Parameters().getParam( "bfg-tau-inc", 0.025 ) ;
-
-            for ( double tau = start_tau; tau < stop_tau; tau += tau_inc ) {
-                Parameters().setParam( "bfg-tau", tau );
-
-                RunInfo info = singleRun( mpicomm, minpow, maxpow, -9, -9, refine_level );
-                l2_errors.push_back( info.L2Errors );
-                bfg_output.setErrors( idx,info.L2Errors );
-                bfg_texwriter.setInfo( info );
-                bfg_output.write( bfg_texwriter, !( tau + tau_inc < stop_tau ) );
-                profiler().NextRun( info.L2Errors[0] ); //finish this run
-            }
+            BfgRun( mpicomm );
             break;
         }
     } // end case
     //profiler output in current format is somewhat meaningless
-    long prof_time = profiler().Output( mpicomm, 0, 0 );
+    profiler().Output( mpicomm, 0, 0 );
 
     return err;
   }
@@ -280,7 +179,133 @@ int main( int argc, char** argv )
   }
 }
 
-RunInfo singleRun(  CollectiveCommunication mpicomm,
+void RefineRun( CollectiveCommunication& mpicomm )
+{
+    // coloumn headers for eoc table output
+    ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
+    L2ErrorVector l2_errors;
+    Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
+    eoc_output.initialize( "data","eoc-file", "eoc-desc", "eoc-template.tex" );
+    size_t idx = eoc_output.addEntry( errorColumnHeaders );
+    Stuff::EocOutput< RunInfo > eoc_texwriter( errorColumnHeaders );
+
+    int maxref = Parameters().getParam( "maxref", 0 );
+    int minref = Parameters().getParam( "minref", 0 );
+
+    // setting this to true will give each run a unique logilfe name
+    bool per_run_log_target = Parameters().getParam( "per-run-log-target", true );
+
+    for ( int ref = minref; ref <= maxref; ++ref ) {
+        if ( per_run_log_target )
+            Logger().SetPrefix( "dune_stokes_ref_"+Stuff::toString(ref) );
+        const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
+        RunInfo info = singleRun( mpicomm, -9, -9, -9, -9, refine_level );
+        l2_errors.push_back( info.L2Errors );
+        eoc_output.setErrors( idx,info.L2Errors );
+        eoc_texwriter.setInfo( info );
+        eoc_output.write( eoc_texwriter, ( ref >= maxref ) );
+        profiler().NextRun( info.L2Errors[0] ); //finish this run
+    }
+}
+
+void StabRun( CollectiveCommunication& mpicomm )
+{
+    // coloumn headers for eoc table output
+    ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
+    L2ErrorVector l2_errors;
+    Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
+    eoc_output.initialize( "data","eoc-file", "eoc-desc", "eoc-template.tex" );
+    size_t idx = eoc_output.addEntry( errorColumnHeaders );
+    Stuff::EocOutput< RunInfo > eoc_texwriter( errorColumnHeaders );
+
+    // the min andmax exponent that will be used in stabilizing terms
+    // ie c11 = ( h_^minpow ) .. ( h^maxpow )
+    // pow = -2 is interpreted as 0
+    // in non-variation context minpow is used for c12 exp and maxpow for d12,
+    //      c11 and D11 are set to zero
+    int maxpow = Parameters().getParam( "maxpow", 2 );
+    int minpow = Parameters().getParam( "minpow", -2 );
+
+    int ref = Parameters().getParam( "minref", 0 );
+
+    // setting this to true will give each run a unique logilfe name
+    bool per_run_log_target = Parameters().getParam( "per-run-log-target", true );
+
+    for ( int i = minpow; i <= maxpow; ++i ) {
+        for ( int j = minpow; j <= maxpow; ++j ) {
+            for ( int k = minpow; k <= maxpow; ++k ) {
+                for ( int l = minpow; l <= maxpow; ++l ) {
+                    if ( per_run_log_target ) { //sets unique per run filename if requested
+                        std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
+                        Logger().SetPrefix( ff );
+                    }
+
+                    Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+                    //do some matlab magic to suppress errors and display a little info baout current params
+                    matlabLogStream <<std::endl<< "\nclear;\ntry\ntic;warning off all;" << std::endl;
+                    matlabLogStream << "disp(' c/d-11/12 h powers: "<< i << " "
+                            << j << " " << k << " "
+                            << l << "') \n" << std::endl;
+
+                    //actual work
+                    const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
+                    RunInfo info = singleRun( mpicomm, i, j, k, l, refine_level );
+
+                    // new line and closing try/catch in m-file
+                    matlabLogStream << "\ncatch\ndisp('errors here');\nend\ntoc\ndisp(' ');\n" << std::endl;
+                    l2_errors.push_back( info.L2Errors );
+
+                    //push errors to eoc-outputter class
+                    eoc_output.setErrors( idx,info.L2Errors );
+                    eoc_texwriter.setInfo( info );
+                    bool lastrun = ( j + k + l + i >= 4 * maxpow );
+                    //the writer needs to know if it should close the table etc.
+                    eoc_output.write( eoc_texwriter, lastrun );
+
+                    profiler().NextRun( info.L2Errors[0] ); //finish this run
+                }
+            }
+        }
+    }
+}
+
+void BfgRun( CollectiveCommunication& mpicomm )
+{
+    //first up a non-bfg run for reference
+    const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* Parameters().getParam( "minref", 0 );
+    Parameters().setParam( "do-bfg", false );
+    RunInfo nobfg_info = singleRun( mpicomm, -9, -9, -9, -9, refine_level );
+
+    L2ErrorVector l2_errors;
+    ColumnHeaders bfgColumnHeaders ( bfgheaders, bfgheaders + num_bfgheaders ) ;
+    l2_errors.push_back( nobfg_info.L2Errors );
+
+    Dune::FemEoc& bfg_output = Dune::FemEoc::instance( );
+    bfg_output.initialize( "data","eoc-file", "bfg-desc", "eoc-template.tex" );
+    size_t idx = bfg_output.addEntry( bfgColumnHeaders );
+    Stuff::BfgOutput< RunInfo > bfg_texwriter( bfgColumnHeaders, nobfg_info );
+    bfg_output.setErrors( idx,nobfg_info.L2Errors );
+    bfg_texwriter.setInfo( nobfg_info );
+    bfg_output.write( bfg_texwriter, false );
+    Parameters().setParam( "do-bfg", true );
+
+    const double start_tau = Parameters().getParam( "bfg-tau-start", 0.01 ) ;
+    const double stop_tau = Parameters().getParam( "bfg-tau-stop", 0.4 ) ;
+    const double tau_inc = Parameters().getParam( "bfg-tau-inc", 0.025 ) ;
+
+    for ( double tau = start_tau; tau < stop_tau; tau += tau_inc ) {
+        Parameters().setParam( "bfg-tau", tau );
+
+        RunInfo info = singleRun( mpicomm, -9, -9, -9, -9, refine_level );
+        l2_errors.push_back( info.L2Errors );
+        bfg_output.setErrors( idx,info.L2Errors );
+        bfg_texwriter.setInfo( info );
+        bfg_output.write( bfg_texwriter, !( tau + tau_inc < stop_tau ) );
+        profiler().NextRun( info.L2Errors[0] ); //finish this run
+    }
+}
+
+RunInfo singleRun(  CollectiveCommunication& mpicomm,
                     int pow1,
                     int pow2,
                     int pow3,
