@@ -15,32 +15,6 @@
 #include <vector>
 #include <string>
 
-#define HAS_RUN_INFO
-
-struct RunInfo //define this beforepass is included so it's known in pass, i know it's ugly
-{
-    std::vector< double > L2Errors;
-    double grid_width;
-    int refine_level;
-    double run_time;
-    long codim0;
-    int polorder_velocity;
-    int polorder_pressure;
-    int polorder_sigma;
-    double c11,d11,c12,d12;
-    bool bfg;
-    std::string gridname;
-    double solver_accuracy;
-    double bfg_tau;
-    std::string extra_info;
-    int iterations_inner_avg;
-    int iterations_inner_min;
-    int iterations_inner_max;
-    int iterations_outer_total;
-    double max_inner_accuracy;
-};
-
-
 #include <iostream>
 #include <cmath>
 #include <dune/common/mpihelper.hh> // An initializer of MPI
@@ -186,7 +160,7 @@ void RefineRun( CollectiveCommunication& mpicomm )
     Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
     eoc_output.initialize( "data","eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
-    Stuff::EocOutput< RunInfo > eoc_texwriter( errorColumnHeaders );
+    Stuff::EocOutput eoc_texwriter( errorColumnHeaders );
 
     int maxref = Parameters().getParam( "maxref", 0 );
     int minref = Parameters().getParam( "minref", 0 );
@@ -215,7 +189,7 @@ void StabRun( CollectiveCommunication& mpicomm )
     Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
     eoc_output.initialize( "data","eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
-    Stuff::EocOutput< RunInfo > eoc_texwriter( errorColumnHeaders );
+    Stuff::EocOutput eoc_texwriter( errorColumnHeaders );
 
     // the min andmax exponent that will be used in stabilizing terms
     // ie c11 = ( h_^minpow ) .. ( h^maxpow )
@@ -282,7 +256,7 @@ void BfgRun( CollectiveCommunication& mpicomm )
     Dune::FemEoc& bfg_output = Dune::FemEoc::instance( );
     bfg_output.initialize( "data","eoc-file", "bfg-desc", "eoc-template.tex" );
     size_t idx = bfg_output.addEntry( bfgColumnHeaders );
-    Stuff::BfgOutput< RunInfo > bfg_texwriter( bfgColumnHeaders, nobfg_info );
+    Stuff::BfgOutput bfg_texwriter( bfgColumnHeaders, nobfg_info );
     bfg_output.setErrors( idx,nobfg_info.L2Errors );
     bfg_texwriter.setInfo( nobfg_info );
     bfg_output.write( bfg_texwriter, false );
