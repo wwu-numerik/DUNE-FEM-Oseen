@@ -164,7 +164,9 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
                 const double residuum = fabs(info.second.second);
                 const int n = info.first;
 
-                limit = tau * std::min( 1. , limit / std::min ( residuum * n  , 1.0 ) );
+                if ( n == 0 )
+                    limit = Parameters().getParam( "absLimit", 10e-12 );
+                limit = tau * std::min( 1. , limit / std::min ( std::pow( residuum, n ) , 1.0 ) );
 
                 a_solver_.setAbsoluteLimit( limit );
                 Logger().Info() << "\t\t\t Set inner error limit to: "<< limit << std::endl;

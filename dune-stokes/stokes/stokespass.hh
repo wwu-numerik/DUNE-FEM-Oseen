@@ -2635,10 +2635,10 @@ class StokesPass
 #ifdef USE_ALTERNATIVE_SOLVER
             AltInvOpType m_op;
             if ( Parameters().getParam( "alternative-solve", false ) )
-                m_op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+                info_ = m_op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
             else
 #endif
-                op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+            info_ = op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 
             // do profiling
             profiler().StopTiming("Pass -- SOLVER");
@@ -2652,6 +2652,17 @@ class StokesPass
         virtual void allocateLocalMemory()
         {}
 
+#ifdef HAS_RUN_INFO
+        void getRuninfo( RunInfo& info )
+        {
+            info.iterations_inner_avg = info_.iterations_inner_avg;
+            info.iterations_inner_min = info_.iterations_inner_min;
+            info.iterations_inner_max = info_.iterations_inner_max;
+            info.iterations_outer_total = info_.iterations_outer_total;
+            info.max_inner_accuracy = info_.max_inner_accuracy;
+        }
+#endif
+
     private:
         DiscreteModelType& discreteModel_;
         GridPartType& gridPart_;
@@ -2659,6 +2670,7 @@ class StokesPass
         DiscreteVelocityFunctionSpaceType& velocitySpace_;
         DiscretePressureFunctionSpaceType& pressureSpace_;
         DiscreteSigmaFunctionSpaceType sigmaSpace_;
+        mutable SaddlepointInverseOperatorInfo info_;
 
         /**
          *  \todo   doc

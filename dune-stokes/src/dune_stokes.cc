@@ -12,6 +12,35 @@
     #warning ("UGGRID in debug mode is likely to produce a segfault")
 #endif
 
+#include <vector>
+#include <string>
+
+#define HAS_RUN_INFO
+
+struct RunInfo //define this beforepass is included so it's known in pass, i know it's ugly
+{
+    std::vector< double > L2Errors;
+    double grid_width;
+    int refine_level;
+    double run_time;
+    long codim0;
+    int polorder_velocity;
+    int polorder_pressure;
+    int polorder_sigma;
+    double c11,d11,c12,d12;
+    bool bfg;
+    std::string gridname;
+    double solver_accuracy;
+    double bfg_tau;
+    std::string extra_info;
+    int iterations_inner_avg;
+    int iterations_inner_min;
+    int iterations_inner_max;
+    int iterations_outer_total;
+    double max_inner_accuracy;
+};
+
+
 #include <iostream>
 #include <cmath>
 #include <dune/common/mpihelper.hh> // An initializer of MPI
@@ -52,26 +81,14 @@
 
 typedef std::vector< std::vector<double> > L2ErrorVector;
 typedef std::vector<std::string> ColumnHeaders;
+
+//for eoc output
 const std::string errheaders[] = { "h", "el't","runtime","C11","C12","D11","D12","Velocity", "Pressure" };
 const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
 
-struct RunInfo
-{
-    std::vector< double > L2Errors;
-    double grid_width;
-    int refine_level;
-    double run_time;
-    long codim0;
-    int polorder_velocity;
-    int polorder_pressure;
-    int polorder_sigma;
-    double c11,d11,c12,d12;
-    bool bfg;
-    std::string gridname;
-    double solver_accuracy;
-    double bfg_tau;
-    std::string extra_info;
-};
+//for bfg output
+const std::string bfgheaders[] = { "h", "el't","runtime","$\\tau$","avg inner","min inner","max inner","total outer","max inner acc.","Velocity", "Pressure" };
+const unsigned int num_bfgheaders = sizeof ( bfgheaders ) / sizeof ( bfgheaders[0] );
 
 RunInfo singleRun(  CollectiveCommunication mpicomm,
                 int pow1, int pow2, int pow3, int pow4,
@@ -123,12 +140,10 @@ int main( int argc, char** argv )
     // coloumn headers for eoc table output
     L2ErrorVector l2_errors;
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
+    ColumnHeaders bfgColumnHeaders ( bfgheaders, bfgheaders + num_bfgheaders ) ;
 
     int err = 0;
-    Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
-    eoc_output.initialize( "data","eoc-file", "eoc-desc", "eoc-template.tex" );
-    size_t idx = eoc_output.addEntry( errorColumnHeaders );
-    Stuff::TexOutput< RunInfo > texwriter( errorColumnHeaders );
+
 
     profiler().Reset( 9 ); //prepare for 9 single runs
 
@@ -154,6 +169,10 @@ int main( int argc, char** argv )
             /** all four stab parameters are permutated in [ minpow ; maxpow ]
                 inside an outer loop that increments the grid's refine level
             **/
+            Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
+            eoc_output.initialize( "data","eoc-file", "eoc-desc", "eoc-template.tex" );
+            size_t idx = eoc_output.addEntry( errorColumnHeaders );
+            Stuff::EocOutput< RunInfo > eoc_texwriter( errorColumnHeaders );
             for ( int ref = minref; ref <= maxref; ++ref ) {
                 for ( int i = minpow; i <= maxpow; ++i ) {
                     for ( int j = minpow; j <= maxpow; ++j ) {
@@ -181,12 +200,12 @@ int main( int argc, char** argv )
 
                                 //push errors to eoc-outputter class
                                 eoc_output.setErrors( idx,info.L2Errors );
-                                texwriter.setInfo( info );
+                                eoc_texwriter.setInfo( info );
                                 bool lastrun = ( //this test is somewhat stupid, make it smart!!
                                     ( ref >= ( maxref  ) ) &&
                                     ( j + k + l + i >= 4 * maxpow ) );
                                 //the writer needs to know if it should close the table etc.
-                                eoc_output.write( texwriter, lastrun );
+                                eoc_output.write( eoc_texwriter, lastrun );
 
                                 profiler().NextRun( info.L2Errors[0] ); //finish this run
                             }
@@ -198,7 +217,10 @@ int main( int argc, char** argv )
         }
         default:
         case 0: { //we don't do any variation here
-
+            Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
+            eoc_output.initialize( "data","eoc-file", "eoc-desc", "eoc-template.tex" );
+            size_t idx = eoc_output.addEntry( errorColumnHeaders );
+            Stuff::EocOutput< RunInfo > eoc_texwriter( errorColumnHeaders );
             for ( int ref = minref; ref <= maxref; ++ref ) {
                 if ( per_run_log_target )
                     Logger().SetPrefix( "dune_stokes_ref_"+Stuff::toString(ref) );
@@ -206,26 +228,40 @@ int main( int argc, char** argv )
                 RunInfo info = singleRun( mpicomm, minpow, maxpow, -9, -9, refine_level );
                 l2_errors.push_back( info.L2Errors );
                 eoc_output.setErrors( idx,info.L2Errors );
-                texwriter.setInfo( info );
-                eoc_output.write( texwriter, ( ref >= maxref ) );
+                eoc_texwriter.setInfo( info );
+                eoc_output.write( eoc_texwriter, ( ref >= maxref ) );
                 profiler().NextRun( info.L2Errors[0] ); //finish this run
             }
             break;
         }
         case 2: { //bfg-tau variance run on set reflevel
+            //first up a non-bfg run for reference
+            const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* minref;
+            Parameters().setParam( "do-bfg", false );
+            RunInfo nobfg_info = singleRun( mpicomm, minpow, maxpow, -9, -9, refine_level );
+            l2_errors.push_back( nobfg_info.L2Errors );
+
+            Dune::FemEoc& bfg_output = Dune::FemEoc::instance( );
+            bfg_output.initialize( "data","eoc-file", "bfg-desc", "eoc-template.tex" );
+            size_t idx = bfg_output.addEntry( bfgColumnHeaders );
+            Stuff::BfgOutput< RunInfo > bfg_texwriter( bfgColumnHeaders, nobfg_info );
+            bfg_output.setErrors( idx,nobfg_info.L2Errors );
+            bfg_texwriter.setInfo( nobfg_info );
+            bfg_output.write( bfg_texwriter, false );
+            Parameters().setParam( "do-bfg", true );
+
             const double start_tau = Parameters().getParam( "bfg-tau-start", 0.01 ) ;
             const double stop_tau = Parameters().getParam( "bfg-tau-stop", 0.4 ) ;
             const double tau_inc = Parameters().getParam( "bfg-tau-inc", 0.025 ) ;
-            const std::string ext_info = getParameterString( "actual tau values:", start_tau, stop_tau, tau_inc );
+
             for ( double tau = start_tau; tau < stop_tau; tau += tau_inc ) {
                 Parameters().setParam( "bfg-tau", tau );
-                const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* minref;
+
                 RunInfo info = singleRun( mpicomm, minpow, maxpow, -9, -9, refine_level );
                 l2_errors.push_back( info.L2Errors );
-                eoc_output.setErrors( idx,info.L2Errors );
-                info.extra_info = ext_info;
-                texwriter.setInfo( info );
-                eoc_output.write( texwriter, !( tau + tau_inc < stop_tau ) );
+                bfg_output.setErrors( idx,info.L2Errors );
+                bfg_texwriter.setInfo( info );
+                bfg_output.write( bfg_texwriter, !( tau + tau_inc < stop_tau ) );
                 profiler().NextRun( info.L2Errors[0] ); //finish this run
             }
             break;
@@ -375,6 +411,7 @@ RunInfo singleRun(  CollectiveCommunication mpicomm,
     profiler().StopTiming( "Pass:apply" );
     info.run_time = profiler().GetTiming( "Pass:apply" );
     long runtime = info.run_time;
+    stokesPass.getRuninfo( info );
 
     /* ********************************************************************** *
      * Problem postprocessing
