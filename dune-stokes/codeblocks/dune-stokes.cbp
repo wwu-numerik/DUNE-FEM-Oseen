@@ -85,6 +85,8 @@
 			<Add option="-DHAVE_CONFIG_H" />
 			<Add option="-DDUNE_FEM_COMPATIBILITY" />
 			<Add option="-DADAPTIVE_SOLVER" />
+			<Add option="-DUSE_BFG_CG_SCHEME" />
+			<Add option="-DUSE_ALTERNATIVE_SOLVER" />
 			<Add directory="../../dune-common/" />
 			<Add directory="../../dune-stuff/" />
 			<Add directory="../../dune-grid/" />
