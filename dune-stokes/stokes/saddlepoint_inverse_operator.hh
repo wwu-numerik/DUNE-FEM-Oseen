@@ -374,7 +374,7 @@ class SaddlepointInverseOperator
 		// aboslute min. error at which cg-solvers will abort
         const double absLimit = Parameters().getParam( "absLimit", 1e-8 );
         const int solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
-        const unsigned int maxIter = Parameters().getParam( "maxIter", 500 );
+        const int maxIter = Parameters().getParam( "maxIter", 500 );
 
 #ifdef USE_BFG_CG_SCHEME
         const double tau = Parameters().getParam( "bfg-tau", 0.1 );

@@ -142,7 +142,6 @@ int main( int argc, char** argv )
 
     int err = 0;
 
-
     profiler().Reset( 9 ); //prepare for 9 single runs
 
 
@@ -435,7 +434,6 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     stokesPass.apply( initArgToPass, computedSolutions );
     profiler().StopTiming( "Pass:apply" );
     info.run_time = profiler().GetTiming( "Pass:apply" );
-    long runtime = info.run_time;
     stokesPass.getRuninfo( info );
 
     /* ********************************************************************** *
