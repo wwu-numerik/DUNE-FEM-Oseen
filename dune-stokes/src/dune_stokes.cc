@@ -376,10 +376,9 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
          AnalyticalDirichletDataType;
      AnalyticalDirichletDataType analyticalDirichletData( discreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
 
-    StokesModelImpType stokesModel( c11,
-                                    c12,
-                                    d11,
-                                    d12,
+    Dune::StabilizationCoefficients coeff( 1,1,1,1,1,1,1,1 );
+
+    StokesModelImpType stokesModel( coeff,
                                     analyticalForce,
                                     analyticalDirichletData,
                                     viscosity  );

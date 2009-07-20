@@ -21,6 +21,46 @@
 
 namespace Dune
 {
+    class StabilizationCoefficients {
+            typedef std::pair<int,double>
+                ValueType;
+            typedef std::map< std::string, ValueType >
+                CoefficientMap;
+            CoefficientMap map_;
+
+        public:
+            StabilizationCoefficients(  const ValueType::first_type C11_pow,
+                                        const ValueType::first_type C12_pow,
+                                        const ValueType::first_type D11_pow,
+                                        const ValueType::first_type D12_pow,
+                                        const ValueType::second_type C11_fac,
+                                        const ValueType::second_type C12_fac,
+                                        const ValueType::second_type D11_fac,
+                                        const ValueType::second_type D12_fac )
+            {
+                map_["C11"] = ValueType( C11_pow, C11_fac );
+                map_["C12"] = ValueType( C12_pow, C12_fac );
+                map_["D11"] = ValueType( D11_pow, D11_fac );
+                map_["D12"] = ValueType( D12_pow, D12_fac );
+            }
+
+            ValueType::second_type Factor( const std::string& name ) {
+                return map_[name].second;
+            }
+
+            void Factor( const std::string& name, ValueType::second_type new_factor ) {
+                map_[name].second = new_factor;
+            }
+
+            ValueType::first_type Power( const std::string& name ) {
+                return map_[name].first;
+            }
+
+            void Power( const std::string& name, ValueType::second_type new_power ) {
+                map_[name].first = new_power;
+            }
+
+    };
 
 /**
  *  \brief  Interface class for stokes problem definition in the LDG context.
@@ -372,6 +412,10 @@ class DiscreteStokesModelInterface
             inside,
             outside
         };
+
+        StabilizationCoefficients getStabilizationCoefficients() const {
+            return asImp().getStabilizationCoefficients();
+        }
 
         /**
          *  \brief  Returns true if problem has a flux contribution of type
@@ -1629,18 +1673,12 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *  \param[in]  viscosity
          *          viscosity of the fluid
          **/
-        DiscreteStokesModelDefault( const int C_11,
-                                    const int C_12,
-                                    const int D_11,
-                                    const int D_12,
+        DiscreteStokesModelDefault( const StabilizationCoefficients& stab_coeff,
                                     const AnalyticalForceType& force,
                                     const AnalyticalDirichletDataType& dirichletData,
                                     const double viscosity )
             : viscosity_( viscosity ),
-            C_11_( C_11 ),
-            C_12_( C_12 ),
-            D_11_( D_11 ),
-            D_12_( D_12 ),
+            stabil_coeff_( stab_coeff ),
             force_( force ),
             dirichletData_( dirichletData )
         {}
@@ -1652,6 +1690,10 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          **/
         ~DiscreteStokesModelDefault()
         {}
+
+        StabilizationCoefficients getStabilizationCoefficients() const {
+            return stabil_coeff_;
+        }
 
         /**
          *  \brief  returns true
@@ -1754,7 +1796,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preparations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType C_12( 1.0 );
-            C_12 *= getStabScalar( x, it , C_12_ );
+            C_12 *= getStabScalar( x, it , stabil_coeff_.Power("C12") );
 
             // contribution to u vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -1903,7 +1945,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             //some preparations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType D_12( 1.0 );
-            D_12 *= getStabScalar( x, it , D_12_ );
+            D_12 *= getStabScalar( x, it , stabil_coeff_.Power("D12") );
 
             // contribution to u vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -1978,7 +2020,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             //some preperations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             double D_11( 1.0 );
-            D_11 *= getStabScalar( x, it , D_11_ );
+            D_11 *= getStabScalar( x, it , stabil_coeff_.Power("D11") );
 
             // contribution to p vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -2159,7 +2201,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preperations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType D_12( 1.0 );
-            D_12 *= getStabScalar( x, it , D_12_ );
+            D_12 *= getStabScalar( x, it , stabil_coeff_.Power("D12") );
 
             // contribution to p vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -2313,7 +2355,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preparations
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             double C_11( 1.0 );
-            C_11 *= getStabScalar( x, it , C_11_ );
+            C_11 *= getStabScalar( x, it , stabil_coeff_.Power("C11") );
 
             // contribution to u vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -2381,7 +2423,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preparations
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType C_12( 1.0 );
-            C_12 *= getStabScalar( x, it , C_12_ );
+            C_12 *= getStabScalar( x, it , stabil_coeff_.Power("C12") );
 
             // contribution to sigma vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -2449,7 +2491,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preparations
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             double C_11( 1.0 );
-            C_11 *= getStabScalar( x, it , C_11_ );
+            C_11 *= getStabScalar( x, it , stabil_coeff_.Power("C11") );
 
             // contribution to u vector
             uReturn = dyadicProduct( u, outerNormal );
@@ -2529,7 +2571,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             const VelocityRangeType xWorld = geometry.global( xIntersectionGlobal );
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             double C_11( 1.0 );
-            C_11 *= getStabScalar( x, it , C_11_ );
+            C_11 *= getStabScalar( x, it , stabil_coeff_.Power("C11") );
 
             // contribution to rhs
             VelocityRangeType gD( 0.0 );
@@ -2582,7 +2624,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
     private:
 
         const double viscosity_;
-        const int C_11_, C_12_, D_11_, D_12_;
+        StabilizationCoefficients stabil_coeff_;
         const AnalyticalForceType& force_;
         const AnalyticalDirichletDataType& dirichletData_;
 
