@@ -433,7 +433,7 @@ class SaddlepointInverseOperator
         typedef typename A_Solver::ReturnValueType
             ReturnValueType;
 #ifdef USE_BFG_CG_SCHEME
-        double current_inner_accuracy = absLimit * tau;
+        double current_inner_accuracy = do_bfg ? absLimit * tau : absLimit;
         double max_inner_accuracy = current_inner_accuracy;
 #else
         double current_inner_accuracy = absLimit;
