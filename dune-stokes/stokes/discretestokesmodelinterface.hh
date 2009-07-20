@@ -60,6 +60,24 @@ namespace Dune
                 map_[name].first = new_power;
             }
 
+            static StabilizationCoefficients getDefaultStabilizationCoefficients() {
+                return StabilizationCoefficients( 1, 1, 1, 1, 1.0, 1.0, 0.0, 0.0 );
+            }
+
+            template < class Stream >
+            void print( Stream& stream ) {
+                CoefficientMap::const_iterator it = map_.begin();
+                for ( ; it != map_.end(); ++it ) {
+                    stream  << (*it).first << " (factor/power): " << (*it).second.second
+                            << " / " << (*it).second.first << std::endl;
+                }
+            }
+
+            static std::vector<std::string> getCoefficientNames() {
+                const std::string names[] = { "C11","C12","D11","D12" };
+                const unsigned int num_names = sizeof ( names ) / sizeof ( names[0] );
+                return std::vector<std::string>( names, names + num_names ) ;
+            }
     };
 
 /**

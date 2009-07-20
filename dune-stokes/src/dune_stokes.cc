@@ -58,8 +58,8 @@ typedef std::vector<std::string> ColumnHeaders;
 
 
 RunInfo singleRun(  CollectiveCommunication& mpicomm,
-                int pow1, int pow2, int pow3, int pow4,
-                int refine_level  );
+                    int refine_level,
+                    Dune::StabilizationCoefficients stabil_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients()  );
 
 
 void BfgRun( CollectiveCommunication& mpicomm );
@@ -167,7 +167,7 @@ void RefineRun( CollectiveCommunication& mpicomm )
         if ( per_run_log_target )
             Logger().SetPrefix( "dune_stokes_ref_"+Stuff::toString(ref) );
         const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
-        RunInfo info = singleRun( mpicomm, -9, -9, -9, -9, refine_level );
+        RunInfo info = singleRun( mpicomm, refine_level );
         l2_errors.push_back( info.L2Errors );
         eoc_output.setErrors( idx,info.L2Errors );
         eoc_texwriter.setInfo( info );
@@ -193,47 +193,52 @@ void StabRun( CollectiveCommunication& mpicomm )
     // pow = -2 is interpreted as 0
     // in non-variation context minpow is used for c12 exp and maxpow for d12,
     //      c11 and D11 are set to zero
-    int maxpow = Parameters().getParam( "maxpow", 2 );
-    int minpow = Parameters().getParam( "minpow", -2 );
+    int maxpow = Parameters().getParam( "maxpow", -1 );
+    int minpow = Parameters().getParam( "minpow", 1 );
+    double minfactor = Parameters().getParam( "minfactor", 0.0 );
+    double maxfactor = Parameters().getParam( "maxfactor", 2.0 );
+    double incfactor = Parameters().getParam( "incfactor", 0.5 );
 
     int ref = Parameters().getParam( "minref", 0 );
+
+    const std::vector<std::string> coefficient_names = Dune::StabilizationCoefficients::getCoefficientNames();
+    std::vector<std::string>::const_iterator name_it = coefficient_names.begin();
 
     // setting this to true will give each run a unique logilfe name
     bool per_run_log_target = Parameters().getParam( "per-run-log-target", true );
 
-    for ( int i = minpow; i <= maxpow; ++i ) {
-        for ( int j = minpow; j <= maxpow; ++j ) {
-            for ( int k = minpow; k <= maxpow; ++k ) {
-                for ( int l = minpow; l <= maxpow; ++l ) {
-                    if ( per_run_log_target ) { //sets unique per run filename if requested
-                        std::string ff = "matlab__pow1_" + Stuff::toString( i ) + "_pow2_" + Stuff::toString( j );
-                        Logger().SetPrefix( ff );
-                    }
-
-                    Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-                    //do some matlab magic to suppress errors and display a little info baout current params
-                    matlabLogStream <<std::endl<< "\nclear;\ntry\ntic;warning off all;" << std::endl;
-                    matlabLogStream << "disp(' c/d-11/12 h powers: "<< i << " "
-                            << j << " " << k << " "
-                            << l << "') \n" << std::endl;
-
-                    //actual work
-                    const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
-                    RunInfo info = singleRun( mpicomm, i, j, k, l, refine_level );
-
-                    // new line and closing try/catch in m-file
-                    matlabLogStream << "\ncatch\ndisp('errors here');\nend\ntoc\ndisp(' ');\n" << std::endl;
-                    l2_errors.push_back( info.L2Errors );
-
-                    //push errors to eoc-outputter class
-                    eoc_output.setErrors( idx,info.L2Errors );
-                    eoc_texwriter.setInfo( info );
-                    bool lastrun = ( j + k + l + i >= 4 * maxpow );
-                    //the writer needs to know if it should close the table etc.
-                    eoc_output.write( eoc_texwriter, lastrun );
-
-                    profiler().NextRun( info.L2Errors[0] ); //finish this run
+    for ( int pow = minpow; pow <= maxpow; ++pow ) {
+        for ( double factor = minfactor; factor <= maxfactor; factor+=incfactor ) {
+            for ( ; name_it != coefficient_names.end(); ++name_it ) {
+                if ( per_run_log_target ) { //sets unique per run filename if requested
+                    std::string ff = "matlab__pow1_" + Stuff::toString( pow ) + "_pow2_" + Stuff::toString( factor ); //! not correct
+                    Logger().SetPrefix( ff );
                 }
+
+                Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+                //do some matlab magic to suppress errors and display a little info baout current params
+                matlabLogStream <<std::endl<< "\nclear;\ntry\ntic;warning off all;" << std::endl;
+                matlabLogStream << "disp(' c/d-11/12 h powers: ";
+                //coeff.print( matlabLogStream );
+                matlabLogStream << "') \n" << std::endl;
+
+                //actual work
+                const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
+//                Dune::StabilizationCoefficients coeff =
+                RunInfo info = singleRun( mpicomm, refine_level );
+
+                // new line and closing try/catch in m-file
+                matlabLogStream << "\ncatch\ndisp('errors here');\nend\ntoc\ndisp(' ');\n" << std::endl;
+                l2_errors.push_back( info.L2Errors );
+
+                //push errors to eoc-outputter class
+                eoc_output.setErrors( idx,info.L2Errors );
+                eoc_texwriter.setInfo( info );
+                bool lastrun = ( pow >= maxpow && !(factor < maxfactor) && name_it == coefficient_names.end() );
+                //the writer needs to know if it should close the table etc.
+                eoc_output.write( eoc_texwriter, lastrun );
+
+                profiler().NextRun( info.L2Errors[0] ); //finish this run
             }
         }
     }
@@ -244,7 +249,7 @@ void BfgRun( CollectiveCommunication& mpicomm )
     //first up a non-bfg run for reference
     const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* Parameters().getParam( "minref", 0 );
     Parameters().setParam( "do-bfg", false );
-    RunInfo nobfg_info = singleRun( mpicomm, -9, -9, -9, -9, refine_level );
+    RunInfo nobfg_info = singleRun( mpicomm, refine_level );
 
     L2ErrorVector l2_errors;
     const std::string bfgheaders[] = { "h", "el't","runtime","$\\tau$","avg inner","min inner","max inner","total outer","max inner acc.","Velocity", "Pressure" };
@@ -268,7 +273,7 @@ void BfgRun( CollectiveCommunication& mpicomm )
     for ( double tau = start_tau; tau < stop_tau; tau += tau_inc ) {
         Parameters().setParam( "bfg-tau", tau );
 
-        RunInfo info = singleRun( mpicomm, -9, -9, -9, -9, refine_level );
+        RunInfo info = singleRun( mpicomm, refine_level );
         l2_errors.push_back( info.L2Errors );
         bfg_output.setErrors( idx,info.L2Errors );
         bfg_texwriter.setInfo( info );
@@ -278,21 +283,17 @@ void BfgRun( CollectiveCommunication& mpicomm )
 }
 
 RunInfo singleRun(  CollectiveCommunication& mpicomm,
-                    int pow1,
-                    int pow2,
-                    int pow3,
-                    int pow4,
-                    int refine_level  )
+                    int refine_level,
+                    Dune::StabilizationCoefficients stabil_coeff )
 {
     profiler().StartTiming( "SingleRun" );
     Logging::LogStream& infoStream = Logger().Info();
     Logging::LogStream& debugStream = Logger().Dbg();
     RunInfo info;
 
-    debugStream << "\nsingleRun( pow1: " << pow1 << ","
-                << "\n           pow2: " << pow2 << ","
-                << "\n           pow3: " << pow3 << ","
-                << "\n           pow4: " << pow4 << " )" << std::endl;
+    debugStream << "\nsingleRun( ";
+    stabil_coeff.print( debugStream );
+    debugStream << " )" << std::endl;
 
     /* ********************************************************************** *
      * initialize the grid                                                    *
@@ -335,19 +336,6 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     typedef Dune::DiscreteStokesModelDefault< StokesModelTraitsImp >
         StokesModelImpType;
 
-//    const double minpow = -9; // all less or equal treatet as zero
-    const int c11 = pow1;// > minpow ? std::pow( grid_width, pow1 ) : 0;
-    const int d11 = pow2;// > minpow ? std::pow( grid_width, pow2 ) : 0;
-    const int c12 = pow3;// > minpow ? std::pow( grid_width, pow3 ) : 0;
-    const int d12 = pow4;// > minpow ? std::pow( grid_width, pow4 ) : 0;
-
-//    debugStream << "  - flux constants" << std::endl
-//                << "    C_11: " << c11 << std::endl
-//                << "    C_12: " << c12 << std::endl
-//                << "    D_11: " << d11 << std::endl
-//                << "    D_12: " << d12 << std::endl;
-
-
     // treat as interface
     typedef Dune::DiscreteStokesModelInterface< StokesModelTraitsImp >
         StokesModelType;
@@ -376,9 +364,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
          AnalyticalDirichletDataType;
      AnalyticalDirichletDataType analyticalDirichletData( discreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
 
-    Dune::StabilizationCoefficients coeff( 1,1,1,1,1,1,1,1 );
-
-    StokesModelImpType stokesModel( coeff,
+    StokesModelImpType stokesModel( stabil_coeff,
                                     analyticalForce,
                                     analyticalDirichletData,
                                     viscosity  );
@@ -432,10 +418,10 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
     postProcessor.save( *gridPtr, computedSolutions, refine_level );
     info.L2Errors = postProcessor.getError();
-    info.c11 = c11;
-    info.c12 = c12;
-    info.d11 = d11;
-    info.d12 = d12;
+    info.c11 = stabil_coeff.Power( "C11" );
+    info.c12 = stabil_coeff.Power( "C12" );
+    info.d11 = stabil_coeff.Power( "D11" );
+    info.d12 = stabil_coeff.Power( "D12" );
     info.bfg = Parameters().getParam( "do-bfg", true );
     info.gridname = gridPart.grid().name();
 
