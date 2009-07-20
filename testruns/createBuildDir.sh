@@ -1,9 +1,9 @@
 #!/bin/bash
 
 if [ $3 == 1 ] ; then
-	DIR=pol${1}_bfg_${2}
+	DIR=pol${1}_bfg_${2}${4}
 else
-	DIR=pol${1}_no-bfg_${2}
+	DIR=pol${1}_no-bfg_${2}${4}
 fi
 
 mkdir $DIR

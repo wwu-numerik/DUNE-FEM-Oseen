@@ -10,7 +10,7 @@ fem.io.datafileprefix: data_
 fem.io.savestep: -1
 fem.io.savecount: 1
 fem.io.outputformat: 1
-minref: 0
+minref: 4
 maxref: 0
 minpow: -1
 maxpow: 1
@@ -34,6 +34,9 @@ eps: 1.0e-14
 disableSolver: 0
 diff-tolerance: 0.01
 bfg-tau: 0.1
+bfg-tau-start: 0
+bfg-tau-stop: 0.5
+bfg-tau-inc: 0.075
 alternative-solve: 1
 maxIter: 5000
 
