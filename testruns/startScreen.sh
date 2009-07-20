@@ -8,3 +8,4 @@ for i in $(ls) ; do
         fi
 done
 
+screen -S "watchdog_stokes" -d -m watchdog dune_stokes
