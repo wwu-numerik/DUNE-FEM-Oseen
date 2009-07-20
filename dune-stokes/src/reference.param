@@ -1,0 +1,111 @@
+# LOG_NONE = 1, LOG_ERR = 2, LOG_INFO = 4,LOG_DEBUG = 8,LOG_CONSOLE = 16,LOG_FILE = 32
+# --> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_FILE = 46
+# ANY odd number will disable ALL logging
+# max logging: 62
+loglevel: 22
+
+#only prefix
+logfile: dune_stokes
+
+#path (relative to binary) where .vtu etc will be saved
+fem.io.datadir: data
+#path (relative to binary) where logs and matlab files will be saved
+fem.io.logdir: log
+fem.io.outputformat: 1
+
+per-run-log-target: 0
+per-run-output: 1
+
+#
+dgf_file_2d: grid_2d.dgf
+dgf_file_3d: grid_3d.dgf
+
+#*********** runtype specific parameters **************************************************
+# runtype 	0: minref <= maxref
+#			1: minref, stab coeff are varied
+#			2: minref, bfg-tau-start <= bfg-tau-stop
+# no runtype set --> old minrun behavior
+runytpe: 0
+
+#in runtype 0 refine maxref + 1 - minref times
+minref: 0
+maxref: 2
+
+#in runtype 1 vary 
+minpow: -1
+maxpow: 1
+minfactor: 0.0
+maxfactor: 2.0
+incfactor: 0.5
+
+#parameters for runtype 2, do-bfg and bfg-tau are ignored there
+bfg-tau-start: 0
+bfg-tau-stop: 0.5
+bfg-tau-inc: 0.075
+
+#*********** end runtype specific parameters **************************************************
+
+#currently ineffective
+viscosity: 1
+
+
+#****************** solver ******************************************************************
+#pretty much ineffective
+relLimit: 1e-12
+
+absLimit: 1e-10
+
+#when nans are detected in solution solver accuracy is multiplied maximal max_adaptions-times by 0.1
+max_adaptions: 4
+
+# > 2 will show bfg setting per inner iteration, > 1 avg inner iteration count
+solverVerbosity: 0
+
+disableSolver: 0
+diff-tolerance: 0.01
+do-bfg: 1
+bfg-tau: 0.1
+
+alternative-solve: 1
+
+#if using alternative solver break after max maxIter outer iterations
+maxIter: 5000
+#****************** end solver ******************************************************************
+
+
+#****************** pass ********************************************************************
+#output:
+Mprint: 0
+Wprint: 0
+Xprint: 0
+Yprint: 0
+Zprint: 0
+Eprint: 0
+Rprint: 0
+H1print: 0
+H2print: 0
+H3print: 0
+allOutput: 0
+Mdebug: 0
+Wdebug: 0
+Xdebug: 0
+Ydebug: 0
+Zdebug: 0
+Edebug: 0
+Rdebug: 0
+H1debug: 0
+H2debug: 0
+H3debug: 0
+solution-print: 0
+
+logBaseI: -1
+logBaseJ: -1
+
+#****************** end pass ********************************************************************
+
+#deprecated
+use-cheat: 0
+
+eps: 1.0e-14
+
+h-factor: 1.0
