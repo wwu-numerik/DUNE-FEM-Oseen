@@ -19,6 +19,7 @@ LIBS="$DUNE_LIBS"
 
 AC_CONFIG_FILES([Makefile
     src/Makefile
+    elliptic/Makefile
     doc/Makefile
     doc/doxygen/Makefile])
 AC_OUTPUT
