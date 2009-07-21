@@ -18,5 +18,4 @@ mkdir data
 cd data
 ln -s ../../eoc-template.tex
 cd ..
-make
 
