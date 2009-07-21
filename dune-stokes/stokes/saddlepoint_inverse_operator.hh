@@ -372,7 +372,7 @@ class SaddlepointInverseOperator
 		// relative min. error at which cg-solvers will abort
         const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
 		// aboslute min. error at which cg-solvers will abort
-        const double absLimit = Parameters().getParam( "absLimit", 1e-8 );
+        const double absLimit = Parameters().getParam( "inner_absLimit", 1e-8 );
         const int solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
         const int maxIter = Parameters().getParam( "maxIter", 500 );
 
