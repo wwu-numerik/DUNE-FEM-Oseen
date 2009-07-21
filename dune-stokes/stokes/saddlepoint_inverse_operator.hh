@@ -372,7 +372,8 @@ class SaddlepointInverseOperator
 		// relative min. error at which cg-solvers will abort
         const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
 		// aboslute min. error at which cg-solvers will abort
-        const double absLimit = Parameters().getParam( "inner_absLimit", 1e-8 );
+        const double outer_absLimit = Parameters().getParam( "absLimit", 1e-8 );
+        const double inner_absLimit = Parameters().getParam( "inner_absLimit", 1e-8 );
         const int solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
         const int maxIter = Parameters().getParam( "maxIter", 500 );
 
@@ -433,10 +434,11 @@ class SaddlepointInverseOperator
         typedef typename A_Solver::ReturnValueType
             ReturnValueType;
 #ifdef USE_BFG_CG_SCHEME
-        double current_inner_accuracy = do_bfg ? absLimit * tau : absLimit;
+        //the bfg scheme uses the outer acc. as a base
+        double current_inner_accuracy = do_bfg ? tau * outer_absLimit : inner_absLimit;
         double max_inner_accuracy = current_inner_accuracy;
 #else
-        double current_inner_accuracy = absLimit;
+        double current_inner_accuracy = inner_absLimit;
 #endif
         A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, current_inner_accuracy, solverVerbosity > 3 );
         ReturnValueType a_solver_info;
@@ -479,7 +481,7 @@ class SaddlepointInverseOperator
         d.assign( residuum );
 
         delta = residuum.scalarProductDofs( residuum );
-        while( (delta > absLimit ) && (iteration++ < maxIter ) ) {
+        while( (delta > outer_absLimit ) && (iteration++ < maxIter ) ) {
             if ( iteration > 1 ) {
                 // gamma_{m+1} = delta_{m+1} / delta_m
                 gamma = delta / gamma;
@@ -493,7 +495,7 @@ class SaddlepointInverseOperator
                     //the form from the precond. paper (does not work properly)
 //                    current_inner_accuracy = tau * std::min( 1. , absLimit / std::min ( std::pow( delta, int(iteration) ), 1.0 ) );
                     //my form, works
-                    current_inner_accuracy = tau * std::min( 1. , absLimit / std::min ( delta * iteration , 1.0 ) );
+                    current_inner_accuracy = tau * std::min( 1. , outer_absLimit / std::min ( delta , 1.0 ) );
                     a_solver.setAbsoluteLimit( current_inner_accuracy );
                     max_inner_accuracy = std::max( max_inner_accuracy, current_inner_accuracy );
                     if( solverVerbosity > 1 )
