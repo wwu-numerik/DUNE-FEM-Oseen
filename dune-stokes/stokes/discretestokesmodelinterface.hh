@@ -22,13 +22,22 @@
 namespace Dune
 {
     class StabilizationCoefficients {
+        public:
             typedef std::pair<int,double>
                 ValueType;
             typedef std::map< std::string, ValueType >
                 CoefficientMap;
+
+        protected:
             CoefficientMap map_;
 
         public:
+            StabilizationCoefficients(  const ValueType::first_type pow,
+                                        const ValueType::second_type fac )
+            {
+                *this = StabilizationCoefficients( pow,pow,pow,pow,fac,fac,fac,fac );
+            }
+
             StabilizationCoefficients(  const ValueType::first_type C11_pow,
                                         const ValueType::first_type C12_pow,
                                         const ValueType::first_type D11_pow,
@@ -56,7 +65,7 @@ namespace Dune
                 return map_[name].first;
             }
 
-            void Power( const std::string& name, ValueType::second_type new_power ) {
+            void Power( const std::string& name, ValueType::first_type new_power ) {
                 map_[name].first = new_power;
             }
 
