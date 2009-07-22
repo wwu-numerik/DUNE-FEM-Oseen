@@ -53,8 +53,13 @@
         typedef Dune::CollectiveCommunication< double > CollectiveCommunication;
 #endif
 
-typedef std::vector< std::vector<double> > L2ErrorVector;
-typedef std::vector<std::string> ColumnHeaders;
+typedef std::vector<Dune::StabilizationCoefficients>
+    CoeffVector;
+
+typedef std::vector< std::vector<double> >
+    L2ErrorVector;
+typedef std::vector<std::string>
+    ColumnHeaders;
 
 
 RunInfo singleRun(  CollectiveCommunication& mpicomm,
@@ -66,6 +71,9 @@ void BfgRun( CollectiveCommunication& mpicomm );
 void RefineRun( CollectiveCommunication& mpicomm );
 void StabRun( CollectiveCommunication& mpicomm );
 
+CoeffVector getAllVariations();
+CoeffVector getC_Variations();
+CoeffVector getC_power_Variations();
 /**
  *  \brief  main function
  *
@@ -188,66 +196,32 @@ void StabRun( CollectiveCommunication& mpicomm )
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
     Stuff::EocOutput eoc_texwriter( errorColumnHeaders );
 
-    // the min andmax exponent that will be used in stabilizing terms
-    // ie c11 = ( h_^minpow ) .. ( h^maxpow )
-    // pow = -2 is interpreted as 0
-    // in non-variation context minpow is used for c12 exp and maxpow for d12,
-    //      c11 and D11 are set to zero
-    int maxpow = Parameters().getParam( "maxpow", -1 );
-    int minpow = Parameters().getParam( "minpow", 1 );
-    double minfactor = Parameters().getParam( "minfactor", 0.0 );
-    double maxfactor = Parameters().getParam( "maxfactor", 2.0 );
-    double incfactor = Parameters().getParam( "incfactor", 0.5 );
-
     int ref = Parameters().getParam( "minref", 0 );
-
-    std::vector<std::string> coefficient_names = Dune::StabilizationCoefficients::getCoefficientNames();
-    std::vector<std::string>::const_iterator name_it = coefficient_names.begin();
 
     // setting this to true will give each run a unique logilfe name
     bool per_run_log_target = Parameters().getParam( "per-run-log-target", true );
 
+    CoeffVector coeff_vector = getC_power_Variations();
 
-    bool lastrun = false;
-    while ( !lastrun ) {
-        Dune::StabilizationCoefficients coeff (minpow,minpow,minpow,minpow, minfactor,minfactor,minfactor,minfactor );
-        for ( int pow = minpow; pow <= maxpow; ++pow ) {
-            for ( double factor = minfactor; factor <= maxfactor; factor+=incfactor ) {
-                for ( ; name_it != coefficient_names.end(); ++name_it ) {
-                    if ( per_run_log_target ) { //sets unique per run filename if requested
-                        std::string ff = "matlab__pow1_" + Stuff::toString( pow ) + "_pow2_" + Stuff::toString( factor ); //! not correct
-                        Logger().SetPrefix( ff );
-                    }
+    Logger().Info().Resume();
+    Logger().Info() << "beginning " << coeff_vector.size() << " runs" << std::endl ;
+    CoeffVector::const_iterator it = coeff_vector.begin();
+    for ( ; it != coeff_vector.end(); ++it ) {
+        const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
+        RunInfo info = singleRun( mpicomm, refine_level, *it );
+        l2_errors.push_back( info.L2Errors );
 
-                    //actual work
-//                    Dune::StabilizationCoefficients coeff_tmp = coeff ;
-//                    coeff_tmp.Power( *name_it, pow );
-//                    coeff_tmp.Factor( *name_it, factor );
-//                    coeff_tmp.print( std::cout );
-                    coeff.Power( *name_it, pow );
-                    coeff.Factor( *name_it, factor );
-                    coeff.print( std::cout );
-                    const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
-                    RunInfo info = singleRun( mpicomm, refine_level, coeff );
-                    l2_errors.push_back( info.L2Errors );
+        //push errors to eoc-outputter class
+        eoc_output.setErrors( idx,info.L2Errors );
+        eoc_texwriter.setInfo( info );
 
-                    //push errors to eoc-outputter class
-                    eoc_output.setErrors( idx,info.L2Errors );
-                    eoc_texwriter.setInfo( info );
-//                    bool lastrun =
-                    lastrun = (!std::next_permutation( coefficient_names.begin(), coefficient_names.end() ) )
-                        && !( ( pow + 1 <= maxpow ) && (factor + incfactor < maxfactor) && ( name_it+1 != coefficient_names.end() ) );
+        //the writer needs to know if it should close the table etc.
+        eoc_output.write( eoc_texwriter, ( (it+1) == coeff_vector.end() ) );
 
-                    if ( lastrun )
-                        std::cout << "huiohoi\n";
-                    //the writer needs to know if it should close the table etc.
-                    eoc_output.write( eoc_texwriter, lastrun );
-
-                    profiler().NextRun( info.L2Errors[0] ); //finish this run
-                }
-            }
-        }
+        profiler().NextRun( info.L2Errors[0] ); //finish this run
     }
+    Logger().Info().Resume();
+    Logger().Info() << "completed " << coeff_vector.size() << " runs" << std::endl ;
 }
 
 void BfgRun( CollectiveCommunication& mpicomm )
@@ -446,3 +420,101 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     return info;
 }
 
+CoeffVector getAllVariations() {
+        // the min andmax exponent that will be used in stabilizing terms
+    // ie c11 = ( h_^minpow ) .. ( h^maxpow )
+    // pow = -2 is interpreted as 0
+    // in non-variation context minpow is used for c12 exp and maxpow for d12,
+    //      c11 and D11 are set to zero
+    int maxpow = Parameters().getParam( "maxpow", -1 );
+    int minpow = Parameters().getParam( "minpow", 1 );
+    double minfactor = Parameters().getParam( "minfactor", 0.0 );
+    double maxfactor = Parameters().getParam( "maxfactor", 2.0 );
+    double incfactor = Parameters().getParam( "incfactor", 0.5 );
+
+    CoeffVector coeff_vector;
+    for ( int c11_pow = minpow; c11_pow <= maxpow; ++c11_pow ) {
+        for ( double c11_factor = minfactor; c11_factor <= maxfactor; c11_factor+=incfactor ) {
+            for ( int c12_pow = minpow; c12_pow <= maxpow; ++c12_pow ) {
+                for ( double c12_factor = minfactor; c12_factor <= maxfactor; c12_factor+=incfactor ) {
+                    for ( int d11_pow = minpow; d11_pow <= maxpow; ++d11_pow ) {
+                        for ( double d11_factor = minfactor; d11_factor <= maxfactor; d11_factor+=incfactor ) {
+                            for ( int d12_pow = minpow; d12_pow <= maxpow; ++d12_pow ) {
+                                for ( double d12_factor = minfactor; d12_factor <= maxfactor; d12_factor+=incfactor ) {
+                                    Dune::StabilizationCoefficients c ( c11_pow, c12_pow, d11_pow, d12_pow,
+                                                                        c11_factor, c12_factor, d11_factor, d12_factor );
+                                    coeff_vector.push_back( c );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return coeff_vector;
+}
+
+CoeffVector getC_Variations(){
+        // the min andmax exponent that will be used in stabilizing terms
+    // ie c11 = ( h_^minpow ) .. ( h^maxpow )
+    // pow = -2 is interpreted as 0
+    // in non-variation context minpow is used for c12 exp and maxpow for d12,
+    //      c11 and D11 are set to zero
+    int maxpow = Parameters().getParam( "maxpow", -1 );
+    int minpow = Parameters().getParam( "minpow", 1 );
+    double minfactor = Parameters().getParam( "minfactor", 0.0 );
+    double maxfactor = Parameters().getParam( "maxfactor", 2.0 );
+    double incfactor = Parameters().getParam( "incfactor", 0.5 );
+
+    typedef Dune::StabilizationCoefficients::ValueType::first_type
+        PowerType;
+    typedef Dune::StabilizationCoefficients::ValueType::second_type
+        FactorType;
+
+    const PowerType invalid_power = Dune::StabilizationCoefficients::invalid_power;
+    const FactorType invalid_factor = Dune::StabilizationCoefficients::invalid_factor;
+
+    CoeffVector coeff_vector;
+    for ( PowerType c11_pow = minpow; c11_pow <= maxpow; ++c11_pow ) {
+        for ( FactorType c11_factor = minfactor; c11_factor <= maxfactor; c11_factor+=incfactor ) {
+            for ( PowerType c12_pow = minpow; c12_pow <= maxpow; ++c12_pow ) {
+                for ( FactorType c12_factor = minfactor; c12_factor <= maxfactor; c12_factor+=incfactor ) {
+                    Dune::StabilizationCoefficients c ( c11_pow, c12_pow, invalid_power, invalid_power,
+                                                        c11_factor, c12_factor, invalid_factor, invalid_factor );
+                    coeff_vector.push_back( c );
+                }
+            }
+        }
+    }
+    return coeff_vector;
+}
+
+CoeffVector getC_power_Variations(){
+        // the min andmax exponent that will be used in stabilizing terms
+    // ie c11 = ( h_^minpow ) .. ( h^maxpow )
+    // pow = -2 is interpreted as 0
+    // in non-variation context minpow is used for c12 exp and maxpow for d12,
+    //      c11 and D11 are set to zero
+    int maxpow = Parameters().getParam( "maxpow", -1 );
+    int minpow = Parameters().getParam( "minpow", 1 );
+    double minfactor = Parameters().getParam( "minfactor", 0.0 );
+
+    typedef Dune::StabilizationCoefficients::ValueType::first_type
+        PowerType;
+    typedef Dune::StabilizationCoefficients::ValueType::second_type
+        FactorType;
+
+    const PowerType invalid_power = Dune::StabilizationCoefficients::invalid_power;
+    const FactorType invalid_factor = Dune::StabilizationCoefficients::invalid_factor;
+
+    CoeffVector coeff_vector;
+    for ( PowerType c11_pow = minpow; c11_pow <= maxpow; ++c11_pow ) {
+            for ( PowerType c12_pow = minpow; c12_pow <= maxpow; ++c12_pow ) {
+             Dune::StabilizationCoefficients c ( c11_pow, c12_pow, invalid_power, invalid_power,
+                                                minfactor, minfactor, invalid_factor, invalid_factor );
+            coeff_vector.push_back( c );
+        }
+    }
+    return coeff_vector;
+}

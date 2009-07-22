@@ -28,6 +28,9 @@ namespace Dune
             typedef std::map< std::string, ValueType >
                 CoefficientMap;
 
+            static const ValueType::first_type  invalid_power   = -9;
+            static const ValueType::second_type invalid_factor  = -9.0;
+
         protected:
             CoefficientMap map_;
 
