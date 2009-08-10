@@ -1240,7 +1240,8 @@ class DiscreteStokesModelDefault;
 /**
  *  \brief  Traits class for DiscreteStokesModelDefault
  **/
-template < class GridPartImp, template <class > class AnalyticalForceImp, template <class > class AnalyticalDirichletDataImp, int gridDim, int polOrder >
+template < class GridPartImp, template <class > class AnalyticalForceImp, template <class > class AnalyticalDirichletDataImp,
+            int gridDim, int sigmaOrder, int velocityOrder = sigmaOrder, int pressureOrder = sigmaOrder  >
 class DiscreteStokesModelDefaultTraits
 {
     public:
@@ -1258,11 +1259,11 @@ class DiscreteStokesModelDefaultTraits
             FaceQuadratureType;
 
         //! polynomial order for the discrete sigma function space
-        static const int sigmaSpaceOrder = polOrder;
+        static const int sigmaSpaceOrder = sigmaOrder;
         //! polynomial order for the discrete velocity function space
-        static const int velocitySpaceOrder = polOrder;
+        static const int velocitySpaceOrder = velocityOrder;
         //! polynomial order for the discrete pressure function space
-        static const int pressureSpaceOrder = polOrder;
+        static const int pressureSpaceOrder = pressureOrder;
 
 //    private:
 
