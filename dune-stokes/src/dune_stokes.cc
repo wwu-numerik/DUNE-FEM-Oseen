@@ -12,6 +12,19 @@
     #warning ("UGGRID in debug mode is likely to produce a segfault")
 #endif
 
+#if ! defined(POLORDER)
+    #define POLORDER 0
+    #warning ("using default polorder 0 for all spaces")
+#endif
+
+#if ! defined(PRESSURE_POLORDER)
+    #define PRESSURE_POLORDER POLORDER
+#endif
+
+#if ! defined(VELOCITY_POLORDER)
+    #define VELOCITY_POLORDER POLORDER
+#endif
+
 #include <vector>
 #include <string>
 
@@ -311,7 +324,9 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
                     Force,
                     DirichletData,
                     gridDim,
-                    polOrder >
+                    polOrder,
+                    VELOCITY_POLORDER,
+                    PRESSURE_POLORDER >
         StokesModelTraitsImp;
     typedef Dune::DiscreteStokesModelDefault< StokesModelTraitsImp >
         StokesModelImpType;
