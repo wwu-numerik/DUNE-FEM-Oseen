@@ -38,7 +38,6 @@
 #include <dune/fem/space/dgspace.hh>
 #include <dune/fem/space/combinedspace.hh>
 #include <dune/fem/space/dgspace/dgadaptiveleafgridpart.hh>
-//#include <dune/fem/grid/gridpart.hh>
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
 #include <dune/fem/misc/femeoc.hh>
@@ -66,31 +65,52 @@
         typedef Dune::CollectiveCommunication< double > CollectiveCommunication;
 #endif
 
+//! return type of getXXX_Permutations()
 typedef std::vector<Dune::StabilizationCoefficients>
     CoeffVector;
 
+//! used in all runs to store L2 errors across runs, but i forgot why...
 typedef std::vector< std::vector<double> >
     L2ErrorVector;
+
+//! the strings used for column headers in tex output
 typedef std::vector<std::string>
     ColumnHeaders;
 
 
+/** \brief one single application of the discretisation and solver
+
+    \param  mpicomm
+            mostly useless atm, but mandatory
+    \param  refine_level_factor
+            integer to be multiplied by Dune::DGFGridInfo< GridType >::refineStepsForHalf()
+            to get the used refine level for the constructed grid
+    \param  stabil_coeff
+            the set of coefficients to be used in the run. Default is used in all run types but StabRun().
+
+**/
 RunInfo singleRun(  CollectiveCommunication& mpicomm,
-                    int refine_level,
+                    int refine_level_factor,
                     Dune::StabilizationCoefficients stabil_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients()  );
 
+//! multiple runs with bfg tau set in [bfg-tau-start : bfg-tau-inc : bfg-tau-stop] and everything else on default
+void BfgRun     ( CollectiveCommunication& mpicomm );
+//! multiple runs with refine level in [minref*refineStepsForHalf : maxref*refineStepsForHalf] and everything else on default
+void RefineRun  ( CollectiveCommunication& mpicomm );
+//! LOTS of runs where any combination of stabilisation coefficients getXXX_Permutations() yields is used ( currently hardcoded to getC_power_Permutations )
+void StabRun    ( CollectiveCommunication& mpicomm );
 
-void BfgRun( CollectiveCommunication& mpicomm );
-void RefineRun( CollectiveCommunication& mpicomm );
-void StabRun( CollectiveCommunication& mpicomm );
+//! brute force all permutations
+CoeffVector getAll_Permutations();
+//! get only permutations for C_11 and C_12
+CoeffVector getC_Permutations();
+//! get only the permutations in power for C_11 and C_12
+CoeffVector getC_power_Permutations();
 
-CoeffVector getAllVariations();
-CoeffVector getC_Variations();
-CoeffVector getC_power_Variations();
 /**
  *  \brief  main function
  *
- *  \attention  attention
+ *  ParameterContainer and Logger setup, select run type from parameter file and go
  *
  *  \param  argc
  *          number of arguments from command line
@@ -117,7 +137,7 @@ int main( int argc, char** argv )
         std::cerr << std::endl;
         return 2;
     }
-    else {
+    else { //the only valid code path
         Parameters().SetGridDimension( GridType::dimensionworld );
         Parameters().SetPolOrder( POLORDER );
 //        Parameters().Print( std::cout );
@@ -137,18 +157,15 @@ int main( int argc, char** argv )
     const int runtype = Parameters().getParam( "runtype", -1 ) != -1  ? Parameters().getParam( "runtype", -1 ) : Parameters().getParam( "multirun", true );
     switch ( runtype ) {
         case 1: {
-            /** all four stab parameters are permutated in [ minpow ; maxpow ]
-                inside an outer loop that increments the grid's refine level
-            **/
             StabRun( mpicomm );
             break;
         }
         default:
-        case 0: { //we don't do any variation here
+        case 0: {
             RefineRun( mpicomm );
             break;
         }
-        case 2: { //bfg-tau variance run on set reflevel
+        case 2: {
             BfgRun( mpicomm );
             break;
         }
@@ -168,7 +185,7 @@ int main( int argc, char** argv )
 
 void RefineRun( CollectiveCommunication& mpicomm )
 {
-    // coloumn headers for eoc table output
+    // column headers for eoc table output
     const std::string errheaders[] = { "h", "el't","runtime","Velocity", "Pressure" };
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
@@ -187,8 +204,8 @@ void RefineRun( CollectiveCommunication& mpicomm )
     for ( int ref = minref; ref <= maxref; ++ref ) {
         if ( per_run_log_target )
             Logger().SetPrefix( "dune_stokes_ref_"+Stuff::toString(ref) );
-        const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
-        RunInfo info = singleRun( mpicomm, refine_level );
+
+        RunInfo info = singleRun( mpicomm, ref );
         l2_errors.push_back( info.L2Errors );
         eoc_output.setErrors( idx,info.L2Errors );
         eoc_texwriter.setInfo( info );
@@ -199,7 +216,7 @@ void RefineRun( CollectiveCommunication& mpicomm )
 
 void StabRun( CollectiveCommunication& mpicomm )
 {
-    // coloumn headers for eoc table output
+    // column headers for eoc table output
     const std::string errheaders[] = { "h", "el't","runtime","C11","C12","D11","D12","Velocity", "Pressure" };
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
@@ -214,14 +231,13 @@ void StabRun( CollectiveCommunication& mpicomm )
     // setting this to true will give each run a unique logilfe name
     bool per_run_log_target = Parameters().getParam( "per-run-log-target", true );
 
-    CoeffVector coeff_vector = getC_power_Variations();
+    CoeffVector coeff_vector = getC_power_Permutations();
 
     Logger().Info().Resume();
     Logger().Info() << "beginning " << coeff_vector.size() << " runs" << std::endl ;
     CoeffVector::const_iterator it = coeff_vector.begin();
     for ( ; it != coeff_vector.end(); ++it ) {
-        const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* ref;
-        RunInfo info = singleRun( mpicomm, refine_level, *it );
+        RunInfo info = singleRun( mpicomm, ref, *it );
         l2_errors.push_back( info.L2Errors );
 
         //push errors to eoc-outputter class
@@ -240,9 +256,9 @@ void StabRun( CollectiveCommunication& mpicomm )
 void BfgRun( CollectiveCommunication& mpicomm )
 {
     //first up a non-bfg run for reference
-    const int refine_level = Dune::DGFGridInfo< GridType >::refineStepsForHalf()* Parameters().getParam( "minref", 0 );
+    const int refine_level_factor = Parameters().getParam( "minref", 0 );
     Parameters().setParam( "do-bfg", false );
-    RunInfo nobfg_info = singleRun( mpicomm, refine_level );
+    RunInfo nobfg_info = singleRun( mpicomm, refine_level_factor );
 
     L2ErrorVector l2_errors;
     const std::string bfgheaders[] = { "h", "el't","runtime","$\\tau$","avg inner","min inner","max inner","total outer","max inner acc.","Velocity", "Pressure" };
@@ -266,7 +282,7 @@ void BfgRun( CollectiveCommunication& mpicomm )
     for ( double tau = start_tau; tau < stop_tau; tau += tau_inc ) {
         Parameters().setParam( "bfg-tau", tau );
 
-        RunInfo info = singleRun( mpicomm, refine_level );
+        RunInfo info = singleRun( mpicomm, refine_level_factor );
         l2_errors.push_back( info.L2Errors );
         bfg_output.setErrors( idx,info.L2Errors );
         bfg_texwriter.setInfo( info );
@@ -276,7 +292,7 @@ void BfgRun( CollectiveCommunication& mpicomm )
 }
 
 RunInfo singleRun(  CollectiveCommunication& mpicomm,
-                    int refine_level,
+                    int refine_level_factor,
                     Dune::StabilizationCoefficients stabil_coeff )
 {
     profiler().StartTiming( "SingleRun" );
@@ -293,6 +309,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
      * ********************************************************************** */
     infoStream << "\n- initialising grid" << std::endl;
     Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
+    const int refine_level = refine_level_factor * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
     gridPtr->globalRefine( refine_level );
     typedef Dune::AdaptiveLeafGridPart< GridType >
         GridPartType;
@@ -435,7 +452,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     return info;
 }
 
-CoeffVector getAllVariations() {
+CoeffVector getAll_Permutations() {
         // the min andmax exponent that will be used in stabilizing terms
     // ie c11 = ( h_^minpow ) .. ( h^maxpow )
     // pow = -2 is interpreted as 0
@@ -470,7 +487,7 @@ CoeffVector getAllVariations() {
     return coeff_vector;
 }
 
-CoeffVector getC_Variations(){
+CoeffVector getC_Permutations(){
         // the min andmax exponent that will be used in stabilizing terms
     // ie c11 = ( h_^minpow ) .. ( h^maxpow )
     // pow = -2 is interpreted as 0
@@ -505,7 +522,7 @@ CoeffVector getC_Variations(){
     return coeff_vector;
 }
 
-CoeffVector getC_power_Variations(){
+CoeffVector getC_power_Permutations(){
         // the min andmax exponent that will be used in stabilizing terms
     // ie c11 = ( h_^minpow ) .. ( h^maxpow )
     // pow = -2 is interpreted as 0

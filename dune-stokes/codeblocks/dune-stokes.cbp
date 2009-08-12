@@ -122,7 +122,7 @@
 		<Unit filename="../src/dune_stokes.cc" />
 		<Unit filename="../src/pressure.hh" />
 		<Unit filename="../src/problem.hh" />
-		<Unit filename="../src/test.param" />
+		<Unit filename="../src/reference.param" />
 		<Unit filename="../src/velocity.hh" />
 		<Unit filename="../stokes/cghelper.hh" />
 		<Unit filename="../stokes/discretegradientpass.hh" />
