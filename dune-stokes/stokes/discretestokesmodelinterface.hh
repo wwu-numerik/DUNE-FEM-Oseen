@@ -2272,18 +2272,6 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
 
         }
 
-        template < class LocalPoint >
-        double getStabScalar( const LocalPoint& x , const IntersectionIteratorType& it, const std::string coeffName ) const
-        {
-            const StabilizationCoefficients::PowerType  power   = stabil_coeff_.Power   ( coeffName );
-            const StabilizationCoefficients::FactorType factor  = stabil_coeff_.Factor  ( coeffName );
-            if ( power == StabilizationCoefficients::invalid_power ) {
-                return 0.0;
-            }
-//                return std::pow( it.intersectionGlobal().integrationElement( x ), param );
-            return factor * std::pow( getLenghtOfIntersection( it ), power );
-        }
-
         /**
          *  \brief  Implementation of \f$\hat{p}^{P^{+}}\f$ for a face on the
          *          boundary of \f$\Omega\f$.
@@ -2727,6 +2715,20 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             const DomainType difference = cornerOne - cornerTwo;
             return difference.two_norm();
         }
+
+        //! avoid code duplication by doing calculations for C_1X and D_1X here
+        template < class LocalPoint >
+        double getStabScalar( const LocalPoint& x , const IntersectionIteratorType& it, const std::string coeffName ) const
+        {
+            const StabilizationCoefficients::PowerType  power   = stabil_coeff_.Power   ( coeffName );
+            const StabilizationCoefficients::FactorType factor  = stabil_coeff_.Factor  ( coeffName );
+            if ( power == StabilizationCoefficients::invalid_power ) {
+                return 0.0;
+            }
+//                return std::pow( it.intersectionGlobal().integrationElement( x ), param );
+            return factor * std::pow( getLenghtOfIntersection( it ), power );
+        }
+
 
 };
 
