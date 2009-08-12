@@ -119,7 +119,6 @@ CoeffVector getC_power_Permutations();
  **/
 int main( int argc, char** argv )
 {
-    std::cout << "pow0 :" << std::pow(12., 0) << std::endl;
   try{
 
     Dune::MPIHelper& mpihelper = Dune::MPIHelper::instance(argc, argv);
