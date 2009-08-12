@@ -77,6 +77,8 @@ ADD_DEFINITIONS(
 	-I${ALUGRID_BASE_PATH}/include/serial 
 	-I${ALUGRID_BASE_PATH}/include/duneinterface -DENABLE_ALUGRID )
 
+#needs to come first to include correct config.h
+INCLUDE_DIRECTORIES( ${dune-stokes_SOURCE_DIR} )
 
 SET( MODULES common istl grid fem stuff )
 
@@ -84,7 +86,6 @@ FOREACH( MODULE ${MODULES} )
     INCLUDE_DIRECTORIES( ${dune-stokes_SOURCE_DIR}/../dune-${MODULE} )
     LINK_DIRECTORIES(${dune-stokes_SOURCE_DIR}/../dune-${MODULE}/${MODULE}/.libs )
 ENDFOREACH(MODULE)
-INCLUDE_DIRECTORIES( ${dune-stokes_SOURCE_DIR} )
 LINK_DIRECTORIES( "/usr/lib" "${ALUGRID_BASE_PATH}/lib" )
 ADD_DEFINITIONS( ${CXX_FLAGS} )
 
