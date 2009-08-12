@@ -1,3 +1,8 @@
+/**
+ *  \file   stuff.hh
+ *  \brief  contains some stuff
+ **/
+
 #ifndef INNERCG_HH_INCLUDED
 #define INNERCG_HH_INCLUDED
 
