@@ -5,6 +5,7 @@
     #include <dune/stuff/printing.hh>
     #include <dune/stuff/misc.hh>
     #include <dune/stuff/logging.hh>
+    #include <dune/stuff/parametercontainer.hh>
 
 
 namespace Dune {
