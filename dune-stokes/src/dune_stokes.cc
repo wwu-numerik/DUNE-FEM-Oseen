@@ -119,6 +119,7 @@ CoeffVector getC_power_Permutations();
  **/
 int main( int argc, char** argv )
 {
+    std::cout << "pow0 :" << std::pow(12., 0) << std::endl;
   try{
 
     Dune::MPIHelper& mpihelper = Dune::MPIHelper::instance(argc, argv);
@@ -151,7 +152,6 @@ int main( int argc, char** argv )
     int err = 0;
 
     profiler().Reset( 9 ); //prepare for 9 single runs
-
 
     //a little trickery so felix doesn't scream at me for breaking any of his scripts/parameterfiles
     const int runtype = Parameters().getParam( "runtype", -1 ) != -1  ? Parameters().getParam( "runtype", -1 ) : Parameters().getParam( "multirun", true );

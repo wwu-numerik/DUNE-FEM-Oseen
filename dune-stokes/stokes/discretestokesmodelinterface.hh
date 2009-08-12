@@ -19,36 +19,44 @@
 
 #include <dune/stuff/misc.hh>
 
+#include <algorithm>
+
 namespace Dune
 {
     class StabilizationCoefficients {
         public:
-            typedef std::pair<int,double>
+            typedef int
+                PowerType;
+            typedef double
+                FactorType;
+
+            typedef std::pair<PowerType,FactorType>
                 ValueType;
+
             typedef std::map< std::string, ValueType >
                 CoefficientMap;
 
-            static const ValueType::first_type  invalid_power   = -9;
-            static const ValueType::second_type invalid_factor  = -9.0;
+            static const PowerType invalid_power   = -9;
+            static const FactorType invalid_factor  = -9.0;
 
         protected:
             CoefficientMap map_;
 
         public:
-            StabilizationCoefficients(  const ValueType::first_type pow,
-                                        const ValueType::second_type fac )
+            StabilizationCoefficients(  const FactorType pow,
+                                        const FactorType fac )
             {
                 *this = StabilizationCoefficients( pow,pow,pow,pow,fac,fac,fac,fac );
             }
 
-            StabilizationCoefficients(  const ValueType::first_type C11_pow,
-                                        const ValueType::first_type C12_pow,
-                                        const ValueType::first_type D11_pow,
-                                        const ValueType::first_type D12_pow,
-                                        const ValueType::second_type C11_fac,
-                                        const ValueType::second_type C12_fac,
-                                        const ValueType::second_type D11_fac,
-                                        const ValueType::second_type D12_fac )
+            StabilizationCoefficients(  const PowerType C11_pow,
+                                        const PowerType C12_pow,
+                                        const PowerType D11_pow,
+                                        const PowerType D12_pow,
+                                        const FactorType C11_fac,
+                                        const FactorType C12_fac,
+                                        const FactorType D11_fac,
+                                        const FactorType D12_fac )
             {
                 map_["C11"] = ValueType( C11_pow, C11_fac );
                 map_["C12"] = ValueType( C12_pow, C12_fac );
@@ -56,19 +64,19 @@ namespace Dune
                 map_["D12"] = ValueType( D12_pow, D12_fac );
             }
 
-            ValueType::second_type Factor( const std::string& name ) {
+            FactorType Factor( const std::string& name ) {
                 return map_[name].second;
             }
 
-            void Factor( const std::string& name, ValueType::second_type new_factor ) {
+            void Factor( const std::string& name, FactorType new_factor ) {
                 map_[name].second = new_factor;
             }
 
-            ValueType::first_type Power( const std::string& name ) {
+            PowerType Power( const std::string& name ) {
                 return map_[name].first;
             }
 
-            void Power( const std::string& name, ValueType::first_type new_power ) {
+            void Power( const std::string& name, PowerType new_power ) {
                 map_[name].first = new_power;
             }
 
@@ -78,10 +86,14 @@ namespace Dune
 
             template < class Stream >
             void print( Stream& stream ) {
-                CoefficientMap::const_iterator it = map_.begin();
-                for ( ; it != map_.end(); ++it ) {
-                    stream  << (*it).first << " (factor/power): " << (*it).second.second
-                            << " / " << (*it).second.first << std::endl;
+                if ( this->Equals( getDefaultStabilizationCoefficients() ) )
+                    stream << "default stabilisation coefficients used" << std::endl;
+                else {
+                    CoefficientMap::const_iterator it = map_.begin();
+                    for ( ; it != map_.end(); ++it ) {
+                        stream  << (*it).first << " (factor/power): " << (*it).second.second
+                                << " / " << (*it).second.first << std::endl;
+                    }
                 }
             }
 
@@ -89,6 +101,10 @@ namespace Dune
                 const std::string names[] = { "C11","C12","D11","D12" };
                 const unsigned int num_names = sizeof ( names ) / sizeof ( names[0] );
                 return std::vector<std::string>( names, names + num_names ) ;
+            }
+
+            bool Equals( const StabilizationCoefficients& other ) {
+                return std::equal( map_.begin(), map_.end(), other.map_.begin() );
             }
     };
 
@@ -1827,7 +1843,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preparations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType C_12( 1.0 );
-            C_12 *= getStabScalar( x, it , stabil_coeff_.Power("C12") );
+            C_12 *= getStabScalar( x, it , "C12" );
 
             // contribution to u vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -1976,7 +1992,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             //some preparations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType D_12( 1.0 );
-            D_12 *= getStabScalar( x, it , stabil_coeff_.Power("D12") );
+            D_12 *= getStabScalar( x, it , "D12" );
 
             // contribution to u vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -2051,7 +2067,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             //some preperations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             double D_11( 1.0 );
-            D_11 *= getStabScalar( x, it , stabil_coeff_.Power("D11") );
+            D_11 *= getStabScalar( x, it , "D11" );
 
             // contribution to p vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -2232,7 +2248,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preperations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType D_12( 1.0 );
-            D_12 *= getStabScalar( x, it , stabil_coeff_.Power("D12") );
+            D_12 *= getStabScalar( x, it , "D12" );
 
             // contribution to p vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -2257,18 +2273,15 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         }
 
         template < class LocalPoint >
-        double getStabScalar( const LocalPoint& x , const IntersectionIteratorType& it, const double param ) const
+        double getStabScalar( const LocalPoint& x , const IntersectionIteratorType& it, const std::string coeffName ) const
         {
-            if ( param == -9 ) {
+            const StabilizationCoefficients::PowerType  power   = stabil_coeff_.Power   ( coeffName );
+            const StabilizationCoefficients::FactorType factor  = stabil_coeff_.Factor  ( coeffName );
+            if ( power == StabilizationCoefficients::invalid_power ) {
                 return 0.0;
             }
-            else if ( param == 0 ) {
-                return 1.0;
-            }
-            else {
 //                return std::pow( it.intersectionGlobal().integrationElement( x ), param );
-                return std::pow( getLenghtOfIntersection( it ), param );
-            }
+            return factor * std::pow( getLenghtOfIntersection( it ), power );
         }
 
         /**
@@ -2386,7 +2399,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preparations
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             double C_11( 1.0 );
-            C_11 *= getStabScalar( x, it , stabil_coeff_.Power("C11") );
+            C_11 *= getStabScalar( x, it , "C11" );
 
             // contribution to u vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -2454,7 +2467,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preparations
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType C_12( 1.0 );
-            C_12 *= getStabScalar( x, it , stabil_coeff_.Power("C12") );
+            C_12 *= getStabScalar( x, it , "C12" );
 
             // contribution to sigma vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -2522,7 +2535,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preparations
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             double C_11( 1.0 );
-            C_11 *= getStabScalar( x, it , stabil_coeff_.Power("C11") );
+            C_11 *= getStabScalar( x, it , "C11" );
 
             // contribution to u vector
             uReturn = dyadicProduct( u, outerNormal );
@@ -2602,7 +2615,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             const VelocityRangeType xWorld = geometry.global( xIntersectionGlobal );
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             double C_11( 1.0 );
-            C_11 *= getStabScalar( x, it , stabil_coeff_.Power("C11") );
+            C_11 *= getStabScalar( x, it , "C11" );
 
             // contribution to rhs
             VelocityRangeType gD( 0.0 );
