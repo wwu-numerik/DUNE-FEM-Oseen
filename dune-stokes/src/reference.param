@@ -25,7 +25,7 @@ dgf_file_3d: grid_3d.dgf
 #			1: minref, stab coeff are varied
 #			2: minref, bfg-tau-start <= bfg-tau-stop
 # no runtype set --> old minrun behavior
-runytpe: 0
+runtype: 0
 
 #in runtype 0 refine maxref + 1 - minref times
 minref: 0
