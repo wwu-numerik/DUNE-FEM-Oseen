@@ -70,8 +70,8 @@ typedef std::vector<Dune::StabilizationCoefficients>
     CoeffVector;
 
 //! used in all runs to store L2 errors across runs, but i forgot why...
-typedef std::vector< std::vector<double> >
-    L2ErrorVector;
+typedef std::vector< RunInfo >
+    RunInfoVector;
 
 //! the strings used for column headers in tex output
 typedef std::vector<std::string>
@@ -153,8 +153,6 @@ int main( int argc, char** argv )
 
     int err = 0;
 
-    profiler().Reset( 9 ); //prepare for 9 single runs
-
     //a little trickery so felix doesn't scream at me for breaking any of his scripts/parameterfiles
     const int runtype = Parameters().getParam( "runtype", -1 ) != -1  ? Parameters().getParam( "runtype", -1 ) : Parameters().getParam( "multirun", true );
     switch ( runtype ) {
@@ -172,8 +170,6 @@ int main( int argc, char** argv )
             break;
         }
     } // end case
-    //profiler output in current format is somewhat meaningless
-    profiler().Output( mpicomm, 0, 0 );
 
     return err;
   }
@@ -191,7 +187,7 @@ void RefineRun( CollectiveCommunication& mpicomm )
     const std::string errheaders[] = { "h", "el't","runtime","Velocity", "Pressure" };
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
-    L2ErrorVector l2_errors;
+    RunInfoVector run_infos;
     Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
     eoc_output.initialize( "data","eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
@@ -203,17 +199,19 @@ void RefineRun( CollectiveCommunication& mpicomm )
     // setting this to true will give each run a unique logilfe name
     bool per_run_log_target = Parameters().getParam( "per-run-log-target", true );
 
+    profiler().Reset( maxref - minref + 1 );
     for ( int ref = minref; ref <= maxref; ++ref ) {
         if ( per_run_log_target )
             Logger().SetPrefix( "dune_stokes_ref_"+Stuff::toString(ref) );
 
         RunInfo info = singleRun( mpicomm, ref );
-        l2_errors.push_back( info.L2Errors );
+        run_infos.push_back( info );
         eoc_output.setErrors( idx,info.L2Errors );
         eoc_texwriter.setInfo( info );
         eoc_output.write( eoc_texwriter, ( ref >= maxref ) );
-        profiler().NextRun( info.L2Errors[0] ); //finish this run
+        profiler().NextRun(); //finish this run
     }
+    profiler().Output( mpicomm, run_infos );
 }
 
 void StabRun( CollectiveCommunication& mpicomm )
@@ -222,7 +220,7 @@ void StabRun( CollectiveCommunication& mpicomm )
     const std::string errheaders[] = { "h", "el't","runtime","C11","C12","D11","D12","Velocity", "Pressure" };
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
-    L2ErrorVector l2_errors;
+    RunInfoVector run_infos;
     Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
     eoc_output.initialize( "data","eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
@@ -237,10 +235,11 @@ void StabRun( CollectiveCommunication& mpicomm )
 
     Logger().Info().Resume();
     Logger().Info() << "beginning " << coeff_vector.size() << " runs" << std::endl ;
+    profiler().Reset( coeff_vector.size() );
     CoeffVector::const_iterator it = coeff_vector.begin();
     for ( ; it != coeff_vector.end(); ++it ) {
         RunInfo info = singleRun( mpicomm, ref, *it );
-        l2_errors.push_back( info.L2Errors );
+        run_infos.push_back( info );
 
         //push errors to eoc-outputter class
         eoc_output.setErrors( idx,info.L2Errors );
@@ -249,10 +248,12 @@ void StabRun( CollectiveCommunication& mpicomm )
         //the writer needs to know if it should close the table etc.
         eoc_output.write( eoc_texwriter, ( (it+1) == coeff_vector.end() ) );
 
-        profiler().NextRun( info.L2Errors[0] ); //finish this run
+        profiler().NextRun(); //finish this run
     }
     Logger().Info().Resume();
     Logger().Info() << "completed " << coeff_vector.size() << " runs" << std::endl ;
+
+    profiler().Output( mpicomm, run_infos );
 }
 
 void BfgRun( CollectiveCommunication& mpicomm )
@@ -262,11 +263,11 @@ void BfgRun( CollectiveCommunication& mpicomm )
     Parameters().setParam( "do-bfg", false );
     RunInfo nobfg_info = singleRun( mpicomm, refine_level_factor );
 
-    L2ErrorVector l2_errors;
+    RunInfoVector run_infos;
     const std::string bfgheaders[] = { "h", "el't","runtime","$\\tau$","avg inner","min inner","max inner","total outer","max inner acc.","Velocity", "Pressure" };
     const unsigned int num_bfgheaders = sizeof ( bfgheaders ) / sizeof ( bfgheaders[0] );
     ColumnHeaders bfgColumnHeaders ( bfgheaders, bfgheaders + num_bfgheaders ) ;
-    l2_errors.push_back( nobfg_info.L2Errors );
+    run_infos.push_back( nobfg_info );
 
     Dune::FemEoc& bfg_output = Dune::FemEoc::instance( );
     bfg_output.initialize( "data","eoc-file", "bfg-desc", "eoc-template.tex" );
@@ -281,16 +282,19 @@ void BfgRun( CollectiveCommunication& mpicomm )
     const double stop_tau = Parameters().getParam( "bfg-tau-stop", 0.4 ) ;
     const double tau_inc = Parameters().getParam( "bfg-tau-inc", 0.025 ) ;
 
+    profiler().Reset( ( stop_tau - start_tau ) / tau_inc + 1 );
+
     for ( double tau = start_tau; tau < stop_tau; tau += tau_inc ) {
         Parameters().setParam( "bfg-tau", tau );
 
         RunInfo info = singleRun( mpicomm, refine_level_factor );
-        l2_errors.push_back( info.L2Errors );
+        run_infos.push_back( info );
         bfg_output.setErrors( idx,info.L2Errors );
         bfg_texwriter.setInfo( info );
         bfg_output.write( bfg_texwriter, !( tau + tau_inc < stop_tau ) );
-        profiler().NextRun( info.L2Errors[0] ); //finish this run
+        profiler().NextRun(); //finish this run
     }
+    profiler().Output( mpicomm, run_infos );
 }
 
 RunInfo singleRun(  CollectiveCommunication& mpicomm,
@@ -402,10 +406,10 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     computedSolutions.discretePressure().clear();
     computedSolutions.discreteVelocity().clear();
 
-    profiler().StartTiming( "Pass:apply" );
+    profiler().StartTiming( "Pass -- APPLY" );
     stokesPass.apply( initArgToPass, computedSolutions );
-    profiler().StopTiming( "Pass:apply" );
-    info.run_time = profiler().GetTiming( "Pass:apply" );
+    profiler().StopTiming( "Pass -- APPLY" );
+    info.run_time = profiler().GetTiming( "Pass -- APPLY" );
     stokesPass.getRuninfo( info );
 
     /* ********************************************************************** *
@@ -440,6 +444,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     info.d12 = Pair( stabil_coeff.Power( "D12" ), stabil_coeff.Factor( "D12" ) );
     info.bfg = Parameters().getParam( "do-bfg", true );
     info.gridname = gridPart.grid().name();
+    info.refine_level = refine_level;
 
     info.polorder_pressure = StokesModelTraitsImp::pressureSpaceOrder;
     info.polorder_sigma = StokesModelTraitsImp::sigmaSpaceOrder;

@@ -226,7 +226,6 @@ class StokesPass
         {
 
             // profiler information
-            profiler().StartTiming("Pass");
             profiler().StartTiming("Pass -- ASSEMBLE");
 
             // entity and geometry types
@@ -2643,8 +2642,6 @@ class StokesPass
 
             // do profiling
             profiler().StopTiming("Pass -- SOLVER");
-            profiler().StopTiming("Pass");
-
         } // end of apply
 
         virtual void compute( const TotalArgumentType& /*arg*/, DestinationType& /*dest*/ ) const

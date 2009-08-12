@@ -87,12 +87,12 @@ namespace Dune
             template < class Stream >
             void print( Stream& stream ) {
                 if ( this->Equals( getDefaultStabilizationCoefficients() ) )
-                    stream << "default stabilisation coefficients used" << std::endl;
+                    stream << "default stabilisation coefficients used " ;
                 else {
                     CoefficientMap::const_iterator it = map_.begin();
                     for ( ; it != map_.end(); ++it ) {
-                        stream  << (*it).first << " (factor/power): " << (*it).second.second
-                                << " / " << (*it).second.first << std::endl;
+                        stream  << std::endl << (*it).first << " (factor/power): " << (*it).second.second
+                                << " / " << (*it).second.first ;
                     }
                 }
             }
