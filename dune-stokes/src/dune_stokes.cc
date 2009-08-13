@@ -127,21 +127,18 @@ int main( int argc, char** argv )
     /* ********************************************************************** *
      * initialize all the stuff we need                                       *
      * ********************************************************************** */
-    if ( !(  Parameters().ReadCommandLine( argc, argv ) ) ) {
-        return 1;
-    }
-    if ( !(  Parameters().SetUp() ) ) {
-        std::cerr << "\nUsage: " << argv[0] << " parameterfile \n" << "\t --- OR --- \n";
+    if ( argc < 2 ) {
+        std::cerr << "\nUsage: " << argv[0] << " parameterfile \n" << "\n\t --- OR --- \n";
         std::cerr << "\nUsage: " << argv[0] << " paramfile:"<<"file" << " more-opts:val ..." << std::endl;
         Parameters().PrintParameterSpecs( std::cerr );
         std::cerr << std::endl;
         return 2;
     }
-    else { //the only valid code path
-        Parameters().SetGridDimension( GridType::dimensionworld );
-        Parameters().SetPolOrder( POLORDER );
-//        Parameters().Print( std::cout );
+    if ( !(  Parameters().ReadCommandLine( argc, argv ) ) ) {
+        return 1;
     }
+
+
 
     // LOG_NONE = 1, LOG_ERR = 2, LOG_INFO = 4,LOG_DEBUG = 8,LOG_CONSOLE = 16,LOG_FILE = 32
     //--> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_CONSOLE | LOG_FILE = 62
@@ -314,13 +311,13 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
      * initialize the grid                                                    *
      * ********************************************************************** */
     infoStream << "\n- initialising grid" << std::endl;
-    Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename() );
+    const int gridDim = GridType::dimensionworld;
+    Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename( gridDim ) );
     const int refine_level = refine_level_factor * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
     gridPtr->globalRefine( refine_level );
     typedef Dune::AdaptiveLeafGridPart< GridType >
         GridPartType;
     GridPartType gridPart( *gridPtr );
-    const int gridDim = GridType::dimensionworld;
     info.codim0 = gridPtr->size( 0 );
     info.codim0 = gridPart.grid().size( 0 );
     Dune::GridWidthProvider< GridType > gw ( *gridPtr );
