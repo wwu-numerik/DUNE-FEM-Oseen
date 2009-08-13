@@ -134,6 +134,7 @@
 		<Unit filename="../../dune-stuff/stuff/grid.hh" />
 		<Unit filename="../../dune-stuff/stuff/logging.hh" />
 		<Unit filename="../../dune-stuff/stuff/misc.hh" />
+		<Unit filename="../../dune-stuff/stuff/parametercontainer.hh" />
 		<Unit filename="../../dune-stuff/stuff/postprocessing.hh" />
 		<Unit filename="../../dune-stuff/stuff/printing.hh" />
 		<Unit filename="../../dune-stuff/stuff/profiler.hh" />
