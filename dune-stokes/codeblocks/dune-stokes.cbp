@@ -87,12 +87,12 @@
 			<Add option="-DADAPTIVE_SOLVER" />
 			<Add option="-DUSE_BFG_CG_SCHEME" />
 			<Add option="-DUSE_ALTERNATIVE_SOLVER" />
+			<Add directory="../../dune-stokes/" />
 			<Add directory="../../dune-common/" />
 			<Add directory="../../dune-stuff/" />
 			<Add directory="../../dune-grid/" />
 			<Add directory="../../dune-istl/" />
 			<Add directory="../../dune-fem/" />
-			<Add directory="../../dune-stokes/" />
 			<Add directory="/share/dune/Modules/modules_x86_64/alberta-1.2/include" />
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.14/include" />
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.14/include/parallel" />
