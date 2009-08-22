@@ -24,6 +24,7 @@ dgf_file_3d: grid_3d.dgf
 # runtype 	0: minref <= maxref
 #			1: minref, stab coeff are varied
 #			2: minref, bfg-tau-start <= bfg-tau-stop
+#			3: minref, accuracy_start <= accuracy_stop + inner lopo for inner acc
 # no runtype set --> old minrun behavior
 runtype: 0
 
@@ -31,7 +32,7 @@ runtype: 0
 minref: 0
 maxref: 2
 
-#in runtype 1 vary 
+#in runtype 1 vary
 minpow: -1
 maxpow: 1
 minfactor: 0.0
@@ -42,6 +43,11 @@ incfactor: 0.5
 bfg-tau-start: 0
 bfg-tau-stop: 0.5
 bfg-tau-inc: 0.075
+
+#parameters for runtype 3,
+accurracy_start: 10e-5
+accurracy_factor: 10e-3
+accurracy_steps: 5
 
 #*********** end runtype specific parameters **************************************************
 
