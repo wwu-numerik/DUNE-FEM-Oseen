@@ -188,7 +188,7 @@ void RefineRun( CollectiveCommunication& mpicomm )
 {
     Logger().Info() << "starting refine run " << std::endl;
     // column headers for eoc table output
-    const std::string errheaders[] = { "h", "el't","runtime","Velocity", "Pressure" };
+    const std::string errheaders[] = { "h", "el't","Laufzeit (s)","Geschwindigkeit", "Druck" };
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
     RunInfoVector run_infos;
@@ -222,7 +222,7 @@ void AccuracyRun( CollectiveCommunication& mpicomm )
 {
     Logger().Info() << "starting accurracy run " << std::endl;
     // column headers for eoc table output
-    const std::string errheaders[] = { "h", "el't","runtime (s)","avg. inner iter.","inner acc.","total outer iter.","outer acc.","Velocity", "Pressure" };
+    const std::string errheaders[] = { "h", "el't","Laufzeit (s)","\\o{} Iter. (innen)","Genauigkeit (innen)","\\# Iter. (aussen)","Genauigkeit (aussen)","Geschwindigkeit", "Druck" };
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
     RunInfoVector run_infos;
@@ -278,7 +278,7 @@ void StabRun( CollectiveCommunication& mpicomm )
 {
     Logger().Info() << "starting stab run " << std::endl;
     // column headers for eoc table output
-    const std::string errheaders[] = { "h", "el't","runtime","C11","C12","D11","D12","Velocity", "Pressure" };
+    const std::string errheaders[] = { "h", "el't","Laufzeit (s)","C11","C12","D11","D12","Geschwindigkeit", "Druck" };
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
     RunInfoVector run_infos;
@@ -325,7 +325,7 @@ void BfgRun( CollectiveCommunication& mpicomm )
     RunInfo nobfg_info = singleRun( mpicomm, refine_level_factor );
 
     RunInfoVector run_infos;
-    const std::string bfgheaders[] = { "h", "el't","runtime","$\\tau$","avg inner","min inner","max inner","total outer","max inner acc.","Velocity", "Pressure" };
+    const std::string bfgheaders[] = { "h", "el't","Laufzeit (s)","$\\tau$","\\o{} Iter. (i)","min \\# Iter. (i)","max \\# Iter. (i)","\\# Iter. (a)","min. Genau. (i)","Geschwindigkeit", "Druck" };
     const unsigned int num_bfgheaders = sizeof ( bfgheaders ) / sizeof ( bfgheaders[0] );
     ColumnHeaders bfgColumnHeaders ( bfgheaders, bfgheaders + num_bfgheaders ) ;
     run_infos.push_back( nobfg_info );
