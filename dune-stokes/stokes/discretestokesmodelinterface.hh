@@ -81,7 +81,8 @@ namespace Dune
             }
 
             static StabilizationCoefficients getDefaultStabilizationCoefficients() {
-                return StabilizationCoefficients( 1, 1, 1, 1, 1.0, 1.0, 0.0, 0.0 );
+                return StabilizationCoefficients( -1,   invalid_power,    1,    invalid_power,
+                                                 1.0,               0,  1.0,                0 );
             }
 
             template < class Stream >
