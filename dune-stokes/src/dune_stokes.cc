@@ -59,6 +59,12 @@
 #include "pressure.hh"
 #include "problem.hh"
 
+#ifndef COMMIT
+    #define COMMIT "undefined"
+#endif
+
+static const std::string commit_string (COMMIT);
+
 #if ENABLE_MPI
         typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
 #else
@@ -174,8 +180,12 @@ int main( int argc, char** argv )
         }
     } // end case
 
+    Logger().Dbg() << "\nRun from: " << commit_string << std::endl;
     return err;
   }
+
+
+
   catch (Dune::Exception &e){
     std::cerr << "Dune reported error: " << e << std::endl;
   }
