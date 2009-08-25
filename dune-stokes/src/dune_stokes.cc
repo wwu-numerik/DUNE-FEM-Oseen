@@ -107,6 +107,8 @@ void RefineRun  ( CollectiveCommunication& mpicomm );
 void StabRun    ( CollectiveCommunication& mpicomm );
 //! multiple runs with  set in [accuracy_start :  *=accuracy_factor : accuracy_stop] and everything else on default
 void AccuracyRun( CollectiveCommunication& mpicomm );
+//! multiple runs with  set in [accuracy_start :  *=accuracy_factor : accuracy_stop] and everything else on default (only outer acc is varied)
+void AccuracyRunOuter( CollectiveCommunication& mpicomm );
 
 //! brute force all permutations
 CoeffVector getAll_Permutations();
@@ -176,6 +178,10 @@ int main( int argc, char** argv )
         }
         case 3: {
             AccuracyRun( mpicomm );
+            break;
+        }
+        case 4: {
+            AccuracyRunOuter( mpicomm );
             break;
         }
     } // end case
@@ -275,11 +281,56 @@ void AccuracyRun( CollectiveCommunication& mpicomm )
             profiler().NextRun(); //finish this run
 
             Logger().Info() << numruns << " runs remaining" << std::endl;
-//            if ( numruns<=0 ) //yeah, stop conditions are a bit flaky
-//                break;
         }
-//        if ( numruns<=0 )
-//            break;
+    }
+    profiler().Output( mpicomm, run_infos );
+}
+
+void AccuracyRunOuter( CollectiveCommunication& mpicomm )
+{
+    Logger().Info() << "starting accurracyOuter run " << std::endl;
+    // column headers for eoc table output
+    const std::string errheaders[] = { "h", "el't","Laufzeit (s)","\\o{} Iter. (innen)","\\# Iter. (aussen)","Genauigkeit (aussen)","Geschwindigkeit", "Druck" };
+    const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
+    ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
+    RunInfoVector run_infos;
+    Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
+    eoc_output.initialize( "data","eoc-file", "eoc-desc", "eoc-template.tex" );
+    size_t idx = eoc_output.addEntry( errorColumnHeaders );
+    Stuff::AccurracyOutputOuter  eoc_texwriter( errorColumnHeaders );
+
+    double  accurracy_start  = Parameters().getParam( "accurracy_start", 10e-3 );
+    int     accurracy_steps  = Parameters().getParam( "accurracy_steps", 5 );
+    double  accurracy_factor = Parameters().getParam( "accurracy_factor", 10e-3 );
+
+    Logger().Dbg() << " accurracy_start: " <<  accurracy_start
+            << " accurracy_steps: " <<  accurracy_steps
+            << " accurracy_factor: " <<  accurracy_factor << std::endl;
+
+    int ref = Parameters().getParam( "minref", 0 );
+
+    // setting this to true will give each run a unique logilfe name
+    bool per_run_log_target = Parameters().getParam( "per-run-log-target", true );
+
+    int numruns = accurracy_steps;
+    profiler().Reset( numruns );
+    for ( int i = 0; i < accurracy_steps; ++i ) {
+        if ( per_run_log_target )
+            Logger().SetPrefix( "dune_stokes_ref_"+Stuff::toString(ref) );
+
+        double outer_acc = accurracy_start * std::pow( accurracy_factor, double( i ) );
+        double inner_acc = outer_acc;
+        Parameters().setParam( "absLimit", outer_acc );
+        Parameters().setParam( "inner_absLimit", inner_acc );
+        RunInfo info = singleRun( mpicomm, ref );
+        run_infos.push_back( info );
+        eoc_output.setErrors( idx,info.L2Errors );
+        eoc_texwriter.setInfo( info );
+        numruns--;
+        eoc_output.write( eoc_texwriter, !numruns );
+        profiler().NextRun(); //finish this run
+
+        Logger().Info() << numruns << " runs remaining" << std::endl;
     }
     profiler().Output( mpicomm, run_infos );
 }
