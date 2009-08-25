@@ -2,7 +2,7 @@
 # --> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_FILE = 46
 # ANY odd number will disable ALL logging
 # max logging: 62
-loglevel: 62
+loglevel: 22
 
 #only prefix
 logfile: dune_stokes
@@ -13,7 +13,7 @@ fem.io.datadir: data
 fem.io.logdir: log
 fem.io.outputformat: 1
 
-per-run-log-target: 1
+per-run-log-target: 0
 per-run-output: 1
 
 #

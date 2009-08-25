@@ -10,3 +10,4 @@ doxygen-tag
 *REMOTE*
 doxy-header.html
 .svn
+build-*/

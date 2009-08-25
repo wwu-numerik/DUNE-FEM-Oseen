@@ -123,12 +123,12 @@
 			<Add option="-DADAPTIVE_SOLVER" />
 			<Add option="-DUSE_BFG_CG_SCHEME" />
 			<Add option="-DUSE_ALTERNATIVE_SOLVER" />
+			<Add directory="../../dune-stokes/" />
 			<Add directory="../../dune-common/" />
 			<Add directory="../../dune-stuff/" />
 			<Add directory="../../dune-grid/" />
 			<Add directory="../../dune-istl/" />
 			<Add directory="../../dune-fem/" />
-			<Add directory="../../dune-stokes/" />
 			<Add directory="/share/dune/Modules/modules_x86_64/alberta-1.2/include" />
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.14/include" />
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.14/include/parallel" />
@@ -176,7 +176,7 @@
 		</Unit>
 		<Unit filename="../src/pressure.hh" />
 		<Unit filename="../src/problem.hh" />
-		<Unit filename="../src/test.param" />
+		<Unit filename="../src/reference.param" />
 		<Unit filename="../src/velocity.hh" />
 		<Unit filename="../stokes/cghelper.hh" />
 		<Unit filename="../stokes/discretegradientpass.hh" />
@@ -188,6 +188,7 @@
 		<Unit filename="../../dune-stuff/stuff/grid.hh" />
 		<Unit filename="../../dune-stuff/stuff/logging.hh" />
 		<Unit filename="../../dune-stuff/stuff/misc.hh" />
+		<Unit filename="../../dune-stuff/stuff/parametercontainer.hh" />
 		<Unit filename="../../dune-stuff/stuff/postprocessing.hh" />
 		<Unit filename="../../dune-stuff/stuff/printing.hh" />
 		<Unit filename="../../dune-stuff/stuff/profiler.hh" />
