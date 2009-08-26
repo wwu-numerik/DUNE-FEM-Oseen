@@ -32,9 +32,20 @@
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/logging.hh>
 
+#include <cmath>
+
 
 
 namespace Dune {
+
+struct SaddlepointInverseOperatorInfo {
+    int iterations_inner_avg;
+    int iterations_inner_min;
+    int iterations_inner_max;
+    int iterations_outer_total;
+    double max_inner_accuracy;
+};
+
   //!CG Verfahren fuer Sattelpunkt Problem
   //
   /**   \brief
@@ -83,7 +94,7 @@ class NestedCgSaddlepointInverseOperator
                 class DiscreteSigmaFunctionType,
                 class DiscreteVelocityFunctionType,
                 class DiscretePressureFunctionType  >
-    void solve( const DomainType& arg,
+    SaddlepointInverseOperatorInfo solve( const DomainType& arg,
                 RangeType& dest,
                 XmatrixObjectType& Xmatrix,
                 MmatrixObjectType& Mmatrix,
@@ -104,7 +115,7 @@ class NestedCgSaddlepointInverseOperator
         if ( Parameters().getParam( "disableSolver", false ) ) {
             logInfo.Resume();
             logInfo << "solving disabled via parameter file" << std::endl;
-            return;
+            return SaddlepointInverseOperatorInfo();
         }
 
 		// relative min. error at which cg-solvers will abort
@@ -286,6 +297,8 @@ class NestedCgSaddlepointInverseOperator
         a_solver.apply ( Bp_temp, velocity );
 
         logInfo << "\nEnd NestedCgSaddlePointInverseOperator " << std::endl;
+
+        return SaddlepointInverseOperatorInfo();
     }
 
   };
@@ -332,7 +345,7 @@ class SaddlepointInverseOperator
                 class DiscreteSigmaFunctionType,
                 class DiscreteVelocityFunctionType,
                 class DiscretePressureFunctionType  >
-    void solve( const DomainType& arg,
+    SaddlepointInverseOperatorInfo solve( const DomainType& arg,
                 RangeType& dest,
                 XmatrixObjectType& Xmatrix,
                 MmatrixObjectType& Mmatrix,
@@ -353,15 +366,16 @@ class SaddlepointInverseOperator
         if ( Parameters().getParam( "disableSolver", false ) ) {
             logInfo.Resume();
             logInfo << "solving disabled via parameter file" << std::endl;
-            return;
+            return SaddlepointInverseOperatorInfo();
         }
 
 		// relative min. error at which cg-solvers will abort
         const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
 		// aboslute min. error at which cg-solvers will abort
-        const double absLimit = Parameters().getParam( "absLimit", 1e-8 );
+        const double outer_absLimit = Parameters().getParam( "absLimit", 1e-8 );
+        const double inner_absLimit = Parameters().getParam( "inner_absLimit", 1e-8 );
         const int solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
-        const unsigned int maxIter = Parameters().getParam( "maxIter", 500 );
+        const int maxIter = Parameters().getParam( "maxIter", 500 );
 
 #ifdef USE_BFG_CG_SCHEME
         const double tau = Parameters().getParam( "bfg-tau", 0.1 );
@@ -419,13 +433,21 @@ class SaddlepointInverseOperator
             A_Solver;
         typedef typename A_Solver::ReturnValueType
             ReturnValueType;
-
-        A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit*0.01, solverVerbosity > 3 );
+#ifdef USE_BFG_CG_SCHEME
+        //the bfg scheme uses the outer acc. as a base
+        double current_inner_accuracy = do_bfg ? tau * outer_absLimit : inner_absLimit;
+        double max_inner_accuracy = current_inner_accuracy;
+#else
+        double current_inner_accuracy = inner_absLimit;
+#endif
+        A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, current_inner_accuracy, solverVerbosity > 3 );
         ReturnValueType a_solver_info;
 /*****************************************************************************************/
 
-        unsigned int iteration = 0;
-        unsigned int total_inner_iterations = 0;
+        int iteration = 0;
+        int total_inner_iterations = 0;
+        int min_inner_iterations = std::numeric_limits<int>::max();
+        int max_inner_iterations = 0;
         double delta; //norm of residuum
         double gamma=0;
         double rho;
@@ -459,7 +481,7 @@ class SaddlepointInverseOperator
         d.assign( residuum );
 
         delta = residuum.scalarProductDofs( residuum );
-        while( (delta > absLimit ) && (iteration++ < maxIter ) ) {
+        while( (delta > outer_absLimit ) && (iteration++ < maxIter ) ) {
             if ( iteration > 1 ) {
                 // gamma_{m+1} = delta_{m+1} / delta_m
                 gamma = delta / gamma;
@@ -470,10 +492,14 @@ class SaddlepointInverseOperator
 
 #ifdef USE_BFG_CG_SCHEME
                 if ( do_bfg ) {
-                    double limit = tau * std::min( 1. , absLimit / std::min ( delta * iteration, 1.0 ) );
-                    a_solver.setAbsoluteLimit( limit );
+                    //the form from the precond. paper (does not work properly)
+//                    current_inner_accuracy = tau * std::min( 1. , absLimit / std::min ( std::pow( delta, int(iteration) ), 1.0 ) );
+                    //my form, works
+                    current_inner_accuracy = tau * std::min( 1. , outer_absLimit / std::min ( delta , 1.0 ) );
+                    a_solver.setAbsoluteLimit( current_inner_accuracy );
+                    max_inner_accuracy = std::max( max_inner_accuracy, current_inner_accuracy );
                     if( solverVerbosity > 1 )
-                        logInfo << "\t\t\t set inner limit to: " << limit << "\n";
+                        logInfo << "\t\t\t set inner limit to: " << current_inner_accuracy << "\n";
                 }
 #endif
             // xi = A^{-1} ( B * d )
@@ -485,6 +511,8 @@ class SaddlepointInverseOperator
             if( solverVerbosity > 1 )
                 logInfo << "\t\t inner iterations: " << a_solver_info.first << std::endl;
             total_inner_iterations += a_solver_info.first;
+            min_inner_iterations = std::min( min_inner_iterations, a_solver_info.first );
+            max_inner_iterations = std::max( max_inner_iterations, a_solver_info.first );
 #endif
 
             // h = B_t * xi  + C * d
@@ -513,12 +541,23 @@ class SaddlepointInverseOperator
             if( solverVerbosity > 2 )
                 logInfo << "\t" << iteration << " SPcg-Iterationen  " << iteration << " Residuum:" << delta << std::endl;
         }
+
+        logInfo << "End SaddlePointInverseOperator " << std::endl;
+
+        SaddlepointInverseOperatorInfo info; //left blank in case of no bfg
 #ifdef USE_BFG_CG_SCHEME
+        const double avg_inner_iterations = total_inner_iterations / (double)iteration;
         if( solverVerbosity > 0 )
             logInfo << "\n #avg inner iter | #outer iter: "
-                    << total_inner_iterations / (double)iteration << " | " << iteration << std::endl;
+                    <<  avg_inner_iterations << " | " << iteration << std::endl;
+
+        info.iterations_inner_avg = avg_inner_iterations;
+        info.iterations_inner_min = min_inner_iterations;
+        info.iterations_inner_max = max_inner_iterations;
+        info.iterations_outer_total = iteration;
+        info.max_inner_accuracy = max_inner_accuracy;
 #endif
-        logInfo << "End SaddlePointInverseOperator " << std::endl;
+        return info;
     }
 
   };

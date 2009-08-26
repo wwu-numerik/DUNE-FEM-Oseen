@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 import sys
 import math
@@ -8,17 +9,25 @@ import time
 ## global defines
 
 # about the outer rectangle
-rectangle_length_x = 2.0
+rectangle_length_x = 1.0
 rectangle_length_y = 1.0
 
 # about the inner ellipse
-ellipse_radius_x = 0.45
-ellipse_radius_y = 0.25
-ellipse_center_x = 0.5 #rectangle_length_x / 2.0;
+# for different porosities
+# comment next three lines for manual radius
+porosity = 0.4
+standard_cell_area = rectangle_length_x * rectangle_length_y
+ellipse_radius_x = math.sqrt( ( 1.0 - porosity ) * standard_cell_area * ( 1.0 / math.pi ) )
+ellipse_radius_y = math.sqrt( ( 1.0 - porosity ) * standard_cell_area * ( 1.0 / math.pi ) )
+
+# manual circle radius
+#ellipse_radius_x = 0.45
+#ellipse_radius_y = 0.25
+ellipse_center_x = rectangle_length_x / 2.0;
 ellipse_center_y = rectangle_length_y / 2.0;
 
 # about the number of points to approximate
-number_of_points_per_quarter = 4
+number_of_points_per_quarter = 5
 
 # about the boundary ids
 id_of_ellipse_faces = 2
@@ -28,7 +37,7 @@ id_of_top_rectangle_faces = 5
 id_of_left_rectangle_faces = 6
 
 # about the files to be written
-triangle_filename = 'cube_with_hole_in_2d.poly'
+triangle_filename = 'unit_sand_pore_in_2d.poly'
 
 ## done with global defines
 

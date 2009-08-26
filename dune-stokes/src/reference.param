@@ -13,7 +13,7 @@ fem.io.datadir: data
 fem.io.logdir: log
 fem.io.outputformat: 1
 
-per-run-log-target: 1
+per-run-log-target: 0
 per-run-output: 1
 
 #
@@ -21,10 +21,11 @@ dgf_file_2d: grid_2d.dgf
 dgf_file_3d: grid_3d.dgf
 
 #*********** runtype specific parameters **************************************************
-# runtype 	0: minref <= maxref
+# runtype 		0: minref <= maxref
 #			1: minref, stab coeff are varied
 #			2: minref, bfg-tau-start <= bfg-tau-stop
 #			3: minref, accuracy_start <= accuracy_stop + inner lopo for inner acc
+#			4: minref, accuracy_start <= accuracy_stop 
 # no runtype set --> old minrun behavior
 runtype: 0
 

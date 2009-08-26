@@ -226,7 +226,6 @@ class StokesPass
         {
 
             // profiler information
-            profiler().StartTiming("Pass");
             profiler().StartTiming("Pass -- ASSEMBLE");
 
             // entity and geometry types
@@ -923,8 +922,9 @@ class StokesPass
 
                     // get flux coefficients
                     const double lengthOfIntersection = getLenghtOfIntersection( intIt );
-                    const double C_11 = 1.0 / lengthOfIntersection;
-                    const double D_11 = lengthOfIntersection;
+                    StabilizationCoefficients stabil_coeff ( discreteModel_.getStabilizationCoefficients() );
+                    const double C_11 = stabil_coeff.Factor("C11") * std::pow( lengthOfIntersection, stabil_coeff.Power("C11") );
+                    const double D_11 = stabil_coeff.Factor("D11") * std::pow( lengthOfIntersection, stabil_coeff.Power("D11") );
 
                     // if we are inside the grid
                     if ( intIt.neighbor() && !intIt.boundary() ) {
@@ -2635,15 +2635,13 @@ class StokesPass
 #ifdef USE_ALTERNATIVE_SOLVER
             AltInvOpType m_op;
             if ( Parameters().getParam( "alternative-solve", false ) )
-                m_op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+                info_ = m_op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
             else
 #endif
-                op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+            info_ = op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 
             // do profiling
             profiler().StopTiming("Pass -- SOLVER");
-            profiler().StopTiming("Pass");
-
         } // end of apply
 
         virtual void compute( const TotalArgumentType& /*arg*/, DestinationType& /*dest*/ ) const
@@ -2652,6 +2650,17 @@ class StokesPass
         virtual void allocateLocalMemory()
         {}
 
+#ifdef HAS_RUN_INFO
+        void getRuninfo( RunInfo& info )
+        {
+            info.iterations_inner_avg = info_.iterations_inner_avg;
+            info.iterations_inner_min = info_.iterations_inner_min;
+            info.iterations_inner_max = info_.iterations_inner_max;
+            info.iterations_outer_total = info_.iterations_outer_total;
+            info.max_inner_accuracy = info_.max_inner_accuracy;
+        }
+#endif
+
     private:
         DiscreteModelType& discreteModel_;
         GridPartType& gridPart_;
@@ -2659,6 +2668,7 @@ class StokesPass
         DiscreteVelocityFunctionSpaceType& velocitySpace_;
         DiscretePressureFunctionSpaceType& pressureSpace_;
         DiscreteSigmaFunctionSpaceType sigmaSpace_;
+        mutable SaddlepointInverseOperatorInfo info_;
 
         /**
          *  \todo   doc

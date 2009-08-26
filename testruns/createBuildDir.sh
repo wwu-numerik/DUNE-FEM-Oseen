@@ -1,9 +1,9 @@
 #!/bin/bash
 
 if [ $3 == 1 ] ; then
-	DIR=pol${1}_bfg_${2}
+	DIR=pol${1}_bfg_${2}${4}
 else
-	DIR=pol${1}_no-bfg_${2}
+	DIR=pol${1}_no-bfg_${2}${4}
 fi
 
 mkdir $DIR
@@ -15,6 +15,7 @@ ln -s ../gdbinit .gdbinit
 cp ../test.param .
 echo "do-bfg: $3" >> test.param
 mkdir data
-ln -s ../eoc-template.tex data/eoc-template.tex
-make
+cd data
+ln -s ../../eoc-template.tex
+cd ..
 
