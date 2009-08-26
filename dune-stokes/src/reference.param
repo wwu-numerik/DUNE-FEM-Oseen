@@ -2,7 +2,7 @@
 # --> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_FILE = 46
 # ANY odd number will disable ALL logging
 # max logging: 62
-loglevel: 22
+loglevel: 62
 
 #only prefix
 logfile: dune_stokes
@@ -21,10 +21,11 @@ dgf_file_2d: grid_2d.dgf
 dgf_file_3d: grid_3d.dgf
 
 #*********** runtype specific parameters **************************************************
-# runtype 	0: minref <= maxref
+# runtype 		0: minref <= maxref
 #			1: minref, stab coeff are varied
 #			2: minref, bfg-tau-start <= bfg-tau-stop
 #			3: minref, accuracy_start <= accuracy_stop + inner lopo for inner acc
+#			4: minref, accuracy_start <= accuracy_stop 
 # no runtype set --> old minrun behavior
 runtype: 0
 
