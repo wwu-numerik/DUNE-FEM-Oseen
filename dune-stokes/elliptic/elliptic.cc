@@ -80,6 +80,16 @@
 **
 **************************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include <dune/fem/pass/pass.hh>
+#include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
+#include <dune/fem/misc/femeoc.hh>
+#include <dune/fem/misc/gridwidth.hh>
+
+
 // define SKIP_GRAPE, if you don't want visualization.
 #define SKIP_GRAPE
 
