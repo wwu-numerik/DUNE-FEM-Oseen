@@ -19,8 +19,95 @@
 
 #include <dune/stuff/misc.hh>
 
+#include <algorithm>
+
 namespace Dune
 {
+    class StabilizationCoefficients {
+        public:
+            typedef int
+                PowerType;
+            typedef double
+                FactorType;
+
+            typedef std::pair<PowerType,FactorType>
+                ValueType;
+
+            typedef std::map< std::string, ValueType >
+                CoefficientMap;
+
+            static const PowerType invalid_power   = -9;
+            static const FactorType invalid_factor  = -9.0;
+
+        protected:
+            CoefficientMap map_;
+
+        public:
+            StabilizationCoefficients(  const FactorType pow,
+                                        const FactorType fac )
+            {
+                *this = StabilizationCoefficients( pow,pow,pow,pow,fac,fac,fac,fac );
+            }
+
+            StabilizationCoefficients(  const PowerType C11_pow,
+                                        const PowerType C12_pow,
+                                        const PowerType D11_pow,
+                                        const PowerType D12_pow,
+                                        const FactorType C11_fac,
+                                        const FactorType C12_fac,
+                                        const FactorType D11_fac,
+                                        const FactorType D12_fac )
+            {
+                map_["C11"] = ValueType( C11_pow, C11_fac );
+                map_["C12"] = ValueType( C12_pow, C12_fac );
+                map_["D11"] = ValueType( D11_pow, D11_fac );
+                map_["D12"] = ValueType( D12_pow, D12_fac );
+            }
+
+            FactorType Factor( const std::string& name ) {
+                return map_[name].second;
+            }
+
+            void Factor( const std::string& name, FactorType new_factor ) {
+                map_[name].second = new_factor;
+            }
+
+            PowerType Power( const std::string& name ) {
+                return map_[name].first;
+            }
+
+            void Power( const std::string& name, PowerType new_power ) {
+                map_[name].first = new_power;
+            }
+
+            static StabilizationCoefficients getDefaultStabilizationCoefficients() {
+                return StabilizationCoefficients( -1,   invalid_power,    1,    invalid_power,
+                                                 1.0,               0,  1.0,                0 );
+            }
+
+            template < class Stream >
+            void print( Stream& stream ) {
+                if ( this->Equals( getDefaultStabilizationCoefficients() ) )
+                    stream << "default stabilisation coefficients used " ;
+                else {
+                    CoefficientMap::const_iterator it = map_.begin();
+                    for ( ; it != map_.end(); ++it ) {
+                        stream  << std::endl << (*it).first << " (factor/power): " << (*it).second.second
+                                << " / " << (*it).second.first ;
+                    }
+                }
+            }
+
+            static std::vector<std::string> getCoefficientNames() {
+                const std::string names[] = { "C11","C12","D11","D12" };
+                const unsigned int num_names = sizeof ( names ) / sizeof ( names[0] );
+                return std::vector<std::string>( names, names + num_names ) ;
+            }
+
+            bool Equals( const StabilizationCoefficients& other ) {
+                return std::equal( map_.begin(), map_.end(), other.map_.begin() );
+            }
+    };
 
 /**
  *  \brief  Interface class for stokes problem definition in the LDG context.
@@ -372,6 +459,10 @@ class DiscreteStokesModelInterface
             inside,
             outside
         };
+
+        StabilizationCoefficients getStabilizationCoefficients() const {
+            return asImp().getStabilizationCoefficients();
+        }
 
         /**
          *  \brief  Returns true if problem has a flux contribution of type
@@ -1166,7 +1257,8 @@ class DiscreteStokesModelDefault;
 /**
  *  \brief  Traits class for DiscreteStokesModelDefault
  **/
-template < class GridPartImp, template <class > class AnalyticalForceImp, template <class > class AnalyticalDirichletDataImp, int gridDim, int polOrder >
+template < class GridPartImp, template <class > class AnalyticalForceImp, template <class > class AnalyticalDirichletDataImp,
+            int gridDim, int sigmaOrder, int velocityOrder = sigmaOrder, int pressureOrder = sigmaOrder  >
 class DiscreteStokesModelDefaultTraits
 {
     public:
@@ -1184,11 +1276,11 @@ class DiscreteStokesModelDefaultTraits
             FaceQuadratureType;
 
         //! polynomial order for the discrete sigma function space
-        static const int sigmaSpaceOrder = polOrder;
+        static const int sigmaSpaceOrder = sigmaOrder;
         //! polynomial order for the discrete velocity function space
-        static const int velocitySpaceOrder = polOrder;
+        static const int velocitySpaceOrder = velocityOrder;
         //! polynomial order for the discrete pressure function space
-        static const int pressureSpaceOrder = polOrder;
+        static const int pressureSpaceOrder = pressureOrder;
 
 //    private:
 
@@ -1629,18 +1721,12 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *  \param[in]  viscosity
          *          viscosity of the fluid
          **/
-        DiscreteStokesModelDefault( const int C_11,
-                                    const int C_12,
-                                    const int D_11,
-                                    const int D_12,
+        DiscreteStokesModelDefault( const StabilizationCoefficients& stab_coeff,
                                     const AnalyticalForceType& force,
                                     const AnalyticalDirichletDataType& dirichletData,
                                     const double viscosity )
             : viscosity_( viscosity ),
-            C_11_( C_11 ),
-            C_12_( C_12 ),
-            D_11_( D_11 ),
-            D_12_( D_12 ),
+            stabil_coeff_( stab_coeff ),
             force_( force ),
             dirichletData_( dirichletData )
         {}
@@ -1652,6 +1738,10 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          **/
         ~DiscreteStokesModelDefault()
         {}
+
+        StabilizationCoefficients getStabilizationCoefficients() const {
+            return stabil_coeff_;
+        }
 
         /**
          *  \brief  returns true
@@ -1754,7 +1844,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preparations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType C_12( 1.0 );
-            C_12 *= getStabScalar( x, it , C_12_ );
+            C_12 *= getStabScalar( x, it , "C12" );
 
             // contribution to u vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -1903,7 +1993,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             //some preparations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType D_12( 1.0 );
-            D_12 *= getStabScalar( x, it , D_12_ );
+            D_12 *= getStabScalar( x, it , "D12" );
 
             // contribution to u vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -1978,7 +2068,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             //some preperations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             double D_11( 1.0 );
-            D_11 *= getStabScalar( x, it , D_11_ );
+            D_11 *= getStabScalar( x, it , "D11" );
 
             // contribution to p vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -2159,7 +2249,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preperations
             VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType D_12( 1.0 );
-            D_12 *= getStabScalar( x, it , D_12_ );
+            D_12 *= getStabScalar( x, it , "D12" );
 
             // contribution to p vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -2181,21 +2271,6 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 LOGIC_ERROR
             }
 
-        }
-
-        template < class LocalPoint >
-        double getStabScalar( const LocalPoint& x , const IntersectionIteratorType& it, const double param ) const
-        {
-            if ( param == -9 ) {
-                return 0.0;
-            }
-            else if ( param == 0 ) {
-                return 1.0;
-            }
-            else {
-//                return std::pow( it.intersectionGlobal().integrationElement( x ), param );
-                return std::pow( getLenghtOfIntersection( it ), param );
-            }
         }
 
         /**
@@ -2313,7 +2388,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preparations
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             double C_11( 1.0 );
-            C_11 *= getStabScalar( x, it , C_11_ );
+            C_11 *= getStabScalar( x, it , "C11" );
 
             // contribution to u vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -2381,7 +2456,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preparations
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             VelocityRangeType C_12( 1.0 );
-            C_12 *= getStabScalar( x, it , C_12_ );
+            C_12 *= getStabScalar( x, it , "C12" );
 
             // contribution to sigma vector ( from inside entity )
             if ( side == BaseType::inside ) {
@@ -2449,7 +2524,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             // some preparations
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             double C_11( 1.0 );
-            C_11 *= getStabScalar( x, it , C_11_ );
+            C_11 *= getStabScalar( x, it , "C11" );
 
             // contribution to u vector
             uReturn = dyadicProduct( u, outerNormal );
@@ -2529,7 +2604,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             const VelocityRangeType xWorld = geometry.global( xIntersectionGlobal );
             const VelocityRangeType outerNormal = it.unitOuterNormal( x );
             double C_11( 1.0 );
-            C_11 *= getStabScalar( x, it , C_11_ );
+            C_11 *= getStabScalar( x, it , "C11" );
 
             // contribution to rhs
             VelocityRangeType gD( 0.0 );
@@ -2582,7 +2657,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
     private:
 
         const double viscosity_;
-        const int C_11_, C_12_, D_11_, D_12_;
+        StabilizationCoefficients stabil_coeff_;
         const AnalyticalForceType& force_;
         const AnalyticalDirichletDataType& dirichletData_;
 
@@ -2641,6 +2716,20 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             const DomainType difference = cornerOne - cornerTwo;
             return difference.two_norm();
         }
+
+        //! avoid code duplication by doing calculations for C_1X and D_1X here
+        template < class LocalPoint >
+        double getStabScalar( const LocalPoint& x , const IntersectionIteratorType& it, const std::string coeffName ) const
+        {
+            const StabilizationCoefficients::PowerType  power   = stabil_coeff_.Power   ( coeffName );
+            const StabilizationCoefficients::FactorType factor  = stabil_coeff_.Factor  ( coeffName );
+            if ( power == StabilizationCoefficients::invalid_power ) {
+                return 0.0;
+            }
+//                return std::pow( it.intersectionGlobal().integrationElement( x ), param );
+            return factor * std::pow( getLenghtOfIntersection( it ), power );
+        }
+
 
 };
 

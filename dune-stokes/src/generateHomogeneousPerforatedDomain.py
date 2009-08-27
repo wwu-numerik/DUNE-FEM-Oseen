@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 import sys
 import math
@@ -13,9 +14,6 @@ import time
 # clay soil: 0.51 ... 0.58
 porosity = 0.4
 #print 'porosity is %f' %( porosity )
-
-# about the files to be written
-triangle_filename = 'homogeneous_perforated_domain_2d_sand.poly'
 
 # about the domain
 domain_length_x = 1.0
@@ -34,6 +32,9 @@ computed_length_domain_x = number_of_cells_x * standard_cell_size_x
 computed_length_domain_y = number_of_cells_y * standard_cell_size_y
 #print 'domain size is %f x %f' %( computed_length_domain_x, computed_length_domain_y )
 #print 'there are %i x %i = %i standard cells' %( number_of_cells_x, number_of_cells_y, number_of_cells_x * number_of_cells_y )
+
+# about the files to be written
+triangle_filename = 'homogeneous_perforated_domain_2d_porosity_%s_%i_holes.poly' %( str( porosity ), number_of_cells_x * number_of_cells_y )
 
 # about the ellipses
 standard_circle_radius = math.sqrt( ( 1.0 - porosity ) * standard_cell_area * ( 1.0 / math.pi ) )
@@ -88,6 +89,13 @@ def generate_rectangle( length_x, length_y, ids ) :
 
 # write to trianlge
 def write_to_triangle( ellipsoids, outer_rectangle, holes, triangle_filename ) :
+	global number_of_points
+	#if ( number_of_cells_x * number_of_cells_y * number_of_points * 3 ) > 19 :
+		#print '\t[ writing                                 ]'
+		#print '\t[',
+		#five_percent_of_file_lines = int( number_of_cells_x * number_of_cells_y * number_of_points * 3 / 20.0 )
+		#five_percents_of_file = 0
+		#number_of_lines_written = 0
 	file = open( triangle_filename, 'w' )
 	# header
 	file.write( '# ########################################################################\n' )
@@ -118,12 +126,24 @@ def write_to_triangle( ellipsoids, outer_rectangle, holes, triangle_filename ) :
 			y = point_on_ellipse[ 1 ]
 			file.write( '\t%i\t%f\t%f\n' %( vertex_number, x, y ) )
 			vertex_number += 1
+			#if ( number_of_cells_x * number_of_cells_y * number_of_points * 3 ) > 19 :
+				#if ( number_of_lines_written % five_percent_of_file_lines ) == 0 :
+					#if five_percents_of_file < 20 :
+						#sys.stdout.write( '=' )
+						#sys.stdout.flush()
+						#five_percents_of_file += 1
 	# and the outer rectangle
 	for point_with_id_on_rectangle in outer_rectangle :
 		point_on_rectangle = point_with_id_on_rectangle[ 0 ]
 		x = point_on_rectangle[ 0 ]
 		y = point_on_rectangle[ 1 ]
 		file.write( '\t%i\t%f\t%f\n' %( vertex_number, x, y ) )
+		#if ( number_of_cells_x * number_of_cells_y * number_of_points * 3 ) > 19 :
+			#if ( number_of_lines_written % five_percent_of_file_lines ) == 0 :
+				#if five_percents_of_file < 20 :
+					#print '=',
+					#sys.stdout.flush()
+					#five_percents_of_file += 1
 		vertex_number += 1
 	file.write( '# these were the %i vertices\n' %( total_number_of_vertices ) )
 	file.write( '#\n' )
@@ -138,6 +158,12 @@ def write_to_triangle( ellipsoids, outer_rectangle, holes, triangle_filename ) :
 			id = point_with_id_on_ellipse[ 1 ]
 			file.write( '\t%i\t%i\t%i\t%i\n' %( face_number, ( face_number % len( ellipsoid ) ) + number_of_ellipsoids_written, ( ( face_number +1 ) % len( ellipsoid ) ) + number_of_ellipsoids_written, id ) )
 			face_number += 1
+			#if ( number_of_cells_x * number_of_cells_y * number_of_points * 3 ) > 19 :
+				#if ( number_of_lines_written % five_percent_of_file_lines ) == 0 :
+					#if five_percents_of_file < 20 :
+						#print '=',
+						#sys.stdout.flush()
+						#five_percents_of_file += 1
 		number_of_ellipsoids_written += len( ellipsoid )
 	# of the outer rectangle
 	for point_with_id_on_rectangle in outer_rectangle :
@@ -151,6 +177,12 @@ def write_to_triangle( ellipsoids, outer_rectangle, holes, triangle_filename ) :
 	file.write( '%i\n' %( len( holes ) ) )
 	for hole in holes :
 		file.write('\t0\t%f\t%f\n' %( hole[ 0 ], hole[ 1 ] ) )
+		#if ( number_of_cells_x * number_of_cells_y * number_of_points * 3 ) > 19 :
+			#if ( number_of_lines_written % five_percent_of_file_lines ) == 0 :
+				#if five_percents_of_file < 20 :
+					#print '=',
+					#sys.stdout.flush()
+					#five_percents_of_file += 1
 	file.write( '# these were the %i holes\n' %( len( holes ) ) )
 	file.write( '#\n' )
 	# ending
@@ -158,11 +190,21 @@ def write_to_triangle( ellipsoids, outer_rectangle, holes, triangle_filename ) :
 	file.write( '# end of file %s\n' %( triangle_filename ) )
 	file.write( '# written by generateHomogeneousPerforatedDomain.py on %s\n' %( time.strftime('%Y/%m/%d %H:%M:%S') ) )
 	file.write( '# ########################################################################\n' )
+	#if ( number_of_cells_x * number_of_cells_y * number_of_points * 3 ) > 19 :
+		#print ']'
 
 ## done with function definitions
 
 
 ## main
+
+print 'generating perforated domain with %i holes' %( number_of_cells_x * number_of_cells_y )
+#if ( number_of_cells_x * number_of_cells_y ) > 19 :
+	#print '\t[ generating                              ]'
+	#print '\t[',
+	#five_percent_of_holes = int( number_of_cells_x * number_of_cells_y / 20.0 )
+	#five_percents = 0
+	#number_of_holes_written = 0
 
 # points per ellipse
 number_of_points = 4 * number_of_points_per_quarter
@@ -171,18 +213,30 @@ number_of_points = 4 * number_of_points_per_quarter
 ellipsoids = [ ]
 holes = [ ]
 for i in range( 0, number_of_cells_x ) :
-  for j in range( 0, number_of_cells_y ) :
-    center_x = ( i * standard_cell_size_x ) + ellipse_center_x
-    center_y = ( j * standard_cell_size_y ) + ellipse_center_y
-    ellipse = generate_ellipse( center_x, center_y, ellipse_radius_x, ellipse_radius_y, id_of_ellipse_faces, number_of_points )
-    ellipsoids.append( ellipse )
-    hole = [ center_x, center_y ]
-    holes.append( hole )
+	for j in range( 0, number_of_cells_y ) :
+		center_x = ( i * standard_cell_size_x ) + ellipse_center_x
+		center_y = ( j * standard_cell_size_y ) + ellipse_center_y
+		ellipse = generate_ellipse( center_x, center_y, ellipse_radius_x, ellipse_radius_y, id_of_ellipse_faces, number_of_points )
+		ellipsoids.append( ellipse )
+		hole = [ center_x, center_y ]
+		holes.append( hole )
+		#if ( number_of_cells_x * number_of_cells_y ) > 19 :
+			#if ( number_of_holes_written % five_percent_of_holes ) == 0 :
+				#if five_percents < 20 :
+					##print '=',
+					#sys.stdout.write( '=' )
+					#sys.stdout.flush()
+					#five_percents += 1
+
+#if ( number_of_cells_x * number_of_cells_y ) > 19 :
+	#print ']'
+print 'epsilon_suqare is %f' %( standard_cell_area )
 
 # generate the outer rectangle
 outer_rectangle = generate_rectangle( computed_length_domain_x, computed_length_domain_y, [ id_of_bottom_rectangle_faces, id_of_right_rectangle_faces, id_of_top_rectangle_faces, id_of_left_rectangle_faces ] )
 
 # write to triangle .poly file
+print 'writing to %s' %( triangle_filename )
 write_to_triangle( ellipsoids, outer_rectangle, holes, triangle_filename )
 
 ## done with main

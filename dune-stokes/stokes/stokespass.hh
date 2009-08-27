@@ -226,7 +226,6 @@ class StokesPass
         {
 
             // profiler information
-            profiler().StartTiming("Pass");
             profiler().StartTiming("Pass -- ASSEMBLE");
 
             // entity and geometry types
@@ -923,8 +922,9 @@ class StokesPass
 
                     // get flux coefficients
                     const double lengthOfIntersection = getLenghtOfIntersection( intIt );
-                    const double C_11 = 1.0 / lengthOfIntersection;
-                    const double D_11 = lengthOfIntersection;
+                    StabilizationCoefficients stabil_coeff ( discreteModel_.getStabilizationCoefficients() );
+                    const double C_11 = stabil_coeff.Factor("C11") * std::pow( lengthOfIntersection, stabil_coeff.Power("C11") );
+                    const double D_11 = stabil_coeff.Factor("D11") * std::pow( lengthOfIntersection, stabil_coeff.Power("D11") );
 
                     // if we are inside the grid
                     if ( intIt.neighbor() && !intIt.boundary() ) {
@@ -1193,10 +1193,10 @@ class StokesPass
                                         // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
                                         SigmaRangeType tau_j( 0.0 );
-                                        sigmaBaseFunctionSetNeighbour.evaluate( j, xOutside, tau_j );
+                                        sigmaBaseFunctionSetElement.evaluate( j, xInside, tau_j );
                                         VelocityRangeType tau_j_times_normal( 0.0 );
                                         tau_j.mv( outerNormal, tau_j_times_normal );
-                                        const double v_i_times_tau_j_times_normal = velocityBaseFunctionSetElement.evaluateSingle( i, xInside, tau_j_times_normal );
+                                        const double v_i_times_tau_j_times_normal = velocityBaseFunctionSetNeighbour.evaluateSingle( i, xOutside, tau_j_times_normal );
                                         X_i_j += -0.5
                                             * elementVolume
                                             * integrationWeight
@@ -1460,9 +1460,9 @@ class StokesPass
                                         // compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
                                         VelocityRangeType v_i( 0.0 );
-                                        velocityBaseFunctionSetElement.evaluate( i, xInside, v_i );
+                                        velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
                                         PressureRangeType q_j( 0.0 );
-                                        pressureBaseFunctionSetNeighbour.evaluate( j, xOutside, q_j );
+                                        pressureBaseFunctionSetElement.evaluate( j, xInside, q_j );
                                         const double v_i_times_normal = v_i * outerNormal;
                                         const double q_j_times_v_i_times_normal = q_j * v_i_times_normal;
                                         Z_i_j += 0.5
@@ -1725,10 +1725,10 @@ class StokesPass
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
                                         // compute \hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
-                                        PressureRangeType q_j( 0.0 );
-                                        pressureBaseFunctionSetNeighbour.evaluate( j, xOutside, q_j );
                                         PressureRangeType q_i( 0.0 );
-                                        pressureBaseFunctionSetElement.evaluate( i, xInside, q_i );
+                                        pressureBaseFunctionSetNeighbour.evaluate( i, xOutside, q_i );
+                                        PressureRangeType q_j( 0.0 );
+                                        pressureBaseFunctionSetElement.evaluate( j, xInside, q_j );
                                         const double q_i_times_q_j = q_i * q_j;
                                         R_i_j += -1.0
                                             * D_11
@@ -2635,15 +2635,13 @@ class StokesPass
 #ifdef USE_ALTERNATIVE_SOLVER
             AltInvOpType m_op;
             if ( Parameters().getParam( "alternative-solve", false ) )
-                m_op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+                info_ = m_op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
             else
 #endif
-                op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+            info_ = op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 
             // do profiling
             profiler().StopTiming("Pass -- SOLVER");
-            profiler().StopTiming("Pass");
-
         } // end of apply
 
         virtual void compute( const TotalArgumentType& /*arg*/, DestinationType& /*dest*/ ) const
@@ -2652,6 +2650,17 @@ class StokesPass
         virtual void allocateLocalMemory()
         {}
 
+#ifdef HAS_RUN_INFO
+        void getRuninfo( RunInfo& info )
+        {
+            info.iterations_inner_avg = info_.iterations_inner_avg;
+            info.iterations_inner_min = info_.iterations_inner_min;
+            info.iterations_inner_max = info_.iterations_inner_max;
+            info.iterations_outer_total = info_.iterations_outer_total;
+            info.max_inner_accuracy = info_.max_inner_accuracy;
+        }
+#endif
+
     private:
         DiscreteModelType& discreteModel_;
         GridPartType& gridPart_;
@@ -2659,6 +2668,7 @@ class StokesPass
         DiscreteVelocityFunctionSpaceType& velocitySpace_;
         DiscretePressureFunctionSpaceType& pressureSpace_;
         DiscreteSigmaFunctionSpaceType sigmaSpace_;
+        mutable SaddlepointInverseOperatorInfo info_;
 
         /**
          *  \todo   doc
