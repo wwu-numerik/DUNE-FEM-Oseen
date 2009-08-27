@@ -109,13 +109,48 @@
 					<Add directory="/usr/lib" />
 				</Linker>
 			</Target>
+			<Target title="felix_elliptic">
+				<Option output="bin/Debug/dune-stokes" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../src/" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="test.param" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-DDARCY" />
+					<Add option="-DMICRO_POLORDER=1" />
+					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/include" />
+					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include" />
+					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include/parallel" />
+					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include/serial" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/grape" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alberta-2.01/include" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include/parallel" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include/serial" />
+					<Add directory="/usr/local/grape" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="/usr/lib/libSM.so.6" />
+					<Add library="blas" />
+					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/lib" />
+					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/lib" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/grape" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alberta-2.01/lib" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/lib" />
+					<Add directory="/usr/local/grape" />
+					<Add directory="/usr/lib" />
+				</Linker>
+			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-g" />
 			<Add option="-fexceptions" />
 			<Add option="-DENABLE_ALUGRID" />
-			<Add option="-DALUGRID_CONFORM" />
+			<Add option="-DALUGRID_SIMPLEX" />
 			<Add option="-DGRIDDIM=2" />
 			<Add option="-DPOLORDER=1" />
 			<Add option="-DHAVE_CONFIG_H" />
@@ -165,6 +200,7 @@
 			<Option target="rene" />
 			<Option target="uni_elliptic" />
 			<Option target="rene_elliptic" />
+			<Option target="felix_elliptic" />
 		</Unit>
 		<Unit filename="../elliptic/model.hh" />
 		<Unit filename="../src/Makefile.am" />
