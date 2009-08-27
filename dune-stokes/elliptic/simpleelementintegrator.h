@@ -171,23 +171,27 @@ public:
     template< class EntityImp, class ElementMatrixImp >
     void addDiffusiveFluxElementMatrix( const EntityImp &entity,
                                         ElementMatrixImp &matrix,
-                                        double coefficient = 1 ) const
+                                        double coefficient = 1.0 ) const
     {
-        typedef typename EntityType :: Geometry GeometryType;
-        typedef FieldMatrix< typename GeometryType :: ctype,
-        GeometryType :: mydimension,
-        GeometryType :: mydimension >
-        GeometryJacobianType;
-        typedef typename ElementQuadratureType :: CoordinateType CoordinateType;
+        typedef typename EntityType::Geometry
+            GeometryType;
 
-        const ModelType &model = this->model();
-        const DiscreteFunctionSpaceType &discreteFunctionSpace = this->discreteFunctionSpace();
+        typedef FieldMatrix<    typename GeometryType::ctype,
+                                GeometryType::mydimension,
+                                GeometryType::mydimension >
+            GeometryJacobianType;
 
-        const GeometryType &geometry = entity.geometry();
+        typedef typename ElementQuadratureType::CoordinateType
+            CoordinateType;
+
+        const ModelType& model = this->model();
+
+        const DiscreteFunctionSpaceType& discreteFunctionSpace = this->discreteFunctionSpace();
+
+        const GeometryType& geometry = entity.geometry();
 
         // get local basis
-        const BaseFunctionSetType baseSet
-        =  discreteFunctionSpace.baseFunctionSet( entity );
+        const BaseFunctionSetType baseSet = discreteFunctionSpace.baseFunctionSet( entity );
         int numBaseFunctions = baseSet.numBaseFunctions();
 
         // assert that allocated space for gradPhiPtr is sufficient!!
@@ -197,18 +201,18 @@ public:
         assert( matrix.rows() >= numBaseFunctions );
         assert( matrix.cols() >= numBaseFunctions );
 
-        ElementQuadratureType quadrature( entity, TraitsType :: quadDegree );
+        ElementQuadratureType quadrature( entity, TraitsType::quadDegree );
         const int numQuadraturePoints = quadrature.nop();
         for ( int pt = 0; pt < numQuadraturePoints; ++pt )
         {
-            const CoordinateType &x = quadrature.point( pt );
+            const CoordinateType& x = quadrature.point( pt );
 
-            const GeometryJacobianType &inv = geometry.jacobianInverseTransposed( x );
+            const GeometryJacobianType& inv = geometry.jacobianInverseTransposed( x );
             const double volume = geometry.integrationElement( x );
 
             for ( int i = 0; i < numBaseFunctions; ++i )
             {
-                JacobianRangeType &gradPhi = gradPhiPtr_[ i ];
+                JacobianRangeType& gradPhi = gradPhiPtr_[ i ];
                 baseSet.jacobian( i, quadrature[ pt ], gradPhi );
                 // multiply with transposed of the jacobian inverse
                 gradPhi[ 0 ] = FMatrixHelp :: mult( inv, gradPhi[ 0 ] );

@@ -91,7 +91,7 @@
 
 
 // define SKIP_GRAPE, if you don't want visualization.
-#define SKIP_GRAPE
+//#define SKIP_GRAPE
 
 // select, whether Kronecker-Treatment of Matrix should be performed,
 // i.e. kronecker rows are extended to kronecker columns. For symmetric
@@ -156,25 +156,27 @@ enum { polynomialOrder = 1 };
 #endif
 
 #ifndef ELLIPTIC
-#ifndef POISSON
-#define POISSON
-#endif
+    #ifndef POISSON
+        #define POISSON
+    #endif
 #endif
 
 using namespace Dune;
 
-typedef LeafGridPart< GridType > GridPartType;
+typedef LeafGridPart< GridType >
+    GridPartType;
 
-typedef FunctionSpace< double, double, dimworld, 3 > FunctionSpaceType;
-typedef LagrangeDiscreteFunctionSpace
-< FunctionSpaceType, GridPartType, polynomialOrder >
-DiscreteFunctionSpaceType;
+typedef FunctionSpace< double, double, dimworld, 3 >
+    FunctionSpaceType;
+
+typedef LagrangeDiscreteFunctionSpace < FunctionSpaceType, GridPartType, polynomialOrder >
+    DiscreteFunctionSpaceType;
 
 typedef AdaptiveDiscreteFunction< DiscreteFunctionSpaceType >
-DiscreteFunctionType;
+    DiscreteFunctionType;
 
 typedef DefaultMatrixElementIntegratorTraits< DiscreteFunctionType, 100 >
-ElementIntegratorTraitsType;
+    ElementIntegratorTraitsType;
 
 /*
 // definition of traits class, which already defines various
@@ -186,21 +188,32 @@ typedef EllipticElementIntegratorTraits< GridType, polynomialOrder >
 typedef ElementIntegratorTraitsType :: FunctionSpaceType FunctionSpaceType;
 */
 #ifdef AORTA
-typedef AortaModel< FunctionSpaceType > EllipticModelType;
-typedef Elliptic3dExactSolution< FunctionSpaceType > ExactSolutionType;
-
+    typedef AortaModel< FunctionSpaceType >
+        EllipticModelType;
+    typedef Elliptic3dExactSolution< FunctionSpaceType >
+        ExactSolutionType;
+#elif defined(DARCY)
+    typedef DarcyModel< FunctionSpaceType >
+        EllipticModelType;
+    typedef Elliptic2dExactSolution< FunctionSpaceType >
+        ExactSolutionType;
 #elif defined(POISSON)
-typedef PoissonModel< FunctionSpaceType > EllipticModelType;
-typedef PoissonExactSolution< FunctionSpaceType > ExactSolutionType;
-
+    typedef PoissonModel< FunctionSpaceType >
+        EllipticModelType;
+    typedef PoissonExactSolution< FunctionSpaceType >
+        ExactSolutionType;
 #elif defined(ELLIPTIC)
-#if PDIM==2
-typedef Elliptic2dModel< FunctionSpaceType > EllipticModelType;
-typedef Elliptic2dExactSolution< FunctionSpaceType > ExactSolutionType;
-#elif PDIM==3
-typedef Elliptic3dModel< FunctionSpaceType > EllipticModelType;
-typedef Elliptic3dExactSolution< FunctionSpaceType > ExactSolutionType;
-#endif
+    #if PDIM==2
+        typedef Elliptic2dModel< FunctionSpaceType >
+            EllipticModelType;
+        typedef Elliptic2dExactSolution< FunctionSpaceType >
+            ExactSolutionType;
+    #elif PDIM==3
+        typedef Elliptic3dModel< FunctionSpaceType >
+            EllipticModelType;
+        typedef Elliptic3dExactSolution< FunctionSpaceType >
+            ExactSolutionType;
+    #endif
 #endif // if ELLIPTIC
 
 /*
@@ -239,42 +252,44 @@ typedef ElementIntegratorTraitsType::DiscreteFunctionType DiscreteFunctionType;
                         vtkWriter_.write(( "data/"#z ) ); \
                         vtkWriter_.clear();
 typedef Dune::VTKIO<GridPartType>
-VTKWriterType;
+    VTKWriterType;
 
 
 //! definition of the problem specific ElementRhsIntegrator
 class MyElementRhsIntegrator
-            : public DefaultElementRhsIntegrator< ElementIntegratorTraitsType,
-            EllipticModelType,
-            MyElementRhsIntegrator >
+    : public DefaultElementRhsIntegrator<   ElementIntegratorTraitsType,
+                                            EllipticModelType,
+                                            MyElementRhsIntegrator >
 {
-private:
-    typedef MyElementRhsIntegrator ThisType;
-    typedef DefaultElementRhsIntegrator< ElementIntegratorTraitsType,
-    EllipticModelType,
-    ThisType >
-    BaseType;
+    private:
+        typedef MyElementRhsIntegrator
+            ThisType;
 
-public:
-    //! constructor with model must be implemented as a forward to Base class
-    MyElementRhsIntegrator(EllipticModelType& model, const DiscreteFunctionSpaceType &dfSpace, int verbose=0)
-            : BaseType( model, dfSpace, verbose )
-    {
-    }
+        typedef DefaultElementRhsIntegrator<    ElementIntegratorTraitsType,
+                                                EllipticModelType,
+                                                ThisType >
+            BaseType;
 
-    //! access function, which is the essence and can be used to implement
-    //! arbitrary operators
-    template <class EntityType, class ElementRhsType>
-    void addElementRhs(EntityType &entity,
-                       ElementRhsType &elRhs,
-                       double coef=1.0) // const
-    {
-        // arbitrary combination of existing or new methods
-        addSourceElementRhs(entity,elRhs,coef);
-        addNeumannElementRhs(entity,elRhs,coef);
-        addRobinElementRhs(entity,elRhs,coef);
+    public:
+        //! constructor with model must be implemented as a forward to Base class
+        MyElementRhsIntegrator(EllipticModelType& model, const DiscreteFunctionSpaceType &dfSpace, int verbose=0)
+                : BaseType( model, dfSpace, verbose )
+        {
+        }
 
-    };
+        //! access function, which is the essence and can be used to implement
+        //! arbitrary operators
+        template <class EntityType, class ElementRhsType>
+        void addElementRhs(EntityType &entity,
+                           ElementRhsType &elRhs,
+                           double coef=1.0) // const
+        {
+            // arbitrary combination of existing or new methods
+            addSourceElementRhs(entity,elRhs,coef);
+            addNeumannElementRhs(entity,elRhs,coef);
+            addRobinElementRhs(entity,elRhs,coef);
+
+        };
 };
 
 typedef MyElementRhsIntegrator ElementRhsIntegratorType;
@@ -385,7 +400,7 @@ double algorithm( const std :: string &filename, int maxlevel )
     rhs.clear();
 
     // decide, whether you want to have detailed verbosity output
-    // const int verbose = 1;
+//     const int verbose = 1;
     const int verbose = 0;
 
     // initialize Model and Exact solution

@@ -16,6 +16,8 @@
 
 #include <sstream>
 
+#include "../../dune-stuff/stuff/parametercontainer.hh"
+
 namespace Dune
 {
 
@@ -841,6 +843,341 @@ namespace Dune
             assert( false );
         }
     };  // end of AortaModel class
+
+    struct DarcyModelProperties
+    {
+        enum { hasDirichletValues = false };
+        enum { hasNeumannValues = true };
+        enum { hasRobinValues = false };
+        enum { hasGeneralizedNeumannValues = false };
+        enum { hasConvectiveFlux = false };
+        enum { hasMass = false };
+        enum { hasSource = false };
+    };
+
+    template< class FunctionSpaceImp >
+    class DarcyModel
+                : public LinearEllipticModelDefault< FunctionSpaceImp, DarcyModel < FunctionSpaceImp > >
+    {
+    public:
+        typedef FunctionSpaceImp
+            FunctionSpaceType;
+
+    private:
+        typedef DarcyModel< FunctionSpaceType >
+            ThisType;
+
+        typedef LinearEllipticModelDefault< FunctionSpaceType, ThisType >
+            BaseType;
+
+        typedef Dune::FieldMatrix< double, dimworld, dimworld >
+            PermeabilityTensorType;
+
+    public:
+        typedef typename BaseType :: BoundaryType
+            BoundaryType;
+
+        typedef typename FunctionSpaceType :: DomainType
+            DomainType;
+
+        typedef typename FunctionSpaceType :: RangeType
+            RangeType;
+
+        typedef typename FunctionSpaceType :: JacobianRangeType
+        JacobianRangeType;
+
+        typedef typename FunctionSpaceType :: DomainFieldType
+            DomainFieldType;
+
+        typedef typename FunctionSpaceType :: RangeFieldType
+            RangeFieldType;
+
+    public:
+        using BaseType::diffusiveFlux;
+        using BaseType::convectiveFlux;
+        using BaseType::mass;
+        using BaseType::source;
+
+    public:
+        //! constructor with functionspace argument such that the space and the
+        //! grid is available
+        inline DarcyModel()
+        {
+            assert( dimworld == 2 );
+            permeabilityTensor_ = 0.0;
+
+            Logging::LogStream& infoStream = Logger().Info();
+            Logging::LogStream& debugStream = Logger().Dbg();
+
+            infoStream << "\nComputing permeability tensor for the darcy equation..." << std::endl;
+
+            /* ********************************************************************** *
+             * initialize the grid                                                    *
+             * ********************************************************************** */
+            const int gridDim = GridType::dimensionworld;
+            Dune::GridPtr< GridType > gridPtr( "micro_2d.dgf" );
+            const int refine_level = Parameters().getParam( "micro_refine", 0 ) * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
+            gridPtr->globalRefine( refine_level );
+
+            typedef Dune::AdaptiveLeafGridPart< GridType >
+                MicroGridPartType;
+            MicroGridPartType microGridPart( *gridPtr );
+            infoStream << "\n\tInitialised the grid." << std::endl;
+
+            /* ********************************************************************** *
+             * initialize problem                                                     *
+             * ********************************************************************** */
+            const int microPolOrder = MICRO_POLORDER;
+            const double microViscosity = Parameters().getParam( "micro_viscosity", 1.0 );
+//
+            // model traits
+            typedef Dune::DiscreteStokesModelDefaultTraits<
+                            GridPartType,
+                            Force,
+                            DirichletData,
+                            gridDim,
+                            microPolOrder,
+                            microPolOrder,
+                            microPolOrder >
+                MicroStokesModelTraitsImp;
+//    typedef Dune::DiscreteStokesModelDefault< StokesModelTraitsImp >
+//        StokesModelImpType;
+//
+//    // treat as interface
+//    typedef Dune::DiscreteStokesModelInterface< StokesModelTraitsImp >
+//        StokesModelType;
+//
+//    // function wrapper for the solutions
+//    typedef StokesModelTraitsImp::DiscreteStokesFunctionSpaceWrapperType
+//        DiscreteStokesFunctionSpaceWrapperType;
+//
+//    DiscreteStokesFunctionSpaceWrapperType
+//        discreteStokesFunctionSpaceWrapper( gridPart );
+//
+//    typedef StokesModelTraitsImp::DiscreteStokesFunctionWrapperType
+//        DiscreteStokesFunctionWrapperType;
+//
+//    DiscreteStokesFunctionWrapperType
+//        computedSolutions(  "computed_",
+//                                        discreteStokesFunctionSpaceWrapper );
+//
+//    DiscreteStokesFunctionWrapperType initArgToPass( "init_", discreteStokesFunctionSpaceWrapper );
+//
+//     typedef StokesModelTraitsImp::AnalyticalForceType
+//         AnalyticalForceType;
+//     AnalyticalForceType analyticalForce( viscosity , discreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
+//
+//     typedef StokesModelTraitsImp::AnalyticalDirichletDataType
+//         AnalyticalDirichletDataType;
+//     AnalyticalDirichletDataType analyticalDirichletData( discreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
+//
+//    StokesModelImpType stokesModel( stabil_coeff,
+//                                    analyticalForce,
+//                                    analyticalDirichletData,
+//                                    viscosity  );
+//
+            infoStream << "\n\tInitialised problem." << std::endl;
+//    /* ********************************************************************** *
+//     * initialize passes                                                      *
+//     * ********************************************************************** */
+//    infoStream << "\n- starting pass" << std::endl;
+//
+//    typedef Dune::StartPass< DiscreteStokesFunctionWrapperType, -1 >
+//        StartPassType;
+//    StartPassType startPass;
+//
+//    typedef Dune::StokesPass< StokesModelType, StartPassType, 0 >
+//        StokesPassType;
+//    StokesPassType stokesPass(  startPass,
+//                                stokesModel,
+//                                gridPart,
+//                                discreteStokesFunctionSpaceWrapper );
+//
+//    computedSolutions.discretePressure().clear();
+//    computedSolutions.discreteVelocity().clear();
+//
+//    profiler().StartTiming( "Pass -- APPLY" );
+//    stokesPass.apply( initArgToPass, computedSolutions );
+//    profiler().StopTiming( "Pass -- APPLY" );
+//    info.run_time = profiler().GetTiming( "Pass -- APPLY" );
+//    stokesPass.getRuninfo( info );
+//
+//    /* ********************************************************************** *
+//     * Problem postprocessing
+//     * ********************************************************************** */
+//    infoStream << "\n- postprocesing" << std::endl;
+//
+//
+//    profiler().StartTiming( "Problem/Postprocessing" );
+//
+//#ifndef COCKBURN_PROBLEM //bool tpl-param toggles ana-soltion output in post-proc
+//    typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, false >
+//        ProblemType;
+//#else
+//    typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, true >
+//        ProblemType;
+//#endif
+//    ProblemType problem( viscosity , computedSolutions );
+//
+//    typedef PostProcessor< StokesPassType, ProblemType >
+//        PostProcessorType;
+//
+//    PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );
+//
+//    postProcessor.save( *gridPtr, computedSolutions, refine_level );
+//    info.L2Errors = postProcessor.getError();
+//    typedef Dune::StabilizationCoefficients::ValueType
+//        Pair;
+//    info.c11 = Pair( stabil_coeff.Power( "C11" ), stabil_coeff.Factor( "C11" ) );
+//    info.c12 = Pair( stabil_coeff.Power( "C12" ), stabil_coeff.Factor( "C12" ) );
+//    info.d11 = Pair( stabil_coeff.Power( "D11" ), stabil_coeff.Factor( "D11" ) );
+//    info.d12 = Pair( stabil_coeff.Power( "D12" ), stabil_coeff.Factor( "D12" ) );
+//    info.bfg = Parameters().getParam( "do-bfg", true );
+//    info.gridname = gridPart.grid().name();
+//    info.refine_level = refine_level;
+//
+//    info.polorder_pressure = StokesModelTraitsImp::pressureSpaceOrder;
+//    info.polorder_sigma = StokesModelTraitsImp::sigmaSpaceOrder;
+//    info.polorder_velocity = StokesModelTraitsImp::velocitySpaceOrder;
+//
+//    info.solver_accuracy = Parameters().getParam( "absLimit", 1e-4 );
+//    info.inner_solver_accuracy = Parameters().getParam( "inner_absLimit", 1e-4 );
+//    info.bfg_tau = Parameters().getParam( "bfg-tau", 0.1 );
+//
+//    profiler().StopTiming( "Problem/Postprocessing" );
+//    profiler().StopTiming( "SingleRun" );
+//
+//    return info;
+
+        }
+
+        //! return boundary type of a boundary point p used in a quadrature
+        template< class IntersectionType >
+        inline BoundaryType boundaryType( const IntersectionType &intersection ) const
+        {
+//            const int boundaryId = intersection.boundaryId();
+//            switch ( boundaryId )
+//            {
+//            case 2:
+//                return BaseType :: Dirichlet;
+//            default:
+            return BaseType :: Neumann;
+//            }
+        }
+
+        //! determine dirichlet value in a boundary point used in a quadrature
+        template< class IntersectionType, class QuadratureType >
+        inline void dirichletValues( const IntersectionType &intersection,
+                                     const QuadratureType& quad, int p,
+                                     RangeType& ret) const
+        {
+            assert( !"There should be no Dirichlet Values" );
+//            double fac = 10.0;
+//            ret = RangeType( fac );
+        }
+
+        //! determine neumann value in a boundary point used in a quadrature
+        template< class IntersectionType, class QuadratureType >
+        inline void neumannValues( const IntersectionType &intersection,
+                                   const QuadratureType& quad, int p,
+                                   RangeType& ret) const
+        {
+//            const int boundaryId = intersection.boundaryId();
+//            double fac = 100.0;
+//            switch ( boundaryId )
+//            {
+//            case 1:
+//                ret[0] = 0;
+//                break;
+//
+//            case 2:
+//                ret[0] = fac;
+//                break;
+//
+//            case 3:
+//            case 4:
+//            case 5:
+//            case 6:
+//                ret[0] = -1 * fac;
+//                break;
+//
+//            default:
+//                DUNE_THROW( RangeError, "Unknown boundary id." );
+//            }
+            ret = 0.0;
+        }
+
+        //! determine robin value in a boundary point used in a quadrature
+        template< class IntersectionType, class QuadratureType >
+        inline void robinValues( const IntersectionType &intersection,
+                                 const QuadratureType& quad, int p,
+                                 RangeType& ret) const
+        {
+            assert( !"There should be no Robin Values!" );
+        }
+
+        //! function c from top doc
+        template< class EntityType, class PointType >
+        inline void mass ( const EntityType &entity,
+                           const PointType &x,
+                           RangeType &ret ) const
+        {
+//            const DomainType &global = entity.geometry().global( coordinate( x ) );
+//            ret = global[ 0 ] * global[ 1 ];
+            ret = 0.0;
+        }
+
+        //! function f from top doc
+        template< class EntityType, class PointType >
+        inline void source ( const EntityType &entity,
+                             const PointType &x,
+                             RangeType &ret ) const
+        {
+//            ret = RangeType( 0.0 );
+            ret = 1.0;
+        }
+
+        //! function a from top doc
+        template< class EntityType, class PointType >
+        inline void diffusiveFlux ( const EntityType &entity,
+                                    const PointType &x,
+                                    const JacobianRangeType &gradient,
+                                    JacobianRangeType &flux ) const
+        {
+            const DomainType& grad = gradient[ 0 ];
+            const DomainType& ret = flux[ 0 ];
+            flux = 1.0;
+        }
+
+        //! function b from top doc
+        template< class EntityType, class PointType >
+        inline void convectiveFlux( const EntityType &entity,
+                                    const PointType &x,
+                                    const RangeType &phi,
+                                    JacobianRangeType &ret ) const
+        {
+//            const DomainType global = entity.geometry().global( coordinate( x ) );
+//            ret[ 0 ][ 0 ] = -global[ 1 ] * phi[ 0 ];
+//            ret[ 0 ][ 1 ] = -global[ 1 ] * phi[ 0 ];
+//            ret[ 0 ][ 2 ] = -global[ 1 ] * phi[ 0 ];
+            ret = 0.0;
+        }
+
+        //! the coefficient for robin boundary condition
+        template< class IntersectionType, class QuadratureType >
+        inline RangeFieldType robinAlpha ( const IntersectionType &intersection,
+                                           const QuadratureType &quadrature,
+                                           int pt ) const
+        {
+            assert( false );
+        }
+
+    private:
+
+        PermeabilityTensorType permeabilityTensor_;
+
+
+    };  // end of DarcyModel class
 
 } // end namespace Dune
 
