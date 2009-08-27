@@ -3,39 +3,39 @@
 
 #include <dune/fem/operator/elementintegrators.hh>
 
-  /** \class SimpleElementMatrixIntegrator
-   *
-   *  \brief The SimpleElementMatrixIntegrator class implements some
-   *         default functionality.
-   *
-   *  The class can be used for deriving own ElementMatrixIntegrator classes.
-   *  Mainly it provides model access and storage functionality. It does not
-   *  implement the addElementMatrix method, so this still has to be implemented
-   *  in derived classes. But the class provides building blocks for use in
-   *  future addElementMatrix methods. In particular methods
-   *  addMassElementMatrix, addDiffusiveFluxElementMatrix,
-   *  addConvectiveFluxElementMatrix.
-   *
-   *  So a derivation of an own class is very simple, e.g. done in
-   *  dune/fem/examples/elliptic/elliptic.cc
-   */
-  template <class TraitsImp, class ModelImp >
-  class SimpleElementMatrixIntegrator
-  : public ElementMatrixIntegratorInterface< TraitsImp,
-                                             typename ModelImp :: LinearEllipticModelInterfaceType,
-                                             SimpleElementMatrixIntegrator<TraitsImp,ModelImp> >
-  {
-  public:
+/** \class SimpleElementMatrixIntegrator
+ *
+ *  \brief The SimpleElementMatrixIntegrator class implements some
+ *         default functionality.
+ *
+ *  The class can be used for deriving own ElementMatrixIntegrator classes.
+ *  Mainly it provides model access and storage functionality. It does not
+ *  implement the addElementMatrix method, so this still has to be implemented
+ *  in derived classes. But the class provides building blocks for use in
+ *  future addElementMatrix methods. In particular methods
+ *  addMassElementMatrix, addDiffusiveFluxElementMatrix,
+ *  addConvectiveFluxElementMatrix.
+ *
+ *  So a derivation of an own class is very simple, e.g. done in
+ *  dune/fem/examples/elliptic/elliptic.cc
+ */
+template <class TraitsImp, class ModelImp >
+class SimpleElementMatrixIntegrator
+            : public ElementMatrixIntegratorInterface< TraitsImp,
+            typename ModelImp :: LinearEllipticModelInterfaceType,
+            SimpleElementMatrixIntegrator<TraitsImp,ModelImp> >
+{
+public:
     typedef SimpleElementMatrixIntegrator
-      < TraitsImp, ModelImp >
-      ThisType;
+    < TraitsImp, ModelImp >
+    ThisType;
     typedef ElementMatrixIntegratorInterface
-      < TraitsImp,
-        typename ModelImp :: LinearEllipticModelInterfaceType,
-        SimpleElementMatrixIntegrator<TraitsImp,ModelImp> >
-      BaseType;
+    < TraitsImp,
+    typename ModelImp :: LinearEllipticModelInterfaceType,
+    SimpleElementMatrixIntegrator<TraitsImp,ModelImp> >
+    BaseType;
 
-  public:
+public:
     typedef typename BaseType :: TraitsType TraitsType;
     typedef typename BaseType :: ModelType ModelType;
     typedef typename TraitsType::ElementMatrixType    ElementMatrixType;
@@ -51,9 +51,9 @@
     typedef typename TraitsType::DomainType DomainType;
     typedef typename TraitsType::JacobianRangeType JacobianRangeType;
     typedef typename TraitsType::IntersectionIteratorType
-                     IntersectionIteratorType;
+    IntersectionIteratorType;
     typedef typename TraitsType::IntersectionQuadratureType
-                     IntersectionQuadratureType;
+    IntersectionQuadratureType;
     typedef typename TraitsType::GridPartType GridPartType;
     //! used grid type
     typedef typename GridPartType :: GridType GridType;
@@ -77,37 +77,37 @@
      *   \param[in]  verbose  optional verbosity flag
      */
     SimpleElementMatrixIntegrator ( ModelType& model,
-                                     const DiscreteFunctionSpaceType &dfSpace,
-                                     int verbose = 0 )
-    : model_( model ),
-      discreteFunctionSpace_( dfSpace ),
-      verbose_( verbose )
+                                    const DiscreteFunctionSpaceType &dfSpace,
+                                    int verbose = 0 )
+            : model_( model ),
+            discreteFunctionSpace_( dfSpace ),
+            verbose_( verbose )
     {
-      // determine number of basis functions on first entity
-      if (verbose_)
-          std::cout << "entered constructor of SimpleElementMatrixIntegrator" << std :: endl;
+        // determine number of basis functions on first entity
+        if (verbose_)
+            std::cout << "entered constructor of SimpleElementMatrixIntegrator" << std :: endl;
 
-      if (verbose_)
-          std::cout << "got discrete functionspace" << std :: endl;
+        if (verbose_)
+            std::cout << "got discrete functionspace" << std :: endl;
 
-      EntityPointerType ep = dfSpace.begin();
-      EntityType& entity = *ep;
+        EntityPointerType ep = dfSpace.begin();
+        EntityType& entity = *ep;
 
-      if (verbose_)
-          std::cout << "got first entity" << std :: endl;
+        if (verbose_)
+            std::cout << "got first entity" << std :: endl;
 
 //            const typename EntityType::Geometry& geo = entity.geometry();
 
-      if (verbose_)
-          std::cout << "successful got geometry" << std :: endl;
+        if (verbose_)
+            std::cout << "successful got geometry" << std :: endl;
 
-      const BaseFunctionSetType baseFunctionSet
+        const BaseFunctionSetType baseFunctionSet
         = dfSpace.baseFunctionSet( entity );
-      numBaseFunctions_ = baseFunctionSet.numBaseFunctions();
-      gradPhiPtr_ = new JacobianRangeType[ numBaseFunctions_ ];
+        numBaseFunctions_ = baseFunctionSet.numBaseFunctions();
+        gradPhiPtr_ = new JacobianRangeType[ numBaseFunctions_ ];
 
-      if (verbose_)
-          std::cout << "allocated temporary storage for gradients\n";
+        if (verbose_)
+            std::cout << "allocated temporary storage for gradients\n";
     }
 
     /*!  access function for model
@@ -118,12 +118,12 @@
      */
     inline const ModelType& model () const
     {
-      return model_;
+        return model_;
     }
 
     inline const DiscreteFunctionSpaceType &discreteFunctionSpace () const
     {
-      return discreteFunctionSpace_;
+        return discreteFunctionSpace_;
     }
 
     /*!
@@ -132,23 +132,23 @@
      */
     ~SimpleElementMatrixIntegrator ()
     {
-      if( verbose_ )
-        std::cout << "entered destructor of SimpleElementMatrixIntegrator"
-                  << std :: endl;
-      delete[] gradPhiPtr_;
+        if ( verbose_ )
+            std::cout << "entered destructor of SimpleElementMatrixIntegrator"
+                      << std :: endl;
+        delete[] gradPhiPtr_;
     }
 
     inline void addElementMatrix ( const EntityType &entity,
                                    ElementMatrixType& matrix,
                                    double coefficient = 1 ) // const
     {
-      addDiffusiveFluxElementMatrix( entity, matrix, coefficient );
+        addDiffusiveFluxElementMatrix( entity, matrix, coefficient );
 
-      if( entity.hasBoundaryIntersections() )
-      {
-        if( ModelType :: Properties :: hasRobinValues )
-          addRobinElementMatrix( entity, matrix, coefficient );
-      }
+        if ( entity.hasBoundaryIntersections() )
+        {
+            if ( ModelType :: Properties :: hasRobinValues )
+                addRobinElementMatrix( entity, matrix, coefficient );
+        }
     }
 
     /** \brief accumulate diffusive contributions
@@ -173,57 +173,57 @@
                                         ElementMatrixImp &matrix,
                                         double coefficient = 1 ) const
     {
-      typedef typename EntityType :: Geometry GeometryType;
-      typedef FieldMatrix< typename GeometryType :: ctype,
-                           GeometryType :: mydimension,
-                           GeometryType :: mydimension >
+        typedef typename EntityType :: Geometry GeometryType;
+        typedef FieldMatrix< typename GeometryType :: ctype,
+        GeometryType :: mydimension,
+        GeometryType :: mydimension >
         GeometryJacobianType;
-      typedef typename ElementQuadratureType :: CoordinateType CoordinateType;
+        typedef typename ElementQuadratureType :: CoordinateType CoordinateType;
 
-      const ModelType &model = this->model();
-      const DiscreteFunctionSpaceType &discreteFunctionSpace = this->discreteFunctionSpace();
+        const ModelType &model = this->model();
+        const DiscreteFunctionSpaceType &discreteFunctionSpace = this->discreteFunctionSpace();
 
-      const GeometryType &geometry = entity.geometry();
+        const GeometryType &geometry = entity.geometry();
 
-      // get local basis
-      const BaseFunctionSetType baseSet
+        // get local basis
+        const BaseFunctionSetType baseSet
         =  discreteFunctionSpace.baseFunctionSet( entity );
-      int numBaseFunctions = baseSet.numBaseFunctions();
+        int numBaseFunctions = baseSet.numBaseFunctions();
 
-      // assert that allocated space for gradPhiPtr is sufficient!!
-      assert( numBaseFunctions <= numBaseFunctions_ );
+        // assert that allocated space for gradPhiPtr is sufficient!!
+        assert( numBaseFunctions <= numBaseFunctions_ );
 
-      // assert that matrix allocation is sufficient
-      assert( matrix.rows() >= numBaseFunctions );
-      assert( matrix.cols() >= numBaseFunctions );
+        // assert that matrix allocation is sufficient
+        assert( matrix.rows() >= numBaseFunctions );
+        assert( matrix.cols() >= numBaseFunctions );
 
-      ElementQuadratureType quadrature( entity, TraitsType :: quadDegree );
-      const int numQuadraturePoints = quadrature.nop();
-      for ( int pt = 0; pt < numQuadraturePoints; ++pt )
-      {
-        const CoordinateType &x = quadrature.point( pt );
-
-        const GeometryJacobianType &inv = geometry.jacobianInverseTransposed( x );
-        const double volume = geometry.integrationElement( x );
-
-        for( int i = 0; i < numBaseFunctions; ++i )
+        ElementQuadratureType quadrature( entity, TraitsType :: quadDegree );
+        const int numQuadraturePoints = quadrature.nop();
+        for ( int pt = 0; pt < numQuadraturePoints; ++pt )
         {
-          JacobianRangeType &gradPhi = gradPhiPtr_[ i ];
-          baseSet.jacobian( i, quadrature[ pt ], gradPhi );
-          // multiply with transposed of the jacobian inverse
-          gradPhi[ 0 ] = FMatrixHelp :: mult( inv, gradPhi[ 0 ] );
-        }
+            const CoordinateType &x = quadrature.point( pt );
 
-        // evaluate diffusiveFlux for all gradients of basis functions
-        const double factor = coefficient * quadrature.weight( pt ) * volume;
-        for( int j = 0; j < numBaseFunctions; ++j )
-        {
-          JacobianRangeType psi;
-          model.diffusiveFlux( entity, quadrature[ pt ], gradPhiPtr_[ j ], psi );
-          for( int i = 0; i < numBaseFunctions; ++i )
-            matrix.add( i, j, factor * (psi[ 0 ] * gradPhiPtr_[ i ][ 0 ]) );
+            const GeometryJacobianType &inv = geometry.jacobianInverseTransposed( x );
+            const double volume = geometry.integrationElement( x );
+
+            for ( int i = 0; i < numBaseFunctions; ++i )
+            {
+                JacobianRangeType &gradPhi = gradPhiPtr_[ i ];
+                baseSet.jacobian( i, quadrature[ pt ], gradPhi );
+                // multiply with transposed of the jacobian inverse
+                gradPhi[ 0 ] = FMatrixHelp :: mult( inv, gradPhi[ 0 ] );
+            }
+
+            // evaluate diffusiveFlux for all gradients of basis functions
+            const double factor = coefficient * quadrature.weight( pt ) * volume;
+            for ( int j = 0; j < numBaseFunctions; ++j )
+            {
+                JacobianRangeType psi;
+                model.diffusiveFlux( entity, quadrature[ pt ], gradPhiPtr_[ j ], psi );
+                for ( int i = 0; i < numBaseFunctions; ++i )
+                    matrix.add( i, j, factor * (psi[ 0 ] * gradPhiPtr_[ i ][ 0 ]) );
+            }
         }
-      }
     } // end addDiffusiveFluxElementMatrix
 
 
@@ -250,58 +250,58 @@
                                 ElementMatrixType &matrix,
                                 double coefficient = 1 ) //  const
     {
-      assert( ModelType :: Properties :: hasRobinValues );
-      const ModelType &model = this->model();
+        assert( ModelType :: Properties :: hasRobinValues );
+        const ModelType &model = this->model();
 
-      enum { quadratureDegree = TraitsType :: quadDegree };
+        enum { quadratureDegree = TraitsType :: quadDegree };
 
-      // for all intersections check whether boundary
-      const DiscreteFunctionSpaceType &dfSpace = this->discreteFunctionSpace();
+        // for all intersections check whether boundary
+        const DiscreteFunctionSpaceType &dfSpace = this->discreteFunctionSpace();
 
-      const GridPartType &gridPart = dfSpace.gridPart();
+        const GridPartType &gridPart = dfSpace.gridPart();
 
-      const IntersectionIteratorType end = gridPart.iend( entity );
-      for( IntersectionIteratorType it = gridPart.ibegin( entity ); it != end; ++it )
-      {
-        // check for boundary
-        if( !it.boundary() )
-          continue;
-
-        // check for robin boundary values
-        if( model.boundaryType( it ) != ModelType :: Robin )
-          continue;
-
-        const BaseFunctionSetType baseFunctionSet
-          = dfSpace.baseFunctionSet( entity );
-        const int numBaseFunctions = baseFunctionSet.numBaseFunctions();
-
-        // integrate over intersection
-        IntersectionQuadratureType quadrature
-          ( gridPart, it, quadratureDegree, IntersectionQuadratureType :: INSIDE );
-        const int numQuadraturePoints = quadrature.nop();
-        for( int pt = 0; pt < numQuadraturePoints; ++pt )
+        const IntersectionIteratorType end = gridPart.iend( entity );
+        for ( IntersectionIteratorType it = gridPart.ibegin( entity ); it != end; ++it )
         {
-          const double volume
-            = it.intersectionGlobal().integrationElement( quadrature.localPoint( pt ) );
-          const double alpha = model.robinAlpha( it, quadrature, pt );
-          const double factor = coefficient * alpha * quadrature.weight( pt ) * volume;
+            // check for boundary
+            if ( !it.boundary() )
+                continue;
 
-          for( int i = 0; i < numBaseFunctions; ++i )
-          {
-            RangeType phi_i;
-            baseFunctionSet.evaluate( i, quadrature[ pt ], phi_i );
-            for( int j = 0; j < numBaseFunctions; ++j )
-			      {
-              RangeType phi_j;
-              baseFunctionSet.evaluate( j, quadrature[ pt ], phi_j );
-              matrix.add( i, j, factor * (phi_i[ 0 ] * phi_j[ 0 ]) );
-            }
-          }
-        } // end loop over quadraturepoints
-      } // end loop over intersections
+            // check for robin boundary values
+            if ( model.boundaryType( it ) != ModelType :: Robin )
+                continue;
+
+            const BaseFunctionSetType baseFunctionSet
+            = dfSpace.baseFunctionSet( entity );
+            const int numBaseFunctions = baseFunctionSet.numBaseFunctions();
+
+            // integrate over intersection
+            IntersectionQuadratureType quadrature
+            ( gridPart, it, quadratureDegree, IntersectionQuadratureType :: INSIDE );
+            const int numQuadraturePoints = quadrature.nop();
+            for ( int pt = 0; pt < numQuadraturePoints; ++pt )
+            {
+                const double volume
+                = it.intersectionGlobal().integrationElement( quadrature.localPoint( pt ) );
+                const double alpha = model.robinAlpha( it, quadrature, pt );
+                const double factor = coefficient * alpha * quadrature.weight( pt ) * volume;
+
+                for ( int i = 0; i < numBaseFunctions; ++i )
+                {
+                    RangeType phi_i;
+                    baseFunctionSet.evaluate( i, quadrature[ pt ], phi_i );
+                    for ( int j = 0; j < numBaseFunctions; ++j )
+                    {
+                        RangeType phi_j;
+                        baseFunctionSet.evaluate( j, quadrature[ pt ], phi_j );
+                        matrix.add( i, j, factor * (phi_i[ 0 ] * phi_j[ 0 ]) );
+                    }
+                }
+            } // end loop over quadraturepoints
+        } // end loop over intersections
     } // end method addRobinElementMatrix
 
-  protected:
+protected:
     //! Reference to the data model
     const ModelType& model_;
     //! the discrete function space
@@ -312,7 +312,7 @@
     int numBaseFunctions_;
     //! storage for basis-function gradients
     JacobianRangeType *gradPhiPtr_;
-  }; // end of SimpleElementMatrixIntegrator class
+}; // end of SimpleElementMatrixIntegrator class
 
 
 
