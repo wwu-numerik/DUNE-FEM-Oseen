@@ -84,12 +84,6 @@
 #include "config.h"
 #endif
 
-#include <dune/fem/pass/pass.hh>
-#include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
-#include <dune/fem/misc/femeoc.hh>
-#include <dune/fem/misc/gridwidth.hh>
-
-
 // define SKIP_GRAPE, if you don't want visualization.
 #define SKIP_GRAPE
 
@@ -104,9 +98,6 @@
 // i.e. comment or uncomment the following
 //#define FEOP_SAVE_MATRIX_WANTED
 
-
-//- system includes
-#include <config.h>
 #include <iostream>
 
 // save GRIDDIM for later selection of problem depending on dimension
