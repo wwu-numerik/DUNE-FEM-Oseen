@@ -16,7 +16,55 @@
 
 #include <sstream>
 
-#include "../../dune-stuff/stuff/parametercontainer.hh"
+#include <dune/fem/pass/pass.hh>
+#include <dune/fem/operator/matrix/spmatrix.hh>
+#include <dune/fem/space/dgspace.hh>
+#include <dune/fem/quadrature/caching/twistutility.hh>
+#include <dune/fem/misc/l2norm.hh>
+
+#include <dune/stokes/saddlepoint_inverse_operator.hh>
+
+
+#ifndef NLOG // if we want logging, should be removed in the end
+    #include <dune/stuff/printing.hh>
+    #include <dune/stuff/misc.hh>
+    #include <dune/stuff/logging.hh>
+#endif
+
+#include <dune/stuff/grid.hh>
+#include <dune/stuff/functions.hh>
+
+#include <dune/stuff/profiler.hh>
+#include <dune/stuff/parametercontainer.hh>
+#include <vector>
+#include <string>
+
+#include <iostream>
+#include <cmath>
+#include <dune/common/mpihelper.hh> // An initializer of MPI
+#include <dune/common/exceptions.hh> // We use exceptions
+#include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
+
+#include <dune/fem/solver/oemsolver/oemsolver.hh>
+#include <dune/fem/space/dgspace.hh>
+#include <dune/fem/space/combinedspace.hh>
+#include <dune/fem/space/dgspace/dgadaptiveleafgridpart.hh>
+#include <dune/fem/pass/pass.hh>
+#include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
+#include <dune/fem/misc/femeoc.hh>
+#include <dune/fem/misc/gridwidth.hh>
+
+#include <dune/stokes/discretestokesfunctionspacewrapper.hh>
+#include <dune/stokes/discretestokesmodelinterface.hh>
+#include <dune/stokes/stokespass.hh>
+#include "../src/analyticaldata.hh"
+
+#include <dune/stuff/printing.hh>
+#include <dune/stuff/misc.hh>
+#include <dune/stuff/logging.hh>
+#include <dune/stuff/parametercontainer.hh>
+#include <dune/stuff/postprocessing.hh>
+#include <dune/stuff/profiler.hh>
 
 namespace Dune
 {
@@ -922,85 +970,85 @@ namespace Dune
             typedef Dune::AdaptiveLeafGridPart< GridType >
                 MicroGridPartType;
             MicroGridPartType microGridPart( *gridPtr );
-            infoStream << "\n\tInitialised the grid." << std::endl;
+            infoStream << "\tInitialised the grid." << std::endl;
 
             /* ********************************************************************** *
              * initialize problem                                                     *
              * ********************************************************************** */
             const int microPolOrder = MICRO_POLORDER;
             const double microViscosity = Parameters().getParam( "micro_viscosity", 1.0 );
-//
+
             // model traits
             typedef Dune::DiscreteStokesModelDefaultTraits<
-                            GridPartType,
-                            Force,
-                            DirichletData,
+                            MicroGridPartType,
+                            MicroForce,
+                            MicroDirichletData,
                             gridDim,
                             microPolOrder,
                             microPolOrder,
                             microPolOrder >
                 MicroStokesModelTraitsImp;
-//    typedef Dune::DiscreteStokesModelDefault< StokesModelTraitsImp >
-//        StokesModelImpType;
-//
-//    // treat as interface
-//    typedef Dune::DiscreteStokesModelInterface< StokesModelTraitsImp >
-//        StokesModelType;
-//
-//    // function wrapper for the solutions
-//    typedef StokesModelTraitsImp::DiscreteStokesFunctionSpaceWrapperType
-//        DiscreteStokesFunctionSpaceWrapperType;
-//
-//    DiscreteStokesFunctionSpaceWrapperType
-//        discreteStokesFunctionSpaceWrapper( gridPart );
-//
-//    typedef StokesModelTraitsImp::DiscreteStokesFunctionWrapperType
-//        DiscreteStokesFunctionWrapperType;
-//
-//    DiscreteStokesFunctionWrapperType
-//        computedSolutions(  "computed_",
-//                                        discreteStokesFunctionSpaceWrapper );
-//
-//    DiscreteStokesFunctionWrapperType initArgToPass( "init_", discreteStokesFunctionSpaceWrapper );
-//
-//     typedef StokesModelTraitsImp::AnalyticalForceType
-//         AnalyticalForceType;
-//     AnalyticalForceType analyticalForce( viscosity , discreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
-//
-//     typedef StokesModelTraitsImp::AnalyticalDirichletDataType
-//         AnalyticalDirichletDataType;
-//     AnalyticalDirichletDataType analyticalDirichletData( discreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
-//
-//    StokesModelImpType stokesModel( stabil_coeff,
-//                                    analyticalForce,
-//                                    analyticalDirichletData,
-//                                    viscosity  );
-//
-            infoStream << "\n\tInitialised problem." << std::endl;
-//    /* ********************************************************************** *
-//     * initialize passes                                                      *
-//     * ********************************************************************** */
-//    infoStream << "\n- starting pass" << std::endl;
-//
-//    typedef Dune::StartPass< DiscreteStokesFunctionWrapperType, -1 >
-//        StartPassType;
-//    StartPassType startPass;
-//
-//    typedef Dune::StokesPass< StokesModelType, StartPassType, 0 >
-//        StokesPassType;
-//    StokesPassType stokesPass(  startPass,
-//                                stokesModel,
-//                                gridPart,
-//                                discreteStokesFunctionSpaceWrapper );
-//
-//    computedSolutions.discretePressure().clear();
-//    computedSolutions.discreteVelocity().clear();
-//
-//    profiler().StartTiming( "Pass -- APPLY" );
-//    stokesPass.apply( initArgToPass, computedSolutions );
-//    profiler().StopTiming( "Pass -- APPLY" );
-//    info.run_time = profiler().GetTiming( "Pass -- APPLY" );
-//    stokesPass.getRuninfo( info );
+            typedef Dune::DiscreteStokesModelDefault< MicroStokesModelTraitsImp >
+                MicroStokesModelImpType;
+
+//            // treat as interface
+//            typedef Dune::DiscreteStokesModelInterface< MicroStokesModelTraitsImp >
+//                MicroStokesModelType;
+
+            // function wrapper for the solutions
+            typedef MicroStokesModelTraitsImp::DiscreteStokesFunctionSpaceWrapperType
+                MicroDiscreteStokesFunctionSpaceWrapperType;
+
+            MicroDiscreteStokesFunctionSpaceWrapperType
+                microDiscreteStokesFunctionSpaceWrapper( microGridPart );
+
+            typedef MicroStokesModelTraitsImp::DiscreteStokesFunctionWrapperType
+                MicroDiscreteStokesFunctionWrapperType;
+
+            MicroDiscreteStokesFunctionWrapperType
+                microSolutions( "micro_",
+                                microDiscreteStokesFunctionSpaceWrapper );
+
+            MicroDiscreteStokesFunctionWrapperType
+                dummy( "dummy_", microDiscreteStokesFunctionSpaceWrapper );
+
+            typedef MicroStokesModelTraitsImp::AnalyticalForceType
+                MicroAnalyticalForceType;
+            MicroAnalyticalForceType microAnalyticalForce( microViscosity , microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
+
+            typedef MicroStokesModelTraitsImp::AnalyticalDirichletDataType
+                MicroAnalyticalDirichletDataType;
+            MicroAnalyticalDirichletDataType microAnalyticalDirichletData( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
+
+            MicroStokesModelImpType microStokesModel(   Dune::StabilizationCoefficients::StabilizationCoefficients( 1, 1, 1, 1, 1, 0, 1, 0 ),
+                                                        microAnalyticalForce,
+                                                        microAnalyticalDirichletData,
+                                                        microViscosity );
+
+            infoStream << "\tInitialised problem." << std::endl;
+            /* ********************************************************************** *
+             * initialize passes                                                      *
+             * ********************************************************************** */
+
+            typedef Dune::StartPass< MicroDiscreteStokesFunctionWrapperType, -1 >
+                MicroStartPassType;
+            MicroStartPassType microStartPass;
+
+            typedef Dune::StokesPass< MicroStokesModelImpType, MicroStartPassType, 0 >
+                MicroStokesPassType;
+            MicroStokesPassType microStokesPass(    microStartPass,
+                                                    microStokesModel,
+                                                    microGridPart,
+                                                    microDiscreteStokesFunctionSpaceWrapper );
+
+            microSolutions.discretePressure().clear();
+            microSolutions.discreteVelocity().clear();
+            dummy.discretePressure().clear();
+            dummy.discreteVelocity().clear();
+
+            microStokesPass.apply( dummy, microSolutions );
+
+            infoStream << "\tMicroPass done." << std::endl;
 //
 //    /* ********************************************************************** *
 //     * Problem postprocessing
