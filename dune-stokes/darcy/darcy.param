@@ -1,0 +1,60 @@
+# #### darcy.param #################################################################################
+
+
+# #### output ######################################################################################
+
+# LOG_NONE = 1, LOG_ERR = 2, LOG_INFO = 4,LOG_DEBUG = 8,LOG_CONSOLE = 16,LOG_FILE = 32
+# --> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_FILE = 46
+# ANY odd number will disable ALL logging
+# max logging: 62
+loglevel: 62
+
+# only prefix
+logfile: darcy
+
+# path (relative to binary) where .vtu etc will be saved
+fem.io.datadir: data
+# path (relative to binary) where logs and matlab files will be saved
+fem.io.logdir: log
+fem.io.outputformat: 1
+
+per-run-log-target: 0
+per-run-output: 1
+
+# #### end output ##################################################################################
+
+
+# #### macro problem ###############################################################################
+
+macro_grid_2d: grid_2d.dgf
+macro_solver_accuracy: 1e-10
+macro_solver_verbosity: 0
+
+# #### end macro problem ###########################################################################
+
+
+# #### micro problem ###############################################################################
+
+#pretty much ineffective
+relLimit: 1e-12
+
+absLimit: 1e-10
+inner_absLimit: 1e-10
+
+#when nans are detected in solution solver accuracy is multiplied maximal max_adaptions-times by 0.1
+max_adaptions: 4
+
+# > 2 will show bfg setting per inner iteration, > 1 avg inner iteration count
+solverVerbosity: 0
+
+disableSolver: 0
+diff-tolerance: 0.01
+do-bfg: 1
+bfg-tau: 0.1
+
+alternative-solve: 1
+
+#if using alternative solver break after max maxIter outer iterations
+maxIter: 5000
+
+# #### end micro problem ###########################################################################
