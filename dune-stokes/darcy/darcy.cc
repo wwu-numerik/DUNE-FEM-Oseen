@@ -165,7 +165,7 @@ void singleRun( const int refineLevel )
 
     MacroGridPartType macroGridPart( *macroGridPointer );
 
-    infoStream << "Initialised the grid (with " << macroGridPart.grid().size( 0 ) << " elements)." << std::endl;
+    infoStream << "Initialised macro grid (with " << macroGridPart.grid().size( 0 ) << " elements)." << std::endl;
 
     /*
      * macro function space etc
@@ -194,10 +194,10 @@ void singleRun( const int refineLevel )
      * macro model
      */
 
-    typedef Darcy::DarcyModel< MacroFunctionSpaceType >
+    typedef Darcy::DarcyModel< MacroFunctionSpaceType, MacroGridPartType >
         MacroModelType;
 
-    MacroModelType macroModel;
+    MacroModelType macroModel( 1 );
 
     infoStream << "Initialised macro model." << std::endl;
 
@@ -266,9 +266,9 @@ void singleRun( const int refineLevel )
         MacroInverseOperatorType;
 
     MacroInverseOperatorType macroInverseOperator(  macroEllipticOperator,
-                                                    12345.67890,
                                                     Dune::Parameter::getValue( "macro_solver_accuracy", 1e-10 ),
-                                                    20000,
+                                                    Dune::Parameter::getValue( "macro_solver_accuracy", 1e-10 ),
+                                                    Dune::Parameter::getValue( "macro_solver_max_iterations", 20000 ),
                                                     Dune::Parameter::getValue( "macro_solver_verbosity", 0 ) );
 
     macroInverseOperator( macroRightHandSide, macroPressure );

@@ -27,13 +27,18 @@ per-run-output: 1
 # #### macro problem ###############################################################################
 
 macro_grid_2d: grid_2d.dgf
+macro_grid_2d:
 macro_solver_accuracy: 1e-10
+macro_solver_max_iterations: 20000
 macro_solver_verbosity: 0
 
 # #### end macro problem ###########################################################################
 
 
 # #### micro problem ###############################################################################
+
+micro_grid_2d: unit_sand_pore_in_2d.dgf
+micro_grid_3d:
 
 #pretty much ineffective
 relLimit: 1e-12
