@@ -30,6 +30,7 @@
 				<Option compiler="gcc" />
 				<Option parameters="test.param" />
 				<Compiler>
+					<Add option="-O" />
 					<Add option="-g" />
 					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include" />
@@ -43,7 +44,6 @@
 					<Add directory="/usr/local/grape" />
 				</Compiler>
 				<Linker>
-					<Add option="-s" />
 					<Add library="blas" />
 					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/lib" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/lib" />
@@ -111,8 +111,8 @@
 				</Linker>
 			</Target>
 			<Target title="darcy_felix">
-				<Option output="bin/Debug/dune-stokes" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="../src/" />
+				<Option output="bin/Debug/darcy" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../darcy/" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -146,6 +146,43 @@
 					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/lib" />
 					<Add directory="/usr/local/grape" />
 					<Add directory="/usr/lib" />
+				</Linker>
+			</Target>
+			<Target title="darcy_felix_uni">
+				<Option output="bin/Debug/darcy" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../darcy/" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="../darcy/darcy.param" />
+				<Compiler>
+					<Add option="-O" />
+					<Add option="-g" />
+					<Add option="-DMACRO_POLORDER=1" />
+					<Add option="-DMACRO_PROBLEM=MACRO_PROBLEM" />
+					<Add option="-DMACRO_CG_SOLVERTYPE=CGInverseOp" />
+					<Add option="-DMICRO_GRIDTYPE=ALUSimplexGrid" />
+					<Add option="-DMICRO_POLORDER=1" />
+					<Add option="-DMICRO_PROBLEM=MICRO_PROBLEM" />
+					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/include" />
+					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include" />
+					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include/parallel" />
+					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include/serial" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/grape" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alberta-2.01/include" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include/parallel" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include/serial" />
+					<Add directory="/usr/local/grape" />
+				</Compiler>
+				<Linker>
+					<Add library="blas" />
+					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/lib" />
+					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/lib" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/grape" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alberta-2.01/lib" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/lib" />
+					<Add directory="/usr/local/grape" />
 				</Linker>
 			</Target>
 		</Build>
@@ -203,22 +240,32 @@
 		<Unit filename="../darcy/Makefile.am">
 			<Option virtualFolder="darcy/" />
 			<Option target="darcy_felix" />
+			<Option target="darcy_felix_uni" />
+		</Unit>
+		<Unit filename="../darcy/analyticaldarcydata.hh">
+			<Option virtualFolder="darcy/" />
+			<Option target="darcy_felix" />
+			<Option target="darcy_felix_uni" />
 		</Unit>
 		<Unit filename="../darcy/darcy.cc">
 			<Option virtualFolder="darcy/" />
 			<Option target="darcy_felix" />
+			<Option target="darcy_felix_uni" />
 		</Unit>
 		<Unit filename="../darcy/darcy.param">
 			<Option virtualFolder="darcy/" />
 			<Option target="darcy_felix" />
+			<Option target="darcy_felix_uni" />
 		</Unit>
 		<Unit filename="../darcy/elementintegrators.hh">
 			<Option virtualFolder="darcy/" />
 			<Option target="darcy_felix" />
+			<Option target="darcy_felix_uni" />
 		</Unit>
 		<Unit filename="../darcy/ellipticmodels.hh">
 			<Option virtualFolder="darcy/" />
 			<Option target="darcy_felix" />
+			<Option target="darcy_felix_uni" />
 		</Unit>
 		<Unit filename="../elliptic/Makefile.am">
 			<Option virtualFolder="elliptic/" />

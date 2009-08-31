@@ -46,9 +46,9 @@
 #include <dune/fem/io/file/vtkio.hh>
 
 #include <dune/stuff/logging.hh>
+#include <dune/stuff/parametercontainer.hh>
 //#include <dune/stuff/printing.hh>
 //#include <dune/stuff/misc.hh>
-//#include <dune/stuff/parametercontainer.hh>
 //#include <dune/stuff/postprocessing.hh>
 //#include <dune/stuff/profiler.hh>
 
@@ -88,6 +88,14 @@ int main( int argc, char** argv )
 
         Dune::MPIHelper& mpihelper = Dune::MPIHelper::instance(argc, argv);
         CollectiveCommunication mpicomm ( mpihelper.getCommunicator() );
+
+        if ( argc < 2 ) {
+            std::cerr << "\nUsage: " << argv[0] << " parameterfile" << std::endl;
+            return 2;
+        }
+        if ( !(  Parameters().ReadCommandLine( argc, argv ) ) ) {
+            return 1;
+        }
 
         if ( argc < 2 ) {
             std::cerr << "\nUsage: " << argv[0] << " parameterfile" << std::endl;
@@ -145,18 +153,18 @@ void singleRun( const int refineLevel )
 
     const int gridDim = GridType::dimensionworld;
 
-    std::string macroGridFile( "macro_grid_2d.dgf" );
-    if ( gridDim == 2 ) {
-        macroGridFile = Dune::Parameter::getValue( "macro_grid_2d", std::string("macro_grid_2d.dgf") );
-    }
-    else if ( gridDim == 3 ) {
-        assert( !"Darcy only implemented in 2D!" );
-        macroGridFile = Dune::Parameter::getValue( "macro_grid_3d", std::string("macro_grid_3d.dgf") );
-    }
-    else {
-        assert( !"Darcy only implemented in 2D and 3D!" );
-    }
-    Dune::GridPtr< GridType > macroGridPointer( macroGridFile );
+//    std::string macroGridFile( "macro_grid_2d.dgf" );
+//    if ( gridDim == 2 ) {
+//        macroGridFile = Dune::Parameter::getValue( "macro_grid_2d", std::string("macro_grid_2d.dgf") );
+//    }
+//    else if ( gridDim == 3 ) {
+//        assert( !"Darcy only implemented in 2D!" );
+//        macroGridFile = Dune::Parameter::getValue( "macro_grid_3d", std::string("macro_grid_3d.dgf") );
+//    }
+//    else {
+//        assert( !"Darcy only implemented in 2D and 3D!" );
+//    }
+    Dune::GridPtr< GridType > macroGridPointer( Parameters().DgfFilename( gridDim ) );
 
     macroGridPointer->globalRefine( refineLevel * Dune::DGFGridInfo< GridType >::refineStepsForHalf() );
 
