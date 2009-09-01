@@ -498,7 +498,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
      typedef StokesModelTraitsImp::AnalyticalForceType
          AnalyticalForceType;
-     AnalyticalForceType analyticalForce( viscosity , discreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
+     AnalyticalForceType analyticalForce( viscosity , discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), 1.0 );
 
      typedef StokesModelTraitsImp::AnalyticalDirichletDataType
          AnalyticalDirichletDataType;
@@ -507,7 +507,8 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     StokesModelImpType stokesModel( stabil_coeff,
                                     analyticalForce,
                                     analyticalDirichletData,
-                                    viscosity  );
+                                    viscosity,
+                                    1.0 );
 
     /* ********************************************************************** *
      * initialize passes                                                      *
@@ -542,11 +543,11 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
     profiler().StartTiming( "Problem/Postprocessing" );
 
-#ifndef COCKBURN_PROBLEM //bool tpl-param toggles ana-soltion output in post-proc
-    typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, false >
+#if defined (COCKBURN_PROBLEM) || (GENRALIZED_STOKES_PROBLEM) //bool tpl-param toggles ana-soltion output in post-proc
+    typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, true >
         ProblemType;
 #else
-    typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, true >
+    typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, false >
         ProblemType;
 #endif
     ProblemType problem( viscosity , computedSolutions );

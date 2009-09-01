@@ -30,9 +30,10 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
          *  \brief  constructor
          *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
          **/
-        Force( const double viscosity, const FunctionSpaceImp& space )
+        Force( const double viscosity, const FunctionSpaceImp& space, const double alpha = 0.0 )
             : BaseType ( space ),
               viscosity_( viscosity ),
+              alpha_( alpha ),
               dim_( FunctionSpaceImp::dimDomain )
         {}
 
@@ -56,8 +57,8 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 assert( !"force not implemented in 1D!" );
             }
             else if ( dim_ == 2 ) {
-//                const double x1 = arg[0];
-//                const double x2 = arg[1];
+                const double x1 = arg[0];
+                const double x2 = arg[1];
 #ifdef SIMPLE_PROBLEM
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//-1.0;//arg[0];
@@ -73,6 +74,10 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
 #elif defined(MICRO_PROBLEM_WOIDS)
                 ret[ 0 ] = 0.0;
                 ret[ 1 ] = 0.0;
+#elif defined(GENRALIZED_STOKES_PROBLEM)
+                const double tmp = ( 0.5 * M_PI ) * ( std::cos( ( 0.5 * M_PI ) * ( x1 - x2 ) ) + ( M_PI + alpha_ ) * std::cos( ( 0.5 * M_PI ) * ( x1 + x2 ) ) );
+                ret[0] = tmp;
+                ret[1] = -1.0 * tmp;
 #else
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//arg[0];
@@ -96,6 +101,8 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 assert( !"MICRO_PROBLEM not implemented in 3D!" );
 #elif defined(MICRO_PROBLEM_WOIDS)
                 assert( !"MICRO_PROBLEM_WOIDS not implemented in 3D!" );
+#elif defined(GENRALIZED_STOKES_PROBLEM)
+                assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
 #else
                 assert( !"force not implemented in 3D!" );
 #endif
@@ -107,6 +114,7 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
 
     private:
         const double viscosity_;
+        const double alpha_;
         const int dim_;
 };
 
@@ -156,6 +164,8 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
             }
             else if ( dim_ == 2 ) {
                 // some computations
+                const double x1 = arg[0];
+                const double x2 = arg[1];
 #ifdef SIMPLE_PROBLEM
                 ret[0] = 1.0;
                 ret[1] = 0.0;
@@ -209,9 +219,11 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                     ret[ 0 ] = 0.0;
                     ret[ 1 ] = 0.0;
                 }
+#elif defined(GENRALIZED_STOKES_PROBLEM)
+                const double tmp = std::cos( ( 0.5 * M_PI ) * ( x1 + x2 ) );
+                ret[0] = tmp;
+                ret[1] = -1.0 * tmp;
 #else
-                const double x1 = arg[0];
-                const double x2 = arg[1];
                 double exp_of_x1 = std::exp( x1 );
                 double sin_of_x2 = std::sin( x2 );
                 double cos_of_x2 = std::cos( x2 );
@@ -241,6 +253,8 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 assert( !"MICRO_PROBLEM not implemented in 3D!" );
 #elif defined(MICRO_PROBLEM_WOIDS)
                 assert( !"MICRO_PROBLEM_WOIDS not implemented in 3D!" );
+#elif defined(GENRALIZED_STOKES_PROBLEM)
+                assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
 #else
                 assert( !"dirichlet data not implemented in 3D!" );
 #endif

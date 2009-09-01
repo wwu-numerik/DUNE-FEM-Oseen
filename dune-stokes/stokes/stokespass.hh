@@ -239,6 +239,9 @@ class StokesPass
             // viscosity
             const double mu = discreteModel_.viscosity();
 
+            // generalized stokes alpha
+            const double alpha = discreteModel_.alpha();
+
             // matrices
             // M\in R^{M\times M}
             typedef SparseRowMatrixObject<  DiscreteSigmaFunctionSpaceType,
@@ -699,6 +702,70 @@ class StokesPass
 #endif
                     }
                 } // done computing X's volume integral
+
+                //
+                // (Y)
+                //
+#ifndef NLOG
+                if ( Ydebug ) {
+                    debugStream.Resume(); // enable logging
+                    debugStream << "    = Y volume =================" << std::endl;
+                    debugStream.Suspend();
+                }
+#endif
+                for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+                    for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+                        double Y_i_j = 0.0;
+#ifndef NLOG
+//                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
+//                        if ( allOutput ) Youtput = true;
+                        if ( Ydebug ) Youtput = true;
+                        if ( entityOutput && Youtput ) debugStream.Resume(); // enable logging
+                        debugStream << "    = Y ========================" << std::endl;
+                        debugStream << "    basefunctions " << i << " " << j << std::endl;
+                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
+#endif
+                        // sum over all quadrature points
+                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
+                            // get x
+                            const ElementCoordinateType x = volumeQuadratureElement.point( quad );
+                            // get the integration factor
+                            const double elementVolume = geometry.integrationElement( x );
+                            // get the quadrature weight
+                            const double integrationWeight = volumeQuadratureElement.weight( quad );
+                            // compute \tau_{j}:\nabla v_{i}
+                            VelocityRangeType v_i( 0.0 );
+                            velocityBaseFunctionSetElement.evaluate( i, x, v_i );
+                            VelocityRangeType v_j( 0.0 );
+                            velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+                            const double v_i_times_v_j = v_i * v_j;
+                            Y_i_j += elementVolume
+                                * integrationWeight
+                                * alpha
+                                * v_i_times_v_j;
+#ifndef NLOG
+                            debugStream << "    - quadPoint " << quad;
+                            Stuff::printFieldVector( x, "x", debugStream, "      " );
+                            debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
+                            debugStream << "        - integrationWeight: " << integrationWeight;
+                            Stuff::printFieldVector( v_i, "v_i", debugStream, "      " );
+                            Stuff::printFieldVector( v_j, "v_j", debugStream, "      " );
+                            debugStream << "\n        - v_i_times_v_j: " << v_i_times_v_j << std::endl;
+                            debugStream << "        - Y_" << i << "_" << j << "+=: " << Y_i_j << std::endl;
+#endif
+                        } // done sum over quadrature points
+                        // if small, should be zero
+                        if ( fabs( Y_i_j ) < eps ) {
+                            Y_i_j = 0.0;
+                        }
+                        // add to matrix
+                        localYmatrixElement.add( i, j, Y_i_j );
+#ifndef NLOG
+                        Youtput = false;
+                        debugStream.Suspend(); // disable logging
+#endif
+                    }
+                } // done computing Y's volume integral
 
                 //                                                  // we will call this one
                 // (Z)_{i,j} += -\int_{T}q_{j}(\nabla\cdot v_{i})dx // Z's volume integral

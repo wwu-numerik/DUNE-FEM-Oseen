@@ -159,14 +159,23 @@
 		<Unit filename="../../dune-fem/fem/space/dgspace/orthonormalbase_2d.cc">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
-		<Unit filename="../elliptic/elementintegratortraits.hh" />
-		<Unit filename="../elliptic/elliptic.cc">
-			<Option target="felix" />
+		<Unit filename="../elliptic/elementintegratortraits.hh">
+			<Option target="uni" />
 			<Option target="rene" />
 			<Option target="uni_elliptic" />
 			<Option target="rene_elliptic" />
 		</Unit>
-		<Unit filename="../elliptic/model.hh" />
+		<Unit filename="../elliptic/elliptic.cc">
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+		</Unit>
+		<Unit filename="../elliptic/model.hh">
+			<Option target="uni" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+		</Unit>
 		<Unit filename="../src/Makefile.am" />
 		<Unit filename="../src/analyticaldata.hh" />
 		<Unit filename="../src/dune_stokes.cc">
