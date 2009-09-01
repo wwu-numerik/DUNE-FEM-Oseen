@@ -30,8 +30,8 @@ dgf_file_3d: grid_3d.dgf
 runtype: 0
 
 #in runtype 0 refine maxref + 1 - minref times
-minref: 0
-maxref: 2
+minref: 4
+maxref: 4
 
 #in runtype 1 vary
 minpow: -1
@@ -67,7 +67,7 @@ inner_absLimit: 1e-10
 max_adaptions: 4
 
 # > 2 will show bfg setting per inner iteration, > 1 avg inner iteration count
-solverVerbosity: 0
+solverVerbosity: 2
 
 disableSolver: 0
 diff-tolerance: 0.01

@@ -1235,6 +1235,17 @@ class DiscreteStokesModelInterface
             return asImp().viscosity();
         }
 
+        /**
+         *  \brief  constant for generalized stokes
+         *
+         *  \todo   doc
+         **/
+        double alpha() const
+        {
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().alpha() );
+            return asImp().alpha();
+        }
+
     private:
         //! for CRTP trick
         DiscreteModelType& asImp()
@@ -1724,8 +1735,10 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         DiscreteStokesModelDefault( const StabilizationCoefficients& stab_coeff,
                                     const AnalyticalForceType& force,
                                     const AnalyticalDirichletDataType& dirichletData,
-                                    const double viscosity )
+                                    const double viscosity = 1.0,
+                                    const double alpha = 0.0 )
             : viscosity_( viscosity ),
+            alpha_( alpha ),
             stabil_coeff_( stab_coeff ),
             force_( force ),
             dirichletData_( dirichletData )
@@ -2654,9 +2667,20 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             return viscosity_;
         }
 
+        /**
+         *  \brief  constant for generalized stokes
+         *
+         *  \todo   doc
+         **/
+        double alpha() const
+        {
+            return alpha_;
+        }
+
     private:
 
         const double viscosity_;
+        const double alpha_;
         StabilizationCoefficients stabil_coeff_;
         const AnalyticalForceType& force_;
         const AnalyticalDirichletDataType& dirichletData_;
