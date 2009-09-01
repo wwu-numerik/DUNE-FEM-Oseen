@@ -7,9 +7,11 @@
 #ifndef ELLIPTICMODELS_HH
 #define ELLIPTICMODELS_HH
 
-//#include <dune/grid/io/file/dgfparser/dgfparser.hh>
-#include <dune/grid/uggrid.hh>
-#include <dune/grid/albertagrid/agrid.hh>
+#include <dune/grid/io/file/dgfparser/dgfalberta.hh>
+//#define ENABLE_UG
+//#define HAVE_UG
+//#define UGGRID
+//#include <dune/grid/io/file/dgfparser/dgfug.hh>
 
 #include <dune/fem/gridpart/periodicgridpart.hh>
 #include <dune/fem/gridpart/adaptiveleafgridpart.hh>
@@ -84,7 +86,7 @@ class DarcyModel
             : verbosity_( verbosity )
         {
 
-            static const int gridDim = MacroGridType::dimensionworld;
+            static const int gridDim = dimworld;
 
             if ( gridDim != 2 ) {
                 assert( !"DarcyModel implemented in 2D only!" );
@@ -106,6 +108,8 @@ class DarcyModel
 
             debugStream << "\tInitialising micro grid..." << std::endl;
 
+//            typedef Dune::UGGrid< 2 >
+//                MicroGridType;
             typedef Dune::AlbertaGrid< gridDim, gridDim >
                 MicroGridType;
 
@@ -122,12 +126,17 @@ class DarcyModel
             }
 
             Dune::GridPtr< MicroGridType > microGridPointer( microGridFile );
-            const int refine_level = Dune::Parameter::getValue( "micro_refine", 0 );// * Dune::DGFGridInfo< MicroGridType >::refineStepsForHalf();
+            const int refine_level = Dune::Parameter::getValue( "micro_refine", 0 ) * Dune::DGFGridInfo< MicroGridType >::refineStepsForHalf();
             microGridPointer->globalRefine( refine_level );
 
-//            typedef Dune::PeriodicLeafGridPart< MicroGridType >
+            typedef Dune::PeriodicLeafGridPart< MicroGridType >
+                PeriodicMicroGridPartType;
+
+            PeriodicMicroGridPartType periodicMicroGridPart( *microGridPointer );
+
             typedef Dune::AdaptiveLeafGridPart< MicroGridType >
                 MicroGridPartType;
+
             MicroGridPartType microGridPart( *microGridPointer );
 
             infoStream << "\tInitialised micro grid." << std::endl;
@@ -140,9 +149,10 @@ class DarcyModel
 
             const int microPolOrder = MICRO_POLORDER;
             const double microViscosity = 1.0;
+            const double generalizedStokesAlpha = 0.01;
 
             typedef Dune::DiscreteStokesModelDefaultTraits<
-                            MicroGridPartType,
+                            PeriodicMicroGridPartType,
                             Darcy::ConstantFunction,
                             Darcy::ConstantFunction,
                             gridDim,
@@ -158,12 +168,12 @@ class DarcyModel
             typedef Dune::DiscreteStokesModelInterface< MicroStokesModelTraitsImp >
                 MicroStokesModelType;
 
-            // function wrapper for the solutions
+//             function wrapper for the solutions
             typedef typename MicroStokesModelType::DiscreteStokesFunctionSpaceWrapperType
                 MicroDiscreteStokesFunctionSpaceWrapperType;
 
             MicroDiscreteStokesFunctionSpaceWrapperType
-                microDiscreteStokesFunctionSpaceWrapper( microGridPart );
+                microDiscreteStokesFunctionSpaceWrapper( periodicMicroGridPart );
 
             typedef typename MicroStokesModelType::DiscreteStokesFunctionWrapperType
                 MicroDiscreteStokesFunctionWrapperType;
@@ -195,7 +205,8 @@ class DarcyModel
             MicroStokesModelImpType microStokesModel(   Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients(),
                                                         microAnalyticalForce,
                                                         microAnalyticalDirichletData,
-                                                        microViscosity );
+                                                        microViscosity,
+                                                        generalizedStokesAlpha );
 
             infoStream << "\tInitialised micro problem." << std::endl;
 
@@ -205,16 +216,20 @@ class DarcyModel
 
             debugStream << "\tInitialising micro system..." << std::endl;
 
+            debugStream << "\tPrinting periodic micro grid information..." << std::endl;
+            Stuff::getGridInformation( periodicMicroGridPart, microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), debugStream );
+            debugStream << "\tPrinting non periodic micro grid information..." << std::endl;
             Stuff::getGridInformation( microGridPart, microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), debugStream );
 
             typedef Dune::StartPass< MicroDiscreteStokesFunctionWrapperType, -1 >
                 MicroStartPassType;
             MicroStartPassType microStartPass;
 
-            typedef Dune::StokesPass< MicroStokesModelImpType, MicroStartPassType, 0 >
+            typedef Dune::StokesPass< MicroStokesModelImpType, MicroStartPassType, 0, MicroGridPartType >
                 MicroStokesPassType;
             MicroStokesPassType microStokesPass(    microStartPass,
                                                     microStokesModel,
+                                                    periodicMicroGridPart,
                                                     microGridPart,
                                                     microDiscreteStokesFunctionSpaceWrapper );
 

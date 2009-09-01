@@ -35,7 +35,8 @@ namespace Dune
  **/
 template <  class DiscreteModelImp,
             class PreviousPassImp,
-            int PassID = 0 >
+            int PassID = 0,
+            class NonPeriodicGridPartType = typename DiscreteModelImp::DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType::DiscreteFunctionSpaceType::GridPartType >
 class StokesPass
     : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
 {
@@ -200,6 +201,26 @@ class StokesPass
             : BaseType( prevPass ),
             discreteModel_( discreteModel ),
             gridPart_( gridPart ),
+            nonPeriodicGridPart_( gridPart ),
+            spaceWrapper_( spaceWrapper ),
+            velocitySpace_( spaceWrapper.discreteVelocitySpace() ),
+            pressureSpace_( spaceWrapper.discretePressureSpace() ),
+            sigmaSpace_( gridPart )
+        {}
+
+        /**
+         *  \brief  constructor
+         *  \todo   doc
+         **/
+        StokesPass( PreviousPassType& prevPass,
+                    DiscreteModelType& discreteModel,
+                    GridPartType& gridPart,
+                    NonPeriodicGridPartType& nonPeriodicGridPart,
+                    DiscreteStokesFunctionSpaceWrapperType& spaceWrapper )
+            : BaseType( prevPass ),
+            discreteModel_( discreteModel ),
+            gridPart_( gridPart ),
+            nonPeriodicGridPart_( nonPeriodicGridPart ),
             spaceWrapper_( spaceWrapper ),
             velocitySpace_( spaceWrapper.discreteVelocitySpace() ),
             pressureSpace_( spaceWrapper.discretePressureSpace() ),
@@ -2731,6 +2752,7 @@ class StokesPass
     private:
         DiscreteModelType& discreteModel_;
         GridPartType& gridPart_;
+        NonPeriodicGridPartType& nonPeriodicGridPart_;
         DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
         DiscreteVelocityFunctionSpaceType& velocitySpace_;
         DiscretePressureFunctionSpaceType& pressureSpace_;

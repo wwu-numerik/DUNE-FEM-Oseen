@@ -8,4 +8,4 @@ CONFIGURE_FLAGS="CXX=g++ CC=gcc CXXFLAGS='-g' F77=gfortran \
   --x-libraries=/usr/X11R6/lib64 \
   --with-grape=/data/dune_work/private/f_albr01/modules/grape \
   --with-grid-dim=2 \
-  --with-grid-type=ALBERTAGRID "
+  --with-grid-type=ALUGRID_SIMPLEX "

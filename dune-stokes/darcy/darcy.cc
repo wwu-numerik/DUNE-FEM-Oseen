@@ -28,9 +28,9 @@
 #define ALUGRID_SIMPLEX
 #include <dune/grid/io/file/dgfparser/dgfalu.hh>
 const int dimworld = GRIDDIM;
-typedef Dune::ALUSimplexGrid<dimworld,dimworld>
+const int gridDim = dimworld;
+typedef Dune::ALUSimplexGrid< gridDim, gridDim >
     GridType;
-#include <dune/grid/io/file/dgfparser/dgfalberta.hh>
 
 #include <vector>
 #include <string>
@@ -160,19 +160,6 @@ void singleRun( const int refineLevel )
      * macro grid
      */
 
-    const int gridDim = GridType::dimensionworld;
-
-//    std::string macroGridFile( "macro_grid_2d.dgf" );
-//    if ( gridDim == 2 ) {
-//        macroGridFile = Dune::Parameter::getValue( "macro_grid_2d", std::string("macro_grid_2d.dgf") );
-//    }
-//    else if ( gridDim == 3 ) {
-//        assert( !"Darcy only implemented in 2D!" );
-//        macroGridFile = Dune::Parameter::getValue( "macro_grid_3d", std::string("macro_grid_3d.dgf") );
-//    }
-//    else {
-//        assert( !"Darcy only implemented in 2D and 3D!" );
-//    }
     Dune::GridPtr< GridType > macroGridPointer( Parameters().DgfFilename( gridDim ) );
 
     macroGridPointer->globalRefine( refineLevel * Dune::DGFGridInfo< GridType >::refineStepsForHalf() );
