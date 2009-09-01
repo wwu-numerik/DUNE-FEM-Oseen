@@ -21,6 +21,7 @@
 
 //#include <dune/grid/io/file/dgfparser/dgfparser.hh>
 #include <dune/grid/uggrid.hh>
+#include <dune/grid/albertagrid/agrid.hh>
 
 #include <dune/fem/gridpart/periodicgridpart.hh>
 #include <dune/fem/gridpart/adaptiveleafgridpart.hh>
@@ -117,7 +118,7 @@ class DarcyModel
 
             debugStream << "\tInitialising micro grid..." << std::endl;
 
-            typedef Dune::UGGrid< gridDim >
+            typedef Dune::AlbertaGrid< gridDim, gridDim >
                 MicroGridType;
 
             std::string microGridFile( "micro_grid_2d.dgf" );

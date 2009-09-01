@@ -121,9 +121,12 @@
 					<Add option="-g" />
 					<Add option="-DMACRO_POLORDER=1" />
 					<Add option="-DMACRO_PROBLEM=MACRO_PROBLEM" />
+					<Add option="-DMACRO_CG_SOLVERTYPE=CGInverseOp" />
 					<Add option="-DMICRO_POLORDER=1" />
 					<Add option="-DMICRO_PROBLEM=MICRO_PROBLEM" />
-					<Add option="-DMACRO_CG_SOLVERTYPE=CGInverseOp" />
+					<Add option="-DENABLE_ALBERTA" />
+					<Add option="-DHAVE_ALBERTA" />
+					<Add option="-DALBERTAGRID" />
 					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include/parallel" />
@@ -161,9 +164,11 @@
 					<Add option="-DMACRO_POLORDER=1" />
 					<Add option="-DMACRO_PROBLEM=MACRO_PROBLEM" />
 					<Add option="-DMACRO_CG_SOLVERTYPE=CGInverseOp" />
-					<Add option="-DMICRO_GRIDTYPE=UGGrid" />
 					<Add option="-DMICRO_POLORDER=1" />
 					<Add option="-DMICRO_PROBLEM=MICRO_PROBLEM" />
+					<Add option="-DENABLE_ALBERTA" />
+					<Add option="-DHAVE_ALBERTA" />
+					<Add option="-DALBERTAGRID" />
 					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include/parallel" />
@@ -190,8 +195,8 @@
 			<Add option="-Wall" />
 			<Add option="-g" />
 			<Add option="-fexceptions" />
-			<Add option="-DENABLE_ALUGRID" />
-			<Add option="-DALUGRID_SIMPLEX" />
+			<Add option="-DENABLE_UG" />
+			<Add option="-DUGGRID" />
 			<Add option="-DGRIDDIM=2" />
 			<Add option="-DPOLORDER=1" />
 			<Add option="-DHAVE_CONFIG_H" />
@@ -199,6 +204,7 @@
 			<Add option="-DADAPTIVE_SOLVER" />
 			<Add option="-DUSE_BFG_CG_SCHEME" />
 			<Add option="-DUSE_ALTERNATIVE_SOLVER" />
+			<Add option="-DHAVE_UG" />
 			<Add directory="../../dune-stokes/" />
 			<Add directory="../../dune-common/" />
 			<Add directory="../../dune-stuff/" />
@@ -210,6 +216,7 @@
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.14/include/parallel" />
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.14/include/serial" />
 			<Add directory="/share/dune/Modules/modules_x86_64/grape/" />
+			<Add directory="/share/dune/Modules/modules_x86_64/ug/include" />
 		</Compiler>
 		<Linker>
 			<Add library="libalugrid.a" />
@@ -219,6 +226,12 @@
 			<Add library="../../dune-grid/lib/.libs/libdunegrid.a" />
 			<Add library="../../dune-common/lib/.libs/libdunecommon.a" />
 			<Add library="m" />
+			<Add library="ugS2" />
+			<Add library="ugS3" />
+			<Add library="devS" />
+			<Add library="ALBERTA22_1" />
+			<Add library="ALBERTA22_0" />
+			<Add library="alberta_util" />
 			<Add directory="../../dune-common/lib" />
 			<Add directory="../../dune-grid/lib" />
 			<Add directory="../../dune-fem/lib" />
@@ -228,6 +241,7 @@
 			<Add directory="/share/dune/Modules/modules_x86_64/alberta-1.2/lib" />
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/lib" />
 			<Add directory="/usr/lib64" />
+			<Add directory="/share/dune/Modules/modules_x86_64/ug/lib" />
 		</Linker>
 		<Unit filename="../../dune-fem/fem/operator/matrix/spmatrix.hh">
 			<Option virtualFolder="dune-fem/" />
@@ -355,11 +369,6 @@
 		</Unit>
 		<Unit filename="../src/reference.param">
 			<Option virtualFolder="dune-stokes/" />
-			<Option target="uni" />
-			<Option target="felix" />
-			<Option target="rene" />
-			<Option target="uni_elliptic" />
-			<Option target="rene_elliptic" />
 		</Unit>
 		<Unit filename="../src/velocity.hh">
 			<Option virtualFolder="dune-stokes/" />
