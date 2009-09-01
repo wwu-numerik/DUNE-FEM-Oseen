@@ -161,7 +161,7 @@
 					<Add option="-DMACRO_POLORDER=1" />
 					<Add option="-DMACRO_PROBLEM=MACRO_PROBLEM" />
 					<Add option="-DMACRO_CG_SOLVERTYPE=CGInverseOp" />
-					<Add option="-DMICRO_GRIDTYPE=ALUSimplexGrid" />
+					<Add option="-DMICRO_GRIDTYPE=UGGrid" />
 					<Add option="-DMICRO_POLORDER=1" />
 					<Add option="-DMICRO_PROBLEM=MICRO_PROBLEM" />
 					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/include" />

@@ -19,7 +19,8 @@
     #include <dune/grid/alugrid.hh>
 #endif
 
-#include <dune/grid/io/file/dgfparser/dgfparser.hh>
+//#include <dune/grid/io/file/dgfparser/dgfparser.hh>
+#include <dune/grid/uggrid.hh>
 
 #include <dune/fem/gridpart/periodicgridpart.hh>
 #include <dune/fem/gridpart/adaptiveleafgridpart.hh>
@@ -116,7 +117,7 @@ class DarcyModel
 
             debugStream << "\tInitialising micro grid..." << std::endl;
 
-            typedef Dune::MICRO_GRIDTYPE< gridDim, gridDim >
+            typedef Dune::UGGrid< gridDim >
                 MicroGridType;
 
             std::string microGridFile( "micro_grid_2d.dgf" );
@@ -132,11 +133,11 @@ class DarcyModel
             }
 
             Dune::GridPtr< MicroGridType > microGridPointer( microGridFile );
-            const int refine_level = Dune::Parameter::getValue( "micro_refine", 0 ) * Dune::DGFGridInfo< MicroGridType >::refineStepsForHalf();
+            const int refine_level = Dune::Parameter::getValue( "micro_refine", 0 );// * Dune::DGFGridInfo< MicroGridType >::refineStepsForHalf();
             microGridPointer->globalRefine( refine_level );
 
-            typedef Dune::PeriodicLeafGridPart< MicroGridType >
-//            typedef Dune::AdaptiveLeafGridPart< MicroGridType >
+//            typedef Dune::PeriodicLeafGridPart< MicroGridType >
+            typedef Dune::AdaptiveLeafGridPart< MicroGridType >
                 MicroGridPartType;
             MicroGridPartType microGridPart( *microGridPointer );
 
@@ -217,25 +218,25 @@ class DarcyModel
 
             Stuff::getGridInformation( microGridPart, microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), debugStream );
 
-//            typedef Dune::StartPass< MicroDiscreteStokesFunctionWrapperType, -1 >
-//                MicroStartPassType;
-//            MicroStartPassType microStartPass;
-//
-//            typedef Dune::StokesPass< MicroStokesModelImpType, MicroStartPassType, 0 >
-//                MicroStokesPassType;
-//            MicroStokesPassType microStokesPass(    microStartPass,
-//                                                    microStokesModel,
-//                                                    microGridPart,
-//                                                    microDiscreteStokesFunctionSpaceWrapper );
-//
-//            microSolutions.discretePressure().clear();
-//            microSolutions.discreteVelocity().clear();
-//            dummy.discretePressure().clear();
-//            dummy.discreteVelocity().clear();
-//
-//            microStokesPass.apply( dummy, microSolutions );
+            typedef Dune::StartPass< MicroDiscreteStokesFunctionWrapperType, -1 >
+                MicroStartPassType;
+            MicroStartPassType microStartPass;
 
-//            infoStream << "\tMicro system solved." << std::endl;
+            typedef Dune::StokesPass< MicroStokesModelImpType, MicroStartPassType, 0 >
+                MicroStokesPassType;
+            MicroStokesPassType microStokesPass(    microStartPass,
+                                                    microStokesModel,
+                                                    microGridPart,
+                                                    microDiscreteStokesFunctionSpaceWrapper );
+
+            microSolutions.discretePressure().clear();
+            microSolutions.discreteVelocity().clear();
+            dummy.discretePressure().clear();
+            dummy.discreteVelocity().clear();
+
+            microStokesPass.apply( dummy, microSolutions );
+
+            infoStream << "\tMicro system solved." << std::endl;
     //
     //    /* ********************************************************************** *
     //     * Problem postprocessing
