@@ -7,18 +7,6 @@
 #ifndef ELLIPTICMODELS_HH
 #define ELLIPTICMODELS_HH
 
-#if ! defined(MICRO_GRIDTYPE)
-    #warning ("MICRO_GRIDTYPE undefined, defaulting to ALUSimplexGrid!")
-    #define MICRO_GRIDTYPE=ALUSimplexGrid
-    #include <dune/grid/alugrid.hh>
-#elif MICRO_GRIDTYPE==ALUSimplexGrid
-    #include <dune/grid/alugrid.hh>
-#else
-    #warning ("only ALUSimplexGrid allowed for MICRO_GRIDTYPE, defaulting to ALUSimplexGrid!")
-    #define MICRO_GRIDTYPE=ALUSimplexGrid
-    #include <dune/grid/alugrid.hh>
-#endif
-
 //#include <dune/grid/io/file/dgfparser/dgfparser.hh>
 #include <dune/grid/uggrid.hh>
 #include <dune/grid/albertagrid/agrid.hh>

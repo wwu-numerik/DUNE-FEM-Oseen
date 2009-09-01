@@ -22,6 +22,16 @@
     #warning ("MICRO_POLORDER undefined, defaulting to 1")
 #endif
 
+//replacing gridtype.hh
+#define ENABLE_ALUGRID
+#define HAVE_ALUGRID
+#define ALUGRID_SIMPLEX
+#include <dune/grid/io/file/dgfparser/dgfalu.hh>
+const int dimworld = GRIDDIM;
+typedef Dune::ALUSimplexGrid<dimworld,dimworld>
+    GridType;
+#include <dune/grid/io/file/dgfparser/dgfalberta.hh>
+
 #include <vector>
 #include <string>
 #include <iostream>
@@ -30,7 +40,6 @@
 #include <dune/common/mpihelper.hh>
 #include <dune/common/exceptions.hh>
 
-#include <dune/grid/io/file/dgfparser/dgfgridtype.hh>
 //#if HAVE_GRAPE
 //#include <dune/grid/io/visual/grapedatadisplay.hh>
 //#endif

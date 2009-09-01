@@ -2,10 +2,10 @@ CONFIGURE_FLAGS="CXX=g++ CC=gcc CXXFLAGS='-g' F77=gfortran \
   --prefix=/data/dune_work/private/f_albr01/dune/diplomarbeit_felix_rene \
   --with-metis=/share/dune/Modules/modules_$HOSTTYPE/metis \
   --with-alugrid=/data/dune_work/private/f_albr01/modules/alugrid-1.14 \
-  --with-alberta=/data/dune_work/private/f_albr01/modules/alberta-2.01 \
+  --with-alberta=/share/dune/modules/modules_x86_64/alberta/alberta-1.2 \
   --with-ug=/share/dune/Modules/modules_$HOSTTYPE/ug \
   --x-includes=/usr/X11R6/include \
   --x-libraries=/usr/X11R6/lib64 \
   --with-grape=/data/dune_work/private/f_albr01/modules/grape \
   --with-grid-dim=2 \
-  --with-grid-type=ALUGRID_CONFORM "
+  --with-grid-type=ALBERTAGRID "
