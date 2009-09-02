@@ -100,6 +100,8 @@ class Pressure : public Dune::Function < typename PressureTraitsImp::FunctionSpa
                 ret[0] = -x2;
 #elif defined(CONSTANT_PROBLEM)
                 ret[0] = -x2;
+#elif defined(GENRALIZED_STOKES_PROBLEM)
+                ret[0] = std::sin( ( 0.5 * M_PI ) * ( x1 - x2 ) );
 #else
                 ret[0] = 2.0 * std::exp( x1 ) * std::sin( x2 );
 #endif
@@ -109,14 +111,19 @@ class Pressure : public Dune::Function < typename PressureTraitsImp::FunctionSpa
 //                double x2 = arg[1];
 //                double x3 = arg[2];
 #ifdef SIMPLE_PROBLEM
-                assert( !"SIMPLE_PROBLEM not implemented in 1D" );
+                assert( !"SIMPLE_PROBLEM not implemented in 3D" );
 #elif defined(CONSTANT_PROBLEM)
                 ret[0] = 0;
                 ret[1] = 0;
                 ret[2] = 0;
+#elif defined(GENRALIZED_STOKES_PROBLEM)
+                assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D" );
 #else
-                assert( !"pressure not implemented in 1D" );
+                assert( !"pressure not implemented in 3D" );
 #endif
+            }
+            else {
+                assert( !"pressure not implemented for more than 3 dimensions" );
             }
         }
 
