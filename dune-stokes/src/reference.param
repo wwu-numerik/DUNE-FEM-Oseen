@@ -26,6 +26,7 @@ dgf_file_3d: grid_3d.dgf
 #			2: minref, bfg-tau-start <= bfg-tau-stop
 #			3: minref, accuracy_start <= accuracy_stop + inner lopo for inner acc
 #			4: minref, accuracy_start <= accuracy_stop
+#			5: one single run with minref
 # no runtype set --> old minrun behavior
 runtype: 0
 

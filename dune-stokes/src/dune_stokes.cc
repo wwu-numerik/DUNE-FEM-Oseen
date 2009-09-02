@@ -184,6 +184,13 @@ int main( int argc, char** argv )
             AccuracyRunOuter( mpicomm );
             break;
         }
+        case 5: {
+            profiler().Reset( 1 );
+            RunInfoVector rf;
+            rf.push_back(singleRun( mpicomm, Parameters().getParam( "minref", 0 ) ) );
+            profiler().Output( mpicomm, rf );
+            break;
+        }
     } // end case
 
     Logger().Dbg() << "\nRun from: " << commit_string << std::endl;
