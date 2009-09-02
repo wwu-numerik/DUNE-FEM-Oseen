@@ -8,17 +8,15 @@
 #define ELLIPTICMODELS_HH
 
 #include <dune/grid/io/file/dgfparser/dgfalberta.hh>
-//#define ENABLE_UG
-//#define HAVE_UG
-//#define UGGRID
-//#include <dune/grid/io/file/dgfparser/dgfug.hh>
 
+#include <dune/fem/quadrature/elementquadrature.hh>
 #include <dune/fem/gridpart/periodicgridpart.hh>
 #include <dune/fem/gridpart/adaptiveleafgridpart.hh>
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/fem/space/dgspace.hh>
 #include <dune/fem/operator/model/linearellipticmodel.hh>
+#include <dune/fem/io/file/vtkio.hh>
 
 #include <dune/stokes/discretestokesmodelinterface.hh>
 #include <dune/stokes/stokespass.hh>
@@ -26,6 +24,7 @@
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/logging.hh>
 #include <dune/stuff/grid.hh>
+#include <dune/stuff/functions.hh>
 
 #include "analyticaldarcydata.hh"
 
@@ -108,8 +107,6 @@ class DarcyModel
 
             debugStream << "\tInitialising micro grid..." << std::endl;
 
-//            typedef Dune::UGGrid< 2 >
-//                MicroGridType;
             typedef Dune::AlbertaGrid< gridDim, gridDim >
                 MicroGridType;
 
@@ -168,7 +165,7 @@ class DarcyModel
             typedef Dune::DiscreteStokesModelInterface< MicroStokesModelTraitsImp >
                 MicroStokesModelType;
 
-//             function wrapper for the solutions
+            // function wrapper for the solutions
             typedef typename MicroStokesModelType::DiscreteStokesFunctionSpaceWrapperType
                 MicroDiscreteStokesFunctionSpaceWrapperType;
 
@@ -179,11 +176,10 @@ class DarcyModel
                 MicroDiscreteStokesFunctionWrapperType;
 
             MicroDiscreteStokesFunctionWrapperType
-                microSolutions( "micro_",
-                                microDiscreteStokesFunctionSpaceWrapper );
+                microSolutions( "micro", microDiscreteStokesFunctionSpaceWrapper );
 
             MicroDiscreteStokesFunctionWrapperType
-                dummy( "dummy_", microDiscreteStokesFunctionSpaceWrapper );
+                dummy( "dummy", microDiscreteStokesFunctionSpaceWrapper );
 
             // analytcal data
             typedef typename MicroStokesModelTraitsImp::AnalyticalForceType
@@ -238,9 +234,53 @@ class DarcyModel
             dummy.discretePressure().clear();
             dummy.discreteVelocity().clear();
 
-            microStokesPass.apply( dummy, microSolutions );
+//            microStokesPass.apply( dummy, microSolutions );
 
             infoStream << "\tMicro system solved." << std::endl;
+
+            debugStream << "\tWriting micro output..." << std::endl;
+
+            /*
+             * cheat for output
+             */
+
+//            Stuff::addScalarToFunc( dummy.discreteVelocity(), 1.0 );
+//
+//            typedef Dune::FunctionSpace< double, double, 2, 2 >
+//                FunctionSpaceType;
+//
+//            typedef Dune::DiscontinuousGalerkinSpace< FunctionSpaceType, MicroGridPartType, 1 >
+//                NonPeriodicDiscreteFunctionSpaceType;
+//
+//            NonPeriodicDiscreteFunctionSpaceType nonPeriodicDiscreteFunctionSpace( microGridPart );
+//
+//            typedef Dune::AdaptiveDiscreteFunction< NonPeriodicDiscreteFunctionSpaceType >
+//                NonPeriodicDiscreteFunctionType;
+
+//            NonPeriodicDiscreteFunctionType nonPeriodicDiscreteFunction( "nonPeriodic", nonPeriodicDiscreteFunctionSpace, dummy.discreteVelocity().leakPointer() );
+//            NonPeriodicDiscreteFunctionType nonPeriodicDiscreteFunction( dynamic_cast< NonPeriodicDiscreteFunctionType >(dummy.discreteVelocity() ) );
+
+//            debugStream << "nonPeriodicDiscreteFunctionSpace.size(): " << nonPeriodicDiscreteFunctionSpace.size() << std::endl;
+//            debugStream << "dummy.discreteVelocity().space().size(): " << dummy.discreteVelocity().space().size() << std::endl;
+
+            typedef Dune::VTKIO< PeriodicMicroGridPartType >
+                MicroVTKWriterType;
+
+            MicroVTKWriterType microVtkWriter( periodicMicroGridPart );
+
+            microVtkWriter.addVertexData( dummy.discreteVelocity() );
+            microVtkWriter.write( "data/microVelocity" );
+            microVtkWriter.clear();
+
+//            microVtkWriter.addVertexData( dummy.discretePressure() );
+//            microVtkWriter.write( "data/microPressure" );
+//            microVtkWriter.clear();
+
+//            microVtkWriter.addVertexData( nonPeriodicDiscreteFunction );
+//            microVtkWriter.write( "data/nonPeriodic" );
+//            microVtkWriter.clear();
+
+            infoStream << "\tMicro Output written." << std::endl;
     //
     //    /* ********************************************************************** *
     //     * Problem postprocessing
@@ -289,7 +329,7 @@ class DarcyModel
     //
     //    return info;
 
-            infoStream << "Computed permeability tensor." << std::endl;
+            infoStream << "\tComputed permeability tensor." << std::endl;
 
             if ( verbosity_ == 0 ) {
                 infoStream.Resume();

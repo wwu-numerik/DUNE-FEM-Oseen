@@ -1279,11 +1279,13 @@ class DiscreteStokesModelDefaultTraits
             DiscreteModelType;
 
         //! we use caching quadratures for the entities
-        typedef Dune::CachingQuadrature< GridPartImp, 0 >
+        typedef Dune::ElementQuadrature< GridPartImp, 0 >
+//        typedef Dune::CachingQuadrature< GridPartImp, 0 >
             VolumeQuadratureType;
 
         //! we use caching quadratures for the faces
-        typedef Dune::CachingQuadrature< GridPartImp, 1 >
+        typedef Dune::ElementQuadrature< GridPartImp, 1 >
+//        typedef Dune::CachingQuadrature< GridPartImp, 1 >
             FaceQuadratureType;
 
         //! polynomial order for the discrete sigma function space
