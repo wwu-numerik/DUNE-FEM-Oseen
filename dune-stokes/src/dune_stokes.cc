@@ -496,19 +496,20 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
     DiscreteStokesFunctionWrapperType initArgToPass( "init_", discreteStokesFunctionSpaceWrapper );
 
-     typedef StokesModelTraitsImp::AnalyticalForceType
-         AnalyticalForceType;
-     AnalyticalForceType analyticalForce( viscosity , discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), 1.0 );
+    const double alpha = Parameters().getParam( "alpha", 0.0 );
+    typedef StokesModelTraitsImp::AnalyticalForceType
+        AnalyticalForceType;
+    AnalyticalForceType analyticalForce( viscosity , discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), alpha );
 
-     typedef StokesModelTraitsImp::AnalyticalDirichletDataType
-         AnalyticalDirichletDataType;
-     AnalyticalDirichletDataType analyticalDirichletData( discreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
+    typedef StokesModelTraitsImp::AnalyticalDirichletDataType
+        AnalyticalDirichletDataType;
+    AnalyticalDirichletDataType analyticalDirichletData( discreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
 
     StokesModelImpType stokesModel( stabil_coeff,
                                     analyticalForce,
                                     analyticalDirichletData,
                                     viscosity,
-                                    1.0 );
+                                    alpha );
 
     /* ********************************************************************** *
      * initialize passes                                                      *
