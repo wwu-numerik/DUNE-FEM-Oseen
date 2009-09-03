@@ -44,6 +44,8 @@ micro_grid_3d:
 
 micro_refine: 0
 
+micro_viscosity: 1.0
+
 # > 2 will show bfg setting per inner iteration, > 1 avg inner iteration count
 solverVerbosity: 2
 
