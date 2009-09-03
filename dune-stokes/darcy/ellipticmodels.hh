@@ -126,10 +126,10 @@ class DarcyModel
             const int refine_level = Dune::Parameter::getValue( "micro_refine", 0 ) * Dune::DGFGridInfo< MicroGridType >::refineStepsForHalf();
             microGridPointer->globalRefine( refine_level );
 
-            typedef Dune::PeriodicLeafGridPart< MicroGridType >
-                PeriodicMicroGridPartType;
+//            typedef Dune::PeriodicLeafGridPart< MicroGridType >
+//                PeriodicMicroGridPartType;
 
-            PeriodicMicroGridPartType periodicMicroGridPart( *microGridPointer );
+//            PeriodicMicroGridPartType periodicMicroGridPart( *microGridPointer );
 
             typedef Dune::AdaptiveLeafGridPart< MicroGridType >
                 MicroGridPartType;
@@ -149,7 +149,7 @@ class DarcyModel
             const double generalizedStokesAlpha = 0.01;
 
             typedef Dune::DiscreteStokesModelDefaultTraits<
-                            PeriodicMicroGridPartType,
+                            MicroGridPartType,
                             Darcy::ConstantFunction,
                             Darcy::ConstantFunction,
                             gridDim,
@@ -170,7 +170,7 @@ class DarcyModel
                 MicroDiscreteStokesFunctionSpaceWrapperType;
 
             MicroDiscreteStokesFunctionSpaceWrapperType
-                microDiscreteStokesFunctionSpaceWrapper( periodicMicroGridPart );
+                microDiscreteStokesFunctionSpaceWrapper( microGridPart );
 
             typedef typename MicroStokesModelType::DiscreteStokesFunctionWrapperType
                 MicroDiscreteStokesFunctionWrapperType;
@@ -212,8 +212,8 @@ class DarcyModel
 
             debugStream << "\tInitialising micro system..." << std::endl;
 
-            debugStream << "\tPrinting periodic micro grid information..." << std::endl;
-            Stuff::getGridInformation( periodicMicroGridPart, microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), debugStream );
+//            debugStream << "\tPrinting periodic micro grid information..." << std::endl;
+//            Stuff::getGridInformation( periodicMicroGridPart, microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), debugStream );
             debugStream << "\tPrinting non periodic micro grid information..." << std::endl;
             Stuff::getGridInformation( microGridPart, microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), debugStream );
 
@@ -221,11 +221,10 @@ class DarcyModel
                 MicroStartPassType;
             MicroStartPassType microStartPass;
 
-            typedef Dune::StokesPass< MicroStokesModelImpType, MicroStartPassType, 0, MicroGridPartType >
+            typedef Dune::StokesPass< MicroStokesModelImpType, MicroStartPassType, 0 >
                 MicroStokesPassType;
             MicroStokesPassType microStokesPass(    microStartPass,
                                                     microStokesModel,
-                                                    periodicMicroGridPart,
                                                     microGridPart,
                                                     microDiscreteStokesFunctionSpaceWrapper );
 
@@ -263,10 +262,10 @@ class DarcyModel
 //            debugStream << "nonPeriodicDiscreteFunctionSpace.size(): " << nonPeriodicDiscreteFunctionSpace.size() << std::endl;
 //            debugStream << "dummy.discreteVelocity().space().size(): " << dummy.discreteVelocity().space().size() << std::endl;
 
-            typedef Dune::VTKIO< PeriodicMicroGridPartType >
+            typedef Dune::VTKIO< MicroGridPartType >
                 MicroVTKWriterType;
 
-            MicroVTKWriterType microVtkWriter( periodicMicroGridPart );
+            MicroVTKWriterType microVtkWriter( microGridPart );
 
             microVtkWriter.addVertexData( dummy.discreteVelocity() );
             microVtkWriter.write( "data/microVelocity" );
