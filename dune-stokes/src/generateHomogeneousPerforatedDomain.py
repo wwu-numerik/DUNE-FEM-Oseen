@@ -15,13 +15,21 @@ import time
 porosity = 0.4
 #print 'porosity is %f' %( porosity )
 
+do_shift = True
+if do_shift :
+	shift_x = -1.0
+	shift_y = -1.0
+else :
+	shift_x = 0.0
+	shift_y = 0.0
+
 # about the domain
-domain_length_x = 1.0
-domain_length_y = 1.0
+domain_length_x = 3.0
+domain_length_y = 3.0
 
 # typical size of the standard cell
-standard_cell_size_x = 0.01
-standard_cell_size_y = 0.01
+standard_cell_size_x = 1.0
+standard_cell_size_y = 1.0
 standard_cell_area = standard_cell_size_x * standard_cell_size_y
 #print 'standard cell size is %f x %f, standard cell area is %f' %( standard_cell_size_x, standard_cell_size_y, standard_cell_area )
 
@@ -234,6 +242,21 @@ print 'epsilon_suqare is %f' %( standard_cell_area )
 
 # generate the outer rectangle
 outer_rectangle = generate_rectangle( computed_length_domain_x, computed_length_domain_y, [ id_of_bottom_rectangle_faces, id_of_right_rectangle_faces, id_of_top_rectangle_faces, id_of_left_rectangle_faces ] )
+
+# shift if desired
+if do_shift :
+	for ellipsoid in ellipsoids:
+		for ellipsoid_point_with_id in ellipsoid :
+			ellipsoid_point = ellipsoid_point_with_id[ 0 ]
+			ellipsoid_point[ 0 ] += shift_x
+			ellipsoid_point[ 1 ] += shift_y
+	for outer_rectangle_point_with_id in outer_rectangle :
+		outer_rectangle_point = outer_rectangle_point_with_id[ 0 ]
+		outer_rectangle_point[ 0 ] += shift_x
+		outer_rectangle_point[ 1 ] += shift_y
+	for hole in holes :
+		hole[ 0 ] += shift_x
+		hole[ 1 ] += shift_y
 
 # write to triangle .poly file
 print 'writing to %s' %( triangle_filename )
