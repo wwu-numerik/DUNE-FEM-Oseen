@@ -145,8 +145,8 @@ class DarcyModel
             infoStream << "\tInitialising micro problem..." << std::endl;
 
             const int microPolOrder = MICRO_POLORDER;
-            const double microViscosity = 1.0;
-            const double generalizedStokesAlpha = 0.01;
+            const double microViscosity = Dune::Parameter::getValue( "micro_viscosity", 1.0 );
+//            const double generalizedStokesAlpha = 0.01;
 
             typedef Dune::DiscreteStokesModelDefaultTraits<
                             MicroGridPartType,
@@ -188,21 +188,20 @@ class DarcyModel
             typename MicroAnalyticalForceType::RangeType unitVector( 0.0 );
             unitVector[ 0 ] = 1.0;
 
-            MicroAnalyticalForceType microAnalyticalForce( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), unitVector );
+            typename MicroAnalyticalForceType::RangeType zeroVector( 0.0 );
+
+            MicroAnalyticalForceType microAnalyticalForce( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), zeroVector );
 
             typedef typename MicroStokesModelTraitsImp::AnalyticalDirichletDataType
                 MicroAnalyticalDirichletDataType;
 
-            typename MicroAnalyticalDirichletDataType::RangeType zero( 0.0 );
-
-            MicroAnalyticalDirichletDataType microAnalyticalDirichletData( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), zero );
+            MicroAnalyticalDirichletDataType microAnalyticalDirichletData( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), zeroVector );
 
             // model
             MicroStokesModelImpType microStokesModel(   Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients(),
                                                         microAnalyticalForce,
                                                         microAnalyticalDirichletData,
-                                                        microViscosity,
-                                                        generalizedStokesAlpha );
+                                                        microViscosity );
 
             infoStream << "\tInitialised micro problem." << std::endl;
 
@@ -214,8 +213,8 @@ class DarcyModel
 
 //            debugStream << "\tPrinting periodic micro grid information..." << std::endl;
 //            Stuff::getGridInformation( periodicMicroGridPart, microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), debugStream );
-            debugStream << "\tPrinting non periodic micro grid information..." << std::endl;
-            Stuff::getGridInformation( microGridPart, microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), debugStream );
+//            debugStream << "\tPrinting non periodic micro grid information..." << std::endl;
+//            Stuff::getGridInformation( microGridPart, microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), debugStream );
 
             typedef Dune::StartPass< MicroDiscreteStokesFunctionWrapperType, -1 >
                 MicroStartPassType;
@@ -233,7 +232,7 @@ class DarcyModel
             dummy.discretePressure().clear();
             dummy.discreteVelocity().clear();
 
-//            microStokesPass.apply( dummy, microSolutions );
+            microStokesPass.apply( dummy, microSolutions );
 
             infoStream << "\tMicro system solved." << std::endl;
 
@@ -267,13 +266,13 @@ class DarcyModel
 
             MicroVTKWriterType microVtkWriter( microGridPart );
 
-            microVtkWriter.addVertexData( dummy.discreteVelocity() );
+            microVtkWriter.addVertexData( microSolutions.discreteVelocity() );
             microVtkWriter.write( "data/microVelocity" );
             microVtkWriter.clear();
 
-//            microVtkWriter.addVertexData( dummy.discretePressure() );
-//            microVtkWriter.write( "data/microPressure" );
-//            microVtkWriter.clear();
+            microVtkWriter.addVertexData( microSolutions.discretePressure() );
+            microVtkWriter.write( "data/microPressure" );
+            microVtkWriter.clear();
 
 //            microVtkWriter.addVertexData( nonPeriodicDiscreteFunction );
 //            microVtkWriter.write( "data/nonPeriodic" );
