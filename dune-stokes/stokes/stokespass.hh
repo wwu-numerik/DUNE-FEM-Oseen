@@ -1262,10 +1262,10 @@ class StokesPass
                                         // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
                                         SigmaRangeType tau_j( 0.0 );
-                                        sigmaBaseFunctionSetElement.evaluate( j, xInside, tau_j );
+                                        sigmaBaseFunctionSetNeighbour.evaluate( j, xOutside, tau_j );
                                         VelocityRangeType tau_j_times_normal( 0.0 );
                                         tau_j.mv( outerNormal, tau_j_times_normal );
-                                        const double v_i_times_tau_j_times_normal = velocityBaseFunctionSetNeighbour.evaluateSingle( i, xOutside, tau_j_times_normal );
+                                        const double v_i_times_tau_j_times_normal = velocityBaseFunctionSetElement.evaluateSingle( i, xInside, tau_j_times_normal );
                                         X_i_j += -0.5
                                             * elementVolume
                                             * integrationWeight
@@ -1529,9 +1529,9 @@ class StokesPass
                                         // compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
                                         VelocityRangeType v_i( 0.0 );
-                                        velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
+                                        velocityBaseFunctionSetElement.evaluate( i, xInside, v_i );
                                         PressureRangeType q_j( 0.0 );
-                                        pressureBaseFunctionSetElement.evaluate( j, xInside, q_j );
+                                        pressureBaseFunctionSetNeighbour.evaluate( j, xOutside, q_j );
                                         const double v_i_times_normal = v_i * outerNormal;
                                         const double q_j_times_v_i_times_normal = q_j * v_i_times_normal;
                                         Z_i_j += 0.5
@@ -1794,10 +1794,10 @@ class StokesPass
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
                                         // compute \hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
-                                        PressureRangeType q_i( 0.0 );
-                                        pressureBaseFunctionSetNeighbour.evaluate( i, xOutside, q_i );
                                         PressureRangeType q_j( 0.0 );
-                                        pressureBaseFunctionSetElement.evaluate( j, xInside, q_j );
+                                        pressureBaseFunctionSetNeighbour.evaluate( j, xOutside, q_j );
+                                        PressureRangeType q_i( 0.0 );
+                                        pressureBaseFunctionSetElement.evaluate( i, xInside, q_i );
                                         const double q_i_times_q_j = q_i * q_j;
                                         R_i_j += -1.0
                                             * D_11
