@@ -31,7 +31,7 @@ dgf_file_3d: grid_3d.dgf
 runtype: 0
 
 #in runtype 0 refine maxref + 1 - minref times
-minref: 4
+minref: 0
 maxref: 4
 
 #in runtype 1 vary
@@ -54,10 +54,8 @@ accurracy_steps: 5
 #*********** end runtype specific parameters **************************************************
 
 #currently ineffective
-viscosity: 1
-#scalar factor to u for generalized stokes
-alpha: 0.0
-
+viscosity: 1.0
+alpha: 0.000001
 
 #****************** solver ******************************************************************
 #pretty much ineffective
@@ -70,7 +68,7 @@ inner_absLimit: 1e-10
 max_adaptions: 4
 
 # > 2 will show bfg setting per inner iteration, > 1 avg inner iteration count
-solverVerbosity: 2
+solverVerbosity: 0
 
 disableSolver: 0
 diff-tolerance: 0.01
