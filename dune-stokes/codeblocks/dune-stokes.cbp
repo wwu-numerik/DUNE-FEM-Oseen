@@ -427,3 +427,37 @@
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
+		<Unit filename="../stokes/stokespass.hh">
+			<Option virtualFolder="dune-stokes/" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/functions.hh">
+			<Option virtualFolder="dune-stuff/" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/grid.hh">
+			<Option virtualFolder="dune-stuff/" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/logging.hh">
+			<Option virtualFolder="dune-stuff/" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/misc.hh">
+			<Option virtualFolder="dune-stuff/" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/parametercontainer.hh">
+			<Option virtualFolder="dune-stuff/" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/postprocessing.hh">
+			<Option virtualFolder="dune-stuff/" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/printing.hh">
+			<Option virtualFolder="dune-stuff/" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/profiler.hh">
+			<Option virtualFolder="dune-stuff/" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
