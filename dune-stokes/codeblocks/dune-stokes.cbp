@@ -5,6 +5,7 @@
 		<Option title="dune-stokes" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
+		<Option virtualFolders="dune-stokes/;elliptic/;dune-stuff/;" />
 		<Build>
 			<Target title="uni">
 				<Option output="bin/Debug/dune-stokes" prefix_auto="1" extension_auto="1" />
@@ -109,13 +110,48 @@
 					<Add directory="/usr/lib" />
 				</Linker>
 			</Target>
+			<Target title="felix_elliptic">
+				<Option output="bin/Debug/dune-stokes" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../src/" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="test.param" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-DDARCY" />
+					<Add option="-DMICRO_POLORDER=1" />
+					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/include" />
+					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include" />
+					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include/parallel" />
+					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include/serial" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/grape" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alberta-2.01/include" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include/parallel" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include/serial" />
+					<Add directory="/usr/local/grape" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="/usr/lib/libSM.so.6" />
+					<Add library="blas" />
+					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/lib" />
+					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/lib" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/grape" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alberta-2.01/lib" />
+					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/lib" />
+					<Add directory="/usr/local/grape" />
+					<Add directory="/usr/lib" />
+				</Linker>
+			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-g" />
 			<Add option="-fexceptions" />
 			<Add option="-DENABLE_ALUGRID" />
-			<Add option="-DALUGRID_CONFORM" />
+			<Add option="-DALUGRID_SIMPLEX" />
 			<Add option="-DGRIDDIM=2" />
 			<Add option="-DPOLORDER=1" />
 			<Add option="-DHAVE_CONFIG_H" />
@@ -153,54 +189,105 @@
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/lib" />
 			<Add directory="/usr/lib64" />
 		</Linker>
-		<Unit filename="../../dune-fem/fem/operator/matrix/spmatrix.hh">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
-		<Unit filename="../../dune-fem/fem/space/dgspace/orthonormalbase_2d.cc">
-			<Option target="&lt;{~None~}&gt;" />
+		<Unit filename="../elliptic/Makefile.am">
+			<Option virtualFolder="elliptic/" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="felix_elliptic" />
 		</Unit>
 		<Unit filename="../elliptic/elementintegratortraits.hh">
+			<Option virtualFolder="elliptic/" />
 			<Option target="uni" />
 			<Option target="rene" />
 			<Option target="uni_elliptic" />
 			<Option target="rene_elliptic" />
 		</Unit>
 		<Unit filename="../elliptic/elliptic.cc">
+			<Option virtualFolder="elliptic/" />
 			<Option target="rene" />
 			<Option target="uni_elliptic" />
 			<Option target="rene_elliptic" />
+			<Option target="felix_elliptic" />
 		</Unit>
 		<Unit filename="../elliptic/model.hh">
+			<Option virtualFolder="elliptic/" />
 			<Option target="uni" />
 			<Option target="rene" />
 			<Option target="uni_elliptic" />
 			<Option target="rene_elliptic" />
 		</Unit>
-		<Unit filename="../src/Makefile.am" />
-		<Unit filename="../src/analyticaldata.hh" />
+		<Unit filename="../elliptic/simpleelementintegrator.h">
+			<Option virtualFolder="elliptic/" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="felix_elliptic" />
+		</Unit>
+		<Unit filename="../src/Makefile.am">
+			<Option virtualFolder="dune-stokes/" />
+		</Unit>
+		<Unit filename="../src/analyticaldata.hh">
+			<Option virtualFolder="dune-stokes/" />
+		</Unit>
 		<Unit filename="../src/dune_stokes.cc">
+			<Option virtualFolder="dune-stokes/" />
 			<Option target="uni" />
 			<Option target="felix" />
 			<Option target="rene" />
 		</Unit>
-		<Unit filename="../src/pressure.hh" />
-		<Unit filename="../src/problem.hh" />
-		<Unit filename="../src/reference.param" />
-		<Unit filename="../src/velocity.hh" />
-		<Unit filename="../stokes/cghelper.hh" />
-		<Unit filename="../stokes/discretegradientpass.hh" />
-		<Unit filename="../stokes/discretestokesfunctionspacewrapper.hh" />
-		<Unit filename="../stokes/discretestokesmodelinterface.hh" />
-		<Unit filename="../stokes/saddlepoint_inverse_operator.hh" />
-		<Unit filename="../stokes/stokespass.hh" />
-		<Unit filename="../../dune-stuff/stuff/functions.hh" />
-		<Unit filename="../../dune-stuff/stuff/grid.hh" />
-		<Unit filename="../../dune-stuff/stuff/logging.hh" />
-		<Unit filename="../../dune-stuff/stuff/misc.hh" />
-		<Unit filename="../../dune-stuff/stuff/parametercontainer.hh" />
-		<Unit filename="../../dune-stuff/stuff/postprocessing.hh" />
-		<Unit filename="../../dune-stuff/stuff/printing.hh" />
-		<Unit filename="../../dune-stuff/stuff/profiler.hh" />
+		<Unit filename="../src/pressure.hh">
+			<Option virtualFolder="dune-stokes/" />
+		</Unit>
+		<Unit filename="../src/problem.hh">
+			<Option virtualFolder="dune-stokes/" />
+		</Unit>
+		<Unit filename="../src/reference.param">
+			<Option virtualFolder="dune-stokes/" />
+		</Unit>
+		<Unit filename="../src/velocity.hh">
+			<Option virtualFolder="dune-stokes/" />
+		</Unit>
+		<Unit filename="../stokes/cghelper.hh">
+			<Option virtualFolder="dune-stokes/" />
+		</Unit>
+		<Unit filename="../stokes/discretegradientpass.hh">
+			<Option virtualFolder="dune-stokes/" />
+		</Unit>
+		<Unit filename="../stokes/discretestokesfunctionspacewrapper.hh">
+			<Option virtualFolder="dune-stokes/" />
+		</Unit>
+		<Unit filename="../stokes/discretestokesmodelinterface.hh">
+			<Option virtualFolder="dune-stokes/" />
+		</Unit>
+		<Unit filename="../stokes/saddlepoint_inverse_operator.hh">
+			<Option virtualFolder="dune-stokes/" />
+		</Unit>
+		<Unit filename="../stokes/stokespass.hh">
+			<Option virtualFolder="dune-stokes/" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/functions.hh">
+			<Option virtualFolder="dune-stuff/" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/grid.hh">
+			<Option virtualFolder="dune-stuff/" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/logging.hh">
+			<Option virtualFolder="dune-stuff/" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/misc.hh">
+			<Option virtualFolder="dune-stuff/" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/parametercontainer.hh">
+			<Option virtualFolder="dune-stuff/" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/postprocessing.hh">
+			<Option virtualFolder="dune-stuff/" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/printing.hh">
+			<Option virtualFolder="dune-stuff/" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/profiler.hh">
+			<Option virtualFolder="dune-stuff/" />
+		</Unit>
 		<Extensions>
 			<code_completion />
 			<envvars />

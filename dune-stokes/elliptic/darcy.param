@@ -2,10 +2,10 @@
 # --> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_FILE = 46
 # ANY odd number will disable ALL logging
 # max logging: 62
-loglevel: 62
+loglevel: 54
 
 #only prefix
-logfile: dune_stokes
+logfile: darcy
 
 #path (relative to binary) where .vtu etc will be saved
 fem.io.datadir: data
@@ -26,13 +26,12 @@ dgf_file_3d: grid_3d.dgf
 #			2: minref, bfg-tau-start <= bfg-tau-stop
 #			3: minref, accuracy_start <= accuracy_stop + inner lopo for inner acc
 #			4: minref, accuracy_start <= accuracy_stop
-#			5: one single run with minref
 # no runtype set --> old minrun behavior
-runtype: 5
+runtype: 0
 
 #in runtype 0 refine maxref + 1 - minref times
 minref: 0
-maxref: 4
+maxref: 2
 
 #in runtype 1 vary
 minpow: -1
@@ -53,9 +52,9 @@ accurracy_steps: 5
 
 #*********** end runtype specific parameters **************************************************
 
+#currently ineffective
 viscosity: 1.0
-# if alpha != 0.0, isGeneralize() has to return true in DiscreteStokesModelDefault
-alpha: 0.0
+
 
 #****************** solver ******************************************************************
 #pretty much ineffective
@@ -118,3 +117,13 @@ use-cheat: 0
 eps: 1.0e-14
 
 h-factor: 1.0
+
+#****************** micro problem ***********************************************************
+micro_refine: 1
+micro_viscosity: 1.0
+#****************** end micro problem *******************************************************
+
+
+
+
+

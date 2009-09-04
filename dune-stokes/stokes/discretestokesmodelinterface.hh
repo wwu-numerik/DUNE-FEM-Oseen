@@ -1747,7 +1747,13 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             stabil_coeff_( stab_coeff ),
             force_( force ),
             dirichletData_( dirichletData )
-        {}
+        {
+            if ( !isGeneralized() ) {
+                if ( ( alpha_ < 0.0 ) || ( alpha_ > 0.0 ) ) {
+                    assert( !"isGeneralized() returns false, but alpha is not zero!" );
+                }
+            }
+        }
 
         /**
          *  \brief  destructor

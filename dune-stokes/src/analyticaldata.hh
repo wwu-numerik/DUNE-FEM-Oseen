@@ -119,6 +119,56 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
 };
 
 /**
+ *  \todo   texdoc
+ **/
+template < class FunctionSpaceImp >
+class MicroForce : public Dune::Function < FunctionSpaceImp , MicroForce < FunctionSpaceImp > >
+{
+    public:
+        typedef MicroForce< FunctionSpaceImp >
+            ThisType;
+        typedef Dune::Function< FunctionSpaceImp, ThisType >
+            BaseType;
+        typedef typename BaseType::DomainType
+            DomainType;
+        typedef typename BaseType::RangeType
+            RangeType;
+
+        /**
+         *  \brief  constructor
+         *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
+         **/
+        MicroForce( const double viscosity, const FunctionSpaceImp& space )
+            : BaseType ( space ),
+              viscosity_( viscosity ),
+              dim_( FunctionSpaceImp::dimDomain )
+        {}
+
+        /**
+         *  \brief  destructor
+         *  doing nothing
+         **/
+        ~MicroForce()
+        {}
+
+        /**
+         *  \brief  evaluates the force
+         *  \param  arg
+         *          point to evaluate at
+         *  \param  ret
+         *          value of force at given point
+         **/
+        inline void evaluate( const DomainType& arg, RangeType& ret ) const
+        {
+            ret = 0.0;
+        }
+
+    private:
+        const double viscosity_;
+        const int dim_;
+};
+
+/**
  *  \brief  describes the dirichlet boundary data
  *
  *  \tparam DirichletTraitsImp
@@ -278,5 +328,60 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 
 };
 
+/**
+ *  \todo   extensive docu with latex
+ **/
+template < class FunctionSpaceImp >
+class MicroDirichletData : public Dune::Function < FunctionSpaceImp, MicroDirichletData < FunctionSpaceImp > >
+{
+    public:
+        typedef MicroDirichletData< FunctionSpaceImp >
+            ThisType;
+        typedef Dune::Function< FunctionSpaceImp, ThisType >
+            BaseType;
+        typedef typename BaseType::DomainType
+            DomainType;
+        typedef typename BaseType::RangeType
+            RangeType;
+
+        /**
+         *  \brief  constructor
+         *
+         *  doing nothing besides Base init
+         **/
+        MicroDirichletData( const FunctionSpaceImp& space )
+            : BaseType( space ),
+              dim_( FunctionSpaceImp::dimDomain )
+        {}
+
+        /**
+         *  \brief  destructor
+         *
+         *  doing nothing
+         **/
+         ~MicroDirichletData()
+         {}
+
+        void evaluate( const DomainType& arg, RangeType& ret, const int id ) const
+        {
+            ret = 0.0;
+        }
+
+         /**
+          * \brief  evaluates the dirichlet data
+          * \param  arg
+          *         point to evaluate at
+          * \param  ret
+          *         value of dirichlet boundary data at given point
+          **/
+        inline void evaluate( const DomainType& arg, RangeType& ret ) const
+        {
+            ret = 0.0;
+        }
+
+    private:
+        const int dim_;
+
+};
 
 #endif // end of analyticaldata.hh
