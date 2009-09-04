@@ -1792,10 +1792,10 @@ class StokesPass
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
                                         // compute \hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}
                                         const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
-                                        PressureRangeType q_i( 0.0 );
-                                        pressureBaseFunctionSetNeighbour.evaluate( i, xOutside, q_i );
                                         PressureRangeType q_j( 0.0 );
-                                        pressureBaseFunctionSetElement.evaluate( j, xInside, q_j );
+                                        pressureBaseFunctionSetNeighbour.evaluate( j, xOutside, q_j );
+                                        PressureRangeType q_i( 0.0 );
+                                        pressureBaseFunctionSetElement.evaluate( i, xInside, q_i );
                                         const double q_i_times_q_j = q_i * q_j;
                                         R_i_j += -1.0
                                             * D_11
