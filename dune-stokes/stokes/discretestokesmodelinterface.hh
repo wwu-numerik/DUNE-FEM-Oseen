@@ -527,6 +527,11 @@ class DiscreteStokesModelInterface
             return asImp().hasForce();
         }
 
+        bool isGeneralized() const
+        {
+            return asImp().isGeneralized();
+        }
+
         /**
          *  \brief  Implementation of \f$\hat{u}_{\sigma}^{U^{+}}\f$ and
          *          \f$\hat{u}_{\sigma}^{U^{-}}\f$ for a face inside
@@ -2677,6 +2682,11 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         double alpha() const
         {
             return alpha_;
+        }
+
+        bool isGeneralized() const
+        {
+            return false;
         }
 
     private:
