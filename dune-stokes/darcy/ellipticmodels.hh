@@ -77,6 +77,12 @@ class DarcyModel
         typedef typename FunctionSpaceType::RangeFieldType
             RangeFieldType;
 
+        typedef Dune::ALUSimplexGrid< gridDim, gridDim >
+            MicroGridType;
+
+        typedef Dune::AdaptiveLeafGridPart< MicroGridType >
+            MicroGridPartType;
+
         using BaseType::diffusiveFlux;
         using BaseType::convectiveFlux;
         using BaseType::mass;
@@ -97,21 +103,19 @@ class DarcyModel
             Logging::LogStream& infoStream = Logger().Info();
             Logging::LogStream& debugStream = Logger().Dbg();
 
-            if ( verbosity_ == 0 ) {
+            if ( verbosity_ == 0) {
                 infoStream.Suspend();
                 debugStream.Suspend();
             }
-
-            debugStream << "\tComputing permeability tensor..." << std::endl;
+            else if ( verbosity_ == 1 ) {
+                debugStream.Suspend();
+            }
 
             /*
              * grid
              */
 
             debugStream << "\tInitialising micro grid..." << std::endl;
-
-            typedef Dune::ALUSimplexGrid< gridDim, gridDim >
-                MicroGridType;
 
             std::string microGridFile( "micro_grid_2d.dgf" );
             if ( gridDim == 2 ) {
@@ -129,9 +133,6 @@ class DarcyModel
             const int refine_level = Dune::Parameter::getValue( "micro_refine", 0 ) * Dune::DGFGridInfo< MicroGridType >::refineStepsForHalf();
             microGridPointer->globalRefine( refine_level );
 
-            typedef Dune::AdaptiveLeafGridPart< MicroGridType >
-                MicroGridPartType;
-
             MicroGridPartType microGridPart( *microGridPointer );
 
             infoStream << "\tInitialised micro grid." << std::endl;
@@ -140,7 +141,7 @@ class DarcyModel
              * micro problem
              */
 
-            infoStream << "\tInitialising micro problem..." << std::endl;
+            debugStream << "\tInitialising micro problem..." << std::endl;
 
             const int microPolOrder = MICRO_POLORDER;
             const double microViscosity = Dune::Parameter::getValue( "micro_viscosity", 1.0 );
@@ -173,40 +174,51 @@ class DarcyModel
                 MicroDiscreteStokesFunctionWrapperType;
 
             MicroDiscreteStokesFunctionWrapperType
-                microSolutions( "micro", microDiscreteStokesFunctionSpaceWrapper );
+                microSolutionsX( "microX", microDiscreteStokesFunctionSpaceWrapper );
+
+            MicroDiscreteStokesFunctionWrapperType
+                microSolutionsY( "microY", microDiscreteStokesFunctionSpaceWrapper );
 
             MicroDiscreteStokesFunctionWrapperType
                 dummy( "dummy", microDiscreteStokesFunctionSpaceWrapper );
 
-            // analytcal data
             typedef typename MicroStokesModelTraitsImp::AnalyticalForceType
                 MicroAnalyticalForceType;
-
-            typename MicroAnalyticalForceType::RangeType unitVector( 0.0 );
-            unitVector[ 0 ] = 1.0;
-
-            typename MicroAnalyticalForceType::RangeType zeroVector( 0.0 );
-
-            MicroAnalyticalForceType microAnalyticalForce( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), unitVector );
 
             typedef typename MicroStokesModelTraitsImp::AnalyticalDirichletDataType
                 MicroAnalyticalDirichletDataType;
 
-            MicroAnalyticalDirichletDataType microAnalyticalDirichletData( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), unitVector );
+            // micro solution for x dimnesion
+            typename MicroAnalyticalForceType::RangeType unitVectorX( 0.0 );
+            unitVectorX[ 0 ] = 1.0;
+
+            MicroAnalyticalForceType microAnalyticalForceX( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), unitVectorX );
+
+            MicroAnalyticalDirichletDataType microAnalyticalDirichletDataX( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), unitVectorX );
 
             // model
-            MicroStokesModelImpType microStokesModel(   Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients(),
-                                                        microAnalyticalForce,
-                                                        microAnalyticalDirichletData,
+            MicroStokesModelImpType microStokesModelX(  Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients(),
+                                                        microAnalyticalForceX,
+                                                        microAnalyticalDirichletDataX,
                                                         microViscosity );
 
-            infoStream << "\tInitialised micro problem." << std::endl;
+            // micro solution for y dimnesion
+            typename MicroAnalyticalForceType::RangeType unitVectorY( 0.0 );
+            unitVectorX[ 1 ] = 1.0;
+
+            MicroAnalyticalForceType microAnalyticalForceY( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), unitVectorY );
+
+            MicroAnalyticalDirichletDataType microAnalyticalDirichletDataY( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), unitVectorY );
+
+            // model
+            MicroStokesModelImpType microStokesModelY(  Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients(),
+                                                        microAnalyticalForceY,
+                                                        microAnalyticalDirichletDataY,
+                                                        microViscosity );
 
             /*
              * micro pass
              */
-
-            debugStream << "\tInitialising micro system..." << std::endl;
 
             typedef Dune::StartPass< MicroDiscreteStokesFunctionWrapperType, -1 >
                 MicroStartPassType;
@@ -214,17 +226,33 @@ class DarcyModel
 
             typedef Dune::StokesPass< MicroStokesModelImpType, MicroStartPassType, 0 >
                 MicroStokesPassType;
-            MicroStokesPassType microStokesPass(    microStartPass,
-                                                    microStokesModel,
+            MicroStokesPassType microStokesPassX(   microStartPass,
+                                                    microStokesModelX,
                                                     microGridPart,
                                                     microDiscreteStokesFunctionSpaceWrapper );
 
-            microSolutions.discretePressure().clear();
-            microSolutions.discreteVelocity().clear();
+            MicroStokesPassType microStokesPassY(   microStartPass,
+                                                    microStokesModelY,
+                                                    microGridPart,
+                                                    microDiscreteStokesFunctionSpaceWrapper );
+
+            infoStream << "\tInitialised micro problem." << std::endl;
+
+            debugStream << "\tSolving micro system..." << std::endl;
+
             dummy.discretePressure().clear();
             dummy.discreteVelocity().clear();
+            microSolutionsX.discretePressure().clear();
+            microSolutionsX.discreteVelocity().clear();
 
-            microStokesPass.apply( dummy, microSolutions );
+            microStokesPassX.apply( dummy, microSolutionsX );
+
+            dummy.discretePressure().clear();
+            dummy.discreteVelocity().clear();
+            microSolutionsY.discretePressure().clear();
+            microSolutionsY.discreteVelocity().clear();
+
+            microStokesPassY.apply( dummy, microSolutionsY );
 
             infoStream << "\tMicro system solved." << std::endl;
 
@@ -235,22 +263,139 @@ class DarcyModel
 
             MicroVTKWriterType microVtkWriter( microGridPart );
 
-            microVtkWriter.addVertexData( microSolutions.discreteVelocity() );
-            microVtkWriter.write( "data/microVelocity" );
+            microVtkWriter.addVertexData( microSolutionsX.discreteVelocity() );
+            microVtkWriter.write( "data/microVelocityX" );
             microVtkWriter.clear();
 
-            microVtkWriter.addVertexData( microSolutions.discretePressure() );
-            microVtkWriter.write( "data/microPressure" );
+            microVtkWriter.addVertexData( microSolutionsX.discretePressure() );
+            microVtkWriter.write( "data/microPressureX" );
+            microVtkWriter.clear();
+
+            microVtkWriter.addVertexData( microSolutionsY.discreteVelocity() );
+            microVtkWriter.write( "data/microVelocityY" );
+            microVtkWriter.clear();
+
+            microVtkWriter.addVertexData( microSolutionsY.discretePressure() );
+            microVtkWriter.write( "data/microPressureY" );
             microVtkWriter.clear();
 
             infoStream << "\tMicro Output written." << std::endl;
 
+            debugStream << "\tComputing permeability tensor..." << std::endl;
+
+            PermeabilityTensorType permeabilityTensor_ = computePermeabilityTensor( microSolutionsX.discreteVelocity(),
+                                                                                    microSolutionsY.discreteVelocity() );
+
             infoStream << "\tComputed permeability tensor." << std::endl;
 
-            if ( verbosity_ == 0 ) {
+            if ( verbosity_ == 0) {
                 infoStream.Resume();
                 debugStream.Resume();
             }
+            else if ( verbosity_ == 1 ) {
+                debugStream.Resume();
+            }
+        }
+
+        template< class DiscreteFunctionImp >
+        PermeabilityTensorType computePermeabilityTensor( DiscreteFunctionImp& discreteFunctionX, DiscreteFunctionImp& discreteFunctionY )
+        {
+            PermeabilityTensorType permeabilityTensor( 0.0 );
+
+            double gradientMicroX_times_gradientMicroX( 0.0 );
+            double gradientMicroX_times_gradientMicroY( 0.0 );
+            double gradientMicroY_times_gradientMicroX( 0.0 );
+            double gradientMicroY_times_gradientMicroY( 0.0 );
+
+            typedef typename MicroGridPartType::template Codim< 0 >::IteratorType
+                EntityIteratorType;
+
+            typedef typename MicroGridType::template Codim< 0 >::Entity
+                EntityType;
+
+            typedef typename EntityType::Geometry
+                EntityGeometryType;
+
+            typedef Dune::CachingQuadrature< MicroGridPartType, 0 >
+                VolumeQuadratureType;
+
+            typedef DiscreteFunctionImp
+                DiscreteFunctionType;
+
+            typedef typename DiscreteFunctionType::LocalFunctionType
+                LocalFunctionType;
+
+            typedef typename LocalFunctionType::JacobianRangeType
+                JacobianRangeType;
+
+            typedef typename Dune::FieldMatrix< typename EntityGeometryType::ctype,
+                                                EntityGeometryType::coorddimension,
+                                                EntityGeometryType::mydimension >
+                JacobianInverseTransposedType;
+
+            bool doOnce = true;
+
+
+            EntityIteratorType entityIteratorEnd = discreteFunctionX.space().end();
+            for (   EntityIteratorType entityIterator = discreteFunctionX.space().begin();
+                    entityIterator != entityIteratorEnd;
+                    ++entityIterator ) {
+
+                // get entity and geometry
+                const EntityType& entity = *entityIterator;
+                const EntityGeometryType& geometry = entity.geometry();
+
+                // get the local functions
+                LocalFunctionType localFunctionX = discreteFunctionX.localFunction( entity );
+                LocalFunctionType localFunctionY = discreteFunctionY.localFunction( entity );
+
+                // quadrature
+                VolumeQuadratureType quadrature( entity, ( 2 * discreteFunctionX.space().order() ) + 1 );
+
+                for ( int quad = 0; quad < quadrature.nop(); ++quad ) {
+
+                    // quadrature point
+                    const DomainType x = quadrature.point( quad );
+
+                    // get the integration factor
+                    const double elementVolume = geometry.integrationElement( x );
+                    // get the quadrature weight
+                    const double integrationWeight = quadrature.weight( quad );
+
+                    // get gradients
+                    const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
+
+                    JacobianRangeType gradient_untransposed_x( 0.0 );
+                    localFunctionX.jacobian( x, gradient_untransposed_x );
+                    JacobianRangeType gradient_x = Stuff::transposeMatrix( gradient_untransposed_x, jacobianInverseTransposed );
+                    if ( doOnce ) {
+                        Stuff::printFieldMatrix( jacobianInverseTransposed, "jacobianInverseTransposed", std::cout, "\t\t" );
+                        Stuff::printFieldMatrix( gradient_untransposed_x, "gradient_untransposed_x", std::cout, "\t\t" );
+                        Stuff::printFieldMatrix( gradient_x, "gradient_x", std::cout, "\t\t" );
+                        doOnce = false;
+                    }
+
+                    JacobianRangeType gradient_untransposed_y( 0.0 );
+                    localFunctionY.jacobian( x, gradient_untransposed_y );
+                    JacobianRangeType gradient_y = Stuff::transposeMatrix( gradient_untransposed_y, jacobianInverseTransposed );
+
+                    const DomainType xWorld = geometry.global( x );
+                    if ( !( ( xWorld[0] < 0.0 ) || ( xWorld[0] > 1.0 ) ) ) { // only in unit square
+                        if ( !( ( xWorld[1] < 0.0 ) || ( xWorld[1] > 1.0 ) ) ) {
+                            gradientMicroX_times_gradientMicroX += elementVolume * integrationWeight * Stuff::colonProduct( gradient_x, gradient_x );
+                            gradientMicroX_times_gradientMicroY += elementVolume * integrationWeight * Stuff::colonProduct( gradient_x, gradient_y );
+                            gradientMicroY_times_gradientMicroX += elementVolume * integrationWeight * Stuff::colonProduct( gradient_y, gradient_x );
+                            gradientMicroY_times_gradientMicroY += elementVolume * integrationWeight * Stuff::colonProduct( gradient_y, gradient_y );
+                        }
+                    }
+                }
+            }
+
+
+
+
+
+            return permeabilityTensor;
         }
 
         //! return boundary type of a boundary point p used in a quadrature

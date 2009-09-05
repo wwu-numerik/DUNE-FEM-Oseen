@@ -121,7 +121,7 @@ int main( int argc, char** argv )
                              Dune::Parameter::getValue( "fem.io.logdir", std::string() )
                            );
 
-            const int refineLevel = 1;
+            const int refineLevel = Dune::Parameter::getValue( "micro_refine", 0 );
 
             Logging::LogStream& infoStream = Logger().Info();
             Logging::LogStream& debugStream = Logger().Dbg();
@@ -201,7 +201,7 @@ void singleRun( const int refineLevel )
     typedef Darcy::DarcyModel< MacroFunctionSpaceType, MacroGridPartType >
         MacroModelType;
 
-    MacroModelType macroModel( 1 );
+    MacroModelType macroModel( Dune::Parameter::getValue( "micro_model_verbosity", 1 ) );
 
     infoStream << "Initialised macro model." << std::endl;
 

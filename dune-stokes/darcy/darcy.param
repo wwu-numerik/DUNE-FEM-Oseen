@@ -38,16 +38,19 @@ macro_solver_verbosity: 0
 
 # #### micro problem ###############################################################################
 
-micro_grid_2d: homogeneous_perforated_domain_2d_porosity_0.36_9_holes.1.dgf
+#micro_grid_2d: homogeneous_perforated_domain_2d_porosity_0.36_9_holes.1.dgf
+micro_grid_2d: unit_sand_pore_in_2d.1.dgf
 #micro_grid_2d: grid_2d.dgf
 micro_grid_3d:
 
-micro_refine: 0
+micro_refine: 2
+
+micro_model_verbosity: 3
 
 micro_viscosity: 1.0
 
 # > 2 will show bfg setting per inner iteration, > 1 avg inner iteration count
-solverVerbosity: 1
+solverVerbosity: 0
 
 #pretty much ineffective
 relLimit: 1e-12
