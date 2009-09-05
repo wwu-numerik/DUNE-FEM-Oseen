@@ -69,7 +69,7 @@ class ConstantFunction : public Dune::Function < FunctionSpaceImp , ConstantFunc
         inline void evaluate( const DomainType& arg, RangeType& ret, const int id ) const
         {
             if ( arg.dim() == 2 ) {
-//                if ( !( arg[1] < 0.0 ) && !( arg[1] > 0.0 ) ) { // micro problem for x dimension
+                if ( ( constValue_[ 0 ] < 0.0 ) || ( constValue_[ 0 ] > 0.0 ) ) { // micro problem for x dimension
                     if ( id == 2 ) { // faces on inner hole
                         ret[ 0 ] = 0.0;
                         ret[ 1 ] = 0.0;
@@ -90,29 +90,29 @@ class ConstantFunction : public Dune::Function < FunctionSpaceImp , ConstantFunc
                         ret[ 0 ] = 1.0;
                         ret[ 1 ] = 0.0;
                     }
-//                }
-//                else { // micro problem for y dimension
-//                    if ( id == 2 ) { // faces on inner hole
-//                        ret[ 0 ] = 0.0;
-//                        ret[ 1 ] = 0.0;
-//                    }
-//                    else if ( id == 3 ) { // bottom faces
-//                        ret[ 0 ] = 0.0;
-//                        ret[ 1 ] = 1.0;
-//                    }
-//                    else if ( id == 4 ) { // right faces
-//                        ret[ 0 ] = 0.0;
-//                        ret[ 1 ] = 0.0;
-//                    }
-//                    else if ( id == 5 ) { // top faces
-//                        ret[ 0 ] = 0.0;
-//                        ret[ 1 ] = 1.0;
-//                    }
-//                    else if ( id == 6 ) { // left faces
-//                        ret[ 0 ] = 0.0;
-//                        ret[ 1 ] = 0.0;
-//                    }
-//                }
+                }
+                else { // micro problem for y dimension
+                    if ( id == 2 ) { // faces on inner hole
+                        ret[ 0 ] = 0.0;
+                        ret[ 1 ] = 0.0;
+                    }
+                    else if ( id == 3 ) { // bottom faces
+                        ret[ 0 ] = 0.0;
+                        ret[ 1 ] = 1.0;
+                    }
+                    else if ( id == 4 ) { // right faces
+                        ret[ 0 ] = 0.0;
+                        ret[ 1 ] = 0.0;
+                    }
+                    else if ( id == 5 ) { // top faces
+                        ret[ 0 ] = 0.0;
+                        ret[ 1 ] = 1.0;
+                    }
+                    else if ( id == 6 ) { // left faces
+                        ret[ 0 ] = 0.0;
+                        ret[ 1 ] = 0.0;
+                    }
+                }
             }
             else {
                 assert( !"constant dirichlet data only implemented in 2D!" );
