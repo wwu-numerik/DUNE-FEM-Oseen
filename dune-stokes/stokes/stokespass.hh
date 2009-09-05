@@ -372,8 +372,8 @@ class StokesPass
 #ifndef NLOG
             // logging stuff
             Logging::LogStream& infoStream = Logger().Info();
-            Logging::LogStream& debugStream = Logger().Info();
-//            Logging::LogStream& debugStream = Logger().Dbg(); // sometimes Dbg() doesn't work
+//            Logging::LogStream& debugStream = Logger().Info();
+            Logging::LogStream& debugStream = Logger().Dbg(); // sometimes Dbg() doesn't work
             bool entityOutput = false;
             bool intersectionOutput = false;
             const int outputEntity = 0;
