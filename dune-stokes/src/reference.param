@@ -17,7 +17,7 @@ per-run-log-target: 0
 per-run-output: 1
 
 #
-dgf_file_2d: grid_2d.dgf
+dgf_file_2d: unit_sand_pore_in_2d.1.dgf
 dgf_file_3d: grid_3d.dgf
 
 #*********** runtype specific parameters **************************************************
@@ -28,7 +28,7 @@ dgf_file_3d: grid_3d.dgf
 #			4: minref, accuracy_start <= accuracy_stop
 #			5: one single run with minref
 # no runtype set --> old minrun behavior
-runtype: 5
+runtype: 0
 
 #in runtype 0 refine maxref + 1 - minref times
 minref: 0
