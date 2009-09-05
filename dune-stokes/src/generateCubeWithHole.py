@@ -24,7 +24,7 @@ else :
 # about the inner ellipse
 # for different porosities
 # comment next four lines for manual radius
-porosity = 0.4
+porosity = 0.36
 standard_cell_area = rectangle_length_x * rectangle_length_y
 ellipse_radius_x = math.sqrt( ( 1.0 - porosity ) * standard_cell_area * ( 1.0 / math.pi ) )
 ellipse_radius_y = math.sqrt( ( 1.0 - porosity ) * standard_cell_area * ( 1.0 / math.pi ) )
@@ -70,7 +70,7 @@ def generate_ellipse( center_x, center_y, radius_x, radius_y, id, n ):
 		point = [ x1, x2 ]
 		ellipse.append( [ point, id] )
 	return ellipse
-	
+
 # calculate points on outer rectangle
 # beginning bottom left
 # rather trivial
@@ -144,7 +144,7 @@ def write_to_triangle( ellipse, rectangle_and_outer_cube, hole, triangle_filenam
 	file.write( '# these are the %i faces\n' %( total_number_of_faces ) )
 	file.write( '%i 1\n' %(total_number_of_faces) )
 	face_number = 0
-	# of the inner ellipse	
+	# of the inner ellipse
 	for point_with_id_on_ellipse in ellipse :
 		id = point_with_id_on_ellipse[ 1 ]
 		file.write( '\t%i\t%i\t%i\t%i\n' %( face_number, face_number % len( ellipse ), ( face_number +1 ) % len( ellipse ), id ) )
@@ -181,7 +181,10 @@ def write_to_triangle( ellipse, rectangle_and_outer_cube, hole, triangle_filenam
 ## main
 number_of_points = 4 * number_of_points_per_quarter
 points_on_ellipse = generate_ellipse( ellipse_center_x, ellipse_center_y, ellipse_radius_x, ellipse_radius_y, id_of_ellipse_faces, number_of_points )
-points_on_rectangle = generate_rectangle( rectangle_length_x, rectangle_length_y, [ 10, 10, 10, 10 ] )
+if outer_cube == 1 :
+	points_on_rectangle = generate_rectangle( rectangle_length_x, rectangle_length_y, [ 1, 1, 1, 1 ] )
+else :
+	points_on_rectangle = generate_rectangle( rectangle_length_x, rectangle_length_y, [ id_of_bottom_rectangle_faces, id_of_right_rectangle_faces, id_of_top_rectangle_faces, id_of_left_rectangle_faces ] )
 if outer_cube == 1 :
 	points_on_outer_cube = generate_outer_cube( rectangle_length_x, rectangle_length_y, outer_cube_offset_x, outer_cube_offset_y, [ id_of_bottom_rectangle_faces, id_of_right_rectangle_faces, id_of_top_rectangle_faces, id_of_left_rectangle_faces ] )
 	write_to_triangle( points_on_ellipse, [ points_on_rectangle, points_on_outer_cube ], [ ellipse_center_x, ellipse_center_y ], triangle_filename )
