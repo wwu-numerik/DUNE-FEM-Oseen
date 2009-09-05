@@ -7,7 +7,10 @@
 #ifndef ELLIPTICMODELS_HH
 #define ELLIPTICMODELS_HH
 
-#include <dune/grid/io/file/dgfparser/dgfalberta.hh>
+#define ENABLE_ALUGRID
+#define HAVE_ALUGRID
+#define ALUGRID_SIMPLEX
+#include <dune/grid/io/file/dgfparser/dgfalu.hh>
 
 #include <dune/fem/quadrature/elementquadrature.hh>
 #include <dune/fem/gridpart/periodicgridpart.hh>
@@ -107,7 +110,7 @@ class DarcyModel
 
             debugStream << "\tInitialising micro grid..." << std::endl;
 
-            typedef Dune::AlbertaGrid< gridDim, gridDim >
+            typedef Dune::ALUSimplexGrid< gridDim, gridDim >
                 MicroGridType;
 
             std::string microGridFile( "micro_grid_2d.dgf" );
@@ -126,11 +129,6 @@ class DarcyModel
             const int refine_level = Dune::Parameter::getValue( "micro_refine", 0 ) * Dune::DGFGridInfo< MicroGridType >::refineStepsForHalf();
             microGridPointer->globalRefine( refine_level );
 
-//            typedef Dune::PeriodicLeafGridPart< MicroGridType >
-//                PeriodicMicroGridPartType;
-
-//            PeriodicMicroGridPartType periodicMicroGridPart( *microGridPointer );
-
             typedef Dune::AdaptiveLeafGridPart< MicroGridType >
                 MicroGridPartType;
 
@@ -146,7 +144,6 @@ class DarcyModel
 
             const int microPolOrder = MICRO_POLORDER;
             const double microViscosity = Dune::Parameter::getValue( "micro_viscosity", 1.0 );
-//            const double generalizedStokesAlpha = 0.01;
 
             typedef Dune::DiscreteStokesModelDefaultTraits<
                             MicroGridPartType,
@@ -190,12 +187,12 @@ class DarcyModel
 
             typename MicroAnalyticalForceType::RangeType zeroVector( 0.0 );
 
-            MicroAnalyticalForceType microAnalyticalForce( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), zeroVector );
+            MicroAnalyticalForceType microAnalyticalForce( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), unitVector );
 
             typedef typename MicroStokesModelTraitsImp::AnalyticalDirichletDataType
                 MicroAnalyticalDirichletDataType;
 
-            MicroAnalyticalDirichletDataType microAnalyticalDirichletData( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), zeroVector );
+            MicroAnalyticalDirichletDataType microAnalyticalDirichletData( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), unitVector );
 
             // model
             MicroStokesModelImpType microStokesModel(   Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients(),
@@ -210,11 +207,6 @@ class DarcyModel
              */
 
             debugStream << "\tInitialising micro system..." << std::endl;
-
-//            debugStream << "\tPrinting periodic micro grid information..." << std::endl;
-//            Stuff::getGridInformation( periodicMicroGridPart, microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), debugStream );
-//            debugStream << "\tPrinting non periodic micro grid information..." << std::endl;
-//            Stuff::getGridInformation( microGridPart, microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), debugStream );
 
             typedef Dune::StartPass< MicroDiscreteStokesFunctionWrapperType, -1 >
                 MicroStartPassType;
@@ -238,29 +230,6 @@ class DarcyModel
 
             debugStream << "\tWriting micro output..." << std::endl;
 
-            /*
-             * cheat for output
-             */
-
-//            Stuff::addScalarToFunc( dummy.discreteVelocity(), 1.0 );
-//
-//            typedef Dune::FunctionSpace< double, double, 2, 2 >
-//                FunctionSpaceType;
-//
-//            typedef Dune::DiscontinuousGalerkinSpace< FunctionSpaceType, MicroGridPartType, 1 >
-//                NonPeriodicDiscreteFunctionSpaceType;
-//
-//            NonPeriodicDiscreteFunctionSpaceType nonPeriodicDiscreteFunctionSpace( microGridPart );
-//
-//            typedef Dune::AdaptiveDiscreteFunction< NonPeriodicDiscreteFunctionSpaceType >
-//                NonPeriodicDiscreteFunctionType;
-
-//            NonPeriodicDiscreteFunctionType nonPeriodicDiscreteFunction( "nonPeriodic", nonPeriodicDiscreteFunctionSpace, dummy.discreteVelocity().leakPointer() );
-//            NonPeriodicDiscreteFunctionType nonPeriodicDiscreteFunction( dynamic_cast< NonPeriodicDiscreteFunctionType >(dummy.discreteVelocity() ) );
-
-//            debugStream << "nonPeriodicDiscreteFunctionSpace.size(): " << nonPeriodicDiscreteFunctionSpace.size() << std::endl;
-//            debugStream << "dummy.discreteVelocity().space().size(): " << dummy.discreteVelocity().space().size() << std::endl;
-
             typedef Dune::VTKIO< MicroGridPartType >
                 MicroVTKWriterType;
 
@@ -274,58 +243,7 @@ class DarcyModel
             microVtkWriter.write( "data/microPressure" );
             microVtkWriter.clear();
 
-//            microVtkWriter.addVertexData( nonPeriodicDiscreteFunction );
-//            microVtkWriter.write( "data/nonPeriodic" );
-//            microVtkWriter.clear();
-
             infoStream << "\tMicro Output written." << std::endl;
-    //
-    //    /* ********************************************************************** *
-    //     * Problem postprocessing
-    //     * ********************************************************************** */
-    //    infoStream << "\n- postprocesing" << std::endl;
-    //
-    //
-    //    profiler().StartTiming( "Problem/Postprocessing" );
-    //
-    //#ifndef COCKBURN_PROBLEM //bool tpl-param toggles ana-soltion output in post-proc
-    //    typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, false >
-    //        ProblemType;
-    //#else
-    //    typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, true >
-    //        ProblemType;
-    //#endif
-    //    ProblemType problem( viscosity , computedSolutions );
-    //
-    //    typedef PostProcessor< StokesPassType, ProblemType >
-    //        PostProcessorType;
-    //
-    //    PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );
-    //
-    //    postProcessor.save( *gridPtr, computedSolutions, refine_level );
-    //    info.L2Errors = postProcessor.getError();
-    //    typedef Dune::StabilizationCoefficients::ValueType
-    //        Pair;
-    //    info.c11 = Pair( stabil_coeff.Power( "C11" ), stabil_coeff.Factor( "C11" ) );
-    //    info.c12 = Pair( stabil_coeff.Power( "C12" ), stabil_coeff.Factor( "C12" ) );
-    //    info.d11 = Pair( stabil_coeff.Power( "D11" ), stabil_coeff.Factor( "D11" ) );
-    //    info.d12 = Pair( stabil_coeff.Power( "D12" ), stabil_coeff.Factor( "D12" ) );
-    //    info.bfg = Parameters().getParam( "do-bfg", true );
-    //    info.gridname = gridPart.grid().name();
-    //    info.refine_level = refine_level;
-    //
-    //    info.polorder_pressure = StokesModelTraitsImp::pressureSpaceOrder;
-    //    info.polorder_sigma = StokesModelTraitsImp::sigmaSpaceOrder;
-    //    info.polorder_velocity = StokesModelTraitsImp::velocitySpaceOrder;
-    //
-    //    info.solver_accuracy = Parameters().getParam( "absLimit", 1e-4 );
-    //    info.inner_solver_accuracy = Parameters().getParam( "inner_absLimit", 1e-4 );
-    //    info.bfg_tau = Parameters().getParam( "bfg-tau", 0.1 );
-    //
-    //    profiler().StopTiming( "Problem/Postprocessing" );
-    //    profiler().StopTiming( "SingleRun" );
-    //
-    //    return info;
 
             infoStream << "\tComputed permeability tensor." << std::endl;
 

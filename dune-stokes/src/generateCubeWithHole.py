@@ -9,7 +9,7 @@ import time
 ## global defines
 
 # is there an outer cube around the unit cell
-outer_cube = 1
+outer_cube = 0
 
 # about the outer rectangle
 if	outer_cube == 1 :
@@ -36,7 +36,7 @@ ellipse_center_x = rectangle_length_x / 2.0;
 ellipse_center_y = rectangle_length_y / 2.0;
 
 # about the number of points to approximate a qurter of the ellipse
-number_of_points_per_quarter = 4
+number_of_points_per_quarter = 3
 
 # about the boundary ids
 id_of_ellipse_faces = 2

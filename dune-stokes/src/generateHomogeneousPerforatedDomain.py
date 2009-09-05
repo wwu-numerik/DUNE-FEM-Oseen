@@ -12,7 +12,7 @@ import time
 # porosity = volume_of_fluid_part / overall_volume
 # sand: 0.36 ... 0.43
 # clay soil: 0.51 ... 0.58
-porosity = 0.4
+porosity = 0.36
 #print 'porosity is %f' %( porosity )
 
 do_shift = True
