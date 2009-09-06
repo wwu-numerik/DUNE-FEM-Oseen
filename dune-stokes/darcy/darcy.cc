@@ -23,9 +23,15 @@
 #endif
 
 //replacing gridtype.hh
-#define ENABLE_ALUGRID
-#define HAVE_ALUGRID
-#define ALUGRID_SIMPLEX
+#ifndef ENABLE_ALUGRID
+    #define ENABLE_ALUGRID
+#endif
+#ifndef HAVE_ALUGRID
+    #define HAVE_ALUGRID
+#endif
+#ifndef ALUGRID_SIMPLEX
+    #define ALUGRID_SIMPLEX
+#endif
 #include <dune/grid/io/file/dgfparser/dgfalu.hh>
 const int dimworld = GRIDDIM;
 const int gridDim = dimworld;
@@ -105,14 +111,9 @@ int main( int argc, char** argv )
         if ( !(  Parameters().ReadCommandLine( argc, argv ) ) ) {
             return 1;
         }
-
-        if ( argc < 2 ) {
-            std::cerr << "\nUsage: " << argv[0] << " parameterfile" << std::endl;
-            return 1;
-        }
         else {
-            Dune::Parameter::append( argv[1] );
-            Dune::Parameter::append( argc, argv );
+//            Dune::Parameter::append( argv[1] );
+//            Dune::Parameter::append( argc, argv );
 
             // LOG_NONE = 1, LOG_ERR = 2, LOG_INFO = 4,LOG_DEBUG = 8,LOG_CONSOLE = 16,LOG_FILE = 32
             //--> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_CONSOLE | LOG_FILE = 62
@@ -121,7 +122,7 @@ int main( int argc, char** argv )
                              Dune::Parameter::getValue( "fem.io.logdir", std::string() )
                            );
 
-            const int refineLevel = Dune::Parameter::getValue( "micro_refine", 0 );
+            const int refineLevel = Dune::Parameter::getValue( "macro_refine", 0 );
 
             Logging::LogStream& infoStream = Logger().Info();
             Logging::LogStream& debugStream = Logger().Dbg();
