@@ -105,10 +105,7 @@ src/homogeneous_perforated_domain_2d_sand.1.node
 src/homogeneous_perforated_domain_2d_sand.1.poly
 src/homogeneous_perforated_domain_2d_sand.poly
 src/log
-darcy/CMakeLists.txt
-darcy/analyticaldarcydata.hh
 darcy/darcy_matlab.m
-darcy/unit_sand_pore_in_2d.dgf
 darcy/unit_sand_pore_in_2d.dgf.ALUgrid
 src/blah.1.ele
 src/blah.1.node
