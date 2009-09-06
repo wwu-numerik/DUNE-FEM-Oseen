@@ -7,9 +7,15 @@
 #ifndef ELLIPTICMODELS_HH
 #define ELLIPTICMODELS_HH
 
-#define ENABLE_ALUGRID
-#define HAVE_ALUGRID
-#define ALUGRID_SIMPLEX
+#ifndef ENABLE_ALUGRID
+    #define ENABLE_ALUGRID
+#endif
+#ifndef HAVE_ALUGRID
+    #define HAVE_ALUGRID
+#endif
+#ifndef ALUGRID_SIMPLEX
+    #define ALUGRID_SIMPLEX
+#endif
 #include <dune/grid/io/file/dgfparser/dgfalu.hh>
 
 #include <dune/fem/quadrature/elementquadrature.hh>
@@ -135,7 +141,7 @@ class DarcyModel
 
             MicroGridPartType microGridPart( *microGridPointer );
 
-            infoStream << "\tInitialised micro grid." << std::endl;
+            infoStream << "\tInitialised micro grid (with " << microGridPart.grid().size( 0 ) << " elements)." << std::endl;
 
             /*
              * micro problem
@@ -196,7 +202,7 @@ class DarcyModel
 
             MicroAnalyticalDirichletDataType microAnalyticalDirichletDataX( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), unitVectorX );
 
-            // model
+            // model x
             MicroStokesModelImpType microStokesModelX(  Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients(),
                                                         microAnalyticalForceX,
                                                         microAnalyticalDirichletDataX,
@@ -210,7 +216,7 @@ class DarcyModel
 
             MicroAnalyticalDirichletDataType microAnalyticalDirichletDataY( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), unitVectorY );
 
-            // model
+            // model y
             MicroStokesModelImpType microStokesModelY(  Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients(),
                                                         microAnalyticalForceY,
                                                         microAnalyticalDirichletDataY,
@@ -281,12 +287,15 @@ class DarcyModel
 
             infoStream << "\tMicro Output written." << std::endl;
 
-            debugStream << "\tComputing permeability tensor..." << std::endl;
+            debugStream << "\tComputing permeability tensor...";
 
             PermeabilityTensorType permeabilityTensor_ = computePermeabilityTensor( microSolutionsX.discreteVelocity(),
                                                                                     microSolutionsY.discreteVelocity() );
 
-            infoStream << "\tComputed permeability tensor." << std::endl;
+            Stuff::printFieldMatrix( permeabilityTensor_, "permeabilityTensor_", debugStream, "\t" );
+            debugStream << std::endl;
+
+            infoStream << "\tPermeability tensor computed." << std::endl;
 
             if ( verbosity_ == 0) {
                 infoStream.Resume();
@@ -367,17 +376,11 @@ class DarcyModel
 
                     JacobianRangeType gradient_untransposed_x( 0.0 );
                     localFunctionX.jacobian( x, gradient_untransposed_x );
-                    JacobianRangeType gradient_x = Stuff::transposeMatrix( gradient_untransposed_x, jacobianInverseTransposed );
-                    if ( doOnce ) {
-                        Stuff::printFieldMatrix( jacobianInverseTransposed, "jacobianInverseTransposed", std::cout, "\t\t" );
-                        Stuff::printFieldMatrix( gradient_untransposed_x, "gradient_untransposed_x", std::cout, "\t\t" );
-                        Stuff::printFieldMatrix( gradient_x, "gradient_x", std::cout, "\t\t" );
-                        doOnce = false;
-                    }
+                    JacobianRangeType gradient_x = Stuff::rowWiseMatrixMultiplication( jacobianInverseTransposed, gradient_untransposed_x );
 
                     JacobianRangeType gradient_untransposed_y( 0.0 );
                     localFunctionY.jacobian( x, gradient_untransposed_y );
-                    JacobianRangeType gradient_y = Stuff::transposeMatrix( gradient_untransposed_y, jacobianInverseTransposed );
+                    JacobianRangeType gradient_y = Stuff::rowWiseMatrixMultiplication( jacobianInverseTransposed, gradient_untransposed_y );
 
                     const DomainType xWorld = geometry.global( x );
                     if ( !( ( xWorld[0] < 0.0 ) || ( xWorld[0] > 1.0 ) ) ) { // only in unit square
@@ -387,13 +390,14 @@ class DarcyModel
                             gradientMicroY_times_gradientMicroX += elementVolume * integrationWeight * Stuff::colonProduct( gradient_y, gradient_x );
                             gradientMicroY_times_gradientMicroY += elementVolume * integrationWeight * Stuff::colonProduct( gradient_y, gradient_y );
                         }
-                    }
-                }
-            }
+                    } // end of unit suqare test
+                } // end of element quadrature
+            } // end of gridwalk
 
-
-
-
+            permeabilityTensor[0][0] = gradientMicroX_times_gradientMicroX;
+            permeabilityTensor[0][1] = gradientMicroX_times_gradientMicroY;
+            permeabilityTensor[1][0] = gradientMicroY_times_gradientMicroX;
+            permeabilityTensor[1][1] = gradientMicroY_times_gradientMicroY;
 
             return permeabilityTensor;
         }
