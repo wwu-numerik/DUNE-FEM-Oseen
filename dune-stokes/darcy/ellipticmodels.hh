@@ -306,6 +306,8 @@ class DarcyModel
             }
         }
 
+    private:
+
         template< class DiscreteFunctionImp >
         PermeabilityTensorType computePermeabilityTensor( DiscreteFunctionImp& discreteFunctionX, DiscreteFunctionImp& discreteFunctionY )
         {
@@ -343,6 +345,9 @@ class DarcyModel
                 JacobianInverseTransposedType;
 
             bool doOnce = true;
+
+//            double min( 0.0 );
+//            double max( 0.0 );
 
 
             EntityIteratorType entityIteratorEnd = discreteFunctionX.space().end();
@@ -382,6 +387,15 @@ class DarcyModel
                     localFunctionY.jacobian( x, gradient_untransposed_y );
                     JacobianRangeType gradient_y = Stuff::rowWiseMatrixMultiplication( jacobianInverseTransposed, gradient_untransposed_y );
 
+//                    for ( int i = 0; i < 2; ++i ) {
+//                        for ( int j = 0; j < 2; ++j )
+//                        {
+//                            min = std::min( gradient_x[i][j], min );
+//                            max = std::max( gradient_x[i][j], max );
+//                        }
+//                    }
+
+
                     const DomainType xWorld = geometry.global( x );
                     if ( !( ( xWorld[0] < 0.0 ) || ( xWorld[0] > 1.0 ) ) ) { // only in unit square
                         if ( !( ( xWorld[1] < 0.0 ) || ( xWorld[1] > 1.0 ) ) ) {
@@ -399,8 +413,13 @@ class DarcyModel
             permeabilityTensor[1][0] = gradientMicroY_times_gradientMicroX;
             permeabilityTensor[1][1] = gradientMicroY_times_gradientMicroY;
 
+//            std::cout << "\t\t\tmin: " << min << std::endl;
+//            std::cout << "\t\t\tmax: " << max << std::endl;
+
             return permeabilityTensor;
         }
+
+    public:
 
         //! return boundary type of a boundary point p used in a quadrature
         template< class IntersectionType >
