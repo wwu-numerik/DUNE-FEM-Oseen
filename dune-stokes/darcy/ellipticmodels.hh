@@ -269,20 +269,25 @@ class DarcyModel
 
             MicroVTKWriterType microVtkWriter( microGridPart );
 
+            std::string outputFilename = "";
+            outputFilename = std::string( "data/microVelocityX_ref_" ) + Stuff::toString( refine_level );
             microVtkWriter.addVertexData( microSolutionsX.discreteVelocity() );
-            microVtkWriter.write( "data/microVelocityX" );
+            microVtkWriter.write( outputFilename.c_str() );
             microVtkWriter.clear();
 
             microVtkWriter.addVertexData( microSolutionsX.discretePressure() );
-            microVtkWriter.write( "data/microPressureX" );
+            outputFilename = std::string( "data/microPressureX_ref_" ) + Stuff::toString( refine_level );
+            microVtkWriter.write( outputFilename.c_str() );
             microVtkWriter.clear();
 
             microVtkWriter.addVertexData( microSolutionsY.discreteVelocity() );
-            microVtkWriter.write( "data/microVelocityY" );
+            outputFilename = std::string( "data/microVelocityY_ref_" ) + Stuff::toString( refine_level );
+            microVtkWriter.write( outputFilename.c_str() );
             microVtkWriter.clear();
 
             microVtkWriter.addVertexData( microSolutionsY.discretePressure() );
-            microVtkWriter.write( "data/microPressureY" );
+            outputFilename = std::string( "data/microPressureY_ref_" ) + Stuff::toString( refine_level );
+            microVtkWriter.write( outputFilename.c_str() );
             microVtkWriter.clear();
 
             infoStream << "\tMicro Output written." << std::endl;
@@ -311,12 +316,8 @@ class DarcyModel
         template< class DiscreteFunctionImp >
         PermeabilityTensorType computePermeabilityTensor( DiscreteFunctionImp& discreteFunctionX, DiscreteFunctionImp& discreteFunctionY )
         {
-            PermeabilityTensorType permeabilityTensor( 0.0 );
 
-            double gradientMicroX_times_gradientMicroX( 0.0 );
-            double gradientMicroX_times_gradientMicroY( 0.0 );
-            double gradientMicroY_times_gradientMicroX( 0.0 );
-            double gradientMicroY_times_gradientMicroY( 0.0 );
+            PermeabilityTensorType permeabilityTensor( 0.0 );
 
             typedef typename MicroGridPartType::template Codim< 0 >::IteratorType
                 EntityIteratorType;
@@ -336,20 +337,18 @@ class DarcyModel
             typedef typename DiscreteFunctionType::LocalFunctionType
                 LocalFunctionType;
 
+            typedef typename DiscreteFunctionType::LocalFunctionType
+                LocalFunctionType;
+
             typedef typename LocalFunctionType::JacobianRangeType
                 JacobianRangeType;
 
-            typedef typename Dune::FieldMatrix< typename EntityGeometryType::ctype,
-                                                EntityGeometryType::coorddimension,
-                                                EntityGeometryType::mydimension >
-                JacobianInverseTransposedType;
+            double permeabilityTensor_x_x( 0.0 );
+            double permeabilityTensor_x_y( 0.0 );
+            double permeabilityTensor_y_x( 0.0 );
+            double permeabilityTensor_y_y( 0.0 );
 
-            bool doOnce = true;
-
-//            double min( 0.0 );
-//            double max( 0.0 );
-
-
+            // do gridwalk
             EntityIteratorType entityIteratorEnd = discreteFunctionX.space().end();
             for (   EntityIteratorType entityIterator = discreteFunctionX.space().begin();
                     entityIterator != entityIteratorEnd;
@@ -359,62 +358,41 @@ class DarcyModel
                 const EntityType& entity = *entityIterator;
                 const EntityGeometryType& geometry = entity.geometry();
 
-                // get the local functions
+                // get local functions
                 LocalFunctionType localFunctionX = discreteFunctionX.localFunction( entity );
                 LocalFunctionType localFunctionY = discreteFunctionY.localFunction( entity );
 
                 // quadrature
                 VolumeQuadratureType quadrature( entity, ( 2 * discreteFunctionX.space().order() ) + 1 );
 
+                // do loop over all quadrature points
                 for ( int quad = 0; quad < quadrature.nop(); ++quad ) {
 
-                    // quadrature point
+                    // quadrature point in reference coordinates
                     const DomainType x = quadrature.point( quad );
+                    // in worlsd coordinates
+                    const DomainType xWorld = geometry.global( x );
 
                     // get the integration factor
-                    const double elementVolume = geometry.integrationElement( x );
+                    const double integrationFactor = geometry.integrationElement( x );
                     // get the quadrature weight
-                    const double integrationWeight = quadrature.weight( quad );
+                    const double quadratureWeight = quadrature.weight( quad );
 
-                    // get gradients
-                    const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
-
-                    JacobianRangeType gradient_untransposed_x( 0.0 );
-                    localFunctionX.jacobian( x, gradient_untransposed_x );
-                    JacobianRangeType gradient_x = Stuff::rowWiseMatrixMultiplication( jacobianInverseTransposed, gradient_untransposed_x );
-
-                    JacobianRangeType gradient_untransposed_y( 0.0 );
-                    localFunctionY.jacobian( x, gradient_untransposed_y );
-                    JacobianRangeType gradient_y = Stuff::rowWiseMatrixMultiplication( jacobianInverseTransposed, gradient_untransposed_y );
-
-//                    for ( int i = 0; i < 2; ++i ) {
-//                        for ( int j = 0; j < 2; ++j )
-//                        {
-//                            min = std::min( gradient_x[i][j], min );
-//                            max = std::max( gradient_x[i][j], max );
-//                        }
-//                    }
-
-
-                    const DomainType xWorld = geometry.global( x );
-                    if ( !( ( xWorld[0] < 0.0 ) || ( xWorld[0] > 1.0 ) ) ) { // only in unit square
+                    // do integration over unit square only
+                    if ( !( ( xWorld[0] < 0.0 ) || ( xWorld[0] > 1.0 ) ) ) {
                         if ( !( ( xWorld[1] < 0.0 ) || ( xWorld[1] > 1.0 ) ) ) {
-                            gradientMicroX_times_gradientMicroX += elementVolume * integrationWeight * Stuff::colonProduct( gradient_x, gradient_x );
-                            gradientMicroX_times_gradientMicroY += elementVolume * integrationWeight * Stuff::colonProduct( gradient_x, gradient_y );
-                            gradientMicroY_times_gradientMicroX += elementVolume * integrationWeight * Stuff::colonProduct( gradient_y, gradient_x );
-                            gradientMicroY_times_gradientMicroY += elementVolume * integrationWeight * Stuff::colonProduct( gradient_y, gradient_y );
+                            JacobianRangeType gradient_x( 0.0 );
+                            localFunctionX.jacobian( x, gradient_x );
+                            JacobianRangeType gradient_y( 0.0 );
+                            localFunctionY.jacobian( x, gradient_y );
+                            permeabilityTensor[0][0] += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_x, gradient_x );
+                            permeabilityTensor[0][1] += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_x, gradient_y );
+                            permeabilityTensor[1][0] += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_y, gradient_x );
+                            permeabilityTensor[1][1] += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_y, gradient_y );
                         }
-                    } // end of unit suqare test
-                } // end of element quadrature
-            } // end of gridwalk
-
-            permeabilityTensor[0][0] = gradientMicroX_times_gradientMicroX;
-            permeabilityTensor[0][1] = gradientMicroX_times_gradientMicroY;
-            permeabilityTensor[1][0] = gradientMicroY_times_gradientMicroX;
-            permeabilityTensor[1][1] = gradientMicroY_times_gradientMicroY;
-
-//            std::cout << "\t\t\tmin: " << min << std::endl;
-//            std::cout << "\t\t\tmax: " << max << std::endl;
+                    } // done integration over unit square only
+                } // done loop over all quadrature points
+            } // done gridwalk
 
             return permeabilityTensor;
         }
