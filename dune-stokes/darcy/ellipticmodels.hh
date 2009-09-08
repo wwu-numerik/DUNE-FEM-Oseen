@@ -343,11 +343,6 @@ class DarcyModel
             typedef typename LocalFunctionType::JacobianRangeType
                 JacobianRangeType;
 
-            double permeabilityTensor_x_x( 0.0 );
-            double permeabilityTensor_x_y( 0.0 );
-            double permeabilityTensor_y_x( 0.0 );
-            double permeabilityTensor_y_y( 0.0 );
-
             // do gridwalk
             EntityIteratorType entityIteratorEnd = discreteFunctionX.space().end();
             for (   EntityIteratorType entityIterator = discreteFunctionX.space().begin();

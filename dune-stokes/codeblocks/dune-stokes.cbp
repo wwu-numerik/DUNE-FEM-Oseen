@@ -311,6 +311,14 @@
 			<Option target="darcy_felix" />
 			<Option target="darcy_felix_uni" />
 		</Unit>
+		<Unit filename="../darcy/runmanager.hh">
+			<Option virtualFolder="darcy/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="darcy_felix" />
+			<Option target="darcy_felix_uni" />
+		</Unit>
 		<Unit filename="../elliptic/Makefile.am">
 			<Option virtualFolder="elliptic/" />
 			<Option target="uni_elliptic" />

@@ -46,6 +46,10 @@ micro_grid_2d: homogeneous_perforated_domain_2d_porosity_0.36_9_holes.1.dgf
 micro_grid_3d:
 
 micro_refine: 0
+micro_reference_solution_refine: 0
+micro_reference_solution_minref: 0
+micro_reference_solution_maxref: 10
+micro_reference_solution_filename: micro_reference_velocity
 
 micro_model_verbosity: 3
 

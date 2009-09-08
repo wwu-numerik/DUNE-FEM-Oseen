@@ -77,6 +77,7 @@ typedef Dune::ALUSimplexGrid< gridDim, gridDim >
 
 #include "elementintegrators.hh"
 #include "ellipticmodels.hh"
+#include "runmanager.hh"
 
 #if ENABLE_MPI
     typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
@@ -128,9 +129,19 @@ int main( int argc, char** argv )
             Logging::LogStream& debugStream = Logger().Dbg();
 
             infoStream << "This is " << argv[0] << "." << std::endl;
-            debugStream << "Doing singleRun() with refinelevel " << refineLevel << "." << std::endl;
+//            debugStream << "Doing singleRun() with refinelevel " << refineLevel << "." << std::endl;
 
-            singleRun( refineLevel );
+            typedef RunManager
+                RunManagerType;
+            RunManagerType runManager( 2, "\t" );
+            const int minref = Dune::Parameter::getValue( "micro_reference_solution_minref", 0 );
+            const int maxref = Dune::Parameter::getValue( "micro_reference_solution_maxref", 5 );
+            for ( int ref = minref; ref <= maxref; ++ref ) {
+                runManager.generateReferenceSolution( ref );
+            }
+//            runManager.loadReferenceSolution( Dune::Parameter::getValue( "micro_reference_solution_filename", std::string( "micro_reference_velocity" ) ) );
+
+//            singleRun( refineLevel );
 
             return 0;
         }
