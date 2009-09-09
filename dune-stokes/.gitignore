@@ -144,3 +144,13 @@ src/unit_sand_pore_in_2d.1.node
 src/unit_sand_pore_in_2d.1.poly
 src/unit_sand_pore_in_2d.poly
 darcy/unit_sand_pore_in_2d.dgf.albertagrid
+src/homogeneous_perforated_domain_2d_porosity_0.36_9_holes.1.dgf.ALUgrid
+src/homogeneous_perforated_domain_2d_porosity_0.36_9_holes.1.ele
+src/homogeneous_perforated_domain_2d_porosity_0.36_9_holes.1.node
+src/homogeneous_perforated_domain_2d_porosity_0.36_9_holes.1.poly
+src/homogeneous_perforated_domain_2d_porosity_0.36_9_holes.poly
+src/homogeneous_perforated_domain_2d_porosity_0.4_9_holes.1.dgf.ALUgrid
+src/homogeneous_perforated_domain_2d_porosity_0.4_9_holes.1.ele
+src/homogeneous_perforated_domain_2d_porosity_0.4_9_holes.1.node
+src/homogeneous_perforated_domain_2d_porosity_0.4_9_holes.1.poly
+src/homogeneous_perforated_domain_2d_porosity_0.4_9_holes.poly
