@@ -20,6 +20,8 @@
 
 #include <dune/fem/gridpart/adaptiveleafgridpart.hh>
 #include <dune/fem/io/file/vtkio.hh>
+#include <dune/fem/misc/l2norm.hh>
+#include <dune/fem/operator/projection/l2projection.hh>
 #include <dune/fem/space/dgspace.hh>
 
 #include <dune/stokes/discretestokesmodelinterface.hh>
@@ -72,6 +74,9 @@ class RunManager
 
     public:
 
+        typedef MicroDiscreteStokesFunctionSpaceWrapperType::DiscreteVelocityFunctionSpaceType
+            DiscreteFunctionSpaceType;
+
         typedef MicroDiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
             DiscreteFunctionType;
 
@@ -98,7 +103,8 @@ class RunManager
             : hasReferenceSolution_( false ),
             verbose_( 0 ),
             outputPrefix_( "" ),
-            dgfFileName_ (Dune::Parameter::getValue( "micro_grid_2d", std::string("micro_grid_2d.dgf") ) )
+            dgfFileName_ (Dune::Parameter::getValue( "micro_grid_2d", std::string("micro_grid_2d.dgf") ) ),
+            referenceSolution_( NULL )
         {
             setVerboseLevel( verbose );
             setOutputPrefix( outputPrefix );
@@ -113,6 +119,9 @@ class RunManager
             Logging::LogStream& info = Logger().Info();
             Logging::LogStream& debug = Logger().Dbg();
             Logging::LogStream& error = Logger().Err();
+            info.Flush();
+            debug.Flush();
+            error.Flush();
 
             debug << outputPrefix_ << "Computing reference Solution..." << std::endl;
 
@@ -191,31 +200,35 @@ class RunManager
 
             dummy.clear();
             microSolutionsX.clear();
-            microSolutionsY.clear();
+//            microSolutionsY.clear();
             microStokesPassX.apply( dummy, microSolutionsX );
-            microStokesPassY.apply( dummy, microSolutionsX );
+//            microStokesPassY.apply( dummy, microSolutionsX );
 
             info << outputPrefix_ << "\tMicro system solved." << std::endl;
 
-            debug << outputPrefix_ << "\tSaving micro reference solution..." << std::endl;
-
-            saveReferenceSolution(
-                microSolutionsX.discreteVelocity(),
-                std::string(
-                    Dune::Parameter::getValue( "micro_reference_solution_filename", std::string( "micro_reference_velocity" ) )
-                        + "_X"
-                        + "_ref_"
-                        + Stuff::toString( referenceSolutionRefineLevel_ ) ) );
-            saveReferenceSolution(
-                microSolutionsY.discreteVelocity(),
-                std::string( Dune::Parameter::getValue( "micro_reference_solution_filename", std::string( "micro_reference_velocity" ) )
-                    + "_Y"
-                    + "_ref_"
-                    + Stuff::toString( referenceSolutionRefineLevel_ ) ) );
-
-            info << outputPrefix_ << "\tMicro reference solution saved." << std::endl;
+//            debug << outputPrefix_ << "\tSaving micro reference solution..." << std::endl;
+//
+//            saveReferenceSolution(
+//                microSolutionsX.discreteVelocity(),
+//                std::string(
+//                    Dune::Parameter::getValue( "micro_reference_solution_filename", std::string( "micro_reference_velocity" ) )
+//                        + "_X"
+//                        + "_ref_"
+//                        + Stuff::toString( referenceSolutionRefineLevel_ ) ) );
+//            saveReferenceSolution(
+//                microSolutionsY.discreteVelocity(),
+//                std::string( Dune::Parameter::getValue( "micro_reference_solution_filename", std::string( "micro_reference_velocity" ) )
+//                    + "_Y"
+//                    + "_ref_"
+//                    + Stuff::toString( referenceSolutionRefineLevel_ ) ) );
+//
+//            info << outputPrefix_ << "\tMicro reference solution saved." << std::endl;
 
             debug << outputPrefix_ << "\tWriting micro output..." << std::endl;
+
+            const double l2error = computeDifferenceToReferenceSolution( microSolutionsX.discreteVelocity() );
+
+            debug << outputPrefix_ << "l2error: " << l2error << std::endl;
 
 
             VTKWriterType microVtkWriter( microGridPart );
@@ -231,15 +244,15 @@ class RunManager
             microVtkWriter.write( outputFilename.c_str() );
             microVtkWriter.clear();
 
-            microVtkWriter.addVertexData( microSolutionsY.discreteVelocity() );
-            outputFilename = std::string( "data/micro_reference_velocity_Y_ref_" ) + Stuff::toString( referenceSolutionRefineLevel_ );
-            microVtkWriter.write( outputFilename.c_str() );
-            microVtkWriter.clear();
-
-            microVtkWriter.addVertexData( microSolutionsY.discretePressure() );
-            outputFilename = std::string( "data/micro_reference_pressure_Y_ref_" ) + Stuff::toString( referenceSolutionRefineLevel_ );
-            microVtkWriter.write( outputFilename.c_str() );
-            microVtkWriter.clear();
+//            microVtkWriter.addVertexData( microSolutionsY.discreteVelocity() );
+//            outputFilename = std::string( "data/micro_reference_velocity_Y_ref_" ) + Stuff::toString( referenceSolutionRefineLevel_ );
+//            microVtkWriter.write( outputFilename.c_str() );
+//            microVtkWriter.clear();
+//
+//            microVtkWriter.addVertexData( microSolutionsY.discretePressure() );
+//            outputFilename = std::string( "data/micro_reference_pressure_Y_ref_" ) + Stuff::toString( referenceSolutionRefineLevel_ );
+//            microVtkWriter.write( outputFilename.c_str() );
+//            microVtkWriter.clear();
 
             info << outputPrefix_ << "\tMicro Output written." << std::endl;
 
@@ -249,6 +262,8 @@ class RunManager
         {
             Logging::LogStream& info = Logger().Info();
             Logging::LogStream& debug = Logger().Dbg();
+            info.Flush();
+            debug.Flush();
 
             if ( verbose == 0) {
                 info.Suspend();
@@ -278,9 +293,12 @@ class RunManager
             outputPrefix_ = outputPrefix;
         }
 
+private:
+
         int saveReferenceSolution( const DiscreteFunctionType& discreteFunction, const std::string filename )
         {
             Logging::LogStream& error = Logger().Err();
+            error.Flush();
 
             int errorState = discreteFunction.write_ascii( filename + std::string( ".ddf" ) );
 
@@ -333,9 +351,16 @@ class RunManager
             return errorState;
         }
 
-        int loadReferenceSolution( const std::string filename )//, DiscreteFunctionType& referenceSolution )
+public:
+
+        int loadReferenceSolution( const std::string filename )
         {
+            Logging::LogStream& info = Logger().Info();
+            Logging::LogStream& debug = Logger().Dbg();
             Logging::LogStream& error = Logger().Err();
+            info.Flush();
+            debug.Flush();
+            error.Flush();
 
             int errorState( 0 );
 
@@ -390,8 +415,6 @@ class RunManager
                         }
                     }
                     else {
-                        std::cout << "gridtype is " << gridType << std::endl;
-                        std::cout << "refine level is " << refineLevel << std::endl;
                         break;
                     }
                 }
@@ -399,8 +422,63 @@ class RunManager
             else {
                 ++errorState;
                 error << "Error: could not open " << std::string( filename + std::string( ".dgf" ) ) << "!" << std::endl;
+                return errorState;
+            }
+
+            debug << outputPrefix_ << "RunManager: Loading reference solution..." << std::endl;
+
+            GridPointerType referenceGridPointer( std::string( filename + std::string( ".dgf" ) ) );
+            referenceGridPointer->globalRefine( refineLevel );
+            GridPartType referenceGridPart( *referenceGridPointer );
+
+            DiscreteFunctionSpaceType referenceSpace( referenceGridPart );
+
+            DiscreteFunctionType referenceSolution( "referenceSolution", referenceSpace );
+            const bool readFromAscii = referenceSolution.read_ascii( std::string( filename + std::string( ".ddf" ) ) );
+            if ( readFromAscii ) {
+                referenceSolution_ = &referenceSolution;
+                hasReferenceSolution_ = true;
+
+                VTKWriterType referenceVtkWriter( referenceGridPart );
+
+                std::string outputFilename = std::string( "data/loaded_reference_solution" );
+                referenceVtkWriter.addVertexData( referenceSolution );
+                referenceVtkWriter.write( outputFilename.c_str() );
+                referenceVtkWriter.clear();
+
+                info << outputPrefix_ << "RunManager: Reference solution loaded." << std::endl;
+            }
+            else {
+                ++errorState;
+                error << "Error: could not read discrete function from  " << std::string( filename + std::string( ".ddf" ) ) << "!" << std::endl;
+                return errorState;
             }
             return errorState;
+        }
+
+        double computeDifferenceToReferenceSolution( const DiscreteFunctionType& computedFunction )
+        {
+            if ( hasReferenceSolution_ ) {
+
+                const DiscreteFunctionType referenceSolution = *referenceSolution_;
+
+                DiscreteFunctionType refinedComputedFunction( "refined_computed_function", referenceSolution.space() );
+                refinedComputedFunction.clear();
+
+                typedef Dune::L2Projection< double, double, DiscreteFunctionType, DiscreteFunctionType >
+                    ProjectionType;
+                ProjectionType projection;
+                projection( computedFunction, refinedComputedFunction );
+
+                DiscreteFunctionType error( referenceSolution );
+                error -= refinedComputedFunction;
+
+                Dune::L2Norm< GridPartType > l2_Error( referenceSolution.space().gridPart() );
+                return l2_Error.norm( error );
+            }
+            else {
+                return -1.0;
+            }
         }
 
     private:
@@ -410,6 +488,7 @@ class RunManager
         int verbose_;
         std::string outputPrefix_;
         const std::string dgfFileName_;
+        DiscreteFunctionType* referenceSolution_;
 };
 
 #endif

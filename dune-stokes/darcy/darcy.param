@@ -49,7 +49,8 @@ micro_refine: 0
 micro_reference_solution_refine: 0
 micro_reference_solution_minref: 0
 micro_reference_solution_maxref: 10
-micro_reference_solution_filename: micro_reference_velocity
+micro_reference_solution_save_filename: micro_reference_velocity
+micro_reference_solution_load_filename: micro_reference_velocity_ref_0
 
 micro_model_verbosity: 3
 

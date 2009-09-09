@@ -134,12 +134,14 @@ int main( int argc, char** argv )
             typedef RunManager
                 RunManagerType;
             RunManagerType runManager( 2, "\t" );
-            const int minref = Dune::Parameter::getValue( "micro_reference_solution_minref", 0 );
-            const int maxref = Dune::Parameter::getValue( "micro_reference_solution_maxref", 5 );
-            for ( int ref = minref; ref <= maxref; ++ref ) {
-                runManager.generateReferenceSolution( ref );
-            }
-//            runManager.loadReferenceSolution( Dune::Parameter::getValue( "micro_reference_solution_filename", std::string( "micro_reference_velocity" ) ) );
+//            const int minref = Dune::Parameter::getValue( "micro_reference_solution_minref", 0 );
+//            const int maxref = Dune::Parameter::getValue( "micro_reference_solution_maxref", 5 );
+//            for ( int ref = minref; ref <= maxref; ++ref ) {
+//                runManager.generateReferenceSolution( ref );
+//            }
+//            runManager.loadReferenceSolution( Dune::Parameter::getValue( "micro_reference_solution_save_filename", std::string( "micro_reference_velocity" ) ) );
+            runManager.loadReferenceSolution( Dune::Parameter::getValue( "micro_reference_solution_load_filename", std::string( "micro_reference_velocity" ) ) );
+            runManager.generateReferenceSolution( 0 );
 
 //            singleRun( refineLevel );
 
