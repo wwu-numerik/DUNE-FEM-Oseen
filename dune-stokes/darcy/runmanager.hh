@@ -90,6 +90,8 @@ class RunManager
         typedef Dune::StokesPass< MicroStokesModelType, MicroStartPassType, 0 >
             MicroStokesPassType;
 
+        typedef Dune::VTKIO< GridPartType >
+            VTKWriterType;
     public:
 
         RunManager( const int verbose = 1, const std::string outputPrefix = "" )
@@ -197,10 +199,49 @@ class RunManager
 
             debug << outputPrefix_ << "\tSaving micro reference solution..." << std::endl;
 
-            saveReferenceSolution( microSolutionsX.discreteVelocity(), std::string( Dune::Parameter::getValue( "micro_reference_solution_filename", std::string( "micro_reference_velocity" ) ) + "_X" + "_ref_" + Stuff::toString( referenceSolutionRefineLevel_ ) ) );
-            saveReferenceSolution( microSolutionsY.discreteVelocity(), std::string( Dune::Parameter::getValue( "micro_reference_solution_filename", std::string( "micro_reference_velocity" ) ) + "_Y" + "_ref_" + Stuff::toString( referenceSolutionRefineLevel_ ) ) );
+            saveReferenceSolution(
+                microSolutionsX.discreteVelocity(),
+                std::string(
+                    Dune::Parameter::getValue( "micro_reference_solution_filename", std::string( "micro_reference_velocity" ) )
+                        + "_X"
+                        + "_ref_"
+                        + Stuff::toString( referenceSolutionRefineLevel_ ) ) );
+            saveReferenceSolution(
+                microSolutionsY.discreteVelocity(),
+                std::string( Dune::Parameter::getValue( "micro_reference_solution_filename", std::string( "micro_reference_velocity" ) )
+                    + "_Y"
+                    + "_ref_"
+                    + Stuff::toString( referenceSolutionRefineLevel_ ) ) );
 
             info << outputPrefix_ << "\tMicro reference solution saved." << std::endl;
+
+            debug << outputPrefix_ << "\tWriting micro output..." << std::endl;
+
+
+            VTKWriterType microVtkWriter( microGridPart );
+
+            std::string outputFilename = "";
+            outputFilename = std::string( "data/micro_reference_velocity_X_ref_" ) + Stuff::toString( referenceSolutionRefineLevel_ );
+            microVtkWriter.addVertexData( microSolutionsX.discreteVelocity() );
+            microVtkWriter.write( outputFilename.c_str() );
+            microVtkWriter.clear();
+
+            microVtkWriter.addVertexData( microSolutionsX.discretePressure() );
+            outputFilename = std::string( "data/micro_reference_pressure_X_ref_" ) + Stuff::toString( referenceSolutionRefineLevel_ );
+            microVtkWriter.write( outputFilename.c_str() );
+            microVtkWriter.clear();
+
+            microVtkWriter.addVertexData( microSolutionsY.discreteVelocity() );
+            outputFilename = std::string( "data/micro_reference_velocity_Y_ref_" ) + Stuff::toString( referenceSolutionRefineLevel_ );
+            microVtkWriter.write( outputFilename.c_str() );
+            microVtkWriter.clear();
+
+            microVtkWriter.addVertexData( microSolutionsY.discretePressure() );
+            outputFilename = std::string( "data/micro_reference_pressure_Y_ref_" ) + Stuff::toString( referenceSolutionRefineLevel_ );
+            microVtkWriter.write( outputFilename.c_str() );
+            microVtkWriter.clear();
+
+            info << outputPrefix_ << "\tMicro Output written." << std::endl;
 
         }
 
