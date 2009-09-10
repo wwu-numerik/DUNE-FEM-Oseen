@@ -128,20 +128,20 @@ int main( int argc, char** argv )
             Logging::LogStream& infoStream = Logger().Info();
             Logging::LogStream& debugStream = Logger().Dbg();
 
-            infoStream << "This is " << argv[0] << "." << std::endl;
+//            infoStream << "This is " << argv[0] << "." << std::endl;
 //            debugStream << "Doing singleRun() with refinelevel " << refineLevel << "." << std::endl;
 
             typedef RunManager
                 RunManagerType;
             RunManagerType runManager( 2, "\t" );
-//            const int minref = Dune::Parameter::getValue( "micro_reference_solution_minref", 0 );
-//            const int maxref = Dune::Parameter::getValue( "micro_reference_solution_maxref", 5 );
-//            for ( int ref = minref; ref <= maxref; ++ref ) {
-//                runManager.generateReferenceSolution( ref );
-//            }
+            const int minref = Dune::Parameter::getValue( "micro_reference_solution_minref", 0 );
+            const int maxref = Dune::Parameter::getValue( "micro_reference_solution_maxref", 10 );
+            for ( int ref = minref; ref <= maxref; ++ref ) {
+                runManager.generateReferenceSolution( ref );
+            }
 //            runManager.loadReferenceSolution( Dune::Parameter::getValue( "micro_reference_solution_save_filename", std::string( "micro_reference_velocity" ) ) );
 //            runManager.loadReferenceSolution( Dune::Parameter::getValue( "micro_reference_solution_load_filename", std::string( "micro_reference_velocity" ) ) );
-            runManager.generateReferenceSolution( Dune::Parameter::getValue( "micro_reference_solution_refine", 5 ) );
+//            runManager.generateReferenceSolution( Dune::Parameter::getValue( "micro_reference_solution_refine", 0 ) );
 
 //            singleRun( refineLevel );
 

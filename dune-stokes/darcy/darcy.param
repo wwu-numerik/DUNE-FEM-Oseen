@@ -58,13 +58,13 @@ micro_model_verbosity: 3
 micro_viscosity: 1.0
 
 # > 2 will show bfg setting per inner iteration, > 1 avg inner iteration count
-solverVerbosity: 0
+solverVerbosity: 1
 
 #pretty much ineffective
-relLimit: 1e-20
+relLimit: 1e-10
 
-absLimit: 1e-20
-inner_absLimit: 1e-20
+absLimit: 1e-10
+inner_absLimit: 1e-10
 
 #when nans are detected in solution solver accuracy is multiplied maximal max_adaptions-times by 0.1
 max_adaptions: 4

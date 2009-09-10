@@ -33,11 +33,12 @@
 #include <dune/stuff/functions.hh>
 
 #ifndef MICRO_PROBLEM
-    #define MICRO_PROBLEM COCKBURN_PROBLEM
-    #warning #warning ("MICRO_PROBLEM undefined, defaulting to COCKBURN_PROBLEM")
+    #define MICRO_PROBLEM MICRO_COCKBURN_PROBLEM
+    #warning #warning ("MICRO_PROBLEM undefined, defaulting to MICRO_COCKBURN_PROBLEM")
 #endif
 
-#if MICRO_PROBLEM==COCKBURN_PROBLEM
+#if MICRO_PROBLEM==MICRO_COCKBURN_PROBLEM
+    #define COCKBURN_PROBLEM
     #include "../src/analyticaldata.hh"
 #else
     #include "analyticaldarcydata.hh"
@@ -62,7 +63,7 @@ class RunManager
         typedef Dune::GridPtr< GridType >
             GridPointerType;
 
-#if MICRO_PROBLEM==COCKBURN_PROBLEM
+#if MICRO_PROBLEM==MICRO_COCKBURN_PROBLEM
         typedef Dune::DiscreteStokesModelDefaultTraits<
                         GridPartType,
                         Force,
@@ -146,23 +147,25 @@ class RunManager
             debug.Flush();
             error.Flush();
 
+#if MICRO_PROBLEM==MICRO_COCKBURN_PROBLEM
+            debug << outputPrefix_ << "Computing COCKBURN reference Solution..." << std::endl;
+#else
             debug << outputPrefix_ << "Computing reference Solution..." << std::endl;
+#endif
 
             // grid
-            debug << outputPrefix_ << "\tInitialising micro grid..." << std::endl;
+            debug << outputPrefix_ << "Initialising micro grid..." << std::endl;
 
-//            const int refine_level = Dune::Parameter::getValue( "micro_reference_solution_refine", 0 ) * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
-            const int refine_level = refineLevel * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
-            referenceSolutionRefineLevel_ = refine_level;
+            referenceSolutionRefineLevel_ = refineLevel;
             GridPointerType gridPointer( dgfFileName_ );
-            gridPointer->globalRefine( refine_level );
+            gridPointer->globalRefine( refineLevel );
             GridPartType microGridPart( *gridPointer );
 
-            info << outputPrefix_ << "\tInitialised micro grid (with " << microGridPart.grid().size( 0 ) << " elements)." << std::endl;
+            info << outputPrefix_ << "Initialised micro grid (with " << microGridPart.grid().size( 0 ) << " elements)." << std::endl;
 
             // problem
 
-            debug << outputPrefix_ << "\tInitialising micro problem..." << std::endl;
+            debug << outputPrefix_ << "Initialising micro problem..." << std::endl;
 
             const double microViscosity = Dune::Parameter::getValue( "micro_viscosity", 1.0 );
 
@@ -170,22 +173,13 @@ class RunManager
             MicroDiscreteStokesFunctionSpaceWrapperType
                 microDiscreteStokesFunctionSpaceWrapper( microGridPart );
 
-#if MICRO_PROBLEM==COCKBURN_PROBLEM
+#if MICRO_PROBLEM==MICRO_COCKBURN_PROBLEM
             MicroDiscreteStokesFunctionWrapperType
                 microSolutions( "micro", microDiscreteStokesFunctionSpaceWrapper );
-#else
-            MicroDiscreteStokesFunctionWrapperType
-                microSolutionsX( "microX", microDiscreteStokesFunctionSpaceWrapper );
-
-            MicroDiscreteStokesFunctionWrapperType
-                microSolutionsY( "microY", microDiscreteStokesFunctionSpaceWrapper );
-#endif
 
             MicroDiscreteStokesFunctionWrapperType
                 dummy( "dummy", microDiscreteStokesFunctionSpaceWrapper );
 
-            // analytical data and model
-#if MICRO_PROBLEM==COCKBURN_PROBLEM
             MicroAnalyticalForceType microAnalyticalForce( microViscosity , microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
 
             MicroAnalyticalDirichletDataType microAnalyticalDirichletData( microDiscreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
@@ -195,6 +189,14 @@ class RunManager
                                                         microAnalyticalDirichletData,
                                                         microViscosity );
 #else
+            MicroDiscreteStokesFunctionWrapperType
+                microSolutionsX( "microX", microDiscreteStokesFunctionSpaceWrapper );
+
+            MicroDiscreteStokesFunctionWrapperType
+                microSolutionsY( "microY", microDiscreteStokesFunctionSpaceWrapper );
+
+            MicroDiscreteStokesFunctionWrapperType
+                dummy( "dummy", microDiscreteStokesFunctionSpaceWrapper );
             // for x dimension
             MicroAnalyticalForceType::RangeType unitVectorX( 0.0 );
             unitVectorX[ 0 ] = 1.0;
@@ -222,7 +224,7 @@ class RunManager
                                                         microViscosity );
 #endif
 
-#if MICRO_PROBLEM==COCKBURN_PROBLEM
+#if MICRO_PROBLEM==MICRO_COCKBURN_PROBLEM
             // passes
             MicroStokesPassType microStokesPass(   microStartPass_,
                                                     microStokesModel,
@@ -241,13 +243,13 @@ class RunManager
                                                     microDiscreteStokesFunctionSpaceWrapper );
 #endif
 
-            info << outputPrefix_ << "\tInitialised micro problem." << std::endl;
+            info << outputPrefix_ << "Initialised micro problem." << std::endl;
 
-            debug << outputPrefix_ << "\tSolving micro system..." << std::endl;
+            debug << outputPrefix_ << "Solving micro system..." << std::endl;
 
             dummy.clear();
 
-#if MICRO_PROBLEM==COCKBURN_PROBLEM
+#if MICRO_PROBLEM==MICRO_COCKBURN_PROBLEM
             microSolutions.clear();
             microStokesPass.apply( dummy, microSolutions );
 #else
@@ -257,11 +259,11 @@ class RunManager
             microStokesPassY.apply( dummy, microSolutionsX );
 #endif
 
-            info << outputPrefix_ << "\tMicro system solved." << std::endl;
+            info << outputPrefix_ << "Micro system solved." << std::endl;
 
-            debug << outputPrefix_ << "\tSaving micro reference solution..." << std::endl;
+            debug << outputPrefix_ << "Saving micro reference solution..." << std::endl;
 
-#if MICRO_PROBLEM==COCKBURN_PROBLEM
+#if MICRO_PROBLEM==MICRO_COCKBURN_PROBLEM
             saveReferenceSolution(
                 microSolutions.discreteVelocity(),
                 std::string(
@@ -285,14 +287,14 @@ class RunManager
                     + Stuff::toString( referenceSolutionRefineLevel_ ) ) );
 #endif
 
-            info << outputPrefix_ << "\tMicro reference solution saved." << std::endl;
+            info << outputPrefix_ << "Micro reference solution saved." << std::endl;
 
-            debug << outputPrefix_ << "\tWriting micro output..." << std::endl;
+            debug << outputPrefix_ << "Writing micro output..." << std::endl;
 
             VTKWriterType microVtkWriter( microGridPart );
             std::string outputFilename = "";
 
-#if MICRO_PROBLEM==COCKBURN_PROBLEM
+#if MICRO_PROBLEM==MICRO_COCKBURN_PROBLEM
             outputFilename = std::string( "data/micro_reference_velocity_cockburn_ref_" ) + Stuff::toString( referenceSolutionRefineLevel_ );
             microVtkWriter.addVertexData( microSolutions.discreteVelocity() );
             microVtkWriter.write( outputFilename.c_str() );
@@ -324,7 +326,13 @@ class RunManager
             microVtkWriter.clear();
 #endif
 
-            info << outputPrefix_ << "\tMicro Output written." << std::endl;
+            info << outputPrefix_ << "Micro Output written." << std::endl;
+
+#if MICRO_PROBLEM==MICRO_COCKBURN_PROBLEM
+            info << outputPrefix_ << "COCKBURN reference solution computed." << std::endl;
+#else
+            info << outputPrefix_ << "Reference solution computed." << std::endl;
+#endif
 
         }
 

@@ -68,10 +68,10 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
 #elif defined(ROTATE_PROBLEM)
                 ret[0] = arg[1];
                 ret[1] = -1.0 * arg[0];
-#elif defined(MICRO_PROBLEM)
+#elif defined(POROSITY_PROBLEM)
                 ret[ 0 ] = 0.0;
                 ret[ 1 ] = 0.0;
-#elif defined(MICRO_PROBLEM_WOIDS)
+#elif defined(POROSITY_PROBLEM_WOIDS)
                 ret[ 0 ] = 0.0;
                 ret[ 1 ] = 0.0;
 #elif defined(GENRALIZED_STOKES_PROBLEM)
@@ -97,10 +97,10 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 ret[2] = -1.0;//arg[0];
 #elif defined(ROTATE_PROBLEM)
                 assert( !"ROTATE_PROBLEM not implemented in 3D!" );
-#elif defined(MICRO_PROBLEM)
-                assert( !"MICRO_PROBLEM not implemented in 3D!" );
-#elif defined(MICRO_PROBLEM_WOIDS)
-                assert( !"MICRO_PROBLEM_WOIDS not implemented in 3D!" );
+#elif defined(POROSITY_PROBLEM)
+                assert( !"POROSITY_PROBLEM not implemented in 3D!" );
+#elif defined(POROSITY_PROBLEM_WOIDS)
+                assert( !"POROSITY_PROBLEM_WOIDS not implemented in 3D!" );
 #elif defined(GENRALIZED_STOKES_PROBLEM)
                 assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
 #else
@@ -115,56 +115,6 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
     private:
         const double viscosity_;
         const double alpha_;
-        const int dim_;
-};
-
-/**
- *  \todo   texdoc
- **/
-template < class FunctionSpaceImp >
-class MicroForce : public Dune::Function < FunctionSpaceImp , MicroForce < FunctionSpaceImp > >
-{
-    public:
-        typedef MicroForce< FunctionSpaceImp >
-            ThisType;
-        typedef Dune::Function< FunctionSpaceImp, ThisType >
-            BaseType;
-        typedef typename BaseType::DomainType
-            DomainType;
-        typedef typename BaseType::RangeType
-            RangeType;
-
-        /**
-         *  \brief  constructor
-         *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
-         **/
-        MicroForce( const double viscosity, const FunctionSpaceImp& space )
-            : BaseType ( space ),
-              viscosity_( viscosity ),
-              dim_( FunctionSpaceImp::dimDomain )
-        {}
-
-        /**
-         *  \brief  destructor
-         *  doing nothing
-         **/
-        ~MicroForce()
-        {}
-
-        /**
-         *  \brief  evaluates the force
-         *  \param  arg
-         *          point to evaluate at
-         *  \param  ret
-         *          value of force at given point
-         **/
-        inline void evaluate( const DomainType& arg, RangeType& ret ) const
-        {
-            ret = 0.0;
-        }
-
-    private:
-        const double viscosity_;
         const int dim_;
 };
 
@@ -225,7 +175,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 #elif defined(ROTATE_PROBLEM)
                 ret[0] = 0.0;
                 ret[1] = 0.0;
-#elif defined(MICRO_PROBLEM)
+#elif defined(POROSITY_PROBLEM)
                 if ( id == 2 ) { // faces on inner hole
                     ret[ 0 ] = 0.0;
                     ret[ 1 ] = 0.0;
@@ -246,7 +196,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                     ret[ 0 ] = 1.0;
                     ret[ 1 ] = 0.0;
                 }
-#elif defined(MICRO_PROBLEM_WOIDS)
+#elif defined(POROSITY_PROBLEM_WOIDS)
                 const double x1 = arg[0];
                 const double x2 = arg[1];
                 if ( !( x2 > 0.0 ) ) { // bottom faces
@@ -299,10 +249,10 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 ret[2] = 0.0;
 #elif defined(ROTATE_PROBLEM)
                 assert( !"ROTATE_PROBLEM not implemented in 3D!" );
-#elif defined(MICRO_PROBLEM)
-                assert( !"MICRO_PROBLEM not implemented in 3D!" );
-#elif defined(MICRO_PROBLEM_WOIDS)
-                assert( !"MICRO_PROBLEM_WOIDS not implemented in 3D!" );
+#elif defined(POROSITY_PROBLEM)
+                assert( !"POROSITY_PROBLEM not implemented in 3D!" );
+#elif defined(POROSITY_PROBLEM_WOIDS)
+                assert( !"POROSITY_PROBLEM_WOIDS not implemented in 3D!" );
 #elif defined(GENRALIZED_STOKES_PROBLEM)
                 assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
 #else
@@ -322,62 +272,6 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
           *         value of dirichlet boundary data at given point
           **/
         inline void evaluate( const DomainType& arg, RangeType& ret ) const {}
-
-    private:
-        const int dim_;
-
-};
-
-/**
- *  \todo   extensive docu with latex
- **/
-template < class FunctionSpaceImp >
-class MicroDirichletData : public Dune::Function < FunctionSpaceImp, MicroDirichletData < FunctionSpaceImp > >
-{
-    public:
-        typedef MicroDirichletData< FunctionSpaceImp >
-            ThisType;
-        typedef Dune::Function< FunctionSpaceImp, ThisType >
-            BaseType;
-        typedef typename BaseType::DomainType
-            DomainType;
-        typedef typename BaseType::RangeType
-            RangeType;
-
-        /**
-         *  \brief  constructor
-         *
-         *  doing nothing besides Base init
-         **/
-        MicroDirichletData( const FunctionSpaceImp& space )
-            : BaseType( space ),
-              dim_( FunctionSpaceImp::dimDomain )
-        {}
-
-        /**
-         *  \brief  destructor
-         *
-         *  doing nothing
-         **/
-         ~MicroDirichletData()
-         {}
-
-        void evaluate( const DomainType& arg, RangeType& ret, const int id ) const
-        {
-            ret = 0.0;
-        }
-
-         /**
-          * \brief  evaluates the dirichlet data
-          * \param  arg
-          *         point to evaluate at
-          * \param  ret
-          *         value of dirichlet boundary data at given point
-          **/
-        inline void evaluate( const DomainType& arg, RangeType& ret ) const
-        {
-            ret = 0.0;
-        }
 
     private:
         const int dim_;
