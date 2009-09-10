@@ -204,10 +204,7 @@
 					<Add option="-DMACRO_PROBLEM=MACRO_PROBLEM" />
 					<Add option="-DMACRO_CG_SOLVERTYPE=CGInverseOp" />
 					<Add option="-DMICRO_POLORDER=1" />
-					<Add option="-DMICRO_PROBLEM=COCKBURN_PROBLEM" />
-					<Add option="-DENABLE_ALUGRID" />
-					<Add option="-DHAVE_ALUGRID" />
-					<Add option="-DALUGRID_SIMPLEX" />
+					<Add option="-DMICRO_PROBLEM=BLAH" />
 					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include/parallel" />

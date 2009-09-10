@@ -48,7 +48,7 @@ micro_grid_3d:
 
 micro_refine: 0
 micro_reference_solution_refine: 1
-micro_reference_solution_minref: 0
+micro_reference_solution_minref: 1
 micro_reference_solution_maxref: 10
 micro_reference_solution_save_filename: micro_reference_velocity
 micro_reference_solution_load_filename: micro_reference_velocity_ref_0
@@ -61,10 +61,10 @@ micro_viscosity: 1.0
 solverVerbosity: 1
 
 #pretty much ineffective
-relLimit: 1e-10
+relLimit: 1e-20
 
-absLimit: 1e-10
-inner_absLimit: 1e-10
+absLimit: 1e-20
+inner_absLimit: 1e-20
 
 #when nans are detected in solution solver accuracy is multiplied maximal max_adaptions-times by 0.1
 max_adaptions: 4
