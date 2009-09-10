@@ -204,7 +204,7 @@
 					<Add option="-DMACRO_PROBLEM=MACRO_PROBLEM" />
 					<Add option="-DMACRO_CG_SOLVERTYPE=CGInverseOp" />
 					<Add option="-DMICRO_POLORDER=1" />
-					<Add option="-DMICRO_PROBLEM=MICRO_PROBLEM" />
+					<Add option="-DMICRO_PROBLEM=COCKBURN_PROBLEM" />
 					<Add option="-DENABLE_ALUGRID" />
 					<Add option="-DHAVE_ALUGRID" />
 					<Add option="-DALUGRID_SIMPLEX" />

@@ -40,13 +40,14 @@ macro_solver_verbosity: 0
 
 # #### micro problem ###############################################################################
 
-micro_grid_2d: homogeneous_perforated_domain_2d_porosity_0.36_9_holes.1.dgf
+#micro_grid_2d: homogeneous_perforated_domain_2d_porosity_0.36_9_holes.1.dgf
 #micro_grid_2d: unit_sand_pore_in_2d.1.dgf
 #micro_grid_2d: grid_2d.dgf
+micro_grid_2d: cockburn_grid_2d.dgf
 micro_grid_3d:
 
 micro_refine: 0
-micro_reference_solution_refine: 0
+micro_reference_solution_refine: 1
 micro_reference_solution_minref: 0
 micro_reference_solution_maxref: 10
 micro_reference_solution_save_filename: micro_reference_velocity
@@ -60,10 +61,10 @@ micro_viscosity: 1.0
 solverVerbosity: 0
 
 #pretty much ineffective
-relLimit: 1e-12
+relLimit: 1e-20
 
-absLimit: 1e-10
-inner_absLimit: 1e-10
+absLimit: 1e-20
+inner_absLimit: 1e-20
 
 #when nans are detected in solution solver accuracy is multiplied maximal max_adaptions-times by 0.1
 max_adaptions: 4

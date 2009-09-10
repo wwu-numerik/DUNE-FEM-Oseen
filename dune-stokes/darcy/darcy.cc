@@ -140,8 +140,8 @@ int main( int argc, char** argv )
 //                runManager.generateReferenceSolution( ref );
 //            }
 //            runManager.loadReferenceSolution( Dune::Parameter::getValue( "micro_reference_solution_save_filename", std::string( "micro_reference_velocity" ) ) );
-            runManager.loadReferenceSolution( Dune::Parameter::getValue( "micro_reference_solution_load_filename", std::string( "micro_reference_velocity" ) ) );
-            runManager.generateReferenceSolution( 0 );
+//            runManager.loadReferenceSolution( Dune::Parameter::getValue( "micro_reference_solution_load_filename", std::string( "micro_reference_velocity" ) ) );
+            runManager.generateReferenceSolution( Dune::Parameter::getValue( "micro_reference_solution_refine", 5 ) );
 
 //            singleRun( refineLevel );
 
