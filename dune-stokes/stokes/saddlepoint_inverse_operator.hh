@@ -372,7 +372,7 @@ class SaddlepointInverseOperator
 		// relative min. error at which cg-solvers will abort
         const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
 		// aboslute min. error at which cg-solvers will abort
-        const double outer_absLimit = Parameters().getParam( "absLimit", 1e-8 );
+        double outer_absLimit = Parameters().getParam( "absLimit", 1e-8 );
         const double inner_absLimit = Parameters().getParam( "inner_absLimit", 1e-8 );
         const int solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
         const int maxIter = Parameters().getParam( "maxIter", 500 );
@@ -448,6 +448,8 @@ class SaddlepointInverseOperator
         int total_inner_iterations = 0;
         int min_inner_iterations = std::numeric_limits<int>::max();
         int max_inner_iterations = 0;
+        const int max_adaptions = Parameters().getParam( "max_adaptions", 2 ) ;
+        int current_adaption = 0;
         double delta; //norm of residuum
         double gamma=0;
         double rho;
@@ -488,6 +490,17 @@ class SaddlepointInverseOperator
                 // d_{m+1} = r_{m+1} + gamma_m * d_m
                 d *= gamma;
                 d += residuum;
+            }
+            if ( iteration >=  maxIter && current_adaption < max_adaptions ) {
+                current_adaption++;
+                iteration = 2;//do not execute first step in next iter again
+                outer_absLimit /= 0.01;
+#ifdef USE_BFG_CG_SCHEME
+                current_inner_accuracy /= 0.01;
+                a_solver.setAbsoluteLimit( current_inner_accuracy );
+#endif
+                logInfo << "\n\t\t Outer CG solver reset, tolerance lowered" << std::endl;
+
             }
 
 #ifdef USE_BFG_CG_SCHEME
