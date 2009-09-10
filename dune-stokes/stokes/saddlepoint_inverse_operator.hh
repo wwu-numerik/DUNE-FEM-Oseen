@@ -554,19 +554,6 @@ class SaddlepointInverseOperator
             if( solverVerbosity > 2 )
                 logInfo << "\t" << iteration << " SPcg-Iterationen  " << iteration << " Residuum:" << delta << std::endl;
         }
-        if ( iteration > maxIter ) {
-            logError << "SaddlePointInverseOperator reached maxIter( " << maxIter << " ) without any success!" << std::endl;
-            SaddlepointInverseOperatorInfo info;
-            info.iterations_inner_avg = -1;
-            info.iterations_inner_min = -1;
-            info.iterations_inner_max = -1;
-            info.iterations_outer_total = -1;
-            info.max_inner_accuracy = -1;
-            return info;
-        }
-        else {
-            logInfo << "End SaddlePointInverseOperator " << std::endl;
-        }
 
         SaddlepointInverseOperatorInfo info; //left blank in case of no bfg
 #ifdef USE_BFG_CG_SCHEME
