@@ -585,6 +585,8 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     info.inner_solver_accuracy = Parameters().getParam( "inner_absLimit", 1e-4 );
     info.bfg_tau = Parameters().getParam( "bfg-tau", 0.1 );
 
+	info.problemIdentifier = StokesProblem::ProblemIdentifier;
+
     profiler().StopTiming( "Problem/Postprocessing" );
     profiler().StopTiming( "SingleRun" );
 
