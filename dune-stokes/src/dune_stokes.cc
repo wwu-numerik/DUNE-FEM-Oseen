@@ -110,6 +110,9 @@ void AccuracyRun( CollectiveCommunication& mpicomm );
 //! multiple runs with  set in [accuracy_start :  *=accuracy_factor : accuracy_stop] and everything else on default (only outer acc is varied)
 void AccuracyRunOuter( CollectiveCommunication& mpicomm );
 
+//! display last computed pressure/velo with grape
+int display( int argc, char** argv );
+
 //! brute force all permutations
 CoeffVector getAll_Permutations();
 //! get only permutations for C_11 and C_12
@@ -690,4 +693,58 @@ CoeffVector getC_power_Permutations(){
         }
     }
     return coeff_vector;
+}
+
+using namespace Dune;
+
+typedef Dune::AdaptiveLeafGridPart< GridType >
+        GridPartType;
+    const int gridDim = GridType::dimensionworld;
+    const int polOrder = POLORDER;
+
+    typedef Dune::DiscreteStokesModelDefaultTraits<
+                GridPartType,
+                Force,
+                DirichletData,
+                gridDim,
+                polOrder,
+                VELOCITY_POLORDER,
+                PRESSURE_POLORDER >
+    StokesModelTraitsImp;
+
+
+typedef Dune::Tuple< StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType*, StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType* >
+				IOTupleType;
+
+typedef IOTupleType GR_InputType;
+
+template <class GrapeDispType,
+          class GR_GridType,
+          class DestinationType>
+void postProcessing(const GrapeDispType& disp,
+                    const GR_GridType& grid,
+                    const double time,
+                    const double timestep,
+                    const DestinationType& Uh)
+{
+}
+
+///begin grape
+// include grape visualization
+#include <dune/grid/io/visual/grapedatadisplay.hh>
+#include <dune/grid/io/visual/combinedgrapedisplay.hh>
+
+// include data reading
+#include <dune/fem/io/visual/grape/datadisp/printhelp.cc>
+#include <dune/fem/io/visual/grape/datadisp/readiotupledata.cc>
+#include <dune/fem/io/visual/grape/datadisp/readioparams.cc>
+#include <dune/fem/io/parameter.hh>
+#include <dune/fem/function/common/discretefunctionadapter.hh>
+///end grape
+
+int display ( int argc, char** argv )
+{
+
+    return readParameterList(argc,argv);
+
 }
