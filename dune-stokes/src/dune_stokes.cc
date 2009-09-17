@@ -143,9 +143,13 @@ int main( int argc, char** argv )
     if ( argc < 2 ) {
         std::cerr << "\nUsage: " << argv[0] << " parameterfile \n" << "\n\t --- OR --- \n";
         std::cerr << "\nUsage: " << argv[0] << " paramfile:"<<"file" << " more-opts:val ..." << std::endl;
+        std::cerr << "\nUsage: " << argv[0] << " -d paramfile "<< "\n\t(for displaying solutions in grape) "<< std::endl;
         Parameters().PrintParameterSpecs( std::cerr );
         std::cerr << std::endl;
         return 2;
+    }
+    if ( !strcmp( argv[1], "-d" ) ) {
+        return display( argc, argv );
     }
     if ( !(  Parameters().ReadCommandLine( argc, argv ) ) ) {
         return 1;
@@ -744,7 +748,13 @@ void postProcessing(const GrapeDispType& disp,
 
 int display ( int argc, char** argv )
 {
+//    printf("usage: %s paramfile:paramfile <i_start> <i_end>", funcName);
+    int argc_ = 4;
+    char buffer [50];
 
-    return readParameterList(argc,argv);
+    sprintf (buffer, "paramfile:%s", argv[2] );
+    char* argv_[4] = { argv[0], buffer,  "0", "0" };
+    Parameter::append(argc_,argv_);
+    return readParameterList(argc_,argv_);
 
 }

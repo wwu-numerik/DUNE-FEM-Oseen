@@ -35,7 +35,7 @@ dgf_file_3d: grid_3d.dgf
 runtype: 5
 
 #in runtype 0 refine maxref + 1 - minref times
-minref: 4
+minref: 2
 maxref: 1
 
 #in runtype 1 vary
