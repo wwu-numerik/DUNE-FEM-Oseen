@@ -35,6 +35,8 @@
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
 
 #include <dune/fem/solver/oemsolver/oemsolver.hh>
+#include <dune/fem/space/dgspace/dgadaptmanager.hh>
+#include <dune/fem/space/common/restrictprolonginterface.hh>
 #include <dune/fem/space/dgspace.hh>
 #include <dune/fem/space/combinedspace.hh>
 #include <dune/fem/space/dgspace/dgadaptiveleafgridpart.hh>
@@ -58,6 +60,7 @@
 #include "velocity.hh"
 #include "pressure.hh"
 #include "problem.hh"
+#include "estimator.hh"
 
 #ifndef COMMIT
     #define COMMIT "undefined"
@@ -451,12 +454,15 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
      * ********************************************************************** */
     infoStream << "\n- initialising grid" << std::endl;
     const int gridDim = GridType::dimensionworld;
-    Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename( gridDim ) );
+    static Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename( gridDim ) );
     const int refine_level = refine_level_factor * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
-    gridPtr->globalRefine( refine_level );
+//     gridPtr->globalRefine( refine_level_factor != 0 ? Dune::DGFGridInfo< GridType >::refineStepsForHalf() : 0 );
+
+	
+
     typedef Dune::AdaptiveLeafGridPart< GridType >
         GridPartType;
-    GridPartType gridPart( *gridPtr );
+    static GridPartType gridPart( *gridPtr );
     info.codim0 = gridPtr->size( 0 );
     info.codim0 = gridPart.grid().size( 0 );
     Dune::GridWidthProvider< GridType > gw ( *gridPtr );
@@ -499,18 +505,41 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     typedef StokesModelTraitsImp::DiscreteStokesFunctionSpaceWrapperType
         DiscreteStokesFunctionSpaceWrapperType;
 
-    DiscreteStokesFunctionSpaceWrapperType
+    static DiscreteStokesFunctionSpaceWrapperType
         discreteStokesFunctionSpaceWrapper( gridPart );
 
     typedef StokesModelTraitsImp::DiscreteStokesFunctionWrapperType
         DiscreteStokesFunctionWrapperType;
 
-    DiscreteStokesFunctionWrapperType
+    static DiscreteStokesFunctionWrapperType
         computedSolutions(  "computed_",
                                         discreteStokesFunctionSpaceWrapper );
 
-    DiscreteStokesFunctionWrapperType initArgToPass( "init_", discreteStokesFunctionSpaceWrapper );
-
+	Dune::Estimator<DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType>
+		estimator ( computedSolutions.discretePressure() );
+	if ( refine_level_factor != 0 )
+		estimator.mark( 0.0 /*dummy*/ );
+	
+	typedef Dune::RestrictProlongDefault< DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType >
+		RestrictProlongPressureType;
+	typedef Dune::AdaptationManager< GridType, RestrictProlongPressureType >
+		PressureAdaptationManagerType;
+	    // create Restriction and Prolongation Operator
+    static RestrictProlongPressureType rpPressure( computedSolutions.discretePressure() );
+    // create Adaptation Manager
+    static PressureAdaptationManagerType adaptManagerPressure( gridPart.grid(), rpPressure );
+	adaptManagerPressure.adapt();
+	
+	typedef Dune::RestrictProlongDefault< DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType >
+		RestrictProlongVelocityType;
+	typedef Dune::AdaptationManager< GridType, RestrictProlongVelocityType >
+		VelocityAdaptationManagerType;
+	    // create Restriction and Prolongation Operator
+    static RestrictProlongVelocityType rpVelocity( computedSolutions.discreteVelocity() );
+    // create Adaptation Manager
+    static VelocityAdaptationManagerType adaptManagerVelocity( gridPart.grid(), rpVelocity );
+	adaptManagerVelocity.adapt();
+										
      typedef StokesModelTraitsImp::AnalyticalForceType
          AnalyticalForceType;
      AnalyticalForceType analyticalForce( viscosity , discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), alpha );
@@ -530,6 +559,8 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
      * ********************************************************************** */
     infoStream << "\n- starting pass" << std::endl;
 
+	DiscreteStokesFunctionWrapperType initArgToPass( "init_", discreteStokesFunctionSpaceWrapper );
+
     typedef Dune::StartPass< DiscreteStokesFunctionWrapperType, -1 >
         StartPassType;
     StartPassType startPass;
@@ -540,9 +571,6 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
                                 stokesModel,
                                 gridPart,
                                 discreteStokesFunctionSpaceWrapper );
-
-    computedSolutions.discretePressure().clear();
-    computedSolutions.discreteVelocity().clear();
 
     profiler().StartTiming( "Pass -- APPLY" );
     stokesPass.apply( initArgToPass, computedSolutions );
