@@ -412,6 +412,17 @@ class SaddlepointInverseOperator
         BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
         WmatrixType& w_mat      = Wmatrix.matrix();
 
+        DiscreteSigmaFunctionType m_tmp ( "m_tom", rhs1.space() );
+        DiscreteVelocityFunctionType f_func( "f_func", velocity.space() );
+		f_func.clear();
+		m_tmp.clear();
+
+		// f_func = ( ( -1 * ( X * ( M_inv * rhs1 ) ) ) + rhs2 )
+        m_inv_mat.apply( rhs1, m_tmp );
+        x_mat.apply( m_tmp, f_func );
+        f_func *= -1;
+        f_func += rhs2;
+
 /*** making our matrices kuhnibert compatible ****/
         b_t_mat.scale( -1 ); //since B_t = -E
         w_mat.scale( m_inv_mat(0,0) );
@@ -539,9 +550,6 @@ class SaddlepointInverseOperator
             // p_{m+1} = p_m - ( rho_m * d_m )
             pressure.addScaled( d, -rho );
 
-            // u_{m+1} = u_m + ( rho_m * xi_m )
-            velocity.addScaled( xi, +rho );
-
             // r_{m+1} = r_m - rho_m * h_m
             residuum.addScaled( h, -rho );
 
@@ -554,6 +562,13 @@ class SaddlepointInverseOperator
             if( solverVerbosity > 2 )
                 logInfo << "\t" << iteration << " SPcg-Iterationen  " << iteration << " Residuum:" << delta << std::endl;
         }
+
+        // u^0 = A^{-1} ( F - B * p^0 )
+        F.assign(rhs2);
+        tmp1.clear();
+        b_mat.apply( pressure, tmp1 );
+        F-=tmp1; // F ^= rhs2 - B * p
+        a_solver.apply(F,velocity);
 
         logInfo << "End SaddlePointInverseOperator " << std::endl;
 
