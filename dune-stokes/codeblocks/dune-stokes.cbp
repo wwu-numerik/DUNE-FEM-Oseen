@@ -19,6 +19,8 @@
 				</Compiler>
 				<Linker>
 					<Add library="blas" />
+					<Add library="gr" />
+					<Add library="GL" />
 					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
 				</Linker>
 			</Target>

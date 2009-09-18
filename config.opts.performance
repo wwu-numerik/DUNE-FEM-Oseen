@@ -9,6 +9,7 @@ CONFIGURE_FLAGS="CXX=g++ CC=gcc CXXFLAGS='-O3 -funroll-loops --param max-inline-
   --x-includes=/usr/X11R6/include \
   --x-libraries=/usr/X11R6/lib64 \
   --disable-documentation \
+  --with-grape=/share/dune/Modules/modules_$HOSTTYPE/grape \
   --enable-dunedevel \
   --with-grid-dim=2 \
   --with-grid-type=ALUGRID_CONFORM "
@@ -18,4 +19,3 @@ MAKE_FLAGS=
 #  --enable-mpi \
 #  --enable-parallel \
 #  --with-mpi=/usr/o0/openmpi-1.2.3/ix86_64-ibm-linux\lib "
-#  --with-grape=/share/dune/Modules/modules_$HOSTTYPE/grape \
