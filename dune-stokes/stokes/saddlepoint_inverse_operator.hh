@@ -553,7 +553,7 @@ class SaddlepointInverseOperator
                 logInfo << "\t" << iteration << " SPcg-Iterationen  " << iteration << " Residuum:" << delta << std::endl;
         }
 
-        if ( Parameters().getParam( "use_velocity_reconstruct", false ) {
+        if ( Parameters().getParam( "use_velocity_reconstruct", false ) ) {
             // u^0 = A^{-1} ( F - B * p^0 )
             F.assign(rhs2);
             tmp1.clear();

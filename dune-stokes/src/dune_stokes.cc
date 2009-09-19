@@ -458,8 +458,6 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     const int refine_level = refine_level_factor * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
 //     gridPtr->globalRefine( refine_level_factor != 0 ? Dune::DGFGridInfo< GridType >::refineStepsForHalf() : 0 );
 
-	
-
     typedef Dune::AdaptiveLeafGridPart< GridType >
         GridPartType;
     static GridPartType gridPart( *gridPtr );
@@ -476,7 +474,6 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     const double alpha = Parameters().getParam( "alpha", 0.0 );
 
     // analytical data
-
 
     // model traits
     typedef Dune::DiscreteStokesModelDefaultTraits<
@@ -513,7 +510,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 		estimator ( computedSolutions.discretePressure() );
 	//if ( refine_level_factor != 0 )
 		estimator.mark( 0.0 /*dummy*/ );
-	
+
 	typedef Dune::RestrictProlongDefault< DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType >
 		RestrictProlongPressureType;
 	typedef Dune::AdaptationManager< GridType, RestrictProlongPressureType >
@@ -523,7 +520,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     // create Adaptation Manager
     static PressureAdaptationManagerType adaptManagerPressure( gridPart.grid(), rpPressure );
 	adaptManagerPressure.adapt();
-	
+
 	typedef Dune::RestrictProlongDefault< DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType >
 		RestrictProlongVelocityType;
 	typedef Dune::AdaptationManager< GridType, RestrictProlongVelocityType >
@@ -534,13 +531,17 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     static VelocityAdaptationManagerType adaptManagerVelocity( gridPart.grid(), rpVelocity );
 	adaptManagerVelocity.adapt();
 
+	if ( Parameters().getParam( "clear_u:" , true ) )
+        computedSolutions.discreteVelocity().clear();
+    if ( Parameters().getParam( "clear_p:" , true ) )
+        computedSolutions.discretePressure().clear();
+
 	info.codim0 = gridPtr->size( 0 );
-    info.codim0 = gridPart.grid().size( 0 );
     Dune::GridWidthProvider< GridType > gw ( *gridPtr );
     double grid_width = gw.gridWidth();
     infoStream << "  - max grid width: " << grid_width << std::endl;
     info.grid_width = grid_width;
-										
+
      typedef StokesModelTraitsImp::AnalyticalForceType
          AnalyticalForceType;
      AnalyticalForceType analyticalForce( viscosity , discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), alpha );
