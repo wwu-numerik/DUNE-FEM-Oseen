@@ -549,7 +549,8 @@ class SaddlepointInverseOperator
 
             // p_{m+1} = p_m - ( rho_m * d_m )
             pressure.addScaled( d, -rho );
-
+            // u_{m+1} = u_m + ( rho_m * xi_m )
+            velocity.addScaled( xi, +rho );
             // r_{m+1} = r_m - rho_m * h_m
             residuum.addScaled( h, -rho );
 
@@ -563,12 +564,6 @@ class SaddlepointInverseOperator
                 logInfo << "\t" << iteration << " SPcg-Iterationen  " << iteration << " Residuum:" << delta << std::endl;
         }
 
-        // u^0 = A^{-1} ( F - B * p^0 )
-        F.assign(rhs2);
-        tmp1.clear();
-        b_mat.apply( pressure, tmp1 );
-        F-=tmp1; // F ^= rhs2 - B * p
-        a_solver.apply(F,velocity);
 
         logInfo << "End SaddlePointInverseOperator " << std::endl;
 
