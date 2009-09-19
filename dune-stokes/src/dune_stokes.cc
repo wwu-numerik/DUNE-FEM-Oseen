@@ -574,7 +574,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
                                 discreteStokesFunctionSpaceWrapper );
 
     profiler().StartTiming( "Pass -- APPLY" );
-    stokesPass.apply( computedSolutions, computedSolutions );
+    stokesPass.apply( initArgToPass, computedSolutions );
     profiler().StopTiming( "Pass -- APPLY" );
     info.run_time = profiler().GetTiming( "Pass -- APPLY" );
     stokesPass.getRuninfo( info );

@@ -345,7 +345,7 @@ class SaddlepointInverseOperator
                 class DiscreteSigmaFunctionType,
                 class DiscreteVelocityFunctionType,
                 class DiscretePressureFunctionType  >
-    SaddlepointInverseOperatorInfo solve( const DomainType& arg,
+    SaddlepointInverseOperatorInfo solve( const DomainType& /*arg*/,
                 RangeType& dest,
                 XmatrixObjectType& Xmatrix,
                 MmatrixObjectType& Mmatrix,
