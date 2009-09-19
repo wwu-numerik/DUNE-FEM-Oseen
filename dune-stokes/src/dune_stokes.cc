@@ -517,7 +517,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
 	Dune::Estimator<DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType>
 		estimator ( computedSolutions.discretePressure() );
-	if ( refine_level_factor != 0 )
+	//if ( refine_level_factor != 0 )
 		estimator.mark( 0.0 /*dummy*/ );
 	
 	typedef Dune::RestrictProlongDefault< DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType >
@@ -539,6 +539,8 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     // create Adaptation Manager
     static VelocityAdaptationManagerType adaptManagerVelocity( gridPart.grid(), rpVelocity );
 	adaptManagerVelocity.adapt();
+	computedSolutions.discreteVelocity().clear();
+	
 										
      typedef StokesModelTraitsImp::AnalyticalForceType
          AnalyticalForceType;
