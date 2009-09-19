@@ -553,12 +553,14 @@ class SaddlepointInverseOperator
                 logInfo << "\t" << iteration << " SPcg-Iterationen  " << iteration << " Residuum:" << delta << std::endl;
         }
 
-        // u^0 = A^{-1} ( F - B * p^0 )
-        F.assign(rhs2);
-        tmp1.clear();
-        b_mat.apply( pressure, tmp1 );
-        F-=tmp1; // F ^= rhs2 - B * p
-        a_solver.apply(F,velocity);
+        if ( Parameters().getParam( "use_velocity_reconstruct", false ) {
+            // u^0 = A^{-1} ( F - B * p^0 )
+            F.assign(rhs2);
+            tmp1.clear();
+            b_mat.apply( pressure, tmp1 );
+            F-=tmp1; // F ^= rhs2 - B * p
+            a_solver.apply(F,velocity);
+        }
 
         logInfo << "End SaddlePointInverseOperator " << std::endl;
 
