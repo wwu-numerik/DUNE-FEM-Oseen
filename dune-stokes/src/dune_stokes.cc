@@ -463,12 +463,6 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     typedef Dune::AdaptiveLeafGridPart< GridType >
         GridPartType;
     static GridPartType gridPart( *gridPtr );
-    info.codim0 = gridPtr->size( 0 );
-    info.codim0 = gridPart.grid().size( 0 );
-    Dune::GridWidthProvider< GridType > gw ( *gridPtr );
-    double grid_width = gw.gridWidth();
-    infoStream << "  - max grid width: " << grid_width << std::endl;
-    info.grid_width = grid_width;
 
     /* ********************************************************************** *
      * initialize problem                                                     *
@@ -539,8 +533,13 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     // create Adaptation Manager
     static VelocityAdaptationManagerType adaptManagerVelocity( gridPart.grid(), rpVelocity );
 	adaptManagerVelocity.adapt();
-	computedSolutions.discreteVelocity().clear();
-	
+
+	info.codim0 = gridPtr->size( 0 );
+    info.codim0 = gridPart.grid().size( 0 );
+    Dune::GridWidthProvider< GridType > gw ( *gridPtr );
+    double grid_width = gw.gridWidth();
+    infoStream << "  - max grid width: " << grid_width << std::endl;
+    info.grid_width = grid_width;
 										
      typedef StokesModelTraitsImp::AnalyticalForceType
          AnalyticalForceType;
@@ -575,7 +574,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
                                 discreteStokesFunctionSpaceWrapper );
 
     profiler().StartTiming( "Pass -- APPLY" );
-    stokesPass.apply( initArgToPass, computedSolutions );
+    stokesPass.apply( computedSolutions, computedSolutions );
     profiler().StopTiming( "Pass -- APPLY" );
     info.run_time = profiler().GetTiming( "Pass -- APPLY" );
     stokesPass.getRuninfo( info );
