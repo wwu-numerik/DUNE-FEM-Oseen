@@ -376,6 +376,7 @@ class SaddlepointInverseOperator
         const double inner_absLimit = Parameters().getParam( "inner_absLimit", 1e-8 );
         const int solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
         const int maxIter = Parameters().getParam( "maxIter", 500 );
+        const bool use_velocity_reconstruct = Parameters().getParam( "use_velocity_reconstruct", true );
 
 #ifdef USE_BFG_CG_SCHEME
         const double tau = Parameters().getParam( "bfg-tau", 0.1 );
@@ -538,8 +539,10 @@ class SaddlepointInverseOperator
 
             // p_{m+1} = p_m - ( rho_m * d_m )
             pressure.addScaled( d, -rho );
-            // u_{m+1} = u_m + ( rho_m * xi_m )
-            velocity.addScaled( xi, +rho );
+            if ( !use_velocity_reconstruct ) {
+                // u_{m+1} = u_m + ( rho_m * xi_m )
+                velocity.addScaled( xi, +rho );
+            }
             // r_{m+1} = r_m - rho_m * h_m
             residuum.addScaled( h, -rho );
 
@@ -553,7 +556,7 @@ class SaddlepointInverseOperator
                 logInfo << "\t" << iteration << " SPcg-Iterationen  " << iteration << " Residuum:" << delta << std::endl;
         }
 
-        if ( Parameters().getParam( "use_velocity_reconstruct", false ) ) {
+        if ( use_velocity_reconstruct ) {
             // u^0 = A^{-1} ( F - B * p^0 )
             F.assign(rhs2);
             tmp1.clear();
