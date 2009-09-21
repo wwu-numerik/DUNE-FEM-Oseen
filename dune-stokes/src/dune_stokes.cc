@@ -531,9 +531,9 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     static VelocityAdaptationManagerType adaptManagerVelocity( gridPart.grid(), rpVelocity );
 	adaptManagerVelocity.adapt();
 
-	if ( Parameters().getParam( "clear_u:" , true ) )
+	if ( Parameters().getParam( "clear_u" , true ) )
         computedSolutions.discreteVelocity().clear();
-    if ( Parameters().getParam( "clear_p:" , true ) )
+    if ( Parameters().getParam( "clear_p" , true ) )
         computedSolutions.discretePressure().clear();
 
 	info.codim0 = gridPtr->size( 0 );
