@@ -7,6 +7,8 @@
 #define DISCRETESTOKESFUNCTIONSPACEWRAPPER_HH_INCLUDED
 
 #include <dune/fem/space/common/discretefunctionspace.hh>
+#include <dune/fem/space/dgspace/dgadaptmanager.hh>
+#include <dune/fem/space/common/restrictprolonginterface.hh>
 
 namespace Dune
 {
@@ -415,6 +417,7 @@ class DiscreteStokesFunctionWrapperTraits
         typedef DiscretePressureFunctionImp
             DiscretePressureFunctionType;
 
+
 }; // end of DiscreteStokesFunctionWrapperTraits
 
 /**
@@ -449,6 +452,26 @@ class DiscreteStokesFunctionWrapper
         typedef typename DiscreteVelocityFunctionType::RangeFieldType
             RangeFieldType;
 
+//the adaption manager, etc. is not really tested for all gridparts/spaces so we need to be able to disable it
+#if ENABLE_ADAPTIVE
+    protected:
+		typedef typename DiscreteFunctionSpaceType::GridType
+			GridType;
+
+		typedef Dune::RestrictProlongDefault< DiscretePressureFunctionType >
+			RestrictProlongPressureType;
+		typedef Dune::AdaptationManager< GridType, RestrictProlongPressureType >
+			PressureAdaptationManagerType;
+
+		typedef Dune::RestrictProlongDefault< DiscreteVelocityFunctionType >
+			RestrictProlongVelocityType;
+		typedef Dune::AdaptationManager< GridType, RestrictProlongVelocityType >
+			VelocityAdaptationManagerType;
+
+    public:
+#endif
+
+
         /**
          *  \brief  constructor
          *  \todo   doc
@@ -458,12 +481,18 @@ class DiscreteStokesFunctionWrapper
             : space_( space ),
             velocity_( name + std::string("_velocity"), space.discreteVelocitySpace() ),
             pressure_( name + std::string("_pressure"), space.discretePressureSpace() )
+#if ENABLE_ADAPTIVE
+			,rpVelocity_( velocity_ ),
+			adaptManagerVelocity_( space.grid(), rpVelocity_ ),
+			rpPressure_( pressure_ ),
+			adaptManagerPressure_( space.grid(), rpPressure_ )
+#endif
         {}
 
         /**
          *  \brief      constructor
          *
-         *              wrappes existing velocity and pressure
+         *              wraps existing velocity and pressure
          *  \attention  by copying
          **/
         DiscreteStokesFunctionWrapper(  DiscreteFunctionSpaceType& space,
@@ -472,6 +501,12 @@ class DiscreteStokesFunctionWrapper
             : space_( space ),
             velocity_( velocity ),
             pressure_( pressure )
+#if ENABLE_ADAPTIVE
+			,rpVelocity_( velocity_ ),
+			adaptManagerVelocity_( space.grid(), rpVelocity_ ),
+			rpPressure_( pressure_ ),
+			adaptManagerPressure_( space.grid(), rpPressure_ )
+#endif
         {}
 
         /**
@@ -517,7 +552,7 @@ class DiscreteStokesFunctionWrapper
          *  \brief  obtain the name of the discrete function
          *  \todo   doc
          **/
-        inline const std::string &name() const
+        inline const std::string& name() const
         {
             return velocity_.name();
         }
@@ -595,12 +630,31 @@ class DiscreteStokesFunctionWrapper
             return *this;
         }
 
+		/**
+         *  \brief  discreteFunction/grid adaption
+         *  this will both refine/coarsen all marked grid entities and adapt both member functions to that new grid layout
+         **/
+        void adapt()
+        {
+            adaptManagerVelocity_.adapt();
+			adaptManagerPressure_.adapt();
+        }
+
+
 
     private:
 
         const DiscreteFunctionSpaceType& space_;
         DiscreteVelocityFunctionType velocity_;
         DiscretePressureFunctionType pressure_;
+
+#if ENABLE_ADAPTIVE
+		RestrictProlongPressureType rpPressure_;
+		PressureAdaptationManagerType adaptManagerPressure_;
+
+		RestrictProlongVelocityType rpVelocity_;
+		VelocityAdaptationManagerType adaptManagerVelocity_;
+#endif
 
 }; // end of DiscreteStokesFunctionWrapper
 

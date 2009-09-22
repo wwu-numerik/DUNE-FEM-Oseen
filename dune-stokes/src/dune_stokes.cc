@@ -8,6 +8,11 @@
 #include "config.h"
 #endif
 
+//the adaption manager might be troublesome with certain gridparts/spaces, so we needed a easy way to disable it
+#ifndef ENABLE_ADAPTIVE
+    #define ENABLE_ADAPTIVE 1
+#endif
+
 #if defined(UGGRID) && defined(DEBUG)
     #warning ("UGGRID in debug mode is likely to produce a segfault")
 #endif
@@ -35,8 +40,6 @@
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
 
 #include <dune/fem/solver/oemsolver/oemsolver.hh>
-#include <dune/fem/space/dgspace/dgadaptmanager.hh>
-#include <dune/fem/space/common/restrictprolonginterface.hh>
 #include <dune/fem/space/dgspace.hh>
 #include <dune/fem/space/combinedspace.hh>
 #include <dune/fem/space/dgspace/dgadaptiveleafgridpart.hh>
@@ -508,28 +511,9 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
 	Dune::Estimator<DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType>
 		estimator ( computedSolutions.discretePressure() );
-	//if ( refine_level_factor != 0 )
-		estimator.mark( 0.0 /*dummy*/ );
+	estimator.mark( 0.0 /*dummy*/ );
 
-	typedef Dune::RestrictProlongDefault< DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType >
-		RestrictProlongPressureType;
-	typedef Dune::AdaptationManager< GridType, RestrictProlongPressureType >
-		PressureAdaptationManagerType;
-	    // create Restriction and Prolongation Operator
-    static RestrictProlongPressureType rpPressure( computedSolutions.discretePressure() );
-    // create Adaptation Manager
-    static PressureAdaptationManagerType adaptManagerPressure( gridPart.grid(), rpPressure );
-	adaptManagerPressure.adapt();
-
-	typedef Dune::RestrictProlongDefault< DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType >
-		RestrictProlongVelocityType;
-	typedef Dune::AdaptationManager< GridType, RestrictProlongVelocityType >
-		VelocityAdaptationManagerType;
-	    // create Restriction and Prolongation Operator
-    static RestrictProlongVelocityType rpVelocity( computedSolutions.discreteVelocity() );
-    // create Adaptation Manager
-    static VelocityAdaptationManagerType adaptManagerVelocity( gridPart.grid(), rpVelocity );
-	adaptManagerVelocity.adapt();
+	computedSolutions.adapt();
 
 	if ( Parameters().getParam( "clear_u" , true ) )
         computedSolutions.discreteVelocity().clear();
