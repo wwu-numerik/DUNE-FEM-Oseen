@@ -148,9 +148,11 @@ int main( int argc, char** argv )
         std::cerr << std::endl;
         return 2;
     }
+#if HAVE_GRAPE
     if ( !strcmp( argv[1], "-d" ) ) {
         return display( argc, argv );
     }
+#endif
     if ( !(  Parameters().ReadCommandLine( argc, argv ) ) ) {
         return 1;
     }
@@ -699,6 +701,7 @@ CoeffVector getC_power_Permutations(){
     return coeff_vector;
 }
 
+#if HAVE_GRAPE
 using namespace Dune;
 
 typedef Dune::AdaptiveLeafGridPart< GridType >
@@ -758,3 +761,4 @@ int display ( int argc, char** argv )
     return readParameterList(argc_,argv_);
 
 }
+#endif
