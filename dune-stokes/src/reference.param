@@ -11,7 +11,11 @@ logfile: dune_stokes
 fem.io.datadir: data
 #path (relative to binary) where logs and matlab files will be saved
 fem.io.logdir: log
-fem.io.outputformat: 1
+fem.io.outputformat: 0
+fem.io.datafileprefix: solu_
+fem.io.savestep: 0
+fem.io.savecount: 0
+
 
 per-run-log-target: 0
 per-run-output: 1
@@ -31,7 +35,7 @@ dgf_file_3d: grid_3d.dgf
 runtype: 5
 
 #in runtype 0 refine maxref + 1 - minref times
-minref: 0
+minref: 3
 maxref: 4
 
 #in runtype 1 vary

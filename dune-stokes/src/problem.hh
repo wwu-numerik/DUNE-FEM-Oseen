@@ -16,6 +16,26 @@
 #include "pressure.hh"
 #include "analyticaldata.hh"
 
+namespace StokesProblem {
+	#ifdef SIMPLE_PROBLEM
+		static const std::string ProblemIdentifier = "SIMPLE_PROBLEM";
+	#elif defined(CONSTANT_PROBLEM)
+		static const std::string ProblemIdentifier = "CONSTANT_PROBLEM";
+	#elif defined(ROTATE_PROBLEM)
+		static const std::string ProblemIdentifier = "ROTATE_PROBLEM";
+	#elif defined(MICRO_PROBLEM)
+		static const std::string ProblemIdentifier = "MICRO_PROBLEM";
+	#elif defined(MICRO_PROBLEM_WOIDS)
+		static const std::string ProblemIdentifier = "MICRO_PROBLEM_WOIDS";
+	#elif defined(GENRALIZED_STOKES_PROBLEM)
+		static const std::string ProblemIdentifier = "GENRALIZED_STOKES_PROBLEM";
+	#elif defined(COCKBURN_PROBLEM)
+		static const std::string ProblemIdentifier = "COCKBURN_PROBLEM";
+	#else
+		static const std::string ProblemIdentifier = "UNKNONW_PROBLEM";
+	#endif
+}
+
 /**
  *  \brief  a collection of some analytical functions solving a stokes problem
  *
@@ -42,7 +62,7 @@ class Problem
         typedef typename DiscreteFunctionSpaceWrapperType
                 ::DiscreteVelocityFunctionSpaceType
                 ::FunctionSpaceType
-        VelocityFunctionSpaceType;
+		  VelocityFunctionSpaceType;
 
         typedef Velocity< VelocityTraits < gridDim, VelocityFunctionSpaceType > >
             VelocityType;

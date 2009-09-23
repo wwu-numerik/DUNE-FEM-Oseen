@@ -110,6 +110,9 @@ void AccuracyRun( CollectiveCommunication& mpicomm );
 //! multiple runs with  set in [accuracy_start :  *=accuracy_factor : accuracy_stop] and everything else on default (only outer acc is varied)
 void AccuracyRunOuter( CollectiveCommunication& mpicomm );
 
+//! display last computed pressure/velo with grape
+int display( int argc, char** argv );
+
 //! brute force all permutations
 CoeffVector getAll_Permutations();
 //! get only permutations for C_11 and C_12
@@ -140,10 +143,16 @@ int main( int argc, char** argv )
     if ( argc < 2 ) {
         std::cerr << "\nUsage: " << argv[0] << " parameterfile \n" << "\n\t --- OR --- \n";
         std::cerr << "\nUsage: " << argv[0] << " paramfile:"<<"file" << " more-opts:val ..." << std::endl;
+        std::cerr << "\nUsage: " << argv[0] << " -d paramfile "<< "\n\t(for displaying solutions in grape) "<< std::endl;
         Parameters().PrintParameterSpecs( std::cerr );
         std::cerr << std::endl;
         return 2;
     }
+#if HAVE_GRAPE
+    if ( !strcmp( argv[1], "-d" ) ) {
+        return display( argc, argv );
+    }
+#endif
     if ( !(  Parameters().ReadCommandLine( argc, argv ) ) ) {
         return 1;
     }
@@ -585,6 +594,8 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     info.inner_solver_accuracy = Parameters().getParam( "inner_absLimit", 1e-4 );
     info.bfg_tau = Parameters().getParam( "bfg-tau", 0.1 );
 
+	info.problemIdentifier = StokesProblem::ProblemIdentifier;
+
     profiler().StopTiming( "Problem/Postprocessing" );
     profiler().StopTiming( "SingleRun" );
 
@@ -689,3 +700,65 @@ CoeffVector getC_power_Permutations(){
     }
     return coeff_vector;
 }
+
+#if HAVE_GRAPE
+using namespace Dune;
+
+typedef Dune::AdaptiveLeafGridPart< GridType >
+        GridPartType;
+    const int gridDim = GridType::dimensionworld;
+    const int polOrder = POLORDER;
+
+    typedef Dune::DiscreteStokesModelDefaultTraits<
+                GridPartType,
+                Force,
+                DirichletData,
+                gridDim,
+                polOrder,
+                VELOCITY_POLORDER,
+                PRESSURE_POLORDER >
+    StokesModelTraitsImp;
+
+
+typedef Dune::Tuple< StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType*, StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType* >
+				IOTupleType;
+
+typedef IOTupleType GR_InputType;
+
+template <class GrapeDispType,
+          class GR_GridType,
+          class DestinationType>
+void postProcessing(const GrapeDispType& disp,
+                    const GR_GridType& grid,
+                    const double time,
+                    const double timestep,
+                    const DestinationType& Uh)
+{
+}
+
+///begin grape
+// include grape visualization
+#include <dune/grid/io/visual/grapedatadisplay.hh>
+#include <dune/grid/io/visual/combinedgrapedisplay.hh>
+
+// include data reading
+#include <dune/fem/io/visual/grape/datadisp/printhelp.cc>
+#include <dune/fem/io/visual/grape/datadisp/readiotupledata.cc>
+#include <dune/fem/io/visual/grape/datadisp/readioparams.cc>
+#include <dune/fem/io/parameter.hh>
+#include <dune/fem/function/common/discretefunctionadapter.hh>
+///end grape
+
+int display ( int argc, char** argv )
+{
+//    printf("usage: %s paramfile:paramfile <i_start> <i_end>", funcName);
+    int argc_ = 4;
+    char buffer [50];
+
+    sprintf (buffer, "paramfile:%s", argv[2] );
+    char* argv_[4] = { argv[0], buffer,  "0", "0" };
+    Parameter::append(argc_,argv_);
+    return readParameterList(argc_,argv_);
+
+}
+#endif

@@ -357,6 +357,24 @@ public:
                             const std::string& destPath,
                             const std::string& prefix)
   {
+    {
+      std::string filename = Parameter::getValue<std::string >( std::string ("dgf_file_2d") );
+
+
+        std::string destFilename(destPath);
+      destFilename += "/";
+      destFilename += prefix;
+      destFilename += "_grid.macro";
+
+      std::string cmd("cp -f ");
+      cmd += filename; cmd += " ";
+      cmd += destFilename;
+
+      // copy file to actual path
+      std::cout << cmd << "\n" ;
+      system(cmd.c_str());
+    }
+
     // do nothing for unstructured grids
     if( Capabilities::IsUnstructured<GridImp>::v ) return;
 
@@ -373,7 +391,7 @@ public:
       destFilename += prefix;
       destFilename += "_grid.macro";
 
-      std::string cmd("cp ");
+      std::string cmd("cp -f ");
       cmd += filename; cmd += " ";
       cmd += destFilename;
 
