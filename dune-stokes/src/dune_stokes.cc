@@ -507,7 +507,8 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
     static DiscreteStokesFunctionWrapperType
         computedSolutions(  "computed_",
-                                        discreteStokesFunctionSpaceWrapper );
+                            discreteStokesFunctionSpaceWrapper,
+                            gridPart );
 
 	Dune::Estimator<DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType>
 		estimator ( computedSolutions.discretePressure() );
@@ -545,7 +546,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
      * ********************************************************************** */
     infoStream << "\n- starting pass" << std::endl;
 
-	DiscreteStokesFunctionWrapperType initArgToPass( "init_", discreteStokesFunctionSpaceWrapper );
+	DiscreteStokesFunctionWrapperType initArgToPass( "init_", discreteStokesFunctionSpaceWrapper, gridPart );
 
     typedef Dune::StartPass< DiscreteStokesFunctionWrapperType, -1 >
         StartPassType;
