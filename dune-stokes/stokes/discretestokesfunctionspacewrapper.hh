@@ -443,13 +443,22 @@ class DiscreteStokesFunctionWrapperTraits
 		typedef Dune::AdaptationManager< GridType, RestrictProlongVelocityType >
 			VelocityAdaptationManagerType;
 
+        typedef Dune::RestrictProlongPair<RestrictProlongVelocityType, RestrictProlongPressureType >
+            RestrictProlongPairType;
+
+        typedef Dune::AdaptationManager< GridType, RestrictProlongPairType >
+			AdaptationManagerType;
+
         public:
             DiscreteStokesFunctionWrapperAdaptionManager (  GridType& grid,
                                                             DiscreteStokesFunctionWrapperImp& functionWrapper )
-                :   rpVelocity_             ( functionWrapper.discreteVelocity() ),
-                    adaptManagerVelocity_   ( grid, rpVelocity_ ),
-                    rpPressure_             ( functionWrapper.discretePressure() ),
-                    adaptManagerPressure_   ( grid, rpPressure_ )
+                :
+                rpVelocity_             ( functionWrapper.discreteVelocity() ),
+//                adaptManagerVelocity_   ( grid, rpVelocity_ ),
+                rpPressure_             ( functionWrapper.discretePressure() ),
+//                adaptManagerPressure_   ( grid, rpPressure_ ),
+                restrictPair_( rpVelocity_, rpPressure_ ),
+                adaptManager_( grid, restrictPair_ )
             {
 
             }
@@ -459,18 +468,20 @@ class DiscreteStokesFunctionWrapperTraits
 
             void adapt()
             {
-                adaptManagerPressure_.adapt();
-                adaptManagerVelocity_.adapt();
+               adaptManager_.adapt();
             }
 
 
         protected:
 
             RestrictProlongVelocityType rpVelocity_;
-            VelocityAdaptationManagerType adaptManagerVelocity_;
+//            VelocityAdaptationManagerType adaptManagerVelocity_;
 
             RestrictProlongPressureType rpPressure_;
-            PressureAdaptationManagerType adaptManagerPressure_;
+//            PressureAdaptationManagerType adaptManagerPressure_;
+//
+            RestrictProlongPairType restrictPair_;
+            AdaptationManagerType adaptManager_;
 
  };
 
