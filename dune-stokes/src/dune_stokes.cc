@@ -798,12 +798,10 @@ void postProcessing(const GrapeDispType& disp,
 int display ( int argc, char** argv )
 {
 //    printf("usage: %s paramfile:paramfile <i_start> <i_end>", funcName);
-    int argc_ = 4;
-    char buffer [50];
+    int argc_ = 5;
 
-    sprintf (buffer, "paramfile:%s", argv[2] );
-    char* argv_[4] = { argv[0], buffer,  "0", "0" };
-    Parameter::append(argc_,argv_);
-    return readParameterList(argc_,argv_);
+    char* argv_[5] = { argv[0], "0", "0", "-replay", "manager.replay" };
+    Parameter::append( argv[2] );
+    return readParameterList( argc_, argv_ );
 
 }
