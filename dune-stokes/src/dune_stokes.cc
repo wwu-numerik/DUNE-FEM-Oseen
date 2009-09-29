@@ -13,8 +13,11 @@
     #define ENABLE_ADAPTIVE 1
 #endif
 
-#if defined(UGGRID) && defined(DEBUG)
-    #warning ("UGGRID in debug mode is likely to produce a segfault")
+#if defined(UGGRID)
+    #define OLD_DUNE_GRID_VERSION
+    #if defined(DEBUG)
+        #warning ("UGGRID in debug mode is likely to produce a segfault")
+    #endif
 #endif
 
 #if ! defined(POLORDER)
