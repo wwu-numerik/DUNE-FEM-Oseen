@@ -458,8 +458,12 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     infoStream << "\n- initialising grid" << std::endl;
     const int gridDim = GridType::dimensionworld;
     static Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename( gridDim ) );
-    const int refine_level = refine_level_factor * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
-//     gridPtr->globalRefine( refine_level_factor != 0 ? Dune::DGFGridInfo< GridType >::refineStepsForHalf() : 0 );
+    static bool firstRun = true;
+    int refine_level = ( refine_level_factor  ) * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
+    if ( firstRun && refine_level_factor > 1 ) { //since we have a couple of local statics, only do this once, further refinement done in estimator
+        refine_level = ( refine_level_factor -1 ) * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
+        gridPtr->globalRefine( refine_level );// -1 since we refine once more via the estimator currently
+    }
 
     typedef Dune::AdaptiveLeafGridPart< GridType >
         GridPartType;
@@ -510,16 +514,18 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
                             discreteStokesFunctionSpaceWrapper,
                             gridPart );
 
-	Dune::Estimator<DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType>
-		estimator ( computedSolutions.discretePressure() );
-	estimator.mark( 0.0 /*dummy*/ );
+    if ( !firstRun ) {
+        Dune::Estimator<DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType>
+            estimator ( computedSolutions.discretePressure() );
+        estimator.mark( 0.0 /*dummy*/ );
 
-	computedSolutions.adapt();
+        computedSolutions.adapt();
 
-	if ( Parameters().getParam( "clear_u" , true ) )
-        computedSolutions.discreteVelocity().clear();
-    if ( Parameters().getParam( "clear_p" , true ) )
-        computedSolutions.discretePressure().clear();
+        if ( Parameters().getParam( "clear_u" , true ) )
+            computedSolutions.discreteVelocity().clear();
+        if ( Parameters().getParam( "clear_p" , true ) )
+            computedSolutions.discretePressure().clear();
+    }
 
 	info.codim0 = gridPtr->size( 0 );
     Dune::GridWidthProvider< GridType > gw ( *gridPtr );
@@ -611,6 +617,8 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
     profiler().StopTiming( "Problem/Postprocessing" );
     profiler().StopTiming( "SingleRun" );
+
+    firstRun = false;
 
     return info;
 }

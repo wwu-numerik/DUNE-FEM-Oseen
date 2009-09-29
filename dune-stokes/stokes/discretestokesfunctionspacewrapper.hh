@@ -454,9 +454,7 @@ class DiscreteStokesFunctionWrapperTraits
                                                             DiscreteStokesFunctionWrapperImp& functionWrapper )
                 :
                 rpVelocity_             ( functionWrapper.discreteVelocity() ),
-//                adaptManagerVelocity_   ( grid, rpVelocity_ ),
                 rpPressure_             ( functionWrapper.discretePressure() ),
-//                adaptManagerPressure_   ( grid, rpPressure_ ),
                 restrictPair_( rpVelocity_, rpPressure_ ),
                 adaptManager_( grid, restrictPair_ )
             {
@@ -475,11 +473,7 @@ class DiscreteStokesFunctionWrapperTraits
         protected:
 
             RestrictProlongVelocityType rpVelocity_;
-//            VelocityAdaptationManagerType adaptManagerVelocity_;
-
             RestrictProlongPressureType rpPressure_;
-//            PressureAdaptationManagerType adaptManagerPressure_;
-//
             RestrictProlongPairType restrictPair_;
             AdaptationManagerType adaptManager_;
 
