@@ -126,6 +126,9 @@ CoeffVector getC_Permutations();
 //! get only the permutations in power for C_11 and C_12
 CoeffVector getC_power_Permutations();
 
+//! output alert for neg. EOC
+void eocCheck( const RunInfoVector& runInfos );
+
 /**
  *  \brief  main function
  *
@@ -252,6 +255,8 @@ void RefineRun( CollectiveCommunication& mpicomm )
         profiler().NextRun(); //finish this run
     }
     profiler().Output( mpicomm, run_infos );
+
+	eocCheck( run_infos );
 }
 
 void AccuracyRun( CollectiveCommunication& mpicomm )
@@ -621,6 +626,27 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     firstRun = false;
 
     return info;
+}
+
+void eocCheck( const RunInfoVector& runInfos )
+{
+	bool ups = false;
+	RunInfoVector::const_iterator it = runInfos.begin();
+	RunInfo last = *it;
+	++it;
+	for ( ; it != runInfos.end(); ++it ) {
+		ups = ( last.L2Errors[0] < it->L2Errors[0]
+			|| last.L2Errors[1] < it->L2Errors[1] );
+		last = *it;
+	}
+	if ( ups ) {
+		Logger().Err() 	<< 	"----------------------------------------------------------\n"
+						<<	"-                                                        -\n"
+						<<	"-                  negative EOC                          -\n"
+						<<	"-                                                        -\n"
+						<< 	"----------------------------------------------------------\n"
+						<< std::endl;
+	}
 }
 
 CoeffVector getAll_Permutations() {
