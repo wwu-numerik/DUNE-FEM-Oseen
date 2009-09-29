@@ -560,6 +560,127 @@ public:
             }
         }
 
+        int computePermabilityTensor( const std::string filename )
+        {
+            Logging::LogStream& info = Logger().Info();
+            Logging::LogStream& debug = Logger().Dbg();
+            Logging::LogStream& error = Logger().Err();
+            info.Flush();
+            debug.Flush();
+            error.Flush();
+
+            int errorState( 0 );
+
+            std::string gridType( "" );
+            int refineLevel( 0 );
+
+            bool gridTypeRead( false );
+            bool refineLevelRead( false );
+
+            std::ifstream readFile( std::string( filename + std::string( "_X.dgf" ) ).c_str() );
+
+            if ( readFile.is_open() ) {
+                while( !( readFile.eof() ) ) {
+                    if ( !( gridTypeRead || refineLevelRead ) ) {
+                        std::string line( "" );
+                        std::getline( readFile, line );
+                        if ( line.size() ) {
+                            if ( line.substr( 0, 6 ) == "# ddf_" ) {
+                                unsigned int key_start = 6;
+                                unsigned int key_end = key_start;
+                                for ( ; key_end < line.size(); ++key_end ) {
+                                    const char &c = line[key_end];
+                                    if( (c == ' ') || (c == '\t') || (c == ':') ) {
+                                        break;
+                                    }
+                                }
+                                std::string key = line.substr( key_start, key_end - key_start );
+                                unsigned int value_start = key_end;
+                                for( ; value_start < line.size() ; ++value_start ) {
+                                    if( line[value_start] == ':' ) {
+                                        break;
+                                    }
+                                }
+                                ++value_start;
+                                for( ; value_start < line.size(); ++value_start ) {
+                                    if( ( line[value_start] != ' ' ) && ( line[value_start] != '\t' ) ) {
+                                        break;
+                                    }
+                                }
+                                if( value_start >= line.size() ) {
+                                    ++errorState;
+                                }
+                                std::string value = line.substr( value_start, line.size() - value_start );
+                                if ( key == "gridtype" ) {
+                                    gridType = value;
+                                    gridTypeRead = true;
+                                }
+                                else if ( key == "refine_level" ) {
+                                    refineLevel = Stuff::fromString< int >( value );
+                                    refineLevelRead = true;
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        break;
+                    }
+                }
+            }
+            else {
+                ++errorState;
+                error << "Error: could not open " << std::string( filename + std::string( ".dgf" ) ) << "!" << std::endl;
+                return errorState;
+            }
+
+            debug << outputPrefix_ << "RunManager: Loading local solutions..." << std::endl;
+
+            GridPointerType gridPointer( std::string( filename + std::string( "_X.dgf" ) ) );
+            gridPointer->globalRefine( refineLevel );
+            GridPartType gridPart( *gridPointer );
+
+            DiscreteFunctionSpaceType velocitySpace( gridPart );
+            DiscreteFunctionType velocity_X( "velocity_X", velocitySpace );
+            bool readFromAscii = velocity_X.read_ascii( std::string( filename + std::string( "_X.ddf" ) ) );
+            if ( readFromAscii ) {
+
+                VTKWriterType vtkWriter( gridPart );
+
+                std::string outputFilename = std::string( "data/loaded_velocity_X" );
+                vtkWriter.addVectorVertexData( velocity_X );
+                vtkWriter.write( outputFilename.c_str() );
+                vtkWriter.clear();
+
+                info << outputPrefix_ << "RunManager: First local solution loaded." << std::endl;
+            }
+            else {
+                ++errorState;
+                error << "Error: could not read discrete function from  " << std::string( filename + std::string( "_X.ddf" ) ) << "!" << std::endl;
+                return errorState;
+            }
+
+            DiscreteFunctionType velocity_Y( "velocity_Y", velocitySpace );
+            readFromAscii = velocity_Y.read_ascii( std::string( filename + std::string( "_Y.ddf" ) ) );
+            if ( readFromAscii ) {
+
+                VTKWriterType vtkWriter( gridPart );
+
+                std::string outputFilename = std::string( "data/loaded_velocity_Y" );
+                vtkWriter.addVectorVertexData( velocity_Y );
+                vtkWriter.write( outputFilename.c_str() );
+                vtkWriter.clear();
+
+                info << outputPrefix_ << "RunManager: First local solution loaded." << std::endl;
+            }
+            else {
+                ++errorState;
+                error << "Error: could not read discrete function from  " << std::string( filename + std::string( "_Y.ddf" ) ) << "!" << std::endl;
+                return errorState;
+            }
+
+
+        }
+
     private:
 
         int referenceSolutionRefineLevel_;

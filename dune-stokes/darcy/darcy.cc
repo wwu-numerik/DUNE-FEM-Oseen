@@ -143,7 +143,8 @@ int main( int argc, char** argv )
 //            }
 //            runManager.loadReferenceSolution( Dune::Parameter::getValue( "micro_reference_solution_save_filename", std::string( "micro_reference_velocity" ) ) );
 //            runManager.loadReferenceSolution( Dune::Parameter::getValue( "micro_reference_solution_load_filename", std::string( "micro_reference_velocity" ) ) );
-            runManager.generateReferenceSolution( Dune::Parameter::getValue( "micro_reference_solution_refine", 0 ) );
+            runManager.computePermabilityTensor( Dune::Parameter::getValue( "micro_reference_solution_load_filename", std::string( "micro_reference_velocity" ) ) );
+//            runManager.generateReferenceSolution( Dune::Parameter::getValue( "micro_reference_solution_refine", 0 ) );
 
 //            singleRun( refineLevel );
 
