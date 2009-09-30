@@ -160,7 +160,7 @@ int main( int argc, char** argv )
         std::cerr << std::endl;
         return 2;
     }
-    if ( !strcmp( argv[1], "-d" ) ) {
+    if ( !strcmp( argv[1], "-d" ) || !strcmp( argv[1], "-r" ) ) {
         return display( argc, argv );
     }
     if ( !(  Parameters().ReadCommandLine( argc, argv ) ) ) {
@@ -801,10 +801,18 @@ void postProcessing(const GrapeDispType& disp,
 int display ( int argc, char** argv )
 {
 //    printf("usage: %s paramfile:paramfile <i_start> <i_end>", funcName);
-    int argc_ = 5;
-
-    char* argv_[5] = { argv[0], "0", "0", "-replay", "manager.replay" };
     Parameter::append( argv[2] );
-    return readParameterList( argc_, argv_ );
 
+    if ( !strcmp( argv[1], "-d" ) ) {
+        int argc_ = 3;
+        char* argv_[3] = { argv[0], "0", "0" };
+        return readParameterList( argc_, argv_ );
+    }
+    else if ( !strcmp( argv[1], "-r" ) ) {
+        int argc_ = 5;
+        char* argv_[5] = { argv[0], "0", "0", "-replay", "manager.replay" };
+        return readParameterList( argc_, argv_ );
+    }
+
+    Logger().Err() << "BLAHLABLSBN";
 }
