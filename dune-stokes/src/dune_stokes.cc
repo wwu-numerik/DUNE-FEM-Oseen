@@ -628,6 +628,36 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     profiler().StopTiming( "Problem/Postprocessing" );
     profiler().StopTiming( "SingleRun" );
 
+    /*
+     * save solutions
+     */
+    Dune::VTKIO< GridPartType > vtkWriter( gridPart );
+    std::string vtkWriterFilename = "";
+
+    Stuff::saveDiscreteFunction(    computedSolutions.discreteVelocity(),
+                                    info.gridname,
+                                    refine_level,
+                                    Parameters().DgfFilename( gridDim ),
+                                    std::string( "data/saved_velocity_ref_" ) + Stuff::toString( refine_level ),
+                                    Logger().Err() );
+
+    vtkWriterFilename = std::string( "data/saved_velocity_ref_" ) + Stuff::toString( refine_level );
+    vtkWriter.addVectorVertexData( computedSolutions.discreteVelocity() );
+    vtkWriter.write( vtkWriterFilename.c_str() );
+    vtkWriter.clear();
+
+    Stuff::saveDiscreteFunction(    computedSolutions.discretePressure(),
+                                    info.gridname,
+                                    refine_level,
+                                    Parameters().DgfFilename( gridDim ),
+                                    std::string( "data/saved_pressure_ref_" ) + Stuff::toString( refine_level ),
+                                    Logger().Err() );
+
+    vtkWriterFilename = std::string( "data/saved_pressure_ref_" ) + Stuff::toString( refine_level );
+    vtkWriter.addVertexData( computedSolutions.discretePressure() );
+    vtkWriter.write( vtkWriterFilename.c_str() );
+    vtkWriter.clear();
+
     firstRun = false;
 
     return info;
