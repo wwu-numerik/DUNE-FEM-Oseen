@@ -260,6 +260,10 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 #elif defined(GENRALIZED_STOKES_PROBLEM)
                 assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
 #elif defined(AORTA_PROBLEM)
+
+#if defined(UGGRID)
+    #error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
+#endif
                 switch ( id ) {
                     case 1: {
                         ret[0] = 0.0;//arg[1];
