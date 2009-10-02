@@ -525,9 +525,11 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     if ( !firstRun ) {
         Dune::Estimator<DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType>
             estimator ( computedSolutions.discretePressure() );
-        estimator.mark( 0.0 /*dummy*/ );
 
-        computedSolutions.adapt();
+        for ( int i = 0; i < Dune::DGFGridInfo< GridType >::refineStepsForHalf(); ++i ) {
+            estimator.mark( 0.0 /*dummy*/ );
+            computedSolutions.adapt();
+        }
 
         if ( Parameters().getParam( "clear_u" , true ) )
             computedSolutions.discreteVelocity().clear();
