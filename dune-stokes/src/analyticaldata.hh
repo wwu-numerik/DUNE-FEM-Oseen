@@ -103,6 +103,10 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 assert( !"MICRO_PROBLEM_WOIDS not implemented in 3D!" );
 #elif defined(GENRALIZED_STOKES_PROBLEM)
                 assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
+#elif defined(AORTA_PROBLEM)
+                ret[0] = 0.0;//arg[1];
+                ret[1] = 0.0;//-1.0;//arg[0];
+                ret[2] = 0.0;
 #else
                 assert( !"force not implemented in 3D!" );
 #endif
@@ -305,6 +309,35 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 assert( !"MICRO_PROBLEM_WOIDS not implemented in 3D!" );
 #elif defined(GENRALIZED_STOKES_PROBLEM)
                 assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
+#elif defined(AORTA_PROBLEM)
+                std::cout << "ID " << id << std::endl;
+                switch ( id ) {
+                    case 1: {
+                        ret[0] = 0.0;//arg[1];
+                        ret[1] = 0.0;//-1.0;//arg[0];
+                        ret[2] = 0.0;
+                        return;
+                    }
+                    case 2: {
+                        ret[0] = 1000.0;//arg[1];
+                        ret[1] = 1000.0;//-1.0;//arg[0];
+                        ret[2] = 1000.0;
+                        return;
+                    }
+                    case 6:
+                    case 5:
+                    case 4:
+                    case 3: {
+                        ret[0] = 1000.0;//arg[1];
+                        ret[1] = 1000.0;//-1.0;//arg[0];
+                        ret[2] = 1000.0;
+                        std::cout << 'k' ;
+                        return;
+                    }
+                    default:
+                        assert( false );
+                        return;
+                }
 #else
                 assert( !"dirichlet data not implemented in 3D!" );
 #endif
@@ -321,7 +354,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
           * \param  ret
           *         value of dirichlet boundary data at given point
           **/
-        inline void evaluate( const DomainType& arg, RangeType& ret ) const {}
+        inline void evaluate( const DomainType& arg, RangeType& ret ) const { }
 
     private:
         const int dim_;

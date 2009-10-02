@@ -31,6 +31,8 @@ namespace StokesProblem {
 		static const std::string ProblemIdentifier = "GENRALIZED-STOKES-PROBLEM";
 	#elif defined(COCKBURN_PROBLEM)
 		static const std::string ProblemIdentifier = "COCKBURN-PROBLEM";
+	#elif defined(AORTA_PROBLEM)
+		static const std::string ProblemIdentifier = "AORTA-PROBLEM";
 	#else
 		static const std::string ProblemIdentifier = "UNKNOWN-PROBLEM";
 	#endif
