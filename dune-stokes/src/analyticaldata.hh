@@ -260,7 +260,6 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 #elif defined(GENRALIZED_STOKES_PROBLEM)
                 assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
 #elif defined(AORTA_PROBLEM)
-                std::cout << "ID " << id << std::endl;
                 switch ( id ) {
                     case 1: {
                         ret[0] = 0.0;//arg[1];
@@ -281,7 +280,6 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                         ret[0] = 1000.0;//arg[1];
                         ret[1] = 1000.0;//-1.0;//arg[0];
                         ret[2] = 1000.0;
-                        std::cout << 'k' ;
                         return;
                     }
                     default:
