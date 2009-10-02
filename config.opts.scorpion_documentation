@@ -4,7 +4,7 @@ CONFIGURE_FLAGS="CXX=g++ CC=gcc CXXFLAGS='-g' \
 	LDFLAGS=/usr/lib64/libgfortran.so.1.0.0 \
   --prefix=/data/dune_work/private/f_albr01/diplomarbeit_felix_rene \
   --with-metis=/share/dune/Modules/modules_$HOSTTYPE/metis \
-  --with-alugrid=/share/dune/Modules/modules_$HOSTTYPE/ALUGrid-1.1_Parallel \
+  --with-alugrid=/share/dune/modules/modules_x86_64/alugrid/alugrid-1.14$ \
   --with-alberta=/share/dune/Modules/modules_$HOSTTYPE/alberta \
   --with-ug=/share/dune/Modules/modules_$HOSTTYPE/ug \
   --x-includes=/usr/X11R6/include \

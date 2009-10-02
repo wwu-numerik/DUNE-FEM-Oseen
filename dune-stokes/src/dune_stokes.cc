@@ -8,8 +8,16 @@
 #include "config.h"
 #endif
 
-#if defined(UGGRID) && defined(DEBUG)
-    #warning ("UGGRID in debug mode is likely to produce a segfault")
+//the adaption manager might be troublesome with certain gridparts/spaces, so we needed a easy way to disable it
+#ifndef ENABLE_ADAPTIVE
+    #define ENABLE_ADAPTIVE 1
+#endif
+
+#if defined(UGGRID)
+    #define OLD_DUNE_GRID_VERSION
+    #if defined(DEBUG)
+        #warning ("UGGRID in debug mode is likely to produce a segfault")
+    #endif
 #endif
 
 #if ! defined(POLORDER)
@@ -58,6 +66,7 @@
 #include "velocity.hh"
 #include "pressure.hh"
 #include "problem.hh"
+#include "estimator.hh"
 
 #ifndef COMMIT
     #define COMMIT "undefined"
@@ -110,12 +119,18 @@ void AccuracyRun( CollectiveCommunication& mpicomm );
 //! multiple runs with  set in [accuracy_start :  *=accuracy_factor : accuracy_stop] and everything else on default (only outer acc is varied)
 void AccuracyRunOuter( CollectiveCommunication& mpicomm );
 
+//! display last computed pressure/velo with grape
+int display( int argc, char** argv );
+
 //! brute force all permutations
 CoeffVector getAll_Permutations();
 //! get only permutations for C_11 and C_12
 CoeffVector getC_Permutations();
 //! get only the permutations in power for C_11 and C_12
 CoeffVector getC_power_Permutations();
+
+//! output alert for neg. EOC
+void eocCheck( const RunInfoVector& runInfos );
 
 /**
  *  \brief  main function
@@ -140,9 +155,13 @@ int main( int argc, char** argv )
     if ( argc < 2 ) {
         std::cerr << "\nUsage: " << argv[0] << " parameterfile \n" << "\n\t --- OR --- \n";
         std::cerr << "\nUsage: " << argv[0] << " paramfile:"<<"file" << " more-opts:val ..." << std::endl;
+        std::cerr << "\nUsage: " << argv[0] << " -d paramfile "<< "\n\t(for displaying solutions in grape) "<< std::endl;
         Parameters().PrintParameterSpecs( std::cerr );
         std::cerr << std::endl;
         return 2;
+    }
+    if ( !strcmp( argv[1], "-d" ) || !strcmp( argv[1], "-r" ) ) {
+        return display( argc, argv );
     }
     if ( !(  Parameters().ReadCommandLine( argc, argv ) ) ) {
         return 1;
@@ -239,6 +258,8 @@ void RefineRun( CollectiveCommunication& mpicomm )
         profiler().NextRun(); //finish this run
     }
     profiler().Output( mpicomm, run_infos );
+
+	eocCheck( run_infos );
 }
 
 void AccuracyRun( CollectiveCommunication& mpicomm )
@@ -444,18 +465,17 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
      * ********************************************************************** */
     infoStream << "\n- initialising grid" << std::endl;
     const int gridDim = GridType::dimensionworld;
-    Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename( gridDim ) );
-    const int refine_level = refine_level_factor * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
-    gridPtr->globalRefine( refine_level );
+    static Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename( gridDim ) );
+    static bool firstRun = true;
+    int refine_level = ( refine_level_factor  ) * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
+    if ( firstRun && refine_level_factor > 1 ) { //since we have a couple of local statics, only do this once, further refinement done in estimator
+        refine_level = ( refine_level_factor -1 ) * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
+        gridPtr->globalRefine( refine_level );// -1 since we refine once more via the estimator currently
+    }
+
     typedef Dune::AdaptiveLeafGridPart< GridType >
         GridPartType;
-    GridPartType gridPart( *gridPtr );
-    info.codim0 = gridPtr->size( 0 );
-    info.codim0 = gridPart.grid().size( 0 );
-    Dune::GridWidthProvider< GridType > gw ( *gridPtr );
-    double grid_width = gw.gridWidth();
-    infoStream << "  - max grid width: " << grid_width << std::endl;
-    info.grid_width = grid_width;
+    static GridPartType gridPart( *gridPtr );
 
     /* ********************************************************************** *
      * initialize problem                                                     *
@@ -469,7 +489,6 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     const double alpha = Parameters().getParam( "alpha", 0.0 );
 
     // analytical data
-
 
     // model traits
     typedef Dune::DiscreteStokesModelDefaultTraits<
@@ -492,17 +511,35 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     typedef StokesModelTraitsImp::DiscreteStokesFunctionSpaceWrapperType
         DiscreteStokesFunctionSpaceWrapperType;
 
-    DiscreteStokesFunctionSpaceWrapperType
+    static DiscreteStokesFunctionSpaceWrapperType
         discreteStokesFunctionSpaceWrapper( gridPart );
 
     typedef StokesModelTraitsImp::DiscreteStokesFunctionWrapperType
         DiscreteStokesFunctionWrapperType;
 
-    DiscreteStokesFunctionWrapperType
+    static DiscreteStokesFunctionWrapperType
         computedSolutions(  "computed_",
-                                        discreteStokesFunctionSpaceWrapper );
+                            discreteStokesFunctionSpaceWrapper,
+                            gridPart );
 
-    DiscreteStokesFunctionWrapperType initArgToPass( "init_", discreteStokesFunctionSpaceWrapper );
+    if ( !firstRun ) {
+        Dune::Estimator<DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType>
+            estimator ( computedSolutions.discretePressure() );
+        estimator.mark( 0.0 /*dummy*/ );
+
+        computedSolutions.adapt();
+
+        if ( Parameters().getParam( "clear_u" , true ) )
+            computedSolutions.discreteVelocity().clear();
+        if ( Parameters().getParam( "clear_p" , true ) )
+            computedSolutions.discretePressure().clear();
+    }
+
+	info.codim0 = gridPtr->size( 0 );
+    Dune::GridWidthProvider< GridType > gw ( *gridPtr );
+    double grid_width = gw.gridWidth();
+    infoStream << "  - max grid width: " << grid_width << std::endl;
+    info.grid_width = grid_width;
 
      typedef StokesModelTraitsImp::AnalyticalForceType
          AnalyticalForceType;
@@ -523,6 +560,8 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
      * ********************************************************************** */
     infoStream << "\n- starting pass" << std::endl;
 
+	DiscreteStokesFunctionWrapperType initArgToPass( "init_", discreteStokesFunctionSpaceWrapper, gridPart );
+
     typedef Dune::StartPass< DiscreteStokesFunctionWrapperType, -1 >
         StartPassType;
     StartPassType startPass;
@@ -533,9 +572,6 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
                                 stokesModel,
                                 gridPart,
                                 discreteStokesFunctionSpaceWrapper );
-
-    computedSolutions.discretePressure().clear();
-    computedSolutions.discreteVelocity().clear();
 
     profiler().StartTiming( "Pass -- APPLY" );
     stokesPass.apply( initArgToPass, computedSolutions );
@@ -585,10 +621,35 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     info.inner_solver_accuracy = Parameters().getParam( "inner_absLimit", 1e-4 );
     info.bfg_tau = Parameters().getParam( "bfg-tau", 0.1 );
 
+	info.problemIdentifier = StokesProblem::ProblemIdentifier;
+
     profiler().StopTiming( "Problem/Postprocessing" );
     profiler().StopTiming( "SingleRun" );
 
+    firstRun = false;
+
     return info;
+}
+
+void eocCheck( const RunInfoVector& runInfos )
+{
+	bool ups = false;
+	RunInfoVector::const_iterator it = runInfos.begin();
+	RunInfo last = *it;
+	++it;
+	for ( ; it != runInfos.end(); ++it ) {
+		ups = ( last.L2Errors[0] < it->L2Errors[0]
+			|| last.L2Errors[1] < it->L2Errors[1] );
+		last = *it;
+	}
+	if ( ups ) {
+		Logger().Err() 	<< 	"----------------------------------------------------------\n"
+						<<	"-                                                        -\n"
+						<<	"-                  negative EOC                          -\n"
+						<<	"-                                                        -\n"
+						<< 	"----------------------------------------------------------\n"
+						<< std::endl;
+	}
 }
 
 CoeffVector getAll_Permutations() {
@@ -688,4 +749,70 @@ CoeffVector getC_power_Permutations(){
         }
     }
     return coeff_vector;
+}
+
+using namespace Dune;
+
+typedef Dune::AdaptiveLeafGridPart< GridType >
+        GridPartType;
+    const int gridDim = GridType::dimensionworld;
+    const int polOrder = POLORDER;
+
+    typedef Dune::DiscreteStokesModelDefaultTraits<
+                GridPartType,
+                Force,
+                DirichletData,
+                gridDim,
+                polOrder,
+                VELOCITY_POLORDER,
+                PRESSURE_POLORDER >
+    StokesModelTraitsImp;
+
+
+typedef Dune::Tuple< StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType*, StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType* >
+				IOTupleType;
+
+typedef IOTupleType GR_InputType;
+
+template <class GrapeDispType,
+          class GR_GridType,
+          class DestinationType>
+void postProcessing(const GrapeDispType& disp,
+                    const GR_GridType& grid,
+                    const double time,
+                    const double timestep,
+                    const DestinationType& Uh)
+{
+}
+
+///begin grape
+// include grape visualization
+#include <dune/grid/io/visual/grapedatadisplay.hh>
+#include <dune/grid/io/visual/combinedgrapedisplay.hh>
+
+// include data reading
+#include <dune/fem/io/visual/grape/datadisp/printhelp.cc>
+#include <dune/fem/io/visual/grape/datadisp/readiotupledata.cc>
+#include <dune/fem/io/visual/grape/datadisp/readioparams.cc>
+#include <dune/fem/io/parameter.hh>
+#include <dune/fem/function/common/discretefunctionadapter.hh>
+///end grape
+
+int display ( int argc, char** argv )
+{
+//    printf("usage: %s paramfile:paramfile <i_start> <i_end>", funcName);
+    Parameter::append( argv[2] );
+
+    if ( !strcmp( argv[1], "-d" ) ) {
+        int argc_ = 3;
+        char* argv_[3] = { argv[0], "0", "0" };
+        return readParameterList( argc_, argv_ );
+    }
+    else if ( !strcmp( argv[1], "-r" ) ) {
+        int argc_ = 5;
+        char* argv_[5] = { argv[0], "0", "0", "-replay", "manager.replay" };
+        return readParameterList( argc_, argv_ );
+    }
+
+    Logger().Err() << "BLAHLABLSBN";
 }

@@ -11,11 +11,7 @@ logfile: dune_stokes
 fem.io.datadir: data
 #path (relative to binary) where logs and matlab files will be saved
 fem.io.logdir: log
-fem.io.outputformat: 0
-fem.io.datafileprefix: solu_
-fem.io.savestep: 0
-fem.io.savecount: 0
-
+fem.io.outputformat: 1
 
 per-run-log-target: 0
 per-run-output: 1
@@ -35,7 +31,7 @@ dgf_file_3d: grid_3d.dgf
 runtype: 0
 
 #in runtype 0 refine maxref + 1 - minref times
-minref: 0
+minref: 4
 maxref: 4
 
 #in runtype 1 vary
@@ -57,9 +53,11 @@ accurracy_steps: 5
 
 #*********** end runtype specific parameters **************************************************
 
-viscosity: 1.0
-# if alpha != 0.0, isGeneralize() has to return true in DiscreteStokesModelDefault
+#currently ineffective
+viscosity: 1
+#scalar factor to u for generalized stokes
 alpha: 0.0
+
 
 #****************** solver ******************************************************************
 #pretty much ineffective
@@ -72,7 +70,7 @@ inner_absLimit: 1e-10
 max_adaptions: 4
 
 # > 2 will show bfg setting per inner iteration, > 1 avg inner iteration count
-solverVerbosity: 0
+solverVerbosity: 2
 
 disableSolver: 0
 diff-tolerance: 0.01

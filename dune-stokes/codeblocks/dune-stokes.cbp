@@ -28,6 +28,8 @@
 					<Add library="ALBERTA22_1" />
 					<Add library="ALBERTA22_0" />
 					<Add library="alberta_util" />
+					<Add library="gr" />
+					<Add library="GL" />
 					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
 				</Linker>
 			</Target>

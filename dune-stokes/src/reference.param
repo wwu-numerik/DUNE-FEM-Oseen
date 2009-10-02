@@ -11,7 +11,11 @@ logfile: dune_stokes
 fem.io.datadir: data
 #path (relative to binary) where logs and matlab files will be saved
 fem.io.logdir: log
-fem.io.outputformat: 1
+fem.io.outputformat: 0
+fem.io.datafileprefix: solu_
+fem.io.savestep: 0
+fem.io.savecount: 0
+
 
 per-run-log-target: 0
 per-run-output: 1
@@ -31,7 +35,7 @@ dgf_file_3d: grid_3d.dgf
 runtype: 0
 
 #in runtype 0 refine maxref + 1 - minref times
-minref: 0
+minref: 3
 maxref: 4
 
 #in runtype 1 vary
@@ -63,6 +67,12 @@ relLimit: 1e-12
 
 absLimit: 1e-10
 inner_absLimit: 1e-10
+
+#reconstruct u at the ned of alt_solver instead of continually updating it
+use_velocity_reconstruct: 0
+#clear computed functions at start of every singleRun ?
+clear_u: 0
+clear_p: 0
 
 #when nans are detected in solution solver accuracy is multiplied maximal max_adaptions-times by 0.1
 max_adaptions: 4
