@@ -272,9 +272,11 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                     LocalVectorType;
 
                 LocalVectorType center = Stuff::getBarycenterLocal( faceIter.intersectionSelfLocal() );
+                Stuff::printFieldVector( center, "center", std::cout );
                 RangeType normal = faceIter.unitOuterNormal( center );
+                Stuff::printFieldVector( normal, "normal", std::cout );
                 static const double gd_factor = Parameters().getParam( "gd_factor", 1.0 );
-                ret = arg;
+                ret = normal;
                 switch ( id ) {
                     case 1: {
                         ret *= 0;
