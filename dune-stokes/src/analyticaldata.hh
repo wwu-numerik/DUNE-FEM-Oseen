@@ -9,6 +9,7 @@
 #include <cmath>
 
 #include <dune/common/fvector.hh>
+#include <dune/stuff/parametercontainer.hh>
 
 /**
  *  \todo   texdoc
@@ -161,8 +162,10 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
          ~DirichletData()
          {}
 
-        void evaluate( const DomainType& arg, RangeType& ret, const int id ) const
+        template < class IntersectionIteratorType >
+        void evaluate( const DomainType& arg, RangeType& ret, const IntersectionIteratorType& faceIter ) const
         {
+            const int id = faceIter.boundaryId();
             if ( dim_ == 1 ) {
                 assert( !"dirichlet data not implemented in 1D!" );
             }
@@ -264,26 +267,20 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 #if defined(UGGRID)
     #error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
 #endif
+                RangeType normal = id.unitOuterNormal( arg );
+                static const double gd_factor = Parameters().getParam( "gd_factor", 1.0 );
+                ret = arg;
                 switch ( id ) {
                     case 1: {
-                        ret[0] = 0.0;//arg[1];
-                        ret[1] = 0.0;//-1.0;//arg[0];
-                        ret[2] = 0.0;
+                        ret *= 0;
                         return;
                     }
-                    case 2: {
-                        ret[0] = 1000.0;//arg[1];
-                        ret[1] = 1000.0;//-1.0;//arg[0];
-                        ret[2] = 1000.0;
-                        return;
-                    }
+                    case 2:
                     case 6:
                     case 5:
                     case 4:
                     case 3: {
-                        ret[0] = 1000.0;//arg[1];
-                        ret[1] = 1000.0;//-1.0;//arg[0];
-                        ret[2] = 1000.0;
+                        ret *= gd_factor;
                         return;
                     }
                     default:

@@ -2666,7 +2666,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                             VelocityRangeType& dirichletDataReturn ) const
         {
             assert( ( !intIt.neighbor() && intIt.boundary() ) || !"this intersection does not lie on the boundary" );
-            dirichletData_.evaluate( x, dirichletDataReturn, intIt.boundaryId() );
+            dirichletData_.evaluate( x, dirichletDataReturn, intIt );
         }
 
         /**
