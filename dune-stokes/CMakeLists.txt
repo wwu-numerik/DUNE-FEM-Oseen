@@ -52,7 +52,7 @@ SET( VELOCITYPOLORDER
 SET( INNER_CG_SOLVERTYPE
 	"OEMCGOp" CACHE STRING
 	"INNER_CG_SOLVERTYPE" )
-	
+
 SET( OUTER_CG_SOLVERTYP
 	"OEMCGOp" CACHE STRING
 	"OUTER_CG_SOLVERTYP" )
@@ -60,7 +60,7 @@ SET( OUTER_CG_SOLVERTYP
 SET( PROBLEM
 	"COCKBURN_PROBLEM" CACHE STRING
 	"PROBLEM" )
-	
+
 SET( ALUGRID_BASE_PATH
 	"/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel" CACHE STRING
 	"ALUGRID_BASE_PATH" )
@@ -84,8 +84,8 @@ ADD_DEFINITIONS(-D${GRIDTYPE} -DGRIDDIM=${GRIDDIM} -D${PROBLEM} -DCOMMIT="${COMM
 ADD_DEFINITIONS(-DPOLORDER=${POLORDER} -DPRESSURE_POLORDER=${PRESSUREPOLORDER} -DVELOCITY_POLORDER=${VELOCITYPOLORDER} )
 ADD_DEFINITIONS(-DINNER_CG_SOLVERTYPE=${INNER_CG_SOLVERTYPE} -DOUTER_CG_SOLVERTYP=${OUTER_CG_SOLVERTYP} )
 ADD_DEFINITIONS( -I${GRAPE_PATH}
-	-I${ALUGRID_BASE_PATH}/include 
-	-I${ALUGRID_BASE_PATH}/include/serial 
+	-I${ALUGRID_BASE_PATH}/include
+	-I${ALUGRID_BASE_PATH}/include/serial
 	-I${ALUGRID_BASE_PATH}/include/duneinterface -DENABLE_ALUGRID )
 
 #needs to come first to include correct config.h
@@ -103,10 +103,13 @@ ADD_DEFINITIONS( ${CXX_FLAGS} )
 #----------------------------------------------------------------------------------------------------
 # Source listing
 #----------------------------------------------------------------------------------------------------
-SET(dune-stokesSrc 
+SET(dune-stokesSrc
 	src/dune_stokes.cc
 )
 
 ADD_EXECUTABLE(dune_stokes ${dune-stokesSrc} )
 
 TARGET_LINK_LIBRARIES(dune_stokes "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS} "gr" "GL")
+
+ADD_EXECUTABLE(minimal src/minimal.cc )
+TARGET_LINK_LIBRARIES(minimal "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS} "gr" "GL")
