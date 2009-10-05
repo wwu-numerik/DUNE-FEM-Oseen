@@ -320,6 +320,7 @@ class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFl
 			zeroBoundaryIds_ 	= Parameters().getList( "zeroBoundaryIds" , 1 );
 			influxBoundaryIds_	= Parameters().getList( "influxBoundaryIds" , 2 );
 			outfluxBoundaryIds_	= Parameters().getList( "outfluxBoundaryIds" , 3 );
+			setupBoundaryIdTypeMap_();
 		}
 
 		/**
