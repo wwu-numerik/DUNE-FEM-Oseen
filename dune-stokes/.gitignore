@@ -63,3 +63,4 @@ doc/dune-stokes-howto/includes/stokes.aux
 doc/dune-stokes-howto/includes/stokes_mit_ldg.aux
 doc/dune-stokes-howto/includes/stokes_mit_ldg.tex.backup
 build*
+CMakeFiles
