@@ -267,8 +267,12 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 #if defined(UGGRID)
     #error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
 #endif
-                //!TODO use a sane value here instead of 0.0 ?
-                RangeType normal = faceIter.unitOuterNormal( 0.0 );
+                //!TODO use a sane value here instead of 0.0
+                typedef Dune::FieldVector< typename IntersectionIteratorType::ctype, IntersectionIteratorType::dimension - 1 >
+                    Dummy;
+                Dummy dummy;
+                dummy *= 0.0;
+                RangeType normal = faceIter.unitOuterNormal( dummy );
                 static const double gd_factor = Parameters().getParam( "gd_factor", 1.0 );
                 ret = arg;
                 switch ( id ) {
