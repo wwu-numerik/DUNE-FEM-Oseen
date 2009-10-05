@@ -262,38 +262,6 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 assert( !"MICRO_PROBLEM_WOIDS not implemented in 3D!" );
 #elif defined(GENRALIZED_STOKES_PROBLEM)
                 assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
-#elif defined(AORTA_PROBLEM)
-
-#if defined(UGGRID)
-    #error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
-#endif
-                //!TODO use a sane value here instead of 0.0
-                typedef Dune::FieldVector< typename IntersectionIteratorType::ctype, IntersectionIteratorType::dimension - 1 >
-                    LocalVectorType;
-
-                LocalVectorType center = Stuff::getBarycenterLocal( faceIter.intersectionSelfLocal() );
-                Stuff::printFieldVector( center, "center", std::cout );
-                RangeType normal = faceIter.unitOuterNormal( center );
-                Stuff::printFieldVector( normal, "normal", std::cout );
-                static const double gd_factor = Parameters().getParam( "gd_factor", 1.0 );
-                ret = normal;
-                switch ( id ) {
-                    case 1: {
-                        ret *= 0;
-                        return;
-                    }
-                    case 2:
-                    case 6:
-                    case 5:
-                    case 4:
-                    case 3: {
-                        ret *= gd_factor;
-                        return;
-                    }
-                    default:
-                        assert( false );
-                        return;
-                }
 #else
                 assert( !"dirichlet data not implemented in 3D!" );
 #endif
@@ -315,6 +283,116 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
     private:
         const int dim_;
 
+};
+
+template < class FunctionSpaceImp >
+class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFluxDirichletData < FunctionSpaceImp > >
+{
+	public:
+		enum BoundaryType {
+			zeroBoundary	= 0,
+			influxBoundary	= 1,
+			outfluxBoundary	= 2
+		};
+
+		typedef InOutFluxDirichletData< FunctionSpaceImp >
+			ThisType;
+		typedef Dune::Function< FunctionSpaceImp, ThisType >
+			BaseType;
+		typedef typename BaseType::DomainType
+			DomainType;
+		typedef typename BaseType::RangeType
+			RangeType;
+		typedef std::map< int, BoundaryType >
+			BoundaryIdTypeMapType;
+		typedef typename BoundaryIdTypeMapType::const_iterator
+			BoundaryIdTypeMapTypeConstIterator;
+
+		/**
+			*  \brief  constructor
+			*
+			*
+			**/
+		InOutFluxDirichletData( const FunctionSpaceImp& space )
+			: BaseType( space ),
+				dim_( FunctionSpaceImp::dimDomain )
+		{
+			zeroBoundaryIds_ 	= Parameters().getList( "zeroBoundaryIds" , 1 );
+			influxBoundaryIds_	= Parameters().getList( "influxBoundaryIds" , 2 );
+			outfluxBoundaryIds_	= Parameters().getList( "outfluxBoundaryIds" , 3 );
+		}
+
+		/**
+			*  \brief  destructor
+			*
+			*  doing nothing
+			**/
+		~InOutFluxDirichletData()
+		{}
+
+		template < class IntersectionIteratorType >
+		void evaluate( const DomainType& arg, RangeType& ret, const IntersectionIteratorType& faceIter ) const
+		{
+			const int id = faceIter.boundaryId();
+		#if defined(AORTA_PROBLEM)
+
+		#if defined(UGGRID)
+			#error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
+		#endif
+			//!TODO use a sane value here instead of 0.0
+			typedef Dune::FieldVector< typename IntersectionIteratorType::ctype, IntersectionIteratorType::dimension - 1 >
+				LocalVectorType;
+
+			LocalVectorType center = Stuff::getBarycenterLocal( faceIter.intersectionSelfLocal() );
+			Stuff::printFieldVector( center, "center", std::cout );
+			RangeType normal = faceIter.unitOuterNormal( center );
+			Stuff::printFieldVector( normal, "normal", std::cout );
+			static const double gd_factor = Parameters().getParam( "gd_factor", 1.0 );
+			ret = normal;
+			BoundaryIdTypeMapTypeConstIterator id_it = boundaryIdTypeMap_.find( id );
+			assert ( id_it != boundaryIdTypeMap_.end() );
+
+			switch ( id_it->second ) {
+				case zeroBoundary: {
+					ret *= 0;
+					return;
+				}
+				case influxBoundary:
+					ret *= -1;
+				case outfluxBoundary: {
+					ret *= gd_factor;
+					return;
+				}
+				default:
+					assert( false );
+					return;
+			}
+		#else
+			#error "InOutFluxDirichletData not implemented"
+		#endif
+		}
+
+		inline void evaluate( const DomainType& arg, RangeType& ret ) const { assert(false); }
+
+	protected:
+		void setupBoundaryIdTypeMap_() {
+			for( std::vector< int >::const_iterator it = zeroBoundaryIds_.begin(); it != zeroBoundaryIds_.end(); ++it ) {
+				boundaryIdTypeMap_[*it] = zeroBoundary;
+			}
+			for( std::vector< int >::const_iterator it = influxBoundaryIds_.begin(); it != influxBoundaryIds_.end(); ++it ) {
+				boundaryIdTypeMap_[*it] = influxBoundary;
+			}
+			for( std::vector< int >::const_iterator it = outfluxBoundaryIds_.begin(); it != outfluxBoundaryIds_.end(); ++it ) {
+				boundaryIdTypeMap_[*it] = outfluxBoundary;
+			}
+		}
+
+		std::vector< int > zeroBoundaryIds_;
+		std::vector< int > influxBoundaryIds_;
+		std::vector< int > outfluxBoundaryIds_;
+		BoundaryIdTypeMapType boundaryIdTypeMap_;
+
+		const int dim_;
 };
 
 #endif // end of analyticaldata.hh

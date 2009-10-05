@@ -481,6 +481,17 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
 
     // model traits
+	#if defined( AORTA_PROBLEM )
+    typedef Dune::DiscreteStokesModelDefaultTraits<
+                    GridPartType,
+                    Force,
+                    InOutFluxDirichletData,
+                    gridDim,
+                    polOrder,
+                    VELOCITY_POLORDER,
+                    PRESSURE_POLORDER >
+        StokesModelTraitsImp;
+	#else
     typedef Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
                     Force,
@@ -490,6 +501,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
                     VELOCITY_POLORDER,
                     PRESSURE_POLORDER >
         StokesModelTraitsImp;
+	#endif
     typedef Dune::DiscreteStokesModelDefault< StokesModelTraitsImp >
         StokesModelImpType;
 
