@@ -269,10 +269,10 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 #endif
                 //!TODO use a sane value here instead of 0.0
                 typedef Dune::FieldVector< typename IntersectionIteratorType::ctype, IntersectionIteratorType::dimension - 1 >
-                    Dummy;
-                Dummy dummy;
-                dummy *= 0.0;
-                RangeType normal = faceIter.unitOuterNormal( dummy );
+                    LocalVectorType;
+
+                LocalVectorType center = Stuff::getBarycenterLocal( faceIter.intersectionSelfLocal() );
+                RangeType normal = faceIter.unitOuterNormal( center );
                 static const double gd_factor = Parameters().getParam( "gd_factor", 1.0 );
                 ret = arg;
                 switch ( id ) {
