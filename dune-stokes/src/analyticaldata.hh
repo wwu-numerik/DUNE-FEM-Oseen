@@ -267,7 +267,8 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 #if defined(UGGRID)
     #error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
 #endif
-                RangeType normal = id.unitOuterNormal( arg );
+                //!TODO use a sane value here instead of 0.0 ?
+                RangeType normal = faceIter.unitOuterNormal( 0.0 );
                 static const double gd_factor = Parameters().getParam( "gd_factor", 1.0 );
                 ret = arg;
                 switch ( id ) {
