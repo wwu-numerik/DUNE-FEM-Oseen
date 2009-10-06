@@ -10,6 +10,8 @@
 
 #include <dune/common/fvector.hh>
 
+#include "parametercontainer.hh"
+
 /**
  *  \todo   texdoc
  **/
@@ -80,12 +82,12 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 ret[1] = -1.0 * tmp;
 #elif defined(DARCY_PROBLEM)
                 // im verhältnis zu [-1,1]^2
-                double shiftX = -1.0;
-                double shiftY = -1.0;
-                double lengthX = 0.5;
-                double lengthY = 0.5;
-                ret[0] = ( arg[1] / lengthY ) + shiftY;
-                ret[1] = -1.0 * ( ( arg[0] / lengthX ) + shiftX );
+                double shiftX = Parameters()::getParam( "domain_shift_x", -1.0 );
+                double shiftY = Parameters()::getParam( "domain_shift_y", -1.0 );
+                double scaleX = Parameters()::getParam( "domain_scale_x", 2.0 );
+                double scaleY = Parameters()::getParam( "domain_scale_y", 2.0 );
+                ret[0] = ( arg[1] * scaleY ) + shiftY;
+                ret[1] = -1.0 * ( ( arg[0] * scaleX ) + shiftX );
 #else
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//arg[0];
