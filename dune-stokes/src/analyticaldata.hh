@@ -79,8 +79,12 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 ret[0] = tmp;
                 ret[1] = -1.0 * tmp;
 #elif defined(DARCY_PROBLEM)
-                ret[0] = arg[1];
-                ret[1] = -1.0 * arg[0];
+                double lengthX = 1.0;
+                double lengthY = 1.0;
+                double shiftX = 0.5;
+                double shiftY = 0.5;
+                ret[0] = ( arg[1] / lengthY - shiftY;
+                ret[1] = -1.0 * ( ( arg[0] / lengthX ) - shiftX );
 #else
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//arg[0];
