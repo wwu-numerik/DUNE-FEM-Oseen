@@ -78,6 +78,10 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 const double tmp = ( 0.5 * M_PI ) * ( std::cos( ( 0.5 * M_PI ) * ( x1 - x2 ) ) + ( M_PI + alpha_ ) * std::cos( ( 0.5 * M_PI ) * ( x1 + x2 ) ) );
                 ret[0] = tmp;
                 ret[1] = -1.0 * tmp;
+#elif defined(DARCY_PROBLEM)
+                const double tmp = ( 0.5 * M_PI ) * ( std::cos( ( 0.5 * M_PI ) * ( x1 - x2 ) ) + ( M_PI + alpha_ ) * std::cos( ( 0.5 * M_PI ) * ( x1 + x2 ) ) );
+                ret[0] = tmp;
+                ret[1] = -1.0 * tmp;
 #else
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//arg[0];
@@ -103,6 +107,8 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 assert( !"POROSITY_PROBLEM_WOIDS not implemented in 3D!" );
 #elif defined(GENRALIZED_STOKES_PROBLEM)
                 assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
+#elif defined(DARCY_PROBLEM)
+                assert( !"DARCY_PROBLEM not implemented in 3D!" );
 #else
                 assert( !"force not implemented in 3D!" );
 #endif
@@ -223,6 +229,9 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 const double tmp = std::cos( ( 0.5 * M_PI ) * ( x1 + x2 ) );
                 ret[0] = tmp;
                 ret[1] = -1.0 * tmp;
+#elif defined(DARCY_PROBLEM)
+                ret[0] = 0.0;
+                ret[1] = 0.0;
 #else
                 if ( id == 2 ) { // faces on inner hole
                     ret[ 0 ] = 0.0;
@@ -261,6 +270,8 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 assert( !"POROSITY_PROBLEM_WOIDS not implemented in 3D!" );
 #elif defined(GENRALIZED_STOKES_PROBLEM)
                 assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
+#elif defined(DARCY_PROBLEM)
+                assert( !"DARCY_PROBLEM not implemented in 3D!" );
 #else
                 assert( !"dirichlet data not implemented in 3D!" );
 #endif
