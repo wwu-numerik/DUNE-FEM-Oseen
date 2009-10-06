@@ -340,7 +340,6 @@ class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFl
 		#if defined(UGGRID)
 			#error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
 		#endif
-			//!TODO use a sane value here instead of 0.0
 			typedef Dune::FieldVector< typename IntersectionIteratorType::ctype, IntersectionIteratorType::dimension - 1 >
 				LocalVectorType;
 
@@ -375,15 +374,22 @@ class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFl
 
 	protected:
 		void setupBoundaryIdTypeMap_() {
+			Logger().Info() << "\t- Using ids ";
 			for( std::vector< int >::const_iterator it = zeroBoundaryIds_.begin(); it != zeroBoundaryIds_.end(); ++it ) {
 				boundaryIdTypeMap_[*it] = zeroBoundary;
+				Logger().Info() << *it << " ";
 			}
+			Logger().Info() << " \t\tfor g_d = 0 \n\t        ids ";
 			for( std::vector< int >::const_iterator it = influxBoundaryIds_.begin(); it != influxBoundaryIds_.end(); ++it ) {
 				boundaryIdTypeMap_[*it] = influxBoundary;
+				Logger().Info() << *it << " ";
 			}
+			Logger().Info() << " \tfor g_d = - n \n\t        ids ";
 			for( std::vector< int >::const_iterator it = outfluxBoundaryIds_.begin(); it != outfluxBoundaryIds_.end(); ++it ) {
 				boundaryIdTypeMap_[*it] = outfluxBoundary;
+				Logger().Info() << *it << " ";
 			}
+			Logger().Info() << " \tfor g_d = n " << std::endl;
 		}
 
 		std::vector< int > zeroBoundaryIds_;
