@@ -84,7 +84,7 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 double shiftY = -1.0;
                 double lengthX = 0.5;
                 double lengthY = 0.5;
-                ret[0] = ( arg[1] / lengthY ) + shiftY );
+                ret[0] = ( arg[1] / lengthY ) + shiftY;
                 ret[1] = -1.0 * ( ( arg[0] / lengthX ) + shiftX );
 #else
                 ret[0] = 0.0;//arg[1];
