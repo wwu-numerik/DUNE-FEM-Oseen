@@ -345,9 +345,7 @@ class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFl
 				LocalVectorType;
 
 			LocalVectorType center = Stuff::getBarycenterLocal( faceIter.intersectionSelfLocal() );
-			Stuff::printFieldVector( center, "center", std::cout );
 			RangeType normal = faceIter.unitOuterNormal( center );
-			Stuff::printFieldVector( normal, "normal", std::cout );
 			static const double gd_factor = Parameters().getParam( "gd_factor", 1.0 );
 			ret = normal;
 			BoundaryIdTypeMapTypeConstIterator id_it = boundaryIdTypeMap_.find( id );
