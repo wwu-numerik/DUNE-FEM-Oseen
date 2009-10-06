@@ -16,6 +16,8 @@ fem.io.datafileprefix: solu_
 fem.io.savestep: 0
 fem.io.savecount: 0
 
+#use this to seperate tokens in a paramter list
+parameterlist_delimiter: ;
 
 per-run-log-target: 0
 per-run-output: 1
@@ -119,6 +121,9 @@ logBaseJ: -1
 #****************** PROBLEM *********************************************************************
 #used in AORTA_PROBLEM to scale normals used as inital data for velocity
 gd_factor: 1.0
+zeroBoundaryIds: 1
+influxBoundaryIds: 2;3;4
+outfluxBoundaryIds: 5;6
 #****************** END PROBLEM *****************************************************************
 
 
