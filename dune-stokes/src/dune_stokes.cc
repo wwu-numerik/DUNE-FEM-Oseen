@@ -211,6 +211,10 @@ int main( int argc, char** argv )
   catch (Dune::Exception &e){
     std::cerr << "Dune reported error: " << e << std::endl;
   }
+  catch ( std::bad_alloc& b ) {
+      std::cerr << "Memory allocation failed: " << b.what() ;
+      Stuff::meminfo();
+  }
   catch (...){
     std::cerr << "Unknown exception thrown!" << std::endl;
   }
