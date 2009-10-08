@@ -7,7 +7,10 @@
 #ifndef DUNE_DISCRESTOKESTEMODELINTERFACE_HH
 #define DUNE_DISCRESTOKESTEMODELINTERFACE_HH
 
-#include <dune/common/bartonnackmanifcheck.hh>
+
+
+
+
 #include <dune/common/fvector.hh>
 
 #include <dune/stokes/discretefunctionspacepair.hh>
@@ -20,6 +23,10 @@
 #include <dune/stuff/misc.hh>
 
 #include <algorithm>
+
+// include this file after all other includes because some of them might undef
+// the macros we want to use
+#include <dune/common/bartonnackmanifcheck.hh>
 
 namespace Dune
 {
