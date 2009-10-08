@@ -113,6 +113,10 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
 #elif defined(DARCY_PROBLEM)
                 assert( !"DARCY_PROBLEM not implemented in 3D!" );
+#elif defined(AORTA_PROBLEM)
+                ret[0] = 0.0;//arg[1];
+                ret[1] = 0.0;//-1.0;//arg[0];
+                ret[2] = 0.0;
 #else
                 assert( !"force not implemented in 3D!" );
 #endif
@@ -276,6 +280,37 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
 #elif defined(DARCY_PROBLEM)
                 assert( !"DARCY_PROBLEM not implemented in 3D!" );
+#elif defined(AORTA_PROBLEM)
+
+#if defined(UGGRID)
+    #error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
+#endif
+                switch ( id ) {
+                    case 1: {
+                        ret[0] = 0.0;//arg[1];
+                        ret[1] = 0.0;//-1.0;//arg[0];
+                        ret[2] = 0.0;
+                        return;
+                    }
+                    case 2: {
+                        ret[0] = 1000.0;//arg[1];
+                        ret[1] = 1000.0;//-1.0;//arg[0];
+                        ret[2] = 1000.0;
+                        return;
+                    }
+                    case 6:
+                    case 5:
+                    case 4:
+                    case 3: {
+                        ret[0] = 1000.0;//arg[1];
+                        ret[1] = 1000.0;//-1.0;//arg[0];
+                        ret[2] = 1000.0;
+                        return;
+                    }
+                    default:
+                        assert( false );
+                        return;
+                }
 #else
                 assert( !"dirichlet data not implemented in 3D!" );
 #endif

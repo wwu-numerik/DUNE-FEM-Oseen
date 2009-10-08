@@ -18,21 +18,23 @@
 
 namespace StokesProblem {
 	#ifdef SIMPLE_PROBLEM
-		static const std::string ProblemIdentifier = "SIMPLE_PROBLEM";
+		static const std::string ProblemIdentifier = "SIMPLE-PROBLEM";
 	#elif defined(CONSTANT_PROBLEM)
-		static const std::string ProblemIdentifier = "CONSTANT_PROBLEM";
+		static const std::string ProblemIdentifier = "CONSTANT-PROBLEM";
 	#elif defined(ROTATE_PROBLEM)
-		static const std::string ProblemIdentifier = "ROTATE_PROBLEM";
+		static const std::string ProblemIdentifier = "ROTATE-PROBLEM";
 	#elif defined(MICRO_PROBLEM)
-		static const std::string ProblemIdentifier = "MICRO_PROBLEM";
+		static const std::string ProblemIdentifier = "MICRO-PROBLEM";
 	#elif defined(MICRO_PROBLEM_WOIDS)
-		static const std::string ProblemIdentifier = "MICRO_PROBLEM_WOIDS";
+		static const std::string ProblemIdentifier = "MICRO-PROBLEM-WOIDS";
 	#elif defined(GENRALIZED_STOKES_PROBLEM)
-		static const std::string ProblemIdentifier = "GENRALIZED_STOKES_PROBLEM";
+		static const std::string ProblemIdentifier = "GENRALIZED-STOKES-PROBLEM";
 	#elif defined(COCKBURN_PROBLEM)
-		static const std::string ProblemIdentifier = "COCKBURN_PROBLEM";
+		static const std::string ProblemIdentifier = "COCKBURN-PROBLEM";
+	#elif defined(AORTA_PROBLEM)
+		static const std::string ProblemIdentifier = "AORTA-PROBLEM";
 	#else
-		static const std::string ProblemIdentifier = "UNKNONW_PROBLEM";
+		static const std::string ProblemIdentifier = "UNKNOWN-PROBLEM";
 	#endif
 }
 

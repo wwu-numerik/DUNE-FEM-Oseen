@@ -160,9 +160,11 @@ int main( int argc, char** argv )
         std::cerr << std::endl;
         return 2;
     }
-    if ( !strcmp( argv[1], "-d" ) || !strcmp( argv[1], "-r" ) ) {
+#if HAVE_GRAPE
+    if ( !strcmp( argv[1], "-d" ) ) {
         return display( argc, argv );
     }
+#endif
     if ( !(  Parameters().ReadCommandLine( argc, argv ) ) ) {
         return 1;
     }
@@ -220,6 +222,10 @@ int main( int argc, char** argv )
 
   catch (Dune::Exception &e){
     std::cerr << "Dune reported error: " << e << std::endl;
+  }
+  catch ( std::bad_alloc& b ) {
+      std::cerr << "Memory allocation failed: " << b.what() ;
+      Stuff::meminfo();
   }
   catch (...){
     std::cerr << "Unknown exception thrown!" << std::endl;
@@ -783,6 +789,7 @@ CoeffVector getC_power_Permutations(){
     return coeff_vector;
 }
 
+#if HAVE_GRAPE
 using namespace Dune;
 
 typedef Dune::AdaptiveLeafGridPart< GridType >
@@ -833,18 +840,13 @@ void postProcessing(const GrapeDispType& disp,
 int display ( int argc, char** argv )
 {
 //    printf("usage: %s paramfile:paramfile <i_start> <i_end>", funcName);
-    Parameter::append( argv[2] );
+    int argc_ = 4;
+    char buffer [50];
 
-    if ( !strcmp( argv[1], "-d" ) ) {
-        int argc_ = 3;
-        char* argv_[3] = { argv[0], "0", "0" };
-        return readParameterList( argc_, argv_ );
-    }
-    else if ( !strcmp( argv[1], "-r" ) ) {
-        int argc_ = 5;
-        char* argv_[5] = { argv[0], "0", "0", "-replay", "manager.replay" };
-        return readParameterList( argc_, argv_ );
-    }
+    sprintf (buffer, "paramfile:%s", argv[2] );
+    char* argv_[4] = { argv[0], buffer,  "0", "0" };
+    Parameter::append(argc_,argv_);
+    return readParameterList(argc_,argv_);
 
-    Logger().Err() << "BLAHLABLSBN";
 }
+#endif
