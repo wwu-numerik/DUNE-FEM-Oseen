@@ -165,9 +165,6 @@
 					<Add option="-DMACRO_CG_SOLVERTYPE=CGInverseOp" />
 					<Add option="-DMICRO_POLORDER=1" />
 					<Add option="-DMICRO_PROBLEM=MICRO_PROBLEM" />
-					<Add option="-DENABLE_ALUGRID" />
-					<Add option="-DHAVE_ALUGRID" />
-					<Add option="-DALUGRID_SIMPLEX" />
 					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include/parallel" />
@@ -234,6 +231,7 @@
 			<Add option="-g" />
 			<Add option="-fexceptions" />
 			<Add option="-DGRIDDIM=2" />
+			<Add option="-DGRIDTYPE=ALUGRID_SIMPLEX" />
 			<Add option="-DPOLORDER=1" />
 			<Add option="-DHAVE_CONFIG_H" />
 			<Add option="-DDUNE_FEM_COMPATIBILITY" />
@@ -282,7 +280,6 @@
 		</Unit>
 		<Unit filename="../darcy/Makefile.am">
 			<Option virtualFolder="darcy/" />
-			<Option target="darcy_felix" />
 			<Option target="darcy_felix_uni" />
 		</Unit>
 		<Unit filename="../darcy/analyticaldarcydata.hh">
@@ -292,12 +289,18 @@
 		</Unit>
 		<Unit filename="../darcy/darcy.cc">
 			<Option virtualFolder="darcy/" />
-			<Option target="darcy_felix" />
 			<Option target="darcy_felix_uni" />
 		</Unit>
 		<Unit filename="../darcy/darcy.param">
 			<Option virtualFolder="darcy/" />
 			<Option target="darcy_felix" />
+			<Option target="darcy_felix_uni" />
+		</Unit>
+		<Unit filename="../darcy/darcy_permeabilitytensor.cc">
+			<Option target="darcy_felix" />
+			<Option target="darcy_felix_uni" />
+		</Unit>
+		<Unit filename="../darcy/darcy_visualization.cc">
 			<Option target="darcy_felix_uni" />
 		</Unit>
 		<Unit filename="../darcy/elementintegrators.hh">
@@ -406,6 +409,12 @@
 		</Unit>
 		<Unit filename="../src/reference.param">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="darcy_felix_uni" />
 		</Unit>
 		<Unit filename="../src/velocity.hh">
 			<Option virtualFolder="dune-stokes/" />

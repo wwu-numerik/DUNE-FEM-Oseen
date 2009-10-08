@@ -57,14 +57,26 @@ AM_CPPFLAGS = $(ALL_PKG_CPPFLAGS) -DGRIDDIM=$(GRIDDIM) -D$(GRIDTYPE) -DPOLORDER=
     -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME -DUSE_ALTERNATIVE_SOLVER \
     -I../../dune-stuff -g -O0
 
-noinst_PROGRAMS = darcy
+noinst_PROGRAMS = darcy darcy_visualization darcy_permeabilitytensor
 
 darcy_SOURCES = darcy.cc
-
 darcy_CXXFLAGS = $(MPI_CPPFLAGS)  $(AM_CPPFLAGS)
 darcy_LDADD = $(MPI_LDFLAGS) $(ALUGRID_LDFLAGS) $(ALUGRID_LIBS) \
     $(MPI_LDFLAGS) $(DUNE_LDFLAGS) $(DUNE_LIBS) $(GRAPE_LDFLAGS) \
     $(GRAPE_LIBS) $(BLAS_LIBS)
+
+darcy_permeabilitytensor_SOURCES = darcy_permeabilitytensor.cc
+darcy_permeabilitytensor_CXXFLAGS = $(MPI_CPPFLAGS)  $(AM_CPPFLAGS)
+darcy_permeabilitytensor_LDADD = $(MPI_LDFLAGS) $(ALUGRID_LDFLAGS) $(ALUGRID_LIBS) \
+    $(MPI_LDFLAGS) $(DUNE_LDFLAGS) $(DUNE_LIBS) $(GRAPE_LDFLAGS) \
+    $(GRAPE_LIBS) $(BLAS_LIBS)
+
+darcy_visualization_SOURCES = darcy.cc
+darcy_visualization_CXXFLAGS = $(MPI_CPPFLAGS) $(ALL_PKG_CPPFLAGS) -DGRIDDIM=$(GRIDDIM) -D$(GRIDTYPE) -DPOLORDER=$(POLORDER) \
+    -I../../dune-stuff -g -O0
+darcy_visualization_LDADD = $(MPI_LDFLAGS) $(ALUGRID_LDFLAGS) $(ALUGRID_LIBS) \
+    $(MPI_LDFLAGS) $(DUNE_LDFLAGS) $(DUNE_LIBS) \
+    $(BLAS_LIBS)
 
 # don't follow the full GNU-standard
 # we need automake 1.5

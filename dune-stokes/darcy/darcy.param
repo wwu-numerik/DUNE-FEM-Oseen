@@ -27,6 +27,8 @@ per-run-output: 1
 # #### macro problem ###############################################################################
 
 loadDiscreteFunctionFilenamePrefix: micro_reference_velocity_Y_ref_0
+microSolutionsFilenamePrefix: micro_reference_velocity
+microSolutionsRefineLevel: 0
 
 dgf_file_2d: grid_2d.dgf
 dgf_file_3d: grid_3d.dgf
