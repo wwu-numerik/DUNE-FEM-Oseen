@@ -467,9 +467,9 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     const int gridDim = GridType::dimensionworld;
     static Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename( gridDim ) );
     static bool firstRun = true;
-    int refine_level = ( refine_level_factor  ) * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
+    int refine_level = ( refine_level_factor  ); //* Dune::DGFGridInfo< GridType >::refineStepsForHalf();
     if ( firstRun && refine_level_factor > 1 ) { //since we have a couple of local statics, only do this once, further refinement done in estimator
-        refine_level = ( refine_level_factor -1 ) * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
+        refine_level = ( refine_level_factor -1 ) ;//* Dune::DGFGridInfo< GridType >::refineStepsForHalf();
         gridPtr->globalRefine( refine_level );// -1 since we refine once more via the estimator currently
     }
 
@@ -526,10 +526,10 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
         Dune::Estimator<DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType>
             estimator ( computedSolutions.discretePressure() );
 
-        for ( int i = 0; i < Dune::DGFGridInfo< GridType >::refineStepsForHalf(); ++i ) {
+//        for ( int i = 0; i < Dune::DGFGridInfo< GridType >::refineStepsForHalf(); ++i ) {
             estimator.mark( 0.0 /*dummy*/ );
             computedSolutions.adapt();
-        }
+//        }
 
         if ( Parameters().getParam( "clear_u" , true ) )
             computedSolutions.discreteVelocity().clear();
@@ -638,10 +638,10 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
                                     info.gridname,
                                     refine_level,
                                     Parameters().DgfFilename( gridDim ),
-                                    std::string( "data/saved_velocity_ref_" ) + Stuff::toString( refine_level ),
+                                    std::string( "data/saved_micro_velocity_Y_ref_" ) + Stuff::toString( refine_level ),
                                     Logger().Err() );
 
-    vtkWriterFilename = std::string( "data/saved_velocity_ref_" ) + Stuff::toString( refine_level );
+    vtkWriterFilename = std::string( "data/saved_micro_velocity_Y_ref_" ) + Stuff::toString( refine_level );
     vtkWriter.addVectorVertexData( computedSolutions.discreteVelocity() );
     vtkWriter.write( vtkWriterFilename.c_str() );
     vtkWriter.clear();
@@ -650,10 +650,10 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
                                     info.gridname,
                                     refine_level,
                                     Parameters().DgfFilename( gridDim ),
-                                    std::string( "data/saved_pressure_ref_" ) + Stuff::toString( refine_level ),
+                                    std::string( "data/saved_micro_pressure_Y_ref_" ) + Stuff::toString( refine_level ),
                                     Logger().Err() );
 
-    vtkWriterFilename = std::string( "data/saved_pressure_ref_" ) + Stuff::toString( refine_level );
+    vtkWriterFilename = std::string( "data/saved_micro_pressure_Y_ref_" ) + Stuff::toString( refine_level );
     vtkWriter.addVertexData( computedSolutions.discretePressure() );
     vtkWriter.write( vtkWriterFilename.c_str() );
     vtkWriter.clear();

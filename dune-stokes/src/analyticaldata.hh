@@ -70,7 +70,7 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 ret[1] = -1.0 * arg[0];
 #elif defined(POROSITY_PROBLEM)
                 ret[ 0 ] = 0.0;
-                ret[ 1 ] = 0.0;
+                ret[ 1 ] = 1.0;
 #elif defined(POROSITY_PROBLEM_WOIDS)
                 ret[ 0 ] = 0.0;
                 ret[ 1 ] = 0.0;
@@ -192,18 +192,18 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 }
                 else if ( id == 3 ) { // bottom faces
                     ret[ 0 ] = 0.0;
-                    ret[ 1 ] = 0.0;
+                    ret[ 1 ] = 1.0;
                 }
                 else if ( id == 4 ) { // right faces
-                    ret[ 0 ] = 1.0;
+                    ret[ 0 ] = 0.0;
                     ret[ 1 ] = 0.0;
                 }
                 else if ( id == 5 ) { // top faces
                     ret[ 0 ] = 0.0;
-                    ret[ 1 ] = 0.0;
+                    ret[ 1 ] = 1.0;
                 }
                 else if ( id == 6 ) { // left faces
-                    ret[ 0 ] = 1.0;
+                    ret[ 0 ] = 0.0;
                     ret[ 1 ] = 0.0;
                 }
 #elif defined(POROSITY_PROBLEM_WOIDS)
