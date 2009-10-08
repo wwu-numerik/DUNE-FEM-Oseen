@@ -160,9 +160,11 @@ int main( int argc, char** argv )
         std::cerr << std::endl;
         return 2;
     }
+#if HAVE_GRAPE
     if ( !strcmp( argv[1], "-d" ) || !strcmp( argv[1], "-r" ) ) {
         return display( argc, argv );
     }
+#endif
     if ( !(  Parameters().ReadCommandLine( argc, argv ) ) ) {
         return 1;
     }
@@ -220,6 +222,10 @@ int main( int argc, char** argv )
 
   catch (Dune::Exception &e){
     std::cerr << "Dune reported error: " << e << std::endl;
+  }
+  catch ( std::bad_alloc& b ) {
+      std::cerr << "Memory allocation failed: " << b.what() ;
+      Stuff::meminfo();
   }
   catch (...){
     std::cerr << "Unknown exception thrown!" << std::endl;
@@ -751,6 +757,7 @@ CoeffVector getC_power_Permutations(){
     return coeff_vector;
 }
 
+#if HAVE_GRAPE
 using namespace Dune;
 
 typedef Dune::AdaptiveLeafGridPart< GridType >

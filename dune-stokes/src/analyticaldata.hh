@@ -103,6 +103,10 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 assert( !"MICRO_PROBLEM_WOIDS not implemented in 3D!" );
 #elif defined(GENRALIZED_STOKES_PROBLEM)
                 assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
+#elif defined(AORTA_PROBLEM)
+                ret[0] = 0.0;//arg[1];
+                ret[1] = 0.0;//-1.0;//arg[0];
+                ret[2] = 0.0;
 #else
                 assert( !"force not implemented in 3D!" );
 #endif
@@ -115,56 +119,6 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
     private:
         const double viscosity_;
         const double alpha_;
-        const int dim_;
-};
-
-/**
- *  \todo   texdoc
- **/
-template < class FunctionSpaceImp >
-class MicroForce : public Dune::Function < FunctionSpaceImp , MicroForce < FunctionSpaceImp > >
-{
-    public:
-        typedef MicroForce< FunctionSpaceImp >
-            ThisType;
-        typedef Dune::Function< FunctionSpaceImp, ThisType >
-            BaseType;
-        typedef typename BaseType::DomainType
-            DomainType;
-        typedef typename BaseType::RangeType
-            RangeType;
-
-        /**
-         *  \brief  constructor
-         *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
-         **/
-        MicroForce( const double viscosity, const FunctionSpaceImp& space )
-            : BaseType ( space ),
-              viscosity_( viscosity ),
-              dim_( FunctionSpaceImp::dimDomain )
-        {}
-
-        /**
-         *  \brief  destructor
-         *  doing nothing
-         **/
-        ~MicroForce()
-        {}
-
-        /**
-         *  \brief  evaluates the force
-         *  \param  arg
-         *          point to evaluate at
-         *  \param  ret
-         *          value of force at given point
-         **/
-        inline void evaluate( const DomainType& arg, RangeType& ret ) const
-        {
-            ret = 0.0;
-        }
-
-    private:
-        const double viscosity_;
         const int dim_;
 };
 
@@ -305,6 +259,37 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 assert( !"MICRO_PROBLEM_WOIDS not implemented in 3D!" );
 #elif defined(GENRALIZED_STOKES_PROBLEM)
                 assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
+#elif defined(AORTA_PROBLEM)
+
+#if defined(UGGRID)
+    #error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
+#endif
+                switch ( id ) {
+                    case 1: {
+                        ret[0] = 0.0;//arg[1];
+                        ret[1] = 0.0;//-1.0;//arg[0];
+                        ret[2] = 0.0;
+                        return;
+                    }
+                    case 2: {
+                        ret[0] = 1000.0;//arg[1];
+                        ret[1] = 1000.0;//-1.0;//arg[0];
+                        ret[2] = 1000.0;
+                        return;
+                    }
+                    case 6:
+                    case 5:
+                    case 4:
+                    case 3: {
+                        ret[0] = 1000.0;//arg[1];
+                        ret[1] = 1000.0;//-1.0;//arg[0];
+                        ret[2] = 1000.0;
+                        return;
+                    }
+                    default:
+                        assert( false );
+                        return;
+                }
 #else
                 assert( !"dirichlet data not implemented in 3D!" );
 #endif
@@ -322,62 +307,6 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
           *         value of dirichlet boundary data at given point
           **/
         inline void evaluate( const DomainType& arg, RangeType& ret ) const {}
-
-    private:
-        const int dim_;
-
-};
-
-/**
- *  \todo   extensive docu with latex
- **/
-template < class FunctionSpaceImp >
-class MicroDirichletData : public Dune::Function < FunctionSpaceImp, MicroDirichletData < FunctionSpaceImp > >
-{
-    public:
-        typedef MicroDirichletData< FunctionSpaceImp >
-            ThisType;
-        typedef Dune::Function< FunctionSpaceImp, ThisType >
-            BaseType;
-        typedef typename BaseType::DomainType
-            DomainType;
-        typedef typename BaseType::RangeType
-            RangeType;
-
-        /**
-         *  \brief  constructor
-         *
-         *  doing nothing besides Base init
-         **/
-        MicroDirichletData( const FunctionSpaceImp& space )
-            : BaseType( space ),
-              dim_( FunctionSpaceImp::dimDomain )
-        {}
-
-        /**
-         *  \brief  destructor
-         *
-         *  doing nothing
-         **/
-         ~MicroDirichletData()
-         {}
-
-        void evaluate( const DomainType& arg, RangeType& ret, const int id ) const
-        {
-            ret = 0.0;
-        }
-
-         /**
-          * \brief  evaluates the dirichlet data
-          * \param  arg
-          *         point to evaluate at
-          * \param  ret
-          *         value of dirichlet boundary data at given point
-          **/
-        inline void evaluate( const DomainType& arg, RangeType& ret ) const
-        {
-            ret = 0.0;
-        }
 
     private:
         const int dim_;

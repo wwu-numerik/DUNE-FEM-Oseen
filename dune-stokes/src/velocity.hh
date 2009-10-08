@@ -151,6 +151,10 @@ class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType ,
                 ret[2] = 0;
 #elif defined(GENRALIZED_STOKES_PROBLEM)
                 assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D" );
+#elif defined(AORTA_PROBLEM)
+                ret[0] = 0.0;//arg[1];
+                ret[1] = 0.0;//-1.0;//arg[0];
+                ret[2] = 0.0;
 #else
                 assert( !"velocity not implemented in 3D" );
 #endif
