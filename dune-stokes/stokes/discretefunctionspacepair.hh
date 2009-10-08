@@ -198,6 +198,6 @@ class DiscreteFunctionSpacePair
         SecondDiscreteFunctionSpaceType secondSpace_;
 
 };
-};
+}
 
 #endif // end of discretefunctionspacepair.cc
