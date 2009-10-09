@@ -297,10 +297,12 @@
 			<Option target="darcy_felix_uni" />
 		</Unit>
 		<Unit filename="../darcy/darcy_permeabilitytensor.cc">
+			<Option virtualFolder="darcy/" />
 			<Option target="darcy_felix" />
 			<Option target="darcy_felix_uni" />
 		</Unit>
 		<Unit filename="../darcy/darcy_visualization.cc">
+			<Option virtualFolder="darcy/" />
 			<Option target="darcy_felix_uni" />
 		</Unit>
 		<Unit filename="../darcy/elementintegrators.hh">

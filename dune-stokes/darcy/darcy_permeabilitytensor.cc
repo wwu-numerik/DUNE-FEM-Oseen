@@ -178,6 +178,16 @@ void computePermeabilityTensor( const std::string microSolutionsFilenamePrefix,
     typedef LocalFunctionType::JacobianRangeType
         JacobianRangeType;
 
+    typedef Dune::FieldMatrix< EntityGeometryType::ctype,
+                                        EntityGeometryType::coorddimension,
+                                        EntityGeometryType::mydimension >
+        JacobianInverseTransposedType;
+
+    double permeabilityTensor_0_0( 0.0 );
+    double permeabilityTensor_0_1( 0.0 );
+    double permeabilityTensor_1_0( 0.0 );
+    double permeabilityTensor_1_1( 0.0 );
+
     // do gridwalk
     EntityIteratorType entityIteratorEnd = discreteFunctionSpace.end();
     for (   EntityIteratorType entityIterator = discreteFunctionSpace.begin();
@@ -211,18 +221,33 @@ void computePermeabilityTensor( const std::string microSolutionsFilenamePrefix,
             // do integration over unit square only
             if ( !( ( xWorld[0] < 0.0 ) || ( xWorld[0] > 1.0 ) ) ) {
                 if ( !( ( xWorld[1] < 0.0 ) || ( xWorld[1] > 1.0 ) ) ) {
+                    JacobianRangeType gradient_x_untransposed( 0.0 );
+                    localFunctionX.jacobian( x, gradient_x_untransposed );
+                    const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
                     JacobianRangeType gradient_x( 0.0 );
-                    localFunctionX.jacobian( x, gradient_x );
+                    jacobianInverseTransposed.mv( gradient_x_untransposed[0], gradient_x[0] );
+                    jacobianInverseTransposed.mv( gradient_x_untransposed[1], gradient_x[1] );
+                    JacobianRangeType gradient_y_untransposed( 0.0 );
+                    localFunctionY.jacobian( x, gradient_y_untransposed );
                     JacobianRangeType gradient_y( 0.0 );
-                    localFunctionY.jacobian( x, gradient_y );
-//                    permeabilityTensor[0][0] += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_x, gradient_x );
-//                    permeabilityTensor[0][1] += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_x, gradient_y );
-//                    permeabilityTensor[1][0] += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_y, gradient_x );
-//                    permeabilityTensor[1][1] += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_y, gradient_y );
+                    jacobianInverseTransposed.mv( gradient_y_untransposed[0], gradient_y[0] );
+                    jacobianInverseTransposed.mv( gradient_y_untransposed[1], gradient_y[1] );
+//                    permeabilityTensor_0_0 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_x, gradient_x );
+//                    permeabilityTensor_0_1 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_x, gradient_y );
+//                    permeabilityTensor_1_0 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_y, gradient_x );
+//                    permeabilityTensor_1_1 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_y, gradient_y );
+                    permeabilityTensor_0_0 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_x_untransposed, gradient_x_untransposed );
+                    permeabilityTensor_0_1 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_x_untransposed, gradient_y_untransposed );
+                    permeabilityTensor_1_0 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_y_untransposed, gradient_x_untransposed );
+                    permeabilityTensor_1_1 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_y_untransposed, gradient_y_untransposed );
                 }
             } // done integration over unit square only
         } // done loop over all quadrature points
     } // done gridwalk
+
+    std::cout << "permeabilitytensor:" << std::endl;
+    std::cout << "\t" << permeabilityTensor_0_0 << " \t" << permeabilityTensor_0_1 << std::endl;
+    std::cout << "\t" << permeabilityTensor_1_0 << " \t" << permeabilityTensor_1_1 << std::endl;
 
 }
 
