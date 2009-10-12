@@ -225,7 +225,11 @@ int main( int argc, char** argv )
   }
   catch ( std::bad_alloc& b ) {
       std::cerr << "Memory allocation failed: " << b.what() ;
-      Stuff::meminfo();
+      Logger().Info().Resume();
+      Stuff::meminfo( Logger().Info() );
+  }
+  catch ( assert_exception& a ) {
+      std::cerr << "Exception thrown at:\n" << a.what() << std::endl ;
   }
   catch (...){
     std::cerr << "Unknown exception thrown!" << std::endl;
@@ -822,7 +826,7 @@ int display ( int argc, char** argv )
         return readParameterList( argc_, argv_ );
     }
 
-    Logger().Err() << "BLAHLABLSBN";
+    return -1;
 }
 
 #endif //HAVE_GRAPE
