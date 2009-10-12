@@ -21,7 +21,7 @@ per-run-log-target: 0
 per-run-output: 1
 
 #
-dgf_file_2d: homogeneous_perforated_domain_2d_porosity_0.36_9_holes.1.dgf
+dgf_file_2d: homogeneous_perforated_domain_2d_porosity_0.8_009_holes_epsilon_1.0.dgf
 dgf_file_3d: grid_3d.dgf
 
 #*********** runtype specific parameters **************************************************
@@ -36,7 +36,7 @@ runtype: 0
 
 #in runtype 0 refine maxref + 1 - minref times
 minref: 0
-maxref: 8
+maxref: 2
 
 #in runtype 1 vary
 minpow: -1
@@ -78,9 +78,9 @@ clear_p: 0
 max_adaptions: 5
 
 # > 2 will show bfg setting per inner iteration, > 1 avg inner iteration count
-solverVerbosity: 0
+solverVerbosity: 1
 
-disableSolver: 1
+disableSolver: 0
 diff-tolerance: 0.01
 do-bfg: 1
 bfg-tau: 0.1
