@@ -80,12 +80,18 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 ret[1] = -1.0 * tmp;
 #elif defined(DARCY_PROBLEM)
                 // im verhältnis zu [-1,1]^2
-                double shiftX = Parameters().getParam( "domain_shift_x", -1.0 );
-                double shiftY = Parameters().getParam( "domain_shift_y", -1.0 );
-                double scaleX = Parameters().getParam( "domain_scale_x", 2.0 );
-                double scaleY = Parameters().getParam( "domain_scale_y", 2.0 );
+                double shiftX = Parameters().getParam( "domain_shift_x", 0.0 );
+                double shiftY = Parameters().getParam( "domain_shift_y", 0.0 );
+                double scaleX = Parameters().getParam( "domain_scale_x", 1.0 );
+                double scaleY = Parameters().getParam( "domain_scale_y", 1.0 );
                 ret[0] = ( arg[1] * scaleY ) + shiftY;
                 ret[1] = -1.0 * ( ( arg[0] * scaleX ) + shiftX );
+#elif defined(MICRO_PROBLEM_X)
+                ret[0] = 1.0;
+                ret[1] = 0.0;
+#elif defined(MICRO_PROBLEM_Y)
+                ret[0] = 0.0;
+                ret[1] = 1.0;
 #else
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//arg[0];
@@ -240,6 +246,48 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 #elif defined(DARCY_PROBLEM)
                 ret[0] = 0.0;
                 ret[1] = 0.0;
+#elif defined(MICRO_PROBLEM_X)
+                if ( id == 2 ) { // faces on inner hole
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( id == 3 ) { // bottom faces
+                    ret[ 0 ] = 1.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( id == 4 ) { // right faces
+                    ret[ 0 ] = 1.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( id == 5 ) { // top faces
+                    ret[ 0 ] = 1.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( id == 6 ) { // left faces
+                    ret[ 0 ] = 1.0;
+                    ret[ 1 ] = 0.0;
+                }
+#elif defined(MICRO_PROBLEM_Y)
+                if ( id == 2 ) { // faces on inner hole
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( id == 3 ) { // bottom faces
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 1.0;
+                }
+                else if ( id == 4 ) { // right faces
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 1.0;
+                }
+                else if ( id == 5 ) { // top faces
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 1.0;
+                }
+                else if ( id == 6 ) { // left faces
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 1.0;
+                }
 #else
                 if ( id == 2 ) { // faces on inner hole
                     ret[ 0 ] = 0.0;

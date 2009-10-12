@@ -640,14 +640,15 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     Dune::VTKIO< GridPartType > vtkWriter( gridPart );
     std::string vtkWriterFilename = "";
 
+#ifdef MICRO_PROBLEM_X
     Stuff::saveDiscreteFunction(    computedSolutions.discreteVelocity(),
                                     info.gridname,
                                     refine_level,
                                     Parameters().DgfFilename( gridDim ),
-                                    std::string( "data/saved_micro_velocity_Y_ref_" ) + Stuff::toString( refine_level ),
+                                    std::string( "data/micro_reference_velocity_X_ref_" ) + Stuff::toString( refine_level ),
                                     Logger().Err() );
 
-    vtkWriterFilename = std::string( "data/saved_micro_velocity_Y_ref_" ) + Stuff::toString( refine_level );
+    vtkWriterFilename = std::string( "data/micro_reference_velocity_X_ref_" ) + Stuff::toString( refine_level );
     vtkWriter.addVectorVertexData( computedSolutions.discreteVelocity() );
     vtkWriter.write( vtkWriterFilename.c_str() );
     vtkWriter.clear();
@@ -656,13 +657,39 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
                                     info.gridname,
                                     refine_level,
                                     Parameters().DgfFilename( gridDim ),
-                                    std::string( "data/saved_micro_pressure_Y_ref_" ) + Stuff::toString( refine_level ),
+                                    std::string( "data/micro_reference_pressure_X_ref_" ) + Stuff::toString( refine_level ),
                                     Logger().Err() );
 
-    vtkWriterFilename = std::string( "data/saved_micro_pressure_Y_ref_" ) + Stuff::toString( refine_level );
+    vtkWriterFilename = std::string( "data/micro_reference_pressure_X_ref_" ) + Stuff::toString( refine_level );
     vtkWriter.addVertexData( computedSolutions.discretePressure() );
     vtkWriter.write( vtkWriterFilename.c_str() );
     vtkWriter.clear();
+#endif
+#ifdef MICRO_PROBLEM_Y
+    Stuff::saveDiscreteFunction(    computedSolutions.discreteVelocity(),
+                                    info.gridname,
+                                    refine_level,
+                                    Parameters().DgfFilename( gridDim ),
+                                    std::string( "data/micro_reference_velocity_Y_ref_" ) + Stuff::toString( refine_level ),
+                                    Logger().Err() );
+
+    vtkWriterFilename = std::string( "data/micro_reference_velocity_Y_ref_" ) + Stuff::toString( refine_level );
+    vtkWriter.addVectorVertexData( computedSolutions.discreteVelocity() );
+    vtkWriter.write( vtkWriterFilename.c_str() );
+    vtkWriter.clear();
+
+    Stuff::saveDiscreteFunction(    computedSolutions.discretePressure(),
+                                    info.gridname,
+                                    refine_level,
+                                    Parameters().DgfFilename( gridDim ),
+                                    std::string( "data/micro_reference_pressure_Y_ref_" ) + Stuff::toString( refine_level ),
+                                    Logger().Err() );
+
+    vtkWriterFilename = std::string( "data/micro_reference_pressure_Y_ref_" ) + Stuff::toString( refine_level );
+    vtkWriter.addVertexData( computedSolutions.discretePressure() );
+    vtkWriter.write( vtkWriterFilename.c_str() );
+    vtkWriter.clear();
+#endif
 
     firstRun = false;
 
