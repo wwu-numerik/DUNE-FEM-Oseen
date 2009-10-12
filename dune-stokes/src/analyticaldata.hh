@@ -252,7 +252,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                     ret[ 1 ] = 0.0;
                 }
                 else if ( id == 3 ) { // bottom faces
-                    ret[ 0 ] = 1.0;
+                    ret[ 0 ] = 0.0;
                     ret[ 1 ] = 0.0;
                 }
                 else if ( id == 4 ) { // right faces
@@ -260,7 +260,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                     ret[ 1 ] = 0.0;
                 }
                 else if ( id == 5 ) { // top faces
-                    ret[ 0 ] = 1.0;
+                    ret[ 0 ] = 0.0;
                     ret[ 1 ] = 0.0;
                 }
                 else if ( id == 6 ) { // left faces
@@ -278,7 +278,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 }
                 else if ( id == 4 ) { // right faces
                     ret[ 0 ] = 0.0;
-                    ret[ 1 ] = 1.0;
+                    ret[ 1 ] = 0.0;
                 }
                 else if ( id == 5 ) { // top faces
                     ret[ 0 ] = 0.0;
@@ -286,7 +286,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 }
                 else if ( id == 6 ) { // left faces
                     ret[ 0 ] = 0.0;
-                    ret[ 1 ] = 1.0;
+                    ret[ 1 ] = 0.0;
                 }
 #else
                 if ( id == 2 ) { // faces on inner hole
