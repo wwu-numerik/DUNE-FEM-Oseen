@@ -17,12 +17,18 @@ fem.io.savestep: 0
 fem.io.savecount: 0
 
 
-per-run-log-target: 0
+per-run-log-target: 1
 per-run-output: 1
 
 #
-dgf_file_2d: homogeneous_perforated_domain_2d_porosity_0.8_009_holes_epsilon_1.0.dgf
+dgf_file_2d: homogeneous_perforated_domain_2d_porosity_0.8_400_holes_epsilon_0.0025.dgf
 dgf_file_3d: grid_3d.dgf
+# scale domain to have length 2
+domain_scale_x: 2.0
+domain_scale_y: 2.0
+# shift domain to be [-1;1]^2
+domain_shift_x: -1.0
+domain_shift_y: -1.0
 
 #*********** runtype specific parameters **************************************************
 # runtype 		0: minref <= maxref
@@ -36,7 +42,7 @@ runtype: 0
 
 #in runtype 0 refine maxref + 1 - minref times
 minref: 0
-maxref: 2
+maxref: 10
 
 #in runtype 1 vary
 minpow: -1
@@ -57,7 +63,7 @@ accurracy_steps: 5
 
 #*********** end runtype specific parameters **************************************************
 
-viscosity: 1.0
+viscosity: 0.0025
 # if alpha != 0.0, isGeneralize() has to return true in DiscreteStokesModelDefault
 alpha: 0.0
 
