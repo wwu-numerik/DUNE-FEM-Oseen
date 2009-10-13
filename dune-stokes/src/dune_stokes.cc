@@ -690,6 +690,31 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     vtkWriter.write( vtkWriterFilename.c_str() );
     vtkWriter.clear();
 #endif
+#ifdef DARCY_PROBLEM
+    Stuff::saveDiscreteFunction(    computedSolutions.discreteVelocity(),
+                                    info.gridname,
+                                    refine_level,
+                                    Parameters().DgfFilename( gridDim ),
+                                    std::string( "data/fullscale_perforated_velocity_ref_" ) + Stuff::toString( refine_level ),
+                                    Logger().Err() );
+
+    vtkWriterFilename = std::string( "data/fullscale_perforated_velocity_ref_" ) + Stuff::toString( refine_level );
+    vtkWriter.addVectorVertexData( computedSolutions.discreteVelocity() );
+    vtkWriter.write( vtkWriterFilename.c_str() );
+    vtkWriter.clear();
+
+    Stuff::saveDiscreteFunction(    computedSolutions.discretePressure(),
+                                    info.gridname,
+                                    refine_level,
+                                    Parameters().DgfFilename( gridDim ),
+                                    std::string( "data/fullscale_perforated_pressure_ref_" ) + Stuff::toString( refine_level ),
+                                    Logger().Err() );
+
+    vtkWriterFilename = std::string( "data/fullscale_perforated_pressure_ref_" ) + Stuff::toString( refine_level );
+    vtkWriter.addVertexData( computedSolutions.discretePressure() );
+    vtkWriter.write( vtkWriterFilename.c_str() );
+    vtkWriter.clear();
+#endif
 
     firstRun = false;
 

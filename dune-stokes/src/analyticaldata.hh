@@ -80,10 +80,10 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 ret[1] = -1.0 * tmp;
 #elif defined(DARCY_PROBLEM)
                 // im verhältnis zu [-1,1]^2
-                double shiftX = Parameters().getParam( "domain_shift_x", 0.0 );
-                double shiftY = Parameters().getParam( "domain_shift_y", 0.0 );
-                double scaleX = Parameters().getParam( "domain_scale_x", 1.0 );
-                double scaleY = Parameters().getParam( "domain_scale_y", 1.0 );
+                double scaleX = Parameters().getParam( "domain_scale_x", 2.0 );
+                double scaleY = Parameters().getParam( "domain_scale_y", 2.0 );
+                double shiftX = Parameters().getParam( "domain_shift_x", -1.0 );
+                double shiftY = Parameters().getParam( "domain_shift_y", -1.0 );
                 ret[0] = ( arg[1] * scaleY ) + shiftY;
                 ret[1] = -1.0 * ( ( arg[0] * scaleX ) + shiftX );
 #elif defined(MICRO_PROBLEM_X)
