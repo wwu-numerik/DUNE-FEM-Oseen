@@ -27,8 +27,9 @@ per-run-output: 1
 # #### macro problem ###############################################################################
 
 loadDiscreteFunctionFilenamePrefix: micro_reference_velocity_Y_ref_1
-microSolutionsFilenamePrefix: micro_reference_velocity
+microSolutionsFilenamePrefix: solutions/porosity_08/micro_reference_velocity
 microSolutionsRefineLevel: 1
+comsolFilename: micro_reference_velocity_ref_1.m
 
 dgf_file_2d: grid_2d.dgf
 dgf_file_3d: grid_3d.dgf

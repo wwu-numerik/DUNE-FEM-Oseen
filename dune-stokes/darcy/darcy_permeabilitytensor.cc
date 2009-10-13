@@ -24,7 +24,9 @@
 #endif
 #include <dune/grid/io/file/dgfparser/dgfalu.hh>
 const int gridDim = GRIDDIM;
-typedef Dune::ALUSimplexGrid< gridDim, gridDim >
+//typedef Dune::ALUSimplexGrid< gridDim, gridDim >
+//    GridType;
+typedef Dune::ALUConformGrid< gridDim, gridDim >
     GridType;
 
 const int polOrder = POLORDER;
@@ -57,6 +59,12 @@ const int polOrder = POLORDER;
 // forward
 void computePermeabilityTensor( const std::string microSolutionsFilenamePrefix,
                                 const int microSolutionsRefineLevel );
+
+int writeComsolFile(    const std::string comsolFilename,
+                        const double a_0_0,
+                        const double a_0_1,
+                        const double a_1_0,
+                        const double a_1_1 );
 
 /**
  *  \brief  main function
@@ -123,9 +131,9 @@ void computePermeabilityTensor( const std::string microSolutionsFilenamePrefix,
     assert( refineLevel == Stuff::readRefineLevelFromDGF( microVelocityDgfFilenameY ) );
 
     const std::string gridType( Stuff::readGridTypeFromDGF( microVelocityDgfFilenameX ) );
-//    debug << "gridType: " << gridType << std::endl;
+    debug << "gridType: " << gridType << std::endl;
     assert( !gridType.compare( Stuff::readGridTypeFromDGF( microVelocityDgfFilenameY ) ) );
-    assert( !gridType.compare( "ALUGRID_SIMPLEX" ) );
+//    assert( !gridType.compare( "ALUGRID_CONFORM" ) );
 
     //make grid and stuff
     typedef Dune::AdaptiveLeafGridPart< GridType >
@@ -223,15 +231,15 @@ void computePermeabilityTensor( const std::string microSolutionsFilenamePrefix,
                 if ( !( ( xWorld[1] < 0.0 ) || ( xWorld[1] > 1.0 ) ) ) {
                     JacobianRangeType gradient_x_untransposed( 0.0 );
                     localFunctionX.jacobian( x, gradient_x_untransposed );
-                    const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
-                    JacobianRangeType gradient_x( 0.0 );
-                    jacobianInverseTransposed.mv( gradient_x_untransposed[0], gradient_x[0] );
-                    jacobianInverseTransposed.mv( gradient_x_untransposed[1], gradient_x[1] );
+//                    const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
+//                    JacobianRangeType gradient_x( 0.0 );
+//                    jacobianInverseTransposed.mv( gradient_x_untransposed[0], gradient_x[0] );
+//                    jacobianInverseTransposed.mv( gradient_x_untransposed[1], gradient_x[1] );
                     JacobianRangeType gradient_y_untransposed( 0.0 );
                     localFunctionY.jacobian( x, gradient_y_untransposed );
-                    JacobianRangeType gradient_y( 0.0 );
-                    jacobianInverseTransposed.mv( gradient_y_untransposed[0], gradient_y[0] );
-                    jacobianInverseTransposed.mv( gradient_y_untransposed[1], gradient_y[1] );
+//                    JacobianRangeType gradient_y( 0.0 );
+//                    jacobianInverseTransposed.mv( gradient_y_untransposed[0], gradient_y[0] );
+//                    jacobianInverseTransposed.mv( gradient_y_untransposed[1], gradient_y[1] );
 //                    permeabilityTensor_0_0 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_x, gradient_x );
 //                    permeabilityTensor_0_1 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_x, gradient_y );
 //                    permeabilityTensor_1_0 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_y, gradient_x );
@@ -249,5 +257,181 @@ void computePermeabilityTensor( const std::string microSolutionsFilenamePrefix,
     std::cout << "\t" << permeabilityTensor_0_0 << " \t" << permeabilityTensor_0_1 << std::endl;
     std::cout << "\t" << permeabilityTensor_1_0 << " \t" << permeabilityTensor_1_1 << std::endl;
 
+    std::string comsolFilename( Dune::Parameter::getValue( "comsolFilename", std::string("standardComsolFilename.m") ) );
+    if ( !writeComsolFile(  comsolFilename,
+                            permeabilityTensor_0_0,
+                            permeabilityTensor_0_1,
+                            permeabilityTensor_1_0,
+                            permeabilityTensor_1_1 ) ) {
+        std::cout << "comsol file written to " << comsolFilename << std::endl;
+    }
+    else {
+        std::cerr << "Error: could not write to comsol file " << comsolFilename << std::endl;
+    }
+
+}int writeComsolFile(   const std::string comsolFilename,
+                        const double a_0_0,
+                        const double a_0_1,
+                        const double a_1_0,
+                        const double a_1_1 )
+{
+    double rightHandSide = a_0_1 - a_1_0;
+    std::string g_n_1( "'-1.0*" + Stuff::toString( a_0_0 ) + "*y + 1.0*" + Stuff::toString( a_0_1 ) + "*x'" );
+    std::string g_n_2( "'-1.0*" + Stuff::toString( a_0_1 ) + "*y + 1.0* " + Stuff::toString( a_1_1 ) + "*x'" );
+    std::string g_n_3( "'1.0*" + Stuff::toString( a_1_0 ) + "*y - 1.0* " + Stuff::toString( a_1_1 ) + "*x'" );
+    std::string g_n_4( "'1.0*" + Stuff::toString( a_0_0 ) + "*y - 1.0* " + Stuff::toString( a_0_1 ) + "*x'" );
+    std::string one_over_mu( Stuff::toString( 1.0 / Dune::Parameter::getValue( "micro_viscosity", 1.0 ) ) );
+
+
+    int errorState( 0 );
+
+    std::ofstream writeFile( comsolFilename.c_str() );
+    if ( writeFile.is_open() ) {
+        writeFile   << "% COMSOL Multiphysics Model M-file" << std::endl
+                    << "% Generated by darcy_permeabilitytensor.m" << std::endl
+                    << "% by Felix Albrecht (felix.albrecht@math.uni-muenster.de)" << std::endl
+                    << std::endl
+                    << "flclear fem" << std::endl
+                    << std::endl
+                    << "% COMSOL version" << std::endl
+                    << "clear vrsn" << std::endl
+                    << "vrsn.name = 'COMSOL 3.4';" << std::endl
+                    << "vrsn.ext = '';" << std::endl
+                    << "vrsn.major = 0;" << std::endl
+                    << "vrsn.build = 248;" << std::endl
+                    << "vrsn.rcs = '$Name:  $';" << std::endl
+                    << "vrsn.date = '$Date: 2007/10/10 16:07:51 $';" << std::endl
+                    << "fem.version = vrsn;" << std::endl
+                    << std::endl
+                    << "% Geometry" << std::endl
+                    << "g1=rect2(2,2,'base','corner','pos',[-1,-1]);" << std::endl
+                    << std::endl
+                    << "% Analyzed geometry" << std::endl
+                    << "clear s" << std::endl
+                    << "s.objs={g1};" << std::endl
+                    << "s.name={'R1'};" << std::endl
+                    << "s.tags={'g1'};" << std::endl
+                    << std::endl
+                    << "fem.draw=struct('s',s);" << std::endl
+                    << "fem.geom=geomcsg(fem);" << std::endl
+                    << std::endl
+                    << "% Initialize mesh" << std::endl
+                    << "fem.mesh=meshinit(fem, ..." << std::endl
+                    << "                  'hauto',5);" << std::endl
+                    << std::endl
+                    << "% Refine mesh" << std::endl
+                    << "fem.mesh=meshrefine(fem, ..." << std::endl
+                    << "                    'mcase',0, ..." << std::endl
+                    << "                    'rmethod','regular');" << std::endl
+                    << std::endl
+                    << "% (Default values are not included)" << std::endl
+                    << std::endl
+                    << "% Application mode 1" << std::endl
+                    << "clear appl" << std::endl
+                    << "appl.mode.class = 'Poisson';" << std::endl
+                    << "appl.dim = {'p'};" << std::endl
+                    << "appl.assignsuffix = '_poeq';" << std::endl
+                    << "clear prop" << std::endl
+                    << "prop.elemdefault='Lag1';" << std::endl
+                    << "appl.prop = prop;" << std::endl
+                    << "clear bnd" << std::endl
+                    << "bnd.type = 'neu';" << std::endl
+                    << "bnd.g = {" << g_n_4 << "," << g_n_1 << "," << g_n_2 << "," << g_n_3 << "};" << std::endl
+                    << "bnd.ind = [2,3,4,1];" << std::endl
+                    << "appl.bnd = bnd;" << std::endl
+                    << "clear equ" << std::endl
+                    << "equ.c = {{{" << a_0_0 << "," << a_0_1 << ";" << a_1_0 << "," << a_1_1 << "}}};" << std::endl
+                    << "equ.f = " << rightHandSide << ";" << std::endl
+                    << "equ.ind = [1];" << std::endl
+                    << "appl.equ = equ;" << std::endl
+                    << "fem.appl{1} = appl;" << std::endl
+                    << "fem.frame = {'ref'};" << std::endl
+                    << "fem.border = 1;" << std::endl
+                    << "clear units;" << std::endl
+                    << "units.basesystem = 'SI';" << std::endl
+                    << "fem.units = units;" << std::endl
+                    << std::endl
+                    << "% ODE Settings" << std::endl
+                    << "clear ode" << std::endl
+                    << "clear units;" << std::endl
+                    << "units.basesystem = 'SI';" << std::endl
+                    << "ode.units = units;" << std::endl
+                    << "fem.ode=ode;" << std::endl
+                    << "% Multiphysics" << std::endl
+                    << "fem=multiphysics(fem);" << std::endl
+                    << std::endl
+                    << "% Extend mesh" << std::endl
+                    << "fem.xmesh=meshextend(fem);" << std::endl
+                    << std::endl
+                    << "% Solve problem" << std::endl
+                    << "fem.sol=femstatic(fem, ..." << std::endl
+                    << "                  'solcomp',{'p'}, ..." << std::endl
+                    << "                  'outcomp',{'p'});" << std::endl
+                    << std::endl
+                    << "% eigener kram" << std::endl
+                    << "[x,y] = meshgrid(-1.0:0.01:1.0,-1.0:0.01:1.0);" << std::endl
+                    << "points = [x(:)';y(:)'];" << std::endl
+                    << "pressure = postinterp(fem,'p',points);" << std::endl
+                    << "pressure = reshape(pressure,size(x));" << std::endl
+                    << "pressure_gradient_x = postinterp(fem,'px',points);" << std::endl
+                    << "pressure_gradient_x = reshape(pressure_gradient_x,size(x));" << std::endl
+                    << "pressure_gradient_y = postinterp(fem,'py',points);" << std::endl
+                    << "pressure_gradient_y = reshape(pressure_gradient_y,size(x));" << std::endl
+                    << std::endl
+                    << "velocity_x = " << one_over_mu << ".*" << a_0_0 << ".*(y - 1.0.*pressure_gradient_x) + 1.0.*" << a_0_1 << ".*(-1.0.*x - 1.0.*pressure_gradient_y);" << std::endl
+                    << "velocity_y = " << one_over_mu << ".*" << a_1_0 << ".*(y - 1.0.*pressure_gradient_x) + 1.0.*" << a_1_1 << ".*(-1.0.*x - 1.0.*pressure_gradient_y);" << std::endl
+                    << std::endl
+                    << "figure( 'Position', [1 1 800 800],..." << std::endl
+                    << "        'Name', 'velocity x');" << std::endl
+                    << "surf(x,y,velocity_x);" << std::endl
+                    << "figure( 'Position', [1 1 800 800],..." << std::endl
+                    << "        'Name', 'velocity y');" << std::endl
+                    << "surf(x,y,velocity_y);" << std::endl
+                    << std::endl
+
+                    << std::endl;
+
+        writeFile.flush();
+        writeFile.close();
+
+        return 0;
+    }
+    else {
+        ++errorState;
+        std::cerr << "Error: could not write to " << comsolFilename << "!" << std::endl;
+        return errorState;
+    }
+
+    return errorState;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
