@@ -382,6 +382,9 @@ void computePermeabilityTensor( const std::string microSolutionsFilenamePrefix,
                     << "velocity_y = " << one_over_mu << ".*" << a_1_0 << ".*(y - 1.0.*pressure_gradient_x) + 1.0.*" << a_1_1 << ".*(-1.0.*x - 1.0.*pressure_gradient_y);" << std::endl
                     << std::endl
                     << "figure( 'Position', [1 1 800 800],..." << std::endl
+                    << "        'Name', 'pressure');" << std::endl
+                    << "surf(x,y,pressure);" << std::endl
+                    << "figure( 'Position', [1 1 800 800],..." << std::endl
                     << "        'Name', 'velocity x');" << std::endl
                     << "surf(x,y,velocity_x);" << std::endl
                     << "figure( 'Position', [1 1 800 800],..." << std::endl
