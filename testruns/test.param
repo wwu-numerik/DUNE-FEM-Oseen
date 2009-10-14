@@ -11,9 +11,13 @@ logfile: dune_stokes
 fem.io.datadir: data
 #path (relative to binary) where logs and matlab files will be saved
 fem.io.logdir: log
-fem.io.outputformat: 1
+fem.io.outputformat: 0
+fem.io.datafileprefix: solu_
+fem.io.savestep: 0
+fem.io.savecount: 0
 
-per-run-log-target: 1
+
+per-run-log-target: 0
 per-run-output: 1
 
 #
@@ -21,16 +25,18 @@ dgf_file_2d: grid_2d.dgf
 dgf_file_3d: grid_3d.dgf
 
 #*********** runtype specific parameters **************************************************
-# runtype 	0: minref <= maxref
+# runtype 		0: minref <= maxref
 #			1: minref, stab coeff are varied
 #			2: minref, bfg-tau-start <= bfg-tau-stop
 #			3: minref, accuracy_start <= accuracy_stop + inner lopo for inner acc
+#			4: minref, accuracy_start <= accuracy_stop
+#			5: one single run with minref
 # no runtype set --> old minrun behavior
 runtype: 0
 
 #in runtype 0 refine maxref + 1 - minref times
 minref: 0
-maxref: 2
+maxref: 4
 
 #in runtype 1 vary
 minpow: -1
@@ -51,9 +57,9 @@ accurracy_steps: 5
 
 #*********** end runtype specific parameters **************************************************
 
-#currently ineffective
-viscosity: 1
-
+viscosity: 1.0
+# if alpha != 0.0, isGeneralize() has to return true in DiscreteStokesModelDefault
+alpha: 0.0
 
 #****************** solver ******************************************************************
 #pretty much ineffective

@@ -70,6 +70,12 @@ relLimit: 1e-12
 absLimit: 1e-10
 inner_absLimit: 1e-10
 
+#reconstruct u at the ned of alt_solver instead of continually updating it
+use_velocity_reconstruct: 0
+#clear computed functions at start of every singleRun ?
+clear_u: 0
+clear_p: 0
+
 #when nans are detected in solution solver accuracy is multiplied maximal max_adaptions-times by 0.1
 max_adaptions: 4
 

@@ -1,0 +1,1518 @@
+1 100 10 8.60714 0.642857 0 0 1 $
+	0 8 1 10 0
+	/main/top-row/opts
+4 100 100 8.60714 0.642857 0 0 1 $
+	28 8 1 10 0
+	/main/top-row/opts
+8 100 100 8.64286 0.642857 0.0357143 0 1 $
+	0 8 1 10 0
+	/main/top-row/opts
+4 100 100 8.64286 0.642857 0 0 1 $
+	1e 8 1 10 0
+	/main/top-row/opts
+4 100 100 8.64286 0.642857 0 0 1 $
+	1e 8 1 10 0
+	/main/top-row/opts
+2 100 110 8.64286 0.642857 0 0 1 $
+	0 8 1 10 0
+	/main/top-row/opts
+1 100 10 7.75 9.60714 0 0 1 $
+	776 4.9 10 9.3 9
+	/main/opts/opt-0/genmesh-interface/function/name
+4 100 100 7.75 9.60714 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 7.75 9.60714 0 0 1 $
+	28 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 7.75 9.60714 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 7.75 9.60714 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 7.75 9.60714 0 0 1 $
+	28 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 7.75 9.60714 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 7.75 9.60714 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 7.75 9.60714 0 0 1 $
+	28 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 7.75 9.60714 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 7.75 9.60714 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 7.75 9.60714 0 0 1 $
+	28 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 7.75 9.60714 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 7.75 9.60714 0 0 1 $
+	28 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 7.75 9.60714 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+8 100 100 7.75 9.5 0 -0.107143 1 $
+	0 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 7.75 9.5 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+8 100 100 7.71429 9.25 -0.0357143 -0.25 1 $
+	0 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 7.71429 9.25 0 0 1 $
+	28 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+8 100 100 7.46429 8.67857 -0.25 -0.571429 1 $
+	0 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 7.46429 8.67857 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+8 100 100 7.17857 7.82143 -0.285714 -0.857143 1 $
+	0 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 7.17857 7.82143 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+8 100 100 6.96429 7.25 -0.214286 -0.571429 1 $
+	0 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 6.96429 7.25 0 0 1 $
+	28 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+8 100 100 6.85714 7 -0.107143 -0.25 1 $
+	0 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 6.85714 7 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+8 100 100 6.85714 6.85714 0 -0.142857 1 $
+	0 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 6.85714 6.85714 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+8 100 100 6.85714 6.78571 0 -0.0714286 1 $
+	0 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 6.85714 6.78571 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+8 100 100 6.82143 6.57143 -0.0357143 -0.214286 1 $
+	0 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 6.82143 6.57143 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+8 100 100 6.82143 6.53571 0 -0.0357143 1 $
+	0 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 6.82143 6.53571 0 0 1 $
+	28 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 6.82143 6.53571 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 6.82143 6.53571 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 6.82143 6.53571 0 0 1 $
+	28 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 6.82143 6.53571 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 6.82143 6.53571 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 6.82143 6.53571 0 0 1 $
+	28 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 6.82143 6.53571 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+4 100 100 6.82143 6.53571 0 0 1 $
+	1e 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+2 100 110 6.82143 6.53571 0 0 1 $
+	0 4.625 15.6071 10.875 3.60714
+	/combo-box/combo-list
+1 100 10 7.10714 19.3571 0 0 1 $
+	b0e 0 20 12 19
+	/main/opts/opt-0/set$20min/max$20to$20Colorbar
+4 100 100 7.10714 19.3571 0 0 1 $
+	1e 0 20 12 19
+	/main/opts/opt-0/set$20min/max$20to$20Colorbar
+4 100 100 7.10714 19.3571 0 0 1 $
+	28 0 20 12 19
+	/main/opts/opt-0/set$20min/max$20to$20Colorbar
+4 100 100 7.10714 19.3571 0 0 1 $
+	1e 0 20 12 19
+	/main/opts/opt-0/set$20min/max$20to$20Colorbar
+4 100 100 7.10714 19.3571 0 0 1 $
+	1e 0 20 12 19
+	/main/opts/opt-0/set$20min/max$20to$20Colorbar
+4 100 100 7.10714 19.3571 0 0 1 $
+	28 0 20 12 19
+	/main/opts/opt-0/set$20min/max$20to$20Colorbar
+2 100 110 7.10714 19.3571 0 0 1 $
+	0 0 20 12 19
+	/main/opts/opt-0/set$20min/max$20to$20Colorbar
+1 100 10 7.35714 0.821429 0 0 1 $
+	6c2 6 1 8 0
+	/main/top-row/manag
+4 100 100 7.35714 0.821429 0 0 1 $
+	28 6 1 8 0
+	/main/top-row/manag
+4 100 100 7.35714 0.821429 0 0 1 $
+	1e 6 1 8 0
+	/main/top-row/manag
+4 100 100 7.35714 0.821429 0 0 1 $
+	1e 6 1 8 0
+	/main/top-row/manag
+4 100 100 7.35714 0.821429 0 0 1 $
+	28 6 1 8 0
+	/main/top-row/manag
+2 100 110 7.35714 0.821429 0 0 1 $
+	0 6 1 8 0
+	/main/top-row/manag
+1 100 10 6.64286 4 0 0 1 $
+	f6e 4.5625 4.25 8.875 3.25
+	/main/manag/misc/display-method
+4 100 100 6.64286 4 0 0 1 $
+	1e 4.5625 4.25 8.875 3.25
+	/main/manag/misc/display-method
+4 100 100 6.64286 4 0 0 1 $
+	28 4.5625 4.25 8.875 3.25
+	/main/manag/misc/display-method
+4 100 100 6.64286 4 0 0 1 $
+	1e 4.5625 4.25 8.875 3.25
+	/main/manag/misc/display-method
+4 100 100 6.64286 4 0 0 1 $
+	1e 4.5625 4.25 8.875 3.25
+	/main/manag/misc/display-method
+2 100 110 6.64286 4 0 0 1 $
+	0 4.5625 4.25 8.875 3.25
+	/main/manag/misc/display-method
+1 100 10 6.25 7.14286 0 0 1 $
+	500 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 6.25 7.14286 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 6.25 7.14286 0 0 1 $
+	28 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 6.25 7.14286 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+2 100 110 6.25 7.14286 0 0 1 $
+	0 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+1 100 10 6.25 7.14286 0 0 1 $
+	122 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 6.25 7.14286 0 0 1 $
+	14 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 6.25 7.14286 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 6.25 7.14286 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 6.25 7.14286 0 0 1 $
+	28 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+2 100 110 6.25 7.14286 0 0 1 $
+	0 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+1 100 10 6.25 7.14286 0 0 1 $
+	64 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 6.25 7.14286 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 6.25 7.14286 0 0 1 $
+	28 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 6.25 7.14286 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 6.25 7.14286 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+2 100 110 6.25 7.14286 0 0 1 $
+	0 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+1 100 10 4.17857 6.85714 0 0 1 $
+	12c 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 4.17857 6.85714 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 4.17857 6.85714 0 0 1 $
+	28 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 4.17857 6.85714 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 4.17857 6.85714 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+2 100 110 4.17857 6.85714 0 0 1 $
+	0 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+1 100 10 4.17857 6.85714 0 0 1 $
+	3c 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 4.17857 6.85714 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 4.17857 6.85714 0 0 1 $
+	28 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 4.17857 6.85714 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 4.17857 6.85714 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+2 100 110 4.17857 6.85714 0 0 1 $
+	0 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+1 100 10 4.46429 7.96429 0 0 1 $
+	460 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 4.46429 7.96429 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 4.46429 7.96429 0 0 1 $
+	28 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 4.46429 7.96429 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+2 100 110 4.46429 7.96429 0 0 1 $
+	0 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+1 100 10 4.46429 7.96429 0 0 1 $
+	50 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 4.46429 7.96429 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 4.46429 7.96429 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 4.46429 7.96429 0 0 1 $
+	28 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+4 100 100 4.46429 7.96429 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+2 100 110 4.46429 7.96429 0 0 1 $
+	0 0.25 14.25 10.75 6.25
+	/display-method/method/list/display-method
+1 100 10 4.03571 14.6786 0 0 1 $
+	33e 0.25 15.25 6 14.25
+	/display-method/method/cancel
+4 100 100 4.03571 14.6786 0 0 1 $
+	1e 0.25 15.25 6 14.25
+	/display-method/method/cancel
+4 100 100 4.03571 14.6786 0 0 1 $
+	1e 0.25 15.25 6 14.25
+	/display-method/method/cancel
+4 100 100 4.03571 14.6786 0 0 1 $
+	28 0.25 15.25 6 14.25
+	/display-method/method/cancel
+2 100 110 4.03571 14.6786 0 0 1 $
+	0 0.25 15.25 6 14.25
+	/display-method/method/cancel
+1 100 10 4.03571 15.4643 0 0 1 $
+	29e 0.25 15.75 6 14.75
+	/main/manag/scene/scene-display-method
+4 100 100 4.03571 15.4643 0 0 1 $
+	14 0.25 15.75 6 14.75
+	/main/manag/scene/scene-display-method
+4 100 100 4.03571 15.4643 0 0 1 $
+	1e 0.25 15.75 6 14.75
+	/main/manag/scene/scene-display-method
+4 100 100 4.03571 15.4643 0 0 1 $
+	1e 0.25 15.75 6 14.75
+	/main/manag/scene/scene-display-method
+2 100 110 4.03571 15.4643 0 0 1 $
+	0 0.25 15.75 6 14.75
+	/main/manag/scene/scene-display-method
+1 100 10 7.46429 7.35714 0 0 1 $
+	3ca 0.25 12.25 10.75 4.25
+	/scene-display-method/method/list/scene-display-method
+4 100 100 7.46429 7.35714 0 0 1 $
+	1e 0.25 12.25 10.75 4.25
+	/scene-display-method/method/list/scene-display-method
+4 100 100 7.46429 7.35714 0 0 1 $
+	28 0.25 12.25 10.75 4.25
+	/scene-display-method/method/list/scene-display-method
+2 100 110 7.46429 7.35714 0 0 1 $
+	0 0.25 12.25 10.75 4.25
+	/scene-display-method/method/list/scene-display-method
+1 100 10 7.46429 12.6786 0 0 1 $
+	26c 6 13.25 11.75 12.25
+	/scene-display-method/method/Ok
+4 100 100 7.46429 12.6786 0 0 1 $
+	1e 6 13.25 11.75 12.25
+	/scene-display-method/method/Ok
+8 100 100 7.5 12.6786 0.0357143 0 1 $
+	0 6 13.25 11.75 12.25
+	/scene-display-method/method/Ok
+4 100 100 7.5 12.6786 0 0 1 $
+	28 6 13.25 11.75 12.25
+	/scene-display-method/method/Ok
+4 100 100 7.5 12.6786 0 0 1 $
+	1e 6 13.25 11.75 12.25
+	/scene-display-method/method/Ok
+2 100 110 7.5 12.6786 0 0 1 $
+	0 6 13.25 11.75 12.25
+	/scene-display-method/method/Ok
+1 100 10 9 0.607143 0 0 1 $
+	d02 8 1 10 0
+	/main/top-row/opts
+4 100 100 9 0.607143 0 0 1 $
+	1e 8 1 10 0
+	/main/top-row/opts
+4 100 100 9 0.607143 0 0 1 $
+	28 8 1 10 0
+	/main/top-row/opts
+4 100 100 9 0.607143 0 0 1 $
+	1e 8 1 10 0
+	/main/top-row/opts
+2 100 110 9 0.607143 0 0 1 $
+	0 8 1 10 0
+	/main/top-row/opts
+1 100 10 6.07143 19.3929 0 0 1 $
+	79e 0 20 12 19
+	/main/opts/opt-0/set$20min/max$20to$20Colorbar
+4 100 100 6.07143 19.3929 0 0 1 $
+	1e 0 20 12 19
+	/main/opts/opt-0/set$20min/max$20to$20Colorbar
+4 100 100 6.07143 19.3929 0 0 1 $
+	28 0 20 12 19
+	/main/opts/opt-0/set$20min/max$20to$20Colorbar
+4 100 100 6.07143 19.3929 0 0 1 $
+	1e 0 20 12 19
+	/main/opts/opt-0/set$20min/max$20to$20Colorbar
+4 100 100 6.07143 19.3929 0 0 1 $
+	1e 0 20 12 19
+	/main/opts/opt-0/set$20min/max$20to$20Colorbar
+2 100 110 6.07143 19.3929 0 0 1 $
+	0 0 20 12 19
+	/main/opts/opt-0/set$20min/max$20to$20Colorbar
+1 100 10 7.25 0.571429 0 0 1 $
+	170c 6 1 8 0
+	/main/top-row/manag
+4 100 100 7.25 0.571429 0 0 1 $
+	1e 6 1 8 0
+	/main/top-row/manag
+4 100 100 7.25 0.571429 0 0 1 $
+	28 6 1 8 0
+	/main/top-row/manag
+4 100 100 7.25 0.571429 0 0 1 $
+	1e 6 1 8 0
+	/main/top-row/manag
+2 100 110 7.25 0.571429 0 0 1 $
+	0 6 1 8 0
+	/main/top-row/manag
+1 100 10 10.3214 3.75 0 0 1 $
+	406 8.875 4.25 11.75 3.25
+	/main/manag/misc/switches
+4 100 100 10.3214 3.75 0 0 1 $
+	1e 8.875 4.25 11.75 3.25
+	/main/manag/misc/switches
+4 100 100 10.3214 3.75 0 0 1 $
+	28 8.875 4.25 11.75 3.25
+	/main/manag/misc/switches
+4 100 100 10.3214 3.75 0 0 1 $
+	1e 8.875 4.25 11.75 3.25
+	/main/manag/misc/switches
+4 100 100 10.3214 3.75 0 0 1 $
+	1e 8.875 4.25 11.75 3.25
+	/main/manag/misc/switches
+4 100 100 10.3214 3.75 0 0 1 $
+	28 8.875 4.25 11.75 3.25
+	/main/manag/misc/switches
+4 100 100 10.3214 3.75 0 0 1 $
+	1e 8.875 4.25 11.75 3.25
+	/main/manag/misc/switches
+4 100 100 10.3214 3.75 0 0 1 $
+	1e 8.875 4.25 11.75 3.25
+	/main/manag/misc/switches
+4 100 100 10.3214 3.75 0 0 1 $
+	28 8.875 4.25 11.75 3.25
+	/main/manag/misc/switches
+4 100 100 10.3214 3.75 0 0 1 $
+	1e 8.875 4.25 11.75 3.25
+	/main/manag/misc/switches
+4 100 100 10.3214 3.75 0 0 1 $
+	1e 8.875 4.25 11.75 3.25
+	/main/manag/misc/switches
+4 100 100 10.3214 3.75 0 0 1 $
+	28 8.875 4.25 11.75 3.25
+	/main/manag/misc/switches
+2 100 110 10.3214 3.75 0 0 1 $
+	0 8.875 4.25 11.75 3.25
+	/main/manag/misc/switches
+1 100 10 9.60714 5.92857 0 0 1 $
+	2c6 7.75 6.25 11.75 5.25
+	/switches/grid-patch
+4 100 100 9.60714 5.92857 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.60714 5.92857 0 0 1 $
+	28 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.60714 5.92857 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+2 100 110 9.60714 5.92857 0 0 1 $
+	0 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+1 100 10 9.60714 5.92857 0 0 1 $
+	15e 7.75 6.25 11.75 5.25
+	/switches/grid-patch
+4 100 100 9.60714 5.92857 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.60714 5.92857 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.60714 5.92857 0 0 1 $
+	28 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.60714 5.92857 0 0 1 $
+	a 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.60714 5.92857 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.60714 5.92857 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.60714 5.92857 0 0 1 $
+	28 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.60714 5.92857 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.60714 5.92857 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.60714 5.92857 0 0 1 $
+	28 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.60714 5.92857 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.60714 5.92857 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.60714 5.92857 0 0 1 $
+	28 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.60714 5.92857 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+8 100 100 9.64286 6.21429 0.0357143 0.285714 1 $
+	0 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.64286 6.21429 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+8 100 100 9.67857 6.46429 0.0357143 0.25 1 $
+	0 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.67857 6.46429 0 0 1 $
+	28 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+8 100 100 9.71429 6.64286 0.0357143 0.178571 1 $
+	0 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.71429 6.64286 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+8 100 100 9.71429 6.82143 0 0.178571 1 $
+	0 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.71429 6.82143 0 0 1 $
+	28 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+8 100 100 9.71429 6.89286 0 0.0714286 1 $
+	0 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.71429 6.89286 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.71429 6.89286 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.71429 6.89286 0 0 1 $
+	28 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.71429 6.89286 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.71429 6.89286 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.71429 6.89286 0 0 1 $
+	28 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+4 100 100 9.71429 6.89286 0 0 1 $
+	1e 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+2 100 110 9.71429 6.89286 0 0 1 $
+	0 7.60714 7.7619 11.6071 4.2619
+	/combo-box/combo-list
+1 100 10 10 16.7857 0 0 1 $
+	8de 7.75 17.25 11.75 16.25
+	/switches/dismiss
+4 100 100 10 16.7857 0 0 1 $
+	1e 7.75 17.25 11.75 16.25
+	/switches/dismiss
+4 100 100 10 16.7857 0 0 1 $
+	1e 7.75 17.25 11.75 16.25
+	/switches/dismiss
+4 100 100 10 16.7857 0 0 1 $
+	1e 7.75 17.25 11.75 16.25
+	/switches/dismiss
+4 100 100 10 16.7857 0 0 1 $
+	28 7.75 17.25 11.75 16.25
+	/switches/dismiss
+2 100 110 10 16.7857 0 0 1 $
+	0 7.75 17.25 11.75 16.25
+	/switches/dismiss
+1 100 10 2.39286 12.6429 0 0 1 $
+	8c0 0.25 13.25 4.08333 12.25
+	/main/manag/object-tree/mark
+4 100 100 2.39286 12.6429 0 0 1 $
+	1e 0.25 13.25 4.08333 12.25
+	/main/manag/object-tree/mark
+4 100 100 2.39286 12.6429 0 0 1 $
+	1e 0.25 13.25 4.08333 12.25
+	/main/manag/object-tree/mark
+4 100 100 2.39286 12.6429 0 0 1 $
+	28 0.25 13.25 4.08333 12.25
+	/main/manag/object-tree/mark
+2 100 110 2.39286 12.6429 0 0 1 $
+	0 0.25 13.25 4.08333 12.25
+	/main/manag/object-tree/mark
+1 100 10 4.60714 12.9286 0 0 1 $
+	28a 4.08333 13.25 7.91667 12.25
+	/main/manag/object-tree/copy
+4 100 100 4.60714 12.9286 0 0 1 $
+	1e 4.08333 13.25 7.91667 12.25
+	/main/manag/object-tree/copy
+4 100 100 4.60714 12.9286 0 0 1 $
+	28 4.08333 13.25 7.91667 12.25
+	/main/manag/object-tree/copy
+4 100 100 4.60714 12.9286 0 0 1 $
+	1e 4.08333 13.25 7.91667 12.25
+	/main/manag/object-tree/copy
+2 100 110 4.60714 12.9286 0 0 1 $
+	0 4.08333 13.25 7.91667 12.25
+	/main/manag/object-tree/copy
+1 100 10 5.03571 11.2857 0 0 1 $
+	170c 4 12 8 10
+	/main/manag/bigbutton[2][1]
+4 100 100 5.03571 11.2857 0 0 1 $
+	1e 4 12 8 10
+	/main/manag/bigbutton[2][1]
+4 100 100 5.03571 11.2857 0 0 1 $
+	28 4 12 8 10
+	/main/manag/bigbutton[2][1]
+2 100 110 5.03571 11.2857 0 0 1 $
+	0 4 12 8 10
+	/main/manag/bigbutton[2][1]
+1 100 10 2.60714 12.5714 0 0 1 $
+	f8c 0.25 13.25 4.08333 12.25
+	/main/manag/object-tree/mark
+4 100 100 2.60714 12.5714 0 0 1 $
+	1e 0.25 13.25 4.08333 12.25
+	/main/manag/object-tree/mark
+4 100 100 2.60714 12.5714 0 0 1 $
+	1e 0.25 13.25 4.08333 12.25
+	/main/manag/object-tree/mark
+4 100 100 2.60714 12.5714 0 0 1 $
+	28 0.25 13.25 4.08333 12.25
+	/main/manag/object-tree/mark
+2 100 110 2.60714 12.5714 0 0 1 $
+	0 0.25 13.25 4.08333 12.25
+	/main/manag/object-tree/mark
+1 100 10 2.78571 4.03571 0 0 1 $
+	974 0.25 4.25 4.5625 3.25
+	/main/manag/misc/send-method
+4 100 100 2.78571 4.03571 0 0 1 $
+	1e 0.25 4.25 4.5625 3.25
+	/main/manag/misc/send-method
+4 100 100 2.78571 4.03571 0 0 1 $
+	1e 0.25 4.25 4.5625 3.25
+	/main/manag/misc/send-method
+4 100 100 2.78571 4.03571 0 0 1 $
+	28 0.25 4.25 4.5625 3.25
+	/main/manag/misc/send-method
+2 100 110 2.78571 4.03571 0 0 1 $
+	0 0.25 4.25 4.5625 3.25
+	/main/manag/misc/send-method
+1 100 10 7.03571 8.10714 0 0 1 $
+	3fc 0.25 14.25 10.75 6.25
+	/send-method/method/list/send-method
+4 100 100 7.03571 8.10714 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/send-method/method/list/send-method
+4 100 100 7.03571 8.10714 0 0 1 $
+	1e 0.25 14.25 10.75 6.25
+	/send-method/method/list/send-method
+4 100 100 7.03571 8.10714 0 0 1 $
+	28 0.25 14.25 10.75 6.25
+	/send-method/method/list/send-method
+2 100 110 7.03571 8.10714 0 0 1 $
+	0 0.25 14.25 10.75 6.25
+	/send-method/method/list/send-method
+1 100 10 8.42857 15.1071 0 0 1 $
+	1ea 6 15.25 11.75 14.25
+	/send-method/method/Ok
+4 100 100 8.42857 15.1071 0 0 1 $
+	1e 6 15.25 11.75 14.25
+	/send-method/method/Ok
+4 100 100 8.42857 15.1071 0 0 1 $
+	28 6 15.25 11.75 14.25
+	/send-method/method/Ok
+4 100 100 8.42857 15.1071 0 0 1 $
+	1e 6 15.25 11.75 14.25
+	/send-method/method/Ok
+2 100 110 8.42857 15.1071 0 0 1 $
+	0 6 15.25 11.75 14.25
+	/send-method/method/Ok
+1 100 10 7.39286 10 0 0 1 $
+	406 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+4 100 100 7.39286 10 0 0 1 $
+	28 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+4 100 100 7.39286 10 0 0 1 $
+	1e 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+4 100 100 7.39286 10 0 0 1 $
+	1e 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+2 100 110 7.39286 10 0 0 1 $
+	0 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 56 11 7.39286 10 0 0 1 $
+	8ac 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 45 11 7.39286 10 0 0 1 $
+	d2 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 43 11 7.39286 10 0 0 1 $
+	168 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 54 11 7.39286 10 0 0 1 $
+	a0 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 28 11 7.39286 10 0 0 1 $
+	212 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 63 10 7.39286 10 0 0 1 $
+	546 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 6f 10 7.39286 10 0 0 1 $
+	aa 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 6d 10 7.39286 10 0 0 1 $
+	5a 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 70 10 7.39286 10 0 0 1 $
+	aa 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 75 10 7.39286 10 0 0 1 $
+	d2 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 74 10 7.39286 10 0 0 1 $
+	14a 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 65 10 7.39286 10 0 0 1 $
+	64 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 64 10 7.39286 10 0 0 1 $
+	be 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 5f 11 7.39286 10 0 0 1 $
+	190 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 5f 11 7.39286 10 0 0 1 $
+	be 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 76 10 7.39286 10 0 0 1 $
+	19a 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 65 10 7.39286 10 0 0 1 $
+	32 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 6c 10 7.39286 10 0 0 1 $
+	294 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 6f 10 7.39286 10 0 0 1 $
+	d2 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 63 10 7.39286 10 0 0 1 $
+	8c 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 69 10 7.39286 10 0 0 1 $
+	96 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 74 10 7.39286 10 0 0 1 $
+	a0 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 79 10 7.39286 10 0 0 1 $
+	a0 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 5b 10 7.39286 10 0 0 1 $
+	730 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 30 10 7.39286 10 0 0 1 $
+	49c 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 5d 10 7.39286 10 0 0 1 $
+	104 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 2c 10 7.39286 10 0 0 1 $
+	474 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 63 10 7.39286 10 0 0 1 $
+	30c 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 6f 10 7.39286 10 0 0 1 $
+	64 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 6d 10 7.39286 10 0 0 1 $
+	78 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 70 10 7.39286 10 0 0 1 $
+	dc 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 75 10 7.39286 10 0 0 1 $
+	82 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 74 10 7.39286 10 0 0 1 $
+	96 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 65 10 7.39286 10 0 0 1 $
+	5a 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 64 10 7.39286 10 0 0 1 $
+	f0 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 5f 11 7.39286 10 0 0 1 $
+	474 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 5f 11 7.39286 10 0 0 1 $
+	8c 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 76 10 7.39286 10 0 0 1 $
+	17c 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 65 10 7.39286 10 0 0 1 $
+	64 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 6c 10 7.39286 10 0 0 1 $
+	d2 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 6f 10 7.39286 10 0 0 1 $
+	dc 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 63 10 7.39286 10 0 0 1 $
+	d2 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 69 10 7.39286 10 0 0 1 $
+	a0 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 74 10 7.39286 10 0 0 1 $
+	122 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 79 10 7.39286 10 0 0 1 $
+	a0 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 5b 10 7.39286 10 0 0 1 $
+	370 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 31 10 7.39286 10 0 0 1 $
+	186 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 5d 10 7.39286 10 0 0 1 $
+	b4 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+10 29 11 7.39286 10 0 0 1 $
+	42e 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+20 0 10 7.39286 10 0 0 1 $
+	3a2 3.6 10.4 10.8 9.4
+	/DAT$20interpol/func$20string
+1 100 10 7.42857 11.7857 0 0 1 $
+	97e 0.75 14 11.25 7
+	/DAT$20interpol
+4 100 100 7.42857 11.7857 0 0 1 $
+	1e 0.75 14 11.25 7
+	/DAT$20interpol
+4 100 100 7.42857 11.7857 0 0 1 $
+	28 0.75 14 11.25 7
+	/DAT$20interpol
+2 100 110 7.42857 11.7857 0 0 1 $
+	0 0.75 14 11.25 7
+	/DAT$20interpol
+1 100 10 7.60714 11.25 0 0 1 $
+	140 3.6 11.6 10.8 10.6
+	/DAT$20interpol/evaluate
+4 100 100 7.60714 11.25 0 0 1 $
+	28 3.6 11.6 10.8 10.6
+	/DAT$20interpol/evaluate
+4 100 100 7.60714 11.25 0 0 1 $
+	1e 3.6 11.6 10.8 10.6
+	/DAT$20interpol/evaluate
+4 100 100 7.60714 11.25 0 0 1 $
+	1e 3.6 11.6 10.8 10.6
+	/DAT$20interpol/evaluate
+2 100 110 7.60714 11.25 0 0 1 $
+	0 3.6 11.6 10.8 10.6
+	/DAT$20interpol/evaluate
+1 100 10 9.82143 13.25 0 0 1 $
+	1324 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	28 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	1e 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	1e 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	28 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	1e 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	1e 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	28 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	a 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	1e 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	28 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	1e 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	1e 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	28 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	1e 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	1e 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	28 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	1e 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	1e 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	28 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	1e 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+4 100 100 9.82143 13.25 0 0 1 $
+	1e 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+2 100 110 9.82143 13.25 0 0 1 $
+	0 7.8 13.5 10.8 12.5
+	/DAT$20interpol/switches
+1 100 10 10.4286 18.4286 0 0 1 $
+	3e8 7.25 18.8 11.25 17.8
+	/DAT$20switches/hide$20DAT
+4 100 100 10.4286 18.4286 0 0 1 $
+	28 7.25 18.8 11.25 17.8
+	/DAT$20switches/hide$20DAT
+4 100 100 10.4286 18.4286 0 0 1 $
+	1e 7.25 18.8 11.25 17.8
+	/DAT$20switches/hide$20DAT
+2 100 110 10.4286 18.4286 0 0 1 $
+	0 7.25 18.8 11.25 17.8
+	/DAT$20switches/hide$20DAT
+1 100 10 4.21429 15.1786 0 0 1 $
+	12e8 0.25 15.75 6 14.75
+	/main/manag/scene/scene-display-method
+4 100 100 4.21429 15.1786 0 0 1 $
+	1e 0.25 15.75 6 14.75
+	/main/manag/scene/scene-display-method
+4 100 100 4.21429 15.1786 0 0 1 $
+	28 0.25 15.75 6 14.75
+	/main/manag/scene/scene-display-method
+2 100 110 4.21429 15.1786 0 0 1 $
+	0 0.25 15.75 6 14.75
+	/main/manag/scene/scene-display-method
+10 76 10 3.78571 12.6786 0 0 1 $
+	12fc 0.25 13.25 6 12.25
+	/scene-display-method/method/cancel
+10 65 10 3.78571 12.6786 0 0 1 $
+	5a 0.25 13.25 6 12.25
+	/scene-display-method/method/cancel
+10 63 10 3.78571 12.6786 0 0 1 $
+	316 0.25 13.25 6 12.25
+	/scene-display-method/method/cancel
+10 74 10 3.78571 12.6786 0 0 1 $
+	104 0.25 13.25 6 12.25
+	/scene-display-method/method/cancel
+10 2d 10 3.78571 12.6786 0 0 1 $
+	14a 0.25 13.25 6 12.25
+	/scene-display-method/method/cancel
+10 64 10 3.78571 12.6786 0 0 1 $
+	19a 0.25 13.25 6 12.25
+	/scene-display-method/method/cancel
+10 69 10 3.78571 12.6786 0 0 1 $
+	b4 0.25 13.25 6 12.25
+	/scene-display-method/method/cancel
+10 73 10 3.78571 12.6786 0 0 1 $
+	aa 0.25 13.25 6 12.25
+	/scene-display-method/method/cancel
+10 70 10 3.78571 12.6786 0 0 1 $
+	78 0.25 13.25 6 12.25
+	/scene-display-method/method/cancel
+20 0 10 3.78571 12.6786 0 0 1 $
+	24e 0.25 13.25 6 12.25
+	/scene-display-method/method/cancel
+1 100 10 8.85714 0.785714 0 0 1 $
+	a1e 8 1 10 0
+	/main/top-row/opts
+4 100 100 8.85714 0.785714 0 0 1 $
+	28 8 1 10 0
+	/main/top-row/opts
+4 100 100 8.85714 0.785714 0 0 1 $
+	1e 8 1 10 0
+	/main/top-row/opts
+4 100 100 8.85714 0.785714 0 0 1 $
+	1e 8 1 10 0
+	/main/top-row/opts
+2 100 110 8.85714 0.785714 0 0 1 $
+	0 8 1 10 0
+	/main/top-row/opts
+1 100 10 3.14286 1.75 0 0 1 $
+	4c4 2 2 4 1
+	/main/opts/opt-row/opt-1
+4 100 100 3.14286 1.75 0 0 1 $
+	28 2 2 4 1
+	/main/opts/opt-row/opt-1
+4 100 100 3.14286 1.75 0 0 1 $
+	1e 2 2 4 1
+	/main/opts/opt-row/opt-1
+4 100 100 3.14286 1.75 0 0 1 $
+	1e 2 2 4 1
+	/main/opts/opt-row/opt-1
+2 100 110 3.14286 1.75 0 0 1 $
+	0 2 2 4 1
+	/main/opts/opt-row/opt-1
+1 100 10 0.714286 1.46429 0 0 1 $
+	49c 0 2 2 1
+	/main/opts/opt-row/opt-0
+4 100 100 0.714286 1.46429 0 0 1 $
+	1e 0 2 2 1
+	/main/opts/opt-row/opt-0
+4 100 100 0.714286 1.46429 0 0 1 $
+	1e 0 2 2 1
+	/main/opts/opt-row/opt-0
+4 100 100 0.714286 1.46429 0 0 1 $
+	28 0 2 2 1
+	/main/opts/opt-row/opt-0
+2 100 110 0.714286 1.46429 0 0 1 $
+	0 0 2 2 1
+	/main/opts/opt-row/opt-0
+1 100 10 6.71429 0.714286 0 0 1 $
+	e9c 6 1 8 0
+	/main/top-row/manag
+4 100 100 6.71429 0.714286 0 0 1 $
+	28 6 1 8 0
+	/main/top-row/manag
+8 100 100 6.85714 0.678571 0.142857 -0.0357143 1 $
+	0 6 1 8 0
+	/main/top-row/manag
+4 100 100 6.85714 0.678571 0 0 1 $
+	1e 6 1 8 0
+	/main/top-row/manag
+8 100 100 6.92857 0.678571 0.0714286 0 1 $
+	0 6 1 8 0
+	/main/top-row/manag
+4 100 100 6.92857 0.678571 0 0 1 $
+	1e 6 1 8 0
+	/main/top-row/manag
+4 100 100 6.92857 0.678571 0 0 1 $
+	28 6 1 8 0
+	/main/top-row/manag
+2 100 110 6.92857 0.678571 0 0 1 $
+	0 6 1 8 0
+	/main/top-row/manag
+1 100 10 6.46429 6.60714 0 0 1 $
+	5be 4 8 8 6
+	/main/manag/bigbutton[0][1]
+4 100 100 6.46429 6.60714 0 0 1 $
+	28 4 8 8 6
+	/main/manag/bigbutton[0][1]
+4 100 100 6.46429 6.60714 0 0 1 $
+	1e 4 8 8 6
+	/main/manag/bigbutton[0][1]
+2 100 110 6.46429 6.60714 0 0 1 $
+	0 4 8 8 6
+	/main/manag/bigbutton[0][1]
+1 100 10 8.92857 0.535714 0 0 1 $
+	5c8 8 1 10 0
+	/main/top-row/opts
+4 100 100 8.92857 0.535714 0 0 1 $
+	1e 8 1 10 0
+	/main/top-row/opts
+4 100 100 8.92857 0.535714 0 0 1 $
+	1e 8 1 10 0
+	/main/top-row/opts
+4 100 100 8.92857 0.535714 0 0 1 $
+	28 8 1 10 0
+	/main/top-row/opts
+2 100 110 8.92857 0.535714 0 0 1 $
+	0 8 1 10 0
+	/main/top-row/opts
+1 100 10 2.89286 1.53571 0 0 1 $
+	3fc 2 2 4 1
+	/main/opts/opt-row/opt-1
+4 100 100 2.89286 1.53571 0 0 1 $
+	28 2 2 4 1
+	/main/opts/opt-row/opt-1
+4 100 100 2.89286 1.53571 0 0 1 $
+	1e 2 2 4 1
+	/main/opts/opt-row/opt-1
+2 100 110 2.89286 1.53571 0 0 1 $
+	0 2 2 4 1
+	/main/opts/opt-row/opt-1
+1 100 10 1.67857 5.82143 0 0 1 $
+	b54 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 1.67857 5.82143 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 1.67857 5.82143 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 1.67857 5.82143 0 0 1 $
+	1e 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 1.67857 5.82143 0 0 1 $
+	1e 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 1.67857 5.82143 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 1.67857 5.82143 0 0 1 $
+	1e 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+8 100 100 1.71429 5.82143 0.0357143 0 1 $
+	0 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+8 100 100 1.75 5.82143 0.0357143 0 1 $
+	0 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 1.75 5.82143 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+8 100 100 1.82143 5.82143 0.0714286 0 1 $
+	0 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+8 100 100 1.85714 5.82143 0.0357143 0 1 $
+	a 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 1.85714 5.82143 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+8 100 100 1.89286 5.82143 0.0357143 0 1 $
+	0 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+8 100 100 1.92857 5.82143 0.0357143 0 1 $
+	a 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 1.92857 5.82143 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+8 100 100 2 5.82143 0.0714286 0 1 $
+	0 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2 5.82143 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2 5.82143 0 0 1 $
+	1e 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2 5.82143 0 0 1 $
+	1e 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2 5.82143 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+8 100 100 2.03571 5.82143 0.0357143 0 1 $
+	0 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2.03571 5.82143 0 0 1 $
+	14 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+8 100 100 2.07143 5.82143 0.0357143 0 1 $
+	0 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2.07143 5.82143 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+8 100 100 2.14286 5.82143 0.0714286 0 1 $
+	0 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2.14286 5.82143 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2.14286 5.82143 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2.14286 5.82143 0 0 1 $
+	1e 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2.14286 5.82143 0 0 1 $
+	1e 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+8 100 100 2.17857 5.82143 0.0357143 0 1 $
+	0 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2.17857 5.82143 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+8 100 100 2.21429 5.78571 0.0357143 -0.0357143 1 $
+	0 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2.21429 5.78571 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2.21429 5.78571 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+8 100 100 2.25 5.78571 0.0357143 0 1 $
+	0 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2.25 5.78571 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+8 100 100 2.28571 5.78571 0.0357143 0 1 $
+	0 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+8 100 100 2.32143 5.78571 0.0357143 0 1 $
+	0 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2.32143 5.78571 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+8 100 100 2.35714 5.78571 0.0357143 0 1 $
+	0 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2.35714 5.78571 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2.35714 5.78571 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2.35714 5.78571 0 0 1 $
+	1e 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2.35714 5.78571 0 0 1 $
+	1e 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+4 100 100 2.35714 5.78571 0 0 1 $
+	28 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+2 100 110 2.35714 5.78571 0 0 1 $
+	0 1.25 6.25 8.45 5.25
+	/main/opts/opt-1/genmesh2d-vect/distance/pureruler
+1 100 10 10.9286 6.71429 0 0 1 $
+	988 9.45 7.25 11.75 6.25
+	/main/opts/opt-1/genmesh2d-vect/mesh-width/input
+4 100 100 10.9286 6.71429 0 0 1 $
+	28 9.45 7.25 11.75 6.25
+	/main/opts/opt-1/genmesh2d-vect/mesh-width/input
+4 100 100 10.9286 6.71429 0 0 1 $
+	1e 9.45 7.25 11.75 6.25
+	/main/opts/opt-1/genmesh2d-vect/mesh-width/input
+2 100 110 10.9286 6.71429 0 0 1 $
+	0 9.45 7.25 11.75 6.25
+	/main/opts/opt-1/genmesh2d-vect/mesh-width/input
+10 30 10 9.96429 8.39286 0 0 1 $
+	ca8 9.45 9.25 11.75 8.25
+	/main/opts/opt-1/genmesh2d-vect/length/input
+10 2e 10 9.96429 8.39286 0 0 1 $
+	302 9.45 9.25 11.75 8.25
+	/main/opts/opt-1/genmesh2d-vect/length/input
+10 30 10 9.96429 8.39286 0 0 1 $
+	1e0 9.45 9.25 11.75 8.25
+	/main/opts/opt-1/genmesh2d-vect/length/input
+10 33 10 9.96429 8.39286 0 0 1 $
+	974 9.45 9.25 11.75 8.25
+	/main/opts/opt-1/genmesh2d-vect/length/input
+10 35 10 9.96429 8.39286 0 0 1 $
+	384 9.45 9.25 11.75 8.25
+	/main/opts/opt-1/genmesh2d-vect/length/input
+20 0 10 9.96429 8.39286 0 0 1 $
+	186 9.45 9.25 11.75 8.25
+	/main/opts/opt-1/genmesh2d-vect/length/input
+1 100 10 10.5714 6.75 0 0 1 $
+	ae6 9.45 7.25 11.75 6.25
+	/main/opts/opt-1/genmesh2d-vect/mesh-width/input
+4 100 100 10.5714 6.75 0 0 1 $
+	28 9.45 7.25 11.75 6.25
+	/main/opts/opt-1/genmesh2d-vect/mesh-width/input
+4 100 100 10.5714 6.75 0 0 1 $
+	1e 9.45 7.25 11.75 6.25
+	/main/opts/opt-1/genmesh2d-vect/mesh-width/input
+4 100 100 10.5714 6.75 0 0 1 $
+	1e 9.45 7.25 11.75 6.25
+	/main/opts/opt-1/genmesh2d-vect/mesh-width/input
+2 100 110 10.5714 6.75 0 0 1 $
+	0 9.45 7.25 11.75 6.25
+	/main/opts/opt-1/genmesh2d-vect/mesh-width/input
+1 100 10 10.8571 7.75 0 0 1 $
+	708 9.45 8.25 11.75 7.25
+	/main/opts/opt-1/genmesh2d-vect/max$20length/input
+4 100 100 10.8571 7.75 0 0 1 $
+	28 9.45 8.25 11.75 7.25
+	/main/opts/opt-1/genmesh2d-vect/max$20length/input
+4 100 100 10.8571 7.75 0 0 1 $
+	0 9.45 8.25 11.75 7.25
+	/main/opts/opt-1/genmesh2d-vect/max$20length/input
+4 100 100 10.8571 7.75 0 0 1 $
+	28 9.45 8.25 11.75 7.25
+	/main/opts/opt-1/genmesh2d-vect/max$20length/input
+4 100 100 10.8571 7.75 0 0 1 $
+	1e 9.45 8.25 11.75 7.25
+	/main/opts/opt-1/genmesh2d-vect/max$20length/input
+4 100 100 10.8571 7.75 0 0 1 $
+	1e 9.45 8.25 11.75 7.25
+	/main/opts/opt-1/genmesh2d-vect/max$20length/input
+2 100 110 10.8571 7.75 0 0 1 $
+	0 9.45 8.25 11.75 7.25
+	/main/opts/opt-1/genmesh2d-vect/max$20length/input
+10 31 10 10.8571 7.75 0 0 1 $
+	c8a 9.45 8.25 11.75 7.25
+	/main/opts/opt-1/genmesh2d-vect/max$20length/input
+20 0 10 10.8571 7.75 0 0 1 $
+	23a 9.45 8.25 11.75 7.25
+	/main/opts/opt-1/genmesh2d-vect/max$20length/input
+1 100 10 4.89286 0.678571 0 0 1 $
+	30c0 4 1 6 0
+	/main/top-row/trans
+4 100 100 4.89286 0.678571 0 0 1 $
+	1e 4 1 6 0
+	/main/top-row/trans
+4 100 100 4.89286 0.678571 0 0 1 $
+	28 4 1 6 0
+	/main/top-row/trans
+4 100 100 4.89286 0.678571 0 0 1 $
+	1e 4 1 6 0
+	/main/top-row/trans
+2 100 110 4.89286 0.678571 0 0 1 $
+	0 4 1 6 0
+	/main/top-row/trans
+1 100 10 1.60714 22.4643 0 0 1 $
+	6cc 0.25 22.75 3.75 21.75
+	/main/trans/fit2window/fit2window
+4 100 100 1.60714 22.4643 0 0 1 $
+	1e 0.25 22.75 3.75 21.75
+	/main/trans/fit2window/fit2window
+4 100 100 1.60714 22.4643 0 0 1 $
+	28 0.25 22.75 3.75 21.75
+	/main/trans/fit2window/fit2window
+4 100 100 1.60714 22.4643 0 0 1 $
+	1e 0.25 22.75 3.75 21.75
+	/main/trans/fit2window/fit2window
+4 100 100 1.60714 22.4643 0 0 1 $
+	1e 0.25 22.75 3.75 21.75
+	/main/trans/fit2window/fit2window
+2 100 110 1.60714 22.4643 0 0 1 $
+	0 0.25 22.75 3.75 21.75
+	/main/trans/fit2window/fit2window
+1 100 10 9.03571 0.464286 0 0 1 $
+	0 8 1 10 0
+	/main/top-row/opts
+4 100 100 9.03571 0.464286 0 0 1 $
+	28 8 1 10 0
+	/main/top-row/opts
+4 100 100 9.03571 0.464286 0 0 1 $
+	0 8 1 10 0
+	/main/top-row/opts
+4 100 100 9.03571 0.464286 0 0 1 $
+	1e 8 1 10 0
+	/main/top-row/opts
+4 100 100 9.03571 0.464286 0 0 1 $
+	28 8 1 10 0
+	/main/top-row/opts
+2 100 110 9.03571 0.464286 0 0 1 $
+	0 8 1 10 0
+	/main/top-row/opts
+1 100 10 0.892857 1.21429 0 0 1 $
+	5be 0 2 2 1
+	/main/opts/opt-row/opt-0
+4 100 100 0.892857 1.21429 0 0 1 $
+	1e 0 2 2 1
+	/main/opts/opt-row/opt-0
+4 100 100 0.892857 1.21429 0 0 1 $
+	1e 0 2 2 1
+	/main/opts/opt-row/opt-0
+4 100 100 0.892857 1.21429 0 0 1 $
+	28 0 2 2 1
+	/main/opts/opt-row/opt-0
+2 100 110 0.892857 1.21429 0 0 1 $
+	0 0 2 2 1
+	/main/opts/opt-row/opt-0
+1 100 10 7.28571 16.75 0 0 1 $
+	76c 0.25 17 11.75 16
+	/main/opts/opt-0/hpmesh2d-isoline/pop-colorbar-layer
+4 100 100 7.28571 16.75 0 0 1 $
+	28 0.25 17 11.75 16
+	/main/opts/opt-0/hpmesh2d-isoline/pop-colorbar-layer
+4 100 100 7.28571 16.75 0 0 1 $
+	1e 0.25 17 11.75 16
+	/main/opts/opt-0/hpmesh2d-isoline/pop-colorbar-layer
+2 100 110 7.28571 16.75 0 0 1 $
+	0 0.25 17 11.75 16
+	/main/opts/opt-0/hpmesh2d-isoline/pop-colorbar-layer
+1 100 10 5.78571 4.21429 0 0 1 $
+	c1c 0.5 4.75 10 3.75
+	/isoline-disp-colorshading/selector/modify-selector/predefined$20maps
+4 100 100 5.78571 4.21429 0 0 1 $
+	1e 0.5 4.75 10 3.75
+	/isoline-disp-colorshading/selector/modify-selector/predefined$20maps
+4 100 100 5.78571 4.21429 0 0 1 $
+	1e 0.5 4.75 10 3.75
+	/isoline-disp-colorshading/selector/modify-selector/predefined$20maps
+4 100 100 5.78571 4.21429 0 0 1 $
+	28 0.5 4.75 10 3.75
+	/isoline-disp-colorshading/selector/modify-selector/predefined$20maps
+2 100 110 5.78571 4.21429 0 0 1 $
+	0 0.5 4.75 10 3.75
+	/isoline-disp-colorshading/selector/modify-selector/predefined$20maps
+1 100 10 4.03571 17.1786 0 0 1 $
+	3b4c 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+4 100 100 4.03571 17.1786 0 0 1 $
+	a 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+4 100 100 4.03571 17.1786 0 0 1 $
+	1e 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+4 100 100 4.03571 17.1786 0 0 1 $
+	28 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+4 100 100 4.03571 17.1786 0 0 1 $
+	1e 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+2 100 110 4.03571 17.1786 0 0 1 $
+	0 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+1 100 10 4.03571 17.1786 0 0 1 $
+	212 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+4 100 100 4.03571 17.1786 0 0 1 $
+	1e 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+4 100 100 4.03571 17.1786 0 0 1 $
+	1e 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+4 100 100 4.03571 17.1786 0 0 1 $
+	28 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+2 100 110 4.03571 17.1786 0 0 1 $
+	0 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+1 100 10 4.14286 16.7143 0 0 1 $
+	1d1a 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+4 100 100 4.14286 16.7143 0 0 1 $
+	1e 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+4 100 100 4.14286 16.7143 0 0 1 $
+	28 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+4 100 100 4.14286 16.7143 0 0 1 $
+	1e 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+4 100 100 4.14286 16.7143 0 0 1 $
+	1e 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+2 100 110 4.14286 16.7143 0 0 1 $
+	0 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+1 100 10 4.14286 16.7143 0 0 1 $
+	c8 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+4 100 100 4.14286 16.7143 0 0 1 $
+	1e 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+4 100 100 4.14286 16.7143 0 0 1 $
+	1e 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+4 100 100 4.14286 16.7143 0 0 1 $
+	28 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+4 100 100 4.14286 16.7143 0 0 1 $
+	1e 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+2 100 110 4.14286 16.7143 0 0 1 $
+	0 0.75 20.25 8.75 8
+	/isoline-disp-colorshading/selector/predefined$20maps/select-sample/list/select-sample
+1 100 10 8.78571 25.2857 0 0 1 $
+	23a0 5.25 25.75 10.25 24.75
+	/isoline-disp-colorshading/dismiss
+4 100 100 8.78571 25.2857 0 0 1 $
+	1e 5.25 25.75 10.25 24.75
+	/isoline-disp-colorshading/dismiss
+4 100 100 8.78571 25.2857 0 0 1 $
+	1e 5.25 25.75 10.25 24.75
+	/isoline-disp-colorshading/dismiss
+4 100 100 8.78571 25.2857 0 0 1 $
+	28 5.25 25.75 10.25 24.75
+	/isoline-disp-colorshading/dismiss
+2 100 110 8.78571 25.2857 0 0 1 $
+	0 5.25 25.75 10.25 24.75
+	/isoline-disp-colorshading/dismiss
