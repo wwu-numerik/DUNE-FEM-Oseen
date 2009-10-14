@@ -598,7 +598,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
     profiler().StartTiming( "Problem/Postprocessing" );
 
-#if defined (COCKBURN_PROBLEM) || defined (GENRALIZED_STOKES_PROBLEM) //bool tpl-param toggles ana-soltion output in post-proc
+#if defined (COCKBURN_PROBLEM) || defined (GENRALIZED_STOKES_PROBLEM) //bool tpl-param toggles ana-solution output in post-proc
     typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, true >
         ProblemType;
 #else
