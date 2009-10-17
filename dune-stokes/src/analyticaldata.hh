@@ -366,7 +366,7 @@ class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFl
 					return;
 			}
 		#else
-			#error "InOutFluxDirichletData not implemented"
+			ASSERT_EXCEPTION( false, "only valid in aorta problem" );
 		#endif
 		}
 
