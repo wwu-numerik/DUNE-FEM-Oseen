@@ -5,7 +5,7 @@
 		<Option title="dune-stokes" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
-		<Option virtualFolders="dune-stokes/;elliptic/;dune-stuff/;" />
+		<Option virtualFolders="dune-stokes/;dune-stuff/;" />
 		<Build>
 			<Target title="uni">
 				<Option output="bin/Debug/dune-stokes" prefix_auto="1" extension_auto="1" />
@@ -64,6 +64,7 @@
 				<Option parameters="test.param" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-DAORTA_PROBLEM" />
 					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/include" />
 					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/include/parallel" />
 					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/include/serial" />
@@ -154,7 +155,7 @@
 			<Add option="-fexceptions" />
 			<Add option="-DENABLE_ALUGRID" />
 			<Add option="-DALUGRID_SIMPLEX" />
-			<Add option="-DGRIDDIM=2" />
+			<Add option="-DGRIDDIM=3" />
 			<Add option="-DPOLORDER=1" />
 			<Add option="-DHAVE_CONFIG_H" />
 			<Add option="-DDUNE_FEM_COMPATIBILITY" />
@@ -191,39 +192,6 @@
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/lib" />
 			<Add directory="/usr/lib64" />
 		</Linker>
-		<Unit filename="../elliptic/Makefile.am">
-			<Option virtualFolder="elliptic/" />
-			<Option target="uni_elliptic" />
-			<Option target="rene_elliptic" />
-			<Option target="felix_elliptic" />
-		</Unit>
-		<Unit filename="../elliptic/elementintegratortraits.hh">
-			<Option virtualFolder="elliptic/" />
-			<Option target="uni" />
-			<Option target="rene" />
-			<Option target="uni_elliptic" />
-			<Option target="rene_elliptic" />
-		</Unit>
-		<Unit filename="../elliptic/elliptic.cc">
-			<Option virtualFolder="elliptic/" />
-			<Option target="rene" />
-			<Option target="uni_elliptic" />
-			<Option target="rene_elliptic" />
-			<Option target="felix_elliptic" />
-		</Unit>
-		<Unit filename="../elliptic/model.hh">
-			<Option virtualFolder="elliptic/" />
-			<Option target="uni" />
-			<Option target="rene" />
-			<Option target="uni_elliptic" />
-			<Option target="rene_elliptic" />
-		</Unit>
-		<Unit filename="../elliptic/simpleelementintegrator.h">
-			<Option virtualFolder="elliptic/" />
-			<Option target="uni_elliptic" />
-			<Option target="rene_elliptic" />
-			<Option target="felix_elliptic" />
-		</Unit>
 		<Unit filename="../src/Makefile.am">
 			<Option virtualFolder="dune-stokes/" />
 		</Unit>
