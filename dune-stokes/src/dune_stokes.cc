@@ -13,11 +13,8 @@
     #define ENABLE_ADAPTIVE 1
 #endif
 
-#if defined(UGGRID)
-    #define OLD_DUNE_GRID_VERSION
-    #if defined(DEBUG)
-        #warning ("UGGRID in debug mode is likely to produce a segfault")
-    #endif
+#if defined(UGGRID) && defined(DEBUG)
+    #warning ("UGGRID in debug mode is likely to produce a segfault")
 #endif
 
 #if ! defined(POLORDER)
@@ -33,6 +30,11 @@
     #define VELOCITY_POLORDER POLORDER
 #endif
 
+#if ( defined(ALUGRID_SIMPLEX) && ( GRIDDIM == 3 ) ) || defined(UGGRID)
+    //this is no mistake, ALU is indeed only incompatible in 3d
+    #define OLD_DUNE_GRID_VERSION
+#endif
+
 #include <vector>
 #include <string>
 
@@ -40,6 +42,8 @@
 #include <cmath>
 #include <dune/common/mpihelper.hh> // An initializer of MPI
 #include <dune/common/exceptions.hh> // We use exceptions
+
+//!ATTENTION: undef's GRIDDIM
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
 
 #include <dune/fem/solver/oemsolver/oemsolver.hh>
