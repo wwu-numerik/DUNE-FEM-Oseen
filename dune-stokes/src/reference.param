@@ -96,6 +96,7 @@ maxIter: 5000
 
 #****************** pass ********************************************************************
 #output:
+outputMatrixPlots: 0
 Mprint: 0
 Wprint: 0
 Xprint: 0
