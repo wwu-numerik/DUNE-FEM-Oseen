@@ -2694,9 +2694,19 @@ class StokesPass
 //                gw( f_R );
 //            }
 #endif
-
             // do profiling
             profiler().StopTiming("Pass -- ASSEMBLE");
+
+            if ( Parameters().getParam( "outputMatrixPlots", true ) ) {
+                Stuff::matrixToGnuplotFile( Ematrix.matrix(),       std::string( "mat_E.gnuplot")       );
+                Stuff::matrixToGnuplotFile( Wmatrix.matrix(),       std::string( "mat_W.gnuplot")       );
+                Stuff::matrixToGnuplotFile( Xmatrix.matrix(),       std::string( "mat_X.gnuplot")       );
+                Stuff::matrixToGnuplotFile( Ymatrix.matrix(),       std::string( "mat_Y.gnuplot")       );
+                Stuff::matrixToGnuplotFile( Zmatrix.matrix(),       std::string( "mat_Z.gnuplot")       );
+                Stuff::matrixToGnuplotFile( Rmatrix.matrix(),       std::string( "mat_R.gnuplot")       );
+                Stuff::matrixToGnuplotFile( MInversMatrix.matrix(), std::string( "mat_M-inv.gnuplot")   );
+            }
+
             profiler().StartTiming("Pass -- SOLVER");
 
             // do solving
