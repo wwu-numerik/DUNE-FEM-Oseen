@@ -22,6 +22,8 @@ parameterlist_delimiter: ;
 per-run-log-target: 0
 per-run-output: 1
 
+visualisationFilename: visualisation
+
 #
 dgf_file_2d: grid_2d.dgf
 dgf_file_3d: grid_3d.dgf

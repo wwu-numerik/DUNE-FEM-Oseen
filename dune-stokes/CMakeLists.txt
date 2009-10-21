@@ -113,3 +113,6 @@ TARGET_LINK_LIBRARIES(dune_stokes "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${
 
 ADD_EXECUTABLE(minimal src/minimal.cc )
 TARGET_LINK_LIBRARIES(minimal "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS} "gr" "GL")
+
+ADD_EXECUTABLE(visualisation src/visualisation.cc )
+TARGET_LINK_LIBRARIES(visualisation "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS} "gr" "GL")

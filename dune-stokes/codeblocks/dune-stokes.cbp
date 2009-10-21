@@ -5,7 +5,7 @@
 		<Option title="dune-stokes" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
-		<Option virtualFolders="dune-stokes/;dune-stuff/;" />
+		<Option virtualFolders="dune-stokes/;dune-stuff/;visualisation/;" />
 		<Build>
 			<Target title="uni">
 				<Option output="bin/Debug/dune-stokes" prefix_auto="1" extension_auto="1" />
@@ -148,6 +148,23 @@
 					<Add directory="/usr/lib" />
 				</Linker>
 			</Target>
+			<Target title="visualisation_uni">
+				<Option output="bin/Debug/dune-stokes" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../src/" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="test.param" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add library="blas" />
+					<Add library="gr" />
+					<Add library="GL" />
+					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
+				</Linker>
+			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
@@ -204,6 +221,11 @@
 			<Option target="felix" />
 			<Option target="rene" />
 		</Unit>
+		<Unit filename="../src/elementdata.hh">
+			<Option virtualFolder="visualisation/" />
+			<Option target="uni" />
+			<Option target="visualisation_uni" />
+		</Unit>
 		<Unit filename="../src/pressure.hh">
 			<Option virtualFolder="dune-stokes/" />
 		</Unit>
@@ -215,6 +237,10 @@
 		</Unit>
 		<Unit filename="../src/velocity.hh">
 			<Option virtualFolder="dune-stokes/" />
+		</Unit>
+		<Unit filename="../src/visualisation.cc">
+			<Option virtualFolder="visualisation/" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../stokes/cghelper.hh">
 			<Option virtualFolder="dune-stokes/" />
