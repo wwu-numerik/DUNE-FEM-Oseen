@@ -482,9 +482,9 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     static Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename( gridDim ) );
     static bool firstRun = true;
     int refine_level = ( refine_level_factor  ) * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
-    if ( firstRun && refine_level_factor > 1 ) { //since we have a couple of local statics, only do this once, further refinement done in estimator
-        refine_level = ( refine_level_factor -1 ) * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
-        gridPtr->globalRefine( refine_level );// -1 since we refine once more via the estimator currently
+    if ( firstRun && refine_level_factor > 0 ) { //since we have a couple of local statics, only do this once, further refinement done in estimator
+        refine_level = ( refine_level_factor ) * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
+        gridPtr->globalRefine( refine_level );
     }
 
     typedef Dune::AdaptiveLeafGridPart< GridType >
