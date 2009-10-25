@@ -26,10 +26,12 @@ per-run-output: 1
 
 # #### macro problem ###############################################################################
 
+# for darcy_visualization.cc
 loadDiscreteFunctionFilenamePrefix: micro_reference_velocity_Y_ref_1
-microSolutionsFilenamePrefix: solutions/porosity_08/micro_reference_velocity
-microSolutionsRefineLevel: 1
-comsolFilename: micro_reference_velocity_ref_1.m
+# for darcy_premeabilitytensor.cc
+microSolutionsFilenamePrefix: solutions/porosity_036/old_jax/micro_reference_velocity
+microSolutionsRefineLevel: 2
+comsolFilename: micro_reference_velocity_porosity_036_old_jax_ref_2.m
 
 dgf_file_2d: grid_2d.dgf
 dgf_file_3d: grid_3d.dgf

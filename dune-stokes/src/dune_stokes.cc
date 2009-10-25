@@ -225,7 +225,7 @@ int main( int argc, char** argv )
   }
   catch ( std::bad_alloc& b ) {
       std::cerr << "Memory allocation failed: " << b.what() ;
-      Stuff::meminfo();
+      Stuff::meminfo( Logger().Err() );
   }
   catch (...){
     std::cerr << "Unknown exception thrown!" << std::endl;

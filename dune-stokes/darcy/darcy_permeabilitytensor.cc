@@ -24,10 +24,10 @@
 #endif
 #include <dune/grid/io/file/dgfparser/dgfalu.hh>
 const int gridDim = GRIDDIM;
-//typedef Dune::ALUSimplexGrid< gridDim, gridDim >
-//    GridType;
-typedef Dune::ALUConformGrid< gridDim, gridDim >
+typedef Dune::ALUSimplexGrid< gridDim, gridDim >
     GridType;
+//typedef Dune::ALUConformGrid< gridDim, gridDim >
+//    GridType;
 
 const int polOrder = POLORDER;
 
@@ -49,6 +49,7 @@ const int polOrder = POLORDER;
 #include <dune/stuff/parametercontainer.hh>
 #include <dune/stuff/functions.hh>
 #include <dune/stuff/misc.hh>
+#include <dune/stuff/printing.hh>
 
 #if ENABLE_MPI
     typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
@@ -127,7 +128,7 @@ void computePermeabilityTensor( const std::string microSolutionsFilenamePrefix,
 
     // make sure gridtype and refinement are the same
     const int refineLevel = Stuff::readRefineLevelFromDGF( microVelocityDgfFilenameX );
-//    debug << "refineLevel: " << refineLevel << std::endl;
+    debug << "refineLevel: " << refineLevel << std::endl;
     assert( refineLevel == Stuff::readRefineLevelFromDGF( microVelocityDgfFilenameY ) );
 
     const std::string gridType( Stuff::readGridTypeFromDGF( microVelocityDgfFilenameX ) );
@@ -196,6 +197,16 @@ void computePermeabilityTensor( const std::string microSolutionsFilenamePrefix,
     double permeabilityTensor_1_0( 0.0 );
     double permeabilityTensor_1_1( 0.0 );
 
+    DomainType velocity_x_min( 0.0 );
+    DomainType velocity_x_max( 0.0 );
+    DomainType velocity_y_min( 0.0 );
+    DomainType velocity_y_max( 0.0 );
+
+    JacobianRangeType velocity_x_gradient_min( 0.0 );
+    JacobianRangeType velocity_x_gradient_max( 0.0 );
+    JacobianRangeType velocity_y_gradient_min( 0.0 );
+    JacobianRangeType velocity_y_gradient_max( 0.0 );
+
     // do gridwalk
     EntityIteratorType entityIteratorEnd = discreteFunctionSpace.end();
     for (   EntityIteratorType entityIterator = discreteFunctionSpace.begin();
@@ -229,29 +240,66 @@ void computePermeabilityTensor( const std::string microSolutionsFilenamePrefix,
             // do integration over unit square only
             if ( !( ( xWorld[0] < 0.0 ) || ( xWorld[0] > 1.0 ) ) ) {
                 if ( !( ( xWorld[1] < 0.0 ) || ( xWorld[1] > 1.0 ) ) ) {
-                    JacobianRangeType gradient_x_untransposed( 0.0 );
-                    localFunctionX.jacobian( x, gradient_x_untransposed );
-//                    const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
-//                    JacobianRangeType gradient_x( 0.0 );
-//                    jacobianInverseTransposed.mv( gradient_x_untransposed[0], gradient_x[0] );
-//                    jacobianInverseTransposed.mv( gradient_x_untransposed[1], gradient_x[1] );
-                    JacobianRangeType gradient_y_untransposed( 0.0 );
-                    localFunctionY.jacobian( x, gradient_y_untransposed );
-//                    JacobianRangeType gradient_y( 0.0 );
-//                    jacobianInverseTransposed.mv( gradient_y_untransposed[0], gradient_y[0] );
-//                    jacobianInverseTransposed.mv( gradient_y_untransposed[1], gradient_y[1] );
-//                    permeabilityTensor_0_0 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_x, gradient_x );
-//                    permeabilityTensor_0_1 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_x, gradient_y );
-//                    permeabilityTensor_1_0 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_y, gradient_x );
-//                    permeabilityTensor_1_1 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_y, gradient_y );
-                    permeabilityTensor_0_0 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_x_untransposed, gradient_x_untransposed );
-                    permeabilityTensor_0_1 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_x_untransposed, gradient_y_untransposed );
-                    permeabilityTensor_1_0 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_y_untransposed, gradient_x_untransposed );
-                    permeabilityTensor_1_1 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_y_untransposed, gradient_y_untransposed );
+                    // do calculation of min and max of velocities
+                    DomainType velocity_x( 0.0 );
+                    DomainType velocity_y( 0.0 );
+                    localFunctionX.evaluate( x, velocity_x );
+                    localFunctionY.evaluate( x, velocity_y );
+                    const double velocity_x_norm = velocity_x.two_norm();
+                    const double velocity_y_norm = velocity_y.two_norm();
+                    velocity_x_min[0] = velocity_x[0] < velocity_x_min[0] ? velocity_x[0] : velocity_x_min[0];
+                    velocity_x_max[0] = velocity_x[0] > velocity_x_max[0] ? velocity_x[0] : velocity_x_max[0];
+                    velocity_x_min[1] = velocity_x[1] < velocity_x_min[1] ? velocity_x[1] : velocity_x_min[1];
+                    velocity_x_max[1] = velocity_x[1] > velocity_x_max[1] ? velocity_x[1] : velocity_x_max[1];
+                    velocity_y_min[0] = velocity_y[0] < velocity_y_min[0] ? velocity_y[0] : velocity_y_min[0];
+                    velocity_y_max[0] = velocity_y[0] > velocity_y_max[0] ? velocity_y[0] : velocity_y_max[0];
+                    velocity_y_min[1] = velocity_y[1] < velocity_y_min[1] ? velocity_y[1] : velocity_y_min[1];
+                    velocity_y_max[1] = velocity_y[1] > velocity_y_max[1] ? velocity_y[1] : velocity_y_max[1];
+
+                    // do calculation of permeabilitytensor
+                    JacobianRangeType gradient_x( 0.0 );
+                    localFunctionX.jacobian( x, gradient_x );
+                    JacobianRangeType gradient_y( 0.0 );
+                    localFunctionY.jacobian( x, gradient_y );
+                    permeabilityTensor_0_0 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_x, gradient_x );
+                    permeabilityTensor_0_1 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_x, gradient_y );
+                    permeabilityTensor_1_0 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_y, gradient_x );
+                    permeabilityTensor_1_1 += integrationFactor * quadratureWeight * Stuff::colonProduct( gradient_y, gradient_y );
+
+                    //do calculation of min and max of velocity gradients
+                    velocity_x_gradient_min[0][0] = gradient_x[0][0] < velocity_x_gradient_min[0][0] ? gradient_x[0][0] : velocity_x_gradient_min[0][0];
+                    velocity_x_gradient_min[0][1] = gradient_x[0][1] < velocity_x_gradient_min[0][1] ? gradient_x[0][1] : velocity_x_gradient_min[0][1];
+                    velocity_x_gradient_min[1][0] = gradient_x[1][0] < velocity_x_gradient_min[1][0] ? gradient_x[1][0] : velocity_x_gradient_min[1][0];
+                    velocity_x_gradient_min[1][1] = gradient_x[1][1] < velocity_x_gradient_min[1][1] ? gradient_x[1][1] : velocity_x_gradient_min[1][1];
+                    velocity_x_gradient_max[0][0] = gradient_x[0][0] > velocity_x_gradient_max[0][0] ? gradient_x[0][0] : velocity_x_gradient_max[0][0];
+                    velocity_x_gradient_max[0][1] = gradient_x[0][1] > velocity_x_gradient_max[0][1] ? gradient_x[0][1] : velocity_x_gradient_max[0][1];
+                    velocity_x_gradient_max[1][0] = gradient_x[1][0] > velocity_x_gradient_max[1][0] ? gradient_x[1][0] : velocity_x_gradient_max[1][0];
+                    velocity_x_gradient_max[1][1] = gradient_x[1][1] > velocity_x_gradient_max[1][1] ? gradient_x[1][1] : velocity_x_gradient_max[1][1];
+                    velocity_y_gradient_min[0][0] = gradient_y[0][0] < velocity_y_gradient_min[0][0] ? gradient_y[0][0] : velocity_y_gradient_min[0][0];
+                    velocity_y_gradient_min[0][1] = gradient_y[0][1] < velocity_y_gradient_min[0][1] ? gradient_y[0][1] : velocity_y_gradient_min[0][1];
+                    velocity_y_gradient_min[1][0] = gradient_y[1][0] < velocity_y_gradient_min[1][0] ? gradient_y[1][0] : velocity_y_gradient_min[1][0];
+                    velocity_y_gradient_min[1][1] = gradient_y[1][1] < velocity_y_gradient_min[1][1] ? gradient_y[1][1] : velocity_y_gradient_min[1][1];
+                    velocity_y_gradient_max[0][0] = gradient_y[0][0] > velocity_y_gradient_max[0][0] ? gradient_y[0][0] : velocity_y_gradient_max[0][0];
+                    velocity_y_gradient_max[0][1] = gradient_y[0][1] > velocity_y_gradient_max[0][1] ? gradient_y[0][1] : velocity_y_gradient_max[0][1];
+                    velocity_y_gradient_max[1][0] = gradient_y[1][0] > velocity_y_gradient_max[1][0] ? gradient_y[1][0] : velocity_y_gradient_max[1][0];
+                    velocity_y_gradient_max[1][1] = gradient_y[1][1] > velocity_y_gradient_max[1][1] ? gradient_y[1][1] : velocity_y_gradient_max[1][1];
+
+
                 }
             } // done integration over unit square only
         } // done loop over all quadrature points
     } // done gridwalk
+
+
+    Stuff::printFieldVector( velocity_x_min, "velocity_x_min", std::cout );
+    Stuff::printFieldVector( velocity_x_max, "velocity_x_max", std::cout );
+    Stuff::printFieldVector( velocity_y_min, "velocity_y_min", std::cout );
+    Stuff::printFieldVector( velocity_y_max, "velocity_y_max", std::cout );
+    Stuff::printFieldMatrix( velocity_x_gradient_min, "velocity_x_gradient_min", std::cout );
+    Stuff::printFieldMatrix( velocity_x_gradient_max, "velocity_x_gradient_max", std::cout );
+    Stuff::printFieldMatrix( velocity_y_gradient_min, "velocity_y_gradient_min", std::cout );
+    Stuff::printFieldMatrix( velocity_y_gradient_max, "velocity_y_gradient_max", std::cout );
+    std::cout << std::endl;
 
     std::cout << "permeabilitytensor:" << std::endl;
     std::cout << "\t" << permeabilityTensor_0_0 << " \t" << permeabilityTensor_0_1 << std::endl;
@@ -269,7 +317,9 @@ void computePermeabilityTensor( const std::string microSolutionsFilenamePrefix,
         std::cerr << "Error: could not write to comsol file " << comsolFilename << std::endl;
     }
 
-}int writeComsolFile(   const std::string comsolFilename,
+}
+
+int writeComsolFile(   const std::string comsolFilename,
                         const double a_0_0,
                         const double a_0_1,
                         const double a_1_0,
@@ -282,14 +332,16 @@ void computePermeabilityTensor( const std::string microSolutionsFilenamePrefix,
     std::string g_n_4( "'1.0*" + Stuff::toString( a_0_0 ) + "*y - 1.0* " + Stuff::toString( a_0_1 ) + "*x'" );
     std::string one_over_mu( Stuff::toString( 1.0 / Dune::Parameter::getValue( "micro_viscosity", 1.0 ) ) );
 
-
     int errorState( 0 );
 
     std::ofstream writeFile( comsolFilename.c_str() );
     if ( writeFile.is_open() ) {
         writeFile   << "% COMSOL Multiphysics Model M-file" << std::endl
-                    << "% Generated by darcy_permeabilitytensor.m" << std::endl
+                    << "% Generated by darcy_permeabilitytensor.cc" << std::endl
                     << "% by Felix Albrecht (felix.albrecht@math.uni-muenster.de)" << std::endl
+                    << "%" << std::endl
+                    << "%permeabilitytensor: " << a_0_0 << " " << a_0_1 << std::endl
+                    << "%                    " << a_1_0 << " " << a_1_1 << std::endl
                     << std::endl
                     << "flclear fem" << std::endl
                     << std::endl
@@ -320,6 +372,9 @@ void computePermeabilityTensor( const std::string microSolutionsFilenamePrefix,
                     << "                  'hauto',5);" << std::endl
                     << std::endl
                     << "% Refine mesh" << std::endl
+                    << "fem.mesh=meshrefine(fem, ..." << std::endl
+                    << "                    'mcase',0, ..." << std::endl
+                    << "                    'rmethod','regular');" << std::endl
                     << "fem.mesh=meshrefine(fem, ..." << std::endl
                     << "                    'mcase',0, ..." << std::endl
                     << "                    'rmethod','regular');" << std::endl
@@ -381,17 +436,9 @@ void computePermeabilityTensor( const std::string microSolutionsFilenamePrefix,
                     << "velocity_x = " << one_over_mu << ".*" << a_0_0 << ".*(y - 1.0.*pressure_gradient_x) + 1.0.*" << a_0_1 << ".*(-1.0.*x - 1.0.*pressure_gradient_y);" << std::endl
                     << "velocity_y = " << one_over_mu << ".*" << a_1_0 << ".*(y - 1.0.*pressure_gradient_x) + 1.0.*" << a_1_1 << ".*(-1.0.*x - 1.0.*pressure_gradient_y);" << std::endl
                     << std::endl
-                    << "figure( 'Position', [1 1 800 800],..." << std::endl
-                    << "        'Name', 'pressure');" << std::endl
-                    << "surf(x,y,pressure);" << std::endl
-                    << "figure( 'Position', [1 1 800 800],..." << std::endl
-                    << "        'Name', 'velocity x');" << std::endl
-                    << "surf(x,y,velocity_x);" << std::endl
-                    << "figure( 'Position', [1 1 800 800],..." << std::endl
-                    << "        'Name', 'velocity y');" << std::endl
-                    << "surf(x,y,velocity_y);" << std::endl
-                    << std::endl
-
+                    << "save( 'saved_x_" << comsolFilename << "', 'x' );" << std::endl
+                    << "save( 'saved_y_" << comsolFilename << "', 'y' );" << std::endl
+                    << "save( 'saved_pressure_" << comsolFilename << "', 'pressure' );" << std::endl
                     << std::endl;
 
         writeFile.flush();
@@ -401,7 +448,7 @@ void computePermeabilityTensor( const std::string microSolutionsFilenamePrefix,
     }
     else {
         ++errorState;
-        std::cerr << "Error: could not write to " << comsolFilename << "!" << std::endl;
+        std::cerr << "Error: could not write to " << comsolFilename << ".m!" << std::endl;
         return errorState;
     }
 
