@@ -16,6 +16,7 @@
 				<Option parameters="test.param" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-DAORTA_PROBLEM" />
 				</Compiler>
 				<Linker>
 					<Add library="blas" />
@@ -172,7 +173,7 @@
 			<Add option="-fexceptions" />
 			<Add option="-DENABLE_ALUGRID" />
 			<Add option="-DALUGRID_SIMPLEX" />
-			<Add option="-DGRIDDIM=3" />
+			<Add option="-DGRIDDIM=2" />
 			<Add option="-DPOLORDER=1" />
 			<Add option="-DHAVE_CONFIG_H" />
 			<Add option="-DDUNE_FEM_COMPATIBILITY" />
@@ -241,6 +242,9 @@
 		<Unit filename="../src/visualisation.cc">
 			<Option virtualFolder="visualisation/" />
 			<Option target="visualisation_uni" />
+		</Unit>
+		<Unit filename="../stokes/boundaryinfo.hh">
+			<Option virtualFolder="dune-stokes/" />
 		</Unit>
 		<Unit filename="../stokes/cghelper.hh">
 			<Option virtualFolder="dune-stokes/" />

@@ -10,6 +10,7 @@
 
 #include <dune/common/fvector.hh>
 #include <dune/stuff/parametercontainer.hh>
+#include <dune/stokes/boundaryinfo.hh>
 
 /**
  *  \todo   texdoc
@@ -398,6 +399,121 @@ class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFl
 		BoundaryIdTypeMapType boundaryIdTypeMap_;
 
 		const int dim_;
+};
+
+template < class FunctionSpaceImp, class GridPartType >
+class VariableDirichletData : public Dune::Function < FunctionSpaceImp, VariableDirichletData < FunctionSpaceImp, GridPartType > >
+{
+	public:
+		enum BoundaryType {
+			zeroBoundary	= 0,
+			influxBoundary	= 1,
+			outfluxBoundary	= 2
+		};
+
+		typedef VariableDirichletData< FunctionSpaceImp, GridPartType >
+			ThisType;
+		typedef Dune::Function< FunctionSpaceImp, ThisType >
+			BaseType;
+		typedef typename BaseType::DomainType
+			DomainType;
+		typedef typename BaseType::RangeType
+			RangeType;
+		typedef std::map< int, BoundaryType >
+			BoundaryIdTypeMapType;
+		typedef typename BoundaryIdTypeMapType::const_iterator
+			BoundaryIdTypeMapTypeConstIterator;
+        typedef std::map< int, RangeType>
+            ID_ValueMapType;
+        typedef Dune::BoundaryInfo< GridPartType >
+            BoundaryInfoType;
+		/**
+			*  \brief  constructor
+			*
+			*
+			**/
+		VariableDirichletData( const FunctionSpaceImp& space, const GridPartType& gridpart )
+			: BaseType( space ),
+            gridpart_( gridpart ),
+            dim_( FunctionSpaceImp::dimDomain ),
+            boundaryInfo_( gridpart )
+		{
+			zeroBoundaryIds_ 	= Parameters().getList( "zeroBoundaryIds" , 1 );
+			influxBoundaryIds_	= Parameters().getList( "influxBoundaryIds" , 2 );
+			outfluxBoundaryIds_	= Parameters().getList( "outfluxBoundaryIds" , 3 );
+			setupBoundaryIdTypeMap_();
+		}
+
+		/**
+			*  \brief  destructor
+			*
+			*  doing nothing
+			**/
+		~VariableDirichletData()
+		{}
+
+		template < class IntersectionIteratorType >
+		void evaluate( const DomainType& arg, RangeType& ret, const IntersectionIteratorType& faceIter ) const
+		{
+		#if defined(AORTA_PROBLEM)
+
+		#if defined(UGGRID)
+			#error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
+		#endif
+			const int id = faceIter.boundaryId();
+			static const double gd_factor = Parameters().getParam( "gd_factor", 1.0 );
+
+            typename ID_ValueMapType::const_iterator value_it = id_value_map_.find( id );
+            assert( value_it != id_value_map_.end() );
+            ret = value_it->second;
+            ret *= gd_factor;
+		#else
+			ASSERT_EXCEPTION( false, "only valid in aorta problem" );
+		#endif
+		}
+
+		inline void evaluate( const DomainType& arg, RangeType& ret ) const { assert(false); }
+
+	protected:
+		void setupBoundaryIdTypeMap_() {
+			Logger().Info() << "\t- Using ids ";
+			for( std::vector< int >::const_iterator it = zeroBoundaryIds_.begin(); it != zeroBoundaryIds_.end(); ++it ) {
+				boundaryIdTypeMap_[*it] = zeroBoundary;
+				Logger().Info() << *it << " ";
+			}
+			Logger().Info() << " \t\tfor g_d = 0 \n\t        ids ";
+			for( std::vector< int >::const_iterator it = influxBoundaryIds_.begin(); it != influxBoundaryIds_.end(); ++it ) {
+				boundaryIdTypeMap_[*it] = influxBoundary;
+				Logger().Info() << *it << " ";
+			}
+			Logger().Info() << " \tfor g_d = - n \n\t        ids ";
+			for( std::vector< int >::const_iterator it = outfluxBoundaryIds_.begin(); it != outfluxBoundaryIds_.end(); ++it ) {
+				boundaryIdTypeMap_[*it] = outfluxBoundary;
+				Logger().Info() << *it << " ";
+			}
+			Logger().Info() << " \tfor g_d = n " << std::endl;
+			for ( BoundaryIdTypeMapTypeConstIterator it = boundaryIdTypeMap_.begin(); it != boundaryIdTypeMap_.end(); ++it ) {
+                const int id = it->first;
+                std::string paramname = std::string( "gd_" ) + Stuff::toString( id );
+                std::vector< double > components = Parameters().getList( paramname, double(id) ); //senseless def val here...
+                RangeType value;
+                assert( components.size() == value.dim() );
+                for ( int i = 0; i < value.dim(); ++i )
+                    value[i] = components[i];
+                id_value_map_[ id ] = value;
+
+			}
+		}
+
+		std::vector< int > zeroBoundaryIds_;
+		std::vector< int > influxBoundaryIds_;
+		std::vector< int > outfluxBoundaryIds_;
+		BoundaryIdTypeMapType boundaryIdTypeMap_;
+        ID_ValueMapType	id_value_map_;
+        const GridPartType& gridpart_;
+
+		const int dim_;
+		BoundaryInfoType boundaryInfo_;
 };
 
 #endif // end of analyticaldata.hh

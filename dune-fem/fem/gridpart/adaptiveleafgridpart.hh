@@ -1,30 +1,30 @@
 #ifndef DUNE_ADAPTIVELEAFGRIDPART_HH
 #define DUNE_ADAPTIVELEAFGRIDPART_HH
 
-//- Dune includes 
+//- Dune includes
 #include <dune/fem/gridpart/gridpart.hh>
 #include <dune/fem/storage/singletonlist.hh>
 
-//- local includes 
+//- local includes
 #include "adaptiveleafindexset.hh"
 
 namespace Dune
 {
 
   /** @addtogroup AdaptiveLeafGP
-      GridPart for Dune::AdaptiveLeafIndexSet. 
+      GridPart for Dune::AdaptiveLeafIndexSet.
       The underlying index set is
-      singleton for each grid object.   
+      singleton for each grid object.
       Uses very efficient index sets specially
       designed for problems with constantly changing underlying grid.
   */
   /////////////////////////////////////////////////////////////////////////
   //
-  //  --AdaptiveLeafIndexGridPart 
+  //  --AdaptiveLeafIndexGridPart
   //
   /////////////////////////////////////////////////////////////////////////
 
-  // forward deklaration of grid part 
+  // forward deklaration of grid part
   template< class Grid, PartitionIteratorType pitype >
   class AdaptiveLeafGridPart;
 
@@ -35,7 +35,7 @@ namespace Dune
   template< class Grid, PartitionIteratorType pitype >
   struct AdaptiveLeafGridPartTraits
   {
-    //! type of the grid 
+    //! type of the grid
     typedef Grid GridType;
 
     //! default is to use DGAdaptiveLeafIndexSet
@@ -46,29 +46,29 @@ namespace Dune
       typedef AdaptiveLeafIndexSet< GridT > IndexSetType;
     };
 
-    // the same for shitty grids 
+    // the same for shitty grids
     template< class GridT >
     struct GoodGridChooser< GridT, false >
     {
-      // the grids leaf index set wrapper for good 
+      // the grids leaf index set wrapper for good
       typedef WrappedLeafIndexSet< GridT > IndexSetType;
     };
 
-    //! type of the grid part , i.e. this type 
+    //! type of the grid part , i.e. this type
     typedef AdaptiveLeafGridPart< GridType, pitype > GridPartType;
 
-    // choose index set dependend on grid type  
+    // choose index set dependend on grid type
     typedef GoodGridChooser
       < GridType, Conversion< GridType, HasHierarchicIndexSet > :: exists >
       IndexSetChooserType;
-                
-    //! type of the index set 
+
+    //! type of the index set
     typedef typename IndexSetChooserType :: IndexSetType IndexSetType;
 
     typedef typename GridType
       :: template Codim< 0 > :: Entity :: LeafIntersectionIterator
       IntersectionIteratorType;
-    
+
     template< int cd >
     struct Codim
     {
@@ -77,7 +77,7 @@ namespace Dune
         IteratorType;
     };
 
-    //! \brief is true if grid on this view only has conforming intersections 
+    //! \brief is true if grid on this view only has conforming intersections
     enum { conforming = Capabilities :: isLeafwiseConforming< GridType > :: v };
   };
 
@@ -87,7 +87,7 @@ namespace Dune
       designed for adaptive calculations.
 
       The underlying \ref AdaptiveLeafIndexSet "index set" is defined for
-      entities of all codimensions. 
+      entities of all codimensions.
   */
   template< class Grid, PartitionIteratorType pitype = Interior_Partition >
   class AdaptiveLeafGridPart
@@ -118,8 +118,10 @@ namespace Dune
         IteratorType;
     };
 
-    //! \brief is true if grid on this view only has conforming intersections 
+    //! \brief is true if grid on this view only has conforming intersections
     enum { conforming = Traits :: conforming };
+
+    typedef typename GridType :: template Codim< 0 > :: Entity EntityCodim0Type;
 
   private:
     struct IndexSetFactory
@@ -142,8 +144,6 @@ namespace Dune
       < typename IndexSetFactory :: KeyType, IndexSetType, IndexSetFactory >
       IndexSetProviderType;
 
-    typedef typename GridType :: template Codim< 0 > :: Entity EntityCodim0Type;
-
   public:
     //! Constructor
     inline explicit AdaptiveLeafGridPart ( GridType &grid )
@@ -153,7 +153,7 @@ namespace Dune
     /** \brief Destrcutor removeing index set, if only one reference left, index set
         removed.  */
     inline ~AdaptiveLeafGridPart ()
-    { 
+    {
       IndexSetProviderType :: removeObject( this->indexSet() );
     }
 
@@ -177,7 +177,7 @@ namespace Dune
     {
       return entity.ileafbegin();
     }
-    
+
     //! iend of corresponding intersection iterator for given entity
     inline IntersectionIteratorType
     iend ( const EntityCodim0Type &entity ) const
