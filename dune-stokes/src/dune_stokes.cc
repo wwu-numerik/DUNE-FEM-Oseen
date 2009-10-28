@@ -35,6 +35,8 @@
     #define OLD_DUNE_GRID_VERSION
 #endif
 
+#define USE_GRPAE_VISUALISATION (HAVE_GRAPE && !defined( AORTA_PROBLEM ))
+
 #include <vector>
 #include <string>
 
@@ -164,7 +166,7 @@ int main( int argc, char** argv )
         std::cerr << std::endl;
         return 2;
     }
-#if HAVE_GRAPE
+#if USE_GRPAE_VISUALISATION
     if ( !strcmp( argv[1], "-d" ) || !strcmp( argv[1], "-r" ) ) {
         return display( argc, argv );
     }
@@ -509,7 +511,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     typedef Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
                     Force,
-                    InOutFluxDirichletData,
+                    VariableDirichletData,
                     gridDim,
                     polOrder,
                     VELOCITY_POLORDER,
@@ -574,7 +576,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
      typedef StokesModelTraitsImp::AnalyticalDirichletDataType
          AnalyticalDirichletDataType;
-     AnalyticalDirichletDataType analyticalDirichletData( discreteStokesFunctionSpaceWrapper.discreteVelocitySpace() );
+     AnalyticalDirichletDataType analyticalDirichletData( discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), gridPart );
 
     StokesModelImpType stokesModel( stabil_coeff,
                                     analyticalForce,
@@ -614,7 +616,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
     profiler().StartTiming( "Problem/Postprocessing" );
 
-#if defined (COCKBURN_PROBLEM) || defined (GENRALIZED_STOKES_PROBLEM) //bool tpl-param toggles ana-solution output in post-proc
+#if defined (AORTA_PROBLEM) || defined (COCKBURN_PROBLEM) || defined (GENRALIZED_STOKES_PROBLEM) //bool tpl-param toggles ana-solution output in post-proc
     typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, true >
         ProblemType;
 #else
@@ -778,7 +780,7 @@ CoeffVector getC_power_Permutations(){
     return coeff_vector;
 }
 
-#if HAVE_GRAPE
+#if USE_GRPAE_VISUALISATION
 using namespace Dune;
 
 typedef Dune::AdaptiveLeafGridPart< GridType >
@@ -845,4 +847,4 @@ int display ( int argc, char** argv )
     return -1;
 }
 
-#endif //HAVE_GRAPE
+#endif //USE_GRPAE_VISUALISATION

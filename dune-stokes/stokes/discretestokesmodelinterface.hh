@@ -1280,7 +1280,7 @@ class DiscreteStokesModelDefault;
 /**
  *  \brief  Traits class for DiscreteStokesModelDefault
  **/
-template < class GridPartImp, template <class > class AnalyticalForceImp, template <class > class AnalyticalDirichletDataImp,
+template < class GridPartImp, template <class > class AnalyticalForceImp, template <class,class > class AnalyticalDirichletDataImp,
             int gridDim, int sigmaOrder, int velocityOrder = sigmaOrder, int pressureOrder = sigmaOrder  >
 class DiscreteStokesModelDefaultTraits
 {
@@ -1381,7 +1381,7 @@ class DiscreteStokesModelDefaultTraits
             AnalyticalForceType;
 
         //! function type for the analytical dirichlet data
-        typedef AnalyticalDirichletDataImp< VelocityFunctionSpaceType >
+        typedef AnalyticalDirichletDataImp< VelocityFunctionSpaceType, GridPartImp >
             AnalyticalDirichletDataType;
 
         /**
