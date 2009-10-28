@@ -2,7 +2,9 @@
 #define BOUNDARYINFO_HH_INCLUDED
 
 #include <dune/common/misc.hh>
-
+#include <dune/stuff/printing.hh>
+#include <dune/stuff/misc.hh>
+#include <dune/stuff/logging.hh>
 #include <map>
 #include <set>
 #include <utility>
@@ -46,8 +48,6 @@ class BoundaryInfo
         typedef std::map<int,std::pair< CoordType,CoordType > >
             OuterCoordMapType;
 
-
-        /** Default constructor */
         BoundaryInfo(const GridPartType& gridpart)
             : gridpart_(gridpart)
         {
@@ -63,21 +63,25 @@ class BoundaryInfo
                         const IntersectionGeometryGlobalType& globalGeo = intIt.intersectionGlobal();
                         for ( int i = 0; i < globalGeo.corners(); ++i ) {
                             const CoordType& c = globalGeo[i];
-                            boundaryCoordList_[i].push_back( c );
+                            boundaryCoordList_[id].push_back( c );
                         }
 					}
 				}
             }
+            assert( boundaryCoordList_.size() > 0 );
+            Logger().Info() << "num BIDs: " << boundaryCoordList_.size() << '\n';
             for (   typename BoundaryCoordListType::const_iterator b_it = boundaryCoordList_.begin();
-                    b_it != boundaryCoordList_.begin();
+                    b_it != boundaryCoordList_.end();
                     ++b_it ) {
                 CoordDistanceMapType c_dists;
                 const typename BoundaryCoordListType::key_type current_boundary_id = b_it->first;
+                Logger().Info() << "num points for BID: " << current_boundary_id << " : " << b_it->second.size() << '\n';
                 for (   typename CoordListType::const_iterator it = b_it->second.begin();
                         it != b_it->second.end();
                         ++it ) {
                     c_dists[&(*it)] = getDisctances( b_it->second, *it );
                 }
+                assert( c_dists.size() > 0 );
                 VariancesMapType m;
                 for ( typename CoordDistanceMapType::const_iterator c_it = c_dists.begin(); c_it != c_dists.end(); ++c_it ) {
                     const CoordType& vertex = *c_it->first;
@@ -90,15 +94,26 @@ class BoundaryInfo
                     }
                     m[variance] = vertex;
                 }
+                assert( m.size() > 0 );
                 const CoordType& center = m.begin()->second;
+                Logging::LogStream& ss = Logger().Info();
+                Stuff::printFieldVector( center,   std::string("center for id: ") + Stuff::toString( current_boundary_id ), ss, "BID --- " );
                 const DistancesMapType& distances_from_center = c_dists[&center];
                 typename DistancesMapType::const_iterator d_r_it = distances_from_center.end();
-                assert (--d_r_it != distances_from_center.begin() );
-                const CoordType& out1 = d_r_it->second;
-                assert (--d_r_it != distances_from_center.begin() );
-                const CoordType& out2 = d_r_it->second;
-                centerCoordMap_[ current_boundary_id ] = center;
-                outerCoordMapType_[ current_boundary_id ] = EgdeType( out1, out2 );
+                if( distances_from_center.size() > 0 ) {
+                    --d_r_it;
+                    assert ( d_r_it != distances_from_center.begin() );
+                    const CoordType& out1 = d_r_it->second;
+                    --d_r_it;
+                    assert ( d_r_it != distances_from_center.begin() );
+                    const CoordType& out2 = d_r_it->second;
+                    centerCoordMap_[ current_boundary_id ] = center;
+                    outerCoordMapType_[ current_boundary_id ] = EgdeType( out1, out2 );
+                    Stuff::printFieldVector( out1,     std::string("out1   for id: ") + Stuff::toString( current_boundary_id ), ss, "BID --- " );
+                    Stuff::printFieldVector( out2,     std::string("out2   for id: ") + Stuff::toString( current_boundary_id ), ss, "BID --- " );
+                }
+                else
+                    Logger().Info() << "no dists for BID: "<< current_boundary_id << std::endl;
             }
 
         }
