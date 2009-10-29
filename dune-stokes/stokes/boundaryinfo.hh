@@ -71,6 +71,7 @@ class BoundaryInfo
                             globalPointList_.push_back( GlobalListElementType(c,id) );
                         }
 					}
+
 				}
             }
             assert( boundaryCoordList_.size() > 0 );
@@ -78,6 +79,8 @@ class BoundaryInfo
             for (   typename BoundaryCoordListType::const_iterator b_it = boundaryCoordList_.begin();
                     b_it != boundaryCoordList_.end();
                     ++b_it ) {
+                if ( b_it->first != 2 )
+                    continue;
                 CoordDistanceMapType c_dists;
                 const typename BoundaryCoordListType::key_type current_boundary_id = b_it->first;
                 Logger().Info() << "num points for BID: " << current_boundary_id << " : " << b_it->second.size() << '\n';
@@ -96,33 +99,26 @@ class BoundaryInfo
                     assert ( count > 0 );
                     double variance = 0.0;
                     for (   typename DistancesMapType::const_iterator d_it = d.begin(); d_it != d.end(); ++d_it ) {
-                        variance += (d_it->first)/double(count);
+                        variance += std::abs(d_it->first)/double(count);
                     }
                     m[variance] = vertex;
                 }
                 assert( m.size() > 0 );
                 const CoordType& center = m.begin()->second;
                 int center_idx_in_globallist = Stuff::getIdx( globalPointList_, GlobalListElementType( center, current_boundary_id ) );
+                assert( center_idx_in_globallist != -1 );
                 Logging::LogStream& ss = Logger().Info();
                 Stuff::printFieldVector( center,   std::string("center for id: ") + Stuff::toString( current_boundary_id ), ss, "BID --- " );
                 const DistancesMapType& distances_from_center = c_dists[center_idx_in_globallist];
-                typename DistancesMapType::const_iterator d_r_it = distances_from_center.end();
                 if( distances_from_center.size() > 1 ) {
-                    --d_r_it;
-                    assert ( d_r_it != distances_from_center.begin() );
-                    const CoordType& out1 = d_r_it->second;
-                    --d_r_it;
-                    assert ( d_r_it != distances_from_center.begin() );
+                    const CoordType& out1 = distances_from_center.begin()->second;
+                    typename DistancesMapType::const_reverse_iterator d_r_it = distances_from_center.rbegin();
+                    //assert ( d_r_it != distances_from_center.begin() );
                     const CoordType& out2 = d_r_it->second;
                     centerCoordMap_[ current_boundary_id ] = center;
                     outerCoordMapType_[ current_boundary_id ] = EgdeType( out1, out2 );
                     Stuff::printFieldVector( out1,     std::string("out1   for id: ") + Stuff::toString( current_boundary_id ), ss, "BID --- " );
                     Stuff::printFieldVector( out2,     std::string("out2   for id: ") + Stuff::toString( current_boundary_id ), ss, "BID --- " );
-                    Logger().Info() << "ALL dists (" << distances_from_center.size() << ") for BID: "<< current_boundary_id << std::endl;
-                    for ( typename DistancesMapType::const_iterator pr_it = distances_from_center.begin(); pr_it != distances_from_center.end(); ++pr_it ) {
-                        Logger().Info() << "[" << pr_it->second[0] << "," << pr_it->second[1] << " | " << pr_it->first << " ]\t";
-                    }
-                    Logger().Info() << std::endl;
                 }
                 else
                     Logger().Info() << "no dists for BID: "<< current_boundary_id << std::endl;
@@ -152,9 +148,10 @@ class BoundaryInfo
                     continue;
                 typename DistancesMapType::key_type dist = ( *it - origin ).two_norm();
                 assert( dist > 0 );
-                double prod = origin * *it;
-
-                ret[dist] = *it;
+                long sign = Stuff::sign( long(origin * *it) );
+                if ( sign == 0 )
+                    sign = origin.two_norm() > it->two_norm() ? 1 : -1;
+                ret[sign*dist] = *it;
             }
             return ret;
         }
