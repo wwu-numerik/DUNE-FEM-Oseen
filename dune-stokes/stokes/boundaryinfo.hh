@@ -33,6 +33,10 @@ class BoundaryInfo
             CoordBoundaryIDMapType;
         typedef std::vector< CoordType >
             CoordListType;
+        typedef std::pair<CoordType,int>
+            GlobalListElementType;
+        typedef std::vector< GlobalListElementType >
+            GlobalListType;
         typedef std::map< int, std::vector< CoordType > >
             BoundaryCoordListType;
         typedef std::pair<CoordType,CoordType>
@@ -41,7 +45,7 @@ class BoundaryInfo
             DistancesMapType;
         typedef std::map<double,CoordType>
             VariancesMapType;
-        typedef std::map<const CoordType*,DistancesMapType>
+        typedef std::map<int,DistancesMapType> //idx in Globallist -> distancesMap
             CoordDistanceMapType;
         typedef std::map<int,CoordType>
             CenterCoordMapType;
@@ -64,6 +68,7 @@ class BoundaryInfo
                         for ( int i = 0; i < globalGeo.corners(); ++i ) {
                             const CoordType& c = globalGeo[i];
                             boundaryCoordList_[id].push_back( c );
+                            globalPointList_.push_back( GlobalListElementType(c,id) );
                         }
 					}
 				}
@@ -79,12 +84,13 @@ class BoundaryInfo
                 for (   typename CoordListType::const_iterator it = b_it->second.begin();
                         it != b_it->second.end();
                         ++it ) {
-                    c_dists[&(*it)] = getDisctances( b_it->second, *it );
+                    int idx_in_globallist = Stuff::getIdx( globalPointList_, GlobalListElementType( *it, current_boundary_id ) );
+                    c_dists[idx_in_globallist] = getDisctances( b_it->second, *it );
                 }
                 assert( c_dists.size() > 0 );
                 VariancesMapType m;
                 for ( typename CoordDistanceMapType::const_iterator c_it = c_dists.begin(); c_it != c_dists.end(); ++c_it ) {
-                    const CoordType& vertex = *c_it->first;
+                    const CoordType& vertex = globalPointList_[c_it->first].first;
                     const DistancesMapType& d = c_it->second;
                     const size_t count = d.size();
                     assert ( count > 0 );
@@ -96,11 +102,12 @@ class BoundaryInfo
                 }
                 assert( m.size() > 0 );
                 const CoordType& center = m.begin()->second;
+                int center_idx_in_globallist = Stuff::getIdx( globalPointList_, GlobalListElementType( center, current_boundary_id ) );
                 Logging::LogStream& ss = Logger().Info();
                 Stuff::printFieldVector( center,   std::string("center for id: ") + Stuff::toString( current_boundary_id ), ss, "BID --- " );
-                const DistancesMapType& distances_from_center = c_dists[&center];
+                const DistancesMapType& distances_from_center = c_dists[center_idx_in_globallist];
                 typename DistancesMapType::const_iterator d_r_it = distances_from_center.end();
-                if( distances_from_center.size() > 0 ) {
+                if( distances_from_center.size() > 1 ) {
                     --d_r_it;
                     assert ( d_r_it != distances_from_center.begin() );
                     const CoordType& out1 = d_r_it->second;
@@ -111,6 +118,11 @@ class BoundaryInfo
                     outerCoordMapType_[ current_boundary_id ] = EgdeType( out1, out2 );
                     Stuff::printFieldVector( out1,     std::string("out1   for id: ") + Stuff::toString( current_boundary_id ), ss, "BID --- " );
                     Stuff::printFieldVector( out2,     std::string("out2   for id: ") + Stuff::toString( current_boundary_id ), ss, "BID --- " );
+                    Logger().Info() << "ALL dists (" << distances_from_center.size() << ") for BID: "<< current_boundary_id << std::endl;
+                    for ( typename DistancesMapType::const_iterator pr_it = distances_from_center.begin(); pr_it != distances_from_center.end(); ++pr_it ) {
+                        Logger().Info() << "[" << pr_it->second[0] << "," << pr_it->second[1] << " | " << pr_it->first << " ]\t";
+                    }
+                    Logger().Info() << std::endl;
                 }
                 else
                     Logger().Info() << "no dists for BID: "<< current_boundary_id << std::endl;
@@ -129,6 +141,7 @@ class BoundaryInfo
         BoundaryCoordListType boundaryCoordList_;
         CenterCoordMapType centerCoordMap_;
         OuterCoordMapType outerCoordMapType_;
+        GlobalListType globalPointList_;
 
         DistancesMapType getDisctances( const CoordListType& list, const CoordType& origin ) {
             DistancesMapType ret;
@@ -138,6 +151,9 @@ class BoundaryInfo
                 if ( *it == origin )
                     continue;
                 typename DistancesMapType::key_type dist = ( *it - origin ).two_norm();
+                assert( dist > 0 );
+                double prod = origin * *it;
+
                 ret[dist] = *it;
             }
             return ret;
