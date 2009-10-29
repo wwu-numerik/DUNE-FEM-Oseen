@@ -570,13 +570,15 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     infoStream << "  - max grid width: " << grid_width << std::endl;
     info.grid_width = grid_width;
 
-     typedef StokesModelTraitsImp::AnalyticalForceType
-         AnalyticalForceType;
-     AnalyticalForceType analyticalForce( viscosity , discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), alpha );
+    typedef StokesModelTraitsImp::AnalyticalForceType
+        AnalyticalForceType;
+    AnalyticalForceType analyticalForce( viscosity , discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), alpha );
 
-     typedef StokesModelTraitsImp::AnalyticalDirichletDataType
-         AnalyticalDirichletDataType;
-     AnalyticalDirichletDataType analyticalDirichletData( discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), gridPart );
+    Logger().Info().Suspend();
+    typedef StokesModelTraitsImp::AnalyticalDirichletDataType
+        AnalyticalDirichletDataType;
+    AnalyticalDirichletDataType analyticalDirichletData( discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), gridPart );
+    Logger().Info().Resume();
 
     StokesModelImpType stokesModel( stabil_coeff,
                                     analyticalForce,

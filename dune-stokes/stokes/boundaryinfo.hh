@@ -79,8 +79,6 @@ class BoundaryInfo
             for (   typename BoundaryCoordListType::const_iterator b_it = boundaryCoordList_.begin();
                     b_it != boundaryCoordList_.end();
                     ++b_it ) {
-                if ( b_it->first != 2 )
-                    continue;
                 CoordDistanceMapType c_dists;
                 const typename BoundaryCoordListType::key_type current_boundary_id = b_it->first;
                 Logger().Info() << "num points for BID: " << current_boundary_id << " : " << b_it->second.size() << '\n';
