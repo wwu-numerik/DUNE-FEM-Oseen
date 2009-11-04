@@ -402,7 +402,76 @@ class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFl
 };
 
 template < class FunctionSpaceImp, class GridPartType >
-class VariableDirichletData : public Dune::Function < FunctionSpaceImp, VariableDirichletData < FunctionSpaceImp, GridPartType > >
+class HutchenFunctionBase : public Dune::Function < FunctionSpaceImp, HutchenFunctionBase < FunctionSpaceImp, GridPartType > >
+{
+    public:
+        typedef HutchenFunctionBase< FunctionSpaceImp, GridPartType >
+			ThisType;
+		typedef Dune::Function< FunctionSpaceImp, ThisType >
+			BaseType;
+		typedef typename BaseType::DomainType
+			DomainType;
+		typedef typename BaseType::RangeType
+			RangeType;
+        typedef typename Dune::BoundaryInfo<GridPartType>::PointInfo
+            PointInfo;
+        HutchenFunctionBase( const FunctionSpaceImp& space, PointInfo pf, RangeType direction, double scale_factor = 1.0 )
+			: BaseType( space ),
+			pointInfo_( pf ),
+			direction_( direction ),
+			m( pointInfo_.center ),
+            p1( pointInfo_.outmost_1 ),
+            p2( pointInfo_.outmost_2 ),
+            scale_factor_( scale_factor )
+        {
+        }
+
+        virtual void evaluate( const DomainType& arg, RangeType& ret ) const
+        {
+            ret = direction_;
+        }
+
+    protected:
+        const PointInfo pointInfo_;
+        const RangeType direction_;
+        const DomainType& m;
+        const DomainType& p1;
+        const DomainType& p2;
+        const double scale_factor_;
+
+};
+
+template < class FunctionSpaceImp, class GridPartType >
+class HutchenFunction : public HutchenFunctionBase < FunctionSpaceImp, GridPartType >
+{
+    typedef HutchenFunctionBase < FunctionSpaceImp, GridPartType >
+        ParentType;
+
+    public:
+        using ParentType::p1;
+        using ParentType::p2;
+        using ParentType::m;
+        using ParentType::scale_factor_;
+        using ParentType::direction_;
+
+
+        HutchenFunction( const FunctionSpaceImp& space, typename ParentType::PointInfo pf, typename ParentType::RangeType direction, double scale_factor = 1.0 )
+            : ParentType ( space, pf, direction, scale_factor )
+        {}
+
+        virtual void evaluate( const typename ParentType::DomainType& arg, typename ParentType::RangeType& ret ) const
+        {
+            typename ParentType::RangeType tmp = direction_;
+            if ( (p1 + arg).two_norm() > (p1 + m).two_norm() )
+                tmp *= std::abs( ( (p2-arg).two_norm()/(m-p2).two_norm() ) * scale_factor_ );
+            else
+                tmp *= std::abs( ( (p1-arg).two_norm()/(m-p1).two_norm() ) * scale_factor_ );
+            ret = tmp;
+        }
+};
+
+template < class FunctionSpaceImp, class GridPartType >
+class TwoDeeVariableDirichletData : public Dune::Function < FunctionSpaceImp, TwoDeeVariableDirichletData < FunctionSpaceImp, GridPartType > >
 {
 	public:
 		enum BoundaryType {
@@ -411,7 +480,7 @@ class VariableDirichletData : public Dune::Function < FunctionSpaceImp, Variable
 			outfluxBoundary	= 2
 		};
 
-		typedef VariableDirichletData< FunctionSpaceImp, GridPartType >
+		typedef TwoDeeVariableDirichletData< FunctionSpaceImp, GridPartType >
 			ThisType;
 		typedef Dune::Function< FunctionSpaceImp, ThisType >
 			BaseType;
@@ -427,12 +496,16 @@ class VariableDirichletData : public Dune::Function < FunctionSpaceImp, Variable
             ID_ValueMapType;
         typedef Dune::BoundaryInfo< GridPartType >
             BoundaryInfoType;
+        typedef HutchenFunction< FunctionSpaceImp, GridPartType >
+            BoundaryFunctionType;
+        typedef std::vector<BoundaryFunctionType*>
+            BoundaryFunctionListType;
 		/**
 			*  \brief  constructor
 			*
 			*
 			**/
-		VariableDirichletData( const FunctionSpaceImp& space, const GridPartType& gridpart )
+		TwoDeeVariableDirichletData( const FunctionSpaceImp& space, const GridPartType& gridpart )
 			: BaseType( space ),
             gridpart_( gridpart ),
             dim_( FunctionSpaceImp::dimDomain ),
@@ -449,7 +522,7 @@ class VariableDirichletData : public Dune::Function < FunctionSpaceImp, Variable
 			*
 			*  doing nothing
 			**/
-		~VariableDirichletData()
+		~TwoDeeVariableDirichletData()
 		{}
 
 		template < class IntersectionIteratorType >
@@ -461,12 +534,10 @@ class VariableDirichletData : public Dune::Function < FunctionSpaceImp, Variable
 			#error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
 		#endif
 			const int id = faceIter.boundaryId();
-			static const double gd_factor = Parameters().getParam( "gd_factor", 1.0 );
-
-            typename ID_ValueMapType::const_iterator value_it = id_value_map_.find( id );
-            assert( value_it != id_value_map_.end() );
-            ret = value_it->second;
-            ret *= gd_factor;
+//			assert( boundaryFunctionList_.size() >= id );
+			const BoundaryFunctionType* boundaryFunction = boundaryFunctionList_[id];
+			assert ( boundaryFunction );
+            boundaryFunction->evaluate( arg, ret );
 		#else
 			ASSERT_EXCEPTION( false, "only valid in aorta problem" );
 		#endif
@@ -492,6 +563,8 @@ class VariableDirichletData : public Dune::Function < FunctionSpaceImp, Variable
 				Logger().Info() << *it << " ";
 			}
 			Logger().Info() << " \tfor g_d = n " << std::endl;
+			const double gd_factor = Parameters().getParam( "gd_factor", 1.0 );
+			boundaryFunctionList_.reserve( boundaryIdTypeMap_.size() + 1 ); //+1 since BIDs are not 0 indexed
 			for ( BoundaryIdTypeMapTypeConstIterator it = boundaryIdTypeMap_.begin(); it != boundaryIdTypeMap_.end(); ++it ) {
                 const int id = it->first;
                 std::string paramname = std::string( "gd_" ) + Stuff::toString( id );
@@ -501,7 +574,7 @@ class VariableDirichletData : public Dune::Function < FunctionSpaceImp, Variable
                 for ( int i = 0; i < value.dim(); ++i )
                     value[i] = components[i];
                 id_value_map_[ id ] = value;
-
+                boundaryFunctionList_[id] = new BoundaryFunctionType(BaseType::space(), boundaryInfo_.GetPointInfo( id ),  value, gd_factor );
 			}
 		}
 
@@ -514,6 +587,7 @@ class VariableDirichletData : public Dune::Function < FunctionSpaceImp, Variable
 
 		const int dim_;
 		BoundaryInfoType boundaryInfo_;
+		BoundaryFunctionListType boundaryFunctionList_;
 };
 
 #endif // end of analyticaldata.hh

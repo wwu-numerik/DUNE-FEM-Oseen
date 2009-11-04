@@ -511,7 +511,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     typedef Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
                     Force,
-                    VariableDirichletData,
+                    TwoDeeVariableDirichletData,
                     gridDim,
                     polOrder,
                     VELOCITY_POLORDER,
@@ -549,7 +549,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
         computedSolutions(  "computed_",
                             discreteStokesFunctionSpaceWrapper,
                             gridPart );
-
+#if ENABLE_ADAPTIVE
     if ( !firstRun ) {
         Dune::Estimator<DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType>
             estimator ( computedSolutions.discretePressure() );
@@ -563,6 +563,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
         if ( Parameters().getParam( "clear_p" , true ) )
             computedSolutions.discretePressure().clear();
     }
+#endif
 
 	info.codim0 = gridPtr->size( 0 );
     Dune::GridWidthProvider< GridType > gw ( *gridPtr );
@@ -574,11 +575,11 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
         AnalyticalForceType;
     AnalyticalForceType analyticalForce( viscosity , discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), alpha );
 
-    Logger().Info().Suspend();
+//    Logger().Info().Suspend();
     typedef StokesModelTraitsImp::AnalyticalDirichletDataType
         AnalyticalDirichletDataType;
     AnalyticalDirichletDataType analyticalDirichletData( discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), gridPart );
-    Logger().Info().Resume();
+//    Logger().Info().Resume();
 
     StokesModelImpType stokesModel( stabil_coeff,
                                     analyticalForce,

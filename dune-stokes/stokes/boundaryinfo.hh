@@ -52,6 +52,12 @@ class BoundaryInfo
         typedef std::map<int,std::pair< CoordType,CoordType > >
             OuterCoordMapType;
 
+        struct PointInfo {
+            CoordType center;
+            CoordType outmost_1;
+            CoordType outmost_2;
+        };
+
         BoundaryInfo(const GridPartType& gridpart)
             : gridpart_(gridpart)
         {
@@ -71,7 +77,6 @@ class BoundaryInfo
                             globalPointList_.push_back( GlobalListElementType(c,id) );
                         }
 					}
-
 				}
             }
             assert( boundaryCoordList_.size() > 0 );
@@ -114,7 +119,7 @@ class BoundaryInfo
                     //assert ( d_r_it != distances_from_center.begin() );
                     const CoordType& out2 = d_r_it->second;
                     centerCoordMap_[ current_boundary_id ] = center;
-                    outerCoordMapType_[ current_boundary_id ] = EgdeType( out1, out2 );
+                    outerCoordMap_[ current_boundary_id ] = EgdeType( out1, out2 );
                     Stuff::printFieldVector( out1,     std::string("out1   for id: ") + Stuff::toString( current_boundary_id ), ss, "BID --- " );
                     Stuff::printFieldVector( out2,     std::string("out2   for id: ") + Stuff::toString( current_boundary_id ), ss, "BID --- " );
                 }
@@ -123,6 +128,19 @@ class BoundaryInfo
             }
 
         }
+
+        PointInfo GetPointInfo( int boundary_id ) const {
+            typename OuterCoordMapType::const_iterator out_it = outerCoordMap_.find( boundary_id );
+            assert( out_it != outerCoordMap_.end() );
+            PointInfo p;
+            p.outmost_1 = out_it->second.first;
+            p.outmost_2 = out_it->second.second;
+            typename CenterCoordMapType::const_iterator cen_it = centerCoordMap_.find( boundary_id );
+            assert( cen_it != centerCoordMap_.end() );
+            p.center = cen_it->second;
+            return p;
+        }
+
         /** Default destructor */
         virtual ~BoundaryInfo() {}
 
@@ -134,7 +152,7 @@ class BoundaryInfo
 //        CoordBoundaryIDMapType coordBoundaryIDMap_;
         BoundaryCoordListType boundaryCoordList_;
         CenterCoordMapType centerCoordMap_;
-        OuterCoordMapType outerCoordMapType_;
+        OuterCoordMapType outerCoordMap_;
         GlobalListType globalPointList_;
 
         DistancesMapType getDisctances( const CoordListType& list, const CoordType& origin ) {
