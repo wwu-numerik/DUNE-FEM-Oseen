@@ -69,18 +69,53 @@ class FanningSimplexList:
 	def __str__(self):
 		return self.__repr__()
 
+class InbetweenRing:
+	def __init__(self):
+		self.vertex_idx = []
+
+	def addVertex(self,v_idx):
+		self.vertex_idx.append( v_idx )
+
+	def __repr__(self):
+		ret = 'InbetweenRing \n'
+		i = 0
+		for s in self.vertex_idx:
+			ret += 'Vertex %4d %s\n'%(i,s)
+			i += 1
+		return ret
+
+	def __str__(self):
+		return self.__repr__()
+
+
 class FullGrid:
 	def __init__(self,f1,default_Bid):
 		self.fans 					= [f1]
 		self.default_Bid 			= default_Bid
 		self.connecting_simplices 	= []
+		self.rings					= []
 
 	def connect(self,new_f):
-		f1 = self.fans[-1]
+		f1 = f2 = None
+		if isinstance( new_f, InbetweenRing ):
+			print 'connceting InbetweenRing\n'
+			self.rings.append( new_f )
+			if len(self.rings) > 1:
+				f1 = self.rings[-2]
+			else:
+				f1 = self.fans[-1]
+		elif isinstance( new_f, FanningSimplexList ):
+			print 'connceting FanningSimplexList\n'
+			self.fans.append( new_f )
+			if len(self.rings) > 0:
+				f1 = self.rings[-1]
+			else:
+				f1 = self.fans[-2]
 		f2 = new_f
 		if len(f1.vertex_idx) !=  len(f2.vertex_idx):
 			raise DimensionIncompatibleException()
 		b_len = len(f1.vertex_idx)
+		print b_len
 		for i in range ( 0, b_len  ):
 			self.connecting_simplices.append( \
 				Simplex(	f1.vertex_idx[i-1],
@@ -91,9 +126,16 @@ class FullGrid:
 							f2.vertex_idx[i], \
 							f2.vertex_idx[i-1] ) )
 	def __str__(self):
-		ret = 'connecting simplices %d\n'%(len(self.connecting_simplices))
+		ret = 25*'=' + 'GRID'+ 25*'=' + '\nconnecting simplices %d\n'%(len(self.connecting_simplices))
 		for s in self.connecting_simplices:
 			ret += str(s) + '\n'
+		ret += 'FanningSimplexLists:\n'
+		for f in self.fans:
+			ret += str(f) + '\n'	
+		ret += 'InbetweenRings:\n'
+		for r in self.rings:
+			ret += str(r) + '\n'
+		ret += 25*'=' + 'GRID'+ 25*'='
 		return ret
 
 	def outputPLC(self,fn):
