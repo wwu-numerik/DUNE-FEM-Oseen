@@ -13,11 +13,8 @@
     #define ENABLE_ADAPTIVE 1
 #endif
 
-#if defined(UGGRID)
-    #define OLD_DUNE_GRID_VERSION
-    #if defined(DEBUG)
-        #warning ("UGGRID in debug mode is likely to produce a segfault")
-    #endif
+#if defined(UGGRID) && defined(DEBUG)
+    #warning ("UGGRID in debug mode is likely to produce a segfault")
 #endif
 
 #if ! defined(POLORDER)
@@ -33,6 +30,11 @@
     #define VELOCITY_POLORDER POLORDER
 #endif
 
+#if ( defined(ALUGRID_SIMPLEX) && ( GRIDDIM == 3 ) ) || defined(UGGRID)
+    //this is no mistake, ALU is indeed only incompatible in 3d
+    #define OLD_DUNE_GRID_VERSION
+#endif
+
 #include <vector>
 #include <string>
 
@@ -40,6 +42,8 @@
 #include <cmath>
 #include <dune/common/mpihelper.hh> // An initializer of MPI
 #include <dune/common/exceptions.hh> // We use exceptions
+
+//!ATTENTION: undef's GRIDDIM
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
 
 #include <dune/fem/solver/oemsolver/oemsolver.hh>
@@ -161,7 +165,7 @@ int main( int argc, char** argv )
         return 2;
     }
 #if HAVE_GRAPE
-    if ( !strcmp( argv[1], "-d" ) ) {
+    if ( !strcmp( argv[1], "-d" ) || !strcmp( argv[1], "-r" ) ) {
         return display( argc, argv );
     }
 #endif
@@ -225,7 +229,11 @@ int main( int argc, char** argv )
   }
   catch ( std::bad_alloc& b ) {
       std::cerr << "Memory allocation failed: " << b.what() ;
-      Stuff::meminfo( Logger().Err() );
+      Logger().Info().Resume();
+      Stuff::meminfo( Logger().Info() );
+  }
+  catch ( assert_exception& a ) {
+      std::cerr << "Exception thrown at:\n" << a.what() << std::endl ;
   }
   catch (...){
     std::cerr << "Unknown exception thrown!" << std::endl;
@@ -473,10 +481,10 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     const int gridDim = GridType::dimensionworld;
     static Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename( gridDim ) );
     static bool firstRun = true;
-    int refine_level = ( refine_level_factor  ); //* Dune::DGFGridInfo< GridType >::refineStepsForHalf();
-    if ( firstRun && refine_level_factor > 1 ) { //since we have a couple of local statics, only do this once, further refinement done in estimator
-        refine_level = ( refine_level_factor -1 ) ;//* Dune::DGFGridInfo< GridType >::refineStepsForHalf();
-        gridPtr->globalRefine( refine_level );// -1 since we refine once more via the estimator currently
+    int refine_level = ( refine_level_factor  ) * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
+    if ( firstRun && refine_level_factor > 0 ) { //since we have a couple of local statics, only do this once, further refinement done in estimator
+        refine_level = ( refine_level_factor ) * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
+        gridPtr->globalRefine( refine_level );
     }
 
     typedef Dune::AdaptiveLeafGridPart< GridType >
@@ -497,6 +505,17 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     // analytical data
 
     // model traits
+	#if defined( AORTA_PROBLEM )
+    typedef Dune::DiscreteStokesModelDefaultTraits<
+                    GridPartType,
+                    Force,
+                    InOutFluxDirichletData,
+                    gridDim,
+                    polOrder,
+                    VELOCITY_POLORDER,
+                    PRESSURE_POLORDER >
+        StokesModelTraitsImp;
+	#else
     typedef Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
                     Force,
@@ -506,6 +525,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
                     VELOCITY_POLORDER,
                     PRESSURE_POLORDER >
         StokesModelTraitsImp;
+	#endif
     typedef Dune::DiscreteStokesModelDefault< StokesModelTraitsImp >
         StokesModelImpType;
 
@@ -531,11 +551,10 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     if ( !firstRun ) {
         Dune::Estimator<DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType>
             estimator ( computedSolutions.discretePressure() );
-
-//        for ( int i = 0; i < Dune::DGFGridInfo< GridType >::refineStepsForHalf(); ++i ) {
-            estimator.mark( 0.0 /*dummy*/ );
+        for ( int i = 0; i < Dune::DGFGridInfo< GridType >::refineStepsForHalf(); ++i ) {
+            estimator.mark( 0.0 /*dummy*/ ); //simpler would be to use real weights in mark(), but alas, that doesn't work as advertised
             computedSolutions.adapt();
-//        }
+        }
 
         if ( Parameters().getParam( "clear_u" , true ) )
             computedSolutions.discreteVelocity().clear();
@@ -595,7 +614,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
     profiler().StartTiming( "Problem/Postprocessing" );
 
-#if defined (COCKBURN_PROBLEM) || defined (GENRALIZED_STOKES_PROBLEM) //bool tpl-param toggles ana-soltion output in post-proc
+#if defined (COCKBURN_PROBLEM) || defined (GENRALIZED_STOKES_PROBLEM) //bool tpl-param toggles ana-solution output in post-proc
     typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, true >
         ProblemType;
 #else
@@ -892,13 +911,20 @@ void postProcessing(const GrapeDispType& disp,
 int display ( int argc, char** argv )
 {
 //    printf("usage: %s paramfile:paramfile <i_start> <i_end>", funcName);
-    int argc_ = 4;
-    char buffer [50];
+    Parameter::append( argv[2] );
 
-    sprintf (buffer, "paramfile:%s", argv[2] );
-    char* argv_[4] = { argv[0], buffer,  "0", "0" };
-    Parameter::append(argc_,argv_);
-    return readParameterList(argc_,argv_);
+    if ( !strcmp( argv[1], "-d" ) ) {
+        int argc_ = 3;
+        char* argv_[3] = { argv[0], "0", "0" };
+        return readParameterList( argc_, argv_ );
+    }
+    else if ( !strcmp( argv[1], "-r" ) ) {
+        int argc_ = 5;
+        char* argv_[5] = { argv[0], "0", "0", "-replay", "manager.replay" };
+        return readParameterList( argc_, argv_ );
+    }
 
+    return -1;
 }
-#endif
+
+#endif //HAVE_GRAPE
