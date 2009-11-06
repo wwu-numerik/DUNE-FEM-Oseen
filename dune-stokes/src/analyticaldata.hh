@@ -9,6 +9,7 @@
 #include <cmath>
 
 #include <dune/common/fvector.hh>
+#include <dune/stuff/parametercontainer.hh>
 
 /**
  *  \todo   texdoc
@@ -103,6 +104,10 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 assert( !"MICRO_PROBLEM_WOIDS not implemented in 3D!" );
 #elif defined(GENRALIZED_STOKES_PROBLEM)
                 assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
+#elif defined(AORTA_PROBLEM)
+                ret[0] = 0.0;//arg[1];
+                ret[1] = 0.0;//-1.0;//arg[0];
+                ret[2] = 0.0;
 #else
                 assert( !"force not implemented in 3D!" );
 #endif
@@ -115,56 +120,6 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
     private:
         const double viscosity_;
         const double alpha_;
-        const int dim_;
-};
-
-/**
- *  \todo   texdoc
- **/
-template < class FunctionSpaceImp >
-class MicroForce : public Dune::Function < FunctionSpaceImp , MicroForce < FunctionSpaceImp > >
-{
-    public:
-        typedef MicroForce< FunctionSpaceImp >
-            ThisType;
-        typedef Dune::Function< FunctionSpaceImp, ThisType >
-            BaseType;
-        typedef typename BaseType::DomainType
-            DomainType;
-        typedef typename BaseType::RangeType
-            RangeType;
-
-        /**
-         *  \brief  constructor
-         *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
-         **/
-        MicroForce( const double viscosity, const FunctionSpaceImp& space )
-            : BaseType ( space ),
-              viscosity_( viscosity ),
-              dim_( FunctionSpaceImp::dimDomain )
-        {}
-
-        /**
-         *  \brief  destructor
-         *  doing nothing
-         **/
-        ~MicroForce()
-        {}
-
-        /**
-         *  \brief  evaluates the force
-         *  \param  arg
-         *          point to evaluate at
-         *  \param  ret
-         *          value of force at given point
-         **/
-        inline void evaluate( const DomainType& arg, RangeType& ret ) const
-        {
-            ret = 0.0;
-        }
-
-    private:
-        const double viscosity_;
         const int dim_;
 };
 
@@ -207,8 +162,10 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
          ~DirichletData()
          {}
 
-        void evaluate( const DomainType& arg, RangeType& ret, const int id ) const
+        template < class IntersectionIteratorType >
+        void evaluate( const DomainType& arg, RangeType& ret, const IntersectionIteratorType& faceIter ) const
         {
+            const int id = faceIter.boundaryId();
             if ( dim_ == 1 ) {
                 assert( !"dirichlet data not implemented in 1D!" );
             }
@@ -328,60 +285,119 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 
 };
 
-/**
- *  \todo   extensive docu with latex
- **/
 template < class FunctionSpaceImp >
-class MicroDirichletData : public Dune::Function < FunctionSpaceImp, MicroDirichletData < FunctionSpaceImp > >
+class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFluxDirichletData < FunctionSpaceImp > >
 {
-    public:
-        typedef MicroDirichletData< FunctionSpaceImp >
-            ThisType;
-        typedef Dune::Function< FunctionSpaceImp, ThisType >
-            BaseType;
-        typedef typename BaseType::DomainType
-            DomainType;
-        typedef typename BaseType::RangeType
-            RangeType;
+	public:
+		enum BoundaryType {
+			zeroBoundary	= 0,
+			influxBoundary	= 1,
+			outfluxBoundary	= 2
+		};
 
-        /**
-         *  \brief  constructor
-         *
-         *  doing nothing besides Base init
-         **/
-        MicroDirichletData( const FunctionSpaceImp& space )
-            : BaseType( space ),
-              dim_( FunctionSpaceImp::dimDomain )
-        {}
+		typedef InOutFluxDirichletData< FunctionSpaceImp >
+			ThisType;
+		typedef Dune::Function< FunctionSpaceImp, ThisType >
+			BaseType;
+		typedef typename BaseType::DomainType
+			DomainType;
+		typedef typename BaseType::RangeType
+			RangeType;
+		typedef std::map< int, BoundaryType >
+			BoundaryIdTypeMapType;
+		typedef typename BoundaryIdTypeMapType::const_iterator
+			BoundaryIdTypeMapTypeConstIterator;
 
-        /**
-         *  \brief  destructor
-         *
-         *  doing nothing
-         **/
-         ~MicroDirichletData()
-         {}
+		/**
+			*  \brief  constructor
+			*
+			*
+			**/
+		InOutFluxDirichletData( const FunctionSpaceImp& space )
+			: BaseType( space ),
+				dim_( FunctionSpaceImp::dimDomain )
+		{
+			zeroBoundaryIds_ 	= Parameters().getList( "zeroBoundaryIds" , 1 );
+			influxBoundaryIds_	= Parameters().getList( "influxBoundaryIds" , 2 );
+			outfluxBoundaryIds_	= Parameters().getList( "outfluxBoundaryIds" , 3 );
+			setupBoundaryIdTypeMap_();
+		}
 
-        void evaluate( const DomainType& arg, RangeType& ret, const int id ) const
-        {
-            ret = 0.0;
-        }
+		/**
+			*  \brief  destructor
+			*
+			*  doing nothing
+			**/
+		~InOutFluxDirichletData()
+		{}
 
-         /**
-          * \brief  evaluates the dirichlet data
-          * \param  arg
-          *         point to evaluate at
-          * \param  ret
-          *         value of dirichlet boundary data at given point
-          **/
-        inline void evaluate( const DomainType& arg, RangeType& ret ) const
-        {
-            ret = 0.0;
-        }
+		template < class IntersectionIteratorType >
+		void evaluate( const DomainType& arg, RangeType& ret, const IntersectionIteratorType& faceIter ) const
+		{
+			const int id = faceIter.boundaryId();
+		#if defined(AORTA_PROBLEM)
 
-    private:
-        const int dim_;
+		#if defined(UGGRID)
+			#error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
+		#endif
+			typedef Dune::FieldVector< typename IntersectionIteratorType::ctype, IntersectionIteratorType::dimension - 1 >
+				LocalVectorType;
 
+			LocalVectorType center = Stuff::getBarycenterLocal( faceIter.intersectionSelfLocal() );
+			RangeType normal = faceIter.unitOuterNormal( center );
+			static const double gd_factor = Parameters().getParam( "gd_factor", 1.0 );
+			ret = normal;
+			BoundaryIdTypeMapTypeConstIterator id_it = boundaryIdTypeMap_.find( id );
+			assert ( id_it != boundaryIdTypeMap_.end() );
+
+			switch ( id_it->second ) {
+				case zeroBoundary: {
+					ret *= 0;
+					return;
+				}
+				case influxBoundary:
+					ret *= -1;
+				case outfluxBoundary: {
+					ret *= gd_factor;
+					return;
+				}
+				default:
+					assert( false );
+					return;
+			}
+		#else
+			ASSERT_EXCEPTION( false, "only valid in aorta problem" );
+		#endif
+		}
+
+		inline void evaluate( const DomainType& arg, RangeType& ret ) const { assert(false); }
+
+	protected:
+		void setupBoundaryIdTypeMap_() {
+			Logger().Info() << "\t- Using ids ";
+			for( std::vector< int >::const_iterator it = zeroBoundaryIds_.begin(); it != zeroBoundaryIds_.end(); ++it ) {
+				boundaryIdTypeMap_[*it] = zeroBoundary;
+				Logger().Info() << *it << " ";
+			}
+			Logger().Info() << " \t\tfor g_d = 0 \n\t        ids ";
+			for( std::vector< int >::const_iterator it = influxBoundaryIds_.begin(); it != influxBoundaryIds_.end(); ++it ) {
+				boundaryIdTypeMap_[*it] = influxBoundary;
+				Logger().Info() << *it << " ";
+			}
+			Logger().Info() << " \tfor g_d = - n \n\t        ids ";
+			for( std::vector< int >::const_iterator it = outfluxBoundaryIds_.begin(); it != outfluxBoundaryIds_.end(); ++it ) {
+				boundaryIdTypeMap_[*it] = outfluxBoundary;
+				Logger().Info() << *it << " ";
+			}
+			Logger().Info() << " \tfor g_d = n " << std::endl;
+		}
+
+		std::vector< int > zeroBoundaryIds_;
+		std::vector< int > influxBoundaryIds_;
+		std::vector< int > outfluxBoundaryIds_;
+		BoundaryIdTypeMapType boundaryIdTypeMap_;
+
+		const int dim_;
 };
 
 #endif // end of analyticaldata.hh

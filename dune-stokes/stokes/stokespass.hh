@@ -249,6 +249,7 @@ class StokesPass
                 MInversMatrixType;
             MInversMatrixType MInversMatrix( sigmaSpace_, sigmaSpace_ );
             MInversMatrix.reserve();
+            assert( MInversMatrix.matrix().rows() == MInversMatrix.matrix().cols() );
             // W\in R^{M\times L}
             typedef SparseRowMatrixObject<  DiscreteSigmaFunctionSpaceType,
                                             DiscreteVelocityFunctionSpaceType >
@@ -401,7 +402,7 @@ class StokesPass
                         ++intIt ) {
                     // count intersections
                     ++numberOfIntersections;
-                    maxGridWidth = Stuff::getLenghtOfIntersection( intIt ) > maxGridWidth ? Stuff::getLenghtOfIntersection( intIt ) : maxGridWidth;
+                    maxGridWidth = std::max( Stuff::getLenghtOfIntersection( intIt ), maxGridWidth );
                     // if we are inside the grid
                     if ( intIt.neighbor() && !intIt.boundary() ) {
                         // count inner intersections
@@ -571,9 +572,9 @@ class StokesPass
                         } // else invert
                         else {
                             M_i_j = 1.0 / M_i_j;
+                            // add to matrix
+                            localMInversMatrixElement.add( i, j, M_i_j );
                         }
-                        // add to matrix
-                        localMInversMatrixElement.add( i, j, M_i_j );
 #ifndef NLOG
                         Moutput = false;
                         debugStream.Suspend(); // disable logging
@@ -633,8 +634,9 @@ class StokesPass
                         if ( fabs( W_i_j ) < eps ) {
                             W_i_j = 0.0;
                         }
-                        // add to matrix
-                        localWmatrixElement.add( i, j, W_i_j );
+                        else
+                            // add to matrix
+                            localWmatrixElement.add( i, j, W_i_j );
 #ifndef NLOG
                         Woutput = false;
                         debugStream.Suspend(); // disable logging
@@ -694,8 +696,9 @@ class StokesPass
                         if ( fabs( X_i_j ) < eps ) {
                             X_i_j = 0.0;
                         }
-                        // add to matrix
-                        localXmatrixElement.add( i, j, X_i_j );
+                        else
+                            // add to matrix
+                            localXmatrixElement.add( i, j, X_i_j );
 #ifndef NLOG
                         Xoutput = false;
                         debugStream.Suspend(); // disable logging
@@ -759,8 +762,9 @@ class StokesPass
                         if ( fabs( Y_i_j ) < eps ) {
                             Y_i_j = 0.0;
                         }
-                        // add to matrix
-                        localYmatrixElement.add( i, j, Y_i_j );
+                        else
+                            // add to matrix
+                            localYmatrixElement.add( i, j, Y_i_j );
 #ifndef NLOG
                         Youtput = false;
                         debugStream.Suspend(); // disable logging
@@ -821,8 +825,9 @@ class StokesPass
                         if ( fabs( Z_i_j ) < eps ) {
                             Z_i_j = 0.0;
                         }
-                        // add to matrix
-                        localZmatrixElement.add( i, j, Z_i_j );
+                        else
+                            // add to matrix
+                            localZmatrixElement.add( i, j, Z_i_j );
 #ifndef NLOG
                         Zoutput = false;
                         debugStream.Suspend(); // disable logging
@@ -947,8 +952,9 @@ class StokesPass
                         if ( fabs( E_i_j ) < eps ) {
                             E_i_j = 0.0;
                         }
-                        // add to matrix
-                        localEmatrixElement.add( i, j, E_i_j );
+                        else
+                            // add to matrix
+                            localEmatrixElement.add( i, j, E_i_j );
 #ifndef NLOG
                         Eoutput = false;
                         debugStream.Suspend(); // disable logging
@@ -1093,8 +1099,9 @@ class StokesPass
                                     if ( fabs( W_i_j ) < eps ) {
                                         W_i_j = 0.0;
                                     }
-                                    // add to matrix
-                                    localWmatrixElement.add( i, j, W_i_j );
+                                    else
+                                        // add to matrix
+                                        localWmatrixElement.add( i, j, W_i_j );
 #ifndef NLOG
                                     Woutput = false;
                                     debugStream.Suspend(); // disable logging
@@ -1155,8 +1162,9 @@ class StokesPass
                                     if ( fabs( W_i_j ) < eps ) {
                                         W_i_j = 0.0;
                                     }
-                                    // add to matrix
-                                    localWmatrixNeighbour.add( i, j, W_i_j );
+                                    else
+                                        // add to matrix
+                                        localWmatrixNeighbour.add( i, j, W_i_j );
 #ifndef NLOG
                                     Woutput = false;
                                     debugStream.Suspend(); // disable logging
@@ -1230,8 +1238,9 @@ class StokesPass
                                     if ( fabs( X_i_j ) < eps ) {
                                         X_i_j = 0.0;
                                     }
-                                    // add to matrix
-                                    localXmatrixElement.add( i, j, X_i_j );
+                                    else
+                                        // add to matrix
+                                        localXmatrixElement.add( i, j, X_i_j );
 #ifndef NLOG
                                     Xoutput = false;
                                     debugStream.Suspend(); // disable logging
@@ -1289,8 +1298,9 @@ class StokesPass
                                     if ( fabs( X_i_j ) < eps ) {
                                         X_i_j = 0.0;
                                     }
-                                    // add to matrix
-                                    localXmatrixNeighbour.add( i, j, X_i_j );
+                                    else
+                                        // add to matrix
+                                        localXmatrixNeighbour.add( i, j, X_i_j );
 #ifndef NLOG
                                     Xoutput = false;
                                     debugStream.Suspend(); // disable logging
@@ -1362,8 +1372,9 @@ class StokesPass
                                     if ( fabs( Y_i_j ) < eps ) {
                                         Y_i_j = 0.0;
                                     }
-                                    // add to matrix
-                                    localYmatrixElement.add( i, j, Y_i_j );
+                                    else
+                                        // add to matrix
+                                        localYmatrixElement.add( i, j, Y_i_j );
 #ifndef NLOG
                                     Youtput = false;
                                     debugStream.Suspend(); // disable logging
@@ -1422,8 +1433,9 @@ class StokesPass
                                     if ( fabs( Y_i_j ) < eps ) {
                                         Y_i_j = 0.0;
                                     }
-                                    // add to matrix
-                                    localYmatrixNeighbour.add( i, j, Y_i_j );
+                                    else
+                                        // add to matrix
+                                        localYmatrixNeighbour.add( i, j, Y_i_j );
 #ifndef NLOG
                                     Youtput = false;
                                     debugStream.Suspend(); // disable logging
@@ -1497,8 +1509,9 @@ class StokesPass
                                     if ( fabs( Z_i_j ) < eps ) {
                                         Z_i_j = 0.0;
                                     }
-                                    // add to matrix
-                                    localZmatrixElement.add( i, j, Z_i_j );
+                                    else
+                                        // add to matrix
+                                        localZmatrixElement.add( i, j, Z_i_j );
 #ifndef NLOG
                                     Zoutput = false;
                                     debugStream.Suspend(); // disable logging
@@ -1557,8 +1570,9 @@ class StokesPass
                                     if ( fabs( Z_i_j ) < eps ) {
                                         Z_i_j = 0.0;
                                     }
-                                    // add to matrix
-                                    localZmatrixNeighbour.add( i, j, Z_i_j );
+                                    else
+                                        // add to matrix
+                                        localZmatrixNeighbour.add( i, j, Z_i_j );
 #ifndef NLOG
                                     Zoutput = false;
                                     debugStream.Suspend(); // disable logging
@@ -1632,8 +1646,9 @@ class StokesPass
                                     if ( fabs( E_i_j ) < eps ) {
                                         E_i_j = 0.0;
                                     }
-                                    // add to matrix
-                                    localEmatrixElement.add( i, j, E_i_j );
+                                    else
+                                        // add to matrix
+                                        localEmatrixElement.add( i, j, E_i_j );
 #ifndef NLOG
                                     Eoutput = false;
                                     debugStream.Suspend(); // disable logging
@@ -1692,8 +1707,9 @@ class StokesPass
                                     if ( fabs( E_i_j ) < eps ) {
                                         E_i_j = 0.0;
                                     }
-                                    // add to matrix
-                                    localEmatrixNeighbour.add( i, j, E_i_j );
+                                    else
+                                        // add to matrix
+                                        localEmatrixNeighbour.add( i, j, E_i_j );
 #ifndef NLOG
                                     Eoutput = false;
                                     debugStream.Suspend(); // disable logging
@@ -1763,8 +1779,9 @@ class StokesPass
                                     if ( fabs( R_i_j ) < eps ) {
                                         R_i_j = 0.0;
                                     }
-                                    // add to matrix
-                                    localRmatrixElement.add( i, j, R_i_j );
+                                    else
+                                        // add to matrix
+                                        localRmatrixElement.add( i, j, R_i_j );
 #ifndef NLOG
                                     Routput = false;
                                     debugStream.Suspend(); // disable logging
@@ -1822,8 +1839,9 @@ class StokesPass
                                     if ( fabs( R_i_j ) < eps ) {
                                         R_i_j = 0.0;
                                     }
-                                    // add to matrix
-                                    localRmatrixNeighbour.add( i, j, R_i_j );
+                                    else
+                                        // add to matrix
+                                        localRmatrixNeighbour.add( i, j, R_i_j );
 #ifndef NLOG
                                     Routput = false;
                                     debugStream.Suspend(); // disable logging
@@ -2066,8 +2084,9 @@ class StokesPass
                                     if ( fabs( X_i_j ) < eps ) {
                                         X_i_j = 0.0;
                                     }
-                                    // add to matrix
-                                    localXmatrixElement.add( i, j, X_i_j );
+                                    else
+                                        // add to matrix
+                                        localXmatrixElement.add( i, j, X_i_j );
 #ifndef NLOG
                                     Xoutput = false;
                                     debugStream.Suspend(); // disable logging
@@ -2137,8 +2156,9 @@ class StokesPass
                                     if ( fabs( Y_i_j ) < eps ) {
                                         Y_i_j = 0.0;
                                     }
-                                    // add to matrix
-                                    localYmatrixElement.add( i, j, Y_i_j );
+                                    else
+                                        // add to matrix
+                                        localYmatrixElement.add( i, j, Y_i_j );
 #ifndef NLOG
                                     Youtput = false;
                                     debugStream.Suspend(); // disable logging
@@ -2208,8 +2228,9 @@ class StokesPass
                                     if ( fabs( Z_i_j ) < eps ) {
                                         Z_i_j = 0.0;
                                     }
-                                    // add to matrix
-                                    localZmatrixElement.add( i, j, Z_i_j );
+                                    else
+                                        // add to matrix
+                                        localZmatrixElement.add( i, j, Z_i_j );
 #ifndef NLOG
                                     Zoutput = false;
                                     debugStream.Suspend(); // disable logging
@@ -2694,9 +2715,19 @@ class StokesPass
 //                gw( f_R );
 //            }
 #endif
-
             // do profiling
             profiler().StopTiming("Pass -- ASSEMBLE");
+
+            if ( Parameters().getParam( "outputMatrixPlots", true ) ) {
+                Stuff::matrixToGnuplotFile( Ematrix.matrix(),       std::string( "mat_E.gnuplot")       );
+                Stuff::matrixToGnuplotFile( Wmatrix.matrix(),       std::string( "mat_W.gnuplot")       );
+                Stuff::matrixToGnuplotFile( Xmatrix.matrix(),       std::string( "mat_X.gnuplot")       );
+                Stuff::matrixToGnuplotFile( Ymatrix.matrix(),       std::string( "mat_Y.gnuplot")       );
+                Stuff::matrixToGnuplotFile( Zmatrix.matrix(),       std::string( "mat_Z.gnuplot")       );
+                Stuff::matrixToGnuplotFile( Rmatrix.matrix(),       std::string( "mat_R.gnuplot")       );
+                Stuff::matrixToGnuplotFile( MInversMatrix.matrix(), std::string( "mat_M.gnuplot")   );
+            }
+
             profiler().StartTiming("Pass -- SOLVER");
 
             // do solving
