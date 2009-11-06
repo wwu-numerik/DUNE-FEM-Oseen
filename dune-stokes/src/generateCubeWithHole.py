@@ -1,30 +1,31 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sys
-import math
-import os
-import time
+import sys, math, os, time
+from optparse import OptionParser
 
 ## global defines
-
-# is there an outer cube around the unit cell
-outer_cube = 0
+parser = OptionParser()
+parser.add_option("-x", "--length_x", dest="length_x", default=1.,
+                  help="rectangle length_x", type='float')
+parser.add_option("-y", "--length_y", dest="length_y", default=1.,
+                  help="rectangle length_y", type='float')
+parser.add_option("-p", "--porosity", dest="porosity", default=0.4,
+                  help="porosity", type='float')
+parser.add_option("-n", "--num_points", dest="number_of_points_per_quarter", default=5,
+                  help="number of points per quarter", type='int')
+parser.add_option("-f", "--filename", dest="filename", default='unit_sand_pore_in_2d.poly',
+                  help="output filename", type='string')
+(options, args) = parser.parse_args()
 
 # about the outer rectangle
-if	outer_cube == 1 :
-	rectangle_length_x = 1.0
-	rectangle_length_y = 1.0
-	outer_cube_offset_x = rectangle_length_x / 2.0
-	outer_cube_offset_y = rectangle_length_y / 2.0
-else :
-	rectangle_length_x = 1.0
-	rectangle_length_y = 1.0
+rectangle_length_x = options.length_x
+rectangle_length_y = options.length_y
 
 # about the inner ellipse
 # for different porosities
-# comment next four lines for manual radius
-porosity = 0.36
+# comment next three lines for manual radius
+porosity = options.porosity
 standard_cell_area = rectangle_length_x * rectangle_length_y
 ellipse_radius_x = math.sqrt( ( 1.0 - porosity ) * standard_cell_area * ( 1.0 / math.pi ) )
 ellipse_radius_y = math.sqrt( ( 1.0 - porosity ) * standard_cell_area * ( 1.0 / math.pi ) )
@@ -35,8 +36,8 @@ ellipse_radius_y = math.sqrt( ( 1.0 - porosity ) * standard_cell_area * ( 1.0 / 
 ellipse_center_x = rectangle_length_x / 2.0;
 ellipse_center_y = rectangle_length_y / 2.0;
 
-# about the number of points to approximate a qurter of the ellipse
-number_of_points_per_quarter = 3
+# about the number of points to approximate
+number_of_points_per_quarter = options.number_of_points_per_quarter
 
 # about the boundary ids
 id_of_ellipse_faces = 2
@@ -46,10 +47,7 @@ id_of_top_rectangle_faces = 5
 id_of_left_rectangle_faces = 6
 
 # about the files to be written
-if outer_cube == 1:
-	triangle_filename = 'unit_sand_pore_with_outer_cube_in_2d.poly'
-else :
-	triangle_filename = 'unit_sand_pore_in_2d.poly'
+triangle_filename = options.filename
 
 ## done with global defines
 
@@ -84,30 +82,15 @@ def generate_rectangle( length_x, length_y, ids ) :
 	rectangle.append( [ [ 0.0, length_y ], ids[3] ] )
 	return rectangle
 
-def generate_outer_cube( length_x, length_y, offset_x, offset_y, ids ) :
-	outer_cube = []
-	outer_cube.append( [ [ -offset_x, -offset_y ], ids[0] ] )
-	outer_cube.append( [ [ length_x + offset_x, -offset_y ], ids[1] ] )
-	outer_cube.append( [ [ length_x + offset_x, length_y + offset_y ], ids[2] ] )
-	outer_cube.append( [ [ -offset_x, length_y + offset_y ], ids[3] ] )
-	return outer_cube
-
 # write to trianlge
-def write_to_triangle( ellipse, rectangle_and_outer_cube, hole, triangle_filename ) :
+def write_to_triangle( ellipse, rectangle, hole, triangle_filename ) :
 	file = open( triangle_filename, 'w' )
 	# header
 	file.write( '# #########################################################\n' )
 	file.write( '# %s\n' %( triangle_filename ) )
 	file.write( '# written by generateCubeWithHole.py on %s\n' %( time.strftime('%Y/%m/%d %H:%M:%S') ) )
-	if len( rectangle_and_outer_cube ) == 2 :
-		rectangle = rectangle_and_outer_cube[ 0 ]
-		outer_cube = rectangle_and_outer_cube[ 1 ]
-		total_number_of_vertices = len( ellipse ) + len( rectangle ) + len( outer_cube )
-		total_number_of_faces = len( ellipse ) + len( rectangle ) + len( outer_cube )
-	else :
-		rectangle = rectangle_and_outer_cube
-		total_number_of_vertices = len( ellipse ) + len( rectangle )
-		total_number_of_faces = len( ellipse ) + len( rectangle )
+	total_number_of_vertices = len( ellipse ) + len( rectangle )
+	total_number_of_faces = len( ellipse ) + len( rectangle )
 	file.write( '# we have \t%i vertices\n' %( total_number_of_vertices ) )
 	file.write( '#\t\t%i faces\n' %( total_number_of_faces ) )
 	file.write( '#\t\t%i hole\n' %(1) )
@@ -131,13 +114,6 @@ def write_to_triangle( ellipse, rectangle_and_outer_cube, hole, triangle_filenam
 		y = point_on_rectangle[ 1 ]
 		file.write( '\t%i\t%f\t%f\n' %( vertex_number, x, y ) )
 		vertex_number += 1
-	if len( rectangle_and_outer_cube ) == 2 :
-		for point_with_id_on_outer_cube in outer_cube :
-			point_on_outer_cube = point_with_id_on_outer_cube[ 0 ]
-			x = point_on_outer_cube[ 0 ]
-			y = point_on_outer_cube[ 1 ]
-			file.write( '\t%i\t%f\t%f\n' %( vertex_number, x, y ) )
-			vertex_number += 1
 	file.write( '# these were the %i vertices\n' %( total_number_of_vertices ) )
 	file.write( '#\n' )
 	# write the faces with boundary id
@@ -149,17 +125,11 @@ def write_to_triangle( ellipse, rectangle_and_outer_cube, hole, triangle_filenam
 		id = point_with_id_on_ellipse[ 1 ]
 		file.write( '\t%i\t%i\t%i\t%i\n' %( face_number, face_number % len( ellipse ), ( face_number +1 ) % len( ellipse ), id ) )
 		face_number += 1
-	# of the rectangle
+	# of the outer rectangle
 	for point_with_id_on_rectangle in rectangle :
 		id = point_with_id_on_rectangle[ 1 ]
 		file.write( '\t%i\t%i\t%i\t%i\n' %( face_number, face_number % len( rectangle ) + len( ellipse ) , ( face_number +1 ) % len( rectangle ) + len( ellipse ), id ) )
 		face_number += 1
-	# of the outer cube
-	if len( rectangle_and_outer_cube ) == 2 :
-		for point_with_id_on_outer_cube in outer_cube :
-			id = point_with_id_on_outer_cube[ 1 ]
-			file.write( '\t%i\t%i\t%i\t%i\n' %( face_number, face_number % len( outer_cube ) + len( ellipse ) + len( rectangle ), ( face_number +1 ) % len( outer_cube ) + len( rectangle ) + len( ellipse ), id ) )
-			face_number += 1
 	file.write( '# these were the %i faces\n' %( total_number_of_faces ) )
 	file.write( '#\n' )
 	# write the holes
@@ -174,19 +144,11 @@ def write_to_triangle( ellipse, rectangle_and_outer_cube, hole, triangle_filenam
 	file.write( '# written by generateCubeWithHole.py on %s\n' %( time.strftime('%Y/%m/%d %H:%M:%S') ) )
 	file.write( '# #########################################################\n' )
 
-
 ## done with function definitions
 
 
 ## main
 number_of_points = 4 * number_of_points_per_quarter
 points_on_ellipse = generate_ellipse( ellipse_center_x, ellipse_center_y, ellipse_radius_x, ellipse_radius_y, id_of_ellipse_faces, number_of_points )
-if outer_cube == 1 :
-	points_on_rectangle = generate_rectangle( rectangle_length_x, rectangle_length_y, [ 1, 1, 1, 1 ] )
-else :
-	points_on_rectangle = generate_rectangle( rectangle_length_x, rectangle_length_y, [ id_of_bottom_rectangle_faces, id_of_right_rectangle_faces, id_of_top_rectangle_faces, id_of_left_rectangle_faces ] )
-if outer_cube == 1 :
-	points_on_outer_cube = generate_outer_cube( rectangle_length_x, rectangle_length_y, outer_cube_offset_x, outer_cube_offset_y, [ id_of_bottom_rectangle_faces, id_of_right_rectangle_faces, id_of_top_rectangle_faces, id_of_left_rectangle_faces ] )
-	write_to_triangle( points_on_ellipse, [ points_on_rectangle, points_on_outer_cube ], [ ellipse_center_x, ellipse_center_y ], triangle_filename )
-else :
-	write_to_triangle( points_on_ellipse, points_on_rectangle, [ ellipse_center_x, ellipse_center_y ], triangle_filename )
+points_on_rectangle = generate_rectangle( rectangle_length_x, rectangle_length_y, [ id_of_bottom_rectangle_faces, id_of_right_rectangle_faces, id_of_top_rectangle_faces, id_of_left_rectangle_faces ] )
+write_to_triangle( points_on_ellipse, points_on_rectangle, [ ellipse_center_x, ellipse_center_y ], triangle_filename )
