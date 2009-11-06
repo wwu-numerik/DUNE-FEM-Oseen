@@ -35,8 +35,8 @@ ellipse_radius_y = math.sqrt( ( 1.0 - porosity ) * standard_cell_area * ( 1.0 / 
 ellipse_center_x = rectangle_length_x / 2.0;
 ellipse_center_y = rectangle_length_y / 2.0;
 
-# about the number of points to approximate
-number_of_points_per_quarter = 5
+# about the number of points to approximate a qurter of the ellipse
+number_of_points_per_quarter = 3
 
 # about the boundary ids
 id_of_ellipse_faces = 2
@@ -173,6 +173,7 @@ def write_to_triangle( ellipse, rectangle_and_outer_cube, hole, triangle_filenam
 	file.write( '# end of file %s\n' %( triangle_filename ) )
 	file.write( '# written by generateCubeWithHole.py on %s\n' %( time.strftime('%Y/%m/%d %H:%M:%S') ) )
 	file.write( '# #########################################################\n' )
+
 
 ## done with function definitions
 

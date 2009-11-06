@@ -16,9 +16,18 @@
 				<Option parameters="test.param" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-DENABLE_UG" />
+					<Add option="-DUGGRID" />
+					<Add option="-DHAVE_UG" />
 				</Compiler>
 				<Linker>
 					<Add library="blas" />
+					<Add library="ugS2" />
+					<Add library="ugS3" />
+					<Add library="devS" />
+					<Add library="ALBERTA22_1" />
+					<Add library="ALBERTA22_0" />
+					<Add library="alberta_util" />
 					<Add library="gr" />
 					<Add library="GL" />
 					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
@@ -32,7 +41,11 @@
 				<Option compiler="gcc" />
 				<Option parameters="test.param" />
 				<Compiler>
+					<Add option="-O" />
 					<Add option="-g" />
+					<Add option="-DENABLE_ALUGRID" />
+					<Add option="-DHAVE_ALUGRID" />
+					<Add option="-DALUGRID_SIMPLEX" />
 					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include/parallel" />
@@ -72,6 +85,12 @@
 				<Linker>
 					<Add option="/usr/lib/libSM.so.6" />
 					<Add library="blas" />
+					<Add library="ugS2" />
+					<Add library="ugS3" />
+					<Add library="devS" />
+					<Add library="ALBERTA22_1" />
+					<Add library="ALBERTA22_0" />
+					<Add library="alberta_util" />
 					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
 					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/lib" />
 					<Add directory="/usr/lib" />
@@ -101,6 +120,9 @@
 				<Option parameters="test.param" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-DENABLE_UG" />
+					<Add option="-DUGGRID" />
+					<Add option="-DHAVE_UG" />
 					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/include" />
 					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/include/parallel" />
 					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/include/serial" />
@@ -108,22 +130,31 @@
 				<Linker>
 					<Add option="/usr/lib/libSM.so.6" />
 					<Add library="blas" />
+					<Add library="ugS2" />
+					<Add library="ugS3" />
+					<Add library="devS" />
+					<Add library="ALBERTA22_1" />
+					<Add library="ALBERTA22_0" />
+					<Add library="alberta_util" />
 					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
 					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/lib" />
 					<Add directory="/usr/lib" />
 				</Linker>
 			</Target>
-			<Target title="felix_elliptic">
-				<Option output="bin/Debug/dune-stokes" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="../src/" />
+			<Target title="darcy_felix">
+				<Option output="bin/Debug/darcy" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../darcy/" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="test.param" />
+				<Option parameters="../darcy/darcy.param" />
 				<Compiler>
 					<Add option="-g" />
-					<Add option="-DDARCY" />
+					<Add option="-DMACRO_POLORDER=1" />
+					<Add option="-DMACRO_PROBLEM=MACRO_PROBLEM" />
+					<Add option="-DMACRO_CG_SOLVERTYPE=CGInverseOp" />
 					<Add option="-DMICRO_POLORDER=1" />
+					<Add option="-DMICRO_PROBLEM=MICRO_PROBLEM" />
 					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include/parallel" />
@@ -190,6 +221,7 @@
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.14/include/parallel" />
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.14/include/serial" />
 			<Add directory="/share/dune/Modules/modules_x86_64/grape/" />
+			<Add directory="/share/dune/Modules/modules_x86_64/ug/include" />
 		</Compiler>
 		<Linker>
 			<Add library="libalugrid.a" />
@@ -208,12 +240,127 @@
 			<Add directory="/share/dune/Modules/modules_x86_64/alberta-1.2/lib" />
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/lib" />
 			<Add directory="/usr/lib64" />
+			<Add directory="/share/dune/Modules/modules_x86_64/ug/lib" />
 		</Linker>
+<<<<<<< HEAD:dune-stokes/codeblocks/dune-stokes.cbp
+		<Unit filename="../../dune-fem/fem/operator/matrix/spmatrix.hh">
+			<Option virtualFolder="dune-fem/" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../dune-fem/fem/space/dgspace/orthonormalbase_2d.cc">
+			<Option virtualFolder="dune-fem/" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../darcy/Makefile.am">
+			<Option virtualFolder="darcy/" />
+			<Option target="darcy_felix_uni" />
+		</Unit>
+		<Unit filename="../darcy/analyticaldarcydata.hh">
+			<Option virtualFolder="darcy/" />
+			<Option target="darcy_felix" />
+			<Option target="darcy_felix_uni" />
+		</Unit>
+		<Unit filename="../darcy/darcy.cc">
+			<Option virtualFolder="darcy/" />
+			<Option target="darcy_felix_uni" />
+		</Unit>
+		<Unit filename="../darcy/darcy.param">
+			<Option virtualFolder="darcy/" />
+			<Option target="darcy_felix" />
+			<Option target="darcy_felix_uni" />
+		</Unit>
+		<Unit filename="../darcy/darcy_permeabilitytensor.cc">
+			<Option virtualFolder="darcy/" />
+			<Option target="darcy_felix" />
+			<Option target="darcy_felix_uni" />
+		</Unit>
+		<Unit filename="../darcy/darcy_visualization.cc">
+			<Option virtualFolder="darcy/" />
+			<Option target="darcy_felix_uni" />
+		</Unit>
+		<Unit filename="../darcy/elementintegrators.hh">
+			<Option virtualFolder="darcy/" />
+			<Option target="darcy_felix" />
+			<Option target="darcy_felix_uni" />
+		</Unit>
+		<Unit filename="../darcy/ellipticmodels.hh">
+			<Option virtualFolder="darcy/" />
+			<Option target="darcy_felix" />
+			<Option target="darcy_felix_uni" />
+		</Unit>
+		<Unit filename="../darcy/runmanager.hh">
+			<Option virtualFolder="darcy/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="darcy_felix" />
+			<Option target="darcy_felix_uni" />
+		</Unit>
+		<Unit filename="../elliptic/Makefile.am">
+			<Option virtualFolder="elliptic/" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+		</Unit>
+		<Unit filename="../elliptic/elementintegratortraits.hh">
+			<Option virtualFolder="elliptic/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+		</Unit>
+		<Unit filename="../elliptic/elliptic.cc">
+			<Option virtualFolder="elliptic/" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+		</Unit>
+		<Unit filename="../elliptic/grid_2d.dgf">
+			<Option virtualFolder="elliptic/" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+		</Unit>
+		<Unit filename="../elliptic/grid_3d.dgf">
+			<Option virtualFolder="elliptic/" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+		</Unit>
+		<Unit filename="../elliptic/model.hh">
+			<Option virtualFolder="elliptic/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+		</Unit>
+		<Unit filename="../elliptic/simpleelementintegrator.h">
+			<Option virtualFolder="elliptic/" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+		</Unit>
+		<Unit filename="../elliptic/test.param">
+			<Option virtualFolder="elliptic/" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+		</Unit>
+=======
+>>>>>>> origin/master:dune-stokes/codeblocks/dune-stokes.cbp
 		<Unit filename="../src/Makefile.am">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
 		</Unit>
 		<Unit filename="../src/analyticaldata.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
 		</Unit>
 		<Unit filename="../src/dune_stokes.cc">
 			<Option virtualFolder="dune-stokes/" />
@@ -228,12 +375,28 @@
 		</Unit>
 		<Unit filename="../src/pressure.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
 		</Unit>
 		<Unit filename="../src/problem.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
 		</Unit>
 		<Unit filename="../src/reference.param">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="darcy_felix_uni" />
 		</Unit>
 		<Unit filename="../src/velocity.hh">
 			<Option virtualFolder="dune-stokes/" />

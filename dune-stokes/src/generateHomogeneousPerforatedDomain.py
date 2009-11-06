@@ -12,10 +12,10 @@ import time
 # porosity = volume_of_fluid_part / overall_volume
 # sand: 0.36 ... 0.43
 # clay soil: 0.51 ... 0.58
-porosity = 0.4
+porosity = 0.36
 #print 'porosity is %f' %( porosity )
 
-do_shift = True
+do_shift = False
 if do_shift :
 	shift_x = -1.0
 	shift_y = -1.0
@@ -28,8 +28,8 @@ domain_length_x = 3.0
 domain_length_y = 3.0
 
 # typical size of the standard cell
-standard_cell_size_x = 1.0
-standard_cell_size_y = 1.0
+standard_cell_size_x = domain_length_x / 10.0
+standard_cell_size_y = domain_length_y / 10.0
 standard_cell_area = standard_cell_size_x * standard_cell_size_y
 #print 'standard cell size is %f x %f, standard cell area is %f' %( standard_cell_size_x, standard_cell_size_y, standard_cell_area )
 
@@ -42,7 +42,7 @@ computed_length_domain_y = number_of_cells_y * standard_cell_size_y
 #print 'there are %i x %i = %i standard cells' %( number_of_cells_x, number_of_cells_y, number_of_cells_x * number_of_cells_y )
 
 # about the files to be written
-triangle_filename = 'homogeneous_perforated_domain_2d_porosity_%s_%i_holes.poly' %( str( porosity ), number_of_cells_x * number_of_cells_y )
+triangle_filename = 'homogeneous_perforated_domain_2d_porosity_%s_%.3i_holes_epsilon_%s.poly' %( str( porosity ), number_of_cells_x * number_of_cells_y, str( standard_cell_size_x * standard_cell_size_y ) )
 
 # about the ellipses
 standard_circle_radius = math.sqrt( ( 1.0 - porosity ) * standard_cell_area * ( 1.0 / math.pi ) )
@@ -53,7 +53,7 @@ ellipse_center_y = standard_cell_size_y / 2.0;
 #print 'standard circle radius is %f, standard circles center is ( %f, %f )' %( standard_circle_radius, ellipse_center_x, ellipse_center_y )
 
 # about the number of points to approximate the ellipses
-number_of_points_per_quarter = 4
+number_of_points_per_quarter = 3
 
 # about the boundary ids
 id_of_ellipse_faces = 2
