@@ -1,21 +1,31 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sys
-import math
-import os
-import time
+import sys, math, os, time
+from optparse import OptionParser
 
 ## global defines
+parser = OptionParser()
+parser.add_option("-x", "--length_x", dest="length_x", default=1.,
+                  help="rectangle length_x", type='float')
+parser.add_option("-y", "--length_y", dest="length_y", default=1.,
+                  help="rectangle length_y", type='float')
+parser.add_option("-p", "--porosity", dest="porosity", default=0.4,
+                  help="porosity", type='float')
+parser.add_option("-n", "--num_points", dest="number_of_points_per_quarter", default=5,
+                  help="number of points per quarter", type='int')
+parser.add_option("-f", "--filename", dest="filename", default='unit_sand_pore_in_2d.poly',
+                  help="output filename", type='string')
+(options, args) = parser.parse_args()
 
 # about the outer rectangle
-rectangle_length_x = 1.0
-rectangle_length_y = 1.0
+rectangle_length_x = options.length_x
+rectangle_length_y = options.length_y
 
 # about the inner ellipse
 # for different porosities
 # comment next three lines for manual radius
-porosity = 0.4
+porosity = options.porosity
 standard_cell_area = rectangle_length_x * rectangle_length_y
 ellipse_radius_x = math.sqrt( ( 1.0 - porosity ) * standard_cell_area * ( 1.0 / math.pi ) )
 ellipse_radius_y = math.sqrt( ( 1.0 - porosity ) * standard_cell_area * ( 1.0 / math.pi ) )
@@ -27,7 +37,7 @@ ellipse_center_x = rectangle_length_x / 2.0;
 ellipse_center_y = rectangle_length_y / 2.0;
 
 # about the number of points to approximate
-number_of_points_per_quarter = 5
+number_of_points_per_quarter = options.number_of_points_per_quarter
 
 # about the boundary ids
 id_of_ellipse_faces = 2
@@ -37,7 +47,7 @@ id_of_top_rectangle_faces = 5
 id_of_left_rectangle_faces = 6
 
 # about the files to be written
-triangle_filename = 'unit_sand_pore_in_2d.poly'
+triangle_filename = options.filename
 
 ## done with global defines
 
@@ -58,7 +68,7 @@ def generate_ellipse( center_x, center_y, radius_x, radius_y, id, n ):
 		point = [ x1, x2 ]
 		ellipse.append( [ point, id] )
 	return ellipse
-	
+
 # calculate points on outer rectangle
 # beginning bottom left
 # rather trivial
@@ -110,7 +120,7 @@ def write_to_triangle( ellipse, rectangle, hole, triangle_filename ) :
 	file.write( '# these are the %i faces\n' %( total_number_of_faces ) )
 	file.write( '%i 1\n' %(total_number_of_faces) )
 	face_number = 0
-	# of the inner ellipse	
+	# of the inner ellipse
 	for point_with_id_on_ellipse in ellipse :
 		id = point_with_id_on_ellipse[ 1 ]
 		file.write( '\t%i\t%i\t%i\t%i\n' %( face_number, face_number % len( ellipse ), ( face_number +1 ) % len( ellipse ), id ) )
