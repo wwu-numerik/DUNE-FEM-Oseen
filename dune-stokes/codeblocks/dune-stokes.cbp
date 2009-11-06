@@ -242,110 +242,6 @@
 			<Add directory="/usr/lib64" />
 			<Add directory="/share/dune/Modules/modules_x86_64/ug/lib" />
 		</Linker>
-<<<<<<< HEAD:dune-stokes/codeblocks/dune-stokes.cbp
-		<Unit filename="../../dune-fem/fem/operator/matrix/spmatrix.hh">
-			<Option virtualFolder="dune-fem/" />
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
-		<Unit filename="../../dune-fem/fem/space/dgspace/orthonormalbase_2d.cc">
-			<Option virtualFolder="dune-fem/" />
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
-		<Unit filename="../darcy/Makefile.am">
-			<Option virtualFolder="darcy/" />
-			<Option target="darcy_felix_uni" />
-		</Unit>
-		<Unit filename="../darcy/analyticaldarcydata.hh">
-			<Option virtualFolder="darcy/" />
-			<Option target="darcy_felix" />
-			<Option target="darcy_felix_uni" />
-		</Unit>
-		<Unit filename="../darcy/darcy.cc">
-			<Option virtualFolder="darcy/" />
-			<Option target="darcy_felix_uni" />
-		</Unit>
-		<Unit filename="../darcy/darcy.param">
-			<Option virtualFolder="darcy/" />
-			<Option target="darcy_felix" />
-			<Option target="darcy_felix_uni" />
-		</Unit>
-		<Unit filename="../darcy/darcy_permeabilitytensor.cc">
-			<Option virtualFolder="darcy/" />
-			<Option target="darcy_felix" />
-			<Option target="darcy_felix_uni" />
-		</Unit>
-		<Unit filename="../darcy/darcy_visualization.cc">
-			<Option virtualFolder="darcy/" />
-			<Option target="darcy_felix_uni" />
-		</Unit>
-		<Unit filename="../darcy/elementintegrators.hh">
-			<Option virtualFolder="darcy/" />
-			<Option target="darcy_felix" />
-			<Option target="darcy_felix_uni" />
-		</Unit>
-		<Unit filename="../darcy/ellipticmodels.hh">
-			<Option virtualFolder="darcy/" />
-			<Option target="darcy_felix" />
-			<Option target="darcy_felix_uni" />
-		</Unit>
-		<Unit filename="../darcy/runmanager.hh">
-			<Option virtualFolder="darcy/" />
-			<Option target="uni" />
-			<Option target="felix" />
-			<Option target="rene" />
-			<Option target="darcy_felix" />
-			<Option target="darcy_felix_uni" />
-		</Unit>
-		<Unit filename="../elliptic/Makefile.am">
-			<Option virtualFolder="elliptic/" />
-			<Option target="uni_elliptic" />
-			<Option target="rene_elliptic" />
-		</Unit>
-		<Unit filename="../elliptic/elementintegratortraits.hh">
-			<Option virtualFolder="elliptic/" />
-			<Option target="uni" />
-			<Option target="felix" />
-			<Option target="rene" />
-			<Option target="uni_elliptic" />
-			<Option target="rene_elliptic" />
-		</Unit>
-		<Unit filename="../elliptic/elliptic.cc">
-			<Option virtualFolder="elliptic/" />
-			<Option target="felix" />
-			<Option target="rene" />
-			<Option target="uni_elliptic" />
-			<Option target="rene_elliptic" />
-		</Unit>
-		<Unit filename="../elliptic/grid_2d.dgf">
-			<Option virtualFolder="elliptic/" />
-			<Option target="uni_elliptic" />
-			<Option target="rene_elliptic" />
-		</Unit>
-		<Unit filename="../elliptic/grid_3d.dgf">
-			<Option virtualFolder="elliptic/" />
-			<Option target="uni_elliptic" />
-			<Option target="rene_elliptic" />
-		</Unit>
-		<Unit filename="../elliptic/model.hh">
-			<Option virtualFolder="elliptic/" />
-			<Option target="uni" />
-			<Option target="felix" />
-			<Option target="rene" />
-			<Option target="uni_elliptic" />
-			<Option target="rene_elliptic" />
-		</Unit>
-		<Unit filename="../elliptic/simpleelementintegrator.h">
-			<Option virtualFolder="elliptic/" />
-			<Option target="uni_elliptic" />
-			<Option target="rene_elliptic" />
-		</Unit>
-		<Unit filename="../elliptic/test.param">
-			<Option virtualFolder="elliptic/" />
-			<Option target="uni_elliptic" />
-			<Option target="rene_elliptic" />
-		</Unit>
-=======
->>>>>>> origin/master:dune-stokes/codeblocks/dune-stokes.cbp
 		<Unit filename="../src/Makefile.am">
 			<Option virtualFolder="dune-stokes/" />
 			<Option target="uni" />
@@ -367,11 +263,8 @@
 			<Option target="uni" />
 			<Option target="felix" />
 			<Option target="rene" />
-		</Unit>
-		<Unit filename="../src/elementdata.hh">
-			<Option virtualFolder="visualisation/" />
-			<Option target="uni" />
-			<Option target="visualisation_uni" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
 		</Unit>
 		<Unit filename="../src/pressure.hh">
 			<Option virtualFolder="dune-stokes/" />
@@ -396,60 +289,188 @@
 			<Option target="rene" />
 			<Option target="uni_elliptic" />
 			<Option target="rene_elliptic" />
-			<Option target="darcy_felix_uni" />
 		</Unit>
 		<Unit filename="../src/velocity.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
 		</Unit>
 		<Unit filename="../src/visualisation.cc">
 			<Option virtualFolder="visualisation/" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
 			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../stokes/cghelper.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="darcy_felix" />
 		</Unit>
 		<Unit filename="../stokes/discretegradientpass.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="darcy_felix" />
 		</Unit>
 		<Unit filename="../stokes/discretestokesfunctionspacewrapper.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="darcy_felix" />
 		</Unit>
 		<Unit filename="../stokes/discretestokesmodelinterface.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="darcy_felix" />
 		</Unit>
 		<Unit filename="../stokes/saddlepoint_inverse_operator.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="darcy_felix" />
 		</Unit>
 		<Unit filename="../stokes/stokespass.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="darcy_felix" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/Makefile.am">
+			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../../dune-stuff/stuff/functions.hh">
 			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../../dune-stuff/stuff/grid.hh">
 			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/headertest.cc">
+			<Option virtualFolder="dune-stuff/" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../../dune-stuff/stuff/logging.hh">
 			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/mem_debug.hh">
+			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../../dune-stuff/stuff/misc.hh">
 			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../../dune-stuff/stuff/parametercontainer.hh">
 			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../../dune-stuff/stuff/postprocessing.hh">
 			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../../dune-stuff/stuff/printing.hh">
 			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../../dune-stuff/stuff/profiler.hh">
 			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/version.hh.in">
+			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Extensions>
 			<code_completion />
 			<envvars />
+			<lib_finder disable_auto="1" />
 			<debugger />
 		</Extensions>
 	</Project>
