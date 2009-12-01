@@ -64,3 +64,5 @@ doc/dune-stokes-howto/includes/stokes_mit_ldg.aux
 doc/dune-stokes-howto/includes/stokes_mit_ldg.tex.backup
 build*
 CMakeFiles
+elliptic/elliptic
+*.ALUgrid
