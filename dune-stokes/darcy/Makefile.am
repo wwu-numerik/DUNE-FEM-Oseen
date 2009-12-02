@@ -1,0 +1,88 @@
+# #### global ######################################################################################
+
+# grid dimension
+# don't take ALUGRID_CONFORM if griddim != 2
+GRIDDIM=2
+
+# grid type
+GRIDTYPE=ALUGRID_SIMPLEX
+#GRIDTYPE=ALUGRID_CONFORM
+#GRIDTYPE=YASPGRID
+#GRIDTYPE=SGRID
+#GRIDTYPE=UGGRID
+#GRIDTYPE=ALBERTAGRID
+
+POLORDER=1
+
+# #### end global ##################################################################################
+
+
+# #### macro problem ###############################################################################
+
+# polorder
+MACRO_POLORDER=1
+
+# problem
+#MACRO_PROBLEM=COCKBURN_PROBLEM
+MACRO_PROBLEM=DUMMY
+
+# solver
+MACRO_CG_SOLVERTYPE=CGInverseOp
+
+# #### end macro problem ###########################################################################
+
+
+# #### micro problem ###############################################################################
+
+# grid
+MICRO_GRIDTYPE=ALUGRID_SIMPLEX
+
+# polorder
+MICRO_POLORDER=1
+
+# problem
+#MICRO_PROBLEM=MICRO_COCKBURN_PROBLEM
+MICRO_PROBLEM=DUMMY
+
+# solver
+MICRO_INNER_CG_SOLVERTYPE=OEMCGOp
+MICRO_OUTER_CG_SOLVERTYPE=OEMCGOp
+
+# #### end micro problem ###########################################################################
+
+
+AM_CPPFLAGS = $(ALL_PKG_CPPFLAGS) -DGRIDDIM=$(GRIDDIM) -D$(GRIDTYPE) -DPOLORDER=$(POLORDER)\
+    -DMACRO_POLORDER=$(MACRO_POLORDER) -DMACRO_PROBLEM=$(MACRO_PROBLEM) -DMACRO_CG_SOLVERTYPE=$(MACRO_CG_SOLVERTYPE) \
+    -DMICRO_GRIDTYPE=$(MICRO_GRIDTYPE) -DMICRO_POLORDER=$(MICRO_POLORDER) -DMICRO_PROBLEM=$(MICRO_PROBLEM) -DINNER_CG_SOLVERTYPE=$(MICRO_INNER_CG_SOLVERTYPE) -DOUTER_CG_SOLVERTYP=$(MICRO_OUTER_CG_SOLVERTYPE) \
+    -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME -DUSE_ALTERNATIVE_SOLVER \
+    -I../../dune-stuff -g -O0
+
+noinst_PROGRAMS = darcy darcy_visualization darcy_permeabilitytensor
+
+darcy_SOURCES = darcy.cc
+darcy_CXXFLAGS = $(MPI_CPPFLAGS)  $(AM_CPPFLAGS)
+darcy_LDADD = $(MPI_LDFLAGS) $(ALUGRID_LDFLAGS) $(ALUGRID_LIBS) \
+    $(MPI_LDFLAGS) $(DUNE_LDFLAGS) $(DUNE_LIBS) $(GRAPE_LDFLAGS) \
+    $(GRAPE_LIBS) $(BLAS_LIBS)
+
+darcy_permeabilitytensor_SOURCES = darcy_permeabilitytensor.cc
+darcy_permeabilitytensor_CXXFLAGS = $(MPI_CPPFLAGS)  $(AM_CPPFLAGS)
+darcy_permeabilitytensor_LDADD = $(MPI_LDFLAGS) $(ALUGRID_LDFLAGS) $(ALUGRID_LIBS) \
+    $(MPI_LDFLAGS) $(DUNE_LDFLAGS) $(DUNE_LIBS) $(GRAPE_LDFLAGS) \
+    $(GRAPE_LIBS) $(BLAS_LIBS)
+
+darcy_visualization_SOURCES = darcy.cc
+darcy_visualization_CXXFLAGS = $(MPI_CPPFLAGS) $(ALL_PKG_CPPFLAGS) -DGRIDDIM=$(GRIDDIM) -D$(GRIDTYPE) -DPOLORDER=$(POLORDER) \
+    -I../../dune-stuff -g -O0
+darcy_visualization_LDADD = $(MPI_LDFLAGS) $(ALUGRID_LDFLAGS) $(ALUGRID_LIBS) \
+    $(MPI_LDFLAGS) $(DUNE_LDFLAGS) $(DUNE_LIBS) \
+    $(BLAS_LIBS)
+
+# don't follow the full GNU-standard
+# we need automake 1.5
+AUTOMAKE_OPTIONS = foreign 1.5
+
+# pass most important options when "make distcheck" is used
+DISTCHECK_CONFIGURE_FLAGS = --with-dune=$(DUNEROOT) CXX="$(CXX)" CC="$(CC)"
+
+include $(top_srcdir)/am/global-rules

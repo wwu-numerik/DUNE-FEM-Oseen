@@ -13,7 +13,7 @@
 
 #include <dune/common/fvector.hh>
 
-#include <dune/stokes/discretefunctionspacepair.hh>
+#include <dune/stokes/discretestokesfunctionspacewrapper.hh>
 
 #ifndef NLOG
     #include <dune/stuff/printing.hh>

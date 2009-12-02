@@ -69,10 +69,10 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
 #elif defined(ROTATE_PROBLEM)
                 ret[0] = arg[1];
                 ret[1] = -1.0 * arg[0];
-#elif defined(MICRO_PROBLEM)
+#elif defined(POROSITY_PROBLEM)
                 ret[ 0 ] = 0.0;
-                ret[ 1 ] = 0.0;
-#elif defined(MICRO_PROBLEM_WOIDS)
+                ret[ 1 ] = 1.0;
+#elif defined(POROSITY_PROBLEM_WOIDS)
                 ret[ 0 ] = 0.0;
                 ret[ 1 ] = 0.0;
 #elif defined(GENRALIZED_STOKES_PROBLEM)
@@ -81,6 +81,21 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 const double tmp = alpha_ * std::cos( M_PI_2 * (x+y) ) + M_PI_2 * M_PI * std::cos( M_PI_2 * ( x + y ) ) + M_PI_2 * std::cos( M_PI_2 * ( x - y ) ) ;
                 ret[0]  =      tmp;
                 ret[1] =    -  tmp;
+
+#elif defined(DARCY_PROBLEM)
+                // im verhältnis zu [-1,1]^2
+                double scaleX = Parameters().getParam( "domain_scale_x", 2.0 );
+                double scaleY = Parameters().getParam( "domain_scale_y", 2.0 );
+                double shiftX = Parameters().getParam( "domain_shift_x", -1.0 );
+                double shiftY = Parameters().getParam( "domain_shift_y", -1.0 );
+                ret[0] = ( arg[1] * scaleY ) + shiftY;
+                ret[1] = -1.0 * ( ( arg[0] * scaleX ) + shiftX );
+#elif defined(MICRO_PROBLEM_X)
+                ret[0] = 1.0;
+                ret[1] = 0.0;
+#elif defined(MICRO_PROBLEM_Y)
+                ret[0] = 0.0;
+                ret[1] = 1.0;
 #else
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//arg[0];
@@ -100,12 +115,14 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 ret[2] = -1.0;//arg[0];
 #elif defined(ROTATE_PROBLEM)
                 assert( !"ROTATE_PROBLEM not implemented in 3D!" );
-#elif defined(MICRO_PROBLEM)
-                assert( !"MICRO_PROBLEM not implemented in 3D!" );
-#elif defined(MICRO_PROBLEM_WOIDS)
-                assert( !"MICRO_PROBLEM_WOIDS not implemented in 3D!" );
+#elif defined(POROSITY_PROBLEM)
+                assert( !"POROSITY_PROBLEM not implemented in 3D!" );
+#elif defined(POROSITY_PROBLEM_WOIDS)
+                assert( !"POROSITY_PROBLEM_WOIDS not implemented in 3D!" );
 #elif defined(GENRALIZED_STOKES_PROBLEM)
                 assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
+#elif defined(DARCY_PROBLEM)
+                assert( !"DARCY_PROBLEM not implemented in 3D!" );
 #elif defined(AORTA_PROBLEM)
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//-1.0;//arg[0];
@@ -184,28 +201,28 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 #elif defined(ROTATE_PROBLEM)
                 ret[0] = 0.0;
                 ret[1] = 0.0;
-#elif defined(MICRO_PROBLEM)
+#elif defined(POROSITY_PROBLEM)
                 if ( id == 2 ) { // faces on inner hole
                     ret[ 0 ] = 0.0;
                     ret[ 1 ] = 0.0;
                 }
                 else if ( id == 3 ) { // bottom faces
                     ret[ 0 ] = 0.0;
-                    ret[ 1 ] = 0.0;
+                    ret[ 1 ] = 1.0;
                 }
                 else if ( id == 4 ) { // right faces
-                    ret[ 0 ] = 1.0;
+                    ret[ 0 ] = 0.0;
                     ret[ 1 ] = 0.0;
                 }
                 else if ( id == 5 ) { // top faces
                     ret[ 0 ] = 0.0;
-                    ret[ 1 ] = 0.0;
+                    ret[ 1 ] = 1.0;
                 }
                 else if ( id == 6 ) { // left faces
-                    ret[ 0 ] = 1.0;
+                    ret[ 0 ] = 0.0;
                     ret[ 1 ] = 0.0;
                 }
-#elif defined(MICRO_PROBLEM_WOIDS)
+#elif defined(POROSITY_PROBLEM_WOIDS)
                 const double x1 = arg[0];
                 const double x2 = arg[1];
                 if ( !( x2 > 0.0 ) ) { // bottom faces
@@ -232,15 +249,66 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 const double tmp = std::cos( ( M_PI_2 ) * ( x1 + x2 ) );
                 ret[0] = tmp;
                 ret[1] = -1.0 * tmp;
+#elif defined(DARCY_PROBLEM)
+                ret[0] = 0.0;
+                ret[1] = 0.0;
+#elif defined(MICRO_PROBLEM_X)
+                if ( id == 2 ) { // faces on inner hole
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( id == 3 ) { // bottom faces
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( id == 4 ) { // right faces
+                    ret[ 0 ] = 1.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( id == 5 ) { // top faces
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( id == 6 ) { // left faces
+                    ret[ 0 ] = 1.0;
+                    ret[ 1 ] = 0.0;
+                }
+#elif defined(MICRO_PROBLEM_Y)
+                if ( id == 2 ) { // faces on inner hole
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( id == 3 ) { // bottom faces
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 1.0;
+                }
+                else if ( id == 4 ) { // right faces
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else if ( id == 5 ) { // top faces
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 1.0;
+                }
+                else if ( id == 6 ) { // left faces
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 0.0;
+                }
 #else
-                double exp_of_x1 = std::exp( x1 );
-                double sin_of_x2 = std::sin( x2 );
-                double cos_of_x2 = std::cos( x2 );
-                //return
-                ret[0] = x2 * cos_of_x2;
-                ret[0] += sin_of_x2;
-                ret[0] *= -1.0 * exp_of_x1;
-                ret[1] = exp_of_x1 * x2 * sin_of_x2;
+                if ( id == 2 ) { // faces on inner hole
+                    ret[ 0 ] = 0.0;
+                    ret[ 1 ] = 0.0;
+                }
+                else {
+                    double exp_of_x1 = std::exp( x1 );
+                    double sin_of_x2 = std::sin( x2 );
+                    double cos_of_x2 = std::cos( x2 );
+                    //return
+                    ret[0] = x2 * cos_of_x2;
+                    ret[0] += sin_of_x2;
+                    ret[0] *= -1.0 * exp_of_x1;
+                    ret[1] = exp_of_x1 * x2 * sin_of_x2;
+                }
 #endif
             }
             else if ( dim_ == 3 ) {
@@ -258,12 +326,45 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 ret[2] = 0.0;
 #elif defined(ROTATE_PROBLEM)
                 assert( !"ROTATE_PROBLEM not implemented in 3D!" );
-#elif defined(MICRO_PROBLEM)
-                assert( !"MICRO_PROBLEM not implemented in 3D!" );
-#elif defined(MICRO_PROBLEM_WOIDS)
-                assert( !"MICRO_PROBLEM_WOIDS not implemented in 3D!" );
+#elif defined(POROSITY_PROBLEM)
+                assert( !"POROSITY_PROBLEM not implemented in 3D!" );
+#elif defined(POROSITY_PROBLEM_WOIDS)
+                assert( !"POROSITY_PROBLEM_WOIDS not implemented in 3D!" );
 #elif defined(GENRALIZED_STOKES_PROBLEM)
                 assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
+#elif defined(DARCY_PROBLEM)
+                assert( !"DARCY_PROBLEM not implemented in 3D!" );
+#elif defined(AORTA_PROBLEM)
+
+#if defined(UGGRID)
+    #error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
+#endif
+                switch ( id ) {
+                    case 1: {
+                        ret[0] = 0.0;//arg[1];
+                        ret[1] = 0.0;//-1.0;//arg[0];
+                        ret[2] = 0.0;
+                        return;
+                    }
+                    case 2: {
+                        ret[0] = 1000.0;//arg[1];
+                        ret[1] = 1000.0;//-1.0;//arg[0];
+                        ret[2] = 1000.0;
+                        return;
+                    }
+                    case 6:
+                    case 5:
+                    case 4:
+                    case 3: {
+                        ret[0] = 1000.0;//arg[1];
+                        ret[1] = 1000.0;//-1.0;//arg[0];
+                        ret[2] = 1000.0;
+                        return;
+                    }
+                    default:
+                        assert( false );
+                        return;
+                }
 #else
                 assert( !"dirichlet data not implemented in 3D!" );
 #endif

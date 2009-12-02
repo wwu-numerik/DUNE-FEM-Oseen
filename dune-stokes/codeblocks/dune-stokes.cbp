@@ -16,9 +16,18 @@
 				<Option parameters="test.param" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-DENABLE_UG" />
+					<Add option="-DUGGRID" />
+					<Add option="-DHAVE_UG" />
 				</Compiler>
 				<Linker>
 					<Add library="blas" />
+					<Add library="ugS2" />
+					<Add library="ugS3" />
+					<Add library="devS" />
+					<Add library="ALBERTA22_1" />
+					<Add library="ALBERTA22_0" />
+					<Add library="alberta_util" />
 					<Add library="gr" />
 					<Add library="GL" />
 					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
@@ -32,7 +41,11 @@
 				<Option compiler="gcc" />
 				<Option parameters="test.param" />
 				<Compiler>
+					<Add option="-O" />
 					<Add option="-g" />
+					<Add option="-DENABLE_ALUGRID" />
+					<Add option="-DHAVE_ALUGRID" />
+					<Add option="-DALUGRID_SIMPLEX" />
 					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include/parallel" />
@@ -72,6 +85,12 @@
 				<Linker>
 					<Add option="/usr/lib/libSM.so.6" />
 					<Add library="blas" />
+					<Add library="ugS2" />
+					<Add library="ugS3" />
+					<Add library="devS" />
+					<Add library="ALBERTA22_1" />
+					<Add library="ALBERTA22_0" />
+					<Add library="alberta_util" />
 					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
 					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/lib" />
 					<Add directory="/usr/lib" />
@@ -101,6 +120,9 @@
 				<Option parameters="test.param" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-DENABLE_UG" />
+					<Add option="-DUGGRID" />
+					<Add option="-DHAVE_UG" />
 					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/include" />
 					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/include/parallel" />
 					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/include/serial" />
@@ -108,22 +130,31 @@
 				<Linker>
 					<Add option="/usr/lib/libSM.so.6" />
 					<Add library="blas" />
+					<Add library="ugS2" />
+					<Add library="ugS3" />
+					<Add library="devS" />
+					<Add library="ALBERTA22_1" />
+					<Add library="ALBERTA22_0" />
+					<Add library="alberta_util" />
 					<Add directory="/share/dune/Modules/modules_x86_64/grape" />
 					<Add directory="/share/dune/Modules/modules_i386/ALUGrid-1.14/lib" />
 					<Add directory="/usr/lib" />
 				</Linker>
 			</Target>
-			<Target title="felix_elliptic">
-				<Option output="bin/Debug/dune-stokes" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="../src/" />
+			<Target title="darcy_felix">
+				<Option output="bin/Debug/darcy" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../darcy/" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="test.param" />
+				<Option parameters="../darcy/darcy.param" />
 				<Compiler>
 					<Add option="-g" />
-					<Add option="-DDARCY" />
+					<Add option="-DMACRO_POLORDER=1" />
+					<Add option="-DMACRO_PROBLEM=MACRO_PROBLEM" />
+					<Add option="-DMACRO_CG_SOLVERTYPE=CGInverseOp" />
 					<Add option="-DMICRO_POLORDER=1" />
+					<Add option="-DMICRO_PROBLEM=MICRO_PROBLEM" />
 					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/include/parallel" />
@@ -190,6 +221,7 @@
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.14/include/parallel" />
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.14/include/serial" />
 			<Add directory="/share/dune/Modules/modules_x86_64/grape/" />
+			<Add directory="/share/dune/Modules/modules_x86_64/ug/include" />
 		</Compiler>
 		<Linker>
 			<Add library="libalugrid.a" />
@@ -208,85 +240,237 @@
 			<Add directory="/share/dune/Modules/modules_x86_64/alberta-1.2/lib" />
 			<Add directory="/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel/lib" />
 			<Add directory="/usr/lib64" />
+			<Add directory="/share/dune/Modules/modules_x86_64/ug/lib" />
 		</Linker>
 		<Unit filename="../src/Makefile.am">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
 		</Unit>
 		<Unit filename="../src/analyticaldata.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
 		</Unit>
 		<Unit filename="../src/dune_stokes.cc">
 			<Option virtualFolder="dune-stokes/" />
 			<Option target="uni" />
 			<Option target="felix" />
 			<Option target="rene" />
-		</Unit>
-		<Unit filename="../src/elementdata.hh">
-			<Option virtualFolder="visualisation/" />
-			<Option target="uni" />
-			<Option target="visualisation_uni" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
 		</Unit>
 		<Unit filename="../src/pressure.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
 		</Unit>
 		<Unit filename="../src/problem.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
 		</Unit>
 		<Unit filename="../src/reference.param">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
 		</Unit>
 		<Unit filename="../src/velocity.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
 		</Unit>
 		<Unit filename="../src/visualisation.cc">
 			<Option virtualFolder="visualisation/" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
 			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../stokes/cghelper.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="darcy_felix" />
 		</Unit>
 		<Unit filename="../stokes/discretegradientpass.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="darcy_felix" />
 		</Unit>
 		<Unit filename="../stokes/discretestokesfunctionspacewrapper.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="darcy_felix" />
 		</Unit>
 		<Unit filename="../stokes/discretestokesmodelinterface.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="darcy_felix" />
 		</Unit>
 		<Unit filename="../stokes/saddlepoint_inverse_operator.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="darcy_felix" />
 		</Unit>
 		<Unit filename="../stokes/stokespass.hh">
 			<Option virtualFolder="dune-stokes/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="darcy_felix" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/Makefile.am">
+			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../../dune-stuff/stuff/functions.hh">
 			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../../dune-stuff/stuff/grid.hh">
 			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/headertest.cc">
+			<Option virtualFolder="dune-stuff/" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../../dune-stuff/stuff/logging.hh">
 			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/mem_debug.hh">
+			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../../dune-stuff/stuff/misc.hh">
 			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../../dune-stuff/stuff/parametercontainer.hh">
 			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../../dune-stuff/stuff/postprocessing.hh">
 			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../../dune-stuff/stuff/printing.hh">
 			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Unit filename="../../dune-stuff/stuff/profiler.hh">
 			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
+		</Unit>
+		<Unit filename="../../dune-stuff/stuff/version.hh.in">
+			<Option virtualFolder="dune-stuff/" />
+			<Option target="uni" />
+			<Option target="felix" />
+			<Option target="rene" />
+			<Option target="uni_elliptic" />
+			<Option target="rene_elliptic" />
+			<Option target="visualisation_uni" />
 		</Unit>
 		<Extensions>
 			<code_completion />
 			<envvars />
+			<lib_finder disable_auto="1" />
 			<debugger />
 		</Extensions>
 	</Project>

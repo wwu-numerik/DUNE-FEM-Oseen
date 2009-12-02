@@ -19,14 +19,20 @@ fem.io.savecount: 0
 #use this to seperate tokens in a paramter list
 parameterlist_delimiter: ;
 
-per-run-log-target: 0
+per-run-log-target: 1
 per-run-output: 1
 
 visualisationFilename: visualisation
 
 #
-dgf_file_2d: grid_2d.dgf
+dgf_file_2d: homogeneous_perforated_domain_2d_porosity_0.8_400_holes_epsilon_0.0025.dgf
 dgf_file_3d: grid_3d.dgf
+# scale domain to have length 2
+domain_scale_x: 2.0
+domain_scale_y: 2.0
+# shift domain to be [-1;1]^2
+domain_shift_x: -1.0
+domain_shift_y: -1.0
 
 #*********** runtype specific parameters **************************************************
 # runtype 		0: minref <= maxref
@@ -36,11 +42,11 @@ dgf_file_3d: grid_3d.dgf
 #			4: minref, accuracy_start <= accuracy_stop
 #			5: one single run with minref
 # no runtype set --> old minrun behavior
-runtype: 5
+runtype: 0
 
 #in runtype 0 refine maxref + 1 - minref times
-minref: 3
-maxref: 4
+minref: 0
+maxref: 10
 
 #in runtype 1 vary
 minpow: -1
@@ -61,13 +67,13 @@ accurracy_steps: 5
 
 #*********** end runtype specific parameters **************************************************
 
-viscosity: 1.0
+viscosity: 0.0025
 # if alpha != 0.0, isGeneralize() has to return true in DiscreteStokesModelDefault
 alpha: 0.0
 
 #****************** solver ******************************************************************
 #pretty much ineffective
-relLimit: 1e-12
+relLimit: 1e-10
 
 absLimit: 1e-10
 inner_absLimit: 1e-10
@@ -75,14 +81,14 @@ inner_absLimit: 1e-10
 #reconstruct u at the ned of alt_solver instead of continually updating it
 use_velocity_reconstruct: 0
 #clear computed functions at start of every singleRun ?
-clear_u: 0
+clear_u: 1
 clear_p: 0
 
 #when nans are detected in solution solver accuracy is multiplied maximal max_adaptions-times by 0.1
-max_adaptions: 4
+max_adaptions: 5
 
 # > 2 will show bfg setting per inner iteration, > 1 avg inner iteration count
-solverVerbosity: 0
+solverVerbosity: 1
 
 disableSolver: 0
 diff-tolerance: 0.01
