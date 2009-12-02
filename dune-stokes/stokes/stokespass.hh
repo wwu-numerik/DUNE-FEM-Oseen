@@ -716,7 +716,8 @@ class StokesPass
                     debugStream.Suspend();
                 }
 #endif
-                if ( discreteModel_.isGeneralized() ) {
+//                if ( discreteModel_.isGeneralized() ) 
+                {
                 for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                         double Y_i_j = 0.0;

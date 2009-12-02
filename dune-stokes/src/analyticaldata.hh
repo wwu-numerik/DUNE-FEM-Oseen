@@ -76,9 +76,11 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 ret[ 0 ] = 0.0;
                 ret[ 1 ] = 0.0;
 #elif defined(GENRALIZED_STOKES_PROBLEM)
-                const double tmp = ( 0.5 * M_PI ) * ( std::cos( ( 0.5 * M_PI ) * ( x1 - x2 ) ) + ( M_PI + alpha_ ) * std::cos( ( 0.5 * M_PI ) * ( x1 + x2 ) ) );
-                ret[0] = tmp;
-                ret[1] = -1.0 * tmp;
+                const double x = arg[0];
+                const double y = arg[1];
+                const double tmp = alpha_ * std::cos( M_PI_2 * (x+y) ) + M_PI_2 * M_PI * std::cos( M_PI_2 * ( x + y ) ) + M_PI_2 * std::cos( M_PI_2 * ( x - y ) ) ;
+                ret[0]  =      tmp;
+                ret[1] =    -  tmp;
 #else
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//arg[0];
@@ -227,7 +229,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                     ret[ 1 ] = 0.0;
                 }
 #elif defined(GENRALIZED_STOKES_PROBLEM)
-                const double tmp = std::cos( ( 0.5 * M_PI ) * ( x1 + x2 ) );
+                const double tmp = std::cos( ( M_PI_2 ) * ( x1 + x2 ) );
                 ret[0] = tmp;
                 ret[1] = -1.0 * tmp;
 #else
