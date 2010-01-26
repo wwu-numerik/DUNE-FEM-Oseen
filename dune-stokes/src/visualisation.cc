@@ -43,7 +43,7 @@ class BoundaryFunctor {
 		double operator() ( const Entity& entity ) const
 		{
 			double ret( 0.0 );
-			int numberOfBoundarySegments( 0.0 );
+			int numberOfBoundarySegments( 0 );
 			bool isOnBoundary = false;
 			typedef typename Entity::LeafIntersectionIterator
 			IntersectionIteratorType;

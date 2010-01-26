@@ -1,0 +1,7 @@
+Manager =
+{
+  log_events = 1;
+  replay_delay = 0;
+  replay_scale = 0;
+  ask_on_exit = 0;
+}

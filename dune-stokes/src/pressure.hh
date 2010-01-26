@@ -101,7 +101,7 @@ class Pressure : public Dune::Function < typename PressureTraitsImp::FunctionSpa
 #elif defined(CONSTANT_PROBLEM)
                 ret[0] = -x2;
 #elif defined(GENRALIZED_STOKES_PROBLEM)
-                ret[0] = std::sin( ( 0.5 * M_PI ) * ( x1 - x2 ) );
+                ret[0] = std::sin( ( M_PI_2 ) * ( x1 - x2 ) );
 #else
                 ret[0] = 2.0 * std::exp( x1 ) * std::sin( x2 );
 #endif

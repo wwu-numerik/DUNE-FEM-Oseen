@@ -305,7 +305,7 @@ void AccuracyRun( CollectiveCommunication& mpicomm )
     // setting this to true will give each run a unique logilfe name
     bool per_run_log_target = Parameters().getParam( "per-run-log-target", true );
 
-    int numruns = std::pow( accurracy_steps, 2.0 );
+	int numruns = int( std::pow( accurracy_steps, 2.0 ) );
     profiler().Reset( numruns );
     for ( int i = 0; i < accurracy_steps; ++i ) {
         for ( int j = 0; j < accurracy_steps; ++j ) {
@@ -395,7 +395,7 @@ void StabRun( CollectiveCommunication& mpicomm )
 
     int ref = Parameters().getParam( "minref", 0 );
 
-    // setting this to true will give each run a unique logilfe name
+	// setting this to true will give each run a unique logfile name
     bool per_run_log_target = Parameters().getParam( "per-run-log-target", true );
 
     CoeffVector coeff_vector = getC_power_Permutations();
@@ -449,7 +449,7 @@ void BfgRun( CollectiveCommunication& mpicomm )
     const double stop_tau = Parameters().getParam( "bfg-tau-stop", 0.4 ) ;
     const double tau_inc = Parameters().getParam( "bfg-tau-inc", 0.025 ) ;
 
-    profiler().Reset( ( stop_tau - start_tau ) / tau_inc + 1 );
+	profiler().Reset( int( ( stop_tau - start_tau ) / tau_inc + 1 ) );
 
     for ( double tau = start_tau; tau < stop_tau; tau += tau_inc ) {
         Parameters().setParam( "bfg-tau", tau );
@@ -658,6 +658,88 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
     profiler().StopTiming( "Problem/Postprocessing" );
     profiler().StopTiming( "SingleRun" );
+
+    /*
+     * save solutions
+     */
+    Dune::VTKIO< GridPartType > vtkWriter( gridPart );
+    std::string vtkWriterFilename = "";
+
+#ifdef MICRO_PROBLEM_X
+    Stuff::saveDiscreteFunction(    computedSolutions.discreteVelocity(),
+                                    info.gridname,
+                                    refine_level,
+                                    Parameters().DgfFilename( gridDim ),
+                                    std::string( "data/micro_reference_velocity_X_ref_" ) + Stuff::toString( refine_level ),
+                                    Logger().Err() );
+
+    vtkWriterFilename = std::string( "data/micro_reference_velocity_X_ref_" ) + Stuff::toString( refine_level );
+    vtkWriter.addVectorVertexData( computedSolutions.discreteVelocity() );
+    vtkWriter.write( vtkWriterFilename.c_str() );
+    vtkWriter.clear();
+
+    Stuff::saveDiscreteFunction(    computedSolutions.discretePressure(),
+                                    info.gridname,
+                                    refine_level,
+                                    Parameters().DgfFilename( gridDim ),
+                                    std::string( "data/micro_reference_pressure_X_ref_" ) + Stuff::toString( refine_level ),
+                                    Logger().Err() );
+
+    vtkWriterFilename = std::string( "data/micro_reference_pressure_X_ref_" ) + Stuff::toString( refine_level );
+    vtkWriter.addVertexData( computedSolutions.discretePressure() );
+    vtkWriter.write( vtkWriterFilename.c_str() );
+    vtkWriter.clear();
+#endif
+#ifdef MICRO_PROBLEM_Y
+    Stuff::saveDiscreteFunction(    computedSolutions.discreteVelocity(),
+                                    info.gridname,
+                                    refine_level,
+                                    Parameters().DgfFilename( gridDim ),
+                                    std::string( "data/micro_reference_velocity_Y_ref_" ) + Stuff::toString( refine_level ),
+                                    Logger().Err() );
+
+    vtkWriterFilename = std::string( "data/micro_reference_velocity_Y_ref_" ) + Stuff::toString( refine_level );
+    vtkWriter.addVectorVertexData( computedSolutions.discreteVelocity() );
+    vtkWriter.write( vtkWriterFilename.c_str() );
+    vtkWriter.clear();
+
+    Stuff::saveDiscreteFunction(    computedSolutions.discretePressure(),
+                                    info.gridname,
+                                    refine_level,
+                                    Parameters().DgfFilename( gridDim ),
+                                    std::string( "data/micro_reference_pressure_Y_ref_" ) + Stuff::toString( refine_level ),
+                                    Logger().Err() );
+
+    vtkWriterFilename = std::string( "data/micro_reference_pressure_Y_ref_" ) + Stuff::toString( refine_level );
+    vtkWriter.addVertexData( computedSolutions.discretePressure() );
+    vtkWriter.write( vtkWriterFilename.c_str() );
+    vtkWriter.clear();
+#endif
+#ifdef DARCY_PROBLEM
+    Stuff::saveDiscreteFunction(    computedSolutions.discreteVelocity(),
+                                    info.gridname,
+                                    refine_level,
+                                    Parameters().DgfFilename( gridDim ),
+                                    std::string( "data/fullscale_perforated_velocity_ref_" ) + Stuff::toString( refine_level ),
+                                    Logger().Err() );
+
+    vtkWriterFilename = std::string( "data/fullscale_perforated_velocity_ref_" ) + Stuff::toString( refine_level );
+    vtkWriter.addVectorVertexData( computedSolutions.discreteVelocity() );
+    vtkWriter.write( vtkWriterFilename.c_str() );
+    vtkWriter.clear();
+
+    Stuff::saveDiscreteFunction(    computedSolutions.discretePressure(),
+                                    info.gridname,
+                                    refine_level,
+                                    Parameters().DgfFilename( gridDim ),
+                                    std::string( "data/fullscale_perforated_pressure_ref_" ) + Stuff::toString( refine_level ),
+                                    Logger().Err() );
+
+    vtkWriterFilename = std::string( "data/fullscale_perforated_pressure_ref_" ) + Stuff::toString( refine_level );
+    vtkWriter.addVertexData( computedSolutions.discretePressure() );
+    vtkWriter.write( vtkWriterFilename.c_str() );
+    vtkWriter.clear();
+#endif
 
     firstRun = false;
 

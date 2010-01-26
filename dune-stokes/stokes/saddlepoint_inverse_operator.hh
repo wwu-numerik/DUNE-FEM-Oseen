@@ -39,7 +39,7 @@
 namespace Dune {
 
 struct SaddlepointInverseOperatorInfo {
-    int iterations_inner_avg;
+	double iterations_inner_avg;
     int iterations_inner_min;
     int iterations_inner_max;
     int iterations_outer_total;

@@ -13,7 +13,7 @@
 
 #include <dune/common/fvector.hh>
 
-#include <dune/stokes/discretefunctionspacepair.hh>
+#include <dune/stokes/discretestokesfunctionspacewrapper.hh>
 
 #ifndef NLOG
     #include <dune/stuff/printing.hh>
@@ -50,7 +50,7 @@ namespace Dune
             CoefficientMap map_;
 
         public:
-            StabilizationCoefficients(  const FactorType pow,
+			StabilizationCoefficients(  const PowerType pow,
                                         const FactorType fac )
             {
                 *this = StabilizationCoefficients( pow,pow,pow,pow,fac,fac,fac,fac );

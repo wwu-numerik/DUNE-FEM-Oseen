@@ -33,6 +33,10 @@ namespace Dune
  *
  *  \todo   doc
  **/
+//template <  class DiscreteModelImp,
+//            class PreviousPassImp,
+//            int PassID = 0,
+//            class NonPeriodicGridPartType = typename DiscreteModelImp::DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType::DiscreteFunctionSpaceType::GridPartType >
 template <  class DiscreteModelImp,
             class PreviousPassImp,
             int PassID = 0 >
@@ -200,11 +204,31 @@ class StokesPass
             : BaseType( prevPass ),
             discreteModel_( discreteModel ),
             gridPart_( gridPart ),
+//            nonPeriodicGridPart_( gridPart ),
             spaceWrapper_( spaceWrapper ),
             velocitySpace_( spaceWrapper.discreteVelocitySpace() ),
             pressureSpace_( spaceWrapper.discretePressureSpace() ),
             sigmaSpace_( gridPart )
         {}
+
+//        /**
+//         *  \brief  constructor
+//         *  \todo   doc
+//         **/
+//        StokesPass( PreviousPassType& prevPass,
+//                    DiscreteModelType& discreteModel,
+//                    GridPartType& gridPart,
+//                    NonPeriodicGridPartType& nonPeriodicGridPart,
+//                    DiscreteStokesFunctionSpaceWrapperType& spaceWrapper )
+//            : BaseType( prevPass ),
+//            discreteModel_( discreteModel ),
+//            gridPart_( gridPart ),
+//            nonPeriodicGridPart_( nonPeriodicGridPart ),
+//            spaceWrapper_( spaceWrapper ),
+//            velocitySpace_( spaceWrapper.discreteVelocitySpace() ),
+//            pressureSpace_( spaceWrapper.discretePressureSpace() ),
+//            sigmaSpace_( gridPart )
+//        {}
 
         /**
          *  \brief  empty constructor
@@ -349,8 +373,8 @@ class StokesPass
 #ifndef NLOG
             // logging stuff
             Logging::LogStream& infoStream = Logger().Info();
-            Logging::LogStream& debugStream = Logger().Info();
-//            Logging::LogStream& debugStream = Logger().Dbg(); // sometimes Dbg() doesn't work
+//            Logging::LogStream& debugStream = Logger().Info();
+            Logging::LogStream& debugStream = Logger().Dbg(); // sometimes Dbg() doesn't work
             bool entityOutput = false;
             bool intersectionOutput = false;
             const int outputEntity = 0;
@@ -716,7 +740,8 @@ class StokesPass
                     debugStream.Suspend();
                 }
 #endif
-                if ( discreteModel_.isGeneralized() ) {
+//                if ( discreteModel_.isGeneralized() ) 
+                {
                 for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                         double Y_i_j = 0.0;
@@ -2753,7 +2778,7 @@ class StokesPass
 #ifdef HAS_RUN_INFO
         void getRuninfo( RunInfo& info )
         {
-            info.iterations_inner_avg = info_.iterations_inner_avg;
+			info.iterations_inner_avg = int( info_.iterations_inner_avg );
             info.iterations_inner_min = info_.iterations_inner_min;
             info.iterations_inner_max = info_.iterations_inner_max;
             info.iterations_outer_total = info_.iterations_outer_total;
@@ -2764,6 +2789,7 @@ class StokesPass
     private:
         DiscreteModelType& discreteModel_;
         GridPartType& gridPart_;
+//        NonPeriodicGridPartType& nonPeriodicGridPart_;
         DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
         DiscreteVelocityFunctionSpaceType& velocitySpace_;
         DiscretePressureFunctionSpaceType& pressureSpace_;

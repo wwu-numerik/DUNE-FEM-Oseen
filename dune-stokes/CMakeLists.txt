@@ -7,12 +7,12 @@ cmake_minimum_required(VERSION 2.6)
 #----------------------------------------------------------------------------------------------------
 SET( CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true )
 SET( CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".lib" ".la" ".a")
-SET( CMAKE_CXX_COMPILER "g++-4.2" )
+SET( CMAKE_CXX_COMPILER "g++" )
 SET( CMAKE_COLOR_MAKEFILE ON)
 
 
 # Add Definitions, Compiler-Switches, etc.: -Wall -O2 -g3 ...
-SET( CXX_FLAGS "-Wall -O3 -fomit-frame-pointer -funroll-loops" CACHE STRING
+SET( CXX_FLAGS "-Wall -O3 -fomit-frame-pointer -funroll-loops -g -ggdb" CACHE STRING
  	"" )
 
 EXECUTE_PROCESS(
@@ -62,7 +62,7 @@ SET( PROBLEM
 	"PROBLEM" )
 
 SET( ALUGRID_BASE_PATH
-	"/share/dune/Modules/modules_x86_64/ALUGrid-1.1_Parallel" CACHE STRING
+	"/share/dune/modules/modules_x86_64/alugrid/alugrid-1.14" CACHE STRING
 	"ALUGRID_BASE_PATH" )
 
 SET( UGGRID_BASE_PATH
