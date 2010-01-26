@@ -2778,7 +2778,7 @@ class StokesPass
 #ifdef HAS_RUN_INFO
         void getRuninfo( RunInfo& info )
         {
-            info.iterations_inner_avg = info_.iterations_inner_avg;
+			info.iterations_inner_avg = int( info_.iterations_inner_avg );
             info.iterations_inner_min = info_.iterations_inner_min;
             info.iterations_inner_max = info_.iterations_inner_max;
             info.iterations_outer_total = info_.iterations_outer_total;
