@@ -60,7 +60,6 @@
 #include <dune/stokes/discretestokesfunctionspacewrapper.hh>
 #include <dune/stokes/discretestokesmodelinterface.hh>
 #include <dune/stokes/stokespass.hh>
-#include <dune/stokes/poissoninitialdata.hh>
 
 #include <dune/stuff/printing.hh>
 #include <dune/stuff/misc.hh>
