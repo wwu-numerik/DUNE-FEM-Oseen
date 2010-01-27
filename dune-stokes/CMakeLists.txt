@@ -7,7 +7,6 @@ cmake_minimum_required(VERSION 2.6)
 #----------------------------------------------------------------------------------------------------
 SET( CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true )
 SET( CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".lib" ".la" ".a")
-SET( CMAKE_CXX_COMPILER "g++" )
 SET( CMAKE_COLOR_MAKEFILE ON)
 
 
