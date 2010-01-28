@@ -15,8 +15,6 @@ template <class GridPartType>
 class BoundaryInfo
 {
     public:
-        Dune::CompileTimeChecker< 2 == GridPartType::GridType::dimension > BoundaryInfo_not_implemented_for_dim_neq_2;
-
         typedef typename GridPartType::GridType
             GridType;
         typedef typename GridPartType::IntersectionIteratorType
