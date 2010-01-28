@@ -55,17 +55,19 @@
 					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include" />
 					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include/parallel" />
 					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/include/serial" />
-					<Add directory="/usr/local/grape" />
+					<Add directory="/usr/local/dune/modules/grape/grape/lib" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
 					<Add library="blas" />
+					<Add library="gr" />
+					<Add library="GL" />
 					<Add directory="/usr/local/dune/modules/alberta/alberta-1.2/lib" />
 					<Add directory="/usr/local/dune/modules/alugrid/alugrid-1.14/lib" />
 					<Add directory="/data/dune_work/private/f_albr01/modules/grape" />
 					<Add directory="/data/dune_work/private/f_albr01/modules/alberta-2.01/lib" />
 					<Add directory="/data/dune_work/private/f_albr01/modules/alugrid-1.14/lib" />
-					<Add directory="/usr/local/grape" />
+					<Add directory="/usr/local/dune/modules/grape/grape/lib" />
 				</Linker>
 			</Target>
 			<Target title="rene">
@@ -300,7 +302,6 @@
 		</Unit>
 		<Unit filename="../src/visualisation.cc">
 			<Option virtualFolder="visualisation/" />
-			<Option target="felix" />
 			<Option target="rene" />
 			<Option target="uni_elliptic" />
 			<Option target="rene_elliptic" />
@@ -389,7 +390,6 @@
 		</Unit>
 		<Unit filename="../../dune-stuff/stuff/headertest.cc">
 			<Option virtualFolder="dune-stuff/" />
-			<Option target="felix" />
 			<Option target="rene" />
 			<Option target="uni_elliptic" />
 			<Option target="rene_elliptic" />
