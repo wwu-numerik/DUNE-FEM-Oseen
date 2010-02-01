@@ -525,7 +525,8 @@ class HutchenFunctionBase : public Dune::Function < FunctionSpaceImp, HutchenFun
 			m( pointInfo_.center ),
             p1( pointInfo_.outmost_1 ),
             p2( pointInfo_.outmost_2 ),
-            scale_factor_( scale_factor )
+			scale_factor_( scale_factor ),
+			edge_distance_( ( (p1 - m).two_norm() + (p2 - m).two_norm() ) / 2.0 )
         {
         }
 
@@ -541,6 +542,7 @@ class HutchenFunctionBase : public Dune::Function < FunctionSpaceImp, HutchenFun
         const DomainType& p1;
         const DomainType& p2;
         const double scale_factor_;
+		const double edge_distance_;
 
 };
 
@@ -556,6 +558,7 @@ class HutchenFunction : public HutchenFunctionBase < FunctionSpaceImp, GridPartT
         using ParentType::m;
         using ParentType::scale_factor_;
         using ParentType::direction_;
+		using ParentType::edge_distance_;
 
 
         HutchenFunction( const FunctionSpaceImp& space, typename ParentType::PointInfo pf, typename ParentType::RangeType direction, double scale_factor = 1.0 )
@@ -565,10 +568,8 @@ class HutchenFunction : public HutchenFunctionBase < FunctionSpaceImp, GridPartT
         virtual void evaluate( const typename ParentType::DomainType& arg, typename ParentType::RangeType& ret ) const
         {
             typename ParentType::RangeType tmp = direction_;
-            if ( (p1 + arg).two_norm() > (p1 + m).two_norm() )
-                tmp *= std::abs( ( (p2-arg).two_norm()/(m-p2).two_norm() ) * scale_factor_ );
-            else
-                tmp *= std::abs( ( (p1-arg).two_norm()/(m-p1).two_norm() ) * scale_factor_ );
+			const double dist  = ( arg - m ).two_norm();
+			tmp *= scale_factor_ * std::abs( edge_distance_ - dist ) / edge_distance_;
             ret = tmp;
         }
 };
@@ -641,6 +642,8 @@ class TwoDeeVariableDirichletData : public Dune::Function < FunctionSpaceImp, Tw
 			const BoundaryFunctionType* boundaryFunction = boundaryFunctionList_[id];
 			assert ( boundaryFunction );
             boundaryFunction->evaluate( arg, ret );
+//			if ( zeroBoundaryIds_.find(id) != zeroBoundaryIds_.end() )
+//				ret *=0;
 		#else
 			ASSERT_EXCEPTION( false, "only valid in aorta problem" );
 		#endif
