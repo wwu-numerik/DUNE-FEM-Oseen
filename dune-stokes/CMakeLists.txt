@@ -106,12 +106,18 @@ SET(dune-stokesSrc
 	src/dune_stokes.cc
 )
 
-ADD_EXECUTABLE(dune_stokes ${dune-stokesSrc} )
+FILE( GLOB header "src/*.hh" )
+FILE( GLOB stokes "stokes/*.hh" )
+FILE( GLOB stuff "../dune-stuff/stuff/*.hh" )
+
+set_source_files_properties( ${stuff} ${stokes} ${header} PROPERTIES HEADER_FILE_ONLY 1 )
+
+ADD_EXECUTABLE(dune_stokes ${dune-stokesSrc} ${header} ${stokes} ${stuff} )
 
 TARGET_LINK_LIBRARIES(dune_stokes "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS} "gr" "GL")
 
-ADD_EXECUTABLE(minimal src/minimal.cc )
+ADD_EXECUTABLE(minimal src/minimal.cc ${header} ${stokes} )
 TARGET_LINK_LIBRARIES(minimal "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS} "gr" "GL")
 
-ADD_EXECUTABLE(visualisation src/visualisation.cc )
+ADD_EXECUTABLE(visualisation src/visualisation.cc ${header} ${stokes} )
 TARGET_LINK_LIBRARIES(visualisation "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS} "gr" "GL")
