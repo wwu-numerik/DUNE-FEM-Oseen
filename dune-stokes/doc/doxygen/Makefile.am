@@ -64,7 +64,7 @@ DEPENDON = -name \*.cc -o -name \*.hh -o -name \*.png
 
 # check dependency ourself to be robust
 doxygen-tag: FORCE $(DOXYGENHEADERBUILD)
-	set -e; \
+	set -e ; \
 	if test -e Doxyfile; then \
 	  if test ! -e doxygen-tag || test x"`find $(top_srcdir) \( $(DEPENDON) \) -a -newer doxygen-tag -print`" != x ; then \
 	    echo Running doxygen. This may take a while... ; \
