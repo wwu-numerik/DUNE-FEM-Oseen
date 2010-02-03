@@ -14,6 +14,7 @@
 #include <dune/common/fvector.hh>
 
 #include <dune/stokes/discretestokesfunctionspacewrapper.hh>
+#include <dune/stokes/boundaryinfo.hh>
 
 #ifndef NLOG
     #include <dune/stuff/printing.hh>
@@ -1280,8 +1281,8 @@ class DiscreteStokesModelDefault;
 /**
  *  \brief  Traits class for DiscreteStokesModelDefault
  **/
-template < class GridPartImp, template <class > class AnalyticalForceImp, template <class,class > class AnalyticalDirichletDataImp,
-            int gridDim, int sigmaOrder, int velocityOrder = sigmaOrder, int pressureOrder = sigmaOrder  >
+template < class GridPartImp, template <class > class AnalyticalForceImp, class AnalyticalDirichletDataTraits,
+			int gridDim, int sigmaOrder, int velocityOrder = sigmaOrder, int pressureOrder = sigmaOrder >
 class DiscreteStokesModelDefaultTraits
 {
     public:
@@ -1381,7 +1382,9 @@ class DiscreteStokesModelDefaultTraits
             AnalyticalForceType;
 
         //! function type for the analytical dirichlet data
-        typedef AnalyticalDirichletDataImp< VelocityFunctionSpaceType, GridPartImp >
+		typedef typename AnalyticalDirichletDataTraits::template Implementation<VelocityFunctionSpaceType,GridPartImp >
+				AnalyticalDirichletDataTraitsImplementation;
+		typedef typename AnalyticalDirichletDataTraitsImplementation::AnalyticalDirichletDataType
             AnalyticalDirichletDataType;
 
         /**

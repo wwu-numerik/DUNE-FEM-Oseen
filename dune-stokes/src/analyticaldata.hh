@@ -9,6 +9,7 @@
 #include <cmath>
 
 #include <dune/common/fvector.hh>
+#include <dune/common/fmatrix.hh>
 #include <dune/stuff/parametercontainer.hh>
 #include <dune/stokes/boundaryinfo.hh>
 
@@ -389,6 +390,21 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 
 };
 
+struct SimpleDirichletDataTraits {
+
+	template < class FunctionSpaceImp, class GridPartImp >
+	struct Implementation {
+		typedef DirichletData< FunctionSpaceImp>
+			AnalyticalDirichletDataType;
+
+		template <class DiscreteStokesFunctionWrapper >
+		static AnalyticalDirichletDataType getInstance( const DiscreteStokesFunctionWrapper& wrapper ) {
+			return 	AnalyticalDirichletDataType( wrapper.discreteVelocitySpace() );
+		}
+	};
+};
+
+
 template < class FunctionSpaceImp >
 class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFluxDirichletData < FunctionSpaceImp > >
 {
@@ -504,52 +520,11 @@ class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFl
 		const int dim_;
 };
 
-template < class FunctionSpaceImp, class GridPartType >
-class BoundaryShapeFunctionBase : public Dune::Function < FunctionSpaceImp, BoundaryShapeFunctionBase < FunctionSpaceImp, GridPartType > >
-{
-    public:
-		typedef BoundaryShapeFunctionBase< FunctionSpaceImp, GridPartType >
-			ThisType;
-		typedef Dune::Function< FunctionSpaceImp, ThisType >
-			BaseType;
-		typedef typename BaseType::DomainType
-			DomainType;
-		typedef typename BaseType::RangeType
-			RangeType;
-        typedef typename Dune::BoundaryInfo<GridPartType>::PointInfo
-            PointInfo;
-		BoundaryShapeFunctionBase( const FunctionSpaceImp& space, PointInfo pf, RangeType direction, double scale_factor = 1.0 )
-			: BaseType( space ),
-			pointInfo_( pf ),
-			direction_( direction ),
-			m( pointInfo_.center ),
-            p1( pointInfo_.outmost_1 ),
-            p2( pointInfo_.outmost_2 ),
-			scale_factor_( scale_factor ),
-			edge_distance_( ( (p1 - m).two_norm() + (p2 - m).two_norm() ) / 2.0 )
-        {
-        }
-
-        virtual void evaluate( const DomainType& arg, RangeType& ret ) const
-        {
-            ret = direction_;
-        }
-
-    protected:
-        const PointInfo pointInfo_;
-        const RangeType direction_;
-        const DomainType& m;
-        const DomainType& p1;
-        const DomainType& p2;
-        const double scale_factor_;
-		const double edge_distance_;
-
-};
 
 template < class FunctionSpaceImp, class GridPartType >
-class FirstOrderBoundaryShapeFunction : public BoundaryShapeFunctionBase< FunctionSpaceImp, GridPartType >
+class FirstOrderBoundaryShapeFunction : public Dune::BoundaryShapeFunctionBase< FunctionSpaceImp, GridPartType >
 {
-	typedef BoundaryShapeFunctionBase < FunctionSpaceImp, GridPartType >
+	typedef Dune::BoundaryShapeFunctionBase < FunctionSpaceImp, GridPartType >
         ParentType;
 
     public:
@@ -575,9 +550,9 @@ class FirstOrderBoundaryShapeFunction : public BoundaryShapeFunctionBase< Functi
 };
 
 template < class FunctionSpaceImp, class GridPartType >
-class SecondOrderBoundaryShapeFunction : public BoundaryShapeFunctionBase< FunctionSpaceImp, GridPartType >
+class SecondOrderBoundaryShapeFunction : public Dune::BoundaryShapeFunctionBase< FunctionSpaceImp, GridPartType >
 {
-	typedef BoundaryShapeFunctionBase < FunctionSpaceImp, GridPartType >
+	typedef Dune::BoundaryShapeFunctionBase < FunctionSpaceImp, GridPartType >
 		ParentType;
 
 	public:
@@ -591,11 +566,15 @@ class SecondOrderBoundaryShapeFunction : public BoundaryShapeFunctionBase< Funct
 
 		SecondOrderBoundaryShapeFunction( const FunctionSpaceImp& space, typename ParentType::PointInfo pf, typename ParentType::RangeType direction, double scale_factor = 1.0 )
 			: ParentType ( space, pf, direction, scale_factor )
-		{}
+		{
+		}
 
 		virtual void evaluate( const typename ParentType::DomainType& arg, typename ParentType::RangeType& ret ) const
 		{
-			assert(false);
+			typename ParentType::RangeType tmp = direction_;
+			const double fac = scale_factor_ * ((arg - p1) * (arg -p2));
+			tmp *= fac;
+			ret = tmp;
 		}
 };
 

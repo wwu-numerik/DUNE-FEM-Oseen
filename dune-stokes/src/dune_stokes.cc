@@ -60,6 +60,7 @@
 #include <dune/stokes/discretestokesfunctionspacewrapper.hh>
 #include <dune/stokes/discretestokesmodelinterface.hh>
 #include <dune/stokes/stokespass.hh>
+#include <dune/stokes/boundaryinfo.hh>
 
 #include <dune/stuff/printing.hh>
 #include <dune/stuff/misc.hh>
@@ -511,7 +512,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     typedef Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
                     Force,
-					VariableDirichletData,
+					Dune::GeometryBasedBoundaryFunctionTraits<VariableDirichletData>,
                     gridDim,
                     polOrder,
                     VELOCITY_POLORDER,
@@ -521,7 +522,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     typedef Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
                     Force,
-                    DirichletData,
+					SimpleDirichletDataTraits,
                     gridDim,
                     polOrder,
                     VELOCITY_POLORDER,
@@ -578,7 +579,8 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 //    Logger().Info().Suspend();
     typedef StokesModelTraitsImp::AnalyticalDirichletDataType
         AnalyticalDirichletDataType;
-    AnalyticalDirichletDataType analyticalDirichletData( discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), gridPart );
+	AnalyticalDirichletDataType analyticalDirichletData =
+			StokesModelTraitsImp::AnalyticalDirichletDataTraitsImplementation::getInstance( discreteStokesFunctionSpaceWrapper );
 //    Logger().Info().Resume();
 
     StokesModelImpType stokesModel( stabil_coeff,
@@ -873,15 +875,28 @@ typedef Dune::AdaptiveLeafGridPart< GridType >
     const int gridDim = GridType::dimensionworld;
     const int polOrder = POLORDER;
 
-    typedef Dune::DiscreteStokesModelDefaultTraits<
-                GridPartType,
-                Force,
-                DirichletData,
-                gridDim,
-                polOrder,
-                VELOCITY_POLORDER,
-                PRESSURE_POLORDER >
-    StokesModelTraitsImp;
+	// model traits
+	#if defined( AORTA_PROBLEM )
+	typedef Dune::DiscreteStokesModelDefaultTraits<
+					GridPartType,
+					Force,
+					Dune::GeometryBasedBoundaryFunctionTraits<VariableDirichletData>,
+					gridDim,
+					polOrder,
+					VELOCITY_POLORDER,
+					PRESSURE_POLORDER >
+		StokesModelTraitsImp;
+	#else
+	typedef Dune::DiscreteStokesModelDefaultTraits<
+					GridPartType,
+					Force,
+					SimpleDirichletDataTraits,
+					gridDim,
+					polOrder,
+					VELOCITY_POLORDER,
+					PRESSURE_POLORDER >
+		StokesModelTraitsImp;
+	#endif
 
 
 typedef Dune::Tuple< StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType*, StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType* >

@@ -143,8 +143,6 @@ class BoundaryInfo
         virtual ~BoundaryInfo() {}
 
     protected:
-        BoundaryInfo(const BoundaryInfo& other) {}
-        BoundaryInfo& operator=(const BoundaryInfo& other) { return *this; }
 
         const GridPartType& gridpart_;
 //        CoordBoundaryIDMapType coordBoundaryIDMap_;
@@ -170,6 +168,66 @@ class BoundaryInfo
             return ret;
         }
 };//end BoundaryInfo
+
+
+template < class FunctionSpaceImp, class GridPartType >
+class BoundaryShapeFunctionBase : public Dune::Function < FunctionSpaceImp, BoundaryShapeFunctionBase < FunctionSpaceImp, GridPartType > >
+{
+	public:
+		typedef BoundaryShapeFunctionBase< FunctionSpaceImp, GridPartType >
+			ThisType;
+		typedef Dune::Function< FunctionSpaceImp, ThisType >
+			BaseType;
+		typedef typename BaseType::DomainType
+			DomainType;
+		typedef typename BaseType::RangeType
+			RangeType;
+		typedef typename Dune::BoundaryInfo<GridPartType>::PointInfo
+			PointInfo;
+		BoundaryShapeFunctionBase( const FunctionSpaceImp& space, PointInfo pf, RangeType direction, double scale_factor = 1.0 )
+			: BaseType( space ),
+			pointInfo_( pf ),
+			direction_( direction ),
+			m( pointInfo_.center ),
+			p1( pointInfo_.outmost_1 ),
+			p2( pointInfo_.outmost_2 ),
+			scale_factor_( scale_factor ),
+			edge_distance_( ( (p1 - m).two_norm() + (p2 - m).two_norm() ) / 2.0 )
+		{
+		}
+
+		virtual void evaluate( const DomainType& arg, RangeType& ret ) const
+		{
+			ret = direction_;
+		}
+
+	protected:
+		const PointInfo pointInfo_;
+		const RangeType direction_;
+		const DomainType& m;
+		const DomainType& p1;
+		const DomainType& p2;
+		const double scale_factor_;
+		const double edge_distance_;
+
+};
+
+
+template < template <class,class, template <class,class> class> class AnalyticalDirichletDataImp, template <class,class> class BoundaryFunctionImp =  BoundaryShapeFunctionBase >
+struct GeometryBasedBoundaryFunctionTraits {
+
+	template < class FunctionSpaceImp, class GridPartImp >
+	struct Implementation {
+		typedef AnalyticalDirichletDataImp< FunctionSpaceImp, GridPartImp, BoundaryFunctionImp >
+			AnalyticalDirichletDataType;
+		typedef typename AnalyticalDirichletDataType::BoundaryFunctionType
+			BoundaryFunctionType;
+		template <class DiscreteStokesFunctionWrapper >
+		static AnalyticalDirichletDataType getInstance( const DiscreteStokesFunctionWrapper& wrapper ) {
+			return 	AnalyticalDirichletDataType( wrapper.discreteVelocitySpace(), wrapper.discreteVelocitySpace().gridPart() );
+		}
+	};
+};
 
 }//end namespace Dune
 
