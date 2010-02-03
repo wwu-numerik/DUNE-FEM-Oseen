@@ -620,13 +620,13 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     profiler().StartTiming( "Problem/Postprocessing" );
 
 #if defined (AORTA_PROBLEM) || defined (COCKBURN_PROBLEM) || defined (GENRALIZED_STOKES_PROBLEM) //bool tpl-param toggles ana-solution output in post-proc
-    typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, true >
+	typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, true, AnalyticalDirichletDataType >
         ProblemType;
 #else
-    typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, false >
+	typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, false, AnalyticalDirichletDataType >
         ProblemType;
 #endif
-    ProblemType problem( viscosity , computedSolutions );
+	ProblemType problem( viscosity , computedSolutions, analyticalDirichletData );
 
     typedef PostProcessor< StokesPassType, ProblemType >
         PostProcessorType;

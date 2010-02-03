@@ -14,7 +14,6 @@
 #include <dune/stuff/logging.hh>
 #include "velocity.hh"
 #include "pressure.hh"
-#include "analyticaldata.hh"
 
 namespace StokesProblem {
 	#ifdef SIMPLE_PROBLEM
@@ -48,7 +47,7 @@ namespace StokesProblem {
  *
  *  \todo   extensive docu with latex
  **/
-template < int griddim, class DiscreteFunctionWrapperImp, bool hasAnalyticalSolution = false >
+template < int griddim, class DiscreteFunctionWrapperImp, bool hasAnalyticalSolution , class DirichletDataImp >
 class Problem
 {
     public:
@@ -78,7 +77,7 @@ class Problem
             PressureType;
         typedef Force< VelocityFunctionSpaceType >
             ForceType;
-        typedef DirichletData< VelocityFunctionSpaceType >
+		typedef DirichletDataImp
             DirichletDataType;
 
     /**
@@ -86,12 +85,11 @@ class Problem
      *
      *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
      **/
-    Problem( const double viscosity, const DiscreteFunctionWrapperType& funcWrapper )
+	Problem( const double viscosity, const DiscreteFunctionWrapperType& funcWrapper, const DirichletDataType& dirichlet )
         : velocity_( funcWrapper.discreteVelocity().space() ),
           pressure_ ( funcWrapper.discretePressure().space() ),
           force_( viscosity, funcWrapper.discreteVelocity().space() ),
-          dirichletData_( funcWrapper.discreteVelocity().space() )
-
+		  dirichletData_( dirichlet )
     {
     }
 
@@ -165,7 +163,7 @@ class Problem
         VelocityType velocity_;
         PressureType pressure_;
         ForceType force_;
-        DirichletDataType dirichletData_;
+		const DirichletDataType& dirichletData_;
 };
 
 #endif // end of problem.hh
