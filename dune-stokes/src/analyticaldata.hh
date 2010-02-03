@@ -505,10 +505,10 @@ class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFl
 };
 
 template < class FunctionSpaceImp, class GridPartType >
-class HutchenFunctionBase : public Dune::Function < FunctionSpaceImp, HutchenFunctionBase < FunctionSpaceImp, GridPartType > >
+class BoundaryShapeFunctionBase : public Dune::Function < FunctionSpaceImp, BoundaryShapeFunctionBase < FunctionSpaceImp, GridPartType > >
 {
     public:
-        typedef HutchenFunctionBase< FunctionSpaceImp, GridPartType >
+		typedef BoundaryShapeFunctionBase< FunctionSpaceImp, GridPartType >
 			ThisType;
 		typedef Dune::Function< FunctionSpaceImp, ThisType >
 			BaseType;
@@ -518,7 +518,7 @@ class HutchenFunctionBase : public Dune::Function < FunctionSpaceImp, HutchenFun
 			RangeType;
         typedef typename Dune::BoundaryInfo<GridPartType>::PointInfo
             PointInfo;
-        HutchenFunctionBase( const FunctionSpaceImp& space, PointInfo pf, RangeType direction, double scale_factor = 1.0 )
+		BoundaryShapeFunctionBase( const FunctionSpaceImp& space, PointInfo pf, RangeType direction, double scale_factor = 1.0 )
 			: BaseType( space ),
 			pointInfo_( pf ),
 			direction_( direction ),
@@ -547,9 +547,9 @@ class HutchenFunctionBase : public Dune::Function < FunctionSpaceImp, HutchenFun
 };
 
 template < class FunctionSpaceImp, class GridPartType >
-class HutchenFunction : public HutchenFunctionBase < FunctionSpaceImp, GridPartType >
+class FirstOrderBoundaryShapeFunction : public BoundaryShapeFunctionBase< FunctionSpaceImp, GridPartType >
 {
-    typedef HutchenFunctionBase < FunctionSpaceImp, GridPartType >
+	typedef BoundaryShapeFunctionBase < FunctionSpaceImp, GridPartType >
         ParentType;
 
     public:
@@ -561,7 +561,7 @@ class HutchenFunction : public HutchenFunctionBase < FunctionSpaceImp, GridPartT
 		using ParentType::edge_distance_;
 
 
-        HutchenFunction( const FunctionSpaceImp& space, typename ParentType::PointInfo pf, typename ParentType::RangeType direction, double scale_factor = 1.0 )
+		FirstOrderBoundaryShapeFunction( const FunctionSpaceImp& space, typename ParentType::PointInfo pf, typename ParentType::RangeType direction, double scale_factor = 1.0 )
             : ParentType ( space, pf, direction, scale_factor )
         {}
 
@@ -575,7 +575,32 @@ class HutchenFunction : public HutchenFunctionBase < FunctionSpaceImp, GridPartT
 };
 
 template < class FunctionSpaceImp, class GridPartType >
-class TwoDeeVariableDirichletData : public Dune::Function < FunctionSpaceImp, TwoDeeVariableDirichletData < FunctionSpaceImp, GridPartType > >
+class SecondOrderBoundaryShapeFunction : public BoundaryShapeFunctionBase< FunctionSpaceImp, GridPartType >
+{
+	typedef BoundaryShapeFunctionBase < FunctionSpaceImp, GridPartType >
+		ParentType;
+
+	public:
+		using ParentType::p1;
+		using ParentType::p2;
+		using ParentType::m;
+		using ParentType::scale_factor_;
+		using ParentType::direction_;
+		using ParentType::edge_distance_;
+
+
+		SecondOrderBoundaryShapeFunction( const FunctionSpaceImp& space, typename ParentType::PointInfo pf, typename ParentType::RangeType direction, double scale_factor = 1.0 )
+			: ParentType ( space, pf, direction, scale_factor )
+		{}
+
+		virtual void evaluate( const typename ParentType::DomainType& arg, typename ParentType::RangeType& ret ) const
+		{
+			assert(false);
+		}
+};
+
+template < class FunctionSpaceImp, class GridPartType, template <class ,class> class BoundaryFunctionImp =  FirstOrderBoundaryShapeFunction >
+class VariableDirichletData : public Dune::Function < FunctionSpaceImp, VariableDirichletData < FunctionSpaceImp, GridPartType > >
 {
 	public:
 		enum BoundaryType {
@@ -584,7 +609,7 @@ class TwoDeeVariableDirichletData : public Dune::Function < FunctionSpaceImp, Tw
 			outfluxBoundary	= 2
 		};
 
-		typedef TwoDeeVariableDirichletData< FunctionSpaceImp, GridPartType >
+		typedef VariableDirichletData< FunctionSpaceImp, GridPartType >
 			ThisType;
 		typedef Dune::Function< FunctionSpaceImp, ThisType >
 			BaseType;
@@ -600,7 +625,7 @@ class TwoDeeVariableDirichletData : public Dune::Function < FunctionSpaceImp, Tw
             ID_ValueMapType;
         typedef Dune::BoundaryInfo< GridPartType >
             BoundaryInfoType;
-        typedef HutchenFunction< FunctionSpaceImp, GridPartType >
+		typedef BoundaryFunctionImp< FunctionSpaceImp, GridPartType >
             BoundaryFunctionType;
         typedef std::vector<BoundaryFunctionType*>
             BoundaryFunctionListType;
@@ -609,7 +634,7 @@ class TwoDeeVariableDirichletData : public Dune::Function < FunctionSpaceImp, Tw
 			*
 			*
 			**/
-		TwoDeeVariableDirichletData( const FunctionSpaceImp& space, const GridPartType& gridpart )
+		VariableDirichletData( const FunctionSpaceImp& space, const GridPartType& gridpart )
 			: BaseType( space ),
             gridpart_( gridpart ),
             dim_( FunctionSpaceImp::dimDomain ),
@@ -626,7 +651,7 @@ class TwoDeeVariableDirichletData : public Dune::Function < FunctionSpaceImp, Tw
 			*
 			*  doing nothing
 			**/
-		~TwoDeeVariableDirichletData()
+		~VariableDirichletData()
 		{}
 
 		template < class IntersectionIteratorType >
