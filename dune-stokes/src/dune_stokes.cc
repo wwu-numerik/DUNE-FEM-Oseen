@@ -30,7 +30,7 @@
     #define VELOCITY_POLORDER POLORDER
 #endif
 
-#if ( (defined(ALUGRID_SIMPLEX) ||  defined(ALUGRID_CUBE) ) && ( GRIDDIM == 3 ) ) || defined(UGGRID)
+#if ( (defined(SGRID) || defined(ALUGRID_SIMPLEX) ||  defined(ALUGRID_CUBE) ) && ( GRIDDIM == 3 ) ) || defined(UGGRID)
     //this is no mistake, ALU is indeed only incompatible in 3d
     #define OLD_DUNE_GRID_VERSION
 #endif
@@ -512,7 +512,6 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     typedef Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
                     Force,
-					Dune::GeometryBasedBoundaryFunctionTraits<VariableDirichletData>,
                     gridDim,
                     polOrder,
                     VELOCITY_POLORDER,
