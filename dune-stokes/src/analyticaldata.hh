@@ -338,9 +338,6 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 assert( !"DARCY_PROBLEM not implemented in 3D!" );
 #elif defined(AORTA_PROBLEM)
 
-#if defined(UGGRID)
-    #error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
-#endif
                 switch ( id ) {
                     case 1: {
                         ret[0] = 0.0;//arg[1];
@@ -457,9 +454,7 @@ class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFl
 			const int id = faceIter.boundaryId();
 		#if defined(AORTA_PROBLEM)
 
-		#if defined(UGGRID)
-			#error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
-		#endif
+
 			typedef Dune::FieldVector< typename IntersectionIteratorType::ctype, IntersectionIteratorType::dimension - 1 >
 				LocalVectorType;
 
@@ -637,10 +632,6 @@ class VariableDirichletData : public Dune::Function < FunctionSpaceImp, Variable
 		void evaluate( const DomainType& arg, RangeType& ret, const IntersectionIteratorType& faceIter ) const
 		{
 		#if defined(AORTA_PROBLEM)
-
-		#if defined(UGGRID)
-			#error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
-		#endif
 			const int id = faceIter.boundaryId();
 //			assert( boundaryFunctionList_.size() >= id );
 			const BoundaryFunctionType* boundaryFunction = boundaryFunctionList_[id];
