@@ -512,6 +512,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     typedef Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
                     Force,
+					Dune::GeometryBasedBoundaryFunctionTraits<VariableDirichletData,FirstOrderBoundaryShapeFunction>,
                     gridDim,
                     polOrder,
                     VELOCITY_POLORDER,
