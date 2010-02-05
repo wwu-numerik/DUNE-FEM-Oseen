@@ -560,17 +560,21 @@ class SecondOrderBoundaryShapeFunction : public Dune::BoundaryShapeFunctionBase<
 
 
 		SecondOrderBoundaryShapeFunction( const FunctionSpaceImp& space, typename ParentType::PointInfo pf, typename ParentType::RangeType direction, double scale_factor = 1.0 )
-			: ParentType ( space, pf, direction, scale_factor )
+			: ParentType ( space, pf, direction, scale_factor ),
+			parabolic_stretch_( Parameters().getParam("parabolic_stretch", 1.0) )
 		{
 		}
 
 		virtual void evaluate( const typename ParentType::DomainType& arg, typename ParentType::RangeType& ret ) const
 		{
 			typename ParentType::RangeType tmp = direction_;
-			const double fac = scale_factor_ * ((arg - p1) * (arg -p2));
+			const double fac = parabolic_stretch_ * scale_factor_ * ( (arg - p1).two_norm() * (arg - p2).two_norm() );
 			tmp *= fac;
 			ret = tmp;
 		}
+
+	protected:
+		const double parabolic_stretch_;
 };
 
 template < class FunctionSpaceImp, class GridPartType, template <class ,class> class BoundaryFunctionImp =  FirstOrderBoundaryShapeFunction >
