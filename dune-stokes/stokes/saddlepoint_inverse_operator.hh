@@ -376,6 +376,9 @@ class SaddlepointInverseOperator
             logInfo << "solving disabled via parameter file" << std::endl;
             return SaddlepointInverseOperatorInfo();
         }
+		static const int save_interval = Parameters().getParam( "save_interval", -1 );
+		static const std::string path = Parameters().getParam("fem.io.datadir", std::string("data") ) + std::string("/intermediate/");
+		Stuff::testCreateDirectory( path );
 
 		// relative min. error at which cg-solvers will abort
         const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
@@ -564,6 +567,8 @@ class SaddlepointInverseOperator
 
             if( solverVerbosity > 2 )
                 logInfo << "\t" << iteration << " SPcg-Iterationen  " << iteration << " Residuum:" << delta << std::endl;
+			if ( save_interval > 0 && iteration % save_interval > 0 )
+				dest.writeVTK( path, iteration );
         }
 
         if ( use_velocity_reconstruct ) {

@@ -694,6 +694,13 @@ class DiscreteStokesFunctionWrapper
             #endif
         }
 
+		void writeVTK( const std::string& path, const int number_postfix )
+		{
+			std::stringstream s;
+			s << std::setfill('0') << std::setw(6) << number_postfix;
+			writeVTK( path, s.str() );
+		}
+
 		//! write both wrapped functions to "path/{pressure,velocity}.name()+postfix+.vtk"
 		void writeVTK( const std::string& path, const std::string postfix = std::string() )
 		{
@@ -702,7 +709,7 @@ class DiscreteStokesFunctionWrapper
 			else
 				vtkWriter_.addVertexData( velocity_ );
 
-			vtkWriter_.write( getPath( pressure_, path, postfix ) );
+			vtkWriter_.write( getPath( velocity_, path, postfix ) );
 			vtkWriter_.clear();
 
 			if ( DiscretePressureFunctionType::FunctionSpaceType::DimRange > 1 )
