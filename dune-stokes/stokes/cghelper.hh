@@ -16,12 +16,11 @@
 namespace Dune {
 
 
-/** \brief Operator to evaluate Matrix multiplication
-
+/** \brief Operator to wrap Matrix-vector multiplication in inner CG algorithms
+	\see InnerCGSolverWrapper
+	\see SchurkomplementOperator
     multOEM method evaluates matrix vector multiplication\n
-    \f$ A := -1 \cdot X  M^{-1} W x  + Yx \f$
-
-
+	\f$ A := -1 \cdot X  M^{-1} W x  + Yx \f$\n
 **/
 template <  class WMatType,
             class MMatType,
@@ -96,6 +95,9 @@ class MatrixA_Operator {
 };
 
 
+/** \brief Operator wrapping Matrix vector multiplication for
+			matrix \f$ S :=  B_t * A^-1 * B + rhs3 \f$
+			**/
 template <  class A_SolverType,
             class B_t_matrixType,
             class CmatrixType,
@@ -224,13 +226,18 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
         mutable long total_inner_iterations;
 };
 
+
+/** \brief wraps the solution of inner CG iteration and exposes only the minimally needed interface to
+		\ref SaddlepointInverseOperator or \ref NestedCgSaddlepointInverseOperator respectively
+
+  **/
 template <  class WMatType,
             class MMatType,
             class XMatType,
             class YMatType,
             class DiscreteSigmaFunctionType,
             class DiscreteVelocityFunctionType >
-class A_SolverCaller {
+class InnerCGSolverWrapper {
     public:
         typedef MatrixA_Operator<   WMatType,
                                     MMatType,
@@ -244,7 +251,7 @@ class A_SolverCaller {
         typedef typename CG_SolverType::ReturnValueType
             ReturnValueType;
 
-        A_SolverCaller( const WMatType& w_mat,
+		InnerCGSolverWrapper( const WMatType& w_mat,
                 const MMatType& m_mat,
                 const XMatType& x_mat,
                 const YMatType& y_mat,
@@ -265,22 +272,24 @@ class A_SolverCaller {
                                 verbose )
         {}
 
+		/** \brief this signature is called if the CG solver uses non-standard third arg to expose runtime info
+			\see SaddlepointInverseOperator (when compiled with BFG scheme support)
+			**/
         void apply ( const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest, ReturnValueType& ret )
         {
             cg_solver.apply(arg,dest, ret);
         }
 
+		//! the standard function call
         void apply ( const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest )
         {
             cg_solver.apply(arg,dest);
         }
 
-        const A_OperatorType& getA_operator( )
-        {
-            return a_op_;
-        }
-
 #ifdef USE_BFG_CG_SCHEME
+		/** - needed when using the BFG scheme
+			- only works with modified Dune Solvers exposing a setAbsoluteLimit of their own
+			**/
         void setAbsoluteLimit( const double abs )
         {
             cg_solver.setAbsoluteLimit( abs );

@@ -153,15 +153,15 @@ class StokesPass
         typedef typename GridType::template Codim< 0 >::Entity
             EntityType;
 
-        //! type of the used solver
+#ifdef USE_NESTED_CG_SOLVER
+		//! alternative, not fully functional, solver implemementation
         typedef NestedCgSaddlepointInverseOperator< ThisType >
-            InvOpType;
-
-#ifdef USE_ALTERNATIVE_SOLVER
-        //! tape of solver used, if USE_ALTERNATIVE_SOLVER is defined
-        typedef SaddlepointInverseOperator< ThisType >
-            AltInvOpType;
+			AltInvOpType;
 #endif
+		//! type of the used solver
+        typedef SaddlepointInverseOperator< ThisType >
+			InvOpType;
+
 
         //! polynomial order for the discrete sigma function space
         static const int sigmaSpaceOrder
@@ -2757,9 +2757,9 @@ class StokesPass
 
             // do solving
             InvOpType op;
-#ifdef USE_ALTERNATIVE_SOLVER
+#ifdef USE_NESTED_CG_SOLVER
             AltInvOpType m_op;
-            if ( Parameters().getParam( "alternative-solve", false ) )
+			if ( Parameters().getParam( "use_nested_cg_solver", false ) )
                 info_ = m_op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
             else
 #endif

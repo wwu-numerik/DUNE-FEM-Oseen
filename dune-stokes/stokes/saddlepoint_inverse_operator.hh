@@ -37,7 +37,7 @@
 
 
 namespace Dune {
-
+//! utility struct used to expose runtime statistics
 struct SaddlepointInverseOperatorInfo {
 	double iterations_inner_avg;
     int iterations_inner_min;
@@ -46,12 +46,11 @@ struct SaddlepointInverseOperatorInfo {
     double max_inner_accuracy;
 };
 
-  //!CG Verfahren fuer Sattelpunkt Problem
-  //
-  /**   \brief
+  /**   \brief Nested Conjugate Gradient Solver
         \tparam StokesPassImp discrete function types etc. get extracted from this
+		\note not fully functional!
+		Iterative Dune solvers are used for both the inner and outer CG iterations
    */
-
 template < class StokesPassImp >
 class NestedCgSaddlepointInverseOperator
 {
@@ -173,16 +172,18 @@ class NestedCgSaddlepointInverseOperator
         f_func += rhs2;
 
 
-        typedef A_SolverCaller< WmatrixType,
+		typedef InnerCGSolverWrapper< WmatrixType,
                                 MmatrixType,
                                 XmatrixType,
                                 YmatrixType,
                                 DiscreteSigmaFunctionType,
                                 DiscreteVelocityFunctionType >
-            A_Solver;
-        typedef typename A_Solver::ReturnValueType
-                A_SolverReturnType;
-        A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit, solverVerbosity );
+			InnerCGSolverWrapperType;
+		typedef typename InnerCGSolverWrapperType::ReturnValueType
+				InnerCGSolverWrapperReturnType;
+		InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat,
+													   y_mat, rhs1.space(),
+													   relLimit, absLimit, solverVerbosity );
 
         DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
 		DiscretePressureFunctionType new_f ( "new_f", g_func.space() );
@@ -190,8 +191,8 @@ class NestedCgSaddlepointInverseOperator
 		new_f.clear();
 
 		// new_f := ( B * A^-1 * f_func ) + g_func
-		A_SolverReturnType a_ret;
-		a_solver.apply( f_func, tmp_f, a_ret );
+		InnerCGSolverWrapperReturnType a_ret;
+		innerCGSolverWrapper.apply( f_func, tmp_f, a_ret );
 #ifdef ADAPTIVE_SOLVER
 		if ( isnan(a_ret.second) ) {
 		    logInfo << "\n\t\t NaNs detected, lowering error tolerance" << std::endl;
@@ -209,8 +210,10 @@ class NestedCgSaddlepointInverseOperator
                 logInfo << "\n\t\t\t trying with relLimit " << a_relLimit
                         << " and absLimit " << a_absLimit << std::endl;
 
-                A_Solver a_solver_adapt( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit, solverVerbosity );
-                a_solver_adapt.apply( f_func, tmp_f, a_ret );
+				InnerCGSolverWrapperType innerCGSolverWrapper_adapt( w_mat, m_inv_mat, x_mat,
+																	 y_mat, rhs1.space(),
+																	 relLimit, absLimit, solverVerbosity );
+				innerCGSolverWrapper_adapt.apply( f_func, tmp_f, a_ret );
 
                 if ( !isnan(a_ret.second) ) {
                     logInfo << "\n\t\t adaption produced NaN-free solution" << std::endl;
@@ -225,7 +228,7 @@ class NestedCgSaddlepointInverseOperator
 
         logInfo << " \n\tend calc new_f,f_func " << std::endl;
 
-        typedef SchurkomplementOperator<    A_Solver,
+		typedef SchurkomplementOperator<    InnerCGSolverWrapperType,
                                             B_t_matrixType,
                                             CmatrixType,
                                             BmatrixType,
@@ -241,7 +244,7 @@ class NestedCgSaddlepointInverseOperator
                 SolverReturnType;
 
         logInfo << " \n\tbegin S*p=new_f " << std::endl;
-        Sk_Operator sk_op(  a_solver, b_t_mat, c_mat, b_mat, m_inv_mat,
+		Sk_Operator sk_op(  innerCGSolverWrapper, b_t_mat, c_mat, b_mat, m_inv_mat,
                             velocity.space(), pressure.space() );
         Sk_Solver sk_solver( sk_op, relLimit, absLimit, 2000, solverVerbosity );
         pressure.clear();
@@ -269,8 +272,8 @@ class NestedCgSaddlepointInverseOperator
                 logInfo << "\n\t\t\t trying with relLimit " << a_relLimit
                         << " and absLimit " << a_absLimit << std::endl;
 
-                A_Solver a_solver_adapt( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit, solverVerbosity );
-                Sk_Operator sk_op_adapt(  a_solver_adapt, b_t_mat, c_mat, b_mat, m_inv_mat,
+				InnerCGSolverWrapperType innerCGSolverWrapper_adapt( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit, solverVerbosity );
+				Sk_Operator sk_op_adapt(  innerCGSolverWrapper_adapt, b_t_mat, c_mat, b_mat, m_inv_mat,
                             velocity.space(), pressure.space() );
                 Sk_Solver sk_solver_adapt( sk_op_adapt, a_relLimit, a_absLimit, 2000, solverVerbosity );
                 pressure.clear();
@@ -294,7 +297,7 @@ class NestedCgSaddlepointInverseOperator
 		b_mat.apply( pressure, Bp_temp );
         Bp_temp *= ( -1 );
         Bp_temp += f_func;
-        a_solver.apply ( Bp_temp, velocity );
+		innerCGSolverWrapper.apply ( Bp_temp, velocity );
 
         logInfo << "\nEnd NestedCgSaddlePointInverseOperator " << std::endl;
 
@@ -303,12 +306,21 @@ class NestedCgSaddlepointInverseOperator
 
   };
 
+/**
+	\brief Saddlepoint Solver
+	The inner CG iteration is implemented by passing a custom Matrix operator to a given\n
+	Dune solver. The outer iteration is a implementation of the CG algorithm as described in\n
+	Kuhnibert
+	Optionally the BFG scheme as described in YADDA is uesd to control the inner solver tolerance.
+	/todo get references in doxygen right
+**/
 template < class StokesPassImp >
 class SaddlepointInverseOperator
 {
   private:
 
-    typedef StokesPassImp StokesPassType;
+	typedef StokesPassImp
+		StokesPassType;
 
     typedef typename StokesPassType::DiscreteStokesFunctionWrapperType
         DiscreteStokesFunctionWrapperType;
@@ -326,14 +338,10 @@ class SaddlepointInverseOperator
 
 
   public:
-    /** \todo Please doc me!
-     * \brief Constructor:
-	*
-	  **/
     SaddlepointInverseOperator()
 	{}
 
-    /** takes raw matrices from pass
+	/** takes raw matrices and right hand sides from pass as input, executes nested cg algorithm and outputs solution
     */
     template <  class XmatrixObjectType,
                 class MmatrixObjectType,
@@ -425,14 +433,14 @@ class SaddlepointInverseOperator
         rhs2 -= v_tmp;
 /***********/
 
-        typedef A_SolverCaller< WmatrixType,
+		typedef InnerCGSolverWrapper< WmatrixType,
                                 MmatrixType,
                                 XmatrixType,
                                 YmatrixType,
                                 DiscreteSigmaFunctionType,
                                 DiscreteVelocityFunctionType >
-            A_Solver;
-        typedef typename A_Solver::ReturnValueType
+			InnerCGSolverWrapperType;
+		typedef typename InnerCGSolverWrapperType::ReturnValueType
             ReturnValueType;
 #ifdef USE_BFG_CG_SCHEME
         //the bfg scheme uses the outer acc. as a base
@@ -441,7 +449,9 @@ class SaddlepointInverseOperator
 #else
         double current_inner_accuracy = inner_absLimit;
 #endif
-        A_Solver a_solver( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, current_inner_accuracy, solverVerbosity > 3 );
+		InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
+													   rhs1.space(), relLimit,
+													   current_inner_accuracy, solverVerbosity > 3 );
         ReturnValueType a_solver_info;
 /*****************************************************************************************/
 
@@ -471,7 +481,7 @@ class SaddlepointInverseOperator
         // u^0 = A^{-1} ( F - B * p^0 )
         b_mat.apply( pressure, tmp1 );
         F-=tmp1; // F ^= rhs2 - B * p
-        a_solver.apply(F,velocity);
+		innerCGSolverWrapper.apply(F,velocity);
 
         // r^0 = G - B_t * u^0 + C * p^0
         b_t_mat.apply( velocity, tmp2 );
@@ -498,7 +508,7 @@ class SaddlepointInverseOperator
                 outer_absLimit /= 0.01;
 #ifdef USE_BFG_CG_SCHEME
                 current_inner_accuracy /= 0.01;
-                a_solver.setAbsoluteLimit( current_inner_accuracy );
+				innerCGSolverWrapper.setAbsoluteLimit( current_inner_accuracy );
 #endif
                 logInfo << "\n\t\t Outer CG solver reset, tolerance lowered" << std::endl;
 
@@ -510,7 +520,7 @@ class SaddlepointInverseOperator
 //                    current_inner_accuracy = tau * std::min( 1. , absLimit / std::min ( std::pow( delta, int(iteration) ), 1.0 ) );
                     //my form, works
                     current_inner_accuracy = tau * std::min( 1. , outer_absLimit / std::min ( delta , 1.0 ) );
-                    a_solver.setAbsoluteLimit( current_inner_accuracy );
+					innerCGSolverWrapper.setAbsoluteLimit( current_inner_accuracy );
                     max_inner_accuracy = std::max( max_inner_accuracy, current_inner_accuracy );
                     if( solverVerbosity > 1 )
                         logInfo << "\t\t\t set inner limit to: " << current_inner_accuracy << "\n";
@@ -519,7 +529,7 @@ class SaddlepointInverseOperator
             // xi = A^{-1} ( B * d )
             tmp1.clear();
             b_mat.apply( d, tmp1 );
-            a_solver.apply( tmp1, xi, a_solver_info );
+			innerCGSolverWrapper.apply( tmp1, xi, a_solver_info );
 
 #ifdef USE_BFG_CG_SCHEME
             if( solverVerbosity > 1 )
@@ -562,7 +572,7 @@ class SaddlepointInverseOperator
             tmp1.clear();
             b_mat.apply( pressure, tmp1 );
             F-=tmp1; // F ^= rhs2 - B * p
-            a_solver.apply(F,velocity);
+			innerCGSolverWrapper.apply(F,velocity);
         }
 
         logInfo << "End SaddlePointInverseOperator " << std::endl;
@@ -581,9 +591,9 @@ class SaddlepointInverseOperator
         info.max_inner_accuracy = max_inner_accuracy;
 #endif
         return info;
-    }
+	} //end SaddlepointInverseOperator::solve
 
-  };
+  };//end class SaddlepointInverseOperator
 
 } // end namespace Dune
 
