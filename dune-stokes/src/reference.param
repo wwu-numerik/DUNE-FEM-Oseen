@@ -24,7 +24,10 @@ parameterlist_delimiter: ;
 per-run-log-target: 1
 per-run-output: 1
 
-visualisationFilename: visualisation
+#basename for output files in visualisation program
+visualisationOutputDir: visualisation
+#show grape online in visualisation program?
+use_grape: 0
 
 #
 dgf_file_2d: homogeneous_perforated_domain_2d_porosity_0.8_400_holes_epsilon_0.0025.dgf

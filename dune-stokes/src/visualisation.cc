@@ -20,24 +20,32 @@ const int dimGrid = GRIDDIM;
 const int dimGrid = 3;
 #endif
 
+class FunctorBase {
+	public:
+		FunctorBase ( const std::string filename )
+			: filename_( filename ) {}
+		const std::string filename() const { return filename_; }
+	protected:
+		const std::string filename_;
 
-class VolumeFunctor {
+};
+
+class VolumeFunctor : public FunctorBase {
 	public:
 		VolumeFunctor ( const std::string filename )
-				: filename_( filename ) {}
+			: FunctorBase( filename ) {}
 
 		template <class Entity>
 		double operator() ( const Entity& ent ) const
 		{
 			return ent.geometry().volume();
 		}
-		const std::string filename_;
 };
 
-class BoundaryFunctor {
+class BoundaryFunctor : public FunctorBase {
 	public:
 		BoundaryFunctor ( const std::string filename )
-				: filename_( filename ) {}
+			: FunctorBase( filename ) {}
 
 		template <class Entity>
 		double operator() ( const Entity& entity ) const
@@ -62,15 +70,14 @@ class BoundaryFunctor {
 			}
 			return ret;
 		}
-		const std::string filename_;
 };
 
-class AreaMarker {
+class AreaMarker : public FunctorBase {
 
 	public:
 
 		AreaMarker( const std::string filename )
-				: filename_( filename ) {}
+			: FunctorBase( filename ) {}
 
 		template <class Entity>
 		double operator() ( const Entity& entity ) const
@@ -99,14 +106,12 @@ class AreaMarker {
 			}
 			return ret;
 		}
-
-		const std::string filename_;
 };
 
-class GeometryFunctor {
+class GeometryFunctor : public FunctorBase {
 	public:
 		GeometryFunctor ( const std::string filename )
-				: filename_( filename ) {}
+			: FunctorBase( filename ) {}
 
 		template <class Entity>
 		double operator() ( const Entity& ent ) const
@@ -123,22 +128,27 @@ class GeometryFunctor {
 			}
 			return vol;
 		}
-		const std::string filename_;
 };
 
 //! supply functor
 template<class Grid>
 void dowork ( Grid& grid, int refSteps = 0 )
 {
-	// make function object
-	std::string outputFilename( "" );
-	Dune::Parameter::get( "visualisationFilename", outputFilename );
-	BoundaryFunctor areaMarker( outputFilename );
+	std::string outputDir = Parameters().getParam( "visualisationOutputDir", std::string("visualisation") );
+	Stuff::testCreateDirectory( outputDir );
+	// make function objects
+	BoundaryFunctor boundaryFunctor( outputDir + std::string("/boundaryFunctor") );
+	AreaMarker areaMarker( outputDir + std::string("/areaMarker") );
+	GeometryFunctor geometryFunctor( outputDir + std::string("/geometryFunctor") );
+	VolumeFunctor volumeFunctor( outputDir + std::string("/volumeFunctor") );
 	// refine the grid
 	grid.globalRefine( refSteps );
 
 	// call the visualization functions
 	elementdata( grid, areaMarker );
+	elementdata( grid, boundaryFunctor );
+	elementdata( grid, volumeFunctor );
+	elementdata( grid, geometryFunctor );
 }
 using namespace Dune;
 
