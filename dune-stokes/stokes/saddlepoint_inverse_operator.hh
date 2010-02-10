@@ -567,7 +567,7 @@ class SaddlepointInverseOperator
 
             if( solverVerbosity > 2 )
                 logInfo << "\t" << iteration << " SPcg-Iterationen  " << iteration << " Residuum:" << delta << std::endl;
-			if ( save_interval > 0 && iteration % save_interval > 0 )
+			if ( save_interval > 0 && iteration % save_interval == 0 )
 				dest.writeVTK( path, iteration );
         }
 
