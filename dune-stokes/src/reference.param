@@ -25,7 +25,7 @@ per-run-log-target: 1
 per-run-output: 1
 
 #basename for output files in visualisation program
-visualisationOutputDir: visualisation
+visualisationOutputDir: data/visualisation
 #show grape online in visualisation program?
 use_grape: 0
 

@@ -134,8 +134,8 @@ class GeometryFunctor : public FunctorBase {
 template<class Grid>
 void dowork ( Grid& grid, int refSteps = 0 )
 {
-	std::string outputDir = Parameters().getParam( "visualisationOutputDir", std::string("visualisation") );
-	Stuff::testCreateDirectory( outputDir );
+	std::string outputDir = Parameters().getParam( "visualisationOutputDir",
+					Parameters().getParam("fem.io.datadir", std::string("data") ) + std::string("/visualisation") );
 	// make function objects
 	BoundaryFunctor boundaryFunctor( outputDir + std::string("/boundaryFunctor") );
 	AreaMarker areaMarker( outputDir + std::string("/areaMarker") );
