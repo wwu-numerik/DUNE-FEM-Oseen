@@ -56,7 +56,7 @@ SET( PROBLEM
 	"PROBLEM" )
 
 SET( ALUGRID_BASE_PATH
-	"/share/dune/modules/modules_x86_64/alugrid/alugrid-1.14" CACHE STRING
+	"/share/dune/Modules/modules_x86_64/ALUGrid-1.22" CACHE STRING
 	"ALUGRID_BASE_PATH" )
 
 SET( UGGRID_BASE_PATH
@@ -71,6 +71,14 @@ SET( CXX_FLAGS
 	"-Wall -O3 -fomit-frame-pointer -funroll-loops -g -ggdb -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME" CACHE STRING
 	"")
 
+SET( ENABLE_PARALELL
+	0 CACHE BOOL
+	"Enable parallel features" )
+
+SET ( METIS_DIR
+	"/share/dune/Modules/modules_x86_64/ParMetis-3.1.1" CACHE STRING
+	"metis toplevel directory" )
+
 IF( ${GRIDTYPE} STREQUAL "UGGRID" )
 	ADD_DEFINITIONS( -I${UGGRID_BASE_PATH}/include -DENABLE_UG )
 	LINK_DIRECTORIES( ${UGGRID_BASE_PATH}/lib/ )
@@ -83,8 +91,18 @@ ADD_DEFINITIONS(-DPOLORDER=${POLORDER} -DPRESSURE_POLORDER=${PRESSUREPOLORDER} -
 ADD_DEFINITIONS(-DINNER_CG_SOLVERTYPE=${INNER_CG_SOLVERTYPE} -DOUTER_CG_SOLVERTYP=${OUTER_CG_SOLVERTYP} )
 ADD_DEFINITIONS( -I${GRAPE_PATH}
 	-I${ALUGRID_BASE_PATH}/include
-	-I${ALUGRID_BASE_PATH}/include/serial
+	-I${ALUGRID_BASE_PATH}/include/serial 
 	-I${ALUGRID_BASE_PATH}/include/duneinterface -DENABLE_ALUGRID )
+
+IF ( ENABLE_PARALELL )
+	LINK_DIRECTORIES( ${METIS_DIR} )
+	Set ( ParaLIBS "-lparmetis -lmetis" )
+	ADD_DEFINITIONS( -I${ALUGRID_BASE_PATH}/include/parallel
+					-DMPIPP_H -DENABLE_MPI=1
+					)
+
+ENDIF ( ENABLE_PARALELL )
+
 
 #needs to come first to include correct config.h
 INCLUDE_DIRECTORIES( ${dune-stokes_SOURCE_DIR} )
@@ -113,10 +131,10 @@ set_source_files_properties( ${stuff} ${stokes} ${header} PROPERTIES HEADER_FILE
 
 ADD_EXECUTABLE(dune_stokes ${dune-stokesSrc} ${header} ${stokes} ${stuff} )
 
-TARGET_LINK_LIBRARIES(dune_stokes "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS} "gr" "GL")
+TARGET_LINK_LIBRARIES(dune_stokes "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS} "gr" "GL" ${ParaLIBS} )
 
 ADD_EXECUTABLE(minimal src/minimal.cc ${header} ${stokes} )
-TARGET_LINK_LIBRARIES(minimal "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS} "gr" "GL")
+TARGET_LINK_LIBRARIES(minimal "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS} "gr" "GL" ${ParaLIBS})
 
 ADD_EXECUTABLE(visualisation src/visualisation.cc ${header} ${stokes} )
-TARGET_LINK_LIBRARIES(visualisation "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS} "gr" "GL")
+TARGET_LINK_LIBRARIES(visualisation "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS} "gr" "GL" ${ParaLIBS})
