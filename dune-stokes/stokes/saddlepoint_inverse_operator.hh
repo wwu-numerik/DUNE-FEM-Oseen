@@ -443,9 +443,11 @@ class SaddlepointInverseOperator
                                 DiscreteSigmaFunctionType,
                                 DiscreteVelocityFunctionType >
 			InnerCGSolverWrapperType;
+#ifdef USE_BFG_CG_SCHEME
 		typedef typename InnerCGSolverWrapperType::ReturnValueType
             ReturnValueType;
-#ifdef USE_BFG_CG_SCHEME
+		ReturnValueType a_solver_info;
+
         //the bfg scheme uses the outer acc. as a base
         double current_inner_accuracy = do_bfg ? tau * outer_absLimit : inner_absLimit;
         double max_inner_accuracy = current_inner_accuracy;
@@ -455,7 +457,7 @@ class SaddlepointInverseOperator
 		InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
 													   rhs1.space(), relLimit,
 													   current_inner_accuracy, solverVerbosity > 3 );
-        ReturnValueType a_solver_info;
+
 /*****************************************************************************************/
 
         int iteration = 0;
@@ -532,7 +534,12 @@ class SaddlepointInverseOperator
             // xi = A^{-1} ( B * d )
             tmp1.clear();
             b_mat.apply( d, tmp1 );
+
+#ifdef USE_BFG_CG_SCHEME
 			innerCGSolverWrapper.apply( tmp1, xi, a_solver_info );
+#else
+			innerCGSolverWrapper.apply( tmp1, xi );
+#endif
 
 #ifdef USE_BFG_CG_SCHEME
             if( solverVerbosity > 1 )

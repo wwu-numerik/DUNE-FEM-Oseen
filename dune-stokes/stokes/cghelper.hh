@@ -7,10 +7,11 @@
 #define INNERCG_HH_INCLUDED
 
 #include <dune/fem/solver/oemsolver/oemsolver.hh>
-    #include <dune/stuff/printing.hh>
-    #include <dune/stuff/misc.hh>
-    #include <dune/stuff/logging.hh>
-    #include <dune/stuff/parametercontainer.hh>
+
+#include <dune/stuff/printing.hh>
+#include <dune/stuff/misc.hh>
+#include <dune/stuff/logging.hh>
+#include <dune/stuff/parametercontainer.hh>
 
 
 namespace Dune {
@@ -248,8 +249,10 @@ class InnerCGSolverWrapper {
 
         typedef INNER_CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
             CG_SolverType;
-        typedef typename CG_SolverType::ReturnValueType
-            ReturnValueType;
+		#ifdef USE_BFG_CG_SCHEME
+			typedef typename CG_SolverType::ReturnValueType
+				ReturnValueType;
+		#endif
 
 		InnerCGSolverWrapper( const WMatType& w_mat,
                 const MMatType& m_mat,
@@ -275,10 +278,12 @@ class InnerCGSolverWrapper {
 		/** \brief this signature is called if the CG solver uses non-standard third arg to expose runtime info
 			\see SaddlepointInverseOperator (when compiled with BFG scheme support)
 			**/
-        void apply ( const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest, ReturnValueType& ret )
-        {
-            cg_solver.apply(arg,dest, ret);
-        }
+	#ifdef USE_BFG_CG_SCHEME
+		void apply ( const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest, ReturnValueType& ret )
+		{
+			cg_solver.apply(arg,dest, ret);
+		}
+	#endif
 
 		//! the standard function call
         void apply ( const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest )
