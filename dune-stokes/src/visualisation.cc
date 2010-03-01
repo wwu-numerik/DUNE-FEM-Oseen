@@ -14,12 +14,6 @@
 
 #include"elementdata.hh"
 
-#ifdef GRIDDIM
-const int dimGrid = GRIDDIM;
-#else
-const int dimGrid = 3;
-#endif
-
 class FunctorBase {
 	public:
 		FunctorBase ( const std::string filename )
@@ -40,6 +34,23 @@ class VolumeFunctor : public FunctorBase {
 		{
 			return ent.geometry().volume();
 		}
+};
+
+class ProcessIdFunctor : public FunctorBase {
+	public:
+		ProcessIdFunctor ( const std::string filename, Dune::MPIHelper& mpiHelper )
+			: FunctorBase( filename ),
+			mpiHelper_( mpiHelper )
+		{}
+
+		template <class Entity>
+		double operator() ( const Entity& ent ) const
+		{
+			return mpiHelper_.rank();
+		}
+
+	protected:
+		Dune::MPIHelper& mpiHelper_;
 };
 
 class BoundaryFunctor : public FunctorBase {
@@ -132,7 +143,7 @@ class GeometryFunctor : public FunctorBase {
 
 //! supply functor
 template<class Grid>
-void dowork ( Grid& grid, int refSteps = 0 )
+void dowork ( Grid& grid, int refSteps, Dune::MPIHelper& mpiHelper )
 {
 	std::string outputDir = Parameters().getParam( "visualisationOutputDir",
 					Parameters().getParam("fem.io.datadir", std::string("data") ) + std::string("/visualisation") );
@@ -141,6 +152,7 @@ void dowork ( Grid& grid, int refSteps = 0 )
 	AreaMarker areaMarker( outputDir + std::string("/areaMarker") );
 	GeometryFunctor geometryFunctor( outputDir + std::string("/geometryFunctor") );
 	VolumeFunctor volumeFunctor( outputDir + std::string("/volumeFunctor") );
+	ProcessIdFunctor processIdFunctor( outputDir + std::string("/ProcessIdFunctor"), mpiHelper );
 	// refine the grid
 	grid.globalRefine( refSteps );
 
@@ -149,14 +161,20 @@ void dowork ( Grid& grid, int refSteps = 0 )
 	elementdata( grid, boundaryFunctor );
 	elementdata( grid, volumeFunctor );
 	elementdata( grid, geometryFunctor );
+	elementdata( grid, processIdFunctor );
 }
-using namespace Dune;
+
+#if ENABLE_MPI
+		typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
+#else
+		typedef Dune::CollectiveCommunication< double > CollectiveCommunication;
+#endif
 
 int main( int argc, char **argv )
 {
 	// initialize MPI, finalize is done automatically on exit
-	MPIHelper& mpihelper = Dune::MPIHelper::instance( argc, argv );
-
+	Dune::MPIHelper& mpihelper = Dune::MPIHelper::instance( argc, argv );
+	CollectiveCommunication mpicomm ( mpihelper.getCommunicator() );
 	// start try/catch block to get error messages from dune
 	try
 	{
@@ -170,17 +188,10 @@ int main( int argc, char **argv )
 						 Parameters().getParam( "fem.io.logdir",    std::string(),              useLogger )
 					   );
 
-		Parameter::append( argc,argv );                         /*@\label{dg:param0}@*/
-		if ( argc == 2 ) {
-			Parameter::append( argv[1] );
-		} else {
-			Parameter::append( "parameter" );                     /*@\label{dg:paramfile}@*/
-		}                                                       /*@\label{dg:param1}@*/
-
-		GridPtr<GridType> gridptr ( Parameters().DgfFilename( dimGrid ) );
-		int refineLevel( 0 );
-		Parameter::get( "minref", refineLevel );
-		dowork( *gridptr, refineLevel );
+		Dune::GridPtr<GridType> gridptr ( Parameters().DgfFilename( GridType::dimensionworld ) );
+		gridptr->loadBalance();
+		int refineLevel = Parameters().getParam( "minref", 0 );
+		dowork( *gridptr, refineLevel, mpihelper );
 
 	}
 	catch ( std::exception & e ) {
