@@ -55,10 +55,12 @@ void elementdata (const G& grid, const F& f)
   // Dune::LeafP0Function<G,double> cc(grid,c);
   Dune::VTKWriter<G> vtkwriter(grid);                  /*@\label{edh:vtk0}@*/
   vtkwriter.addCellData(c,"data");
-  vtkwriter.write("elementdata",Dune::VTKOptions::binaryappended); /*@\label{edh:vtk1}@*/
+  Stuff::testCreateDirectory( f.filename() );
+  vtkwriter.write( f.filename().c_str(),Dune::VTKOptions::binaryappended ); /*@\label{edh:vtk1}@*/
 
   // online visualization with Grape
 #if HAVE_GRAPE                                         /*@\label{edh:grape0}@*/
+  if ( Parameters().getParam("use_grape",false) )
   {
     const int polynomialOrder = 0; // we piecewise constant data
     const int dimRange = 1; // we have scalar data here

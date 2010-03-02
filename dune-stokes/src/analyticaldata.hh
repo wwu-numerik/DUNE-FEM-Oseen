@@ -36,8 +36,7 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
         Force( const double viscosity, const FunctionSpaceImp& space, const double alpha = 0.0 )
             : BaseType ( space ),
               viscosity_( viscosity ),
-              alpha_( alpha ),
-              dim_( FunctionSpaceImp::dimDomain )
+			  alpha_( alpha )
         {}
 
         /**
@@ -56,10 +55,9 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
          **/
         inline void evaluate( const DomainType& arg, RangeType& ret ) const
         {
-            if ( dim_ == 1 ) {
-                assert( !"force not implemented in 1D!" );
-            }
-            else if ( dim_ == 2 ) {
+			Dune::CompileTimeChecker< ( dim_ > 1 && dim_ < 4 ) > Force_Unsuitable_WorldDim;
+
+			if ( dim_ == 2 ) {
                 const double x1 = arg[0];
                 const double x2 = arg[1];
 #ifdef SIMPLE_PROBLEM
@@ -98,15 +96,14 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
 #elif defined(MICRO_PROBLEM_Y)
                 ret[0] = 0.0;
                 ret[1] = 1.0;
-#else
+#elif defined(COCKBURN_PROBLEM)
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//arg[0];
+#else
+				Dune::CompileTimeChecker< false > No_Problem_Defined_For_Force;
 #endif
             }
             else if ( dim_ == 3 ) {
-//                const double x1 = arg[0];
-//                const double x2 = arg[1];
-//                const double x3 = arg[2];
 #ifdef SIMPLE_PROBLEM
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//-1.0;//arg[0];
@@ -130,18 +127,15 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 ret[1] = 0.0;//-1.0;//arg[0];
                 ret[2] = 0.0;
 #else
-                assert( !"force not implemented in 3D!" );
+				Dune::CompileTimeChecker< false > No_Problem_Defined_For_Force;
 #endif
-            }
-            else {
-                assert( !"force not implemented for more then 3 dimensions!" );
             }
         }
 
     private:
         const double viscosity_;
         const double alpha_;
-        const int dim_;
+		static const int dim_ = FunctionSpaceImp::dimDomain;
 };
 
 /**
@@ -171,8 +165,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
          *  doing nothing besides Base init
          **/
         DirichletData( const FunctionSpaceImp& space )
-            : BaseType( space ),
-              dim_( FunctionSpaceImp::dimDomain )
+			: BaseType( space )
         {}
 
         /**
@@ -187,10 +180,8 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
         void evaluate( const DomainType& arg, RangeType& ret, const IntersectionIteratorType& faceIter ) const
         {
             const int id = faceIter.boundaryId();
-            if ( dim_ == 1 ) {
-                assert( !"dirichlet data not implemented in 1D!" );
-            }
-            else if ( dim_ == 2 ) {
+			Dune::CompileTimeChecker< ( dim_ > 1 && dim_ < 4 ) > DirichletData_Unsuitable_WorldDim;
+			if ( dim_ == 2 ) {
                 // some computations
                 const double x1 = arg[0];
                 const double x2 = arg[1];
@@ -296,7 +287,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                     ret[ 0 ] = 0.0;
                     ret[ 1 ] = 0.0;
                 }
-#else
+#elif defined(COCKBURN_PROBLEM)
                 if ( id == 2 ) { // faces on inner hole
                     ret[ 0 ] = 0.0;
                     ret[ 1 ] = 0.0;
@@ -311,13 +302,11 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                     ret[0] *= -1.0 * exp_of_x1;
                     ret[1] = exp_of_x1 * x2 * sin_of_x2;
                 }
+#else
+				Dune::CompileTimeChecker< false > No_Problem_Defined_For_DirichletData;
 #endif
             }
             else if ( dim_ == 3 ) {
-//                double x1 = arg[0];
-//                double x2 = arg[1];
-//                double x3 = arg[2];
-                // some computations
 #ifdef SIMPLE_PROBLEM
                 ret[0] = 1.0;
                 ret[1] = 0.0;
@@ -338,9 +327,6 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 assert( !"DARCY_PROBLEM not implemented in 3D!" );
 #elif defined(AORTA_PROBLEM)
 
-#if defined(UGGRID)
-    #error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
-#endif
                 switch ( id ) {
                     case 1: {
                         ret[0] = 0.0;//arg[1];
@@ -368,11 +354,8 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                         return;
                 }
 #else
-                assert( !"dirichlet data not implemented in 3D!" );
+				Dune::CompileTimeChecker< false > No_Problem_Defined_For_DirichletData;
 #endif
-            }
-            else {
-                assert( !"dirichlet data not implemented for more than 3 dimensions!" );
             }
         }
 
@@ -386,11 +369,10 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
         inline void evaluate( const DomainType& arg, RangeType& ret ) const {}
 
     private:
-        const int dim_;
-
+		static const int dim_ = FunctionSpaceImp::dimDomain ;
 };
 
-struct SimpleDirichletDataTraits {
+struct DefaultDirichletDataTraits {
 
 	template < class FunctionSpaceImp, class GridPartImp >
 	struct Implementation {
@@ -457,9 +439,7 @@ class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFl
 			const int id = faceIter.boundaryId();
 		#if defined(AORTA_PROBLEM)
 
-		#if defined(UGGRID)
-			#error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
-		#endif
+
 			typedef Dune::FieldVector< typename IntersectionIteratorType::ctype, IntersectionIteratorType::dimension - 1 >
 				LocalVectorType;
 
@@ -565,17 +545,21 @@ class SecondOrderBoundaryShapeFunction : public Dune::BoundaryShapeFunctionBase<
 
 
 		SecondOrderBoundaryShapeFunction( const FunctionSpaceImp& space, typename ParentType::PointInfo pf, typename ParentType::RangeType direction, double scale_factor = 1.0 )
-			: ParentType ( space, pf, direction, scale_factor )
+			: ParentType ( space, pf, direction, scale_factor ),
+			parabolic_stretch_( Parameters().getParam("parabolic_stretch", 1.0) )
 		{
 		}
 
 		virtual void evaluate( const typename ParentType::DomainType& arg, typename ParentType::RangeType& ret ) const
 		{
 			typename ParentType::RangeType tmp = direction_;
-			const double fac = scale_factor_ * ((arg - p1) * (arg -p2));
+			const double fac = parabolic_stretch_ * scale_factor_ * ( (arg - p1).two_norm() * (arg - p2).two_norm() );
 			tmp *= fac;
 			ret = tmp;
 		}
+
+	protected:
+		const double parabolic_stretch_;
 };
 
 template < class FunctionSpaceImp, class GridPartType, template <class ,class> class BoundaryFunctionImp =  FirstOrderBoundaryShapeFunction >
@@ -637,10 +621,6 @@ class VariableDirichletData : public Dune::Function < FunctionSpaceImp, Variable
 		void evaluate( const DomainType& arg, RangeType& ret, const IntersectionIteratorType& faceIter ) const
 		{
 		#if defined(AORTA_PROBLEM)
-
-		#if defined(UGGRID)
-			#error ("AORTA PROBLEM will not work with UGGRID, since it doesn't handle boundary ids properly")
-		#endif
 			const int id = faceIter.boundaryId();
 //			assert( boundaryFunctionList_.size() >= id );
 			const BoundaryFunctionType* boundaryFunction = boundaryFunctionList_[id];

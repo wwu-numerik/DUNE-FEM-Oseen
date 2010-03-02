@@ -51,7 +51,7 @@ runtype: 0
 
 #in runtype 0 refine maxref + 1 - minref times
 minref: 0
-maxref: 10
+maxref: 4
 
 #in runtype 1 vary
 minpow: -1
@@ -72,9 +72,9 @@ accurracy_steps: 5
 
 #*********** end runtype specific parameters **************************************************
 
-viscosity: 0.0025
+viscosity: 1.0
 # if alpha != 0.0, isGeneralize() has to return true in DiscreteStokesModelDefault
-alpha: 0.0
+alpha: 1.0
 
 #****************** solver ******************************************************************
 #pretty much ineffective
@@ -87,7 +87,7 @@ inner_absLimit: 1e-10
 use_velocity_reconstruct: 0
 #clear computed functions at start of every singleRun ?
 clear_u: 1
-clear_p: 0
+clear_p: 1
 
 #when nans are detected in solution solver accuracy is multiplied maximal max_adaptions-times by 0.1
 max_adaptions: 5
@@ -100,7 +100,7 @@ diff-tolerance: 0.01
 do-bfg: 1
 bfg-tau: 0.1
 
-use_nested_cg_solver: 1
+use_nested_cg_solver: 0
 
 #if using alternative solver break after max maxIter outer iterations
 maxIter: 5000

@@ -1758,11 +1758,11 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             force_( force ),
             dirichletData_( dirichletData )
         {
-            if ( !isGeneralized() ) {
-                if ( ( alpha_ < 0.0 ) || ( alpha_ > 0.0 ) ) {
-                    assert( !"isGeneralized() returns false, but alpha is not zero!" );
-                }
-            }
+//            if ( !isGeneralized() ) {
+//                if ( ( alpha_ < 0.0 ) || ( alpha_ > 0.0 ) ) {
+//                    assert( !"isGeneralized() returns false, but alpha is not zero!" );
+//                }
+//            }
         }
 
         /**

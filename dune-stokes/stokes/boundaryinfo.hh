@@ -114,7 +114,7 @@ class BoundaryInfo
                 if( distances_from_center.size() > 1 ) {
                     const CoordType& out1 = distances_from_center.begin()->second;
                     typename DistancesMapType::const_reverse_iterator d_r_it = distances_from_center.rbegin();
-                    //assert ( d_r_it != distances_from_center.begin() );
+					assert ( d_r_it != distances_from_center.rend() );
                     const CoordType& out2 = d_r_it->second;
                     centerCoordMap_[ current_boundary_id ] = center;
                     outerCoordMap_[ current_boundary_id ] = EgdeType( out1, out2 );

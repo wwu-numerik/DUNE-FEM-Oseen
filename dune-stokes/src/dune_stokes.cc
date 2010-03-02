@@ -30,7 +30,7 @@
     #define VELOCITY_POLORDER POLORDER
 #endif
 
-#if ( (defined(ALUGRID_SIMPLEX) ||  defined(ALUGRID_CUBE) ) && ( GRIDDIM == 3 ) ) || defined(UGGRID)
+#if ( ( defined(SGRID) || defined(ALUGRID_SIMPLEX) ||  defined(ALUGRID_CUBE) ) && ( GRIDDIM == 3 ) ) || defined(UGGRID) || defined(YASPGRID)
     //this is no mistake, ALU is indeed only incompatible in 3d
     #define OLD_DUNE_GRID_VERSION
 #endif
@@ -44,6 +44,7 @@
 #include <cmath>
 #include <dune/common/mpihelper.hh> // An initializer of MPI
 #include <dune/common/exceptions.hh> // We use exceptions
+#include <dune/grid/common/capabilities.hh>
 
 //!ATTENTION: undef's GRIDDIM
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
@@ -154,6 +155,7 @@ int main( int argc, char** argv )
   try{
 
     Dune::MPIHelper& mpihelper = Dune::MPIHelper::instance(argc, argv);
+	//assert( Dune::Capabilities::isParallel< GridType >::v );
     CollectiveCommunication mpicomm ( mpihelper.getCommunicator() );
 
     /* ********************************************************************** *
@@ -175,8 +177,6 @@ int main( int argc, char** argv )
     if ( !(  Parameters().ReadCommandLine( argc, argv ) ) ) {
         return 1;
     }
-
-
 
     // LOG_NONE = 1, LOG_ERR = 2, LOG_INFO = 4,LOG_DEBUG = 8,LOG_CONSOLE = 16,LOG_FILE = 32
     //--> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_CONSOLE | LOG_FILE = 62
@@ -512,7 +512,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     typedef Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
                     Force,
-					Dune::GeometryBasedBoundaryFunctionTraits<VariableDirichletData>,
+					Dune::GeometryBasedBoundaryFunctionTraits<VariableDirichletData,FirstOrderBoundaryShapeFunction>,
                     gridDim,
                     polOrder,
                     VELOCITY_POLORDER,
@@ -522,7 +522,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     typedef Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
                     Force,
-					SimpleDirichletDataTraits,
+					DefaultDirichletDataTraits,
                     gridDim,
                     polOrder,
                     VELOCITY_POLORDER,

@@ -9,6 +9,7 @@
 #include <dune/fem/space/common/discretefunctionspace.hh>
 #include <dune/fem/space/dgspace/dgadaptmanager.hh>
 #include <dune/fem/space/common/restrictprolonginterface.hh>
+#include <dune/fem/io/file/vtkio.hh>
 
 namespace Dune
 {
@@ -417,6 +418,9 @@ class DiscreteStokesFunctionWrapperTraits
         typedef DiscretePressureFunctionImp
             DiscretePressureFunctionType;
 
+		typedef VTKIO < typename DiscretePressureFunctionType::DiscreteFunctionSpaceType::GridPartType >
+			VtkWriterType;
+
 
 }; // end of DiscreteStokesFunctionWrapperTraits
 
@@ -531,10 +535,11 @@ class DiscreteStokesFunctionWrapper
                                         typename DiscreteFunctionSpaceType::GridPartType& gridPart )
             : space_( space ),
             velocity_( name + std::string("_velocity"), space.discreteVelocitySpace() ),
-            pressure_( name + std::string("_pressure"), space.discretePressureSpace() )
+			pressure_( name + std::string("_pressure"), space.discretePressureSpace() ),
             #if ENABLE_ADAPTIVE
-                , adaptionManager_ ( gridPart.grid(), *this )
+				adaptionManager_ ( gridPart.grid(), *this ),
             #endif
+			vtkWriter_( gridPart )
         {}
 
         /**
@@ -548,10 +553,11 @@ class DiscreteStokesFunctionWrapper
                                         DiscretePressureFunctionType& pressure )
             : space_( space ),
             velocity_( velocity ),
-            pressure_( pressure )
+			pressure_( pressure ),
             #if ENABLE_ADAPTIVE
-                , adaptionManager_ ( space.grid(), *this )
+				adaptionManager_ ( space.grid(), *this ),
             #endif
+			vtkWriter_( pressure.gridPart() )
         {}
 
         /**
@@ -688,7 +694,43 @@ class DiscreteStokesFunctionWrapper
             #endif
         }
 
+		void writeVTK( const std::string& path, const int number_postfix )
+		{
+			std::stringstream s;
+			s << std::setfill('0') << std::setw(6) << number_postfix;
+			writeVTK( path, s.str() );
+		}
+
+		//! write both wrapped functions to "path/{pressure,velocity}.name()+postfix+.vtk"
+		void writeVTK( const std::string& path, const std::string postfix = std::string() )
+		{
+			if ( DiscreteVelocityFunctionType::FunctionSpaceType::DimRange > 1 )
+				vtkWriter_.addVectorVertexData( velocity_ );
+			else
+				vtkWriter_.addVertexData( velocity_ );
+
+			vtkWriter_.write( getPath( velocity_, path, postfix ) );
+			vtkWriter_.clear();
+
+			if ( DiscretePressureFunctionType::FunctionSpaceType::DimRange > 1 )
+				vtkWriter_.addVectorVertexData( pressure_ );
+			else
+				vtkWriter_.addVertexData( pressure_ );
+			vtkWriter_.write( getPath( pressure_, path, postfix ) );
+			vtkWriter_.clear();
+		}
+
     private:
+		template <class FunctionType>
+		inline const char* getPath( const FunctionType& f, const std::string& base_path, const std::string& postfix ) const
+		{
+			std::stringstream ss;
+			ss << base_path;
+			if ( base_path.at(base_path.size()-1) != '/' )
+				ss << '/';
+			ss << f.name() << postfix;
+			return ss.str().c_str();
+		}
 
         const DiscreteFunctionSpaceType& space_;
         DiscreteVelocityFunctionType velocity_;
@@ -698,6 +740,7 @@ class DiscreteStokesFunctionWrapper
     #if ENABLE_ADAPTIVE
         AdaptionManagerType adaptionManager_;
     #endif
+		typename Traits::VtkWriterType vtkWriter_;
 
 }; // end of DiscreteStokesFunctionWrapper
 

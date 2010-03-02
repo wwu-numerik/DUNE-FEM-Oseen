@@ -15,8 +15,6 @@ fem.io.outputformat: 0
 fem.io.datafileprefix: solu_
 fem.io.savestep: 0
 fem.io.savecount: 0
-# write solution vtk every N iterations ( < 1 to disable )
-save_interval: -1
 
 #use this to seperate tokens in a paramter list
 parameterlist_delimiter: ;
@@ -24,13 +22,10 @@ parameterlist_delimiter: ;
 per-run-log-target: 1
 per-run-output: 1
 
-#basename for output files in visualisation program
-visualisationOutputDir: data/visualisation
-#show grape online in visualisation program?
-use_grape: 0
+visualisationFilename: visualisation
 
 #
-dgf_file_2d: grid_2d.dgf
+dgf_file_2d: homogeneous_perforated_domain_2d_porosity_0.8_400_holes_epsilon_0.0025.dgf
 dgf_file_3d: grid_3d.dgf
 # scale domain to have length 2
 domain_scale_x: 2.0
@@ -100,7 +95,7 @@ diff-tolerance: 0.01
 do-bfg: 1
 bfg-tau: 0.1
 
-use_nested_cg_solver: 1
+alternative-solve: 1
 
 #if using alternative solver break after max maxIter outer iterations
 maxIter: 5000

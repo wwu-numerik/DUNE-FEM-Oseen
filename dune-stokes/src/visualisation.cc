@@ -14,30 +14,49 @@
 
 #include"elementdata.hh"
 
-#ifdef GRIDDIM
-const int dimGrid = GRIDDIM;
-#else
-const int dimGrid = 3;
-#endif
+class FunctorBase {
+	public:
+		FunctorBase ( const std::string filename )
+			: filename_( filename ) {}
+		const std::string filename() const { return filename_; }
+	protected:
+		const std::string filename_;
 
+};
 
-class VolumeFunctor {
+class VolumeFunctor : public FunctorBase {
 	public:
 		VolumeFunctor ( const std::string filename )
-				: filename_( filename ) {}
+			: FunctorBase( filename ) {}
 
 		template <class Entity>
 		double operator() ( const Entity& ent ) const
 		{
 			return ent.geometry().volume();
 		}
-		const std::string filename_;
 };
 
-class BoundaryFunctor {
+class ProcessIdFunctor : public FunctorBase {
+	public:
+		ProcessIdFunctor ( const std::string filename, Dune::MPIHelper& mpiHelper )
+			: FunctorBase( filename ),
+			mpiHelper_( mpiHelper )
+		{}
+
+		template <class Entity>
+		double operator() ( const Entity& ent ) const
+		{
+			return mpiHelper_.rank();
+		}
+
+	protected:
+		Dune::MPIHelper& mpiHelper_;
+};
+
+class BoundaryFunctor : public FunctorBase {
 	public:
 		BoundaryFunctor ( const std::string filename )
-				: filename_( filename ) {}
+			: FunctorBase( filename ) {}
 
 		template <class Entity>
 		double operator() ( const Entity& entity ) const
@@ -62,15 +81,14 @@ class BoundaryFunctor {
 			}
 			return ret;
 		}
-		const std::string filename_;
 };
 
-class AreaMarker {
+class AreaMarker : public FunctorBase {
 
 	public:
 
 		AreaMarker( const std::string filename )
-				: filename_( filename ) {}
+			: FunctorBase( filename ) {}
 
 		template <class Entity>
 		double operator() ( const Entity& entity ) const
@@ -99,14 +117,12 @@ class AreaMarker {
 			}
 			return ret;
 		}
-
-		const std::string filename_;
 };
 
-class GeometryFunctor {
+class GeometryFunctor : public FunctorBase {
 	public:
 		GeometryFunctor ( const std::string filename )
-				: filename_( filename ) {}
+			: FunctorBase( filename ) {}
 
 		template <class Entity>
 		double operator() ( const Entity& ent ) const
@@ -123,30 +139,42 @@ class GeometryFunctor {
 			}
 			return vol;
 		}
-		const std::string filename_;
 };
 
 //! supply functor
 template<class Grid>
-void dowork ( Grid& grid, int refSteps = 0 )
+void dowork ( Grid& grid, int refSteps, Dune::MPIHelper& mpiHelper )
 {
-	// make function object
-	std::string outputFilename( "" );
-	Dune::Parameter::get( "visualisationFilename", outputFilename );
-	BoundaryFunctor areaMarker( outputFilename );
+	std::string outputDir = Parameters().getParam( "visualisationOutputDir",
+					Parameters().getParam("fem.io.datadir", std::string("data") ) + std::string("/visualisation") );
+	// make function objects
+	BoundaryFunctor boundaryFunctor( outputDir + std::string("/boundaryFunctor") );
+	AreaMarker areaMarker( outputDir + std::string("/areaMarker") );
+	GeometryFunctor geometryFunctor( outputDir + std::string("/geometryFunctor") );
+	VolumeFunctor volumeFunctor( outputDir + std::string("/volumeFunctor") );
+	ProcessIdFunctor processIdFunctor( outputDir + std::string("/ProcessIdFunctor"), mpiHelper );
 	// refine the grid
 	grid.globalRefine( refSteps );
 
 	// call the visualization functions
 	elementdata( grid, areaMarker );
+	elementdata( grid, boundaryFunctor );
+	elementdata( grid, volumeFunctor );
+	elementdata( grid, geometryFunctor );
+	elementdata( grid, processIdFunctor );
 }
-using namespace Dune;
+
+#if ENABLE_MPI
+		typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
+#else
+		typedef Dune::CollectiveCommunication< double > CollectiveCommunication;
+#endif
 
 int main( int argc, char **argv )
 {
 	// initialize MPI, finalize is done automatically on exit
-	MPIHelper& mpihelper = Dune::MPIHelper::instance( argc, argv );
-
+	Dune::MPIHelper& mpihelper = Dune::MPIHelper::instance( argc, argv );
+	CollectiveCommunication mpicomm ( mpihelper.getCommunicator() );
 	// start try/catch block to get error messages from dune
 	try
 	{
@@ -160,17 +188,10 @@ int main( int argc, char **argv )
 						 Parameters().getParam( "fem.io.logdir",    std::string(),              useLogger )
 					   );
 
-		Parameter::append( argc,argv );                         /*@\label{dg:param0}@*/
-		if ( argc == 2 ) {
-			Parameter::append( argv[1] );
-		} else {
-			Parameter::append( "parameter" );                     /*@\label{dg:paramfile}@*/
-		}                                                       /*@\label{dg:param1}@*/
-
-		GridPtr<GridType> gridptr ( Parameters().DgfFilename( dimGrid ) );
-		int refineLevel( 0 );
-		Parameter::get( "minref", refineLevel );
-		dowork( *gridptr, refineLevel );
+		Dune::GridPtr<GridType> gridptr ( Parameters().DgfFilename( GridType::dimensionworld ) );
+		gridptr->loadBalance();
+		int refineLevel = Parameters().getParam( "minref", 0 );
+		dowork( *gridptr, refineLevel, mpihelper );
 
 	}
 	catch ( std::exception & e ) {
