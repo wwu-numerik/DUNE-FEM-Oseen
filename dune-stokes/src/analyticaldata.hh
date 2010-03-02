@@ -387,7 +387,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 
 };
 
-struct SimpleDirichletDataTraits {
+struct DefaultDirichletDataTraits {
 
 	template < class FunctionSpaceImp, class GridPartImp >
 	struct Implementation {
