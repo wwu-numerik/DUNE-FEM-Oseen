@@ -1506,7 +1506,7 @@ class DiscreteStokesModelDefaultTraits
  *          These fluxes are then decomposed into several numerical fluxes (see
  *          Dune::DiscreteStokesModelInterface for details):\n
  *
- *          \f{tabular}{l||l}
+ *          \f {tabular} {l||l}
  *              on $\mathcal{E}_{I}$ & on $\mathcal{E}_{I}$ \\
  *                  \hline\hline
  *              $\boldsymbol{\hat{u}_{\sigma}^{U^{+}}(u)} := \frac{1}{2} u + \left( u \otimes n^{+} \right) \cdot C_{12}$
