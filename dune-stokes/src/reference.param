@@ -30,7 +30,7 @@ visualisationOutputDir: data/visualisation
 use_grape: 0
 
 #
-dgf_file_2d: homogeneous_perforated_domain_2d_porosity_0.8_400_holes_epsilon_0.0025.dgf
+dgf_file_2d: grid_2d.dgf
 dgf_file_3d: grid_3d.dgf
 # scale domain to have length 2
 domain_scale_x: 2.0
