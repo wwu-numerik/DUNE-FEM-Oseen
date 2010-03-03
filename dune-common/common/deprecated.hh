@@ -1,8 +1,0 @@
-#ifndef DUNE_DEPRECATED_HH
-#define DUNE_DEPRECATED_HH
-
-#ifndef DUNE_DEPRECATED
-#define DUNE_DEPRECATED
-#endif
-
-#endif

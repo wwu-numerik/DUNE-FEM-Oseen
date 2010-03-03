@@ -1,4 +1,0 @@
-Module: dune-fem-howto
-Version: 0.10
-Maintainer: dune@mathematik.uni-freiburg.de
-Depends: dune-common dune-grid dune-fem
