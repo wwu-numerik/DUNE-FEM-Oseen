@@ -12,6 +12,7 @@
 #include <dune/common/fmatrix.hh>
 #include <dune/stuff/parametercontainer.hh>
 #include <dune/stokes/boundaryinfo.hh>
+#include <dune/stuff/misc.hh>
 
 /**
  *  \todo   texdoc
@@ -100,7 +101,7 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//arg[0];
 #else
-				Dune::CompileTimeChecker< false > No_Problem_Defined_For_Force;
+				LOGIC_ERROR
 #endif
             }
             else if ( dim_ == 3 ) {
@@ -127,7 +128,7 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 ret[1] = 0.0;//-1.0;//arg[0];
                 ret[2] = 0.0;
 #else
-				Dune::CompileTimeChecker< false > No_Problem_Defined_For_Force;
+				LOGIC_ERROR
 #endif
             }
         }
@@ -303,7 +304,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                     ret[1] = exp_of_x1 * x2 * sin_of_x2;
                 }
 #else
-				Dune::CompileTimeChecker< false > No_Problem_Defined_For_DirichletData;
+				LOGIC_ERROR
 #endif
             }
             else if ( dim_ == 3 ) {
@@ -354,7 +355,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                         return;
                 }
 #else
-				Dune::CompileTimeChecker< false > No_Problem_Defined_For_DirichletData;
+				LOGIC_ERROR
 #endif
             }
         }

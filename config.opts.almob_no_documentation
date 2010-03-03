@@ -1,9 +1,10 @@
-CONFIGURE_FLAGS="CXX=g++-4.2 CC=gcc-4.2 CXXFLAGS='-g -O0' \
-  --prefix=$PWD \
+CONFIGURE_FLAGS="CXX=g++-4.2 CC=gcc-4.2 CXXFLAGS='-g' \
+  --prefix=/usr/local/dune/dune/projects/diplomarbeit_felix_rene \
   --with-alugrid=/usr/local/dune/modules/alugrid/alugrid-1.14 \
+  --with-alberta=/usr/local/dune/modules/alberta/alberta-1.2 \
   --x-includes=/usr/include/X11 \
   --x-libraries=/usr/lib/X11 \
-  --with-grape=/usr/local/dune/modules/grape
+  --with-grape=/usr/local/dune/modules/grape/grape/lib
   --disable-documentation \
   --with-grid-dim=2 \
   --with-grid-type=ALUGRID_SIMPLEX"
