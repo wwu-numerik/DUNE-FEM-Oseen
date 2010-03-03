@@ -1,5 +1,5 @@
-#ifndef DUNE_OEMSOLVER_HH
-#define DUNE_OEMSOLVER_HH
+#ifndef DUNE_STOKES_DUNE_StokesOEMSolver_HH
+#define DUNE_STOKES_DUNE_StokesOEMSolver_HH
 
 //- system includes
 #include <utility>
@@ -8,7 +8,6 @@
     //< iteration no , < absLimit, residuum > >
     typedef std::pair<int,std::pair<double,double> >
         IterationInfo;
-    static const IterationInfo dummy_info ( -1,std::pair<double,double>(0.,0.) );
 #endif
 //- Dune includes
 #include <dune/common/typetraits.hh>
@@ -17,12 +16,12 @@
 //- local includes
 #include "preconditioning.hh"
 
-#include "../pardg.hh"
+#include <dune/fem/solver/pardg.hh>
 
 // include BLAS  implementation
 #include "cblas.h"
 
-namespace OEMSolver
+namespace StokesOEMSolver
 {
 
 //////////////////////////////////////////////////////////
@@ -373,11 +372,12 @@ public:
   }
 };
 
-} // end namespace OEMSolver
+} // end namespace StokesOEMSolver
 
-namespace Dune
+namespace DuneStokes
 {
-  /** @addtogroup OEMSolver
+	using namespace Dune;
+  /** @addtogroup StokesOEMSolver
 
       In this section implementations of Orthogonal Error Methods (OEM) for solving linear
       systems of the from \f$A x = b\f$, where \f$A\f$ is a Mapping or
@@ -421,13 +421,13 @@ private:
 
       if(op.hasPreconditionMatrix())
       {
-        return OEMSolver::cghs(arg.space().grid().comm(),
+		return StokesOEMSolver::cghs(arg.space().grid().comm(),
                    size,op.systemMatrix(),op.preconditionMatrix(),
                    arg.leakPointer(),dest.leakPointer(),eps,verbose );
       }
       else
       {
-        return OEMSolver::cghs(arg.space().grid().comm(),
+		return StokesOEMSolver::cghs(arg.space().grid().comm(),
                   size,op.systemMatrix(),
                   arg.leakPointer(),dest.leakPointer(),eps,verbose );
       }
@@ -448,7 +448,7 @@ private:
       // see dune-common/common/collectivecommunication.hh
       // for interface
       int size = arg.space().size();
-      return OEMSolver::cghs
+	  return StokesOEMSolver::cghs
                 (arg.space().grid().comm(),
                 size,op.systemMatrix(),
                 arg.leakPointer(),dest.leakPointer(),eps,verbose );
@@ -489,8 +489,8 @@ public:
       SolverCaller<OperatorType,
                    // check wheter operator has precondition methods
                    // to enable preconditioning derive your operator from
-                   // OEMSolver::PreconditionInterface
-                   Conversion<OperatorType, OEMSolver::PreconditionInterface > ::exists >::
+				   // StokesOEMSolver::PreconditionInterface
+				   Conversion<OperatorType, StokesOEMSolver::PreconditionInterface > ::exists >::
                      // call solver, see above
                      call(op_,arg,dest,epsilon_,verbose_);
 
@@ -511,8 +511,8 @@ public:
       SolverCaller<OperatorType,
                    // check wheter operator has precondition methods
                    // to enable preconditioning derive your operator from
-                   // OEMSolver::PreconditionInterface
-                   Conversion<OperatorType, OEMSolver::PreconditionInterface > ::exists >::
+				   // StokesOEMSolver::PreconditionInterface
+				   Conversion<OperatorType, StokesOEMSolver::PreconditionInterface > ::exists >::
                      // call solver, see above
                      call(op_,arg,dest,epsilon_,verbose_);
 
@@ -570,13 +570,13 @@ private:
       int size = arg.space().size();
       if(op.hasPreconditionMatrix())
       {
-        return OEMSolver::bicgstab(arg.space().grid().comm(),
+		return StokesOEMSolver::bicgstab(arg.space().grid().comm(),
                   size,op.systemMatrix(),op.preconditionMatrix(),
                   arg.leakPointer(),dest.leakPointer(),eps,verbose );
       }
       else
       {
-        return OEMSolver::bicgstab(arg.space().grid().comm(),
+		return StokesOEMSolver::bicgstab(arg.space().grid().comm(),
                   size,op.systemMatrix(),
                   arg.leakPointer(),dest.leakPointer(),eps,verbose );
       }
@@ -594,7 +594,7 @@ private:
                      double eps, bool verbose)
     {
       int size = arg.space().size();
-      return OEMSolver::bicgstab(arg.space().grid().comm(),
+	  return StokesOEMSolver::bicgstab(arg.space().grid().comm(),
                 size,op.systemMatrix(),
                 arg.leakPointer(),dest.leakPointer(),eps,verbose );
     }
@@ -636,8 +636,8 @@ public:
       SolverCaller<OperatorType,
                    // check wheter operator has precondition methods
                    // to enable preconditioning derive your operator from
-                   // OEMSolver::PreconditionInterface
-                   Conversion<OperatorType, OEMSolver::PreconditionInterface > ::exists >::
+				   // StokesOEMSolver::PreconditionInterface
+				   Conversion<OperatorType, StokesOEMSolver::PreconditionInterface > ::exists >::
                      // call solver, see above
                      call(op_,arg,dest,epsilon_,verbose_);
 
@@ -660,8 +660,8 @@ public:
       SolverCaller<OperatorType,
                    // check wheter operator has precondition methods
                    // to enable preconditioning derive your operator from
-                   // OEMSolver::PreconditionInterface
-                   Conversion<OperatorType, OEMSolver::PreconditionInterface > ::exists >::
+				   // StokesOEMSolver::PreconditionInterface
+				   Conversion<OperatorType, StokesOEMSolver::PreconditionInterface > ::exists >::
                      // call solver, see above
                      call(op_,arg,dest,epsilon_,verbose_);
 
@@ -742,7 +742,7 @@ public:
 
     int size = arg.space().size();
 
-    int iter = OEMSolver::bicgsq(size,op_.systemMatrix(),
+	int iter = StokesOEMSolver::bicgsq(size,op_.systemMatrix(),
         arg.leakPointer(),dest.leakPointer(),epsilon_,verbose_);
 
     std::cout << "OEM-BICGGsq: " << iter << " iterations!\n";
@@ -774,7 +774,7 @@ public:
 
 private:
   // type of internal projector if no preconditioner given
-  typedef OEMSolver :: FakeConditioner FakeConditionerType;
+  typedef StokesOEMSolver :: FakeConditioner FakeConditionerType;
 
   // no const reference, we make const later
   OperatorType &op_;
@@ -794,22 +794,22 @@ private:
       int size = arg.space().size();
       if(op.hasPreconditionMatrix())
       {
-        return OEMSolver::gmres(arg.space().grid().comm(),
+		return StokesOEMSolver::gmres(arg.space().grid().comm(),
                  inner,size,op.systemMatrix(),op.preconditionMatrix(),
                  arg.leakPointer(),dest.leakPointer(),eps,verbose);
       }
       // in parallel case we need special treatment, if no preconditoner exist
       else if( arg.space().grid().comm().size() > 1 )
       {
-        OEMSolver::SolverInterfaceImpl<OperatorImp> opSolve(op);
+		StokesOEMSolver::SolverInterfaceImpl<OperatorImp> opSolve(op);
         FakeConditionerType preConditioner(size,opSolve);
-        return OEMSolver::gmres(arg.space().grid().comm(),
+		return StokesOEMSolver::gmres(arg.space().grid().comm(),
                  inner,size,op.systemMatrix(),preConditioner,
                  arg.leakPointer(),dest.leakPointer(),eps,verbose);
       }
       else
       {
-        return OEMSolver::gmres(arg.space().grid().comm(),
+		return StokesOEMSolver::gmres(arg.space().grid().comm(),
                  inner,size,op.systemMatrix(),
                  arg.leakPointer(),dest.leakPointer(),eps,verbose);
       }
@@ -829,15 +829,15 @@ private:
       int size = arg.space().size();
       if( arg.space().grid().comm().size() > 1 )
       {
-        OEMSolver::SolverInterfaceImpl<OperatorImp> opSolve(op);
+		StokesOEMSolver::SolverInterfaceImpl<OperatorImp> opSolve(op);
         FakeConditionerType preConditioner(size,opSolve);
-        return OEMSolver::gmres(arg.space().grid().comm(),
+		return StokesOEMSolver::gmres(arg.space().grid().comm(),
                  inner,size,op.systemMatrix(),preConditioner,
                  arg.leakPointer(),dest.leakPointer(),eps,verbose);
       }
       else
       {
-        return OEMSolver::gmres(arg.space().grid().comm(),
+		return StokesOEMSolver::gmres(arg.space().grid().comm(),
                  inner,size,op.systemMatrix(),
                  arg.leakPointer(),dest.leakPointer(),eps,verbose);
       }
@@ -881,8 +881,8 @@ public:
       SolverCaller<OperatorType,
                    // check wheter operator has precondition methods
                    // to enable preconditioning derive your operator from
-                   // OEMSolver::PreconditionInterface
-                   Conversion<OperatorType, OEMSolver::PreconditionInterface > ::exists >::
+				   // StokesOEMSolver::PreconditionInterface
+				   Conversion<OperatorType, StokesOEMSolver::PreconditionInterface > ::exists >::
                      // call solver, see above
                      call(op_,arg,dest,inner,epsilon_,verbose_);
 
@@ -906,8 +906,8 @@ public:
       SolverCaller<OperatorType,
                    // check wheter operator has precondition methods
                    // to enable preconditioning derive your operator from
-                   // OEMSolver::PreconditionInterface
-                   Conversion<OperatorType, OEMSolver::PreconditionInterface > ::exists >::
+				   // StokesOEMSolver::PreconditionInterface
+				   Conversion<OperatorType, StokesOEMSolver::PreconditionInterface > ::exists >::
                      // call solver, see above
                      call(op_,arg,dest,inner,epsilon_,verbose_);
 
@@ -953,7 +953,7 @@ class GMRESOp : public Operator<
             DiscreteFunctionType,DiscreteFunctionType>
 {
 private:
-  typedef OEMSolver :: FakeConditioner FakeConditioner;
+  typedef StokesOEMSolver :: FakeConditioner FakeConditioner;
 
   template <class SolverType, bool hasPreconditioning>
   struct SolverCaller
@@ -968,13 +968,13 @@ private:
       int size = arg.space().size();
       solver.set_max_number_of_iterations(size);
 
-      OEMSolver::SolverInterfaceImpl<OperatorImp> opSolve(op,size);
+	  StokesOEMSolver::SolverInterfaceImpl<OperatorImp> opSolve(op,size);
 
       // in parallel runs we need fake pre conditioner to
       // project vectors onto interior
       if(op.hasPreconditionMatrix())
       {
-        OEMSolver::PreconditionerImpl<PreConMatrix> pre(pm,size);
+		StokesOEMSolver::PreconditionerImpl<PreConMatrix> pre(pm,size);
         solver.set_preconditioner(pre);
 
         // note argument and destination are toggled
@@ -1010,7 +1010,7 @@ private:
                      DiscreteFunctionImp & dest)
     {
       int size = arg.space().size();
-      OEMSolver::SolverInterfaceImpl<OperatorImp> opSolve(op,size);
+	  StokesOEMSolver::SolverInterfaceImpl<OperatorImp> opSolve(op,size);
 
       solver.set_max_number_of_iterations(size);
 
@@ -1019,7 +1019,7 @@ private:
       if(arg.space().grid().comm().size() > 1)
       {
         FakeConditioner fake(size,opSolve);
-        OEMSolver::SolverInterfaceImpl<FakeConditioner> pre(fake);
+		StokesOEMSolver::SolverInterfaceImpl<FakeConditioner> pre(fake);
         solver.set_preconditioner(pre);
 
         // note argument and destination are toggled
@@ -1083,8 +1083,8 @@ public:
     SolverCaller<SolverType,
                    // check wheter operator has precondition methods
                    // to enable preconditioning derive your operator from
-                   // OEMSolver::PreconditionInterface
-                   Conversion<OperatorType, OEMSolver::PreconditionInterface > ::exists >::
+				   // StokesOEMSolver::PreconditionInterface
+				   Conversion<OperatorType, StokesOEMSolver::PreconditionInterface > ::exists >::
                    // call solver, see above
                    call(solver_,op_.systemMatrix(),arg,dest);
 
@@ -1110,7 +1110,7 @@ class FGMRESOp : public Operator<
 {
 
 private:
-  typedef OEMSolver :: FakeConditioner FakeConditionerType;
+  typedef StokesOEMSolver :: FakeConditioner FakeConditionerType;
 
   template <class SolverType, bool hasPreconditioning>
   struct SolverCaller
@@ -1123,8 +1123,8 @@ private:
                DiscreteFunctionImp & dest)
     {
       int size = arg.space().size();
-      OEMSolver::SolverInterfaceImpl<OperatorImp> opSolve(op,size);
-      OEMSolver::PreconditionerImpl<PreConMatrix> pre(pm,size);
+	  StokesOEMSolver::SolverInterfaceImpl<OperatorImp> opSolve(op,size);
+	  StokesOEMSolver::PreconditionerImpl<PreConMatrix> pre(pm,size);
       solver.set_preconditioner(pre);
 
       solver.set_max_number_of_iterations(size);
@@ -1162,7 +1162,7 @@ private:
                DiscreteFunctionImp & dest)
     {
       int size = arg.space().size();
-      OEMSolver::SolverInterfaceImpl<OperatorImp> opSolve(op,size);
+	  StokesOEMSolver::SolverInterfaceImpl<OperatorImp> opSolve(op,size);
       FakeConditionerType fake(size,opSolve);
       SolverCaller<SolverType,true>::solve(solver,op,fake,arg,dest);
     }
@@ -1225,8 +1225,8 @@ public:
     SolverCaller<SolverType,
                    // check wheter operator has precondition methods
                    // to enable preconditioning derive your operator from
-                   // OEMSolver::PreconditionInterface
-                   Conversion<OperatorType, OEMSolver::PreconditionInterface > ::exists >::
+				   // StokesOEMSolver::PreconditionInterface
+				   Conversion<OperatorType, StokesOEMSolver::PreconditionInterface > ::exists >::
                    // call solver, see above
                    call(solver_,op_,arg,dest);
 
@@ -1269,10 +1269,10 @@ private:
                DiscreteFunctionImp & dest)
     {
       int size = arg.space().size();
-      OEMSolver::SolverInterfaceImpl<OperatorImp> opSolve(op,size);
+	  StokesOEMSolver::SolverInterfaceImpl<OperatorImp> opSolve(op,size);
       solver.set_max_number_of_iterations(size);
 
-      OEMSolver::PreconditionerImpl<PreConMatrix> pre(pm,size);
+	  StokesOEMSolver::PreconditionerImpl<PreConMatrix> pre(pm,size);
       solver.set_preconditioner(pre);
 
       // note argument and destination are toggled
@@ -1308,7 +1308,7 @@ private:
                DiscreteFunctionImp & dest)
     {
       int size = arg.space().size();
-      OEMSolver::SolverInterfaceImpl<OperatorImp> opSolve(op,size);
+	  StokesOEMSolver::SolverInterfaceImpl<OperatorImp> opSolve(op,size);
       solver.set_max_number_of_iterations(size);
 
       // note argument and destination are toggled
@@ -1369,8 +1369,8 @@ public:
     SolverCaller<SolverType,
                    // check wheter operator has precondition methods
                    // to enable preconditioning derive your operator from
-                   // OEMSolver::PreconditionInterface
-                   Conversion<OperatorType, OEMSolver::PreconditionInterface > ::exists >::
+				   // StokesOEMSolver::PreconditionInterface
+				   Conversion<OperatorType, StokesOEMSolver::PreconditionInterface > ::exists >::
                    // call solver, see above
                    call(solver_,op_,arg,dest);
 
@@ -1387,4 +1387,4 @@ public:
 };
 #endif
 } // end namespace Dune
-#endif
+#endif //DUNE_STOKES_

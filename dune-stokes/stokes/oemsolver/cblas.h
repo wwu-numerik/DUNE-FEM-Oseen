@@ -1,5 +1,5 @@
-#ifndef DUNE_CBLAS_H_INCLUDED
-#define DUNE_CBLAS_H_INCLUDED
+#ifndef DUNE_STOKES_DUNE_CBLAS_H_INCLUDED
+#define DUNE_STOKES_DUNE_CBLAS_H_INCLUDED
 // -*- C++ -*-
 // define extra namespace 
 namespace DuneCBlas { 
@@ -613,4 +613,4 @@ void dspr2( MatrixTriangle uplo, int n, double alpha, const double *x,
 #endif // CBLAS2_H
 
 } // end namespace DuneCBlas 
-#endif // DUNE_CBLAS_H_INCLUDED 
+#endif // DUNE_STOKES_DUNE_CBLAS_H_INCLUDED

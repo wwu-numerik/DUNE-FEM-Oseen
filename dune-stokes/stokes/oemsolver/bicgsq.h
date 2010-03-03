@@ -1,8 +1,8 @@
 // Emacs should recognise this header as -*- C++ -*-
 
 
-#ifndef BICGSQ_BLAS_H
-#define BICGSQ_BLAS_H
+#ifndef DUNE_STOKES_BICGSQ_BLAS_H
+#define DUNE_STOKES_BICGSQ_BLAS_H
 
 // ============================================================================
 //
@@ -205,4 +205,4 @@ bicgsq( unsigned N, const MATRIX &A,
 // ============================================================================
 
 
-#endif // BICGSQ_BLAS_H
+#endif // DUNE_STOKES_BICGSQ_BLAS_H

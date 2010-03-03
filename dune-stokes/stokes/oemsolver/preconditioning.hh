@@ -1,7 +1,7 @@
-#ifndef DUNE_PRECONDITIONING_HH
-#define DUNE_PRECONDITIONING_HH
+#ifndef DUNE_STOKES_DUNE_PRECONDITIONING_HH
+#define DUNE_STOKES_DUNE_PRECONDITIONING_HH
 
-namespace OEMSolver 
+namespace StokesOEMSolver
 {
 
 /** \brief Interface class for use of Preconditioners with the OEM solvers.

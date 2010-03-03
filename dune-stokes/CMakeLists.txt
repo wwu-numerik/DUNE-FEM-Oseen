@@ -128,13 +128,12 @@ SET(dune-stokesSrc
 )
 
 FILE( GLOB header "src/*.hh" )
-FILE( GLOB stokes "stokes/*.hh" )
+FILE( GLOB_RECURSE stokes "stokes/*" )
 FILE( GLOB stuff "../dune-stuff/stuff/*.hh" )
 
 set_source_files_properties( ${stuff} ${stokes} ${header} PROPERTIES HEADER_FILE_ONLY 1 )
 
 ADD_EXECUTABLE(dune_stokes ${dune-stokesSrc} ${header} ${stokes} ${stuff} )
-
 TARGET_LINK_LIBRARIES(dune_stokes "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS} "gr" "GL" ${ParaLIBS} )
 
 ADD_EXECUTABLE(minimal src/minimal.cc ${header} ${stokes} )

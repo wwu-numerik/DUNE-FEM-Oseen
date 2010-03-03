@@ -1,5 +1,5 @@
-#ifndef GMRES_BLAS_H
-#define GMRES_BLAS_H
+#ifndef DUNE_STOKES_GMRES_BLAS_H
+#define DUNE_STOKES_GMRES_BLAS_H
 
 // ============================================================================
 //
@@ -221,4 +221,4 @@ gmres( const CommunicatorType & comm,
 // ============================================================================
 
 
-#endif // GMRES_BLAS_H
+#endif // DUNE_STOKES_GMRES_BLAS_H

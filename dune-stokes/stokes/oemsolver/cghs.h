@@ -1,5 +1,5 @@
-#ifndef CGHS_BLAS_H
-#define CGHS_BLAS_H
+#ifndef DUNE_STOKES_CGHS_BLAS_H
+#define DUNE_STOKES_CGHS_BLAS_H
 
 // ============================================================================
 //
@@ -176,4 +176,4 @@ cghs( const CommunicatorType & comm,
   return cghs_algo<false> (comm,N,A,A,b,x,eps,detailed );
 }
 
-#endif // CGHS_BLAS_H
+#endif // DUNE_STOKES_CGHS_BLAS_H

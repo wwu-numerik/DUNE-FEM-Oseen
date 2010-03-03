@@ -8,7 +8,7 @@
     //< iteration no , < absLimit, residuum > >
     typedef std::pair<int,std::pair<double,double> >
         IterationInfo;
-    static const IterationInfo dummy_info ( -1,std::pair<double,double>(0.,0.) );
+	static const IterationInfo dummy_infow ( -1,std::pair<double,double>(0.,0.) );
 #endif
 //- Dune includes
 #include <dune/common/typetraits.hh>

@@ -1,5 +1,5 @@
-#ifndef __OEM_TMPMEM_HH__
-#define __OEM_TMPMEM_HH__
+#ifndef DUNE_STOKES___OEM_TMPMEM_HH__
+#define DUNE_STOKES___OEM_TMPMEM_HH__
 
 #include <cassert>
 

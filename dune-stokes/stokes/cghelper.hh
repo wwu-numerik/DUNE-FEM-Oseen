@@ -6,7 +6,7 @@
 #ifndef INNERCG_HH_INCLUDED
 #define INNERCG_HH_INCLUDED
 
-#include <dune/fem/solver/oemsolver/oemsolver.hh>
+#include <dune/stokes/oemsolver/oemsolver.hh>
 
 #include <dune/stuff/printing.hh>
 #include <dune/stuff/misc.hh>

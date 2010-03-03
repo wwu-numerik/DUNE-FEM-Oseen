@@ -1,7 +1,7 @@
 // -*- C++ -*-
 
-#ifndef BICGSTAB_BLAS_H
-#define BICGSTAB_BLAS_H
+#ifndef DUNE_STOKES_BICGSTAB_BLAS_H
+#define DUNE_STOKES_BICGSTAB_BLAS_H
 
 // ============================================================================
 //
@@ -264,4 +264,4 @@ bicgstab( const CommunicatorType & comm,
   return bicgstab_algo<true>(comm,N,A,C,b,x,eps,verbose);
 }
 
-#endif // BICGSTAB_BLAS_H
+#endif // DUNE_STOKES_BICGSTAB_BLAS_H
