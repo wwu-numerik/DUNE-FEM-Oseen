@@ -1,5 +1,0 @@
-#! /bin/bash
-git pull
-cd dune-stuff
-git fetch origin
-git merge origin/master

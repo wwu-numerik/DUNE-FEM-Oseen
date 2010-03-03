@@ -1,5 +1,0 @@
-all:
-  - macrowrap unused vars to silence warnings in release mode
-
-analyticaldata.hh"
-  - asserts --> CompileTimeCheck

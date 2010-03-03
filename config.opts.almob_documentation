@@ -1,7 +1,0 @@
-CONFIGURE_FLAGS="CXX=g++-4.2 CC=gcc-4.2 CXXFLAGS='-g -O0' \
-  --prefix=$PWD \
-  --with-alugrid=/usr/local/dune/modules/alugrid/alugrid-1.14 \
-  --x-includes=/usr/include/X11 \
-  --x-libraries=/usr/lib/X11 \
-  --with-grid-dim=2 \
-  --with-grid-type=ALUGRID_SIMPLEX"
