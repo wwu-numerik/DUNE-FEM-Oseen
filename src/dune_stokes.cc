@@ -57,7 +57,7 @@
 #include <dune/fem/space/dgspace/dgadaptiveleafgridpart.hh>
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
-#include <dune/fem/misc/femeoc.hh>
+#include <dune/stuff/femeoc.hh>
 #include <dune/fem/misc/gridwidth.hh>
 
 #include <dune/stokes/discretestokesfunctionspacewrapper.hh>
