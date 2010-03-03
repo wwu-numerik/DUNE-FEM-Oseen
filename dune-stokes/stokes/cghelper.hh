@@ -6,8 +6,6 @@
 #ifndef INNERCG_HH_INCLUDED
 #define INNERCG_HH_INCLUDED
 
-#include <dune/stokes/oemsolver/oemsolver.hh>
-
 #include <dune/stuff/printing.hh>
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/logging.hh>
@@ -247,7 +245,7 @@ class InnerCGSolverWrapper {
                                     DiscreteSigmaFunctionType >
                 A_OperatorType;
 
-        typedef INNER_CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
+		typedef SOLVER_NAMESPACE::INNER_CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
             CG_SolverType;
 		#ifdef USE_BFG_CG_SCHEME
 			typedef typename CG_SolverType::ReturnValueType

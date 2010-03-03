@@ -20,7 +20,11 @@
     //< iteration no , < absLimit, residuum > >
     typedef std::pair<int,std::pair<double,double> >
         IterationInfo;
-
+	#include <dune/stokes/oemsolver/oemsolver.hh>
+	#define SOLVER_NAMESPACE DuneStokes
+#else
+	#include <dune/fem/solver/oemsolver/oemsolver.hh>
+	#define SOLVER_NAMESPACE Dune
 #endif
 
 #include <dune/fem/function/common/discretefunction.hh>
@@ -237,7 +241,7 @@ class NestedCgSaddlepointInverseOperator
                                             DiscretePressureFunctionType >
                 Sk_Operator;
 
-        typedef OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
+		typedef SOLVER_NAMESPACE::OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
                 Sk_Solver;
 
         typedef typename Sk_Solver::ReturnValueType
