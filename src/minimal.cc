@@ -1,9 +1,11 @@
 #define DUNE_DEPRECATED __attribute__((deprecated))
+#include <dune/fem/misc/mpimanager.hh> // An initializer of MPI
 #include <dune/stuff/parametercontainer.hh>
 #include <dune/stuff/misc.hh>
 //do whatever you like to this file to test out simple and small stuff
 
 int main( int argc, char** argv ) {
+	Dune::MPIManager::initialize(argc, argv);
 	if ( !(  Parameters().ReadCommandLine( argc, argv ) ) ) {
         return 1;
     }

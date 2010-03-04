@@ -5,7 +5,7 @@
 #include <iostream>
 #include <iomanip>
 #include <stdio.h>
-#include <dune/common/mpihelper.hh> // include mpi helper class
+#include <dune/fem/misc/mpimanager.hh> // An initializer of MPI
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh>
 #include <dune/grid/io/file/dgfparser/dgfparser.hh>
 
@@ -174,8 +174,8 @@ void dowork ( Grid& grid, int refSteps, Dune::MPIHelper& mpiHelper )
 int main( int argc, char **argv )
 {
 	// initialize MPI, finalize is done automatically on exit
-	Dune::MPIHelper& mpihelper = Dune::MPIHelper::instance( argc, argv );
-	CollectiveCommunication mpicomm ( mpihelper.getCommunicator() );
+	Dune::MPIManager::initialize(argc, argv);
+	CollectiveCommunication mpicomm ( Dune::MPIManager::helper().getCommunicator() );
 	// start try/catch block to get error messages from dune
 	try
 	{

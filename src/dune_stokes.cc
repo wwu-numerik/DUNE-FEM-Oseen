@@ -46,7 +46,7 @@
 
 #include <iostream>
 #include <cmath>
-#include <dune/common/mpihelper.hh> // An initializer of MPI
+#include <dune/fem/misc/mpimanager.hh> // An initializer of MPI
 #include <dune/common/exceptions.hh> // We use exceptions
 #include <dune/grid/common/capabilities.hh>
 
@@ -158,9 +158,9 @@ int main( int argc, char** argv )
 {
   try{
 
-    Dune::MPIHelper& mpihelper = Dune::MPIHelper::instance(argc, argv);
+	Dune::MPIManager::initialize(argc, argv);
 	//assert( Dune::Capabilities::isParallel< GridType >::v );
-    CollectiveCommunication mpicomm ( mpihelper.getCommunicator() );
+	CollectiveCommunication mpicomm( Dune::MPIManager::helper().getCommunicator() );
 
     /* ********************************************************************** *
      * initialize all the stuff we need                                       *
@@ -597,8 +597,6 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
      * ********************************************************************** */
     infoStream << "\n- starting pass" << std::endl;
 
-	DiscreteStokesFunctionWrapperType initArgToPass( "init_", discreteStokesFunctionSpaceWrapper, gridPart );
-
     typedef Dune::StartPass< DiscreteStokesFunctionWrapperType, -1 >
         StartPassType;
     StartPassType startPass;
@@ -611,7 +609,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
                                 discreteStokesFunctionSpaceWrapper );
 
     profiler().StartTiming( "Pass -- APPLY" );
-    stokesPass.apply( initArgToPass, computedSolutions );
+	stokesPass.apply( computedSolutions, computedSolutions );
     profiler().StopTiming( "Pass -- APPLY" );
     info.run_time = profiler().GetTiming( "Pass -- APPLY" );
     stokesPass.getRuninfo( info );
