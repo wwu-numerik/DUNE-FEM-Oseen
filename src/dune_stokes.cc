@@ -5,13 +5,14 @@
  **/
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+	#include "config.h"
 #endif
-#define DUNE_DEPRECATED __attribute__((deprecated))
+
 #include <cstdio>
-#ifdef USE_PARDG_ODE_SOLVER
+#if defined(USE_PARDG_ODE_SOLVER) && defined(USE_BFG_CG_SCHEME)
 	#warning ("USE_PARDG_ODE_SOLVER enabled, might conflict with custom solvers")
 #endif
+
 //the adaption manager might be troublesome with certain gridparts/spaces, so we needed a easy way to disable it
 #ifndef ENABLE_ADAPTIVE
     #define ENABLE_ADAPTIVE 1

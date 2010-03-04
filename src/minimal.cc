@@ -1,4 +1,7 @@
-#define DUNE_DEPRECATED __attribute__((deprecated))
+#ifdef HAVE_CONFIG_H
+	#include "config.h"
+#endif
+
 #include <dune/fem/misc/mpimanager.hh> // An initializer of MPI
 #include <dune/stuff/parametercontainer.hh>
 #include <dune/stuff/misc.hh>

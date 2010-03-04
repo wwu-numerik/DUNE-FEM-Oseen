@@ -1,7 +1,7 @@
-// $Id$
+#ifdef HAVE_CONFIG_H
+	#include "config.h"
+#endif
 
-#include <config.h>
-#define DUNE_DEPRECATED __attribute__((deprecated))
 #include <iostream>
 #include <iomanip>
 #include <stdio.h>
