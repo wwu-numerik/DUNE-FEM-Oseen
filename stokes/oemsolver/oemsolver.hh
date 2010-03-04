@@ -20,7 +20,7 @@
 
 // include BLAS  implementation
 #include "cblas.h"
-
+#undef USE_PARDG_ODE_SOLVER
 namespace StokesOEMSolver
 {
 
