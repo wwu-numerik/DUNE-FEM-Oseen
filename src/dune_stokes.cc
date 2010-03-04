@@ -7,6 +7,8 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#define DUNE_DEPRECATED __attribute__((deprecated))
+#include <cstdio>
 #ifdef USE_PARDG_ODE_SOLVER
 	#warning ("USE_PARDG_ODE_SOLVER enabled, might conflict with custom solvers")
 #endif
