@@ -2822,7 +2822,8 @@ class StokesPass
         double colonProduct(    const SigmaRangeType& arg1,
                                 const SigmaRangeType& arg2 ) const
         {
-            assert( arg1.rowdim() == arg2.coldim() );
+			Dune::CompileTimeChecker< SigmaRangeType::cols == SigmaRangeType::rows > SigmaRangeType_is_not_a_square_matrix;
+
             double ret = 0.0;
             // iterators
             typedef typename SigmaRangeType::ConstRowIterator
