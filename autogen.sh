@@ -1,15 +1,18 @@
 #!/bin/sh
-# : duneproject 5104 2008-03-06 16:24:04Z robertk $
+# $Id$
 
 # barf on errors
 set -e
 
 usage () {
-    echo "Usage: ./autogen.sh DUNE_COMMON_DIR [options]"
+    echo "Usage: ./autogen.sh [options]"
     echo "  --ac=, --acversion=VERSION   use a specific VERSION of autoconf"
     echo "  --am=, --amversion=VERSION   use a specific VERSION of automake"
     echo "  -h,    --help                you already found this :-)"
 }
+
+# add current dir to PATH
+PATH=$PATH:`dirname $0`/bin
 
 for OPT in "$@"; do
     set +e
@@ -41,13 +44,7 @@ for OPT in "$@"; do
             if test -d "$OPT/am"; then
               am_dir="$OPT/am"
             fi
-            if test -d "$OPT/share/aclocal"; then
-              ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $OPT/share/aclocal"
-            fi
-            if test -d "$OPT/share/dune-common/am"; then
-              am_dir="$OPT/share/dune-common/am"
-            fi
-            PATH="$PATH:$OPT/bin"
+			PATH=$PATH:$OPT/bin
             ;;
     esac
 done
@@ -82,25 +79,14 @@ libtoolize --force
 
 # prepare everything
 echo "--> aclocal..."
-aclocal$AMVERSION $ACLOCAL_FLAGS
+rm -f aclocal.m4
+rm -rf autom4te.cache
+aclocal$AMVERSION -I m4
 
 # applications should provide a config.h for now
 echo "--> autoheader..."
 autoheader$ACVERSION
 
-# create a link to the dune-common am directory
-if [ -n "$am_dir" ] && [ -d $am_dir ]; then
-  echo "--> linking dune-common/am..."
-  rm -f am
-  ln -s $am_dir am
-else
-  echo
-  echo "Error: Could not find dune-common/am!"
-  usage
-  exit 1
-fi
-
-# call automake/conf
 echo "--> automake..."
 automake$AMVERSION --add-missing
 
@@ -108,5 +94,4 @@ echo "--> autoconf..."
 autoconf$ACVERSION
 
 ## tell the user what to do next
-echo "Now run ./configure "
-
+echo "Now run ./configure to setup dune-common"
