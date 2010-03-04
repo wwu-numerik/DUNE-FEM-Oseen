@@ -582,7 +582,7 @@ class StokesPass
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
                         // sum over all quadrature points
-                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
+						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
                             const ElementCoordinateType x = volumeQuadratureElement.point( quad );
                             // get the integration factor
@@ -650,7 +650,7 @@ class StokesPass
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
                         // sum over all quadrature points
-                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
+						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
                             const ElementCoordinateType x = volumeQuadratureElement.point( quad );
                             // get the integration factor
@@ -711,7 +711,7 @@ class StokesPass
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
                         // sum over all quadrature points
-                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
+						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
                             const ElementCoordinateType x = volumeQuadratureElement.point( quad );
                             // get the integration factor
@@ -775,7 +775,7 @@ class StokesPass
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
                         // sum over all quadrature points
-                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
+						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
                             const ElementCoordinateType x = volumeQuadratureElement.point( quad );
                             // get the integration factor
@@ -841,7 +841,7 @@ class StokesPass
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
                         // sum over all quadratur points
-                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
+						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
                             // get x
                             const ElementCoordinateType x = volumeQuadratureElement.point( quad );
                             // get the integration factor
@@ -896,7 +896,7 @@ class StokesPass
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
                         // sum over all quadratur points
-                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
+						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
                             // get x
                             const ElementCoordinateType x = volumeQuadratureElement.point( quad );
                             const VelocityRangeType xWorld = geometry.global( x );
@@ -961,7 +961,7 @@ class StokesPass
                         debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
                         // sum over all quadratur points
-                        for ( int quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
+						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
                             // get x
                             ElementCoordinateType x = volumeQuadratureElement.point( quad );
                             // get the integration factor
@@ -1105,7 +1105,7 @@ class StokesPass
                                     debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                     // sum over all quadrature points
-                                    for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x in codim<0> and codim<1> coordinates
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
@@ -1166,7 +1166,7 @@ class StokesPass
                                     debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
 #endif
                                     // sum over all quadrature points
-                                    for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x in codim<0> and codim<1> coordinates
                                         const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
                                         const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
@@ -1246,7 +1246,7 @@ class StokesPass
                                     debugStream << "      volumeQuadratureElement.nop() " << volumeQuadratureElement.nop() << std::endl;
 #endif
                                     // sum over all quadrature points
-                                    for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x in codim<0> and codim<1> coordinates
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
@@ -1304,7 +1304,7 @@ class StokesPass
                                     debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
 #endif
                                     // sum over all quadrature points
-                                    for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
+									for ( size_t quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
                                         const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
                                         const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
@@ -1380,7 +1380,7 @@ class StokesPass
                                     debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                     // sum over all quadrature points
-                                    for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
@@ -1438,7 +1438,7 @@ class StokesPass
                                     debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
 #endif
                                     // sum over all quadrature points
-                                    for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
+									for ( size_t quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
                                         const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
                                         const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
@@ -1516,7 +1516,7 @@ class StokesPass
                                     debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                     // sum over all quadrature points
-                                    for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
@@ -1575,7 +1575,7 @@ class StokesPass
                                     debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
 #endif
                                     // sum over all quadrature points
-                                    for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
+									for ( size_t quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
                                         const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
                                         const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
@@ -1653,7 +1653,7 @@ class StokesPass
                                     debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                     // sum over all quadrature points
-                                    for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
@@ -1712,7 +1712,7 @@ class StokesPass
                                     debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
 #endif
                                     // sum over all quadrature points
-                                    for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
+									for ( size_t quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
                                         const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
                                         const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
@@ -1789,7 +1789,7 @@ class StokesPass
                                     debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                     // sum over all quadrature points
-                                    for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
@@ -1845,7 +1845,7 @@ class StokesPass
                                     debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
 #endif
                                     // sum over all quadrature points
-                                    for ( int quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
+									for ( size_t quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
                                         const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
                                         const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
@@ -1923,7 +1923,7 @@ class StokesPass
 ////                                    debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 ////#endif
 ////                                    // sum over all quadrature points
-////                                    for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+////                                    for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
 ////                                        // get x codim<0> and codim<1> coordinates
 ////                                        const ElementCoordinateType x = faceQuadratureElement.point( quad );
 ////                                        const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
@@ -2016,7 +2016,7 @@ class StokesPass
                                 debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
-                                for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+								for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                     // get x codim<0> and codim<1> coordinates
                                     const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                     const VelocityRangeType xWorld = geometry.global( x );
@@ -2089,7 +2089,7 @@ class StokesPass
                                     debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                     // sum over all quadrature points
-                                    for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
@@ -2164,7 +2164,7 @@ class StokesPass
                                     debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                     // sum over all quadrature points
-                                    for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
@@ -2237,7 +2237,7 @@ class StokesPass
                                     debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                     // sum over all quadrature points
-                                    for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
@@ -2301,7 +2301,7 @@ class StokesPass
                                 debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
-                                for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+								for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                     // get x codim<0> and codim<1> coordinates
                                     const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                     const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
@@ -2401,7 +2401,7 @@ class StokesPass
 ////                                    debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 ////#endif
 ////                                    // sum over all quadrature points
-////                                    for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+////                                    for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
 ////                                        // get x codim<0> and codim<1> coordinates
 ////                                        const ElementCoordinateType x = faceQuadratureElement.point( quad );
 ////                                        const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
@@ -2501,7 +2501,7 @@ class StokesPass
 ////                                    debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 ////#endif
 ////                                    // sum over all quadrature points
-////                                    for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+////                                    for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
 ////                                        // get x codim<0> and codim<1> coordinates
 ////                                        const ElementCoordinateType x = faceQuadratureElement.point( quad );
 ////                                        const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
@@ -2593,7 +2593,7 @@ class StokesPass
                                 debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
 #endif
                                 // sum over all quadrature points
-                                for ( int quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+								for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                     // get x codim<0> and codim<1> coordinates
                                     const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                     const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
