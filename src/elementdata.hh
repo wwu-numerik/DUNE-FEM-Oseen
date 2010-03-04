@@ -24,18 +24,22 @@ void elementdata (const G& grid, const F& f)
   const int dim = G::dimension;
   const int dimworld = G::dimensionworld;
   typedef typename G::ctype ct;
-  typedef typename G::template Codim<0>::LeafIterator ElementLeafIterator;
+  typedef typename G::LeafGridView GridView;
+  typedef typename GridView::template Codim<0>::Iterator ElementLeafIterator;
+
+  // get grid view on leaf part
+  GridView gridView = grid.leafView();
 
   // make a mapper for codim 0 entities in the leaf grid
   Dune::LeafMultipleCodimMultipleGeomTypeMapper<G,P0Layout>
-      mapper(grid);                                    /*@\label{edh:mapper}@*/
+	  mapper(grid);                                    /*@\label{edh:mapper}@*/
 
   // allocate a vector for the data
   std::vector<double> c(mapper.size());                /*@\label{edh:c}@*/
 
   // iterate through all entities of codim 0 at the leafs
-  for (ElementLeafIterator it = grid.template leafbegin<0>(); /*@\label{edh:loop0}@*/
-	   it!=grid.template leafend<0>(); ++it)
+  for (ElementLeafIterator it = gridView.template begin<0>(); /*@\label{edh:loop0}@*/
+	   it!=gridView.template end<0>(); ++it)
 	{
 	  // cell geometry type
 	  Dune::GeometryType gt = it->type();
@@ -53,7 +57,7 @@ void elementdata (const G& grid, const F& f)
 
   // generate a VTK file
   // Dune::LeafP0Function<G,double> cc(grid,c);
-  Dune::VTKWriter<G> vtkwriter(grid);                  /*@\label{edh:vtk0}@*/
+  Dune::VTKWriter<typename G::LeafGridView> vtkwriter(gridView); /*@\label{edh:vtk0}@*/
   vtkwriter.addCellData(c,"data");
   Stuff::testCreateDirectory( f.filename() );
   vtkwriter.write( f.filename().c_str(),Dune::VTKOptions::binaryappended ); /*@\label{edh:vtk1}@*/

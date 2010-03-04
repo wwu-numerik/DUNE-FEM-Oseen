@@ -192,7 +192,7 @@ int main( int argc, char **argv )
 		Dune::GridPtr<GridType> gridptr ( Parameters().DgfFilename( GridType::dimensionworld ) );
 		gridptr->loadBalance();
 		int refineLevel = Parameters().getParam( "minref", 0 );
-		dowork( *gridptr, refineLevel, mpihelper );
+		dowork( *gridptr, refineLevel, Dune::MPIManager::helper() );
 
 	}
 	catch ( std::exception & e ) {
