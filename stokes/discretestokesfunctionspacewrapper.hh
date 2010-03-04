@@ -63,6 +63,27 @@ class DiscreteStokesFunctionSpaceWrapperTraits
         //! type of underlying grid part
         typedef typename DiscreteVelocityFunctionSpaceType::GridPartType
             GridPartType;
+
+		template< class DiscreteFunction,
+				  class Operation =  // get default type from traits
+				  typename DiscreteVelocityFunctionSpaceType::Traits:: template CommDataHandle< DiscreteFunction > :: OperationType
+				>
+		//! TODO this probably isn't too sane to do...
+		struct CommDataHandle
+		{
+		  //! type of communication data handle
+		  typename DiscreteVelocityFunctionSpaceType::Traits
+			:: template CommDataHandle< DiscreteFunction, Operation > :: Type
+			Type;
+
+		  //! type of operation to perform on scatter
+		  typename DiscreteVelocityFunctionSpaceType::Traits
+			:: template CommDataHandle< DiscreteFunction, Operation > :: OperationType
+			OperationType;
+		};
+
+		//! type of communication manager
+		typedef CommunicationManager< DiscreteFunctionSpaceType > CommunicationManagerType;
         /**
          *  \}
          **/
@@ -447,40 +468,53 @@ class DiscreteStokesFunctionWrapperTraits
 		typedef Dune::AdaptationManager< GridType, RestrictProlongVelocityType >
 			VelocityAdaptationManagerType;
 
-        typedef Dune::RestrictProlongPair<RestrictProlongVelocityType, RestrictProlongPressureType >
+		typedef Dune::RestrictProlongPair<RestrictProlongVelocityType&, RestrictProlongPressureType& >
             RestrictProlongPairType;
 
         typedef Dune::AdaptationManager< GridType, RestrictProlongPairType >
 			AdaptationManagerType;
 
-        public:
-            DiscreteStokesFunctionWrapperAdaptionManager (  GridType& grid,
-                                                            DiscreteStokesFunctionWrapperImp& functionWrapper )
-                :
-                rpVelocity_             ( functionWrapper.discreteVelocity() ),
-                rpPressure_             ( functionWrapper.discretePressure() ),
-                restrictPair_( rpVelocity_, rpPressure_ ),
-                adaptManager_( grid, restrictPair_ )
-            {
+	public:
+		DiscreteStokesFunctionWrapperAdaptionManager (  GridType& grid,
+														DiscreteStokesFunctionWrapperImp& functionWrapper )
+			:
+			grid_( grid ),
+			function_wrapper_( functionWrapper),
+			rpVelocity_             ( functionWrapper.discreteVelocity() ),
+			rpPressure_             ( functionWrapper.discretePressure() ),
+			restrictPair_( rpVelocity_, rpPressure_ ),
+			adaptManager_( grid, restrictPair_ )
+		{
 
-            }
+		}
 
-            ~DiscreteStokesFunctionWrapperAdaptionManager()
-            {}
+		~DiscreteStokesFunctionWrapperAdaptionManager()
+		{}
 
-            void adapt()
-            {
-               adaptManager_.adapt();
-            }
+		void adapt()
+		{
+		   adaptManager_.adapt();
+		}
 
+		DiscreteStokesFunctionWrapperAdaptionManager( DiscreteStokesFunctionWrapperAdaptionManager& other )
+			:
+			grid_( other.grid_ ),
+			function_wrapper_( other.function_wrapper_ ),
+			rpVelocity_             ( function_wrapper_.discreteVelocity() ),
+			rpPressure_             ( function_wrapper_.discretePressure() ),
+			restrictPair_( rpVelocity_, rpPressure_ ),
+			adaptManager_( grid_, restrictPair_ )
+		{
 
-        protected:
+		}
 
-            RestrictProlongVelocityType rpVelocity_;
-            RestrictProlongPressureType rpPressure_;
-            RestrictProlongPairType restrictPair_;
-            AdaptationManagerType adaptManager_;
-
+	protected:
+		GridType& grid_;
+		DiscreteStokesFunctionWrapperImp& function_wrapper_;
+		RestrictProlongVelocityType rpVelocity_;
+		RestrictProlongPressureType rpPressure_;
+		RestrictProlongPairType restrictPair_;
+		AdaptationManagerType adaptManager_;
  };
 
 /**
@@ -741,6 +775,9 @@ class DiscreteStokesFunctionWrapper
         AdaptionManagerType adaptionManager_;
     #endif
 		typename Traits::VtkWriterType vtkWriter_;
+
+		// we can uncomment this if the adpation manager copy-problem is resolved
+		//DiscreteStokesFunctionWrapper( const DiscreteStokesFunctionWrapper& );
 
 }; // end of DiscreteStokesFunctionWrapper
 
