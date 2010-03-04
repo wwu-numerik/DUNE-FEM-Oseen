@@ -13,6 +13,19 @@
 
 #include <dune/stokes/saddlepoint_inverse_operator.hh>
 
+#include <dune/common/stdstreams.hh>
+#include <dune/fem/operator/matrix/spmatrix.hh>
+
+template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
+struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
+	struct StencilType {
+		template <class T>
+		static int nonZerosEstimate( T& rangeSpace_ ) {
+			return 100;
+		}
+	};
+};
+
 
 #ifndef NLOG // if we want logging, should be removed in the end
     #include <dune/stuff/printing.hh>
@@ -269,44 +282,51 @@ class StokesPass
             // matrices
             // M\in R^{M\times M}
             typedef SparseRowMatrixObject<  DiscreteSigmaFunctionSpaceType,
-                                            DiscreteSigmaFunctionSpaceType >
+											DiscreteSigmaFunctionSpaceType,
+											MatrixTraits<DiscreteSigmaFunctionSpaceType,DiscreteSigmaFunctionSpaceType> >
                 MInversMatrixType;
             MInversMatrixType MInversMatrix( sigmaSpace_, sigmaSpace_ );
             MInversMatrix.reserve();
             assert( MInversMatrix.matrix().rows() == MInversMatrix.matrix().cols() );
             // W\in R^{M\times L}
             typedef SparseRowMatrixObject<  DiscreteSigmaFunctionSpaceType,
-                                            DiscreteVelocityFunctionSpaceType >
+											DiscreteVelocityFunctionSpaceType,
+											MatrixTraits<DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType> >
                 WmatrixType;
             WmatrixType Wmatrix( sigmaSpace_, velocitySpace_ );
             Wmatrix.reserve();
             // X\in R^{L\times M}
             typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
-                                            DiscreteSigmaFunctionSpaceType >
+											DiscreteSigmaFunctionSpaceType,
+											MatrixTraits<DiscreteVelocityFunctionSpaceType, DiscreteSigmaFunctionSpaceType> >
                 XmatrixType;
             XmatrixType Xmatrix( velocitySpace_, sigmaSpace_ );
             Xmatrix.reserve();
             // Y\in R^{L\times L}
             typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
-                                            DiscreteVelocityFunctionSpaceType >
+											DiscreteVelocityFunctionSpaceType,
+											MatrixTraits<DiscreteVelocityFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
                 YmatrixType;
             YmatrixType Ymatrix( velocitySpace_, velocitySpace_ );
             Ymatrix.reserve();
             // Z\in R^{L\times K}
             typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
-                                            DiscretePressureFunctionSpaceType >
+											DiscretePressureFunctionSpaceType,
+											MatrixTraits<DiscreteVelocityFunctionSpaceType,DiscretePressureFunctionSpaceType> >
                 ZmatrixType;
             ZmatrixType Zmatrix( velocitySpace_, pressureSpace_ );
             Zmatrix.reserve();
             // E\in R^{K\times L}
             typedef SparseRowMatrixObject<  DiscretePressureFunctionSpaceType,
-                                            DiscreteVelocityFunctionSpaceType >
+											DiscreteVelocityFunctionSpaceType,
+											MatrixTraits<DiscretePressureFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
                 EmatrixType;
             EmatrixType Ematrix( pressureSpace_, velocitySpace_ );
             Ematrix.reserve();
             // R\in R^{K\times K}
             typedef SparseRowMatrixObject<  DiscretePressureFunctionSpaceType,
-                                            DiscretePressureFunctionSpaceType >
+											DiscretePressureFunctionSpaceType,
+											MatrixTraits<DiscretePressureFunctionSpaceType,DiscretePressureFunctionSpaceType> >
                 RmatrixType;
             RmatrixType Rmatrix( pressureSpace_, pressureSpace_ );
             Rmatrix.reserve();
