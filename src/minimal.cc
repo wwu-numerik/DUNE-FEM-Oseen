@@ -1,3 +1,4 @@
+#define DUNE_DEPRECATED __attribute__((deprecated))
 #include <dune/stuff/parametercontainer.hh>
 #include <dune/stuff/misc.hh>
 //do whatever you like to this file to test out simple and small stuff

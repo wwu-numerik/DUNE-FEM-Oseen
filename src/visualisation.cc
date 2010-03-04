@@ -1,6 +1,7 @@
 // $Id$
 
 #include <config.h>
+#define DUNE_DEPRECATED __attribute__((deprecated))
 #include <iostream>
 #include <iomanip>
 #include <stdio.h>
