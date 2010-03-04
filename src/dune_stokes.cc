@@ -571,8 +571,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 #endif
 
 	info.codim0 = gridPtr->size( 0 );
-	Dune::GridWidthProvider< GridType > gw ( gridPtr );
-    double grid_width = gw.gridWidth();
+	const double grid_width = Dune::GridWidth::calcGridWidth( gridPart );
     infoStream << "  - max grid width: " << grid_width << std::endl;
     info.grid_width = grid_width;
 
