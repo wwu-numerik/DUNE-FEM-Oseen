@@ -19,7 +19,7 @@ class BoundaryInfo
             GridType;
         typedef typename GridPartType::IntersectionIteratorType
             IntersectionIteratorType;
-        typedef typename GridPartType::Traits::template Codim< 0 >::IteratorType
+		typedef typename GridPartType::template Codim< 0 >::IteratorType
             EntityIteratorType;
         typedef typename GridPartType::EntityCodim0Type
             EntityType;
