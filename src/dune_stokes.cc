@@ -35,6 +35,10 @@
     #define VELOCITY_POLORDER POLORDER
 #endif
 
+#if ! defined(DIRICHLET_DATA)
+	#define DIRICHLET_DATA DirichletData
+#endif
+
 #if ( ( defined(SGRID) || defined(ALUGRID_SIMPLEX) ||  defined(ALUGRID_CUBE) ) && ( GRIDDIM == 3 ) ) || defined(UGGRID) || defined(YASPGRID)
     //this is no mistake, ALU is indeed only incompatible in 3d
     #define OLD_DUNE_GRID_VERSION
@@ -495,7 +499,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
         gridPtr->globalRefine( refine_level );
     }
 
-	typedef Dune::DGAdaptiveLeafGridPart< GridType >
+	typedef Dune::AdaptiveLeafGridPart< GridType >
         GridPartType;
     static GridPartType gridPart( *gridPtr );
 
@@ -513,7 +517,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     // analytical data
 
     // model traits
-	#if defined( AORTA_PROBLEM )
+	#if 0 //defined( AORTA_PROBLEM )
     typedef Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
                     Force,
@@ -527,7 +531,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     typedef Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
                     Force,
-					DefaultDirichletDataTraits,
+					DefaultDirichletDataTraits<DIRICHLET_DATA>,
                     gridDim,
                     polOrder,
                     VELOCITY_POLORDER,

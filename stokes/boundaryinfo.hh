@@ -213,7 +213,8 @@ class BoundaryShapeFunctionBase : public Dune::Function < FunctionSpaceImp, Boun
 };
 
 
-template < template <class,class, template <class,class> class> class AnalyticalDirichletDataImp, template <class,class> class BoundaryFunctionImp =  BoundaryShapeFunctionBase >
+template < template <class,class, template <class,class> class> class AnalyticalDirichletDataImp,
+			template <class,class> class BoundaryFunctionImp =  BoundaryShapeFunctionBase >
 struct GeometryBasedBoundaryFunctionTraits {
 
 	template < class FunctionSpaceImp, class GridPartImp >

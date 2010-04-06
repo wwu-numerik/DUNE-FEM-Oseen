@@ -373,11 +373,12 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 		static const int dim_ = FunctionSpaceImp::dimDomain ;
 };
 
+template < template < class > class DiricheltDataImp = DirichletData >
 struct DefaultDirichletDataTraits {
 
 	template < class FunctionSpaceImp, class GridPartImp >
 	struct Implementation {
-		typedef DirichletData< FunctionSpaceImp>
+		typedef DiricheltDataImp< FunctionSpaceImp>
 			AnalyticalDirichletDataType;
 
 		template <class DiscreteStokesFunctionWrapper >
@@ -438,8 +439,6 @@ class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFl
 		void evaluate( const DomainType& arg, RangeType& ret, const IntersectionIteratorType& faceIter ) const
 		{
 			const int id = faceIter.boundaryId();
-		#if defined(AORTA_PROBLEM)
-
 
 			typedef Dune::FieldVector< typename IntersectionIteratorType::ctype, IntersectionIteratorType::dimension - 1 >
 				LocalVectorType;
@@ -466,9 +465,6 @@ class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFl
 					assert( false );
 					return;
 			}
-		#else
-			ASSERT_EXCEPTION( false, "only valid in aorta problem" );
-		#endif
 		}
 
 		inline void evaluate( const DomainType& arg, RangeType& ret ) const { assert(false); }
@@ -621,7 +617,6 @@ class VariableDirichletData : public Dune::Function < FunctionSpaceImp, Variable
 		template < class IntersectionIteratorType >
 		void evaluate( const DomainType& arg, RangeType& ret, const IntersectionIteratorType& faceIter ) const
 		{
-		#if defined(AORTA_PROBLEM)
 			const int id = faceIter.boundaryId();
 //			assert( boundaryFunctionList_.size() >= id );
 			const BoundaryFunctionType* boundaryFunction = boundaryFunctionList_[id];
@@ -629,9 +624,6 @@ class VariableDirichletData : public Dune::Function < FunctionSpaceImp, Variable
             boundaryFunction->evaluate( arg, ret );
 //			if ( zeroBoundaryIds_.find(id) != zeroBoundaryIds_.end() )
 //				ret *=0;
-		#else
-			ASSERT_EXCEPTION( false, "only valid in aorta problem" );
-		#endif
 		}
 
 		inline void evaluate( const DomainType& arg, RangeType& ret ) const { assert(false); }
