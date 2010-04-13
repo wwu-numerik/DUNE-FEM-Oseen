@@ -1,0 +1,16 @@
+DGF
+Simplexgenerator
+path /share/dune/Modules/modules_x86_64/tetgen
+
+%file phantom_s.1
+%file half_torus_s02.1
+%file half_torus_s01.1
+file scaled_aorta_remeshed_colored.ply.1
+
+dimension 3
+#
+
+BOUNDARYDOMAIN
+default 1
+#
+
