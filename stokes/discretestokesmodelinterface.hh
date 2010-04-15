@@ -2741,32 +2741,6 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             }
         }
 
-        /**
-         *  \brief  calculates length of given intersection in world coordinates
-         *  \tparam IntersectionIteratorType
-         *          IntersectionIteratorType
-         *  \param[in]  intIt
-         *          intersection
-         *  \return length of intersection
-         **/
-        template < class IntersectionIteratorType >
-        double getLenghtOfIntersection( const IntersectionIteratorType& intIt ) const
-        {
-            typedef typename IntersectionIteratorType::Geometry
-                IntersectionGeometryType;
-            const IntersectionGeometryType& intersectionGeoemtry = intIt.intersectionGlobal();
-            assert( intersectionGeoemtry.corners() == 2 );
-            typedef typename IntersectionIteratorType::ctype
-                ctype;
-            const int dimworld = IntersectionIteratorType::dimensionworld;
-            typedef Dune::FieldVector< ctype, dimworld >
-                DomainType;
-            const DomainType cornerOne = intersectionGeoemtry[0];
-            const DomainType cornerTwo = intersectionGeoemtry[1];
-            const DomainType difference = cornerOne - cornerTwo;
-            return difference.two_norm();
-        }
-
         //! avoid code duplication by doing calculations for C_1X and D_1X here
         template < class LocalPoint >
         double getStabScalar( const LocalPoint& x , const IntersectionIteratorType& it, const std::string coeffName ) const
@@ -2777,7 +2751,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                 return 0.0;
             }
 //                return std::pow( it.intersectionGlobal().integrationElement( x ), param );
-            return factor * std::pow( getLenghtOfIntersection( it ), power );
+			return factor * std::pow( getLenghtOfIntersection( *it ), power );
         }
 
 

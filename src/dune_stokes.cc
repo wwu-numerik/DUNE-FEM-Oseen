@@ -70,7 +70,7 @@
 #include <dune/stokes/discretestokesfunctionspacewrapper.hh>
 #include <dune/stokes/discretestokesmodelinterface.hh>
 #include <dune/stokes/stokespass.hh>
-#include <dune/stokes/boundaryinfo.hh>
+#include <dune/stokes/boundarydata.hh>
 
 #include <dune/stuff/printing.hh>
 #include <dune/stuff/misc.hh>

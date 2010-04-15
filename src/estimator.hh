@@ -129,11 +129,7 @@ namespace Dune
         //if( indicator_[ indexSet_.index( entity ) ] > localTol2 )
         {
           // mark entity for refinement 
-#ifdef OLD_DUNE_GRID_VERSION
-          grid_.mark( 1, it );
-#else 
           grid_.mark( 1, entity );
-#endif
           marked = true;
         }
       }

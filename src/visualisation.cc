@@ -53,7 +53,7 @@ class ProcessIdFunctor : public FunctorBase {
 	protected:
 		Dune::MPIHelper& mpiHelper_;
 };
-
+#include <dune/grid/common/intersectioniteratorwrapper.hh>
 class BoundaryFunctor : public FunctorBase {
 	public:
 		BoundaryFunctor ( const std::string filename )
@@ -71,10 +71,10 @@ class BoundaryFunctor : public FunctorBase {
 			for (	IntersectionIteratorType intersection = entity.ileafbegin();
 					intersection != endIntersection;
 					++intersection ) {
-				if ( !intersection.neighbor() && intersection.boundary() ) {
+				if ( !intersection->neighbor() && intersection->boundary() ) {
 					isOnBoundary = true;
 					numberOfBoundarySegments += 1;
-					ret += double( intersection.boundaryId() );
+					ret += double( intersection->boundaryId() );
 				}
 			}
 			if ( isOnBoundary ) {
@@ -105,7 +105,7 @@ class AreaMarker : public FunctorBase {
 			DomainType baryCenter( 0.0 );
 
 			for ( int corner = 0; corner < geometry.corners(); ++corner ) {
-				baryCenter += geometry[ corner ];
+				baryCenter += geometry.corner( corner );
 			}
 			baryCenter /= geometry.corners();
 
@@ -134,7 +134,7 @@ class GeometryFunctor : public FunctorBase {
 				std::cout << std::setiosflags( std::ios::fixed ) << std::setprecision( 6 ) << std::setw( 8 );
 				//std::cout.showpoint();
 				for ( int i = 0; i < geo.corners(); ++i ) {
-					std::cout << geo[i] << "\t\t" ;
+					std::cout << geo.corner( i ) << "\t\t" ;
 				}
 				std::cout << std::endl;
 			}

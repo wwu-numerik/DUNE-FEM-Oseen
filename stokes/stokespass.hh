@@ -446,14 +446,14 @@ class StokesPass
                         ++intIt ) {
                     // count intersections
                     ++numberOfIntersections;
-                    maxGridWidth = std::max( Stuff::getLenghtOfIntersection( intIt ), maxGridWidth );
+					maxGridWidth = std::max( Stuff::getLenghtOfIntersection( *intIt ), maxGridWidth );
                     // if we are inside the grid
-                    if ( intIt.neighbor() && !intIt.boundary() ) {
+					if ( intIt->neighbor() && !intIt->boundary() ) {
                         // count inner intersections
                         ++numberOfInnerIntersections;
                     }
                     // if we are on the boundary of the grid
-                    if ( !intIt.neighbor() && intIt.boundary() ) {
+					if ( !intIt->neighbor() && intIt->boundary() ) {
                         // count boundary intersections
                         ++numberOfBoundaryIntersections;
                     }
@@ -538,7 +538,7 @@ class StokesPass
                 debugStream << "  - == start calculations on entity " << entityNR << std::endl;
                 debugStream << "    - entity " << entityNR << " has " << geometry.corners() << " corners:";
                 for ( int i = 0; i < geometry.corners(); ++i ) {
-                    const VelocityRangeType corner = geometry[i];
+					const VelocityRangeType corner = geometry.corner( i );
                     Stuff::printFieldVector( corner, "corner_"+Stuff::toString(i), debugStream, "      " );
                 }
                 debugStream << std::endl;
@@ -1009,9 +1009,10 @@ class StokesPass
 
                 // walk the intersections
                 IntersectionIteratorType intItEnd = gridPart_.iend( entity );
-                for (   IntersectionIteratorType intIt = gridPart_.ibegin( entity );
-                        intIt != intItEnd;
-                        ++intIt ) {
+				for (   IntersectionIteratorType intIt = gridPart_.ibegin( entity );
+						intIt != intItEnd;
+						++intIt ) {
+							const typename IntersectionIteratorType::Intersection& intersection = *intIt;
 #ifndef NLOG
 //                    if ( ( outputIntersection == intersectionNR ) && entityOutput ) intersectionOutput = true;
                     if ( entityOutput ) intersectionOutput = true;
@@ -1022,34 +1023,34 @@ class StokesPass
                     // get intersection geometry
                     typedef typename IntersectionIteratorType::Geometry
                         IntersectionGeometryType;
-                    const IntersectionGeometryType& intersectionGeoemtry = intIt.intersectionGlobal();
+					const IntersectionGeometryType& intersectionGeoemtry = intersection.intersectionGlobal();
 #ifndef NLOG
                     // get corners
                     debugStream << "      - intersection " << intersectionNR << " has " << intersectionGeoemtry.corners() << " corners:";
                     for ( int i = 0; i < intersectionGeoemtry.corners(); ++i ) {
-                        const VelocityRangeType corner = intersectionGeoemtry[i];
+						const VelocityRangeType corner = intersectionGeoemtry.corner( i );
                         Stuff::printFieldVector( corner, "corner_"+Stuff::toString(i), debugStream, "        " );
                     }
-                    debugStream << "\n        length of intersection " << intersectionNR << " is " << Stuff::getLenghtOfIntersection( intIt ) << std::endl;
+					debugStream << "\n        length of intersection " << intersectionNR << " is " << Stuff::getLenghtOfIntersection( intersection ) << std::endl;
                     debugStream.Suspend(); // disable logging
 #endif
 
                     // get intersection quadrature, seen from inside
                     const FaceQuadratureType faceQuadratureElement( gridPart_,
-                                                                    intIt,
+																	intersection,
                                                                     ( 4 * pressureSpaceOrder ) + 1,
                                                                     FaceQuadratureType::INSIDE );
 
                     // get flux coefficients
-                    const double lengthOfIntersection = getLenghtOfIntersection( intIt );
+					const double lengthOfIntersection = Stuff::getLenghtOfIntersection( intersection );
                     StabilizationCoefficients stabil_coeff ( discreteModel_.getStabilizationCoefficients() );
                     const double C_11 = stabil_coeff.Factor("C11") * std::pow( lengthOfIntersection, stabil_coeff.Power("C11") );
                     const double D_11 = stabil_coeff.Factor("D11") * std::pow( lengthOfIntersection, stabil_coeff.Power("D11") );
 
                     // if we are inside the grid
-                    if ( intIt.neighbor() && !intIt.boundary() ) {
+					if ( intersection.neighbor() && !intersection.boundary() ) {
                         // get neighbour
-                        const typename IntersectionIteratorType::EntityPointer neighbourPtr = intIt.outside();
+						const typename IntersectionIteratorType::EntityPointer neighbourPtr = intersection.outside();
                         const EntityType& neighbour = *neighbourPtr;
 
                         // get local matrices for the surface integrals
@@ -1071,7 +1072,7 @@ class StokesPass
 
                         // get intersection quadrature, seen from outside
                         const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
-                                                                            intIt,
+																			intersection,
                                                                             ( 4 * pressureSpaceOrder ) + 1,
                                                                             FaceQuadratureType::OUTSIDE );
 
@@ -1114,7 +1115,7 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute \hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{j}\cdot n_{T}
-                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         SigmaRangeType tau_i( 0.0 );
                                         sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
                                         VelocityRangeType v_j( 0.0 );
@@ -1176,7 +1177,7 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute \hat{u}_{\sigma}^{U^{-}}(v_{j})\cdot\tau_{j}\cdot n_{T}
-                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         SigmaRangeType tau_i( 0.0 );
                                         sigmaBaseFunctionSetNeighbour.evaluate( i, xOutside, tau_i );
                                         VelocityRangeType v_j( 0.0 );
@@ -1255,7 +1256,7 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
-                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         SigmaRangeType tau_j( 0.0 );
                                         sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
                                         VelocityRangeType tau_j_times_normal( 0.0 );
@@ -1314,7 +1315,7 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}
-                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         SigmaRangeType tau_j( 0.0 );
                                         sigmaBaseFunctionSetNeighbour.evaluate( j, xOutside, tau_j );
                                         VelocityRangeType tau_j_times_normal( 0.0 );
@@ -1389,7 +1390,7 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute -\mu v_{i}\cdot\hat{\sigma}^{U{+}}(v{j})\cdot n_{t}
-                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         VelocityRangeType v_j( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( j, x, v_j );
                                         VelocityRangeType v_i( 0.0 );
@@ -1448,7 +1449,7 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
                                         // compute -\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}
-                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         VelocityRangeType v_i( 0.0 );
                                         velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
                                         VelocityRangeType v_j( 0.0 );
@@ -1525,7 +1526,7 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
-                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         VelocityRangeType v_i( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( i, x, v_i );
                                         PressureRangeType q_j( 0.0 );
@@ -1585,7 +1586,7 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
                                         // compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
-                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         VelocityRangeType v_i( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( i, xInside, v_i );
                                         PressureRangeType q_j( 0.0 );
@@ -1662,7 +1663,7 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute \hat{u}_{p}^{U^{+}}(v_{j})\cdot n_{T}q_{i}
-                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         VelocityRangeType v_j( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( j, x, v_j );
                                         PressureRangeType q_i( 0.0 );
@@ -1722,7 +1723,7 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
                                         // compute \hat{u}_{p}^{U^{-}}(v_{j})\cdot n_{T}q_{i}
-                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         VelocityRangeType v_j( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
                                         PressureRangeType q_i( 0.0 );
@@ -1798,7 +1799,7 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute \hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}
-                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         PressureRangeType q_i( 0.0 );
                                         pressureBaseFunctionSetElement.evaluate( i, x, q_i );
                                         PressureRangeType q_j( 0.0 );
@@ -1855,7 +1856,7 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
                                         // compute \hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}
-                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         PressureRangeType q_j( 0.0 );
                                         pressureBaseFunctionSetNeighbour.evaluate( j, xOutside, q_j );
                                         PressureRangeType q_i( 0.0 );
@@ -1897,7 +1898,7 @@ class StokesPass
                     } // done with those inside the grid
 
                     // if we are on the boundary of the grid
-                    if ( !intIt.neighbor() && intIt.boundary() ) {
+					if ( !intersection.neighbor() && intersection.boundary() ) {
 
 //                        //                                                                                                               // we wil call this one
 //                        // (W)_{i,j} += \int_{\varepsilon\in \Epsilon_{D}^{T}}-\hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // W's boundary integral
@@ -2026,13 +2027,13 @@ class StokesPass
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureElement.weight( quad );
                                     // compute \hat{u}_{\sigma}^{RHS}()\cdot\tau_{j}\cdot n_{T}
-                                    const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+									const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                     SigmaRangeType tau_j( 0.0 );
                                     sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
                                     VelocityRangeType tau_j_times_normal( 0.0 );
                                     tau_j.mv( outerNormal, tau_j_times_normal );
                                     VelocityRangeType gD( 0.0 );
-                                    discreteModel_.dirichletData( intIt, 0.0, xWorld,  gD );
+									discreteModel_.dirichletData( intersection, 0.0, xWorld,  gD );
                                     const double gD_times_tau_j_times_normal = gD * tau_j_times_normal;
                                     H1_j += elementVolume
                                         * integrationWeight
@@ -2098,7 +2099,7 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
-                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         SigmaRangeType tau_j( 0.0 );
                                         sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
                                         VelocityRangeType v_i( 0.0 );
@@ -2173,7 +2174,7 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute -\mu v_{i}\cdot\hat{\sigma}^{U^{+}}(v_{j})\cdot n_{t}
-                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         VelocityRangeType v_j( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( j, x, v_j );
                                         VelocityRangeType v_i( 0.0 );
@@ -2246,7 +2247,7 @@ class StokesPass
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
-                                        const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         VelocityRangeType v_i( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( i, x, v_i );
                                         PressureRangeType q_j( 0.0 );
@@ -2311,15 +2312,15 @@ class StokesPass
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureElement.weight( quad );
                                     // prepare
-                                    const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+									const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                     VelocityRangeType v_j( 0.0 );
                                     velocityBaseFunctionSetElement.evaluate( j, x, v_j );
                                     // compute \mu v_{j}\cdot\hat{\sigma}^{RHS}()\cdot n_{T}
 //                                    if ( discreteModel_.hasSigmaFlux() ) {
-                                        const VelocityRangeType xIntersectionGlobal = intIt.intersectionSelfLocal().global( xLocal );
+										const VelocityRangeType xIntersectionGlobal = intersection.intersectionSelfLocal().global( xLocal );
                                         const VelocityRangeType xWorld = geometry.global( xIntersectionGlobal );
                                         VelocityRangeType gD( 0.0 );
-                                        discreteModel_.dirichletData( intIt, 0.0, xWorld, gD );
+										discreteModel_.dirichletData( intersection, 0.0, xWorld, gD );
                                         SigmaRangeType gD_times_normal( 0.0 );
                                         gD_times_normal = dyadicProduct( gD, outerNormal );
                                         VelocityRangeType gD_times_normal_times_normal( 0.0 );
@@ -2603,9 +2604,9 @@ class StokesPass
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureElement.weight( quad );
                                     // compute -\hat{u}_{p}^{RHS}()\cdot n_{T}q_{j}
-                                    const VelocityRangeType outerNormal = intIt.unitOuterNormal( xLocal );
+									const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                     VelocityRangeType gD( 0.0 );
-                                    discreteModel_.dirichletData( intIt, 0.0, xWorld, gD );
+									discreteModel_.dirichletData( intersection, 0.0, xWorld, gD );
                                     const double gD_times_normal = gD * outerNormal;
                                     PressureRangeType q_j( 0.0 );
                                     pressureBaseFunctionSetElement.evaluate( j, x, q_j );
@@ -2877,33 +2878,6 @@ class StokesPass
                 ++arg1It;
             }
             return ret;
-        }
-
-        /**
-         *  \brief  calculates length of given intersection
-         *  \tparam IntersectionIteratorType
-         *          IntersectionIteratorType
-         *  \param[in]  intIt
-         *          intersection
-         *  \return length of intersection
-         **/
-        template < class IntersectionIteratorType >
-        double getLenghtOfIntersection( const IntersectionIteratorType& intIt ) const
-        {
-            typedef typename IntersectionIteratorType::Geometry
-                IntersectionGeometryType;
-            const IntersectionGeometryType& intersectionGeoemtry = intIt.intersectionGlobal();
-            return intersectionGeoemtry.volume();
-//            assert( intersectionGeoemtry.corners() == 2 );
-//            typedef typename IntersectionIteratorType::ctype
-//                ctype;
-//            const int dimworld = IntersectionIteratorType::dimensionworld;
-//            typedef Dune::FieldVector< ctype, dimworld >
-//                DomainType;
-//            const DomainType cornerOne = intersectionGeoemtry[0];
-//            const DomainType cornerTwo = intersectionGeoemtry[1];
-//            const DomainType difference = cornerOne - cornerTwo;
-//            return difference.two_norm();
         }
 
         // VelocityRangeType is expected to be a FieldVector,
