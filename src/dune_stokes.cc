@@ -499,7 +499,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
         gridPtr->globalRefine( refine_level );
     }
 
-	typedef Dune::AdaptiveLeafGridPart< GridType >
+	typedef Dune::DGAdaptiveLeafGridPart< GridType >
         GridPartType;
     static GridPartType gridPart( *gridPtr );
 
