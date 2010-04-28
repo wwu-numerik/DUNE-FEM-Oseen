@@ -83,7 +83,8 @@ class DiscreteStokesFunctionSpaceWrapperTraits
 		};
 
 		//! type of communication manager
-		typedef CommunicationManager< DiscreteFunctionSpaceType > CommunicationManagerType;
+		typedef CommunicationManager< DiscreteFunctionSpaceType >
+				CommunicationManagerType;
         /**
          *  \}
          **/
@@ -442,6 +443,8 @@ class DiscreteStokesFunctionWrapperTraits
 		typedef VTKIO < typename DiscretePressureFunctionType::DiscreteFunctionSpaceType::GridPartType >
 			VtkWriterType;
 
+		typedef Dune::Tuple<const DiscreteVelocityFunctionType*,const DiscretePressureFunctionType*>
+				FunctionTupleType;
 
 }; // end of DiscreteStokesFunctionWrapperTraits
 
@@ -752,6 +755,12 @@ class DiscreteStokesFunctionWrapper
 				vtkWriter_.addVertexData( pressure_ );
 			vtkWriter_.write( getPath( pressure_, path, postfix ) );
 			vtkWriter_.clear();
+		}
+
+		typename Traits::FunctionTupleType& functionTuple() const
+		{
+			static typename Traits::FunctionTupleType tuple( &velocity_, &pressure_ );
+			return tuple;
 		}
 
     private:
