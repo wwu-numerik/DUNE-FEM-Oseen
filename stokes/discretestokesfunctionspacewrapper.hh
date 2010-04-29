@@ -445,7 +445,7 @@ class DiscreteStokesFunctionWrapperTraits
 			VtkWriterType;
 
 		typedef Dune::Tuple<const DiscreteVelocityFunctionType*,const DiscretePressureFunctionType*>
-				FunctionTupleType;
+			FunctionTupleType;
 
 }; // end of DiscreteStokesFunctionWrapperTraits
 
@@ -782,7 +782,6 @@ class DiscreteStokesFunctionWrapper
 			typedef Dune::L2Projection< double, double, ContinuousVelocityType, DiscreteVelocityFunctionType >
 				VelocityProjection;
 			VelocityProjection().operator()( continuous_velocity, velocity_ );
-
 		}
 
     private:
