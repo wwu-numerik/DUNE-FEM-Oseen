@@ -10,6 +10,7 @@
 #include <dune/fem/space/dgspace/dgadaptmanager.hh>
 #include <dune/fem/space/common/restrictprolonginterface.hh>
 #include <dune/fem/io/file/vtkio.hh>
+#include <dune/fem/operator/projection/l2projection.hh>
 
 namespace Dune
 {
@@ -769,6 +770,19 @@ class DiscreteStokesFunctionWrapper
 		{
 			static typename Traits::FunctionTupleType tuple( &velocity_, &pressure_ );
 			return tuple;
+		}
+
+		template < class ContinuousVelocityType, class ContinuousPressureType >
+		void projectInto( const ContinuousVelocityType& continuous_velocity, const ContinuousPressureType& continuous_pressure )
+		{
+			typedef Dune::L2Projection< double, double, ContinuousPressureType, DiscretePressureFunctionType >
+				PressureProjection;
+			PressureProjection().operator()( continuous_pressure, pressure_ );
+
+			typedef Dune::L2Projection< double, double, ContinuousVelocityType, DiscreteVelocityFunctionType >
+				VelocityProjection;
+			VelocityProjection().operator()( continuous_velocity, velocity_ );
+
 		}
 
     private:
