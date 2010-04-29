@@ -167,7 +167,7 @@ class DiscreteStokesFunctionSpaceWrapper
         /**
          *  \brief  destructor
          **/
-        ~DiscreteStokesFunctionSpaceWrapper()
+		virtual ~DiscreteStokesFunctionSpaceWrapper()
         {}
 
         /**
@@ -601,7 +601,7 @@ class DiscreteStokesFunctionWrapper
          *  \brief  destructor
          *  \todo   doc
          **/
-        ~DiscreteStokesFunctionWrapper()
+		virtual ~DiscreteStokesFunctionWrapper()
         {}
 
         /**
