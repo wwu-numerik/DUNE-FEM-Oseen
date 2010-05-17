@@ -1391,6 +1391,8 @@ class DiscreteStokesModelDefaultTraits
 		typedef typename AnalyticalDirichletDataTraitsImplementation::AnalyticalDirichletDataType
             AnalyticalDirichletDataType;
 
+		typedef DiscreteVelocityFunctionType
+			ExtraDataDiscreteFunctionType;
         /**
          *  \name   types needed for the pass
          *  \{
@@ -1647,13 +1649,13 @@ class DiscreteStokesModelDefaultTraits
  *                ( const IntersectionIteratorType& it, const double time, const
  *                FaceDomainType& x, SigmaRangeType& <b>rhsReturn</b> )
  **/
-template < class DiscreteStokesModelDefaultTraitsImp >
-class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< DiscreteStokesModelDefaultTraitsImp >
+template < class DiscreteStokesModelTraitsImp >
+class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< DiscreteStokesModelTraitsImp >
 {
     private:
 
         //! interface class
-        typedef DiscreteStokesModelInterface< DiscreteStokesModelDefaultTraitsImp >
+		typedef DiscreteStokesModelInterface< DiscreteStokesModelTraitsImp >
             BaseType;
 
         //! \copydoc Dune::DiscreteStokesModelInterface::IntersectionIteratorType
@@ -1755,12 +1757,16 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                     const AnalyticalForceType& force,
                                     const AnalyticalDirichletDataType& dirichletData,
                                     const double viscosity = 1.0,
-                                    const double alpha = 0.0 )
+									const double alpha = 0.0,
+									const typename DiscreteStokesModelTraitsImp::ExtraDataDiscreteFunctionType* extraLaplace = 0,
+									const typename DiscreteStokesModelTraitsImp::ExtraDataDiscreteFunctionType* extraNonlinear = 0)
             : viscosity_( viscosity ),
             alpha_( alpha ),
             stabil_coeff_( stab_coeff ),
             force_( force ),
-            dirichletData_( dirichletData )
+			dirichletData_( dirichletData ),
+			extraLaplace_( extraLaplace ),
+			extraNonlinear_( extraNonlinear )
         {
 //            if ( !isGeneralized() ) {
 //                if ( ( alpha_ < 0.0 ) || ( alpha_ > 0.0 ) ) {
@@ -2707,6 +2713,23 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             return false;
         }
 
+		bool hasExtraData() const
+		{
+			return extraLaplace_ && extraNonlinear_;
+		}
+
+		const typename DiscreteStokesModelTraitsImp::ExtraDataDiscreteFunctionType&
+				extraLaplace() const {
+			assert( extraLaplace_ );
+			return *extraLaplace_;
+		}
+
+		const typename DiscreteStokesModelTraitsImp::ExtraDataDiscreteFunctionType&
+				extraNonlinear() const {
+			assert( extraNonlinear_ );
+			return *extraNonlinear_;
+		}
+
     private:
 
         const double viscosity_;
@@ -2714,6 +2737,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         StabilizationCoefficients stabil_coeff_;
         const AnalyticalForceType& force_;
         const AnalyticalDirichletDataType& dirichletData_;
+		const typename DiscreteStokesModelTraitsImp::ExtraDataDiscreteFunctionType* extraLaplace_;
+		const typename DiscreteStokesModelTraitsImp::ExtraDataDiscreteFunctionType* extraNonlinear_;
 
         /**
          *  \brief  dyadic product
