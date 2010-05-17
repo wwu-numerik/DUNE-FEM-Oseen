@@ -2760,6 +2760,10 @@ class StokesPass
             profiler().StartTiming("Pass -- SOLVER");
 
             // do solving
+#ifndef NLOG
+			infoStream.Resume();
+			infoStream << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
+#endif
             InvOpType op;
 #ifdef USE_NESTED_CG_SOLVER
             AltInvOpType m_op;
