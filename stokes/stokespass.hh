@@ -1022,6 +1022,9 @@ class StokesPass
                     StabilizationCoefficients stabil_coeff ( discreteModel_.getStabilizationCoefficients() );
                     const double C_11 = stabil_coeff.Factor("C11") * std::pow( lengthOfIntersection, stabil_coeff.Power("C11") );
                     const double D_11 = stabil_coeff.Factor("D11") * std::pow( lengthOfIntersection, stabil_coeff.Power("D11") );
+					//we'll leave this on 0 for the time being so it does not generate any additional  penalty terms
+//					const VelocityRangeType D_12(stabil_coeff.Factor("D12") );//TODO FIXME
+					const VelocityRangeType D_12( 0 );//TODO FIXME
 
                     // if we are inside the grid
 					if ( intersection.neighbor() && !intersection.boundary() ) {
@@ -1508,8 +1511,10 @@ class StokesPass
                                         PressureRangeType q_j( 0.0 );
                                         pressureBaseFunctionSetElement.evaluate( j, x, q_j );
                                         const double v_i_times_normal = v_i * outerNormal;
+										const double p_factor = ( 0.5 - ( D_12 * outerNormal ) );// (0.5 p - p D_12 ) n ) <- p+
+//										const double p_factor = ( 0.5 - ( 1 ) );// (0.5 p - p D_12 ) n ) <- p+
                                         const double q_j_times_v_i_times_normal =  q_j * v_i_times_normal;
-                                        Z_i_j += 0.5
+										Z_i_j += p_factor
                                             * elementVolume
                                             * integrationWeight
                                             * q_j_times_v_i_times_normal;
@@ -1568,8 +1573,10 @@ class StokesPass
                                         PressureRangeType q_j( 0.0 );
                                         pressureBaseFunctionSetNeighbour.evaluate( j, xOutside, q_j );
                                         const double v_i_times_normal = v_i * outerNormal;
+										const double p_factor = ( 0.5 + ( D_12 * outerNormal ) );// (0.5 p + p D_12 ) n ) <- p-
+//										const double p_factor = ( 0.5 + ( 1 ) );// (0.5 p + p D_12 ) n ) <- p-
                                         const double q_j_times_v_i_times_normal = q_j * v_i_times_normal;
-                                        Z_i_j += 0.5
+										Z_i_j += p_factor
                                             * elementVolume
                                             * integrationWeight
                                             * q_j_times_v_i_times_normal;

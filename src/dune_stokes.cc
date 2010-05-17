@@ -268,6 +268,10 @@ void RefineRun( CollectiveCommunication& mpicomm )
     int maxref = Parameters().getParam( "maxref", 0 );
     int minref = Parameters().getParam( "minref", 0 );
 
+	Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
+	if ( Parameters().getParam( "custom_stabilization_coefficients", false ) ) {
+		stab_coeff.FactorFromParams( "D11" );
+	}
     // setting this to true will give each run a unique logilfe name
     bool per_run_log_target = Parameters().getParam( "per-run-log-target", true );
 
@@ -276,14 +280,14 @@ void RefineRun( CollectiveCommunication& mpicomm )
         if ( per_run_log_target )
             Logger().SetPrefix( "dune_stokes_ref_"+Stuff::toString(ref) );
 
-        RunInfo info = singleRun( mpicomm, ref );
+		RunInfo info = singleRun( mpicomm, ref, stab_coeff );
         run_infos.push_back( info );
         eoc_output.setErrors( idx,info.L2Errors );
         eoc_texwriter.setInfo( info );
         eoc_output.write( eoc_texwriter, ( ref >= maxref ) );
         profiler().NextRun(); //finish this run
     }
-    profiler().Output( mpicomm, run_infos );
+	profiler().Output( mpicomm, run_infos );
 
 	eocCheck( run_infos );
 }

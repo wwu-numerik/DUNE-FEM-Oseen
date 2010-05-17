@@ -80,6 +80,10 @@ namespace Dune
                 map_[name].second = new_factor;
             }
 
+			void FactorFromParams( const std::string& name ) {
+				map_[name].second = Parameters().getParam( name, FactorType() );
+			}
+
             PowerType Power( const std::string& name ) {
                 return map_[name].first;
             }
