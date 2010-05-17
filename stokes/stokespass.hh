@@ -889,6 +889,23 @@ class StokesPass
                             H2_j += elementVolume
                                 * integrationWeight
                                 * f_times_v_j;
+							if ( discreteModel_.hasExtraData() ) {
+								VelocityJacobianRangeType jacobian_u;
+								discreteModel_.extraLaplace().jacobian( xWorld, jacobian_u );
+								VelocityJacobianRangeType grad_v_j;
+								velocityBaseFunctionSetElement.jacobian( j, x, grad_v_j );
+								const double grad_v_j_times_jacobian_u = colonProduct( jacobian_u, grad_v_j );
+
+								VelocityRangeType nonlin, u;
+								discreteModel_.extraLaplace().evaluate( xWorld, u );
+								for ( int d = 0; d < nonlin.dim(); ++d ) {
+									nonlin[d] = u * jacobian_u[d];
+								}
+								const double nonlin_times_v_j = nonlin * v_j;
+								H2_j += ( grad_v_j_times_jacobian_u + nonlin_times_v_j )
+										* elementVolume
+										* integrationWeight;
+							}
 #ifndef NLOG
                             debugStream << "    - quadPoint " << quad;
                             Stuff::printFieldVector( x, "x", debugStream, "      " );
@@ -2314,6 +2331,16 @@ class StokesPass
                                             * integrationWeight
                                             * mu
                                             * v_j_times_gD_times_normal_times_normal;
+										if ( discreteModel_.hasExtraData() ) {
+											VelocityJacobianRangeType jacobian_u;
+											discreteModel_.extraLaplace().jacobian( xWorld, jacobian_u );
+											VelocityRangeType jacobian_u_times_normal;
+											jacobian_u.mv( outerNormal, jacobian_u_times_normal );
+											const double jacobian_u_times_normal_times_v = jacobian_u_times_normal * v_j;
+											H2_j += jacobian_u_times_normal_times_v
+													* elementVolume
+													* integrationWeight;
+										}
 #ifndef NLOG
                                         debugStream << "      - quadPoint " << quad;
                                         Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -2807,16 +2834,17 @@ class StokesPass
         /**
          *  \todo   doc
          **/
-        double colonProduct(    const SigmaRangeType& arg1,
-                                const SigmaRangeType& arg2 ) const
+		template <class SomeRangeType >
+		static double colonProduct(    const SomeRangeType& arg1,
+								const SomeRangeType& arg2 )
         {
-			Dune::CompileTimeChecker< SigmaRangeType::cols == SigmaRangeType::rows > SigmaRangeType_is_not_a_square_matrix;
+			Dune::CompileTimeChecker< SomeRangeType::cols == SomeRangeType::rows > SigmaRangeType_is_not_a_square_matrix;
 
             double ret = 0.0;
             // iterators
-            typedef typename SigmaRangeType::ConstRowIterator
+			typedef typename SomeRangeType::ConstRowIterator
                 ConstRowIteratorType;
-            typedef typename SigmaRangeType::row_type::ConstIterator
+			typedef typename SomeRangeType::row_type::ConstIterator
                 ConstIteratorType;
             ConstRowIteratorType arg1RowItEnd = arg1.end();
             ConstRowIteratorType arg2RowItEnd = arg2.end();
@@ -2841,8 +2869,8 @@ class StokesPass
          *
          *          Implements \f$\left(arg_{1} \otimes arg_{2}\right)_{i,j}:={arg_{1}}_{i} {arg_{2}}_{j}\f$
          **/
-        SigmaRangeType dyadicProduct(   const VelocityRangeType& arg1,
-                                        const VelocityRangeType& arg2 ) const
+		static SigmaRangeType dyadicProduct(   const VelocityRangeType& arg1,
+										const VelocityRangeType& arg2 )
         {
             SigmaRangeType ret( 0.0 );
             typedef typename SigmaRangeType::RowIterator
@@ -2871,7 +2899,7 @@ class StokesPass
         // SigmaJacobianRangeType to be a Matrixmapping and
         // SigmaJacobianRangeType[i] to be a FieldVector
         //! \todo   doc me
-        SigmaJacobianRangeType prepareVelocityRangeTypeForSigmaDivergence( const VelocityRangeType& arg ) const
+		static SigmaJacobianRangeType prepareVelocityRangeTypeForSigmaDivergence( const VelocityRangeType& arg )
         {
             SigmaJacobianRangeType ret( 0.0 );
             assert( arg.dim() == ret[0].dim() );
@@ -2886,7 +2914,7 @@ class StokesPass
         }
 
         //! \todo   doc me
-        VelocityJacobianRangeType preparePressureRangeTypeForVelocityDivergence( const PressureRangeType& arg ) const
+		static VelocityJacobianRangeType preparePressureRangeTypeForVelocityDivergence( const PressureRangeType& arg )
         {
             VelocityJacobianRangeType ret( 0.0 );
             for ( unsigned int i = 0; i < ret[0].dim(); ++i ) {
