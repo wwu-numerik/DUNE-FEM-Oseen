@@ -2332,12 +2332,12 @@ class StokesPass
                                             * mu
                                             * v_j_times_gD_times_normal_times_normal;
 										if ( discreteModel_.hasExtraData() ) {
-											VelocityJacobianRangeType jacobian_u;
-											discreteModel_.extraLaplace().jacobian( xWorld, jacobian_u );
-											VelocityRangeType jacobian_u_times_normal;
-											jacobian_u.mv( outerNormal, jacobian_u_times_normal );
-											const double jacobian_u_times_normal_times_v = jacobian_u_times_normal * v_j;
-											H2_j += jacobian_u_times_normal_times_v
+											VelocityJacobianRangeType extra_u_jacobian;
+											discreteModel_.extraLaplace().localFunction( entity ).jacobian( x, extra_u_jacobian );
+											VelocityRangeType extra_u_jacobian_times_normal;
+											extra_u_jacobian.mv( outerNormal, extra_u_jacobian_times_normal );
+											const double extra_u_jacobian_times_normal_times_v = extra_u_jacobian_times_normal * v_j;
+											H2_j += extra_u_jacobian_times_normal_times_v
 													* elementVolume
 													* integrationWeight;
 										}
