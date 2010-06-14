@@ -890,6 +890,8 @@ class StokesPass
                                 * integrationWeight
                                 * f_times_v_j;
 							if ( discreteModel_.hasExtraData() ) {
+								// \int_{T}{ ( u * \grad ) * u * v \dx }  + \int_{T}{  \grad u : \grad v \dx }
+								// + \int_{T}{ u * v \dx }
 								VelocityJacobianRangeType extra_u_jacobian;
 								discreteModel_.extraLaplace().localFunction( entity ).jacobian( x, extra_u_jacobian );
 								VelocityJacobianRangeType grad_v_j;
@@ -902,7 +904,8 @@ class StokesPass
 									nonlin[d] = u * extra_u_jacobian[d];
 								}
 								const double nonlin_times_v_j = nonlin * v_j;
-								H2_j += ( grad_v_j_times_jacobian_u + nonlin_times_v_j )
+								const double u_times_v_j = u * v_j;
+								H2_j += ( grad_v_j_times_jacobian_u + nonlin_times_v_j + u_times_v_j)
 										* elementVolume
 										* integrationWeight;
 							}
@@ -2332,6 +2335,7 @@ class StokesPass
                                             * mu
                                             * v_j_times_gD_times_normal_times_normal;
 										if ( discreteModel_.hasExtraData() ) {
+											// /int_{\vardelta T}{\grad u * n_s * v \ds }
 											VelocityJacobianRangeType extra_u_jacobian;
 											discreteModel_.extraLaplace().localFunction( entity ).jacobian( x, extra_u_jacobian );
 											VelocityRangeType extra_u_jacobian_times_normal;
