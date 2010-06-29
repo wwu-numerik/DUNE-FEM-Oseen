@@ -570,7 +570,7 @@ class StokesPass
                             SigmaRangeType tau_j( 0.0 );
                             sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
                             sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
-                            const double tau_i_times_tau_j = colonProduct( tau_i, tau_j );
+							const double tau_i_times_tau_j = Stuff::colonProduct( tau_i, tau_j );
                             // compute M_i_j
                             M_i_j += elementVolume
                                 * integrationWeight
@@ -896,7 +896,7 @@ class StokesPass
 								discreteModel_.extraLaplace().localFunction( entity ).jacobian( x, extra_u_jacobian );
 								VelocityJacobianRangeType grad_v_j;
 								velocityBaseFunctionSetElement.jacobian( j, x, grad_v_j );
-								const double grad_v_j_times_jacobian_u = colonProduct( extra_u_jacobian, grad_v_j );
+								const double grad_v_j_times_jacobian_u = Stuff::colonProduct( extra_u_jacobian, grad_v_j );
 
 								VelocityRangeType nonlin, u;
 								discreteModel_.extraLaplace().evaluate( xWorld, u );
@@ -2838,35 +2838,6 @@ class StokesPass
         /**
          *  \todo   doc
          **/
-		template <class SomeRangeType >
-		static double colonProduct(    const SomeRangeType& arg1,
-								const SomeRangeType& arg2 )
-        {
-			Dune::CompileTimeChecker< SomeRangeType::cols == SomeRangeType::rows > SigmaRangeType_is_not_a_square_matrix;
-
-            double ret = 0.0;
-            // iterators
-			typedef typename SomeRangeType::ConstRowIterator
-                ConstRowIteratorType;
-			typedef typename SomeRangeType::row_type::ConstIterator
-                ConstIteratorType;
-            ConstRowIteratorType arg1RowItEnd = arg1.end();
-            ConstRowIteratorType arg2RowItEnd = arg2.end();
-            ConstRowIteratorType arg2RowIt = arg2.begin();
-            for (   ConstRowIteratorType arg1RowIt = arg1.begin();
-                    arg1RowIt != arg1RowItEnd, arg2RowIt != arg2RowItEnd;
-                    ++arg1RowIt, ++arg2RowIt ) {
-                ConstIteratorType row1ItEnd = arg1RowIt->end();
-                ConstIteratorType row2ItEnd = arg2RowIt->end();
-                ConstIteratorType row2It = arg2RowIt->begin();
-                for (   ConstIteratorType row1It = arg1RowIt->begin();
-                        row1It != row1ItEnd, row2It != row2ItEnd;
-                        ++row1It, ++row2It ) {
-                    ret += *row1It * *row2It;
-                }
-            }
-            return ret;
-        }
 
         /**
          *  \brief  dyadic product
