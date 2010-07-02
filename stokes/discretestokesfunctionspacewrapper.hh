@@ -533,6 +533,8 @@ class DiscreteStokesFunctionWrapper
 
         typedef DiscreteStokesFunctionWrapperTraitsImp
             Traits;
+		typedef DiscreteStokesFunctionWrapper<Traits>
+			ThisType;
 
         typedef typename Traits::DiscreteFunctionType
             DiscreteFunctionType;
@@ -782,6 +784,12 @@ class DiscreteStokesFunctionWrapper
 			typedef Dune::L2Projection< double, double, ContinuousVelocityType, DiscreteVelocityFunctionType >
 				VelocityProjection;
 			VelocityProjection().operator()( continuous_velocity, velocity_ );
+		}
+
+		void assign( const ThisType& other )
+		{
+			velocity_.assign( other.discreteVelocity() );
+			pressure_.assign( other.discretePressure() );
 		}
 
     private:
