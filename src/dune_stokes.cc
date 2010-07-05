@@ -610,7 +610,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
         StartPassType;
     StartPassType startPass;
 
-    typedef Dune::StokesPass< StokesModelType, StartPassType, 0 >
+	typedef Dune::StokesPass< StokesModelImpType, StartPassType, 0 >
         StokesPassType;
     StokesPassType stokesPass(  startPass,
                                 stokesModel,
