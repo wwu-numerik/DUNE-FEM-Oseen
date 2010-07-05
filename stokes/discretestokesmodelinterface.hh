@@ -1757,12 +1757,14 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                     const AnalyticalForceType& force,
                                     const AnalyticalDirichletDataType& dirichletData,
                                     const double viscosity = 1.0,
-									const double alpha = 0.0 )
+									const double alpha = 0.0,
+									const double scale = 1.0 )
             : viscosity_( viscosity ),
             alpha_( alpha ),
             stabil_coeff_( stab_coeff ),
             force_( force ),
-			dirichletData_( dirichletData )
+			dirichletData_( dirichletData ),
+			scale_(scale)
         {
 //            if ( !isGeneralized() ) {
 //                if ( ( alpha_ < 0.0 ) || ( alpha_ > 0.0 ) ) {
@@ -1838,6 +1840,10 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             return true;
         }
 
+		const double scale() const
+		{
+			return scale_;
+		}
         /**
          *  \brief  Implementation of \f$\hat{u}_{\sigma}^{U^{+}}\f$ and
          *          \f$\hat{u}_{\sigma}^{U^{-}}\f$ for a face inside
@@ -2716,6 +2722,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         StabilizationCoefficients stabil_coeff_;
         const AnalyticalForceType& force_;
         const AnalyticalDirichletDataType& dirichletData_;
+		const double scale_;
 
         /**
          *  \brief  dyadic product
