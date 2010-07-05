@@ -1757,16 +1757,12 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                     const AnalyticalForceType& force,
                                     const AnalyticalDirichletDataType& dirichletData,
                                     const double viscosity = 1.0,
-									const double alpha = 0.0,
-									const typename DiscreteStokesModelTraitsImp::ExtraDataDiscreteFunctionType* extraLaplace = 0,
-									const typename DiscreteStokesModelTraitsImp::ExtraDataDiscreteFunctionType* extraNonlinear = 0)
+									const double alpha = 0.0 )
             : viscosity_( viscosity ),
             alpha_( alpha ),
             stabil_coeff_( stab_coeff ),
             force_( force ),
-			dirichletData_( dirichletData ),
-			extraLaplace_( extraLaplace ),
-			extraNonlinear_( extraNonlinear )
+			dirichletData_( dirichletData )
         {
 //            if ( !isGeneralized() ) {
 //                if ( ( alpha_ < 0.0 ) || ( alpha_ > 0.0 ) ) {
@@ -2713,23 +2709,6 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             return false;
         }
 
-		bool hasExtraData() const
-		{
-			return extraLaplace_ && extraNonlinear_;
-		}
-
-		const typename DiscreteStokesModelTraitsImp::ExtraDataDiscreteFunctionType&
-				extraLaplace() const {
-			assert( extraLaplace_ );
-			return *extraLaplace_;
-		}
-
-		const typename DiscreteStokesModelTraitsImp::ExtraDataDiscreteFunctionType&
-				extraNonlinear() const {
-			assert( extraNonlinear_ );
-			return *extraNonlinear_;
-		}
-
     private:
 
         const double viscosity_;
@@ -2737,8 +2716,6 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         StabilizationCoefficients stabil_coeff_;
         const AnalyticalForceType& force_;
         const AnalyticalDirichletDataType& dirichletData_;
-		const typename DiscreteStokesModelTraitsImp::ExtraDataDiscreteFunctionType* extraLaplace_;
-		const typename DiscreteStokesModelTraitsImp::ExtraDataDiscreteFunctionType* extraNonlinear_;
 
         /**
          *  \brief  dyadic product

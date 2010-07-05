@@ -889,26 +889,6 @@ class StokesPass
                             H2_j += elementVolume
                                 * integrationWeight
                                 * f_times_v_j;
-							if ( discreteModel_.hasExtraData() ) {
-								// \int_{T}{ ( u * \grad ) * u * v \dx }  + \int_{T}{  \grad u : \grad v \dx }
-								// + \int_{T}{ u * v \dx }
-								VelocityJacobianRangeType extra_u_jacobian;
-								discreteModel_.extraLaplace().localFunction( entity ).jacobian( x, extra_u_jacobian );
-								VelocityJacobianRangeType grad_v_j;
-								velocityBaseFunctionSetElement.jacobian( j, x, grad_v_j );
-								const double grad_v_j_times_jacobian_u = Stuff::colonProduct( extra_u_jacobian, grad_v_j );
-
-								VelocityRangeType nonlin, u;
-								discreteModel_.extraLaplace().evaluate( xWorld, u );
-								for ( int d = 0; d < nonlin.dim(); ++d ) {
-									nonlin[d] = u * extra_u_jacobian[d];
-								}
-								const double nonlin_times_v_j = nonlin * v_j;
-								const double u_times_v_j = u * v_j;
-								H2_j += ( grad_v_j_times_jacobian_u + nonlin_times_v_j + u_times_v_j)
-										* elementVolume
-										* integrationWeight;
-							}
 #ifndef NLOG
                             debugStream << "    - quadPoint " << quad;
                             Stuff::printFieldVector( x, "x", debugStream, "      " );
@@ -2334,17 +2314,6 @@ class StokesPass
                                             * integrationWeight
                                             * mu
                                             * v_j_times_gD_times_normal_times_normal;
-										if ( discreteModel_.hasExtraData() ) {
-											// /int_{\vardelta T}{\grad u * n_s * v \ds }
-											VelocityJacobianRangeType extra_u_jacobian;
-											discreteModel_.extraLaplace().localFunction( entity ).jacobian( x, extra_u_jacobian );
-											VelocityRangeType extra_u_jacobian_times_normal;
-											extra_u_jacobian.mv( outerNormal, extra_u_jacobian_times_normal );
-											const double extra_u_jacobian_times_normal_times_v = extra_u_jacobian_times_normal * v_j;
-											H2_j += extra_u_jacobian_times_normal_times_v
-													* elementVolume
-													* integrationWeight;
-										}
 #ifndef NLOG
                                         debugStream << "      - quadPoint " << quad;
                                         Stuff::printFieldVector( x, "x", debugStream, "        " );
