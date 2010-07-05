@@ -827,6 +827,7 @@ class StokesPass
                             // compute q_{j}\cdot(\nabla\cdot v_i)
                             PressureRangeType q_j( 0.0 );
                             pressureBaseFunctionSetElement.evaluate( j, x, q_j );
+							q_j /= discreteModel_.scale();
                             const double divergence_of_v_i_times_q_j = velocityBaseFunctionSetElement.evaluateGradientSingle( i, entity, x, preparePressureRangeTypeForVelocityDivergence( q_j ) );
                             Z_i_j += -1.0
                                 * elementVolume
@@ -1510,6 +1511,7 @@ class StokesPass
                                         velocityBaseFunctionSetElement.evaluate( i, x, v_i );
                                         PressureRangeType q_j( 0.0 );
                                         pressureBaseFunctionSetElement.evaluate( j, x, q_j );
+										q_j /= discreteModel_.scale();
                                         const double v_i_times_normal = v_i * outerNormal;
 										const double p_factor = ( 0.5 - ( D_12 * outerNormal ) );// (0.5 p - p D_12 ) n ) <- p+
 //										const double p_factor = ( 0.5 - ( 1 ) );// (0.5 p - p D_12 ) n ) <- p+
@@ -1787,6 +1789,7 @@ class StokesPass
                                         pressureBaseFunctionSetElement.evaluate( i, x, q_i );
                                         PressureRangeType q_j( 0.0 );
                                         pressureBaseFunctionSetElement.evaluate( j, x, q_j );
+										q_j /= discreteModel_.scale();
                                         const double q_i_times_q_j = q_i * q_j;
                                         R_i_j += D_11
                                             * elementVolume
@@ -2235,6 +2238,7 @@ class StokesPass
                                         velocityBaseFunctionSetElement.evaluate( i, x, v_i );
                                         PressureRangeType q_j( 0.0 );
                                         pressureBaseFunctionSetElement.evaluate( j, x, q_j );
+										q_j /= discreteModel_.scale();
                                         const double v_i_times_normal = v_i * outerNormal;
                                         const double q_j_times_v_times_normal = q_j * v_i_times_normal;
                                         Z_i_j += elementVolume
