@@ -101,10 +101,6 @@ static const std::string commit_string (COMMIT);
 typedef std::vector<Dune::StabilizationCoefficients>
     CoeffVector;
 
-//! used in all runs to store L2 errors across runs, but i forgot why...
-typedef std::vector< RunInfo >
-    RunInfoVector;
-
 //! the strings used for column headers in tex output
 typedef std::vector<std::string>
     ColumnHeaders;
