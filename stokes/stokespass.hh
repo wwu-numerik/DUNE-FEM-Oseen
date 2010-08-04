@@ -884,7 +884,8 @@ class StokesPass
                             VelocityRangeType v_j( 0.0 );
                             velocityBaseFunctionSetElement.evaluate( j, x, v_j );
                             VelocityRangeType f( 0.0 );
-                            discreteModel_.force( 0.0, xWorld, f );
+//							discreteModel_.force( 0.0, xWorld, f );
+							discreteModel_.forceF().localFunction( entity ).evaluate( x, f );
                             const double f_times_v_j = f * v_j;
                             H2_j += elementVolume
                                 * integrationWeight
@@ -2769,7 +2770,7 @@ class StokesPass
 #ifdef USE_NESTED_CG_SOLVER
             AltInvOpType m_op;
 			if ( Parameters().getParam( "use_nested_cg_solver", false ) )
-                info_ = m_op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+				info_ = m_op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
             else
 #endif
             info_ = op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );

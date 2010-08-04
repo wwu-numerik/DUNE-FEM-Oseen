@@ -2709,6 +2709,11 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             return false;
         }
 
+		const AnalyticalForceType& forceF() const
+		{
+			return force_;
+		}
+
     private:
 
         const double viscosity_;
