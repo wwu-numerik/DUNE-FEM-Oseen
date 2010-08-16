@@ -56,6 +56,11 @@ class MatrixA_Operator {
         ~MatrixA_Operator()
         {}
 
+		template <class DiscreteFunctionType>
+		void mult(const DiscreteFunctionType& x, DiscreteFunctionType&  ret) const
+		{
+			multOEM( x.leakPointer(), ret.leakPointer() );
+		}
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret) const
         {

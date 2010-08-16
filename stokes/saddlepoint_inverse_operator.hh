@@ -28,7 +28,7 @@
 #endif
 
 #include <dune/fem/function/common/discretefunction.hh>
-#include <dune/fem/operator/matrix/spmatrix.hh>
+#include <dune/stuff/matrix.hh>
 #include <dune/stokes/cghelper.hh>
 
 #include <dune/stuff/parametercontainer.hh>
@@ -595,6 +595,30 @@ class SaddlepointInverseOperator
 			//tmp2 = B_t * u - G = B_t u + H3
 			b_t_mat.apply( velocity, tmp2 );
 			tmp2 += rhs3;
+			SaneSparseRowMatrixOperator<CmatrixType> c_matrix_operator( c_mat );
+			typedef SOLVER_NAMESPACE::OEMBICGSTABOp< DiscretePressureFunctionType, SaneSparseRowMatrixOperator<CmatrixType> >
+				C_MAT_CG_OP_TYPE;
+			C_MAT_CG_OP_TYPE c_mat_cg_op( c_matrix_operator,
+										  relLimit, relLimit,
+										  2000,
+										  solverVerbosity );
+			Stuff::printDiscreteFunctionMatlabStyle( tmp2, "tmp2" ,  Logger().Matlab() );
+			if ( Parameters().getParam( "use_pressure_reconstruct_A", false ) )
+				c_mat_cg_op.apply( tmp2, pressure );
+
+			tmp1.clear();
+			typename InnerCGSolverWrapperType::A_OperatorType a_op ( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space() );
+			a_op.mult( velocity, tmp1 );
+			SaneSparseRowMatrixOperator<BmatrixType> b_mat_op ( b_mat );
+			typedef SOLVER_NAMESPACE::OEMBICGSTABOp< DiscretePressureFunctionType, SaneSparseRowMatrixOperator<BmatrixType> >
+				B_MAT_CG_OP_TYPE;
+			B_MAT_CG_OP_TYPE b_mat_cg_op( b_mat_op,
+										  relLimit, relLimit,
+										  2000,
+										  solverVerbosity );
+			Stuff::printDiscreteFunctionMatlabStyle( tmp2, "tmp2" ,  Logger().Matlab() );
+			if ( !Parameters().getParam( "use_pressure_reconstruct_A", false ) )
+				b_mat_cg_op.apply( tmp2, pressure );
 		}
 
         logInfo << "End SaddlePointInverseOperator " << std::endl;
