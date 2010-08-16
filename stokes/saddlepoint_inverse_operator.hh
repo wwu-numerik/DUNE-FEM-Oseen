@@ -590,6 +590,12 @@ class SaddlepointInverseOperator
             F-=tmp1; // F ^= rhs2 - B * p
 			innerCGSolverWrapper.apply(F,velocity);
         }
+		else if ( Parameters().getParam( "use_pressure_reconstruct", false ) ) {
+			tmp2.clear();
+			//tmp2 = B_t * u - G = B_t u + H3
+			b_t_mat.apply( velocity, tmp2 );
+			tmp2 += rhs3;
+		}
 
         logInfo << "End SaddlePointInverseOperator " << std::endl;
 
