@@ -1023,13 +1023,14 @@ class StokesPass
 
                     // get flux coefficients
 					const double lengthOfIntersection = Stuff::getLenghtOfIntersection( intersection );
-                    StabilizationCoefficients stabil_coeff ( discreteModel_.getStabilizationCoefficients() );
+					StabilizationCoefficients stabil_coeff ( discreteModel_.getStabilizationCoefficients() );
                     const double C_11 = stabil_coeff.Factor("C11") * std::pow( lengthOfIntersection, stabil_coeff.Power("C11") );
                     const double D_11 = stabil_coeff.Factor("D11") * std::pow( lengthOfIntersection, stabil_coeff.Power("D11") );
 					//we'll leave this on 0 for the time being so it does not generate any additional  penalty terms
 //					const VelocityRangeType D_12(stabil_coeff.Factor("D12") );//TODO FIXME
 					VelocityRangeType D_12( 1 );//TODO FIXME
 					D_12 /= D_12.two_norm();
+					D_12 *= stabil_coeff.Factor("D12");
 
                     // if we are inside the grid
 					if ( intersection.neighbor() && !intersection.boundary() ) {
