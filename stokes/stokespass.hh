@@ -884,8 +884,11 @@ class StokesPass
                             VelocityRangeType v_j( 0.0 );
                             velocityBaseFunctionSetElement.evaluate( j, x, v_j );
                             VelocityRangeType f( 0.0 );
-//							discreteModel_.force( 0.0, xWorld, f );
-							discreteModel_.forceF().localFunction( entity ).evaluate( x, f );
+#if MODEL_PROVIDES_LOCALFUNCTION
+										discreteModel_.forceF().localFunction(entity).evaluate( x, f );
+#else
+										discreteModel_.force( 0.0, xWorld, f );
+#endif
                             const double f_times_v_j = f * v_j;
                             H2_j += elementVolume
                                 * integrationWeight
@@ -1025,7 +1028,7 @@ class StokesPass
                     const double D_11 = stabil_coeff.Factor("D11") * std::pow( lengthOfIntersection, stabil_coeff.Power("D11") );
 					//we'll leave this on 0 for the time being so it does not generate any additional  penalty terms
 //					const VelocityRangeType D_12(stabil_coeff.Factor("D12") );//TODO FIXME
-					const VelocityRangeType D_12( 0 );//TODO FIXME
+//					const VelocityRangeType D_12( 0 );//TODO FIXME
 
                     // if we are inside the grid
 					if ( intersection.neighbor() && !intersection.boundary() ) {
@@ -1512,6 +1515,8 @@ class StokesPass
                                         PressureRangeType q_j( 0.0 );
                                         pressureBaseFunctionSetElement.evaluate( j, x, q_j );
                                         const double v_i_times_normal = v_i * outerNormal;
+										VelocityRangeType D_12( 1 );
+										D_12 *= maxGridWidth;
 										const double p_factor = ( 0.5 - ( D_12 * outerNormal ) );// (0.5 p - p D_12 ) n ) <- p+
 //										const double p_factor = ( 0.5 - ( 1 ) );// (0.5 p - p D_12 ) n ) <- p+
                                         const double q_j_times_v_i_times_normal =  q_j * v_i_times_normal;
@@ -1574,6 +1579,8 @@ class StokesPass
                                         PressureRangeType q_j( 0.0 );
                                         pressureBaseFunctionSetNeighbour.evaluate( j, xOutside, q_j );
                                         const double v_i_times_normal = v_i * outerNormal;
+										VelocityRangeType D_12( 1 );
+										D_12 *= maxGridWidth;
 										const double p_factor = ( 0.5 + ( D_12 * outerNormal ) );// (0.5 p + p D_12 ) n ) <- p-
 //										const double p_factor = ( 0.5 + ( 1 ) );// (0.5 p + p D_12 ) n ) <- p-
                                         const double q_j_times_v_i_times_normal = q_j * v_i_times_normal;
@@ -1846,7 +1853,7 @@ class StokesPass
                                         PressureRangeType q_i( 0.0 );
                                         pressureBaseFunctionSetElement.evaluate( i, xInside, q_i );
                                         const double q_i_times_q_j = q_i * q_j;
-                                        R_i_j += -1.0
+										R_i_j += -1.0
                                             * D_11
                                             * elementVolume
                                             * integrationWeight
