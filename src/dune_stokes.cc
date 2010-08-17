@@ -222,6 +222,7 @@ int main( int argc, char** argv )
             RunInfoVector rf;
 			Dune::StabilizationCoefficients st = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
 			st.FactorFromParams( "D11" );
+			st.FactorFromParams( "D12" );
 			rf.push_back(singleRun( mpicomm, Parameters().getParam( "minref", 0 ), st ) );
             profiler().Output( mpicomm, rf );
             break;
