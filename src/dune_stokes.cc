@@ -220,7 +220,9 @@ int main( int argc, char** argv )
         case 5: {
             profiler().Reset( 1 );
             RunInfoVector rf;
-            rf.push_back(singleRun( mpicomm, Parameters().getParam( "minref", 0 ) ) );
+			Dune::StabilizationCoefficients st = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
+			st.FactorFromParams( "D11" );
+			rf.push_back(singleRun( mpicomm, Parameters().getParam( "minref", 0 ), st ) );
             profiler().Output( mpicomm, rf );
             break;
         }
@@ -480,6 +482,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     profiler().StartTiming( "SingleRun" );
     Logging::LogStream& infoStream = Logger().Info();
     Logging::LogStream& debugStream = Logger().Dbg();
+	stabil_coeff.print( infoStream );
     RunInfo info;
 
     debugStream << "\nsingleRun( ";
