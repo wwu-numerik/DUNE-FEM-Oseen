@@ -1737,7 +1737,7 @@ class StokesPass
 										q_i_times_flux *= q_i;
 										const double q_i_times_flux_times_outerNormal = q_i_times_flux * outerNormal;
 
-										E_i_j += elementVolume
+										E_i_j -= elementVolume
                                             * integrationWeight
 											* q_i_times_flux_times_outerNormal;
 #ifndef NLOG
