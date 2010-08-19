@@ -100,7 +100,7 @@ namespace Dune
             template < class Stream >
             void print( Stream& stream ) {
                 if ( this->Equals( getDefaultStabilizationCoefficients() ) )
-                    stream << "default stabilisation coefficients used " ;
+					stream << "default stabilisation coefficients used " ;
                 else {
                     CoefficientMap::const_iterator it = map_.begin();
                     for ( ; it != map_.end(); ++it ) {
@@ -108,6 +108,7 @@ namespace Dune
                                 << " / " << (*it).second.first ;
                     }
                 }
+				stream << std::endl;
             }
 
             static std::vector<std::string> getCoefficientNames() {
