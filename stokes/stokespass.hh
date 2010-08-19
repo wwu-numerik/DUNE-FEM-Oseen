@@ -921,14 +921,27 @@ class StokesPass
 										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         SigmaRangeType tau_j( 0.0 );
                                         sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
-                                        VelocityRangeType tau_j_times_normal( 0.0 );
-                                        tau_j.mv( outerNormal, tau_j_times_normal );
-                                        const double v_i_times_tau_j_times_normal = velocityBaseFunctionSetElement.evaluateSingle( i, x, tau_j_times_normal );
-                                        X_i_j += -0.5
-                                            * elementVolume
-                                            * integrationWeight
-                                            * mu
-                                            * v_i_times_tau_j_times_normal;
+
+										VelocityRangeType tau_j_times_normal( 0.0 );
+										tau_j.mv( outerNormal, tau_j_times_normal );
+
+										SigmaRangeType tau_j_times_normal_dyadic_C12
+												= dyadicProduct( tau_j_times_normal, C_12 );
+
+										SigmaRangeType flux_value = tau_j;
+										flux_value *= 0.5;
+										flux_value -= tau_j_times_normal_dyadic_C12;
+
+										VelocityRangeType flux_times_normal( 0.0 );
+										flux_value.mv( outerNormal, flux_times_normal );
+
+										const double v_i_times_flux_times_normal
+												= velocityBaseFunctionSetElement.evaluateSingle( i, x, flux_times_normal );
+										X_i_j -= elementVolume
+											* integrationWeight
+											* mu
+											* v_i_times_flux_times_normal;
+
                                     } // done sum over all quadrature points
                                     // if small, should be zero
                                     if ( fabs( X_i_j ) < eps ) {
@@ -955,14 +968,26 @@ class StokesPass
 										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         SigmaRangeType tau_j( 0.0 );
                                         sigmaBaseFunctionSetNeighbour.evaluate( j, xOutside, tau_j );
-                                        VelocityRangeType tau_j_times_normal( 0.0 );
-                                        tau_j.mv( outerNormal, tau_j_times_normal );
-                                        const double v_i_times_tau_j_times_normal = velocityBaseFunctionSetElement.evaluateSingle( i, xInside, tau_j_times_normal );
-                                        X_i_j += -0.5
-                                            * elementVolume
+
+										VelocityRangeType tau_j_times_normal( 0.0 );
+										tau_j.mv( outerNormal, tau_j_times_normal );
+
+										SigmaRangeType tau_j_times_normal_dyadic_C12
+												= dyadicProduct( tau_j_times_normal, C_12 );
+
+										SigmaRangeType flux_value = tau_j;
+										flux_value *= 0.5;
+										flux_value += tau_j_times_normal_dyadic_C12;
+
+										VelocityRangeType flux_times_normal( 0.0 );
+										flux_value.mv( outerNormal, flux_times_normal );
+
+										const double v_i_times_flux_times_normal
+												= velocityBaseFunctionSetNeighbour.evaluateSingle( i, xInside, flux_times_normal );
+										X_i_j -= elementVolume
                                             * integrationWeight
                                             * mu
-                                            * v_i_times_tau_j_times_normal;
+											* v_i_times_flux_times_normal;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
                                     if ( fabs( X_i_j ) < eps ) {
