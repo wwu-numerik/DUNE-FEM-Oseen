@@ -1031,6 +1031,9 @@ class StokesPass
 					VelocityRangeType D_12( 1 );//TODO FIXME
 					D_12 /= D_12.two_norm();
 					D_12 *= stabil_coeff.Factor("D12");
+					VelocityRangeType C_12( 1 );//TODO FIXME
+					C_12 /= C_12.two_norm();
+					C_12 *= stabil_coeff.Factor("C12");
 
                     // if we are inside the grid
 					if ( intersection.neighbor() && !intersection.boundary() ) {
@@ -1103,15 +1106,24 @@ class StokesPass
 										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         SigmaRangeType tau_i( 0.0 );
                                         sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
+
                                         VelocityRangeType v_j( 0.0 );
                                         velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+
+										VelocityJacobianRangeType v_j_dyadic_normal = dyadicProduct( v_j, outerNormal );
+										VelocityRangeType v_j_dyadic_normal_times_C12( 0.0 );
+										v_j_dyadic_normal.mv( C_12, v_j_dyadic_normal_times_C12 );
+
                                         VelocityRangeType tau_i_times_normal( 0.0 );
                                         tau_i.mv( outerNormal, tau_i_times_normal );
-                                        double v_j_times_tau_i_times_normal = v_j * tau_i_times_normal;
-                                        W_i_j += -0.5
-                                            * elementVolume
+
+										VelocityRangeType flux_value = v_j;
+										flux_value *= 0.5;
+										flux_value += v_j_dyadic_normal_times_C12;
+										double flux_times_tau_i_times_normal = flux_value * tau_i_times_normal;
+										W_i_j -= elementVolume
                                             * integrationWeight
-                                            * v_j_times_tau_i_times_normal;
+											* flux_times_tau_i_times_normal;
 #ifndef NLOG
                                         debugStream << "      - quadPoint " << quad;
                                         Stuff::printFieldVector( x, "x", debugStream, "        " );
@@ -1122,8 +1134,8 @@ class StokesPass
                                         Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "        " );
                                         Stuff::printFieldVector( v_j, "v_j", debugStream, "        " );
                                         Stuff::printFieldVector( tau_i_times_normal, "tau_i_times_normal", debugStream, "        " );
-                                        debugStream << "\n          - v_j_times_tau_i_times_normal: " << v_j_times_tau_i_times_normal << std::endl;
-                                        debugStream << "          - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
+//                                        debugStream << "\n          - v_j_times_tau_i_times_normal: " << v_j_times_tau_i_times_normal << std::endl;
+//                                        debugStream << "          - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
 #endif
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -1165,15 +1177,24 @@ class StokesPass
 										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
                                         SigmaRangeType tau_i( 0.0 );
                                         sigmaBaseFunctionSetNeighbour.evaluate( i, xOutside, tau_i );
+
                                         VelocityRangeType v_j( 0.0 );
-                                        velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+
+										VelocityJacobianRangeType v_j_dyadic_normal = dyadicProduct( v_j, outerNormal );
+										VelocityRangeType v_j_dyadic_normal_times_C12( 0.0 );
+										v_j_dyadic_normal.mv( C_12, v_j_dyadic_normal_times_C12 );
+
                                         VelocityRangeType tau_i_times_normal( 0.0 );
                                         tau_i.mv( outerNormal, tau_i_times_normal );
-                                        double v_j_times_tau_i_times_normal = v_j * tau_i_times_normal;
-                                        W_i_j += 0.5
-                                            * elementVolume
+
+										VelocityRangeType flux_value = v_j;
+										flux_value *= 0.5;
+										flux_value -= v_j_dyadic_normal_times_C12;
+										double flux_times_tau_i_times_normal = flux_value * tau_i_times_normal;
+										W_i_j += elementVolume
                                             * integrationWeight
-                                            * v_j_times_tau_i_times_normal;
+											* flux_times_tau_i_times_normal;
 #ifndef NLOG
                                         debugStream << "      - quadPoint " << quad;
                                         Stuff::printFieldVector( xInside, "xInside", debugStream, "        " );
@@ -1185,8 +1206,8 @@ class StokesPass
                                         Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "        " );
                                         Stuff::printFieldVector( v_j, "v_j", debugStream, "        " );
                                         Stuff::printFieldVector( tau_i_times_normal, "tau_i_times_normal", debugStream, "        " );
-                                        debugStream << "\n          - v_j_times_tau_i_times_normal: " << v_j_times_tau_i_times_normal << std::endl;
-                                        debugStream << "          - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
+//                                        debugStream << "\n          - v_j_times_tau_i_times_normal: " << v_j_times_tau_i_times_normal << std::endl;
+//                                        debugStream << "          - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
 #endif
                                     } // done sum over all quadrature points
                                     // if small, should be zero
