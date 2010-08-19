@@ -381,27 +381,6 @@ class StokesPass
             int numberOfIntersections = 0;
             int numberOfBoundaryIntersections = 0;
             int numberOfInnerIntersections = 0;
-            const bool Mprint = Parameters().getParam( "Mprint", false );
-            const bool Wprint = Parameters().getParam( "Wprint", false );
-            const bool Xprint = Parameters().getParam( "Xprint", false );
-            const bool Yprint = Parameters().getParam( "Yprint", false );
-            const bool Zprint = Parameters().getParam( "Zprint", false );
-            const bool Eprint = Parameters().getParam( "Eprint", false );
-            const bool Rprint = Parameters().getParam( "Rprint", false );
-            const bool H1print = Parameters().getParam( "H1print", false );
-            const bool H2print = Parameters().getParam( "H2print", false );
-            const bool H3print = Parameters().getParam( "H3print", false );
-            const bool allOutput = Parameters().getParam( "allOutput", false );
-            const bool Mdebug = Parameters().getParam( "Mdebug", false );
-            const bool Wdebug = Parameters().getParam( "Wdebug", false );
-            const bool Xdebug = Parameters().getParam( "Xdebug", false );
-            const bool Ydebug = Parameters().getParam( "Ydebug", false );
-            const bool Zdebug = Parameters().getParam( "Zdebug", false );
-            const bool Edebug = Parameters().getParam( "Edebug", false );
-            const bool Rdebug = Parameters().getParam( "Rdebug", false );
-            const bool H1debug = Parameters().getParam( "H1debug", false );
-            const bool H2debug = Parameters().getParam( "H2debug", false );
-            const bool H3debug = Parameters().getParam( "H3debug", false );
             int fivePercentOfEntities = 0;
             int fivePercents = 0;
             infoStream << "this is StokesPass::apply()" << std::endl;
@@ -505,58 +484,15 @@ class StokesPass
                     }
                 }
                 debugStream.Suspend(); // disable logging
-//                if ( outputEntity == entityNR ) entityOutput = true;
-                if ( allOutput ) entityOutput = true;
-                if ( entityOutput ) debugStream.Resume(); // enable logging
-                debugStream << "  - numSigmaBaseFunctionsElement: " << numSigmaBaseFunctionsElement << std::endl;
-                debugStream << "  - numVelocityBaseFunctionsElement: " << numVelocityBaseFunctionsElement << std::endl;
-                debugStream << "  - numPressureBaseFunctionsElement: " << numPressureBaseFunctionsElement << std::endl;
-                debugStream << "  - == start calculations on entity " << entityNR << std::endl;
-                debugStream << "    - entity " << entityNR << " has " << geometry.corners() << " corners:";
-                for ( int i = 0; i < geometry.corners(); ++i ) {
-					const VelocityRangeType corner = geometry.corner( i );
-                    Stuff::printFieldVector( corner, "corner_"+Stuff::toString(i), debugStream, "      " );
-                }
-                debugStream << std::endl;
-                bool Moutput = false;
-                bool Woutput = false;
-                bool Xoutput = false;
-                bool Youtput = false;
-                bool Zoutput = false;
-                bool Eoutput = false;
-                bool Routput = false;
-                bool H1output = false;
-                bool H2output = false;
-                bool H3output = false;
-                // we want logging at the following base functions
-                const int logBaseI = Parameters().getParam( "logBaseI", 0 );
-                const int logBaseJ = Parameters().getParam( "logBaseJ", 0 );
-                debugStream.Suspend(); // disable logging
 #endif
 
                 // compute volume integrals
 
                 //                                                     // we will call this one
                 // (M^{-1})_{i,j} = (\int_{T}\tau_{j}:\tau_{i}dx)^{-1} // Minvs' volume integral
-#ifndef NLOG
-                if ( Mdebug ) {
-                    debugStream.Resume(); // enable logging
-                    debugStream << "    = M volume =================" << std::endl;
-                    debugStream.Suspend();
-                }
-#endif
                 for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
                         double M_i_j = 0.0;
-#ifndef NLOG
-//                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Moutput = true;
-//                        if ( allOutput ) Moutput = true;
-                        if ( Mdebug ) Moutput = true;
-                        if ( entityOutput && Moutput ) debugStream.Resume(); // enable logging
-                        debugStream << "    = M ========================" << std::endl;
-                        debugStream << "    basefunctions " << i << " " << j << std::endl;
-                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
-#endif
                         // sum over all quadrature points
 						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
@@ -575,16 +511,6 @@ class StokesPass
                             M_i_j += elementVolume
                                 * integrationWeight
                                 * tau_i_times_tau_j;
-#ifndef NLOG
-                            debugStream << "    - quadPoint " << quad;
-                            Stuff::printFieldVector( x, "x", debugStream, "      " );
-                            debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                            debugStream << "        - integrationWeight: " << integrationWeight;
-                            Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "      " );
-                            Stuff::printFieldMatrix( tau_j, "tau_j", debugStream, "      " );
-                            debugStream << "\n        - tau_i_times_tau_j: " << tau_i_times_tau_j << std::endl;
-                            debugStream << "        - M_" << i << "_" << j << "+=: " << M_i_j << std::endl;
-#endif
                         } // done sum over quadrature points
                         // if small, should be zero
                         if ( fabs( M_i_j ) < eps ) {
@@ -595,36 +521,15 @@ class StokesPass
                             // add to matrix
                             localMInversMatrixElement.add( i, j, M_i_j );
                         }
-#ifndef NLOG
-                        Moutput = false;
-                        debugStream.Suspend(); // disable logging
-#endif
                     }
                 } // done computing Minvs' volume integral
 
                 //                                                        // we will call this one
                 // (W)_{i,j} += \int_{T}v_{j}\cdot(\nabla\cdot\tau_{i})dx // W's volume integral
                 //                                                        // see also "W's entitity surface integral", "W's neighbour surface integral" and "W's boundary integral" below
-#ifndef NLOG
-                if ( Wdebug ) {
-                    debugStream.Resume(); // enable logging
-                    debugStream << "    = W volume =================" << std::endl;
-                    debugStream.Suspend();
-                }
-#endif
                 for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                         double W_i_j = 0.0;
-#ifndef NLOG
-//                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
-//                        if ( ( ( i == logBaseI ) && ( j == logBaseJ ) ) && Wdebug ) Woutput = true;
-//                        if ( allOutput ) Woutput = true;
-                        if ( Wdebug ) Woutput = true;
-                        if ( entityOutput && Woutput ) debugStream.Resume(); // enable logging
-                        debugStream << "    = W ========================" << std::endl;
-                        debugStream << "    basefunctions " << i << " " << j << std::endl;
-                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
-#endif
                         // sum over all quadrature points
 						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
@@ -640,52 +545,23 @@ class StokesPass
                             W_i_j += elementVolume
                                 * integrationWeight
                                 * divergence_of_tau_i_times_v_j;
-#ifndef NLOG
-                            debugStream << "    - quadPoint " << quad;
-                            Stuff::printFieldVector( x, "x", debugStream, "      " );
-                            debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                            debugStream << "        - integrationWeight: " << integrationWeight;
-                            Stuff::printFieldVector( v_j, "v_j", debugStream, "      " );
-                            debugStream << "\n        - divergence_of_tau_i_times_v_j: " << divergence_of_tau_i_times_v_j << std::endl;
-                            debugStream << "        - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
-#endif
                         } // done sum over quadrature points
                         // if small, should be zero
                         if ( fabs( W_i_j ) < eps ) {
                             W_i_j = 0.0;
                         }
-                        else
+						else
                             // add to matrix
                             localWmatrixElement.add( i, j, W_i_j );
-#ifndef NLOG
-                        Woutput = false;
-                        debugStream.Suspend(); // disable logging
-#endif
                     }
                 } // done computing W's volume integral
 
                 //                                                  // we will call this one
                 // (X)_{i,j} += \mu\int_{T}\tau_{j}:\nabla v_{i} dx // X's volume integral
                 //                                                  // see also "X's entitity surface integral", "X's neighbour surface integral" and "X's boundary integral" below
-#ifndef NLOG
-                if ( Xdebug ) {
-                    debugStream.Resume(); // enable logging
-                    debugStream << "    = X volume =================" << std::endl;
-                    debugStream.Suspend();
-                }
-#endif
                 for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
                         double X_i_j = 0.0;
-#ifndef NLOG
-//                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-//                        if ( allOutput ) Xoutput = true;
-                        if ( Xdebug ) Xoutput = true;
-                        if ( entityOutput && Xoutput ) debugStream.Resume(); // enable logging
-                        debugStream << "    = X ========================" << std::endl;
-                        debugStream << "    basefunctions " << i << " " << j << std::endl;
-                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
-#endif
                         // sum over all quadrature points
 						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
@@ -702,15 +578,6 @@ class StokesPass
                                 * integrationWeight
                                 * mu
                                 * gradient_of_v_i_times_tau_j;
-#ifndef NLOG
-                            debugStream << "    - quadPoint " << quad;
-                            Stuff::printFieldVector( x, "x", debugStream, "      " );
-                            debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                            debugStream << "        - integrationWeight: " << integrationWeight;
-                            Stuff::printFieldMatrix( tau_j, "tau_j", debugStream, "      " );
-                            debugStream << "\n        - gradient_of_v_i_times_tau_j: " << gradient_of_v_i_times_tau_j << std::endl;
-                            debugStream << "        - X_" << i << "_" << j << "+=: " << X_i_j << std::endl;
-#endif
                         } // done sum over quadrature points
                         // if small, should be zero
                         if ( fabs( X_i_j ) < eps ) {
@@ -719,37 +586,17 @@ class StokesPass
                         else
                             // add to matrix
                             localXmatrixElement.add( i, j, X_i_j );
-#ifndef NLOG
-                        Xoutput = false;
-                        debugStream.Suspend(); // disable logging
-#endif
                     }
                 } // done computing X's volume integral
 
                 //
                 // (Y)
                 //
-#ifndef NLOG
-                if ( Ydebug ) {
-                    debugStream.Resume(); // enable logging
-                    debugStream << "    = Y volume =================" << std::endl;
-                    debugStream.Suspend();
-                }
-#endif
 //                if ( discreteModel_.isGeneralized() ) 
                 {
                 for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                         double Y_i_j = 0.0;
-#ifndef NLOG
-//                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-//                        if ( allOutput ) Youtput = true;
-                        if ( Ydebug ) Youtput = true;
-                        if ( entityOutput && Youtput ) debugStream.Resume(); // enable logging
-                        debugStream << "    = Y ========================" << std::endl;
-                        debugStream << "    basefunctions " << i << " " << j << std::endl;
-                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
-#endif
                         // sum over all quadrature points
 						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
                             // get x
@@ -768,16 +615,6 @@ class StokesPass
                                 * integrationWeight
                                 * alpha
                                 * v_i_times_v_j;
-#ifndef NLOG
-                            debugStream << "    - quadPoint " << quad;
-                            Stuff::printFieldVector( x, "x", debugStream, "      " );
-                            debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                            debugStream << "        - integrationWeight: " << integrationWeight;
-                            Stuff::printFieldVector( v_i, "v_i", debugStream, "      " );
-                            Stuff::printFieldVector( v_j, "v_j", debugStream, "      " );
-                            debugStream << "\n        - v_i_times_v_j: " << v_i_times_v_j << std::endl;
-                            debugStream << "        - Y_" << i << "_" << j << "+=: " << Y_i_j << std::endl;
-#endif
                         } // done sum over quadrature points
                         // if small, should be zero
                         if ( fabs( Y_i_j ) < eps ) {
@@ -786,10 +623,6 @@ class StokesPass
                         else
                             // add to matrix
                             localYmatrixElement.add( i, j, Y_i_j );
-#ifndef NLOG
-                        Youtput = false;
-                        debugStream.Suspend(); // disable logging
-#endif
                     }
                 } // done computing Y's volume integral
                 }
@@ -797,25 +630,9 @@ class StokesPass
                 //                                                  // we will call this one
                 // (Z)_{i,j} += -\int_{T}q_{j}(\nabla\cdot v_{i})dx // Z's volume integral
                 //                                                  // see also "Z's entitity surface integral", "Z's neighbour surface integral" and "Z's boundary integral" below
-#ifndef NLOG
-                if ( Zdebug ) {
-                    debugStream.Resume(); // enable logging
-                    debugStream << "    = Z volume =================" << std::endl;
-                    debugStream.Suspend();
-                }
-#endif
                 for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
                         double Z_i_j = 0.0;
-#ifndef NLOG
-//                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
-//                        if ( allOutput ) Zoutput = true;
-                        if ( Zdebug ) Zoutput = true;
-                        if ( entityOutput && Zoutput ) debugStream.Resume(); // enable logging
-                        debugStream << "    = Z ========================" << std::endl;
-                        debugStream << "    basefunctions " << i << " " << j << std::endl;
-                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
-#endif
                         // sum over all quadratur points
 						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
                             // get x
@@ -832,15 +649,6 @@ class StokesPass
                                 * elementVolume
                                 * integrationWeight
                                 * divergence_of_v_i_times_q_j;
-#ifndef NLOG
-                            debugStream << "    - quadPoint " << quad;
-                            Stuff::printFieldVector( x, "x", debugStream, "      " );
-                            debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                            debugStream << "        - integrationWeight: " << integrationWeight;
-                            Stuff::printFieldVector( q_j, "q_j", debugStream, "      " );
-                            debugStream << "\n        - divergence_of_v_i_times_q_j: " << divergence_of_v_i_times_q_j << std::endl;
-                            debugStream << "        - Z_" << i << "_" << j << "+=: " << Z_i_j << std::endl;
-#endif
                         } // done sum over all quadrature points
                         // if small, should be zero
                         if ( fabs( Z_i_j ) < eps ) {
@@ -849,10 +657,6 @@ class StokesPass
                         else
                             // add to matrix
                             localZmatrixElement.add( i, j, Z_i_j );
-#ifndef NLOG
-                        Zoutput = false;
-                        debugStream.Suspend(); // disable logging
-#endif
                     }
                 } // done computing Z's volume integral
 
@@ -862,15 +666,6 @@ class StokesPass
                 if ( discreteModel_.hasForce() ) {
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                         double H2_j = 0.0;
-#ifndef NLOG
-//                        if ( ( j == logBaseJ ) ) H2output = true;
-//                        if ( allOutput ) H2output = true;
-                        if ( H2debug ) H2output = true;
-                        if ( entityOutput && H2output ) debugStream.Resume(); // enable logging
-                        debugStream << "    = H2 =======================" << std::endl;
-                        debugStream << "    basefunction " << " " << j << std::endl;
-                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
-#endif
                         // sum over all quadratur points
 						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
                             // get x
@@ -893,17 +688,6 @@ class StokesPass
                             H2_j += elementVolume
                                 * integrationWeight
                                 * f_times_v_j;
-#ifndef NLOG
-                            debugStream << "    - quadPoint " << quad;
-                            Stuff::printFieldVector( x, "x", debugStream, "      " );
-                            Stuff::printFieldVector( xWorld, "xWorld", debugStream, "      " );
-                            debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                            debugStream << "        - integrationWeight: " << integrationWeight;
-                            Stuff::printFieldVector( f, "f", debugStream, "      " );
-                            Stuff::printFieldVector( v_j, "v_j", debugStream, "      " );
-                            debugStream << "\n        - f_times_v_j: " << f_times_v_j << std::endl;
-                            debugStream << "        - H2_" << j << "+=: " << H2_j << std::endl;
-#endif
                         } // done sum over all quadrature points
                         // if small, should be zero
                         if ( fabs( H2_j ) < eps ) {
@@ -911,35 +695,15 @@ class StokesPass
                         }
                         // add to rhs
                         localH2rhs[ j ] += H2_j;
-#ifndef NLOG
-                        H2output = false;
-                        debugStream.Suspend(); // disable logging
-#endif
                     } // done computing H2's volume integral
                 }
 
                 //                                                // we will call this one
                 // (E)_{i,j} += -\int_{T}v_{j}\cdot\nabla q_{i}dx // E's volume integral
                 //                                                // see also "E's entitity surface integral", "E's neighbour surface integral" and "E's boundary integral" below
-#ifndef NLOG
-                if ( Edebug ) {
-                    debugStream.Resume(); // enable logging
-                    debugStream << "    = E volume =================" << std::endl;
-                    debugStream.Suspend();
-                }
-#endif
                 for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                         double E_i_j = 0.0;
-#ifndef NLOG
-//                        if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
-//                        if ( allOutput ) Eoutput = true;
-                        if ( Edebug ) Eoutput = true;
-                        if ( entityOutput && Eoutput ) debugStream.Resume(); // enable logging
-                        debugStream << "    = E ========================" << std::endl;
-                        debugStream << "    basefunctions " << i << " " << j << std::endl;
-                        debugStream << "    volumeQuadrature.nop() " << volumeQuadratureElement.nop() << std::endl;
-#endif
                         // sum over all quadratur points
 						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
                             // get x
@@ -962,16 +726,6 @@ class StokesPass
                                 * elementVolume
                                 * integrationWeight
                                 * gradient_of_q_i_times_v_j;
-#ifndef NLOG
-                            debugStream << "    - quadPoint " << quad;
-                            Stuff::printFieldVector( x, "x", debugStream, "      " );
-                            debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                            debugStream << "        - integrationWeight: " << integrationWeight;
-                            Stuff::printFieldVector( gradient_of_q_i, "gradient_of_q_i", debugStream, "      " );
-                            Stuff::printFieldVector( v_j, "v_j", debugStream, "      " );
-                            debugStream << "\n        - gradient_of_q_i_times_v_j: " << gradient_of_q_i_times_v_j << std::endl;
-                            debugStream << "        - E_" << i << "_" << j << "+=: " << E_i_j << std::endl;
-#endif
                         } // done sum over all quadrature points
                         // if small, should be zero
                         if ( fabs( E_i_j ) < eps ) {
@@ -980,10 +734,6 @@ class StokesPass
                         else
                             // add to matrix
                             localEmatrixElement.add( i, j, E_i_j );
-#ifndef NLOG
-                        Eoutput = false;
-                        debugStream.Suspend(); // disable logging
-#endif
                     }
                 } // done computing E's volume integral
 
@@ -992,29 +742,12 @@ class StokesPass
 				for (   IntersectionIteratorType intIt = gridPart_.ibegin( entity );
 						intIt != intItEnd;
 						++intIt ) {
-							const typename IntersectionIteratorType::Intersection& intersection = *intIt;
-#ifndef NLOG
-//                    if ( ( outputIntersection == intersectionNR ) && entityOutput ) intersectionOutput = true;
-                    if ( entityOutput ) intersectionOutput = true;
-                    if ( intersectionOutput ) debugStream.Resume(); // enable logging
-                    debugStream << "    - ==== start calculations on intersection " << intersectionNR << std::endl;
-#endif
+					const typename IntersectionIteratorType::Intersection& intersection = *intIt;
 
                     // get intersection geometry
                     typedef typename IntersectionIteratorType::Geometry
                         IntersectionGeometryType;
 					const IntersectionGeometryType& intersectionGeoemtry = intersection.intersectionGlobal();
-#ifndef NLOG
-                    // get corners
-                    debugStream << "      - intersection " << intersectionNR << " has " << intersectionGeoemtry.corners() << " corners:";
-                    for ( int i = 0; i < intersectionGeoemtry.corners(); ++i ) {
-						const VelocityRangeType corner = intersectionGeoemtry.corner( i );
-                        Stuff::printFieldVector( corner, "corner_"+Stuff::toString(i), debugStream, "        " );
-                    }
-					debugStream << "\n        length of intersection " << intersectionNR << " is " << Stuff::getLenghtOfIntersection( intersection ) << std::endl;
-                    debugStream.Suspend(); // disable logging
-#endif
-
                     // get intersection quadrature, seen from inside
                     const FaceQuadratureType faceQuadratureElement( gridPart_,
 																	intersection,
@@ -1071,28 +804,11 @@ class StokesPass
                         //           += \int_{\varepsilon\in \Epsilon_{I}^{T}}-\hat{u}_{\sigma}^{U^{-}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // W's neighbour surface integral
                         //                                                                                                               // see also "W's boundary integral" below
                         //                                                                                                               // and "W's volume integral" above
-#ifndef NLOG
-                        if ( Wdebug ) {
-                            debugStream.Resume(); // enable logging
-                            debugStream << "      = W surface =======================" << std::endl;
-                            debugStream.Suspend();
-                        }
-#endif
 //                        if ( discreteModel_.hasVelocitySigmaFlux() ) {
                             for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                                 // compute W's element surface integral
                                 for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                                     double W_i_j = 0.0;
-#ifndef NLOG
-//                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
-//                                    if ( ( ( i == logBaseI ) && ( j == logBaseJ ) ) && Wdebug ) Woutput = true;
-//                                    if ( allOutput ) Woutput = true;
-                                    if ( Wdebug ) Woutput = true;
-                                    if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
-                                    debugStream << "      = W element ======================" << std::endl;
-                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                    debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
-#endif
                                     // sum over all quadrature points
 									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x in codim<0> and codim<1> coordinates
@@ -1124,19 +840,6 @@ class StokesPass
 										W_i_j -= elementVolume
                                             * integrationWeight
 											* flux_times_tau_i_times_normal;
-#ifndef NLOG
-                                        debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
-                                        Stuff::printFieldVector( xLocal, "xLocal", debugStream, "          " );
-                                        Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                        debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                        debugStream << "        - integrationWeight: " << integrationWeight;
-                                        Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "        " );
-                                        Stuff::printFieldVector( v_j, "v_j", debugStream, "        " );
-                                        Stuff::printFieldVector( tau_i_times_normal, "tau_i_times_normal", debugStream, "        " );
-//                                        debugStream << "\n          - v_j_times_tau_i_times_normal: " << v_j_times_tau_i_times_normal << std::endl;
-//                                        debugStream << "          - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
-#endif
                                     } // done sum over all quadrature points
                                     // if small, should be zero
                                     if ( fabs( W_i_j ) < eps ) {
@@ -1145,24 +848,10 @@ class StokesPass
                                     else
                                         // add to matrix
                                         localWmatrixElement.add( i, j, W_i_j );
-#ifndef NLOG
-                                    Woutput = false;
-                                    debugStream.Suspend(); // disable logging
-#endif
                                 } // done computing W's element surface integral
                                 // compute W's neighbour surface integral
                                 for ( int i = 0; i < numSigmaBaseFunctionsNeighbour; ++i ) {
                                     double W_i_j = 0.0;
-#ifndef NLOG
-//                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Woutput = true;
-//                                    if ( ( ( i == logBaseI ) && ( j == logBaseJ ) ) && Wdebug ) Woutput = true;
-//                                    if ( allOutput ) Woutput = true;
-                                    if ( Wdebug ) Woutput = true;
-                                    if ( intersectionOutput && Woutput ) debugStream.Resume(); // enable logging
-                                    debugStream << "      = W neighbour ====================" << std::endl;
-                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                    debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
-#endif
                                     // sum over all quadrature points
 									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x in codim<0> and codim<1> coordinates
@@ -1195,20 +884,6 @@ class StokesPass
 										W_i_j += elementVolume
                                             * integrationWeight
 											* flux_times_tau_i_times_normal;
-#ifndef NLOG
-                                        debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( xInside, "xInside", debugStream, "        " );
-                                        Stuff::printFieldVector( xOutside, "xOutside", debugStream, "        " );
-                                        Stuff::printFieldVector( xLocal, "xLocal", debugStream, "          " );
-                                        Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                        debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                        debugStream << "        - integrationWeight: " << integrationWeight;
-                                        Stuff::printFieldMatrix( tau_i, "tau_i", debugStream, "        " );
-                                        Stuff::printFieldVector( v_j, "v_j", debugStream, "        " );
-                                        Stuff::printFieldVector( tau_i_times_normal, "tau_i_times_normal", debugStream, "        " );
-//                                        debugStream << "\n          - v_j_times_tau_i_times_normal: " << v_j_times_tau_i_times_normal << std::endl;
-//                                        debugStream << "          - W_" << i << "_" << j << "+=: " << W_i_j << std::endl;
-#endif
                                     } // done sum over all quadrature points
                                     // if small, should be zero
                                     if ( fabs( W_i_j ) < eps ) {
@@ -1217,10 +892,6 @@ class StokesPass
                                     else
                                         // add to matrix
                                         localWmatrixNeighbour.add( i, j, W_i_j );
-#ifndef NLOG
-                                    Woutput = false;
-                                    debugStream.Suspend(); // disable logging
-#endif
                                 } // done computing W's neighbour surface integral
                             } // done computing W's surface integrals
 //                        }
@@ -1231,27 +902,11 @@ class StokesPass
                         //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}ds // X's neighbour sourface integral
                         //                                                                                                                   // see also "X's boundary integral" below
                         //                                                                                                                   // and "X's volume integral" above
-#ifndef NLOG
-                        if ( Xdebug ) {
-                            debugStream.Resume(); // enable logging
-                            debugStream << "      = X surface =======================" << std::endl;
-                            debugStream.Suspend();
-                        }
-#endif
 //                        if ( discreteModel_.hasSigmaFlux() ) {
                             for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
                                 // compute X's element sourface integral
                                 for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                                     double X_i_j = 0.0;
-#ifndef NLOG
-//                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-//                                    if ( allOutput ) Xoutput = true;
-                                    if ( Xdebug ) Xoutput = true;
-                                    if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
-                                    debugStream << "      = X element ======================" << std::endl;
-                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                    debugStream << "      volumeQuadratureElement.nop() " << volumeQuadratureElement.nop() << std::endl;
-#endif
                                     // sum over all quadrature points
 									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x in codim<0> and codim<1> coordinates
@@ -1273,18 +928,6 @@ class StokesPass
                                             * integrationWeight
                                             * mu
                                             * v_i_times_tau_j_times_normal;
-#ifndef NLOG
-                                        debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
-                                        Stuff::printFieldVector( xLocal, "xLocal", debugStream, "          " );
-                                        Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                        debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                        debugStream << "        - integrationWeight: " << integrationWeight;
-                                        Stuff::printFieldMatrix( tau_j, "tau_j", debugStream, "        " );
-                                        Stuff::printFieldVector( tau_j_times_normal, "tau_j_times_normal", debugStream, "        " );
-                                        debugStream << "\n          - v_i_times_tau_j_times_normal: " << v_i_times_tau_j_times_normal << std::endl;
-                                        debugStream << "          - X_" << i << "_" << j << "+=: " << X_i_j << std::endl;
-#endif
                                     } // done sum over all quadrature points
                                     // if small, should be zero
                                     if ( fabs( X_i_j ) < eps ) {
@@ -1293,23 +936,10 @@ class StokesPass
                                     else
                                         // add to matrix
                                         localXmatrixElement.add( i, j, X_i_j );
-#ifndef NLOG
-                                    Xoutput = false;
-                                    debugStream.Suspend(); // disable logging
-#endif
                                 } // done computing X's element sourface integral
                                 // compute X's neighbour sourface integral
                                 for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
                                     double X_i_j = 0.0;
-#ifndef NLOG
-//                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-//                                    if ( allOutput ) Xoutput = true;
-                                    if ( Xdebug ) Xoutput = true;
-                                    if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
-                                    debugStream << "      = X neighbour ====================" << std::endl;
-                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                    debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
-#endif
                                     // sum over all quadrature points
 									for ( size_t quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
@@ -1332,19 +962,6 @@ class StokesPass
                                             * integrationWeight
                                             * mu
                                             * v_i_times_tau_j_times_normal;
-#ifndef NLOG
-                                        debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( xInside, "xInside", debugStream, "        " );
-                                        Stuff::printFieldVector( xOutside, "xOutside", debugStream, "        " );
-                                        Stuff::printFieldVector( xLocal, "xLocal", debugStream, "          " );
-                                        Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                        debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                        debugStream << "        - integrationWeight: " << integrationWeight;
-                                        Stuff::printFieldMatrix( tau_j, "tau_j", debugStream, "        " );
-                                        Stuff::printFieldVector( tau_j_times_normal, "tau_j_times_normal", debugStream, "        " );
-                                        debugStream << "\n          - v_i_times_tau_j_times_normal: " << v_i_times_tau_j_times_normal << std::endl;
-                                        debugStream << "          - X_" << i << "_" << j << "+=: " << X_i_j << std::endl;
-#endif
                                     } // done sum over all quadrature points
                                     // if small, should be zero
                                     if ( fabs( X_i_j ) < eps ) {
@@ -1353,10 +970,6 @@ class StokesPass
                                     else
                                         // add to matrix
                                         localXmatrixNeighbour.add( i, j, X_i_j );
-#ifndef NLOG
-                                    Xoutput = false;
-                                    debugStream.Suspend(); // disable logging
-#endif
                                 } // done computing X's neighbour sourface integral
                             } // done computing X's sourface integrals
 //                        }
@@ -1365,27 +978,11 @@ class StokesPass
                         // (Y)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U{+}}(v{j})\cdot n_{t}ds // Y's element surface integral
                         //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}ds // Y's neighbour surface integral
                         //                                                                                                         // see also "Y's boundary integral" below
-#ifndef NLOG
-                        if ( Ydebug ) {
-                            debugStream.Resume(); // enable logging
-                            debugStream << "      = Y surface =======================" << std::endl;
-                            debugStream.Suspend();
-                        }
-#endif
 //                        if ( discreteModel_.hasSigmaFlux() ) {
                             for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                                 // compute Y's element surface integral
                                 for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                                     double Y_i_j = 0.0;
-#ifndef NLOG
-//                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Youtput = true;
-//                                    if ( allOutput ) Youtput = true;
-                                    if ( Ydebug ) Youtput = true;
-                                    if ( intersectionOutput && Youtput ) debugStream.Resume(); // enable logging
-                                    debugStream << "      = Y element ======================" << std::endl;
-                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                    debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
-#endif
                                     // sum over all quadrature points
 									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
@@ -1407,18 +1004,6 @@ class StokesPass
                                             * integrationWeight
                                             * mu
                                             * v_i_times_v_j;
-#ifndef NLOG
-                                        debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
-                                        Stuff::printFieldVector( xLocal, "xLocal", debugStream, "          " );
-                                        Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                        debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                        debugStream << "        - integrationWeight: " << integrationWeight;
-                                        Stuff::printFieldVector( v_i, "v_i", debugStream, "        " );
-                                        Stuff::printFieldVector( v_j, "v_j", debugStream, "        " );
-                                        debugStream << "\n          - v_i_times_v_j: " << v_i_times_v_j << std::endl;
-                                        debugStream << "          - Y_" << i << "_" << j << "+=: " << Y_i_j << std::endl;
-#endif
                                     } // done sum over all quadrature points
                                     // if small, should be zero
                                     if ( fabs( Y_i_j ) < eps ) {
@@ -1427,23 +1012,10 @@ class StokesPass
                                     else
                                         // add to matrix
                                         localYmatrixElement.add( i, j, Y_i_j );
-#ifndef NLOG
-                                    Youtput = false;
-                                    debugStream.Suspend(); // disable logging
-#endif
                                 } // done computing Y's element surface integral
                                 // compute Y's neighbour surface integral
                                 for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
                                     double Y_i_j = 0.0;
-#ifndef NLOG
-//                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Youtput = true;
-//                                    if ( allOutput ) Youtput = true;
-                                    if ( Ydebug ) Youtput = true;
-                                    if ( intersectionOutput && Youtput ) debugStream.Resume(); // enable logging
-                                    debugStream << "      = Y neighbour ====================" << std::endl;
-                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                    debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
-#endif
                                     // sum over all quadrature points
 									for ( size_t quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
@@ -1467,19 +1039,6 @@ class StokesPass
                                             * integrationWeight
                                             * mu
                                             * v_i_times_v_j;
-#ifndef NLOG
-                                        debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( xInside, "xInside", debugStream, "        " );
-                                        Stuff::printFieldVector( xOutside, "xOutside", debugStream, "        " );
-                                        Stuff::printFieldVector( xLocal, "xLocal", debugStream, "          " );
-                                        Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                        debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                        debugStream << "        - integrationWeight: " << integrationWeight;
-                                        Stuff::printFieldVector( v_i, "v_i", debugStream, "        " );
-                                        Stuff::printFieldVector( v_j, "v_j", debugStream, "        " );
-                                        debugStream << "\n          - v_i_times_v_j: " << v_i_times_v_j << std::endl;
-                                        debugStream << "          - Y_" << i << "_" << j << "+=: " << Y_i_j << std::endl;
-#endif
                                     } // done sum over all quadrature points
                                     // if small, should be zero
                                     if ( fabs( Y_i_j ) < eps ) {
@@ -1488,10 +1047,6 @@ class StokesPass
                                     else
                                         // add to matrix
                                         localYmatrixNeighbour.add( i, j, Y_i_j );
-#ifndef NLOG
-                                    Youtput = false;
-                                    debugStream.Suspend(); // disable logging
-#endif
                                 } // done computing Y's neighbour surface integral
                             } // done computing Y's surface integrals
 //                        }
@@ -1501,27 +1056,11 @@ class StokesPass
                         //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{p}^{P^{-}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's neighbour surface integral
                         //                                                                                                  // see also "Z's boundary integral" below
                         //                                                                                                  // and "Z's volume integral" above
-#ifndef NLOG
-                        if ( Zdebug ) {
-                            debugStream.Resume(); // enable logging
-                            debugStream << "      = Z surface =======================" << std::endl;
-                            debugStream.Suspend();
-                        }
-#endif
 //                        if ( discreteModel_.hasPressureFlux() ) {
                             for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
                                 // compute Z's element surface integral
                                 for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                                     double Z_i_j = 0.0;
-#ifndef NLOG
-//                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
-//                                    if ( allOutput ) Zoutput = true;
-                                    if ( Zdebug ) Zoutput = true;
-                                    if ( intersectionOutput && Zoutput ) debugStream.Resume(); // enable logging
-                                    debugStream << "      = Z element ======================" << std::endl;
-                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                    debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
-#endif
                                     // sum over all quadrature points
 									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
@@ -1546,19 +1085,6 @@ class StokesPass
                                             * elementVolume
                                             * integrationWeight
                                             * q_j_times_v_i_times_normal;
-#ifndef NLOG
-                                        debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
-                                        Stuff::printFieldVector( xLocal, "xLocal", debugStream, "          " );
-                                        Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                        debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                        debugStream << "        - integrationWeight: " << integrationWeight;
-                                        Stuff::printFieldVector( v_i, "v_i", debugStream, "        " );
-                                        Stuff::printFieldVector( q_j, "q_j", debugStream, "        " );
-                                        debugStream << "\n          - v_i_times_normal: " << v_i_times_normal << std::endl;
-                                        debugStream << "          - q_j_times_v_i_times_normal: " << q_j_times_v_i_times_normal << std::endl;
-                                        debugStream << "          - Z_" << i << "_" << j << "+=: " << Z_i_j << std::endl;
-#endif
                                     } // done sum over all quadrature points
                                     // if small, should be zero
                                     if ( fabs( Z_i_j ) < eps ) {
@@ -1567,23 +1093,10 @@ class StokesPass
                                     else
                                         // add to matrix
                                         localZmatrixElement.add( i, j, Z_i_j );
-#ifndef NLOG
-                                    Zoutput = false;
-                                    debugStream.Suspend(); // disable logging
-#endif
                                 } // done computing Z's element surface integral
                                 // compute Z's neighbour surface integral
                                 for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
                                     double Z_i_j = 0.0;
-#ifndef NLOG
-//                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
-//                                    if ( allOutput ) Zoutput = true;
-                                    if ( Zdebug ) Zoutput = true;
-                                    if ( intersectionOutput && Zoutput ) debugStream.Resume(); // enable logging
-                                    debugStream << "      = Z neighbour ====================" << std::endl;
-                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                    debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
-#endif
                                     // sum over all quadrature points
 									for ( size_t quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
@@ -1609,20 +1122,6 @@ class StokesPass
                                             * elementVolume
                                             * integrationWeight
                                             * q_j_times_v_i_times_normal;
-#ifndef NLOG
-                                        debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( xInside, "xInside", debugStream, "        " );
-                                        Stuff::printFieldVector( xOutside, "xOutside", debugStream, "        " );
-                                        Stuff::printFieldVector( xLocal, "xLocal", debugStream, "          " );
-                                        Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                        debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                        debugStream << "        - integrationWeight: " << integrationWeight;
-                                        Stuff::printFieldVector( v_i, "v_i", debugStream, "        " );
-                                        Stuff::printFieldVector( q_j, "q_j", debugStream, "        " );
-                                        debugStream << "\n          - v_i_times_normal: " << v_i_times_normal << std::endl;
-                                        debugStream << "          - q_j_times_v_i_times_normal: " << q_j_times_v_i_times_normal << std::endl;
-                                        debugStream << "          - Z_" << i << "_" << j << "+=: " << Z_i_j << std::endl;
-#endif
                                     } // done sum over all quadrature points
                                     // if small, should be zero
                                     if ( fabs( Z_i_j ) < eps ) {
@@ -1631,10 +1130,6 @@ class StokesPass
                                     else
                                         // add to matrix
                                         localZmatrixNeighbour.add( i, j, Z_i_j );
-#ifndef NLOG
-                                    Zoutput = false;
-                                    debugStream.Suspend(); // disable logging
-#endif
                                 } // done computing Z's neighbour surface integral
                             } // done computing Z's surface integrals
 //                        }
@@ -1644,27 +1139,11 @@ class StokesPass
                         //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{U^{-}}(v_{j})\cdot n_{T}q_{i}ds // E's neighbour surface integral
                         //                                                                                                // see also "E's boundary integral" below
                         //                                                                                                // and "E's volume integral" above
-#ifndef NLOG
-                        if ( Edebug ) {
-                            debugStream.Resume(); // enable logging
-                            debugStream << "      = E surface =======================" << std::endl;
-                            debugStream.Suspend();
-                        }
-#endif
 //                        if ( discreteModel_.hasVelocityPressureFlux() ) {
                             for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                                 // compute E's element surface integral
                                 for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
                                     double E_i_j = 0.0;
-#ifndef NLOG
-//                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
-//                                    if ( allOutput ) Eoutput = true;
-                                    if ( Edebug ) Eoutput = true;
-                                    if ( intersectionOutput && Eoutput ) debugStream.Resume(); // enable logging
-                                    debugStream << "      = E element ======================" << std::endl;
-                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                    debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
-#endif
                                     // sum over all quadrature points
 									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
@@ -1693,19 +1172,6 @@ class StokesPass
 										E_i_j += elementVolume
 											* integrationWeight
 											* q_i_times_flux_times_outerNormal;
-#ifndef NLOG
-                                        debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
-                                        Stuff::printFieldVector( xLocal, "xLocal", debugStream, "          " );
-                                        Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                        debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                        debugStream << "        - integrationWeight: " << integrationWeight;
-                                        Stuff::printFieldVector( q_i, "q_i", debugStream, "        " );
-                                        Stuff::printFieldVector( v_j, "v_j", debugStream, "        " );
-//                                        debugStream << "\n          - v_j_times_normal: " << v_j_times_normal << std::endl;
-//                                        debugStream << "          - q_i_times_v_j_times_normal: " << q_i_times_v_j_times_normal << std::endl;
-                                        debugStream << "          - E_" << i << "_" << j << "+=: " << E_i_j << std::endl;
-#endif
                                     } // done sum over all quadrature points
                                     // if small, should be zero
                                     if ( fabs( E_i_j ) < eps ) {
@@ -1714,23 +1180,10 @@ class StokesPass
                                     else
                                         // add to matrix
                                         localEmatrixElement.add( i, j, E_i_j );
-#ifndef NLOG
-                                    Eoutput = false;
-                                    debugStream.Suspend(); // disable logging
-#endif
                                 } // done computing E's element surface integral
                                 // compute E's neighbour surface integral
                                 for ( int i = 0; i < numPressureBaseFunctionsNeighbour; ++i ) {
                                     double E_i_j = 0.0;
-#ifndef NLOG
-//                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Eoutput = true;
-//                                    if ( allOutput ) Eoutput = true;
-                                    if ( Edebug ) Eoutput = true;
-                                    if ( intersectionOutput && Eoutput ) debugStream.Resume(); // enable logging
-                                    debugStream << "      = E neighbour ====================" << std::endl;
-                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                    debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
-#endif
                                     // sum over all quadrature points
 									for ( size_t quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
@@ -1761,20 +1214,6 @@ class StokesPass
 										E_i_j -= elementVolume
                                             * integrationWeight
 											* q_i_times_flux_times_outerNormal;
-#ifndef NLOG
-                                        debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( xInside, "xInside", debugStream, "        " );
-                                        Stuff::printFieldVector( xOutside, "xOutside", debugStream, "        " );
-                                        Stuff::printFieldVector( xLocal, "xLocal", debugStream, "          " );
-                                        Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                        debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                        debugStream << "        - integrationWeight: " << integrationWeight;
-                                        Stuff::printFieldVector( q_i, "q_i", debugStream, "        " );
-                                        Stuff::printFieldVector( v_j, "v_j", debugStream, "        " );
-//                                        debugStream << "\n          - v_j_times_normal: " << v_j_times_normal << std::endl;
-//                                        debugStream << "\n          - q_i_times_v_j_times_normal: " << q_i_times_v_j_times_normal << std::endl;
-                                        debugStream << "          - E_" << i << "_" << j << "+=: " << E_i_j << std::endl;
-#endif
                                     } // done sum over all quadrature points
                                     // if small, should be zero
                                     if ( fabs( E_i_j ) < eps ) {
@@ -1783,10 +1222,6 @@ class StokesPass
                                     else
                                         // add to matrix
                                         localEmatrixNeighbour.add( i, j, E_i_j );
-#ifndef NLOG
-                                    Eoutput = false;
-                                    debugStream.Suspend(); // disable logging
-#endif
                                 } // done computing E's neighbour surface integral
                             } // done computing E's surface integrals
 //                        }
@@ -1795,27 +1230,11 @@ class StokesPass
                         // (R)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}ds // R's element surface integral
                         //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}ds // R's neighbour surface integral
                         //                                                                                                // see also "R's boundary integral" below
-#ifndef NLOG
-                        if ( Rdebug ) {
-                            debugStream.Resume(); // enable logging
-                            debugStream << "      = R surface =======================" << std::endl;
-                            debugStream.Suspend();
-                        }
-#endif
 //                        if ( discreteModel_.hasVelocityPressureFlux() ) {
                             for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
                                 // compute R's element surface integral
                                 for ( int i = 0; i < numPressureBaseFunctionsElement; ++i ) {
                                     double R_i_j = 0.0;
-#ifndef NLOG
-//                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Routput = true;
-//                                    if ( allOutput ) Routput = true;
-                                    if ( Rdebug ) Routput = true;
-                                    if ( intersectionOutput && Routput ) debugStream.Resume(); // enable logging
-                                    debugStream << "      = R element ======================" << std::endl;
-                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                    debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
-#endif
                                     // sum over all quadrature points
 									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
@@ -1836,17 +1255,6 @@ class StokesPass
                                             * elementVolume
                                             * integrationWeight
                                             * q_i_times_q_j;
-#ifndef NLOG
-                                        debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
-                                        Stuff::printFieldVector( xLocal, "xLocal", debugStream, "          " );
-                                        Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                        debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                        debugStream << "        - integrationWeight: " << integrationWeight;
-                                        Stuff::printFieldVector( q_i, "q_i", debugStream, "        " );
-                                        Stuff::printFieldVector( q_j, "q_j", debugStream, "        " );
-                                        debugStream << "\n          - q_i_times_q_j: " << q_i_times_q_j << std::endl;
-#endif
                                     } // done sum over all quadrature points
                                     // if small, should be zero
                                     if ( fabs( R_i_j ) < eps ) {
@@ -1855,23 +1263,10 @@ class StokesPass
                                     else
                                         // add to matrix
                                         localRmatrixElement.add( i, j, R_i_j );
-#ifndef NLOG
-                                    Routput = false;
-                                    debugStream.Suspend(); // disable logging
-#endif
                                 } // done computing R's element surface integral
                                 // compute R's neighbour surface integral
                                 for ( int i = 0; i < numPressureBaseFunctionsNeighbour; ++i ) {
                                     double R_i_j = 0.0;
-#ifndef NLOG
-//                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Routput = true;
-//                                    if ( allOutput ) Routput = true;
-                                    if ( Rdebug ) Routput = true;
-                                    if ( intersectionOutput && Routput ) debugStream.Resume(); // enable logging
-                                    debugStream << "      = R neighbour ====================" << std::endl;
-                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                    debugStream << "      faceQuadratureNeighbour.nop() " << faceQuadratureNeighbour.nop() << std::endl;
-#endif
                                     // sum over all quadrature points
 									for ( size_t quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
@@ -1894,19 +1289,6 @@ class StokesPass
                                             * elementVolume
                                             * integrationWeight
                                             * q_i_times_q_j;
-#ifndef NLOG
-                                        debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( xInside, "xInside", debugStream, "        " );
-                                        Stuff::printFieldVector( xOutside, "xOutside", debugStream, "        " );
-                                        Stuff::printFieldVector( xLocal, "xLocal", debugStream, "          " );
-                                        Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                        debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                        debugStream << "        - integrationWeight: " << integrationWeight;
-                                        Stuff::printFieldVector( q_i, "q_i", debugStream, "        " );
-                                        Stuff::printFieldVector( q_j, "q_j", debugStream, "        " );
-                                        debugStream << "\n          - q_i_times_q_j: " << q_i_times_q_j << std::endl;
-                                        debugStream << "          - R_" << i << "_" << j << "+=: " << R_i_j << std::endl;
-#endif
                                     } // done sum over all quadrature points
                                     // if small, should be zero
                                     if ( fabs( R_i_j ) < eps ) {
@@ -1915,10 +1297,6 @@ class StokesPass
                                     else
                                         // add to matrix
                                         localRmatrixNeighbour.add( i, j, R_i_j );
-#ifndef NLOG
-                                    Routput = false;
-                                    debugStream.Suspend(); // disable logging
-#endif
                                 } // done computing R's neighbour surface integral
                             } // done computing R's surface integrals
 //                        }
@@ -2034,15 +1412,6 @@ class StokesPass
                         if ( discreteModel_.hasVelocitySigmaFlux() ) {
                             for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
                                 double H1_j = 0.0;
-#ifndef NLOG
-//                                if ( j == logBaseJ ) H1output = true;
-//                                if ( allOutput ) H1output = true;
-                                if ( H1debug ) H1output = true;
-                                if ( intersectionOutput && H1output ) debugStream.Resume(); // enable logging
-                                debugStream << "      = H1 boundary ====================" << std::endl;
-                                debugStream << "      basefunction " << j << std::endl;
-                                debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
-#endif
                                 // sum over all quadrature points
 								for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                     // get x codim<0> and codim<1> coordinates
@@ -2065,20 +1434,6 @@ class StokesPass
                                     H1_j += elementVolume
                                         * integrationWeight
                                         * gD_times_tau_j_times_normal;
-#ifndef NLOG
-                                    debugStream << "      - quadPoint " << quad;
-                                    Stuff::printFieldVector( x, "x", debugStream, "        " );
-                                    Stuff::printFieldVector( xLocal, "xLocal", debugStream, "        " );
-                                    Stuff::printFieldVector( xWorld, "xWorld", debugStream, "        " );
-                                    Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "        " );
-                                    debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                    debugStream << "        - integrationWeight: " << integrationWeight;
-                                    Stuff::printFieldMatrix( tau_j, "tau_j", debugStream, "        " );
-                                    Stuff::printFieldVector( gD, "gD", debugStream, "        " );
-                                    Stuff::printFieldVector( tau_j_times_normal, "tau_j_times_normal", debugStream, "        " );
-                                    debugStream << "\n        - gD_times_tau_j_times_normal: " << gD_times_tau_j_times_normal << std::endl;
-                                    debugStream << "        - H1_" << j << "+=: " << H1_j << std::endl;
-#endif
                                 } // done sum over all quadrature points
                                 // if small, should be zero
                                 if ( fabs( H1_j ) < eps ) {
@@ -2086,36 +1441,16 @@ class StokesPass
                                 }
                                 // add to rhs
                                 localH1rhs[ j ] += H1_j;
-#ifndef NLOG
-                                H1output = false;
-                                debugStream.Suspend(); // disable logging
-#endif
                             } // done computing H1's boundary integral
                         }
 
                         //                                                                                                                   // we will call this one
                         // (X)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}ds // X's boundary integral
                         //                                                                                                                   // see also "X's volume integral", "X's element surface integral" and "X's neighbour surface integral" above
-#ifndef NLOG
-                        if ( Xdebug ) {
-                            debugStream.Resume(); // enable logging
-                            debugStream << "      = X boundary =====================" << std::endl;
-                            debugStream.Suspend();
-                        }
-#endif
 //                        if ( discreteModel_.hasSigmaFlux() ) {
                             for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                                 for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
                                     double X_i_j = 0.0;
-#ifndef NLOG
-//                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Xoutput = true;
-//                                    if ( allOutput ) Xoutput = true;
-                                    if ( Xdebug ) Xoutput = true;
-                                    if ( intersectionOutput && Xoutput ) debugStream.Resume(); // enable logging
-                                    debugStream << "      = X boundary =====================" << std::endl;
-                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                    debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
-#endif
                                     // sum over all quadrature points
 									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
@@ -2139,19 +1474,6 @@ class StokesPass
                                             * integrationWeight
                                             * mu
                                             * v_i_times_tau_times_normal;
-#ifndef NLOG
-                                        debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
-                                        Stuff::printFieldVector( xLocal, "xLocal", debugStream, "          " );
-                                        Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                        debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                        debugStream << "        - integrationWeight: " << integrationWeight;
-                                        Stuff::printFieldVector( v_i, "v_i", debugStream, "        " );
-                                        Stuff::printFieldMatrix( tau_j, "tau_j", debugStream, "        " );
-                                        Stuff::printFieldVector( tau_times_normal, "tau_times_normal", debugStream, "        " );
-                                        debugStream << "\n          - v_i_times_tau_times_normal: " << v_i_times_tau_times_normal << std::endl;
-                                        debugStream << "          - X_" << i << "_" << j << "+=: " << X_i_j << std::endl;
-#endif
                                     } // done sum over all quadrature points
                                     // if small, should be zero
                                     if ( fabs( X_i_j ) < eps ) {
@@ -2160,10 +1482,6 @@ class StokesPass
                                     else
                                         // add to matrix
                                         localXmatrixElement.add( i, j, X_i_j );
-#ifndef NLOG
-                                    Xoutput = false;
-                                    debugStream.Suspend(); // disable logging
-#endif
                                 }
                             } // done computing X's boundary integral
 //                        }
@@ -2171,26 +1489,10 @@ class StokesPass
                         //                                                                                                           // we will call this one
                         // (Y)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U^{+}}(v_{j})\cdot n_{t}ds // Y's boundary integral
                         //                                                                                                           // see also "Y's element surface integral" and "Y's neighbour surface integral" above
-#ifndef NLOG
-                        if ( Ydebug ) {
-                            debugStream.Resume(); // enable logging
-                            debugStream << "      = Y boundary =====================" << std::endl;
-                            debugStream.Suspend();
-                        }
-#endif
 //                        if ( discreteModel_.hasSigmaFlux() ) {
                             for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                                 for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                                     double Y_i_j = 0.0;
-#ifndef NLOG
-//                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Youtput = true;
-//                                    if ( allOutput ) Youtput = true;
-                                    if ( Ydebug ) Youtput = true;
-                                    if ( intersectionOutput && Youtput ) debugStream.Resume(); // enable logging
-                                    debugStream << "      = Y boundary =====================" << std::endl;
-                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                    debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
-#endif
                                     // sum over all quadrature points
 									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
@@ -2212,18 +1514,6 @@ class StokesPass
                                             * integrationWeight
                                             * mu
                                             * v_i_times_v_j;
-#ifndef NLOG
-                                        debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
-                                        Stuff::printFieldVector( xLocal, "xLocal", debugStream, "          " );
-                                        Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                        debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                        debugStream << "        - integrationWeight: " << integrationWeight;
-                                        Stuff::printFieldVector( v_i, "v_i", debugStream, "        " );
-                                        Stuff::printFieldVector( v_j, "v_j", debugStream, "        " );
-                                        debugStream << "\n          - v_i_times_v_j: " << v_i_times_v_j << std::endl;
-                                        debugStream << "          - Y_" << i << "_" << j << "+=: " << Y_i_j << std::endl;
-#endif
                                     } // done sum over all quadrature points
                                     // if small, should be zero
                                     if ( fabs( Y_i_j ) < eps ) {
@@ -2232,10 +1522,6 @@ class StokesPass
                                     else
                                         // add to matrix
                                         localYmatrixElement.add( i, j, Y_i_j );
-#ifndef NLOG
-                                    Youtput = false;
-                                    debugStream.Suspend(); // disable logging
-#endif
                                 }
                             } // done computing Y's boundary integral
 //                        }
@@ -2243,27 +1529,11 @@ class StokesPass
                         //                                                                                                  // we will call this one
                         // (Z)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's boundary integral
                         //                                                                                                  // see also "Z's volume integral", "Z's element surface integral" and "Z's neighbour surface integral" above
-#ifndef NLOG
-                        if ( Zdebug ) {
-                            debugStream.Resume(); // enable logging
-                            debugStream << "      = Z boundary =====================" << std::endl;
-                            debugStream.Suspend();
-                        }
-#endif
 //                        if ( discreteModel_.hasPressureFlux() ) {
                             for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
                                 // compute the boundary integral
                                 for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
                                     double Z_i_j = 0.0;
-#ifndef NLOG
-//                                    if ( ( i == logBaseI ) && ( j == logBaseJ ) ) Zoutput = true;
-//                                    if ( allOutput ) Zoutput = true;
-                                    if ( Zdebug ) Zoutput = true;
-                                    if ( intersectionOutput && Zoutput ) debugStream.Resume(); // enable logging
-                                    debugStream << "      = Z boundary =====================" << std::endl;
-                                    debugStream << "      basefunctions " << i << " " << j << std::endl;
-                                    debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
-#endif
                                     // sum over all quadrature points
 									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                         // get x codim<0> and codim<1> coordinates
@@ -2284,18 +1554,6 @@ class StokesPass
                                         Z_i_j += elementVolume
                                             * integrationWeight
                                             * q_j_times_v_times_normal;
-#ifndef NLOG
-                                        debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
-                                        Stuff::printFieldVector( xLocal, "xLocal", debugStream, "          " );
-                                        Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "          " );
-                                        debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                        debugStream << "        - integrationWeight: " << integrationWeight;
-                                        Stuff::printFieldVector( v_i, "v_i", debugStream, "        " );
-                                        Stuff::printFieldVector( q_j, "q_j", debugStream, "        " );
-                                        debugStream << "\n          - q_j_times_v_times_normal: " << q_j_times_v_times_normal << std::endl;
-                                        debugStream << "          - Z_" << i << "_" << j << "+=: " << Z_i_j << std::endl;
-#endif
                                     } // done sum over all quadrature points
                                     // if small, should be zero
                                     if ( fabs( Z_i_j ) < eps ) {
@@ -2304,10 +1562,6 @@ class StokesPass
                                     else
                                         // add to matrix
                                         localZmatrixElement.add( i, j, Z_i_j );
-#ifndef NLOG
-                                    Zoutput = false;
-                                    debugStream.Suspend(); // disable logging
-#endif
                                 }
                             } // done computing Z's boundary integral
 //                        }
@@ -2319,15 +1573,6 @@ class StokesPass
                         if ( discreteModel_.hasSigmaFlux() && discreteModel_.hasPressureFlux() ) {
                             for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
                                 double H2_j = 0.0;
-#ifndef NLOG
-//                                if ( j == logBaseJ ) H2output = true;
-//                                if ( allOutput ) H2output = true;
-                                if ( H2debug ) H2output = true;
-                                if ( intersectionOutput && H2output ) debugStream.Resume(); // enable logging
-                                debugStream << "      = H2 boundary ====================" << std::endl;
-                                debugStream << "      basefunction " << j << std::endl;
-                                debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
-#endif
                                 // sum over all quadrature points
 								for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                     // get x codim<0> and codim<1> coordinates
@@ -2358,21 +1603,6 @@ class StokesPass
                                             * integrationWeight
                                             * mu
                                             * v_j_times_gD_times_normal_times_normal;
-#ifndef NLOG
-                                        debugStream << "      - quadPoint " << quad;
-                                        Stuff::printFieldVector( x, "x", debugStream, "        " );
-                                        Stuff::printFieldVector( xLocal, "xLocal", debugStream, "        " );
-                                        Stuff::printFieldVector( globalX, "globalX", debugStream, "        " );
-                                        Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "        " );
-                                        debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                        debugStream << "        - integrationWeight: " << integrationWeight;
-                                        Stuff::printFieldVector( v_j, "v_j", debugStream, "        " );
-                                        Stuff::printFieldVector( gD, "gD", debugStream, "        " );
-                                        Stuff::printFieldMatrix( gD_times_normal, "gD_times_normal", debugStream, "        " );
-                                        Stuff::printFieldVector( gD_times_normal_times_normal, "gD_times_normal_times_normal", debugStream, "        " );
-                                        debugStream << "\n        - v_j_times_gD_times_normal_times_normal: " << v_j_times_gD_times_normal_times_normal << std::endl;
-                                        debugStream << "        - H2_" << j << "+=: " << H2_j;
-#endif
 //                                    }
                                     // done computing H2's 1st boundary integral
                                     // compute -\hat{p}^{RHS}()\cdot v_{j}\cdot n_{T}
@@ -2383,11 +1613,6 @@ class StokesPass
                                             * elementVolume
                                             * integrationWeight
                                             * flux_times_v_j_times_n_t;
-#ifndef NLOG
-                                        debugStream << "        - v_j_times_normal: " << v_j_times_normal << std::endl;
-                                        debugStream << "        - flux_times_v_j_times_n_t: " << flux_times_v_j_times_n_t << std::endl;
-                                        debugStream << "        - H2_" << j << "+=: " << H2_j << std::endl;
-#endif
 //                                    }
                                     // done computing H2's 2nd boundary integral
                                 } // done sum over all quadrature points
@@ -2397,10 +1622,6 @@ class StokesPass
                                 }
                                 // add to rhs
                                 localH2rhs[ j ] += H2_j;
-#ifndef NLOG
-                                H2output = false;
-                                debugStream.Suspend(); // disable logging
-#endif
                             } // done computing H2's boundary integrals
                         }
 
@@ -2612,15 +1833,6 @@ class StokesPass
 //                        if ( discreteModel_.hasVelocityPressureFlux() ) {
                             for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
                                 double H3_j = 0.0;
-#ifndef NLOG
-//                                if ( j == logBaseJ ) H3output = true;
-//                                if ( allOutput ) H3output = true;
-                                if ( H3debug ) H3output = true;
-                                if ( intersectionOutput && H3output ) debugStream.Resume(); // enable logging
-                                debugStream << "      = H3 boundary ====================" << std::endl;
-                                debugStream << "      basefunction " << j << std::endl;
-                                debugStream << "      faceQuadratureElement.nop() " << faceQuadratureElement.nop() << std::endl;
-#endif
                                 // sum over all quadrature points
 								for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
                                     // get x codim<0> and codim<1> coordinates
@@ -2642,19 +1854,6 @@ class StokesPass
                                     H3_j += elementVolume
                                         * integrationWeight
                                         * q_j_times_gD_times_normal;
-#ifndef NLOG
-                                    debugStream << "      - quadPoint " << quad;
-                                    Stuff::printFieldVector( x, "x", debugStream, "        " );
-                                    Stuff::printFieldVector( xLocal, "xLocal", debugStream, "        " );
-                                    Stuff::printFieldVector( outerNormal, "outerNormal", debugStream, "        " );
-                                    debugStream << "\n        - elementVolume: " << elementVolume << std::endl;
-                                    debugStream << "        - integrationWeight: " << integrationWeight;
-                                    Stuff::printFieldVector( q_j, "q_j", debugStream, "        " );
-                                    Stuff::printFieldVector( gD, "gD", debugStream, "        " );
-                                    debugStream << "\n        - gD_times_normal: " << gD_times_normal << std::endl;
-                                    debugStream << "        - q_j_times_gD_times_normal: " << q_j_times_gD_times_normal << std::endl;
-                                    debugStream << "        - H3_" << j << "+=: " << H3_j << std::endl;
-#endif
                                 } // done sum over all quadrature points
                                 // if small, should be zero
                                 if ( fabs( H3_j ) < eps ) {
@@ -2662,32 +1861,13 @@ class StokesPass
                                 }
                                 // add to rhs
                                 localH3rhs[ j ] += H3_j;
-#ifndef NLOG
-                                H3output = false;
-                                debugStream.Suspend(); // disable logging
-#endif
                             } // done computing H3's boundary integral
 //                        }
 
                     } // done with those on the boundary
-#ifndef NLOG
-                    if ( intersectionOutput ) debugStream.Resume(); // enable logging
-                    debugStream << "    - ==== done calculations on intersection " << intersectionNR << std::endl;
-                    debugStream.Suspend(); // disable logging
-                    intersectionOutput = false;
-                    ++intersectionNR;
-#endif
                 } // done walking the neighbours
 //#endif //no_surface_ints
 
-#ifndef NLOG
-                intersectionNR = 0;
-                if ( entityOutput ) debugStream.Resume(); // enable logging
-                debugStream << "  - == done calculations on entity " << entityNR << std::endl;
-                debugStream.Suspend(); // disable logging
-                entityOutput = false;
-                ++entityNR;
-#endif
             } // done walking the grid
 
 
@@ -2698,52 +1878,6 @@ class StokesPass
             }
             infoStream << "\n- gridwalk done" << std::endl << std::endl;
             infoStream.Suspend();
-
-            if ( Mprint || Wprint || Xprint || Yprint || Zprint || Eprint || Rprint || H1print || H2print || H3print ) {
-                debugStream.Resume();
-                debugStream << "- printing matrices" << std::endl;
-                if ( Mprint ) {
-                    debugStream << " - = Minvers ======" << std::endl;
-                    debugStream.Log( &MInversMatrixType::MatrixType::print,  MInversMatrix.matrix() );
-                }
-                if ( Wprint ) {
-                    debugStream << " - = W ============" << std::endl;
-                    debugStream.Log( &WmatrixType::MatrixType::print,  Wmatrix.matrix() );
-                }
-                if ( Xprint ) {
-                    debugStream << " - = X ============" << std::endl;
-                    debugStream.Log( &XmatrixType::MatrixType::print,  Xmatrix.matrix() );
-                }
-                if ( Yprint ) {
-                    debugStream << " - = Y ============" << std::endl;
-                    debugStream.Log( &YmatrixType::MatrixType::print,  Ymatrix.matrix() );
-                }
-                if ( Zprint ) {
-                    debugStream << " - = Z ============" << std::endl;
-                    debugStream.Log( &ZmatrixType::MatrixType::print,  Zmatrix.matrix() );
-                }
-                if ( Eprint ) {
-                    debugStream << " - = E ============" << std::endl;
-                    debugStream.Log( &EmatrixType::MatrixType::print,  Ematrix.matrix() );
-                }
-                if ( Rprint ) {
-                    debugStream << " - = R ============" << std::endl;
-                    debugStream.Log( &RmatrixType::MatrixType::print,  Rmatrix.matrix() );
-                }
-                if ( H1print ) {
-                    debugStream << " - = H1 ===========" << std::endl;
-                    debugStream.Log( &DiscreteSigmaFunctionType::print, H1rhs );
-                }
-                if ( H2print ) {
-                    debugStream << " - = H2 ===========" << std::endl;
-                    debugStream.Log( &DiscreteVelocityFunctionType::print, H2rhs );
-                }
-                if ( H3print ) {
-                    debugStream << " - = H3 ===========" << std::endl;
-                    debugStream.Log( &DiscretePressureFunctionType::print, H3rhs );
-                }
-                debugStream << std::endl;
-            }
 
 //            // do the matlab logging stuff
 //            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
@@ -2770,24 +1904,12 @@ class StokesPass
 //            Stuff::LocalMatrixPrintFunctor< YmatrixType,FunctorStream> f_Y ( Ymatrix, functorStream, "Y" );
 //            Stuff::LocalMatrixPrintFunctor< ZmatrixType,FunctorStream> f_Z ( Zmatrix, functorStream, "Z" );
 //            Stuff::LocalMatrixPrintFunctor< RmatrixType,FunctorStream> f_R ( Rmatrix, functorStream, "R" );
-//            if( Wprint ) {
 //                gw( f_W );
-//            }
-//            if( Xprint ) {
 //                gw( f_X );
-//            }
-//            if( Yprint ) {
 //                gw( f_Y );
-//            }
-//            if( Zprint ) {
 //                gw( f_Z );
-//            }
-//            if( Eprint ) {
 //                gw( f_E );
-//            }
-//            if( Rprint ) {
 //                gw( f_R );
-//            }
 #endif
             // do profiling
             profiler().StopTiming("Pass -- ASSEMBLE");
@@ -2842,7 +1964,6 @@ class StokesPass
     private:
         DiscreteModelType& discreteModel_;
         GridPartType& gridPart_;
-//        NonPeriodicGridPartType& nonPeriodicGridPart_;
         DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
         DiscreteVelocityFunctionSpaceType& velocitySpace_;
         DiscretePressureFunctionSpaceType& pressureSpace_;
