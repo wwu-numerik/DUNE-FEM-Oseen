@@ -693,8 +693,9 @@ class StokesPass
                         if ( fabs( H2_j ) < eps ) {
                             H2_j = 0.0;
                         }
-                        // add to rhs
-                        localH2rhs[ j ] += H2_j;
+						else
+							// add to rhs
+							localH2rhs[ j ] += H2_j;
                     } // done computing H2's volume integral
                 }
 
@@ -728,7 +729,7 @@ class StokesPass
                                 * gradient_of_q_i_times_v_j;
                         } // done sum over all quadrature points
                         // if small, should be zero
-                        if ( fabs( E_i_j ) < eps ) {
+						if ( fabs( E_i_j ) < eps ) {
                             E_i_j = 0.0;
                         }
                         else
@@ -1336,8 +1337,9 @@ class StokesPass
                                 if ( fabs( H1_j ) < eps ) {
                                     H1_j = 0.0;
                                 }
-                                // add to rhs
-                                localH1rhs[ j ] += H1_j;
+								else
+									// add to rhs
+									localH1rhs[ j ] += H1_j;
                             } // done computing H1's boundary integral
                         }
 
@@ -1517,8 +1519,9 @@ class StokesPass
                                 if ( fabs( H2_j ) < eps ) {
                                     H2_j = 0.0;
                                 }
-                                // add to rhs
-                                localH2rhs[ j ] += H2_j;
+								else
+									// add to rhs
+									localH2rhs[ j ] += H2_j;
                             } // done computing H2's boundary integrals
                         }
 
@@ -1553,8 +1556,9 @@ class StokesPass
                                 if ( fabs( H3_j ) < eps ) {
                                     H3_j = 0.0;
                                 }
-                                // add to rhs
-                                localH3rhs[ j ] += H3_j;
+								else
+									// add to rhs
+									localH3rhs[ j ] += H3_j;
                             } // done computing H3's boundary integral
 //                        }
 
@@ -1728,8 +1732,6 @@ class StokesPass
             }
             return ret;
         }
-
-
 };
 
 }
