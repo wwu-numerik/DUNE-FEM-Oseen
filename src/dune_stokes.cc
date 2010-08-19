@@ -119,7 +119,7 @@ typedef std::vector<std::string>
 **/
 RunInfo singleRun(  CollectiveCommunication& mpicomm,
                     int refine_level_factor,
-                    Dune::StabilizationCoefficients stabil_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients()  );
+					Dune::StabilizationCoefficients& stabil_coeff );
 
 //! multiple runs with bfg tau set in [bfg-tau-start : bfg-tau-inc : bfg-tau-stop] and everything else on default
 void BfgRun     ( CollectiveCommunication& mpicomm );
@@ -221,6 +221,8 @@ int main( int argc, char** argv )
             profiler().Reset( 1 );
             RunInfoVector rf;
 			Dune::StabilizationCoefficients st = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
+			st.FactorFromParams( "C11" );
+			st.FactorFromParams( "C12" );
 			st.FactorFromParams( "D11" );
 			st.FactorFromParams( "D12" );
 			rf.push_back(singleRun( mpicomm, Parameters().getParam( "minref", 0 ), st ) );
@@ -329,7 +331,8 @@ void AccuracyRun( CollectiveCommunication& mpicomm )
             double outer_acc = accurracy_start * std::pow( accurracy_factor, double( i ) );
             Parameters().setParam( "absLimit", outer_acc );
             Parameters().setParam( "inner_absLimit", inner_acc );
-            RunInfo info = singleRun( mpicomm, ref );
+			Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
+			RunInfo info = singleRun( mpicomm, ref, stab_coeff );
             run_infos.push_back( info );
             eoc_output.setErrors( idx,info.L2Errors );
             eoc_texwriter.setInfo( info );
@@ -379,7 +382,8 @@ void AccuracyRunOuter( CollectiveCommunication& mpicomm )
         double inner_acc = outer_acc;
         Parameters().setParam( "absLimit", outer_acc );
         Parameters().setParam( "inner_absLimit", inner_acc );
-        RunInfo info = singleRun( mpicomm, ref );
+		Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
+		RunInfo info = singleRun( mpicomm, ref, stab_coeff );
         run_infos.push_back( info );
         eoc_output.setErrors( idx,info.L2Errors );
         eoc_texwriter.setInfo( info );
@@ -415,7 +419,7 @@ void StabRun( CollectiveCommunication& mpicomm )
     Logger().Info().Resume();
     Logger().Info() << "beginning " << coeff_vector.size() << " runs" << std::endl ;
     profiler().Reset( coeff_vector.size() );
-    CoeffVector::const_iterator it = coeff_vector.begin();
+	CoeffVector::iterator it = coeff_vector.begin();
     for ( ; it != coeff_vector.end(); ++it ) {
         RunInfo info = singleRun( mpicomm, ref, *it );
         run_infos.push_back( info );
@@ -440,7 +444,8 @@ void BfgRun( CollectiveCommunication& mpicomm )
     //first up a non-bfg run for reference
     const int refine_level_factor = Parameters().getParam( "minref", 0 );
     Parameters().setParam( "do-bfg", false );
-    RunInfo nobfg_info = singleRun( mpicomm, refine_level_factor );
+	Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
+	RunInfo nobfg_info = singleRun( mpicomm, refine_level_factor, stab_coeff );
 
     RunInfoVector run_infos;
     const std::string bfgheaders[] = { "h", "el't","Laufzeit (s)","$\\tau$","\\o{} Iter. (i)","min \\# Iter. (i)","max \\# Iter. (i)","\\# Iter. (a)","min. Genau. (i)","Geschwindigkeit", "Druck" };
@@ -465,8 +470,8 @@ void BfgRun( CollectiveCommunication& mpicomm )
 
     for ( double tau = start_tau; tau < stop_tau; tau += tau_inc ) {
         Parameters().setParam( "bfg-tau", tau );
-
-        RunInfo info = singleRun( mpicomm, refine_level_factor );
+		Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
+		RunInfo info = singleRun( mpicomm, refine_level_factor, stab_coeff );
         run_infos.push_back( info );
         bfg_output.setErrors( idx,info.L2Errors );
         bfg_texwriter.setInfo( info );
@@ -478,7 +483,7 @@ void BfgRun( CollectiveCommunication& mpicomm )
 
 RunInfo singleRun(  CollectiveCommunication& mpicomm,
                     int refine_level_factor,
-                    Dune::StabilizationCoefficients stabil_coeff )
+					Dune::StabilizationCoefficients& stabil_coeff )
 {
     profiler().StartTiming( "SingleRun" );
     Logging::LogStream& infoStream = Logger().Info();
