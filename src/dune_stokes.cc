@@ -143,6 +143,7 @@ CoeffVector getC_Permutations();
 CoeffVector getC_power_Permutations();
 
 //! output alert for neg. EOC
+typedef std::vector<RunInfo> RunInfoVector;
 void eocCheck( const RunInfoVector& runInfos );
 
 /**
