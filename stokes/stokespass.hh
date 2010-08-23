@@ -202,6 +202,18 @@ class StokesPass
          *  \}
          **/
 
+		//! when requested we store \f$ \vardelta u, \nabla p (u \cdot \nabla ) u\f$ in this struct after the solver
+		struct RhsDatacontainer {
+			DiscreteVelocityFunctionType velocity_laplace;
+			DiscreteVelocityFunctionType pressure_gradient;
+
+			RhsDatacontainer( const DiscreteVelocityFunctionSpaceType& space )
+				: velocity_laplace( "velocity_laplace", space ),
+				pressure_gradient( "pressure_gradient", space )
+			{}
+
+		};
+
         /**
          *  \brief  constructor
          *  \todo   doc
@@ -235,7 +247,7 @@ class StokesPass
          *  \todo doc
          *  \attention  think about quadrature orders
          **/
-        virtual void apply( const DomainType &arg, RangeType &dest) const
+		virtual void apply( const DomainType &arg, RangeType &dest, RhsDatacontainer* rhs_datacontainer = 0) const
         {
 
             // profiler information
@@ -1665,6 +1677,11 @@ class StokesPass
 
             // do profiling
             profiler().StopTiming("Pass -- SOLVER");
+
+			if ( rhs_datacontainer )
+			{
+				Zmatrix.apply( dest.discretePressure(), rhs_datacontainer->pressure_gradient);
+			}
         } // end of apply
 
         virtual void compute( const TotalArgumentType& /*arg*/, DestinationType& /*dest*/ ) const
