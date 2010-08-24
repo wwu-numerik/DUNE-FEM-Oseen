@@ -206,10 +206,13 @@ class StokesPass
 		struct RhsDatacontainer {
 			DiscreteVelocityFunctionType velocity_laplace;
 			DiscreteVelocityFunctionType pressure_gradient;
+			DiscreteSigmaFunctionType velocity_gradient;
 
-			RhsDatacontainer( const DiscreteVelocityFunctionSpaceType& space )
+			RhsDatacontainer( const DiscreteVelocityFunctionSpaceType& space,
+							  const DiscreteSigmaFunctionSpaceType& sigma_space)
 				: velocity_laplace( "velocity_laplace", space ),
-				pressure_gradient( "pressure_gradient", space )
+				pressure_gradient( "pressure_gradient", space ),
+				velocity_gradient( "velocity_gradient", sigma_space )
 			{}
 
 		};
@@ -357,6 +360,8 @@ class StokesPass
             // H_{2}\in R^{L}
             DiscreteVelocityFunctionType H2rhs( "H2", velocitySpace_ );
             H2rhs.clear();
+			DiscreteVelocityFunctionType H2_O_rhs( "H2_O", velocitySpace_ );
+			H2_O_rhs.clear();
             // H_{3}\in R^{K}
             DiscretePressureFunctionType H3rhs( "H3", pressureSpace_ );
             H3rhs.clear();
@@ -478,6 +483,7 @@ class StokesPass
                 // get local right hand sides
                 LocalH1rhsType localH1rhs = H1rhs.localFunction( entity );
                 LocalH2rhsType localH2rhs = H2rhs.localFunction( entity );
+				LocalH2rhsType localH2_O_rhs = H2_O_rhs.localFunction( entity );
                 LocalH3rhsType localH3rhs = H3rhs.localFunction( entity );
 
                 // get basefunctionsets
@@ -1189,7 +1195,7 @@ class StokesPass
 
 											VelocityRangeType u_h_half = v_i;
 											u_h_half *= 0.5;
-											VelocityJacobianRangeType flux_value = dyadicProduct( v_i, beta_eval );
+											VelocityJacobianRangeType flux_value = dyadicProduct( u_h_half, beta_eval );
 
 											VelocityJacobianRangeType u_jump = dyadicProduct( v_i, outerNormal );
 											u_jump *= c_s;
@@ -1237,14 +1243,8 @@ class StokesPass
 											beta_->evaluate( xWorld, beta_eval );
 											const double beta_times_normal = beta_eval * outerNormal;
 											VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
-											double c_s;
+											double c_s = beta_times_normal * 0.5;
 
-											if ( beta_times_normal < 0 ) {
-												c_s = - beta_times_normal * 0.5;
-											}
-											else {
-												c_s = beta_times_normal * 0.5;
-											}
 											VelocityRangeType u_h_half = v_i;
 											u_h_half *= 0.5;
 											VelocityJacobianRangeType flux_value = dyadicProduct( v_i, beta_eval );
@@ -1643,6 +1643,65 @@ class StokesPass
                             } // done computing Y's boundary integral
 //                        }
 
+							//                                                                                                           // we will call this one
+							// (O)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}} STUFF n_{t}ds // O's boundary integral
+							//                                                                                                           // see also "O's element surface integral" and "Y's neighbour surface integral" above
+							if ( do_oseen_discretization ) {
+								for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+									for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+										double O_i_j = 0.0;
+										// sum over all quadrature points
+										for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+											// get x codim<0> and codim<1> coordinates
+											const ElementCoordinateType x = faceQuadratureElement.point( quad );
+											const VelocityRangeType xWorld = geometry.global( x );
+											const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
+											// get the integration factor
+											const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+											// get the quadrature weight
+											const double integrationWeight = faceQuadratureElement.weight( quad );
+											const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+											//calc u^c_h \tensor beta * v \tensor n
+											VelocityRangeType v_j( 0.0 );
+											velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+											VelocityRangeType gD( 0.0 );
+											discreteModel_.dirichletData( intersection, 0.0, xWorld, gD );
+											VelocityRangeType beta_eval;
+											beta_->evaluate( xWorld, beta_eval );
+											const double beta_times_normal = beta_eval * outerNormal;
+											VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j, outerNormal );
+											double c_s;
+
+											if ( beta_times_normal < 0 ) {
+												c_s = - beta_times_normal * 0.5;
+											}
+											else {
+												c_s = beta_times_normal * 0.5;
+											}
+
+											VelocityJacobianRangeType flux_value = dyadicProduct( v_j, beta_eval );
+
+											VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
+											u_jump *= c_s;
+
+											flux_value += u_jump;
+
+											double ret  = Stuff::colonProduct( flux_value, v_j_tensor_n );
+											//inner edge (self)
+											O_i_j += elementVolume
+												* integrationWeight
+												* ret;
+										} // done sum over all quadrature points
+										// if small, should be zero
+										if ( fabs( O_i_j ) < eps ) {
+											O_i_j = 0.0;
+										}
+										else
+											// add to matrix
+											localOmatrixElement.add( i, j, O_i_j );
+									}
+								} // done computing O's boundary integral
+							}
                         //                                                                                                  // we will call this one
                         // (Z)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's boundary integral
                         //                                                                                                  // see also "Z's volume integral", "Z's element surface integral" and "Z's neighbour surface integral" above
@@ -1742,6 +1801,57 @@ class StokesPass
 									localH2rhs[ j ] += H2_j;
                             } // done computing H2's boundary integrals
                         }
+			#if 0 //since we're using a flux formulation diffferent from the original CKS paper, this is not needed atm
+						//                                                                                                                 // we will call this one
+						// (H2_O)_{j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\left(  \beta n_{T} g_D v_j ds        \right) // H2_O's boundary integral
+						if ( do_oseen_discretization ) {
+							for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+								double H2_O_j = 0.0;
+								// sum over all quadrature points
+								for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+									// get x codim<0> and codim<1> coordinates
+									const ElementCoordinateType x = faceQuadratureElement.point( quad );
+									const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
+													// get the integration factor
+									const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+									// get the quadrature weight
+									const double integrationWeight = faceQuadratureElement.weight( quad );
+									// prepare
+									const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+									VelocityRangeType v_j( 0.0 );
+									velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+									// compute \mu v_{j}\cdot\hat{\sigma}^{RHS}()\cdot n_{T}
+									const VelocityRangeType xIntersectionGlobal = intersection.intersectionSelfLocal().global( xLocal );
+									const VelocityRangeType xWorld = geometry.global( xIntersectionGlobal );
+									VelocityRangeType gD( 0.0 );
+									discreteModel_.dirichletData( intersection, 0.0, xWorld, gD );
+
+									VelocityRangeType beta_eval;
+									beta_->evaluate( xWorld, beta_eval );
+									const double beta_times_normal = beta_eval * outerNormal;
+									VelocityRangeType flux_value;
+									if ( beta_times_normal < 0 ) {
+											flux_value = gD;
+									}
+//									else {//not mandated by the paper..
+//											velocityBaseFunctionSetElement.evaluate( j, xLocal, flux_value );
+//											flux_value = gD;
+//									}
+									const double flux_times_v_j = flux_value * v_j;
+									H2_O_j += elementVolume
+											* integrationWeight
+											* beta_times_normal
+											* flux_times_v_j;
+								}
+								if ( fabs( H2_O_j ) < eps ) {
+										 H2_O_j = 0.0;
+								}
+								else
+									// add to rhs
+									localH2_O_rhs[ j ] += H2_O_j;
+							}
+						}
+			#endif
 
                         //                                                                                        // we will call this one
                         // (H3)_{j} = \int_{\varepsilon\in\Epsilon_{D}^{T}}-\hat{u}_{p}^{RHS}()\cdot n_{T}q_{j}ds // H3's boundary integral
@@ -1843,13 +1953,15 @@ class StokesPass
             profiler().StartTiming("Pass -- SOLVER");
 
             // do solving
-			if ( do_oseen_discretization )
+			if ( do_oseen_discretization ) {
 				Stuff::addMatrix( Ymatrix.matrix(),  Omatrix.matrix() );
+				H2rhs -= H2_O_rhs;
+			}
 #ifndef NLOG
 			infoStream.Resume();
 			infoStream << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
 #endif
-			const bool use_reduced_solver = false;
+			const bool use_reduced_solver = do_oseen_discretization;
 			if( !use_reduced_solver ) {
 				if ( Parameters().getParam( "use_nested_cg_solver", false ) ) {
 					info_ = AltInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
@@ -1865,9 +1977,22 @@ class StokesPass
             // do profiling
             profiler().StopTiming("Pass -- SOLVER");
 
-			if ( rhs_datacontainer )
-			{
-				Zmatrix.apply( dest.discretePressure(), rhs_datacontainer->pressure_gradient);
+			if ( rhs_datacontainer ) {
+				Zmatrix.apply( dest.discretePressure(), rhs_datacontainer->pressure_gradient );
+
+				// \sigma = M^{-1} ( H_1 - Wu )
+				DiscreteSigmaFunctionType sigma_tmp( "sigma_dummy", sigmaSpace_ );
+				Wmatrix.apply( dest.discreteVelocity(), sigma_tmp );
+				sigma_tmp *= -1;
+				sigma_tmp += H1rhs;
+				MInversMatrix.apply( sigma_tmp, rhs_datacontainer->velocity_gradient );
+
+				DiscreteVelocityFunctionType velocity_tmp1( "velocity_tmp1", dest.discreteVelocity().space() );
+//				DiscreteVelocityFunctionType velocity_tmp2( "velocity_tmp2", dest.discreteVelocity().space() );
+				Xmatrix.apply( rhs_datacontainer->velocity_gradient, velocity_tmp1 );
+				Ymatrix.apply( dest.discreteVelocity(), rhs_datacontainer->velocity_laplace );
+				rhs_datacontainer->velocity_laplace += velocity_tmp1;
+
 			}
         } // end of apply
 
