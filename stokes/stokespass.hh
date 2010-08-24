@@ -162,15 +162,15 @@ class StokesPass
         typedef typename GridType::template Codim< 0 >::Entity
             EntityType;
 
-#ifdef USE_NESTED_CG_SOLVER
 		//! alternative, not fully functional, solver implemementation
         typedef NestedCgSaddlepointInverseOperator< ThisType >
 			AltInvOpType;
-#endif
 		//! type of the used solver
         typedef SaddlepointInverseOperator< ThisType >
 			InvOpType;
-
+		//! this is used for reduced (no pressure, incompress. condition) oseen pass
+		typedef ReducedInverseOperator< ThisType >
+			ReducedInvOpType;
 
         //! polynomial order for the discrete sigma function space
         static const int sigmaSpaceOrder
@@ -1843,18 +1843,24 @@ class StokesPass
             profiler().StartTiming("Pass -- SOLVER");
 
             // do solving
+			if ( do_oseen_discretization )
+				Ymatrix.matrix().add( Omatrix.matrix() );
 #ifndef NLOG
 			infoStream.Resume();
 			infoStream << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
 #endif
-            InvOpType op;
-#ifdef USE_NESTED_CG_SOLVER
-            AltInvOpType m_op;
-			if ( Parameters().getParam( "use_nested_cg_solver", false ) )
-				info_ = m_op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-            else
-#endif
-            info_ = op.solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+			const bool use_reduced_solver = false;
+			if( !use_reduced_solver ) {
+				if ( Parameters().getParam( "use_nested_cg_solver", false ) ) {
+					info_ = AltInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+				}
+				else {
+					info_ = InvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+				}
+			}
+			else {
+				info_ = ReducedInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+			}
 
             // do profiling
             profiler().StopTiming("Pass -- SOLVER");
