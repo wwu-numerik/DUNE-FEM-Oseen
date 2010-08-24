@@ -1844,7 +1844,7 @@ class StokesPass
 
             // do solving
 			if ( do_oseen_discretization )
-				Ymatrix.matrix().add( Omatrix.matrix() );
+				Stuff::addMatrix( Ymatrix.matrix(),  Omatrix.matrix() );
 #ifndef NLOG
 			infoStream.Resume();
 			infoStream << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
