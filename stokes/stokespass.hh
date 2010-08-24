@@ -207,12 +207,14 @@ class StokesPass
 			DiscreteVelocityFunctionType velocity_laplace;
 			DiscreteVelocityFunctionType pressure_gradient;
 			DiscreteSigmaFunctionType velocity_gradient;
+			DiscreteVelocityFunctionType convection;
 
 			RhsDatacontainer( const DiscreteVelocityFunctionSpaceType& space,
 							  const DiscreteSigmaFunctionSpaceType& sigma_space)
 				: velocity_laplace( "velocity_laplace", space ),
 				pressure_gradient( "pressure_gradient", space ),
-				velocity_gradient( "velocity_gradient", sigma_space )
+				velocity_gradient( "velocity_gradient", sigma_space ),
+				convection( "convection", space )
 			{}
 
 		};
@@ -1992,6 +1994,9 @@ class StokesPass
 				Xmatrix.apply( rhs_datacontainer->velocity_gradient, velocity_tmp1 );
 				Ymatrix.apply( dest.discreteVelocity(), rhs_datacontainer->velocity_laplace );
 				rhs_datacontainer->velocity_laplace += velocity_tmp1;
+
+				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
+				rhs_datacontainer->convection += H2_O_rhs;//just in case I've switched fluxes and H2_O_rhs is then non-zero
 
 			}
         } // end of apply
