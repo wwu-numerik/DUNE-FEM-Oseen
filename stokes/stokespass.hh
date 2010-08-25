@@ -1963,7 +1963,8 @@ class StokesPass
 			infoStream.Resume();
 			infoStream << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
 #endif
-			const bool use_reduced_solver = do_oseen_discretization;
+			//this lets us switch between standalone oseen and reduced oseen in  thete scheme easily
+			const bool use_reduced_solver = do_oseen_discretization && Parameters().getParam( "reduced_oseen_solver", false );
 			if( !use_reduced_solver ) {
 				if ( Parameters().getParam( "use_nested_cg_solver", false ) ) {
 					info_ = AltInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
