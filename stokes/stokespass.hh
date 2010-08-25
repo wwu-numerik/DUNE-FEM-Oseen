@@ -14,6 +14,7 @@
 #include <dune/stokes/saddlepoint_inverse_operator.hh>
 
 #include <dune/common/stdstreams.hh>
+#include <dune/stuff/matrix.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
 
 template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
@@ -674,13 +675,17 @@ class StokesPass
 								velocityBaseFunctionSetElement.evaluate( j, x, v_j );
 								VelocityRangeType beta_eval;
 								beta_->localFunction( entity ).evaluate( x, beta_eval );
-								VelocityJacobianRangeType beta_jacobian,v_i_jacobian;
+								VelocityJacobianRangeType v_j_jacobian;
+								velocityBaseFunctionSetElement.jacobian( j, x, v_j_jacobian );
+#if 0 //begin old disc.
+								VelocityJacobianRangeType v_i_jacobian;
+								velocityBaseFunctionSetElement.jacobian( j, x, v_i_jacobian );
+								VelocityJacobianRangeType beta_jacobian;
 								const typename DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
 										beta_->localFunction( entity );
 								beta_lf.jacobian( x, beta_jacobian );
-	//										Stuff::printFieldMatrix( beta_jacobian, "jaco", std::cerr, "JACOB ");
 
-								velocityBaseFunctionSetElement.jacobian( i, x, v_i_jacobian );
+
 								VelocityRangeType divergence_of_beta_v_j_tensor_beta;
 								for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
 									double row_result = 0;
@@ -692,12 +697,21 @@ class StokesPass
 								for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
 									assert( !isnan(divergence_of_beta_v_j_tensor_beta[l]) );
 								}
-	//										Stuff::printFieldVector( divergence_of_beta_v_j_tensor_beta, "jaco", std::cerr, "DIV ");
+
 								const double u_h_times_divergence_of_beta_v_j_tensor_beta =
 										v_j * divergence_of_beta_v_j_tensor_beta;
 								O_i_j += elementVolume
 									* integrationWeight
 									* (-1) * u_h_times_divergence_of_beta_v_j_tensor_beta;
+#endif //old disc.
+								//compute u_h \beta  ( \nabla * v_j )
+								double v_i_times_beta = v_i * beta_eval;
+								double v_j_jacobian_trace = matrixTrace( v_j_jacobian );
+
+								O_i_j -= elementVolume
+										* integrationWeight
+										* v_i_times_beta
+										* v_j_jacobian_trace;
 
 							}
 							if ( fabs( O_i_j ) < eps ) {
