@@ -707,19 +707,24 @@ class StokesPass
 								//compute u_h \beta  ( \nabla * v_j )
 								double v_i_times_beta = v_i * beta_eval;
 								double v_j_jacobian_trace = matrixTrace( v_j_jacobian );
-
-								O_i_j -= elementVolume
+								const double val = elementVolume
 										* integrationWeight
 										* v_i_times_beta
 										* v_j_jacobian_trace;
-
+								O_i_j -= val;
+//								Stuff::printFieldVector( beta_eval, "beta", Logger().Dbg(), "DEBUG: " );
+//								Stuff::printFieldVector( v_i, "v_i", Logger().Dbg(), "DEBUG: " );
+//								Logger().Dbg() << "DEBUG: v_j_jacobian_trace | v_i_times_beta " << v_j_jacobian_trace << " | " << v_i_times_beta << "\n";
+//								Logger().Dbg() << "DEBUG: val " << val << "\n";
 							}
+//								Logger().Dbg() << "DEBUG: val " << O_i_j << "\n";
 							if ( fabs( O_i_j ) < eps ) {
 								O_i_j = 0.0;
 							}
-							else
+							else {
 								// add to matrix
 								localOmatrixElement.add( i, j, O_i_j );
+							}
 						}
 					}
 				}
@@ -2016,6 +2021,7 @@ class StokesPass
 				rhs_datacontainer->convection += H2_O_rhs;//just in case I've switched fluxes and H2_O_rhs is then non-zero
 
 			}
+			Stuff::printDiscreteFunctionMatlabStyle( H2_O_rhs, "H2_O_rhs", Logger().Dbg() );
         } // end of apply
 
         virtual void compute( const TotalArgumentType& /*arg*/, DestinationType& /*dest*/ ) const
