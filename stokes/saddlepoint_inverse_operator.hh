@@ -185,8 +185,10 @@ class NestedCgSaddlepointInverseOperator
                                 DiscreteSigmaFunctionType,
                                 DiscreteVelocityFunctionType >
 			InnerCGSolverWrapperType;
+#ifdef USE_BFG_CG_SCHEME
 		typedef typename InnerCGSolverWrapperType::ReturnValueType
 				InnerCGSolverWrapperReturnType;
+#endif
 		InnerCGSolverWrapperType innerCGSolverWrapper( w_mat,
 													  m_inv_mat,
 													  x_mat,
@@ -203,9 +205,13 @@ class NestedCgSaddlepointInverseOperator
 		new_f.clear();
 
 		// new_f := ( B * A^-1 * f_func ) + g_func
+#ifdef USE_BFG_CG_SCHEME
 		InnerCGSolverWrapperReturnType a_ret;
 		innerCGSolverWrapper.apply( f_func, tmp_f, a_ret );
-#ifdef ADAPTIVE_SOLVER
+#else
+		innerCGSolverWrapper.apply( f_func, tmp_f );
+#endif
+#if defined(ADAPTIVE_SOLVER) && defined(USE_BFG_CG_SCHEME)
 		if ( isnan(a_ret.second) ) {
 		    logInfo << "\n\t\t NaNs detected, lowering error tolerance" << std::endl;
             int max_adaptions = Parameters().getParam( "max_adaptions", 8 );
@@ -234,7 +240,7 @@ class NestedCgSaddlepointInverseOperator
                 adapt_step++;
             }
 		}
-#endif
+#endif //defined(ADAPTIVE_SOLVER) && defined(USE_BFG_CG_SCHEME)
 		b_t_mat.apply( tmp_f, new_f );
         new_f -= g_func;
 
@@ -251,9 +257,10 @@ class NestedCgSaddlepointInverseOperator
 
 		typedef SOLVER_NAMESPACE::OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
                 Sk_Solver;
-
+#ifdef USE_BFG_CG_SCHEME
         typedef typename Sk_Solver::ReturnValueType
                 SolverReturnType;
+#endif
 
         logInfo << " \n\tbegin S*p=new_f " << std::endl;
 		Sk_Operator sk_op(  innerCGSolverWrapper, b_t_mat, c_mat, b_mat, m_inv_mat,
@@ -262,12 +269,16 @@ class NestedCgSaddlepointInverseOperator
         pressure.clear();
 
 		// p = S^-1 * new_f = ( B_t * A^-1 * B + rhs3 )^-1 * new_f
+#ifdef USE_BFG_CG_SCHEME
 		SolverReturnType ret;
 		sk_solver.apply( new_f, pressure, ret );
-
 		long total_inner = sk_op.getTotalInnerIterations();
 		logInfo << "\n\t\t #avg inner iter | #outer iter: " << total_inner / (double)ret.first << " | " << ret.first << std::endl;
-#ifdef ADAPTIVE_SOLVER
+#else
+		sk_solver.apply( new_f, pressure );
+#endif
+
+#if defined(ADAPTIVE_SOLVER) && defined(USE_BFG_CG_SCHEME)
         if ( isnan(ret.second) ) {
             logInfo << "\n\t\t NaNs detected, lowering error tolerance" << std::endl;
             int max_adaptions = Parameters().getParam( "max_adaptions", 8 );
@@ -301,7 +312,7 @@ class NestedCgSaddlepointInverseOperator
                 adapt_step++;
             }
         }
-#endif
+#endif //defined(ADAPTIVE_SOLVER) && defined(USE_BFG_CG_SCHEME)
 		//
 		logInfo << "\n\tend  S*p=new_f" << std::endl;
 

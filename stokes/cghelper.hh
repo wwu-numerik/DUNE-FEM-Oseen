@@ -120,10 +120,10 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
                                             DiscreteVelocityFunctionType,
                                             DiscretePressureFunctionType>
                 ThisType;
-
+#ifdef USE_BFG_CG_SCHEME
         typedef typename A_SolverType::ReturnValueType
                 ReturnValueType;
-
+#endif
         SchurkomplementOperator( A_SolverType& a_solver,
                                 const B_t_matrixType& b_t_mat,
                                 const CmatrixType& c_mat,
@@ -142,6 +142,13 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
             total_inner_iterations( 0 )
         {}
 
+        double ddotOEM(const double*v, const double* w) const
+		{
+	        DiscreteVelocityFunctionType V( "ddot V", tmp1.space(), v );
+	        DiscreteVelocityFunctionType W( "ddot W", tmp1.space(), w );
+	        return V.scalarProductDofs( W );
+		}
+
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret) const
         {
@@ -153,14 +160,16 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
 
             b_mat_.multOEM( x, tmp1.leakPointer() );
 
+#ifdef USE_BFG_CG_SCHEME
             ReturnValueType cg_info;
             a_solver_.apply( tmp1, tmp2, cg_info );
-
             if ( solverVerbosity > 1 )
                 info << "\t\t\t\t\t inner iterations: " << cg_info.first << std::endl;
 
             total_inner_iterations += cg_info.first;
-
+#else
+			a_solver_.apply( tmp1, tmp2 );
+#endif
             b_t_mat_.multOEM( tmp2.leakPointer(), ret );
             c_mat_.multOEMAdd( x, ret );
         }
