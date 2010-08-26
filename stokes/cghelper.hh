@@ -151,13 +151,14 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
             tmp1 ( "tmp1", velocity_space ),
             tmp2 ( "tmp2", velocity_space ),
             do_bfg( Parameters().getParam( "do-bfg", true ) ),
-            total_inner_iterations( 0 )
+            total_inner_iterations( 0 ),
+			pressure_space_(pressure_space)
         {}
 
         double ddotOEM(const double*v, const double* w) const
 		{
-	        DiscreteVelocityFunctionType V( "ddot V", tmp1.space(), v );
-	        DiscreteVelocityFunctionType W( "ddot W", tmp1.space(), w );
+	        DiscretePressureFunctionType V( "ddot V", pressure_space_, v );
+	        DiscretePressureFunctionType W( "ddot W", pressure_space_, w );
 	        return V.scalarProductDofs( W );
 		}
 
@@ -248,6 +249,7 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
         mutable DiscreteVelocityFunctionType tmp2;
         bool do_bfg;
         mutable long total_inner_iterations;
+		const typename DiscretePressureFunctionType::DiscreteFunctionSpaceType& pressure_space_;
 };
 
 
