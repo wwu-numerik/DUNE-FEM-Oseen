@@ -1664,7 +1664,7 @@ class StokesPass
 //                        }
 
 							//                                                                                                           // we will call this one
-							// (O)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}} STUFF n_{t}ds // O's boundary integral
+							// (O)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}} STUFF n_{t}ds											// O's boundary integral
 							//                                                                                                           // see also "O's element surface integral" and "Y's neighbour surface integral" above
 							if ( do_oseen_discretization ) {
 								for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
