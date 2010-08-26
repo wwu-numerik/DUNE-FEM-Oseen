@@ -195,6 +195,7 @@ class NestedCgSaddlepointInverseOperator
 													  y_mat,
 													  o_mat,
 													  rhs1.space(),
+													  f_func.space(),
 													  relLimit,
 													  absLimit,
 													  solverVerbosity );
@@ -482,7 +483,7 @@ class SaddlepointInverseOperator
         double current_inner_accuracy = inner_absLimit;
 #endif
 		InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
-													   o_mat, rhs1.space(), relLimit,
+													   o_mat, rhs1.space(),rhs2.space(), relLimit,
 													   current_inner_accuracy, solverVerbosity > 3 );
 
 /*****************************************************************************************/
@@ -764,7 +765,7 @@ class ReducedInverseOperator
 			InnerCGSolverWrapperType;
 		double current_inner_accuracy = inner_absLimit;
 		InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
-													   o_mat, rhs1.space(), relLimit,
+													   o_mat, rhs1.space(), rhs2.space(), relLimit,
 													   current_inner_accuracy, solverVerbosity > 3 );
 
 /*****************************************************************************************/

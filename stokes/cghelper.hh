@@ -25,7 +25,8 @@ template <  class WMatType,
             class MMatType,
             class XMatType,
             class YMatType,
-            class DiscreteSigmaFunctionType >
+            class DiscreteSigmaFunctionType,
+			class DiscreteVelocityFunctionType>
 class MatrixA_Operator {
 
     public:
@@ -34,7 +35,8 @@ class MatrixA_Operator {
                         MMatType,
                         XMatType,
                         YMatType,
-                        DiscreteSigmaFunctionType >
+                        DiscreteSigmaFunctionType,
+						DiscreteVelocityFunctionType>
                     ThisType;
         /** The operator needs the
 
@@ -45,14 +47,16 @@ class MatrixA_Operator {
                 const XMatType& x_mat,
                 const YMatType& y_mat,
 				const YMatType& o_mat,
-                const typename DiscreteSigmaFunctionType::DiscreteFunctionSpaceType& sig_space )
+                const typename DiscreteSigmaFunctionType::DiscreteFunctionSpaceType& sig_space,
+                const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& space)
             :  w_mat_(w_mat),
             m_mat_(m_mat),
             x_mat_(x_mat),
             y_mat_(y_mat),
             o_mat_(o_mat),
             sig_tmp1( "sig_tmp1", sig_space ),
-            sig_tmp2( "sig_tmp2", sig_space )
+            sig_tmp2( "sig_tmp2", sig_space ),
+            space_(space)
         {}
 
         ~MatrixA_Operator()
@@ -81,6 +85,13 @@ class MatrixA_Operator {
             multOEM(x,ret);
         }
 #endif
+        double ddotOEM(const double*v, const double* w) const
+		{
+	        DiscreteVelocityFunctionType V( "ddot V", space_, v );
+	        DiscreteVelocityFunctionType W( "ddot W", space_, w );
+	        return V.scalarProductDofs( W );
+		}
+
 
         ThisType& systemMatrix ()
         {
@@ -95,6 +106,7 @@ class MatrixA_Operator {
 		const YMatType& o_mat_;
         mutable DiscreteSigmaFunctionType sig_tmp1;
         mutable DiscreteSigmaFunctionType sig_tmp2;
+		const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& space_;
 };
 
 
@@ -255,7 +267,8 @@ class InnerCGSolverWrapper {
                                     MMatType,
                                     XMatType,
                                     YMatType,
-                                    DiscreteSigmaFunctionType >
+                                    DiscreteSigmaFunctionType,
+									DiscreteVelocityFunctionType>
                 A_OperatorType;
 
 		typedef SOLVER_NAMESPACE::INNER_CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
@@ -271,6 +284,7 @@ class InnerCGSolverWrapper {
                 const YMatType& y_mat,
 				const YMatType& o_mat,
                 const typename DiscreteSigmaFunctionType::DiscreteFunctionSpaceType& sig_space,
+				const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& space,
                 const double relLimit,
                 const double absLimit,
                 const bool verbose )
@@ -280,7 +294,7 @@ class InnerCGSolverWrapper {
             y_mat_(y_mat),
             sig_tmp1( "sig_tmp1", sig_space ),
             sig_tmp2( "sig_tmp2", sig_space ),
-            a_op_( w_mat, m_mat, x_mat, y_mat, o_mat, sig_space ),
+            a_op_( w_mat, m_mat, x_mat, y_mat, o_mat, sig_space, space ),
             cg_solver( a_op_,   relLimit,
                                 absLimit,
                                 2000, //inconsequential anyways
