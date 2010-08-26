@@ -11,7 +11,7 @@
 #endif
 
 #ifndef OUTER_CG_SOLVERTYPE
-    #define OUTER_CG_SOLVERTYPE OEMCGOp
+	#define OUTER_CG_SOLVERTYPE OEMCGOp
 #endif
 
 
@@ -174,8 +174,7 @@ class NestedCgSaddlepointInverseOperator
 		// f_func = ( ( -1 * ( X * ( M_inv * rhs1 ) ) ) + rhs2 )
         m_inv_mat.apply( rhs1, m_tmp );
         x_mat.apply( m_tmp, f_func );
-        f_func *= -1;
-        f_func += rhs2;
+		f_func -= rhs2;
 
 
 		typedef InnerCGSolverWrapper< WmatrixType,
@@ -266,7 +265,7 @@ class NestedCgSaddlepointInverseOperator
         logInfo << " \n\tbegin S*p=new_f " << std::endl;
 		Sk_Operator sk_op(  innerCGSolverWrapper, b_t_mat, c_mat, b_mat, m_inv_mat,
                             velocity.space(), pressure.space() );
-        Sk_Solver sk_solver( sk_op, relLimit, absLimit, 2000, solverVerbosity );
+		Sk_Solver sk_solver( sk_op, relLimit, absLimit, 2000, solverVerbosity );
         pressure.clear();
 
 		// p = S^-1 * new_f = ( B_t * A^-1 * B + rhs3 )^-1 * new_f
@@ -317,13 +316,14 @@ class NestedCgSaddlepointInverseOperator
 		//
 		logInfo << "\n\tend  S*p=new_f" << std::endl;
 
+		pressure *= -1;
         DiscreteVelocityFunctionType Bp_temp ( "Bp_temp", velocity.space() );
         Bp_temp.clear();
 		// velocity = A^-1 * ( ( -1 * ( B * pressure ) ) + f_func )
 		b_mat.apply( pressure, Bp_temp );
-        Bp_temp *= ( -1 );
-        Bp_temp += f_func;
+		Bp_temp += f_func;
 		innerCGSolverWrapper.apply ( Bp_temp, velocity );
+		velocity *= -1;
 
         logInfo << "\nEnd NestedCgSaddlePointInverseOperator " << std::endl;
 
