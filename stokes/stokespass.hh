@@ -1920,18 +1920,23 @@ class StokesPass
             infoStream << "\n- gridwalk done" << std::endl << std::endl;
             infoStream.Suspend();
 
+#endif
 //            // do the matlab logging stuff
-//            Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-//            Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Xmatrix.matrix(), "X", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Ymatrix.matrix(), "Y", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Zmatrix.matrix(), "Z", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Ematrix.matrix(), "E", matlabLogStream );
-//            Stuff::printSparseRowMatrixMatlabStyle( Rmatrix.matrix(), "R", matlabLogStream );
-//            Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
-//            Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
-//            Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
+			if ( Parameters().getParam( "save_matrices", false ) ) {
+				Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+				Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
+				Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
+				Stuff::printSparseRowMatrixMatlabStyle( Omatrix.matrix(), "O", matlabLogStream );
+				Stuff::printSparseRowMatrixMatlabStyle( Xmatrix.matrix(), "X", matlabLogStream );
+				Stuff::printSparseRowMatrixMatlabStyle( Ymatrix.matrix(), "Y", matlabLogStream );
+				Stuff::printSparseRowMatrixMatlabStyle( Zmatrix.matrix(), "Z", matlabLogStream );
+				Stuff::printSparseRowMatrixMatlabStyle( Ematrix.matrix(), "E", matlabLogStream );
+				Stuff::printSparseRowMatrixMatlabStyle( Rmatrix.matrix(), "R", matlabLogStream );
+				Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
+				Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
+				Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
+				Stuff::printDiscreteFunctionMatlabStyle( H2_O_rhs, "H_O", matlabLogStream );
+			}
 //
 //            // log local matrices
 //            Stuff::GridWalk<GridPartType> gw( gridPart_ );
@@ -1951,7 +1956,6 @@ class StokesPass
 //                gw( f_Z );
 //                gw( f_E );
 //                gw( f_R );
-#endif
             // do profiling
             profiler().StopTiming("Pass -- ASSEMBLE");
 
