@@ -1684,12 +1684,14 @@ class StokesPass
 											//calc u^c_h \tensor beta * v \tensor n
 											VelocityRangeType v_j( 0.0 );
 											velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+											VelocityRangeType v_i( 0.0 );
+											velocityBaseFunctionSetElement.evaluate( i, x, v_i );
 											VelocityRangeType gD( 0.0 );
 											discreteModel_.dirichletData( intersection, 0.0, xWorld, gD );
 											VelocityRangeType beta_eval;
 											beta_->evaluate( xWorld, beta_eval );
 											const double beta_times_normal = beta_eval * outerNormal;
-											VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j, outerNormal );
+											VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
 											double c_s;
 
 											if ( beta_times_normal < 0 ) {
@@ -1706,7 +1708,7 @@ class StokesPass
 
 											flux_value += u_jump;
 
-											double ret  = Stuff::colonProduct( flux_value, v_j_tensor_n );
+											double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
 											//inner edge (self)
 											O_i_j += elementVolume
 												* integrationWeight
