@@ -1973,7 +1973,6 @@ class StokesPass
 
             // do solving
 			if ( do_oseen_discretization ) {
-				Stuff::addMatrix( Ymatrix.matrix(),  Omatrix.matrix() );
 				H2rhs -= H2_O_rhs;
 			}
 #ifndef NLOG
@@ -1984,14 +1983,14 @@ class StokesPass
 			const bool use_reduced_solver = do_oseen_discretization && Parameters().getParam( "reduced_oseen_solver", false );
 			if( !use_reduced_solver ) {
 				if ( Parameters().getParam( "use_nested_cg_solver", false ) ) {
-					info_ = AltInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+					info_ = AltInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 				}
 				else {
-					info_ = InvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+					info_ = InvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 				}
 			}
 			else {
-				info_ = ReducedInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+				info_ = ReducedInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 			}
 
             // do profiling

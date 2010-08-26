@@ -44,11 +44,13 @@ class MatrixA_Operator {
                 const MMatType& m_mat,
                 const XMatType& x_mat,
                 const YMatType& y_mat,
+				const YMatType& o_mat,
                 const typename DiscreteSigmaFunctionType::DiscreteFunctionSpaceType& sig_space )
             :  w_mat_(w_mat),
             m_mat_(m_mat),
             x_mat_(x_mat),
             y_mat_(y_mat),
+            o_mat_(o_mat),
             sig_tmp1( "sig_tmp1", sig_space ),
             sig_tmp2( "sig_tmp2", sig_space )
         {}
@@ -62,13 +64,14 @@ class MatrixA_Operator {
             sig_tmp1.clear();
             sig_tmp2.clear();
 
-			// ret = ( ( X * ( -1* ( M_inv * ( W * x ) ) ) ) + ( Y * x ) )
+			// ret = ( ( X * ( -1* ( M_inv * ( W * x ) ) ) ) + ( Y + O ) * x ) )
             w_mat_.multOEM( x, sig_tmp1.leakPointer() );
             m_mat_.apply( sig_tmp1, sig_tmp2 );//Stuff:DiagmUlt
 
             sig_tmp2 *= ( -1 );
             x_mat_.multOEM( sig_tmp2.leakPointer(), ret );
             y_mat_.multOEMAdd( x, ret );
+			o_mat_.multOEMAdd( x, ret );
         }
 
 #ifdef USE_BFG_CG_SCHEME
@@ -89,6 +92,7 @@ class MatrixA_Operator {
         const MMatType& m_mat_;
         const XMatType& x_mat_;
         const YMatType& y_mat_;
+		const YMatType& o_mat_;
         mutable DiscreteSigmaFunctionType sig_tmp1;
         mutable DiscreteSigmaFunctionType sig_tmp2;
 };
@@ -256,6 +260,7 @@ class InnerCGSolverWrapper {
                 const MMatType& m_mat,
                 const XMatType& x_mat,
                 const YMatType& y_mat,
+				const YMatType& o_mat,
                 const typename DiscreteSigmaFunctionType::DiscreteFunctionSpaceType& sig_space,
                 const double relLimit,
                 const double absLimit,
@@ -266,7 +271,7 @@ class InnerCGSolverWrapper {
             y_mat_(y_mat),
             sig_tmp1( "sig_tmp1", sig_space ),
             sig_tmp2( "sig_tmp2", sig_space ),
-            a_op_( w_mat, m_mat, x_mat, y_mat, sig_space ),
+            a_op_( w_mat, m_mat, x_mat, y_mat, o_mat, sig_space ),
             cg_solver( a_op_,   relLimit,
                                 absLimit,
                                 2000, //inconsequential anyways

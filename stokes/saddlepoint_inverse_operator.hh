@@ -102,6 +102,7 @@ class NestedCgSaddlepointInverseOperator
                 XmatrixObjectType& Xmatrix,
                 MmatrixObjectType& Mmatrix,
                 YmatrixObjectType& Ymatrix,
+				YmatrixObjectType& Omatrix,
                 EmatrixObjectType& Ematrix,
                 RmatrixObjectType& Rmatrix,
                 ZmatrixObjectType& Zmatrix,
@@ -152,6 +153,7 @@ class NestedCgSaddlepointInverseOperator
         XmatrixType& x_mat      = Xmatrix.matrix();
         MmatrixType& m_inv_mat  = Mmatrix.matrix();
         YmatrixType& y_mat      = Ymatrix.matrix();
+		YmatrixType& o_mat      = Omatrix.matrix();
         B_t_matrixType& b_t_mat = Ematrix.matrix(); //! renamed
         CmatrixType& c_mat      = Rmatrix.matrix(); //! renamed
         BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
@@ -185,9 +187,15 @@ class NestedCgSaddlepointInverseOperator
 			InnerCGSolverWrapperType;
 		typedef typename InnerCGSolverWrapperType::ReturnValueType
 				InnerCGSolverWrapperReturnType;
-		InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat,
-													   y_mat, rhs1.space(),
-													   relLimit, absLimit, solverVerbosity );
+		InnerCGSolverWrapperType innerCGSolverWrapper( w_mat,
+													  m_inv_mat,
+													  x_mat,
+													  y_mat,
+													  o_mat,
+													  rhs1.space(),
+													  relLimit,
+													  absLimit,
+													  solverVerbosity );
 
         DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
 		DiscretePressureFunctionType new_f ( "new_f", g_func.space() );
@@ -215,7 +223,7 @@ class NestedCgSaddlepointInverseOperator
                         << " and absLimit " << a_absLimit << std::endl;
 
 				InnerCGSolverWrapperType innerCGSolverWrapper_adapt( w_mat, m_inv_mat, x_mat,
-																	 y_mat, rhs1.space(),
+																	 y_mat, o_mat, rhs1.space(),
 																	 relLimit, absLimit, solverVerbosity );
 				innerCGSolverWrapper_adapt.apply( f_func, tmp_f, a_ret );
 
@@ -276,7 +284,9 @@ class NestedCgSaddlepointInverseOperator
                 logInfo << "\n\t\t\t trying with relLimit " << a_relLimit
                         << " and absLimit " << a_absLimit << std::endl;
 
-				InnerCGSolverWrapperType innerCGSolverWrapper_adapt( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit, solverVerbosity );
+				InnerCGSolverWrapperType innerCGSolverWrapper_adapt( w_mat, m_inv_mat, x_mat,
+																	y_mat, o_mat, rhs1.space(),
+																	relLimit, absLimit, solverVerbosity );
 				Sk_Operator sk_op_adapt(  innerCGSolverWrapper_adapt, b_t_mat, c_mat, b_mat, m_inv_mat,
                             velocity.space(), pressure.space() );
                 Sk_Solver sk_solver_adapt( sk_op_adapt, a_relLimit, a_absLimit, 2000, solverVerbosity );
@@ -362,6 +372,7 @@ class SaddlepointInverseOperator
                 XmatrixObjectType& Xmatrix,
                 MmatrixObjectType& Mmatrix,
                 YmatrixObjectType& Ymatrix,
+				YmatrixObjectType& Omatrix,
                 EmatrixObjectType& Ematrix,
                 RmatrixObjectType& Rmatrix,
                 ZmatrixObjectType& Zmatrix,
@@ -423,6 +434,7 @@ class SaddlepointInverseOperator
         XmatrixType& x_mat      = Xmatrix.matrix();
         MmatrixType& m_inv_mat  = Mmatrix.matrix();
         YmatrixType& y_mat      = Ymatrix.matrix();
+		YmatrixType& o_mat      = Omatrix.matrix();
         B_t_matrixType& b_t_mat = Ematrix.matrix(); //! renamed
         CmatrixType& c_mat      = Rmatrix.matrix(); //! renamed
         BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
@@ -459,7 +471,7 @@ class SaddlepointInverseOperator
         double current_inner_accuracy = inner_absLimit;
 #endif
 		InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
-													   rhs1.space(), relLimit,
+													   o_mat, rhs1.space(), relLimit,
 													   current_inner_accuracy, solverVerbosity > 3 );
 
 /*****************************************************************************************/
@@ -663,6 +675,7 @@ class ReducedInverseOperator
 				XmatrixObjectType& Xmatrix,
 				MmatrixObjectType& Mmatrix,
 				YmatrixObjectType& Ymatrix,
+				YmatrixObjectType& Omatrix,
 				EmatrixObjectType& Ematrix,
 				RmatrixObjectType& Rmatrix,
 				ZmatrixObjectType& Zmatrix,
@@ -714,6 +727,7 @@ class ReducedInverseOperator
 		XmatrixType& x_mat      = Xmatrix.matrix();
 		MmatrixType& m_inv_mat  = Mmatrix.matrix();
 		YmatrixType& y_mat      = Ymatrix.matrix();
+		YmatrixType& o_mat      = Omatrix.matrix();
 		B_t_matrixType& b_t_mat = Ematrix.matrix(); //! renamed
 		CmatrixType& c_mat      = Rmatrix.matrix(); //! renamed
 		BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
@@ -739,7 +753,7 @@ class ReducedInverseOperator
 			InnerCGSolverWrapperType;
 		double current_inner_accuracy = inner_absLimit;
 		InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
-													   rhs1.space(), relLimit,
+													   o_mat, rhs1.space(), relLimit,
 													   current_inner_accuracy, solverVerbosity > 3 );
 
 /*****************************************************************************************/
