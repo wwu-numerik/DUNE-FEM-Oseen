@@ -127,7 +127,7 @@ class NestedCgSaddlepointInverseOperator
         const double absLimit = Parameters().getParam( "absLimit", 1e-3 );
         const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
 
-        logInfo << "Begin SaddlePointInverseOperator " << std::endl;
+        logInfo << "Begin NestedCgSaddlepointInverseOperator " << std::endl;
 
         logDebug.Resume();
         //get some refs for more readability
