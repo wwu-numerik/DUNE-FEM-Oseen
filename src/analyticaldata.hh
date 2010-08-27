@@ -74,7 +74,7 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
 #elif defined(POROSITY_PROBLEM_WOIDS)
                 ret[ 0 ] = 0.0;
                 ret[ 1 ] = 0.0;
-#elif defined(GENRALIZED_STOKES_PROBLEM)
+#elif defined(GENERALIZED_STOKES_PROBLEM)
                 const double x = arg[0];
                 const double y = arg[1];
                 const double tmp = alpha_ * std::cos( M_PI_2 * (x+y) ) + M_PI_2 * M_PI * std::cos( M_PI_2 * ( x + y ) ) + M_PI_2 * std::cos( M_PI_2 * ( x - y ) ) ;
@@ -117,8 +117,8 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 assert( !"POROSITY_PROBLEM not implemented in 3D!" );
 #elif defined(POROSITY_PROBLEM_WOIDS)
                 assert( !"POROSITY_PROBLEM_WOIDS not implemented in 3D!" );
-#elif defined(GENRALIZED_STOKES_PROBLEM)
-                assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
+#elif defined(GENERALIZED_STOKES_PROBLEM)
+                assert( !"GENERALIZED_STOKES_PROBLEM not implemented in 3D!" );
 #elif defined(DARCY_PROBLEM)
                 assert( !"DARCY_PROBLEM not implemented in 3D!" );
 #elif defined(AORTA_PROBLEM)
@@ -237,7 +237,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                     ret[ 0 ] = 0.0;
                     ret[ 1 ] = 0.0;
                 }
-#elif defined(GENRALIZED_STOKES_PROBLEM)
+#elif defined(GENERALIZED_STOKES_PROBLEM)
                 const double tmp = std::cos( ( M_PI_2 ) * ( x1 + x2 ) );
                 ret[0] = tmp;
                 ret[1] = -1.0 * tmp;
@@ -320,8 +320,8 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 assert( !"POROSITY_PROBLEM not implemented in 3D!" );
 #elif defined(POROSITY_PROBLEM_WOIDS)
                 assert( !"POROSITY_PROBLEM_WOIDS not implemented in 3D!" );
-#elif defined(GENRALIZED_STOKES_PROBLEM)
-                assert( !"GENRALIZED_STOKES_PROBLEM not implemented in 3D!" );
+#elif defined(GENERALIZED_STOKES_PROBLEM)
+                assert( !"GENERALIZED_STOKES_PROBLEM not implemented in 3D!" );
 #elif defined(DARCY_PROBLEM)
                 assert( !"DARCY_PROBLEM not implemented in 3D!" );
 #elif defined(AORTA_PROBLEM)

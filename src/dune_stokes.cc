@@ -641,7 +641,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
     profiler().StartTiming( "Problem/Postprocessing" );
 
-#if defined (AORTA_PROBLEM) || defined (COCKBURN_PROBLEM) || defined (GENRALIZED_STOKES_PROBLEM) //bool tpl-param toggles ana-solution output in post-proc
+#if defined (AORTA_PROBLEM) || defined (COCKBURN_PROBLEM) || defined (GENERALIZED_STOKES_PROBLEM) //bool tpl-param toggles ana-solution output in post-proc
 	typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, true, AnalyticalDirichletDataType >
         ProblemType;
 #else
