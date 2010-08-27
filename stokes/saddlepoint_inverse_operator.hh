@@ -316,14 +316,14 @@ class NestedCgSaddlepointInverseOperator
 		//
 		logInfo << "\n\tend  S*p=new_f" << std::endl;
 
-		pressure *= -1;
+		pressure *= -1;//magic
         DiscreteVelocityFunctionType Bp_temp ( "Bp_temp", velocity.space() );
         Bp_temp.clear();
 		// velocity = A^-1 * ( ( -1 * ( B * pressure ) ) + f_func )
 		b_mat.apply( pressure, Bp_temp );
 		Bp_temp += f_func;
 		innerCGSolverWrapper.apply ( Bp_temp, velocity );
-		velocity *= -1;
+		velocity *= -1;//even more magic
 
         logInfo << "\nEnd NestedCgSaddlePointInverseOperator " << std::endl;
 
