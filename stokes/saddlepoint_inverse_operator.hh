@@ -229,7 +229,7 @@ class NestedCgSaddlepointInverseOperator
                         << " and absLimit " << a_absLimit << std::endl;
 
 				InnerCGSolverWrapperType innerCGSolverWrapper_adapt( w_mat, m_inv_mat, x_mat,
-																	 y_mat, o_mat, rhs1.space(),
+																	 y_mat, o_mat, rhs1.space(),f_func.space(),
 																	 relLimit, absLimit, solverVerbosity );
 				innerCGSolverWrapper_adapt.apply( f_func, tmp_f, a_ret );
 
@@ -296,7 +296,7 @@ class NestedCgSaddlepointInverseOperator
                         << " and absLimit " << a_absLimit << std::endl;
 
 				InnerCGSolverWrapperType innerCGSolverWrapper_adapt( w_mat, m_inv_mat, x_mat,
-																	y_mat, o_mat, rhs1.space(),
+																	y_mat, o_mat, rhs1.space(),f_func.space(),
 																	relLimit, absLimit, solverVerbosity );
 				Sk_Operator sk_op_adapt(  innerCGSolverWrapper_adapt, b_t_mat, c_mat, b_mat, m_inv_mat,
                             velocity.space(), pressure.space() );

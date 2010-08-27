@@ -110,12 +110,18 @@ bicgstab_algo( const CommunicatorType & comm,
 
   double err=eps*eps;
   double bb = 0.0;
-
+#ifdef USE_BFG_CG_SCHEME
+  IterationInfo info;
+#endif
   bool rightPreCon = MultType :: first_mult(A,C,x,r,tmp);
   // if pc matrix, recalc rhs
   if( usePC && (!rightPreCon) )
   {
-    mult(C,rhs,tmp);
+#ifdef USE_BFG_CG_SCHEME
+    mult(C,rhs,tmp,info);
+#else
+	mult(C,rhs,tmp);
+#endif
     daxpy(N,-1.,tmp,1,r,1);
     bb = ddot(N,tmp,1,tmp,1);
   }
@@ -138,10 +144,6 @@ bicgstab_algo( const CommunicatorType & comm,
 
   // communicate rTr and rTh
   comm.sum( rtBuff, 2 );
-
-  #ifdef USE_BFG_CG_SCHEME
-    IterationInfo info;
-  #endif
 
   while( rTr>err )
   {

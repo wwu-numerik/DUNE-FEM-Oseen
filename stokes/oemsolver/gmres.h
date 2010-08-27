@@ -47,7 +47,7 @@ gmres_algo (const CommunicatorType & comm,
   typedef Mult<Matrix,PC_Matrix,usePC> MultType;
   typedef typename MultType :: mult_t mult_t;
   // get appropriate mult method 
-  mult_t * mult_pc = MultType :: mult_pc;
+//  mult_t * mult_pc = MultType :: mult_pc;
 
   typedef double *doubleP;
 #ifdef USE_MEMPROVIDER
@@ -94,12 +94,22 @@ gmres_algo (const CommunicatorType & comm,
     
     // global sum 
     nrm2b = comm.sum ( nrm2b );
-    
+
+	#ifdef USE_BFG_CG_SCHEME
+	  IterationInfo info;
+	#endif
+
     io=0;
     do  
     { // "aussere Iteration
       ++io;
-      mult_pc(A,C,x,r,tmp);
+#ifdef USE_BFG_CG_SCHEME
+        info.first = io;
+        info.second = std::pair<double,double>(0.0,std::abs(y[j]));
+		MultType::mult_pc(A,C,x,r,tmp, info);
+#else
+		MultType::mult_pc(A,C,x,r,tmp);
+#endif
       daxpy(n,-1.,b,1,r,1);
       beta = dnrm2(n,r,1);
 
@@ -115,7 +125,11 @@ gmres_algo (const CommunicatorType & comm,
       do 
       { // innere Iteration j=0,...,m-1
         u0j=uij;
-        mult_pc(A,C,v[j],v[j+1],tmp);
+#ifdef USE_BFG_CG_SCHEME
+        MultType::mult_pc(A,C,v[j],v[j+1],tmp,info);
+#else
+		MultType::mult_pc(A,C,v[j],v[j+1],tmp);
+#endif
         dgemv(DuneCBlas::Transpose,n,j+1,1.,V,n,v[j+1],1,0.,U+u0j,1);
 
         // global sum 
