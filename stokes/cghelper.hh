@@ -8,6 +8,7 @@
 
 #include <dune/stuff/printing.hh>
 #include <dune/stuff/misc.hh>
+#include <dune/stuff/matrix.hh>
 #include <dune/stuff/logging.hh>
 #include <dune/stuff/parametercontainer.hh>
 
@@ -26,7 +27,8 @@ template <  class WMatType,
             class YMatType,
             class DiscreteSigmaFunctionType,
 			class DiscreteVelocityFunctionType>
-class MatrixA_Operator {
+class MatrixA_Operator : public OEMSolver::PreconditionInterface
+	{
 
     public:
 
@@ -55,8 +57,21 @@ class MatrixA_Operator {
             o_mat_(o_mat),
             sig_tmp1( "sig_tmp1", sig_space ),
             sig_tmp2( "sig_tmp2", sig_space ),
-            space_(space)
-        {}
+            space_(space),
+            precondition_matrix_( y_mat_.rows(), y_mat_.cols(), 10 ),
+            precondition_matrix_invers( y_mat_.cols(), y_mat_.rows(), 10 ),
+            precondition_diagonal_( "diag1", space )
+        {
+			x_mat_.getDiag( m_mat_, w_mat_, precondition_diagonal_);
+			precondition_diagonal_ *= -1;
+			y_mat_.addDiag( precondition_diagonal_ );
+			o_mat_.addDiag( precondition_diagonal_ );
+			setMatrixDiag( precondition_matrix_, precondition_diagonal_ );
+			DiscreteVelocityFunctionType precondition_diagonal_inv( "diag_inv", space );
+			precondition_diagonal_inv.assign( precondition_diagonal_ );
+			Stuff::invertFunctionDofs( precondition_diagonal_inv );
+			setMatrixDiag( precondition_matrix_invers, precondition_diagonal_inv );
+		}
 
         ~MatrixA_Operator()
         {}
@@ -97,6 +112,29 @@ class MatrixA_Operator {
             return *this;
         }
 
+        YMatType& preconditionMatrix()
+        {
+            return precondition_matrix_;
+        }
+
+        bool hasPreconditionMatrix () const
+        {
+            return true;
+        }
+
+        bool rightPrecondition() const
+        {
+            return false;
+        }
+
+        template <class VecType>
+        void precondition( const VecType* tmp, VecType* dest ) const
+        {
+			assert( false );
+			precondition_matrix_invers.multOEM( tmp, dest );
+        }
+
+
     private:
         const WMatType& w_mat_;
         const MMatType& m_mat_;
@@ -106,6 +144,9 @@ class MatrixA_Operator {
         mutable DiscreteSigmaFunctionType sig_tmp1;
         mutable DiscreteSigmaFunctionType sig_tmp2;
 		const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& space_;
+		YMatType precondition_matrix_;
+		DiscreteVelocityFunctionType precondition_diagonal_;
+		YMatType precondition_matrix_invers;
 };
 
 
@@ -151,8 +192,11 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
             tmp2 ( "tmp2", velocity_space ),
             do_bfg( Parameters().getParam( "do-bfg", true ) ),
             total_inner_iterations( 0 ),
-			pressure_space_(pressure_space)
-        {}
+			pressure_space_(pressure_space),
+			precond_( c_mat_.rows() )
+        {
+			precond_.scale( 4 );
+		}
 
         double ddotOEM(const double*v, const double* w) const
 		{
@@ -212,9 +256,9 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
             return *this;
         }
 
-        ThisType& preconditionMatrix()
+        IdentityMatrix<CmatrixType>& preconditionMatrix()
         {
-            return *this;
+            return precond_;
         }
 
         bool hasPreconditionMatrix () const
@@ -230,7 +274,8 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
         template <class VecType>
         void precondition( const VecType* tmp, VecType* dest ) const
         {
-
+			assert( false );
+			precond_.multOEM( tmp, dest );
         }
 
         long getTotalInnerIterations()
@@ -249,6 +294,7 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
         bool do_bfg;
         mutable long total_inner_iterations;
 		const typename DiscretePressureFunctionType::DiscreteFunctionSpaceType& pressure_space_;
+		IdentityMatrix<CmatrixType> precond_;
 };
 
 
