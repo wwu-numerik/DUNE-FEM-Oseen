@@ -33,13 +33,9 @@ class VelocityTraits
         typedef typename FunctionSpaceType::RangeType
             RangeType;
         typedef typename FunctionSpaceType::JacobianRangeType
-//        typedef Dune::FieldVector< RangeType, gridDim >
             GradientRangeType;
         typedef typename FunctionSpaceType::HessianRangeType
-//        typedef Dune::FieldVector< double, 1 >
             DivergenceRangeType;
-
-
 };
 
 /**
@@ -181,36 +177,6 @@ class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType ,
         }
 
         /**
-         *  \brief  evaluates the gradient of the velocity
-         *
-         *  \param  arg
-         *          point to evaluate at
-         *  \param  ret
-         *          value of the gradient of the velocity at given point
-         **/
-//        inline void gradient( const DomainType& arg, GradientRangeType& ret ) const;
-
-        /**
-         *  \brief  evaluates the divergence of the velocity
-         *
-         *  \param  arg
-         *          point to evaluate at
-         *  \param  ret
-         *          value of the divergence of the velocity at given point
-         **/
-//        inline void divergence( const DomainType& arg, DivergenceRangeType& ret ) const;
-
-        /**
-         *  \brief  evaluates the laplacian of the velocity
-         *
-         *  \param  arg
-         *          point to evaluate at
-         *  \param  ret
-         *          value of the laplacian of the velocity at given point
-         **/
-//        inline void laplacian( const DomainType& arg, RangeType& ret ) const;
-
-        /**
          *  \brief  a simple test of all class' functionalities
          **/
         void testMe() const;
@@ -218,139 +184,5 @@ class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType ,
     private:
         const int dim_;
 };
-
-/**
- *  \brief  specialization for gridDim = 2
- **/
-//template < class TraitsImp >
-//inline void Velocity< TraitsImp >::evaluate(
-//        const DomainType& arg,
-//        RangeType& ret ) const
-//{
-//    // play safe
-//    assert( arg.dim() == 2 );
-//    assert( ret.dim() == 2 );
-//    double x1 = arg[0];
-//    double x2 = arg[1];
-//#ifdef SIMPLE_PROBLEM
-//    ret[0] = 1;
-//    ret[1] = 0;
-//#elif defined(CONSTANT_PROBLEM)
-//    ret[0] = 0;
-//    ret[1] = 0;
-//#else
-//    double exp_of_x1 = std::exp( x1 );
-//    double sin_of_x2 = std::sin( x2 );
-//    // return
-//    ret[0] = -1.0 * exp_of_x1 * ( x2 * std::cos( x2 ) + sin_of_x2 );
-//    ret[1] = exp_of_x1 * x2 * sin_of_x2;
-//
-//#endif
-//
-//}
-
-/**
- *  \brief  specialization for gridDim = 2
- **/
-//template < class TraitsImp >
-//inline void Velocity< TraitsImp >::gradient( const DomainType& arg, GradientRangeType& ret ) const
-//{
-//    // play safe
-//    assert( arg.dim() == 2 );
-////    assert( ret.dim() == 2 );
-//    assert( ret[0].dim() == 2 );
-//    assert( ret[1].dim() == 2 );
-//    // some computations
-//    double x1 = arg[0];
-//    double x2 = arg[1];
-//    double exp_of_x1 = std::exp( x1 );
-//    double sin_of_x2 = std::sin( x2 );
-//    double cos_of_x2 = std::cos( x2 );
-//    // gradient of u_{1}
-//    double du1_over_dx1 = -1.0 * exp_of_x1 *
-//        ( x2 * cos_of_x2 + sin_of_x2 );
-//    double du1_over_dx2 = exp_of_x1 *
-//        ( x2 * sin_of_x2 - 2.0 * cos_of_x2 );
-//    RangeType grad_u1;
-//    grad_u1[0] = du1_over_dx1;
-//    grad_u1[1] = du1_over_dx2;
-//    // gradient of u_{2}
-//    double du2_over_dx1 = exp_of_x1 * x2 * sin_of_x2;
-//    double du2_over_dx2 = exp_of_x1 *
-//        ( x2 * cos_of_x2 + sin_of_x2 );
-//    RangeType grad_u2;
-//    grad_u2[0] = du2_over_dx1;
-//    grad_u2[1] = du2_over_dx2;
-//    // return
-//    ret[0] = grad_u1;
-//    ret[1] = grad_u2;
-//}
-
-/**
- *  \brief  specialization for gridDim = 2
- **/
-//template < class TraitsImp >
-//inline void Velocity< TraitsImp >::divergence( const DomainType& arg, DivergenceRangeType& ret ) const
-//{
-//    // play safe
-//    assert( arg.dim() == 2 );
-//    assert( ret.dim() == 1 );
-//    // return
-//    ret[0] = 0.0;
-//}
-
-/**
- *  \brief  specialization for gridDim = 2
- **/
-//template < class TraitsImp >
-//inline void Velocity< TraitsImp >::laplacian( const DomainType& arg, RangeType& ret ) const
-//{
-//    // play safe
-//    assert( arg.dim() == 2 );
-//    assert( ret.dim() == 2 );
-//    // some computations
-//    double x1 = arg[0];
-//    double x2 = arg[1];
-//    double exp_of_x1 = std::exp( x1 );
-//    double cos_of_x2 = std::cos( x2 );
-//    // return
-//    ret[0] = -1.0 * exp_of_x1 *
-//        ( ( 2.0 * x2 * cos_of_x2 ) - ( 2.0 * std::sin( x2 ) ) );
-//    ret[1] = 2.0 * exp_of_x1 * cos_of_x2;
-//}
-
-/**
- *  \brief  specialization for gridDim = 2
- **/
-//template < class TraitsImp >
-//void Velocity< TraitsImp >::testMe() const
-//{
-//    // some logstreams
-//    Logging::LogStream& infoStream = Logger().Info();
-//    Logging::LogStream& debugStream = Logger().Dbg();
-//    infoStream << "- testing class Velocity..." << std::endl;
-//    //tests
-//    DomainType x;
-//    x[0] = 1.0;
-//    x[1] = 1.0;
-//    debugStream << "  - x: " << x[0] << std::endl;
-//    debugStream << "       " << x[1] << std::endl;
-//    RangeType u;
-//    evaluate( x, u );
-//    debugStream << "  - u(x): " << u[0] << std::endl;
-//    debugStream << "          " << u[1] << std::endl;
-////    GradientRangeType grad_u;
-////    gradient( x, grad_u );
-////    debugStream << "  - grad u(x): " << grad_u[0] << std::endl;
-////    debugStream << "               " << grad_u[1] << std::endl;
-////    DivergenceRangeType div_u;
-////    divergence( x, div_u );
-////    debugStream << "  - div u(x): " << div_u[0] << std::endl;
-////    RangeType laplace_u;
-////    laplacian( x, laplace_u );
-////    debugStream << "  - laplacian u(x): " << laplace_u[0] << std::endl;
-////    debugStream <<  "                  " << laplace_u[1] << std::endl;
-//    infoStream << "  ...test passed!" << std::endl;
-//}
 
 #endif // end of velocity.hh
