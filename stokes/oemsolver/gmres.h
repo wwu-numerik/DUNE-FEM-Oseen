@@ -26,7 +26,7 @@ template<bool usePC ,
          class PC_Matrix >
 inline
 std::pair<int,double> 
-gmres_algo (const CommunicatorType & comm,
+gmres_algo2 (const CommunicatorType & comm,
        int m, int n, const Matrix &A, const PC_Matrix & C, 
        const double *b , double *x, double eps,
        bool detailed ) 
@@ -217,7 +217,7 @@ std::pair<int,double>
 gmres( const CommunicatorType & comm, 
       int m, int n, const Matrix &A, const double *b, double *x, double eps , bool verbose )
 {
-  return gmres_algo<false> (comm,m,n,A,A,b,x,eps,verbose);
+  return gmres_algo2<false> (comm,m,n,A,A,b,x,eps,verbose);
 }
 
 template<class CommunicatorType, 
@@ -229,7 +229,7 @@ gmres( const CommunicatorType & comm,
       int m, int n, const Matrix &A, const PC_Matrix & C ,
       const double *b, double *x, double eps , bool verbose )
 {
-  return gmres_algo<true> (comm,m,n,A,C,b,x,eps,verbose);
+  return gmres_algo2<true> (comm,m,n,A,C,b,x,eps,verbose);
 }
 
 // ============================================================================
