@@ -50,7 +50,7 @@ template<bool usePC,
          class PC_MATRIX >
 inline
 std::pair<int,double>
-bicgstab_algo( const CommunicatorType & comm,
+bicgstab_algo2( const CommunicatorType & comm,
     unsigned int N, const MATRIX &A, const PC_MATRIX & C,
 	  const double *rhs, double *x, double eps, bool detailed )
 {
@@ -250,7 +250,7 @@ bicgstab( const CommunicatorType & comm,
     unsigned int N, const MATRIX &A,
 	  const double *b, double *x, double eps, bool verbose )
 {
-  return bicgstab_algo<false>(comm,N,A,A,b,x,eps,verbose);
+  return bicgstab_algo2<false>(comm,N,A,A,b,x,eps,verbose);
 }
 
 // bicgstab with pc matrix
@@ -263,7 +263,7 @@ bicgstab( const CommunicatorType & comm,
     unsigned int N, const MATRIX &A, const PC_MATRIX & C,
 	  const double *b,double *x, double eps, bool verbose )
 {
-  return bicgstab_algo<true>(comm,N,A,C,b,x,eps,verbose);
+  return bicgstab_algo2<true>(comm,N,A,C,b,x,eps,verbose);
 }
 
 #endif // DUNE_STOKES_BICGSTAB_BLAS_H
