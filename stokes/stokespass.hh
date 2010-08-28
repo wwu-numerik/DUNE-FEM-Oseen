@@ -1982,6 +1982,20 @@ class StokesPass
 			if ( do_oseen_discretization ) {
 				H2rhs -= H2_O_rhs;
 			}
+			{//paranoid checks
+				assert( !Stuff::MatrixContainsNanOrInf( Omatrix.matrix() ) );
+				assert( !Stuff::MatrixContainsNanOrInf( Ematrix.matrix() ) );
+				assert( !Stuff::MatrixContainsNanOrInf( Wmatrix.matrix() ) );
+				assert( !Stuff::MatrixContainsNanOrInf( Xmatrix.matrix() ) );
+				assert( !Stuff::MatrixContainsNanOrInf( Ymatrix.matrix() ) );
+				assert( !Stuff::MatrixContainsNanOrInf( Zmatrix.matrix() ) );
+				assert( !Stuff::MatrixContainsNanOrInf( Rmatrix.matrix() ) );
+				assert( !Stuff::MatrixContainsNanOrInf( MInversMatrix.matrix() ) );
+				assert( !Stuff::FunctionContainsNanOrInf( H1rhs ) );
+				assert( !Stuff::FunctionContainsNanOrInf( H2rhs ) );
+				assert( !Stuff::FunctionContainsNanOrInf( H3rhs ) );
+				assert( !Stuff::FunctionContainsNanOrInf( H2_O_rhs ) );
+			}
 #ifndef NLOG
 			infoStream.Resume();
 			infoStream << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
