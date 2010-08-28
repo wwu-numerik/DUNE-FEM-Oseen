@@ -188,16 +188,8 @@ class NestedCgSaddlepointInverseOperator
 		typedef typename InnerCGSolverWrapperType::ReturnValueType
 				InnerCGSolverWrapperReturnType;
 #endif
-		InnerCGSolverWrapperType innerCGSolverWrapper( w_mat,
-													  m_inv_mat,
-													  x_mat,
-													  y_mat,
-													  o_mat,
-													  rhs1.space(),
-													  f_func.space(),
-													  relLimit,
-													  absLimit,
-													  solverVerbosity );
+		#define innerCGSolverWrapper InnerCGSolverWrapperType(w_mat,m_inv_mat,x_mat,y_mat,o_mat,rhs1.space(),f_func.space(),relLimit,absLimit,solverVerbosity)
+
 
         DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
 		DiscretePressureFunctionType new_f ( "new_f", g_func.space() );
@@ -263,7 +255,8 @@ class NestedCgSaddlepointInverseOperator
 #endif
 
         logInfo << " \n\tbegin S*p=new_f " << std::endl;
-		Sk_Operator sk_op(  innerCGSolverWrapper, b_t_mat, c_mat, b_mat, m_inv_mat,
+		InnerCGSolverWrapperType innerCGSolverWrapper__ (w_mat,m_inv_mat,x_mat,y_mat,o_mat,rhs1.space(),f_func.space(),relLimit,absLimit,solverVerbosity);
+		Sk_Operator sk_op(  innerCGSolverWrapper__, b_t_mat, c_mat, b_mat, m_inv_mat,
                             velocity.space(), pressure.space() );
 		Sk_Solver sk_solver( sk_op, relLimit, absLimit, 2000, solverVerbosity );
         pressure.clear();
@@ -321,6 +314,7 @@ class NestedCgSaddlepointInverseOperator
         Bp_temp.clear();
 		// velocity = A^-1 * ( ( -1 * ( B * pressure ) ) + f_func )
 		b_mat.apply( pressure, Bp_temp );
+//		Bp_temp *= -1;
 		Bp_temp += f_func;
 		innerCGSolverWrapper.apply ( Bp_temp, velocity );
 		velocity *= -1;//even more magic
@@ -328,6 +322,7 @@ class NestedCgSaddlepointInverseOperator
         logInfo << "\nEnd NestedCgSaddlePointInverseOperator " << std::endl;
 
         return SaddlepointInverseOperatorInfo();
+	#undef innerCGSolverWrapper
     }
 
   };
