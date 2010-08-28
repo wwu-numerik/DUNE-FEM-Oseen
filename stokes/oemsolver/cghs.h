@@ -37,7 +37,7 @@ template< bool usePC,
           class PC_MATRIX >
 inline
 std::pair < int , double >
-cghs_algo( const CommunicatorType & comm,
+cghs_algo2( const CommunicatorType & comm,
       unsigned int N, const MATRIX &A, const PC_MATRIX& C,
       const double *b, double *x, double eps,
       bool detailed )
@@ -162,7 +162,7 @@ cghs( const CommunicatorType & comm,
       unsigned int N, const MATRIX &A, const PC_MATRIX &C,
       const double *b, double *x, double eps, bool detailed )
 {
-  return cghs_algo<true> (comm,N,A,C,b,x,eps,detailed );
+  return cghs_algo2<true> (comm,N,A,C,b,x,eps,detailed );
 }
 
 // cghs without preconditioning
@@ -173,7 +173,7 @@ cghs( const CommunicatorType & comm,
       unsigned int N, const MATRIX &A,
       const double *b, double *x, double eps, bool detailed )
 {
-  return cghs_algo<false> (comm,N,A,A,b,x,eps,detailed );
+  return cghs_algo2<false> (comm,N,A,A,b,x,eps,detailed );
 }
 
 #endif // DUNE_STOKES_CGHS_BLAS_H
