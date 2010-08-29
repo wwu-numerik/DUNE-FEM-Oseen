@@ -62,7 +62,7 @@ namespace Dune {
 				a_operator_.multOEM( arg_velocity.leakPointer(), ret );
 				b_mat_.multOEMAdd( arg_pressure.leakPointer(), ret );
 				b_t_mat_.multOEM( arg_velocity.leakPointer(), ret + numDofs_velocity );
-				c_mat_.multOEM( arg_pressure.leakPointer(), ret + numDofs_velocity );
+				c_mat_.multOEMAdd( arg_pressure.leakPointer(), ret + numDofs_velocity );
 			}
 
 		#ifdef USE_BFG_CG_SCHEME
@@ -225,7 +225,6 @@ class DirectKrylovSolver
 		WmatrixType& w_mat      = Wmatrix.matrix();
 
 		c_mat.scale( -1 ); //since B_t = -E
-		b_t_mat.scale( -1 ); //since B_t = -E
 
 		DiscretePressureFunctionType& g_func = rhs3;
 		g_func *= ( -1 ); //since G = -H_3
