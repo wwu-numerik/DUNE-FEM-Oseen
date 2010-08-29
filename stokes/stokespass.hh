@@ -2001,8 +2001,8 @@ class StokesPass
 				assert( !Stuff::FunctionContainsNanOrInf( H2_O_rhs ) );
 			}
 
-			infoStream.Resume();
-			infoStream << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
+			Logger().Info().Resume();
+			Logger().Info() << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
 
 			//this lets us switch between standalone oseen and reduced oseen in  thete scheme easily
 			const bool use_reduced_solver = do_oseen_discretization && Parameters().getParam( "reduced_oseen_solver", false );
