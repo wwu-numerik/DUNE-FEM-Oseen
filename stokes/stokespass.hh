@@ -12,6 +12,7 @@
 #include <dune/fem/misc/l2norm.hh>
 
 #include <dune/stokes/saddlepoint_inverse_operator.hh>
+#include <dune/stokes/direct_solver.hh>
 
 #include <dune/common/stdstreams.hh>
 #include <dune/stuff/matrix.hh>
@@ -163,7 +164,7 @@ class StokesPass
         typedef typename GridType::template Codim< 0 >::Entity
             EntityType;
 
-		//! alternative, not fully functional, solver implemementation
+		//! alternative solver implementation
         typedef NestedCgSaddlepointInverseOperator< ThisType >
 			AltInvOpType;
 		//! type of the used solver
@@ -172,6 +173,8 @@ class StokesPass
 		//! this is used for reduced (no pressure, incompress. condition) oseen pass
 		typedef ReducedInverseOperator< ThisType >
 			ReducedInvOpType;
+		typedef DirectKrylovSolver< ThisType >
+			DirectKrylovSolverType;
 
         //! polynomial order for the discrete sigma function space
         static const int sigmaSpaceOrder
@@ -1966,7 +1969,7 @@ class StokesPass
             // do profiling
             profiler().StopTiming("Pass -- ASSEMBLE");
 
-            if ( Parameters().getParam( "outputMatrixPlots", true ) ) {
+			if ( Parameters().getParam( "outputMatrixPlots", false ) ) {
                 Stuff::matrixToGnuplotFile( Ematrix.matrix(),       std::string( "mat_E.gnuplot")       );
                 Stuff::matrixToGnuplotFile( Wmatrix.matrix(),       std::string( "mat_W.gnuplot")       );
                 Stuff::matrixToGnuplotFile( Xmatrix.matrix(),       std::string( "mat_X.gnuplot")       );
@@ -1982,6 +1985,7 @@ class StokesPass
 			if ( do_oseen_discretization ) {
 				H2rhs -= H2_O_rhs;
 			}
+			if ( Parameters().getParam( "paranoid_checks", false ) )
 			{//paranoid checks
 				assert( !Stuff::MatrixContainsNanOrInf( Omatrix.matrix() ) );
 				assert( !Stuff::MatrixContainsNanOrInf( Ematrix.matrix() ) );
@@ -1996,15 +2000,18 @@ class StokesPass
 				assert( !Stuff::FunctionContainsNanOrInf( H3rhs ) );
 				assert( !Stuff::FunctionContainsNanOrInf( H2_O_rhs ) );
 			}
-#ifndef NLOG
+
 			infoStream.Resume();
 			infoStream << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
-#endif
+
 			//this lets us switch between standalone oseen and reduced oseen in  thete scheme easily
 			const bool use_reduced_solver = do_oseen_discretization && Parameters().getParam( "reduced_oseen_solver", false );
 			if( !use_reduced_solver ) {
 				if ( Parameters().getParam( "use_nested_cg_solver", false ) ) {
 					info_ = AltInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+				}
+				else if ( Parameters().getParam( "use_full_solver", false ) ) {
+					info_ = DirectKrylovSolverType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 				}
 				else {
 					info_ = InvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
@@ -2013,6 +2020,25 @@ class StokesPass
 			else {
 				info_ = ReducedInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 			}
+
+			//test of the combined function ( does come out again what goes in?)
+//			typedef CombinedDiscreteFunction< DomainType >
+//				CombinedDiscreteFunctionType;
+//			CombinedDiscreteFunctionType combined_arg( dest );
+
+//			DiscreteVelocityFunctionType d1("de",dest.discreteVelocity().space());
+//			DiscretePressureFunctionType d2("de",dest.discretePressure().space());
+
+//			d1.assign( dest.discreteVelocity() );
+//			d2.assign( dest.discretePressure() );
+//			combined_arg.copyBack( dest );
+
+////			dest.discreteVelocity() -= d1;
+////			dest.discretePressure() -= d2;
+
+//			Logger().Info() << "non null diff:\n";
+//			Stuff::printFunctionMinMax( Logger().Info(), dest.discreteVelocity() );
+//			Stuff::printFunctionMinMax( Logger().Info(), dest.discretePressure() );
 
             // do profiling
             profiler().StopTiming("Pass -- SOLVER");

@@ -8,103 +8,70 @@ namespace Dune {
 	/** \brief Operator wrapping Matrix vector multiplication for
 				matrix \f$ S :=  B_t * A^-1 * B + rhs3 \f$
 				**/
-	template <  class A_SolverType,
+	template <  class A_OperatorType,
 				class B_t_matrixType,
 				class CmatrixType,
 				class BmatrixType,
-				class MmatrixType,
 				class DiscreteVelocityFunctionType ,
 				class DiscretePressureFunctionType>
 	class FullSytemOperator //: public OEMSolver::PreconditionInterface
 	{
 		public:
 
-			typedef FullSytemOperator <   A_SolverType,
+			typedef FullSytemOperator <   A_OperatorType,
 												B_t_matrixType,
 												CmatrixType,
 												BmatrixType,
-												MmatrixType,
 												DiscreteVelocityFunctionType,
 												DiscretePressureFunctionType>
 					ThisType;
-	#ifdef USE_BFG_CG_SCHEME
-			typedef typename A_SolverType::ReturnValueType
-					ReturnValueType;
-	#endif
-			FullSytemOperator( A_SolverType& a_solver,
+
+			FullSytemOperator( A_OperatorType& a_operator,
 									const B_t_matrixType& b_t_mat,
 									const CmatrixType& c_mat,
 									const BmatrixType& b_mat,
-									const MmatrixType& m_mat,
 									const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& velocity_space,
 									const typename DiscretePressureFunctionType::DiscreteFunctionSpaceType& pressure_space )
-				: a_solver_(a_solver),
+				: a_operator_(a_operator),
 				b_t_mat_(b_t_mat),
 				c_mat_(c_mat),
 				b_mat_(b_mat),
-				m_mat_(m_mat),
-				tmp1 ( "tmp1", velocity_space ),
-				tmp2 ( "tmp2", velocity_space ),
+				tmp_velocity ( "tmp1", velocity_space ),
+				tmp_pressure ( "tmp2", pressure_space ),
 				do_bfg( Parameters().getParam( "do-bfg", true ) ),
 				total_inner_iterations( 0 ),
 				pressure_space_(pressure_space),
-				precond_( c_mat_.rows() )
+				velocity_space_(velocity_space),
+				precond_( c_mat_.rows() + b_mat_.rows() )
 			{
-				precond_.scale( 4 );
 			}
 
-			double ddotOEM(const double*v, const double* w) const
-			{
-				DiscretePressureFunctionType V( "ddot V", pressure_space_, v );
-				DiscretePressureFunctionType W( "ddot W", pressure_space_, w );
-				return V.scalarProductDofs( W );
-			}
+//			double ddotOEM(const double*v, const double* w) const
+//			{
+//				DiscretePressureFunctionType V( "ddot V", pressure_space_, v );
+//				DiscretePressureFunctionType W( "ddot W", pressure_space_, w );
+//				return V.scalarProductDofs( W );
+//			}
 
 			template <class VECtype>
 			void multOEM(const VECtype *x, VECtype * ret) const
 			{
-				Logging::LogStream& info = Logger().Info();
-				const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
-				tmp1.clear();
-
-				// ret = ( ( B_t * ( A^-1 * ( B * x ) ) ) + ( C * x ) )
-
-				b_mat_.multOEM( x, tmp1.leakPointer() );
-
-	#ifdef USE_BFG_CG_SCHEME
-				ReturnValueType cg_info;
-				a_solver_.apply( tmp1, tmp2, cg_info );
-				if ( solverVerbosity > 1 )
-					info << "\t\t\t\t\t inner iterations: " << cg_info.first << std::endl;
-
-				total_inner_iterations += cg_info.first;
-	#else
-				a_solver_.apply( tmp1, tmp2 );
-	#endif
-				b_t_mat_.multOEM( tmp2.leakPointer(), ret );
-				c_mat_.multOEMAdd( x, ret );
+				const size_t numDofs_velocity = velocity_space_.size();
+				DiscreteVelocityFunctionType arg_velocity( "arg_velocity", velocity_space_, x );
+				DiscretePressureFunctionType arg_pressure( "arg_pressure", pressure_space_, x + numDofs_velocity );
+				a_operator_.multOEM( arg_velocity.leakPointer(), ret );
+				b_mat_.multOEMAdd( arg_pressure.leakPointer(), ret );
+				b_t_mat_.multOEM( arg_velocity.leakPointer(), ret + numDofs_velocity );
+				c_mat_.multOEM( arg_pressure.leakPointer(), ret + numDofs_velocity );
 			}
 
-	#ifdef USE_BFG_CG_SCHEME
+		#ifdef USE_BFG_CG_SCHEME
 			template <class VECtype>
 			void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& info ) const
 			{
-				if ( do_bfg ) {
-					static const double tau = Parameters().getParam( "bfg-tau", 0.1 );
-					double limit = info.second.first;
-					const double residuum = fabs(info.second.second);
-					const int n = info.first;
-
-					if ( n == 0 )
-						limit = Parameters().getParam( "absLimit", 10e-12 );
-					limit = tau * std::min( 1. , limit / std::min ( std::pow( residuum, n ) , 1.0 ) );
-
-					a_solver_.setAbsoluteLimit( limit );
-					Logger().Info() << "\t\t\t Set inner error limit to: "<< limit << std::endl;
-				}
-				multOEM( x, ret );
+				multOEM(x,ret);
 			}
-	#endif
+		#endif
 
 			ThisType& systemMatrix ()
 			{
@@ -139,16 +106,16 @@ namespace Dune {
 			}
 
 		private:
-			mutable A_SolverType& a_solver_;
+			mutable A_OperatorType& a_operator_;
 			const B_t_matrixType& b_t_mat_;
 			const CmatrixType& c_mat_;
 			const BmatrixType& b_mat_;
-			const MmatrixType& m_mat_;
-			mutable DiscreteVelocityFunctionType tmp1;
-			mutable DiscreteVelocityFunctionType tmp2;
+			mutable DiscreteVelocityFunctionType tmp_velocity;
+			mutable DiscretePressureFunctionType tmp_pressure;
 			bool do_bfg;
 			mutable long total_inner_iterations;
 			const typename DiscretePressureFunctionType::DiscreteFunctionSpaceType& pressure_space_;
+			const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& velocity_space_;
 			IdentityMatrix<CmatrixType> precond_;
 	};
 
@@ -226,7 +193,7 @@ class DirectKrylovSolver
 		const double absLimit = Parameters().getParam( "absLimit", 1e-3 );
 		const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
 
-		logInfo << "Begin NestedCgSaddlepointInverseOperator " << std::endl;
+		logInfo << "Begin DirectKrylovSolver " << std::endl;
 
 		logDebug.Resume();
 		//get some refs for more readability
@@ -257,12 +224,12 @@ class DirectKrylovSolver
 		BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
 		WmatrixType& w_mat      = Wmatrix.matrix();
 
+		c_mat.scale( -1 ); //since B_t = -E
 		b_t_mat.scale( -1 ); //since B_t = -E
 
 		DiscretePressureFunctionType& g_func = rhs3;
 		g_func *= ( -1 ); //since G = -H_3
 
-		logInfo << " \n\tbegin calc new_f,f_func " << std::endl;
 		//Stuff::DiagonalMult( m_inv_mat, rhs1 ); //calc m_inv * H_1 "in-place"
 		DiscreteSigmaFunctionType m_tmp ( "m_tom", rhs1.space() );
 		DiscreteVelocityFunctionType f_func( "f_func", velocity.space() );
@@ -272,18 +239,44 @@ class DirectKrylovSolver
 		// f_func = ( ( -1 * ( X * ( M_inv * rhs1 ) ) ) + rhs2 )
 		m_inv_mat.apply( rhs1, m_tmp );
 		x_mat.apply( m_tmp, f_func );
-		f_func -= rhs2;
+		f_func *= -1;
+		f_func += rhs2;
 
-
-		DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
-		DiscretePressureFunctionType new_f ( "new_f", g_func.space() );
-		tmp_f.clear();
-		new_f.clear();
+		DomainType rhs_wrapper( arg.space(), f_func, g_func );
 
 		typedef CombinedDiscreteFunction< DomainType >
 			CombinedDiscreteFunctionType;
-		CombinedDiscreteFunctionType combined_arg( arg );
+		CombinedDiscreteFunctionType combined_dest( dest );
+		CombinedDiscreteFunctionType combined_rhs( rhs_wrapper );
 
+		typedef MatrixA_Operator<   WmatrixType,
+									MmatrixType,
+									XmatrixType,
+									YmatrixType,
+									DiscreteSigmaFunctionType,
+									DiscreteVelocityFunctionType>
+				A_OperatorType;
+		A_OperatorType a_operator( w_mat, m_inv_mat, x_mat, y_mat, o_mat, rhs1.space() , velocity.space() );
+
+		typedef FullSytemOperator< A_OperatorType,
+									B_t_matrixType,
+									CmatrixType,
+									BmatrixType,
+									DiscreteVelocityFunctionType,
+									DiscretePressureFunctionType >
+			FullSytemOperatorType;
+
+		FullSytemOperatorType fullsystem_operator( a_operator, b_t_mat, c_mat, b_mat,
+												   velocity.space(), pressure.space() );
+
+		typedef SOLVER_NAMESPACE::OUTER_CG_SOLVERTYPE< CombinedDiscreteFunctionType, FullSytemOperatorType >
+				KrylovSolverType;
+		KrylovSolverType kr( fullsystem_operator , relLimit, absLimit, 2000, solverVerbosity );
+
+		kr.apply( combined_rhs, combined_dest );
+		combined_dest.copyBack( dest );
+
+		return SaddlepointInverseOperatorInfo();
 
 	}
 
