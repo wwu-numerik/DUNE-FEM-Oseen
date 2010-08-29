@@ -819,6 +819,34 @@ class DiscreteStokesFunctionWrapper
 
 }; // end of DiscreteStokesFunctionWrapper
 
+template < class DiscreteFunctionWrapper >
+class CombinedDiscreteFunction
+{
+public:
+	typedef typename DiscreteFunctionWrapper::DiscreteVelocityFunctionType::DiscreteFunctionSpaceType
+		DiscreteFunctionSpaceTypeA;
+	typedef typename DiscreteFunctionWrapper::DiscretePressureFunctionType::DiscreteFunctionSpaceType
+		DiscreteFunctionSpaceTypeB;
+	typedef typename DiscreteFunctionSpaceTypeA::RangeFieldType
+		RangeFieldType;
+	typedef MutableArray< RangeFieldType >
+		DofStorageType;
+	CombinedDiscreteFunction( const DiscreteFunctionWrapper& wrapper )
+		:space_A_( wrapper.discreteVelocity().space() ),
+		space_B_( wrapper.discretePressure().space() ),
+		dofVec_( space_A_.size() + space_B_.size() )
+
+	{
+
+	}
+
+private:
+	const DiscreteFunctionSpaceTypeA& space_A_;
+	const DiscreteFunctionSpaceTypeB& space_B_;
+	mutable DofStorageType dofVec_;
+
+};
+
 }; // end of namespace Dune
 
 #endif // end of discretestokesfunctionspacewrapper.hh
