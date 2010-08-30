@@ -26,7 +26,7 @@ namespace StokesProblem {
 		static const std::string ProblemIdentifier = "MICRO-PROBLEM";
 	#elif defined(MICRO_PROBLEM_WOIDS)
 		static const std::string ProblemIdentifier = "MICRO-PROBLEM-WOIDS";
-	#elif defined(GENRALIZED_STOKES_PROBLEM)
+	#elif defined(GENERALIZED_STOKES_PROBLEM)
 		static const std::string ProblemIdentifier = "GENRALIZED-STOKES-PROBLEM";
 	#elif defined(COCKBURN_PROBLEM)
 		static const std::string ProblemIdentifier = "COCKBURN-PROBLEM";

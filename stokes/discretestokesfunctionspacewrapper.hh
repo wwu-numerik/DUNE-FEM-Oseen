@@ -588,7 +588,7 @@ class DiscreteStokesFunctionWrapper
          *              wraps existing velocity and pressure
          *  \attention  by copying
          **/
-        DiscreteStokesFunctionWrapper(  DiscreteFunctionSpaceType& space,
+		DiscreteStokesFunctionWrapper(  const DiscreteFunctionSpaceType& space,
                                         DiscreteVelocityFunctionType& velocity,
                                         DiscretePressureFunctionType& pressure )
             : space_( space ),
@@ -597,7 +597,7 @@ class DiscreteStokesFunctionWrapper
             #if ENABLE_ADAPTIVE
 				adaptionManager_ ( space.grid(), *this ),
             #endif
-			vtkWriter_( pressure.gridPart() )
+			vtkWriter_( pressure.space().gridPart() )
         {}
 
         /**
@@ -661,6 +661,9 @@ class DiscreteStokesFunctionWrapper
 //        {
 //            return velocity_.localFunction( entity );
 //        }
+
+		//! get the grid from velo space (we're assuming same grid for both functions everywhere anyways)
+		const typename DiscreteFunctionSpaceType::GridType& grid() const { return velocity_.space().grid(); }
 
         /**
          *  \brief  set all degrees of freedom to zero
@@ -792,6 +795,11 @@ class DiscreteStokesFunctionWrapper
 			pressure_.assign( other.discretePressure() );
 		}
 
+		const DiscreteFunctionSpaceType& space() const
+		{
+			return space_;
+		}
+
     private:
 		template <class FunctionType>
 		inline const char* getPath( const FunctionType& f, const std::string& base_path, const std::string& postfix ) const
@@ -818,6 +826,177 @@ class DiscreteStokesFunctionWrapper
 		//DiscreteStokesFunctionWrapper( const DiscreteStokesFunctionWrapper& );
 
 }; // end of DiscreteStokesFunctionWrapper
+
+/** \brief a minimal function wrapper making a function pair usable in OEM solver size() and grid() methods
+  */
+template < class DiscreteFunctionWrapper >
+class CombinedDiscreteFunctionSpace
+{
+	public:
+		CombinedDiscreteFunctionSpace( const DiscreteFunctionWrapper& function_wrapper )
+			:function_wrapper_( function_wrapper )
+		{}
+
+		const typename DiscreteFunctionWrapper::DiscreteFunctionSpaceType::GridType& grid() const
+		{
+			return function_wrapper_.grid();
+		}
+
+		const size_t size() const
+		{
+			return function_wrapper_.discreteVelocity().space().size()
+				   + function_wrapper_.discretePressure().space().size();
+		}
+
+	private:
+		const DiscreteFunctionWrapper& function_wrapper_;
+};
+
+/** \brief a minimal function wrapper making a function pair usable in OEM solver requiring continous access to dof arrays
+  *
+  **/
+template < class DiscreteFunctionWrapper >
+class CombinedDiscreteFunction
+{
+public:
+	typedef CombinedDiscreteFunction< DiscreteFunctionWrapper >
+		ThisType;
+	typedef typename DiscreteFunctionWrapper::DiscreteVelocityFunctionType
+		DiscreteFunctionTypeA;
+	typedef typename DiscreteFunctionTypeA::DiscreteFunctionSpaceType
+		DiscreteFunctionSpaceTypeA;
+	typedef typename DiscreteFunctionTypeA::DofIteratorType
+		DofIteratorTypeA;
+	typedef typename DiscreteFunctionTypeA::ConstDofIteratorType
+		ConstDofIteratorTypeA;
+
+	typedef typename DiscreteFunctionWrapper::DiscretePressureFunctionType
+		DiscreteFunctionTypeB;
+	typedef typename DiscreteFunctionTypeB::DiscreteFunctionSpaceType
+		DiscreteFunctionSpaceTypeB;
+	typedef typename DiscreteFunctionTypeB::DofIteratorType
+		DofIteratorTypeB;
+	typedef typename DiscreteFunctionTypeB::ConstDofIteratorType
+		ConstDofIteratorTypeB;
+
+	typedef typename DiscreteFunctionSpaceTypeA::RangeFieldType
+		RangeFieldType;
+	typedef typename DiscreteFunctionSpaceTypeA::DomainFieldType
+		DomainFieldType;
+	typedef MutableArray< RangeFieldType >
+		DofStorageType;
+	typedef CombinedDiscreteFunctionSpace< DiscreteFunctionWrapper >
+		FunctionSpaceType;
+
+	CombinedDiscreteFunction( const CombinedDiscreteFunction& other )
+		:combined_space_( other.space() ),
+		space_A_( other.space_A() ),
+		space_B_( other.space_B() ),
+		numDofs_( space_A_.size() + space_B_.size() ),
+		dofVec_( numDofs_ )
+	{
+		for ( size_t i = 0; i < numDofs_; ++i )
+			dofVec_[i] += other.leakPointer()[i];
+	}
+
+	CombinedDiscreteFunction( const DiscreteFunctionWrapper& wrapper )
+		:combined_space_( wrapper ),
+		space_A_( wrapper.discreteVelocity().space() ),
+		space_B_( wrapper.discretePressure().space() ),
+		numDofs_( space_A_.size() + space_B_.size() ),
+		dofVec_( numDofs_ )
+	{
+		size_t i = 0;
+		for (	ConstDofIteratorTypeA it = wrapper.discreteVelocity().dbegin();
+				i < space_A_.size() && wrapper.discreteVelocity().dend() != it;
+				++it,++i)
+		{
+			dofVec_[i] = *it;
+		}
+
+		i = space_A_.size();
+		for (	ConstDofIteratorTypeB it = wrapper.discretePressure().dbegin();
+				i < space_A_.size() + space_B_.size() && wrapper.discretePressure().dend() != it;
+				++it,++i )
+		{
+			dofVec_[i] = *it;
+		}
+	}
+
+
+	//! copy dofs back to respective functions
+	void copyBack( DiscreteFunctionWrapper& wrapper ) const
+	{
+		size_t i = 0;
+		for (	DofIteratorTypeA it = wrapper.discreteVelocity().dbegin();
+				i < space_A_.size() && wrapper.discreteVelocity().dend() != it;
+				++it,++i)
+		{
+			*it = dofVec_[i];
+		}
+
+		i = space_A_.size();
+		for (	DofIteratorTypeB it = wrapper.discretePressure().dbegin();
+				i < space_A_.size() + space_B_.size() && wrapper.discretePressure().dend() != it;
+				++it,++i )
+		{
+			*it = dofVec_[i];
+		}
+	}
+
+	//! return pointer to internal array for use of BLAS routines
+	RangeFieldType * leakPointer () { return dofVec_.leakPointer();  }
+	//! return pointer to internal array for use of BLAS routines
+	const RangeFieldType * leakPointer () const { return dofVec_.leakPointer(); }
+
+	RangeFieldType * leakPointerB () { return dofVec_.leakPointer() + space_A().size();  }
+	//! return pointer to internal array for use of BLAS routines
+	const RangeFieldType * leakPointerB () const { return dofVec_.leakPointer() + space_A().size(); }
+
+	const FunctionSpaceType& space() const
+	{
+		return combined_space_;
+	}
+
+	ThisType& operator+= (const ThisType &g)
+	{
+		for ( size_t i = 0; i < numDofs_; ++i )
+			dofVec_[i] += g.leakPointer()[i];
+		return *this;
+	}
+
+	ThisType& operator-= (const ThisType &g)
+	{
+		for ( size_t i = 0; i < numDofs_; ++i )
+			dofVec_[i] -= g.leakPointer()[i];
+		return *this;
+	}
+
+	ThisType& operator*= (const RangeFieldType &scalar)
+	{
+		for ( size_t i = 0; i < numDofs_; ++i )
+			dofVec_[i] *= scalar;
+		return *this;
+	}
+
+	ThisType& operator/= (const RangeFieldType &scalar)
+	{
+		for ( size_t i = 0; i < numDofs_; ++i )
+			dofVec_[i] /= scalar;
+		return *this;
+	}
+
+private:
+	FunctionSpaceType combined_space_;
+	const DiscreteFunctionSpaceTypeA& space_A_;
+	const DiscreteFunctionSpaceTypeB& space_B_;
+	const size_t numDofs_;
+	mutable DofStorageType dofVec_;
+
+	const DiscreteFunctionSpaceTypeA& space_A() const { return space_A_; }
+	const DiscreteFunctionSpaceTypeB& space_B() const { return space_B_; }
+
+};
 
 }; // end of namespace Dune
 

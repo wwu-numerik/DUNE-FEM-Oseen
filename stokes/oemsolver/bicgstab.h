@@ -50,7 +50,7 @@ template<bool usePC,
          class PC_MATRIX >
 inline
 std::pair<int,double>
-bicgstab_algo( const CommunicatorType & comm,
+bicgstab_algo2( const CommunicatorType & comm,
     unsigned int N, const MATRIX &A, const PC_MATRIX & C,
 	  const double *rhs, double *x, double eps, bool detailed )
 {
@@ -110,12 +110,18 @@ bicgstab_algo( const CommunicatorType & comm,
 
   double err=eps*eps;
   double bb = 0.0;
-
+#ifdef USE_BFG_CG_SCHEME
+  IterationInfo info;
+#endif
   bool rightPreCon = MultType :: first_mult(A,C,x,r,tmp);
   // if pc matrix, recalc rhs
   if( usePC && (!rightPreCon) )
   {
-    mult(C,rhs,tmp);
+#ifdef USE_BFG_CG_SCHEME
+    mult(C,rhs,tmp,info);
+#else
+	mult(C,rhs,tmp);
+#endif
     daxpy(N,-1.,tmp,1,r,1);
     bb = ddot(N,tmp,1,tmp,1);
   }
@@ -138,10 +144,6 @@ bicgstab_algo( const CommunicatorType & comm,
 
   // communicate rTr and rTh
   comm.sum( rtBuff, 2 );
-
-  #ifdef USE_BFG_CG_SCHEME
-    IterationInfo info;
-  #endif
 
   while( rTr>err )
   {
@@ -248,7 +250,7 @@ bicgstab( const CommunicatorType & comm,
     unsigned int N, const MATRIX &A,
 	  const double *b, double *x, double eps, bool verbose )
 {
-  return bicgstab_algo<false>(comm,N,A,A,b,x,eps,verbose);
+  return bicgstab_algo2<false>(comm,N,A,A,b,x,eps,verbose);
 }
 
 // bicgstab with pc matrix
@@ -261,7 +263,7 @@ bicgstab( const CommunicatorType & comm,
     unsigned int N, const MATRIX &A, const PC_MATRIX & C,
 	  const double *b,double *x, double eps, bool verbose )
 {
-  return bicgstab_algo<true>(comm,N,A,C,b,x,eps,verbose);
+  return bicgstab_algo2<true>(comm,N,A,C,b,x,eps,verbose);
 }
 
 #endif // DUNE_STOKES_BICGSTAB_BLAS_H

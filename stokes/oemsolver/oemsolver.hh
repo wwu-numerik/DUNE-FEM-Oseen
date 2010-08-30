@@ -114,20 +114,21 @@ using namespace DuneCBlas;
 //! this method is called from all solvers and is only a wrapper
 //! this method is mainly from SparseRowMatrix
 #ifdef USE_BFG_CG_SCHEME
-template <class MatrixImp, class VectorType>
-void mult(const MatrixImp & m, const VectorType * x, VectorType * ret, const IterationInfo& info )
-{
-  // call multOEM of the matrix
-  m.multOEM(x,ret, info );
-}
-#endif
+	template <class MatrixImp, class VectorType>
+	void mult(const MatrixImp & m, const VectorType * x, VectorType * ret, const IterationInfo& info )
+	{
+	  // call multOEM of the matrix
+	  m.multOEM(x,ret, info );
+	}
 
-template <class MatrixImp, class VectorType>
-void mult(const MatrixImp & m, const VectorType * x, VectorType * ret )
-{
-  // call multOEM of the matrix
-  m.multOEM(x,ret );
-}
+#else
+	template <class MatrixImp, class VectorType>
+	void mult(const MatrixImp & m, const VectorType * x, VectorType * ret )
+	{
+	  // call multOEM of the matrix
+	  m.multOEM(x,ret );
+	}
+#endif
 
 //! mult method when given pre conditioning matrix
 template <class Matrix , class PC_Matrix , bool use_pc >
@@ -262,7 +263,12 @@ struct Mult<Matrix,Matrix,false>
     assert( &A == &C );
 
     // call mult of Matrix A
-    mult(A,arg,dest);
+	#ifdef USE_BFG_CG_SCHEME
+		IterationInfo dummy;
+		mult(A,arg,dest,dummy);
+	#else
+		mult(A,arg,dest);
+	#endif
 
     // first mult like right precon
     return true;

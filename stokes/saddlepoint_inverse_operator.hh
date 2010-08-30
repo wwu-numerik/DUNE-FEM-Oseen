@@ -1,54 +1,13 @@
 #ifndef DUNE_SPINVERSE_OPERATORS_HH
 #define DUNE_SPINVERSE_OPERATORS_HH
 
+#include <dune/stokes/solver_interface.hh>
+
 /** \file
     \brief SPinverseoperator_original.hh
  */
 
-// OEMBICGSQOp will NOT compile
-#ifndef INNER_CG_SOLVERTYPE
-    #define INNER_CG_SOLVERTYPE OEMCGOp
-#endif
-
-#ifndef OUTER_CG_SOLVERTYPE
-    #define OUTER_CG_SOLVERTYPE OEMCGOp
-#endif
-
-
-#ifdef USE_BFG_CG_SCHEME
-    #include <utility>
-    //< iteration no , < absLimit, residuum > >
-    typedef std::pair<int,std::pair<double,double> >
-        IterationInfo;
-	#include <dune/stokes/oemsolver/oemsolver.hh>
-	#define SOLVER_NAMESPACE DuneStokes
-#else
-	#include <dune/fem/solver/oemsolver/oemsolver.hh>
-	#define SOLVER_NAMESPACE Dune
-#endif
-
-#include <dune/fem/function/common/discretefunction.hh>
-#include <dune/fem/operator/matrix/spmatrix.hh>
-#include <dune/stokes/cghelper.hh>
-
-#include <dune/stuff/parametercontainer.hh>
-#include <dune/stuff/printing.hh>
-#include <dune/stuff/misc.hh>
-#include <dune/stuff/logging.hh>
-
-#include <cmath>
-
-
-
 namespace Dune {
-//! utility struct used to expose runtime statistics
-struct SaddlepointInverseOperatorInfo {
-	double iterations_inner_avg;
-    int iterations_inner_min;
-    int iterations_inner_max;
-    int iterations_outer_total;
-    double max_inner_accuracy;
-};
 
   /**   \brief Nested Conjugate Gradient Solver
         \tparam StokesPassImp discrete function types etc. get extracted from this
@@ -102,6 +61,7 @@ class NestedCgSaddlepointInverseOperator
                 XmatrixObjectType& Xmatrix,
                 MmatrixObjectType& Mmatrix,
                 YmatrixObjectType& Ymatrix,
+				YmatrixObjectType& Omatrix,
                 EmatrixObjectType& Ematrix,
                 RmatrixObjectType& Rmatrix,
                 ZmatrixObjectType& Zmatrix,
@@ -127,7 +87,7 @@ class NestedCgSaddlepointInverseOperator
         const double absLimit = Parameters().getParam( "absLimit", 1e-3 );
         const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
 
-        logInfo << "Begin SaddlePointInverseOperator " << std::endl;
+        logInfo << "Begin NestedCgSaddlepointInverseOperator " << std::endl;
 
         logDebug.Resume();
         //get some refs for more readability
@@ -152,6 +112,7 @@ class NestedCgSaddlepointInverseOperator
         XmatrixType& x_mat      = Xmatrix.matrix();
         MmatrixType& m_inv_mat  = Mmatrix.matrix();
         YmatrixType& y_mat      = Ymatrix.matrix();
+		YmatrixType& o_mat      = Omatrix.matrix();
         B_t_matrixType& b_t_mat = Ematrix.matrix(); //! renamed
         CmatrixType& c_mat      = Rmatrix.matrix(); //! renamed
         BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
@@ -172,8 +133,7 @@ class NestedCgSaddlepointInverseOperator
 		// f_func = ( ( -1 * ( X * ( M_inv * rhs1 ) ) ) + rhs2 )
         m_inv_mat.apply( rhs1, m_tmp );
         x_mat.apply( m_tmp, f_func );
-        f_func *= -1;
-        f_func += rhs2;
+		f_func -= rhs2;
 
 
 		typedef InnerCGSolverWrapper< WmatrixType,
@@ -183,11 +143,12 @@ class NestedCgSaddlepointInverseOperator
                                 DiscreteSigmaFunctionType,
                                 DiscreteVelocityFunctionType >
 			InnerCGSolverWrapperType;
+#ifdef USE_BFG_CG_SCHEME
 		typedef typename InnerCGSolverWrapperType::ReturnValueType
 				InnerCGSolverWrapperReturnType;
-		InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat,
-													   y_mat, rhs1.space(),
-													   relLimit, absLimit, solverVerbosity );
+#endif
+		#define innerCGSolverWrapper InnerCGSolverWrapperType(w_mat,m_inv_mat,x_mat,y_mat,o_mat,rhs1.space(),f_func.space(),relLimit,absLimit,solverVerbosity)
+
 
         DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
 		DiscretePressureFunctionType new_f ( "new_f", g_func.space() );
@@ -195,9 +156,13 @@ class NestedCgSaddlepointInverseOperator
 		new_f.clear();
 
 		// new_f := ( B * A^-1 * f_func ) + g_func
+#ifdef USE_BFG_CG_SCHEME
 		InnerCGSolverWrapperReturnType a_ret;
 		innerCGSolverWrapper.apply( f_func, tmp_f, a_ret );
-#ifdef ADAPTIVE_SOLVER
+#else
+		innerCGSolverWrapper.apply( f_func, tmp_f );
+#endif
+#if defined(ADAPTIVE_SOLVER) && defined(USE_BFG_CG_SCHEME)
 		if ( isnan(a_ret.second) ) {
 		    logInfo << "\n\t\t NaNs detected, lowering error tolerance" << std::endl;
             int max_adaptions = Parameters().getParam( "max_adaptions", 8 );
@@ -215,7 +180,7 @@ class NestedCgSaddlepointInverseOperator
                         << " and absLimit " << a_absLimit << std::endl;
 
 				InnerCGSolverWrapperType innerCGSolverWrapper_adapt( w_mat, m_inv_mat, x_mat,
-																	 y_mat, rhs1.space(),
+																	 y_mat, o_mat, rhs1.space(),f_func.space(),
 																	 relLimit, absLimit, solverVerbosity );
 				innerCGSolverWrapper_adapt.apply( f_func, tmp_f, a_ret );
 
@@ -226,7 +191,7 @@ class NestedCgSaddlepointInverseOperator
                 adapt_step++;
             }
 		}
-#endif
+#endif //defined(ADAPTIVE_SOLVER) && defined(USE_BFG_CG_SCHEME)
 		b_t_mat.apply( tmp_f, new_f );
         new_f -= g_func;
 
@@ -243,23 +208,29 @@ class NestedCgSaddlepointInverseOperator
 
 		typedef SOLVER_NAMESPACE::OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
                 Sk_Solver;
-
+#ifdef USE_BFG_CG_SCHEME
         typedef typename Sk_Solver::ReturnValueType
                 SolverReturnType;
+#endif
 
         logInfo << " \n\tbegin S*p=new_f " << std::endl;
-		Sk_Operator sk_op(  innerCGSolverWrapper, b_t_mat, c_mat, b_mat, m_inv_mat,
+		InnerCGSolverWrapperType innerCGSolverWrapper__ (w_mat,m_inv_mat,x_mat,y_mat,o_mat,rhs1.space(),f_func.space(),relLimit,absLimit,solverVerbosity);
+		Sk_Operator sk_op(  innerCGSolverWrapper__, b_t_mat, c_mat, b_mat, m_inv_mat,
                             velocity.space(), pressure.space() );
-        Sk_Solver sk_solver( sk_op, relLimit, absLimit, 2000, solverVerbosity );
+		Sk_Solver sk_solver( sk_op, relLimit, absLimit, 2000, solverVerbosity );
         pressure.clear();
 
 		// p = S^-1 * new_f = ( B_t * A^-1 * B + rhs3 )^-1 * new_f
+#ifdef USE_BFG_CG_SCHEME
 		SolverReturnType ret;
 		sk_solver.apply( new_f, pressure, ret );
-
 		long total_inner = sk_op.getTotalInnerIterations();
 		logInfo << "\n\t\t #avg inner iter | #outer iter: " << total_inner / (double)ret.first << " | " << ret.first << std::endl;
-#ifdef ADAPTIVE_SOLVER
+#else
+		sk_solver.apply( new_f, pressure );
+#endif
+
+#if defined(ADAPTIVE_SOLVER) && defined(USE_BFG_CG_SCHEME)
         if ( isnan(ret.second) ) {
             logInfo << "\n\t\t NaNs detected, lowering error tolerance" << std::endl;
             int max_adaptions = Parameters().getParam( "max_adaptions", 8 );
@@ -276,7 +247,9 @@ class NestedCgSaddlepointInverseOperator
                 logInfo << "\n\t\t\t trying with relLimit " << a_relLimit
                         << " and absLimit " << a_absLimit << std::endl;
 
-				InnerCGSolverWrapperType innerCGSolverWrapper_adapt( w_mat, m_inv_mat, x_mat, y_mat, rhs1.space(), relLimit, absLimit, solverVerbosity );
+				InnerCGSolverWrapperType innerCGSolverWrapper_adapt( w_mat, m_inv_mat, x_mat,
+																	y_mat, o_mat, rhs1.space(),f_func.space(),
+																	relLimit, absLimit, solverVerbosity );
 				Sk_Operator sk_op_adapt(  innerCGSolverWrapper_adapt, b_t_mat, c_mat, b_mat, m_inv_mat,
                             velocity.space(), pressure.space() );
                 Sk_Solver sk_solver_adapt( sk_op_adapt, a_relLimit, a_absLimit, 2000, solverVerbosity );
@@ -291,21 +264,24 @@ class NestedCgSaddlepointInverseOperator
                 adapt_step++;
             }
         }
-#endif
+#endif //defined(ADAPTIVE_SOLVER) && defined(USE_BFG_CG_SCHEME)
 		//
 		logInfo << "\n\tend  S*p=new_f" << std::endl;
 
+		pressure *= -1;//magic
         DiscreteVelocityFunctionType Bp_temp ( "Bp_temp", velocity.space() );
         Bp_temp.clear();
 		// velocity = A^-1 * ( ( -1 * ( B * pressure ) ) + f_func )
 		b_mat.apply( pressure, Bp_temp );
-        Bp_temp *= ( -1 );
-        Bp_temp += f_func;
+//		Bp_temp *= -1;
+		Bp_temp += f_func;
 		innerCGSolverWrapper.apply ( Bp_temp, velocity );
+		velocity *= -1;//even more magic
 
         logInfo << "\nEnd NestedCgSaddlePointInverseOperator " << std::endl;
 
         return SaddlepointInverseOperatorInfo();
+	#undef innerCGSolverWrapper
     }
 
   };
@@ -362,6 +338,7 @@ class SaddlepointInverseOperator
                 XmatrixObjectType& Xmatrix,
                 MmatrixObjectType& Mmatrix,
                 YmatrixObjectType& Ymatrix,
+				YmatrixObjectType& Omatrix,
                 EmatrixObjectType& Ematrix,
                 RmatrixObjectType& Rmatrix,
                 ZmatrixObjectType& Zmatrix,
@@ -423,6 +400,7 @@ class SaddlepointInverseOperator
         XmatrixType& x_mat      = Xmatrix.matrix();
         MmatrixType& m_inv_mat  = Mmatrix.matrix();
         YmatrixType& y_mat      = Ymatrix.matrix();
+		YmatrixType& o_mat      = Omatrix.matrix();
         B_t_matrixType& b_t_mat = Ematrix.matrix(); //! renamed
         CmatrixType& c_mat      = Rmatrix.matrix(); //! renamed
         BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
@@ -459,7 +437,7 @@ class SaddlepointInverseOperator
         double current_inner_accuracy = inner_absLimit;
 #endif
 		InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
-													   rhs1.space(), relLimit,
+													   o_mat, rhs1.space(),rhs2.space(), relLimit,
 													   current_inner_accuracy, solverVerbosity > 3 );
 
 /*****************************************************************************************/
@@ -610,6 +588,158 @@ class SaddlepointInverseOperator
 	} //end SaddlepointInverseOperator::solve
 
   };//end class SaddlepointInverseOperator
+
+/**
+	\brief Saddlepoint Solver
+	The inner CG iteration is implemented by passing a custom Matrix operator to a given\n
+	Dune solver. The outer iteration is a implementation of the CG algorithm as described in\n
+	Kuhnibert
+	Optionally the BFG scheme as described in YADDA is uesd to control the inner solver tolerance.
+	/todo get references in doxygen right
+**/
+template < class StokesPassImp >
+class ReducedInverseOperator
+{
+  private:
+
+	typedef StokesPassImp
+		StokesPassType;
+
+	typedef typename StokesPassType::DiscreteStokesFunctionWrapperType
+		DiscreteStokesFunctionWrapperType;
+
+	typedef typename StokesPassType::DomainType
+		DomainType;
+
+	typedef typename StokesPassType::RangeType
+		RangeType;
+
+	typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
+		PressureDiscreteFunctionType;
+	typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
+		VelocityDiscreteFunctionType;
+
+
+  public:
+	ReducedInverseOperator()
+	{}
+
+	/** takes raw matrices and right hand sides from pass as input, executes nested cg algorithm and outputs solution
+	*/
+	template <  class XmatrixObjectType,
+				class MmatrixObjectType,
+				class YmatrixObjectType,
+				class EmatrixObjectType,
+				class RmatrixObjectType,
+				class ZmatrixObjectType,
+				class WmatrixObjectType,
+				class DiscreteSigmaFunctionType,
+				class DiscreteVelocityFunctionType,
+				class DiscretePressureFunctionType  >
+	SaddlepointInverseOperatorInfo solve( const DomainType& /*arg*/,
+				RangeType& dest,
+				XmatrixObjectType& Xmatrix,
+				MmatrixObjectType& Mmatrix,
+				YmatrixObjectType& Ymatrix,
+				YmatrixObjectType& Omatrix,
+				EmatrixObjectType& Ematrix,
+				RmatrixObjectType& Rmatrix,
+				ZmatrixObjectType& Zmatrix,
+				WmatrixObjectType& Wmatrix,
+				DiscreteSigmaFunctionType& rhs1,
+				DiscreteVelocityFunctionType& rhs2,
+				DiscretePressureFunctionType& rhs3 ) const
+	{
+
+		Logging::LogStream& logDebug = Logger().Dbg();
+		Logging::LogStream& logError = Logger().Err();
+		Logging::LogStream& logInfo = Logger().Info();
+
+		if ( Parameters().getParam( "disableSolver", false ) ) {
+			logInfo.Resume();
+			logInfo << "solving disabled via parameter file" << std::endl;
+			return SaddlepointInverseOperatorInfo();
+		}
+
+		// relative min. error at which cg-solvers will abort
+		const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
+		// aboslute min. error at which cg-solvers will abort
+		const double inner_absLimit = Parameters().getParam( "inner_absLimit", 1e-8 );
+		const int solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
+
+		logInfo.Resume();
+		logInfo << "Begin ReducedInverseOperator " << std::endl;
+
+		logDebug.Resume();
+		//get some refs for more readability
+		PressureDiscreteFunctionType& pressure = dest.discretePressure();
+		VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
+
+		typedef typename  XmatrixObjectType::MatrixType
+			XmatrixType;
+		typedef typename  MmatrixObjectType::MatrixType
+			MmatrixType;
+		typedef typename  YmatrixObjectType::MatrixType
+			YmatrixType;
+		typedef typename  EmatrixObjectType::MatrixType
+			B_t_matrixType;                             //! renamed
+		typedef typename  RmatrixObjectType::MatrixType
+			CmatrixType;                                //! renamed
+		typedef typename  ZmatrixObjectType::MatrixType
+			BmatrixType;                                //! renamed
+		typedef typename  WmatrixObjectType::MatrixType
+			WmatrixType;
+
+		XmatrixType& x_mat      = Xmatrix.matrix();
+		MmatrixType& m_inv_mat  = Mmatrix.matrix();
+		YmatrixType& y_mat      = Ymatrix.matrix();
+		YmatrixType& o_mat      = Omatrix.matrix();
+		B_t_matrixType& b_t_mat = Ematrix.matrix(); //! renamed
+		CmatrixType& c_mat      = Rmatrix.matrix(); //! renamed
+		BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
+		WmatrixType& w_mat      = Wmatrix.matrix();
+
+/*** making our matrices kuhnibert compatible ****/
+		b_t_mat.scale( -1 ); //since B_t = -E
+		w_mat.scale( m_inv_mat(0,0) );
+		rhs1 *=  m_inv_mat(0,0);
+		m_inv_mat.scale( 1 / m_inv_mat(0,0) );
+
+		//transformation from StokesPass::buildMatrix
+		VelocityDiscreteFunctionType v_tmp ( "v_tmp", velocity.space() );
+		x_mat.apply( rhs1, v_tmp );
+		rhs2 -= v_tmp;
+/***********/
+		typedef InnerCGSolverWrapper< WmatrixType,
+								MmatrixType,
+								XmatrixType,
+								YmatrixType,
+								DiscreteSigmaFunctionType,
+								DiscreteVelocityFunctionType >
+			InnerCGSolverWrapperType;
+		double current_inner_accuracy = inner_absLimit;
+		InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
+													   o_mat, rhs1.space(), rhs2.space(), relLimit,
+													   current_inner_accuracy, solverVerbosity > 3 );
+
+/*****************************************************************************************/
+
+		VelocityDiscreteFunctionType F( "f", velocity.space() );
+		F.assign(rhs2);
+		VelocityDiscreteFunctionType tmp1( "tmp1", velocity.space() );
+		tmp1.clear();
+
+		// u^0 = A^{-1} ( F - B * p^0 )
+		b_mat.apply( pressure, tmp1 );
+		logInfo << "OSEEN: first apply\n" ;
+		SaddlepointInverseOperatorInfo info;
+		innerCGSolverWrapper.apply(F,velocity);
+		logInfo << "End ReducedInverseOperator " << std::endl;
+		return info;
+	} //end ReducedInverseOperator::solve
+
+
+  };//end class ReducedInverseOperator
 
 } // end namespace Dune
 
