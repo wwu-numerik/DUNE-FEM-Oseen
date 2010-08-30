@@ -500,6 +500,9 @@ class StokesPass
                 const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
                 const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
 
+				const double convection_scaling = Parameters().getParam( "convection_scaling", 1.0 );
+				const double pressure_gradient_scaling = Parameters().getParam( "pressure_gradient_scaling", 1.0 );
+
                 // get quadrature
                 const VolumeQuadratureType volumeQuadratureElement( entity,
                                                                     ( 4 * pressureSpaceOrder ) + 1 );
@@ -712,6 +715,7 @@ class StokesPass
 								double v_j_jacobian_trace = matrixTrace( v_j_jacobian );
 								const double val = elementVolume
 										* integrationWeight
+										* convection_scaling
 										* v_i_times_beta
 										* v_j_jacobian_trace;
 								O_i_j -= val;
@@ -1231,6 +1235,7 @@ class StokesPass
 											//inner edge (self)
 											O_i_j += elementVolume
 												* integrationWeight
+												* convection_scaling
 												* ret;
 
 										} // done sum over all quadrature points
@@ -1282,6 +1287,7 @@ class StokesPass
 											//inner edge (self)
 											O_i_j += elementVolume
 												* integrationWeight
+												* convection_scaling
 												* ret;
 										} // done sum over all quadrature points
 										// if small, should be zero
@@ -1718,6 +1724,7 @@ class StokesPass
 											//inner edge (self)
 											O_i_j += elementVolume
 												* integrationWeight
+												* convection_scaling
 												* ret;
 										} // done sum over all quadrature points
 										// if small, should be zero
@@ -1868,6 +1875,7 @@ class StokesPass
 //									}
 									const double flux_times_v_j = flux_value * v_j;
 									H2_O_j += elementVolume
+											* convection_scaling
 											* integrationWeight
 											* beta_times_normal
 											* flux_times_v_j;
