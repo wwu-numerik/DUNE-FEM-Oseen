@@ -757,6 +757,7 @@ class StokesPass
                             Z_i_j += -1.0
                                 * elementVolume
                                 * integrationWeight
+                                * pressure_gradient_scaling
                                 * divergence_of_v_i_times_q_j;
                         } // done sum over all quadrature points
                         // if small, should be zero
@@ -1332,6 +1333,7 @@ class StokesPass
 										Z_i_j += p_factor
                                             * elementVolume
                                             * integrationWeight
+											* pressure_gradient_scaling
                                             * q_j_times_v_i_times_normal;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -1369,6 +1371,7 @@ class StokesPass
 										Z_i_j += p_factor
                                             * elementVolume
                                             * integrationWeight
+                                            * pressure_gradient_scaling
                                             * q_j_times_v_i_times_normal;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -1761,6 +1764,7 @@ class StokesPass
                                         const double q_j_times_v_times_normal = q_j * v_i_times_normal;
                                         Z_i_j += elementVolume
                                             * integrationWeight
+                                            * pressure_gradient_scaling
                                             * q_j_times_v_times_normal;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -1820,6 +1824,7 @@ class StokesPass
                                         H2_j += -1.0
                                             * elementVolume
                                             * integrationWeight
+											* pressure_gradient_scaling
                                             * flux_times_v_j_times_n_t;
 //                                    }
                                     // done computing H2's 2nd boundary integral
