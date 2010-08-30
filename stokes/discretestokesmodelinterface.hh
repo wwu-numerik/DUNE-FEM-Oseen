@@ -1264,6 +1264,20 @@ class DiscreteStokesModelInterface
             return asImp().alpha();
         }
 
+		//! ZAF
+		double convection_scaling() const
+        {
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().convection_scaling() );
+            return asImp().convection_scaling();
+        }
+
+		//! ZAF
+		double pressure_gradient_scaling() const
+        {
+            CHECK_INTERFACE_IMPLEMENTATION( asImp().pressure_gradient_scaling() );
+            return asImp().pressure_gradient_scaling();
+        }
+
     private:
         //! for CRTP trick
         DiscreteModelType& asImp()
@@ -1758,9 +1772,14 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
                                     const AnalyticalForceType& force,
                                     const AnalyticalDirichletDataType& dirichletData,
                                     const double viscosity = 1.0,
-									const double alpha = 0.0 )
+									const double alpha = 0.0,
+								   const double convection_scaling = 1.0,
+								   const double pressure_gradient_scaling = 1.0
+								   )
             : viscosity_( viscosity ),
             alpha_( alpha ),
+			convection_scaling_( convection_scaling ),
+            pressure_gradient_scaling_( pressure_gradient_scaling ),
             stabil_coeff_( stab_coeff ),
             force_( force ),
 			dirichletData_( dirichletData )
@@ -2710,6 +2729,18 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             return false;
         }
 
+		//! ZAF
+		double convection_scaling() const
+        {
+            return convection_scaling_;
+        }
+
+		//! ZAF
+		double pressure_gradient_scaling() const
+        {
+            return pressure_gradient_scaling_;
+        }
+
 		const AnalyticalForceType& forceF() const
 		{
 			return force_;
@@ -2719,6 +2750,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
 
         const double viscosity_;
         const double alpha_;
+		const double convection_scaling_;
+		const double pressure_gradient_scaling_;
         StabilizationCoefficients stabil_coeff_;
         const AnalyticalForceType& force_;
         const AnalyticalDirichletDataType& dirichletData_;

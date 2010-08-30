@@ -500,8 +500,8 @@ class StokesPass
                 const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
                 const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
 
-				const double convection_scaling = Parameters().getParam( "convection_scaling", 1.0 );
-				const double pressure_gradient_scaling = Parameters().getParam( "pressure_gradient_scaling", 1.0 );
+				const double convection_scaling = discreteModel_.convection_scaling();
+				const double pressure_gradient_scaling = discreteModel_.pressure_gradient_scaling();
 
                 // get quadrature
                 const VolumeQuadratureType volumeQuadratureElement( entity,
