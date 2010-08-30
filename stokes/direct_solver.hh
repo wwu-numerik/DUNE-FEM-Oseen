@@ -57,12 +57,10 @@ namespace Dune {
 			void multOEM(const VECtype *x, VECtype * ret) const
 			{
 				const size_t numDofs_velocity = velocity_space_.size();
-				DiscreteVelocityFunctionType arg_velocity( "arg_velocity", velocity_space_, x );
-				DiscretePressureFunctionType arg_pressure( "arg_pressure", pressure_space_, x + numDofs_velocity );
-				a_operator_.multOEM( arg_velocity.leakPointer(), ret );
-				b_mat_.multOEMAdd( arg_pressure.leakPointer(), ret );
-				b_t_mat_.multOEM( arg_velocity.leakPointer(), ret + numDofs_velocity );
-				c_mat_.multOEMAdd( arg_pressure.leakPointer(), ret + numDofs_velocity );
+				a_operator_.multOEM( x, ret );
+				b_mat_.multOEMAdd( x + numDofs_velocity, ret );
+				b_t_mat_.multOEM( x, ret + numDofs_velocity );
+				c_mat_.multOEMAdd( x + numDofs_velocity, ret + numDofs_velocity );
 			}
 
 		#ifdef USE_BFG_CG_SCHEME
