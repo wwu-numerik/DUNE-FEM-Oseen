@@ -399,6 +399,7 @@ class StokesPass
 			const double convection_scaling = discreteModel_.convection_scaling();
 			const double pressure_gradient_scaling = discreteModel_.pressure_gradient_scaling();
 			const bool use_cks_convection = Parameters().getParam( "use_cks_convection", false );
+			const bool use_alternate_vonctetion_volume_disc = Parameters().getParam( "use_alternate_vonctetion_volume_disc", true );
 
 			Logger().Info() << "pressure_gradient/convection scaling : " << convection_scaling <<
 						  " | " << pressure_gradient_scaling << std::endl;
@@ -687,42 +688,44 @@ class StokesPass
 								beta_->localFunction( entity ).evaluate( x, beta_eval );
 								VelocityJacobianRangeType v_j_jacobian;
 								velocityBaseFunctionSetElement.jacobian( j, x, v_j_jacobian );
-#if 0 //begin old disc.
-								VelocityJacobianRangeType v_i_jacobian;
-								velocityBaseFunctionSetElement.jacobian( j, x, v_i_jacobian );
-								VelocityJacobianRangeType beta_jacobian;
-								const typename DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
-										beta_->localFunction( entity );
-								beta_lf.jacobian( x, beta_jacobian );
+								if ( use_alternate_vonctetion_volume_disc ) {
+
+									VelocityJacobianRangeType v_i_jacobian;
+									velocityBaseFunctionSetElement.jacobian( j, x, v_i_jacobian );
+									VelocityJacobianRangeType beta_jacobian;
+									const typename DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
+											beta_->localFunction( entity );
+									beta_lf.jacobian( x, beta_jacobian );
 
 
-								VelocityRangeType divergence_of_beta_v_j_tensor_beta;
-								for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
-									double row_result = 0;
-									for ( size_t m = 0; m < beta_eval.dim(); ++m ) {
-										row_result += beta_jacobian[l][m] * v_i[l] + v_i_jacobian[l][m] * beta_eval[l];
+									VelocityRangeType divergence_of_beta_v_j_tensor_beta;
+									for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
+										double row_result = 0;
+										for ( size_t m = 0; m < beta_eval.dim(); ++m ) {
+											row_result += beta_jacobian[l][m] * v_i[l] + v_i_jacobian[l][m] * beta_eval[l];
+										}
+										divergence_of_beta_v_j_tensor_beta[l] = row_result;
 									}
-									divergence_of_beta_v_j_tensor_beta[l] = row_result;
-								}
-								for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
-									assert( !isnan(divergence_of_beta_v_j_tensor_beta[l]) );
-								}
+									for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
+										assert( !isnan(divergence_of_beta_v_j_tensor_beta[l]) );
+									}
 
-								const double u_h_times_divergence_of_beta_v_j_tensor_beta =
-										v_j * divergence_of_beta_v_j_tensor_beta;
-								O_i_j += elementVolume
-									* integrationWeight
-									* (-1) * u_h_times_divergence_of_beta_v_j_tensor_beta;
-#endif //old disc.
-								//compute u_h \beta  ( \nabla * v_j )
-								double v_i_times_beta = v_i * beta_eval;
-								double v_j_jacobian_trace = matrixTrace( v_j_jacobian );
-								const double val = elementVolume
+									const double u_h_times_divergence_of_beta_v_j_tensor_beta =
+											v_j * divergence_of_beta_v_j_tensor_beta;
+									O_i_j -= elementVolume
 										* integrationWeight
-										* convection_scaling
-										* v_i_times_beta
-										* v_j_jacobian_trace;
-								O_i_j -= val;
+										* u_h_times_divergence_of_beta_v_j_tensor_beta;
+								} else {
+									//compute u_h \beta  ( \nabla * v_j )
+									double v_i_times_beta = v_i * beta_eval;
+									double v_j_jacobian_trace = matrixTrace( v_j_jacobian );
+									const double val = elementVolume
+											* integrationWeight
+											* convection_scaling
+											* v_i_times_beta
+											* v_j_jacobian_trace;
+									O_i_j -= val;
+								}
 //								Stuff::printFieldVector( beta_eval, "beta", Logger().Dbg(), "DEBUG: " );
 //								Stuff::printFieldVector( v_i, "v_i", Logger().Dbg(), "DEBUG: " );
 //								Logger().Dbg() << "DEBUG: v_j_jacobian_trace | v_i_times_beta " << v_j_jacobian_trace << " | " << v_i_times_beta << "\n";
