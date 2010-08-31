@@ -32,10 +32,11 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
          *  \brief  constructor
          *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
          **/
-        Force( const double viscosity, const FunctionSpaceImp& space, const double alpha = 0.0 )
+        Force( const double viscosity, const FunctionSpaceImp& space, const double alpha = 0.0, const double scaling_factor = 1.0 )
             : BaseType ( space ),
               viscosity_( viscosity ),
-			  alpha_( alpha )
+			  alpha_( alpha ),
+			  scaling_factor_( scaling_factor )
         {}
 
         /**
@@ -77,9 +78,12 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
 #elif defined(GENERALIZED_STOKES_PROBLEM)
                 const double x = arg[0];
                 const double y = arg[1];
-                const double tmp = alpha_ * std::cos( M_PI_2 * (x+y) ) + M_PI_2 * M_PI * std::cos( M_PI_2 * ( x + y ) ) + M_PI_2 * std::cos( M_PI_2 * ( x - y ) ) ;
-                ret[0]  =      tmp;
-                ret[1] =    -  tmp;
+				const double cos_p = std::cos( M_PI_2 * (x+y) );
+				const double cos_m = std::cos( M_PI_2 * (x-y) );
+				const double pi_sq = std::pow( M_PI_2 , 2 );
+                const double tmp = alpha_ *  + M_PI_2 * M_PI * std::cos( M_PI_2 * ( x + y ) ) + M_PI_2 * std::cos( M_PI_2 * ( x - y ) ) ;
+                ret[0]  = cos_p * ( alpha_ + viscosity_ * pi_sq ) + M_PI_2 * cos_m;
+                ret[1]  = cos_p * ( - alpha_ - viscosity_ * pi_sq ) - M_PI_2 * cos_m;
 
 #elif defined(DARCY_PROBLEM)
                 // im verhältnis zu [-1,1]^2
@@ -129,11 +133,13 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
 				LOGIC_ERROR
 #endif
             }
+            ret *= scaling_factor_;
         }
 
     private:
         const double viscosity_;
         const double alpha_;
+		const double scaling_factor_;
 		static const int dim_ = FunctionSpaceImp::dimDomain;
 };
 

@@ -124,7 +124,7 @@ class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType ,
                 ret[0] = 0;
                 ret[1] = 0;
 #elif defined(GENERALIZED_STOKES_PROBLEM)
-                const double tmp = std::cos( ( 0.5 * M_PI ) * ( x1 + x2 ) );
+                const double tmp = std::cos( ( M_PI_2 ) * ( x1 + x2 ) );
                 ret[0] = tmp;
                 ret[1] = -1.0 * tmp;
 #else
