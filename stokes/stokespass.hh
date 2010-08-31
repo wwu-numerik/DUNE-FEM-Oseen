@@ -399,7 +399,7 @@ class StokesPass
 			const double convection_scaling = discreteModel_.convection_scaling();
 			const double pressure_gradient_scaling = discreteModel_.pressure_gradient_scaling();
 			const bool use_cks_convection = Parameters().getParam( "use_cks_convection", false );
-			const bool use_alternate_vonctetion_volume_disc = Parameters().getParam( "use_alternate_vonctetion_volume_disc", true );
+			const bool use_alternate_vonctetion_volume_disc = Parameters().getParam( "use_alternate_convection_volume_disc", true );
 
 			Logger().Info() << "pressure_gradient/convection scaling : " << convection_scaling <<
 						  " | " << pressure_gradient_scaling << std::endl;
