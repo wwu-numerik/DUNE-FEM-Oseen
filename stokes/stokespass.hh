@@ -396,6 +396,11 @@ class StokesPass
 
             // eps
             const double eps = Parameters().getParam( "eps", 1.0e-14 );
+			const double convection_scaling = discreteModel_.convection_scaling();
+			const double pressure_gradient_scaling = discreteModel_.pressure_gradient_scaling();
+
+			Logger().Info() << "pressure_gradient/convection scaling : " << convection_scaling <<
+						  " | " << pressure_gradient_scaling << std::endl;
 
 #ifndef NLOG
             // logging stuff
@@ -463,7 +468,6 @@ class StokesPass
                 infoStream << "      maxGridWidth is " << maxGridWidth << std::endl;
                 infoStream << "- starting gridwalk" << std::endl;
             }
-            infoStream.Suspend();
 #endif
 
             // walk the grid
@@ -500,8 +504,7 @@ class StokesPass
                 const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
                 const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
 
-				const double convection_scaling = discreteModel_.convection_scaling();
-				const double pressure_gradient_scaling = discreteModel_.pressure_gradient_scaling();
+				infoStream.Suspend();
 
                 // get quadrature
                 const VolumeQuadratureType volumeQuadratureElement( entity,
