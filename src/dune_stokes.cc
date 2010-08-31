@@ -526,7 +526,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     debugStream << "  - polOrder: " << polOrder << std::endl;
     const double viscosity = Parameters().getParam( "viscosity", 1.0 );
     debugStream << "  - viscosity: " << viscosity << std::endl;
-	const double alpha = 1 / Parameters().getParam( "alpha", 0.0 );
+	const double alpha = Parameters().getParam( "alpha", 0.0 );
 
     // analytical data
 
@@ -596,7 +596,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
     typedef StokesModelTraitsImp::AnalyticalForceType
         AnalyticalForceType;
-	AnalyticalForceType analyticalForce( viscosity / alpha, discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), 1 );
+	AnalyticalForceType analyticalForce( viscosity, discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), alpha );
 
 //    Logger().Info().Suspend();
     typedef StokesModelTraitsImp::AnalyticalDirichletDataType
@@ -608,9 +608,9 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     StokesModelImpType stokesModel( stabil_coeff,
                                     analyticalForce,
                                     analyticalDirichletData,
-									viscosity / alpha,
-									1,
-									1 / alpha );
+									viscosity ,
+									alpha,
+									1 );
 
     /* ********************************************************************** *
      * initialize passes                                                      *
