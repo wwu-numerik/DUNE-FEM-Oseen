@@ -714,6 +714,7 @@ class StokesPass
 											v_j * divergence_of_beta_v_j_tensor_beta;
 									O_i_j -= elementVolume
 										* integrationWeight
+										* convection_scaling
 										* u_h_times_divergence_of_beta_v_j_tensor_beta;
 								} else {
 									//compute u_h \beta  ( \nabla * v_j )
