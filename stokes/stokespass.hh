@@ -882,10 +882,12 @@ class StokesPass
 					VelocityRangeType D_12( 1 );//TODO FIXME
 					D_12 /= D_12.two_norm();
 					D_12 *= stabil_coeff.Factor("D12");
-					VelocityRangeType C_12( 1 );//TODO FIXME
-					C_12 /= C_12.two_norm();
-					C_12 *= stabil_coeff.Factor("C12");
 					VelocityRangeType E_11(stabil_coeff.Factor("E12"));
+					{
+//						Logging::ResumeLocal a;
+						Stuff::printFieldVector( D_12, "D_12",  debugStream, "stabilzation" );
+						Stuff::printFieldVector( E_11, "E_12",  debugStream, "stabilzation" );
+					}
 
                     // if we are inside the grid
 					if ( intersection.neighbor() && !intersection.boundary() ) {
@@ -947,8 +949,9 @@ class StokesPass
                                         velocityBaseFunctionSetElement.evaluate( j, x, v_j );
 
 										VelocityJacobianRangeType v_j_dyadic_normal = dyadicProduct( v_j, outerNormal );
+										C12 c_12( outerNormal );
 										VelocityRangeType v_j_dyadic_normal_times_C12( 0.0 );
-										v_j_dyadic_normal.mv( C_12, v_j_dyadic_normal_times_C12 );
+										v_j_dyadic_normal.mv( c_12, v_j_dyadic_normal_times_C12 );
 
                                         VelocityRangeType tau_i_times_normal( 0.0 );
                                         tau_i.mv( outerNormal, tau_i_times_normal );
@@ -992,7 +995,8 @@ class StokesPass
 
 										VelocityJacobianRangeType v_j_dyadic_normal = dyadicProduct( v_j, outerNormal );
 										VelocityRangeType v_j_dyadic_normal_times_C12( 0.0 );
-										v_j_dyadic_normal.mv( C_12, v_j_dyadic_normal_times_C12 );
+										C12 c_12( outerNormal );
+										v_j_dyadic_normal.mv( c_12, v_j_dyadic_normal_times_C12 );
 
                                         VelocityRangeType tau_i_times_normal( 0.0 );
                                         tau_i.mv( outerNormal, tau_i_times_normal );
@@ -1043,9 +1047,9 @@ class StokesPass
 
 										VelocityRangeType tau_j_times_normal( 0.0 );
 										tau_j.mv( outerNormal, tau_j_times_normal );
-
+										C12 c_12( outerNormal );
 										SigmaRangeType tau_j_times_normal_dyadic_C12
-												= dyadicProduct( tau_j_times_normal, C_12 );
+												= dyadicProduct( tau_j_times_normal, c_12 );
 
 										SigmaRangeType flux_value = tau_j;
 										flux_value *= 0.5;
@@ -1090,9 +1094,9 @@ class StokesPass
 
 										VelocityRangeType tau_j_times_normal( 0.0 );
 										tau_j.mv( outerNormal, tau_j_times_normal );
-
+										C12 c_12( outerNormal );
 										SigmaRangeType tau_j_times_normal_dyadic_C12
-												= dyadicProduct( tau_j_times_normal, C_12 );
+												= dyadicProduct( tau_j_times_normal, c_12 );
 
 										SigmaRangeType flux_value = tau_j;
 										flux_value *= 0.5;
@@ -2233,6 +2237,27 @@ class StokesPass
             }
             return ret;
         }
+
+		//! gives a vector c such that c * normal = signum( v * n ) / 2
+		class C12 : public VelocityRangeType {
+		public:
+			C12 ( const VelocityRangeType& normal, const VelocityRangeType v = VelocityRangeType(1) )
+				: VelocityRangeType( 0.0 )
+			{
+				const double v_normal = v * normal;
+				if ( v_normal != 0.0 ) {
+					const double a = copysign(1.0, v * normal ) / 2.0;
+					if ( normal[1] != 0 ) {
+						(*this)[0] = 1;
+						(*this)[1] = ( a - normal[0])/normal[1];
+					}
+					else {
+						(*this)[1] = 1;
+						(*this)[0] = ( a - normal[1])/normal[0];
+					}
+				}
+			}
+		};
 };
 
 }
