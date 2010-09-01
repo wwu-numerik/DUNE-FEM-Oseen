@@ -123,6 +123,8 @@ namespace Dune
             }
 
             bool Equals( const StabilizationCoefficients& other ) {
+				if ( map_.size() != other.map_.size() )
+					return false;
                 return std::equal( map_.begin(), map_.end(), other.map_.begin() );
             }
 		private:
