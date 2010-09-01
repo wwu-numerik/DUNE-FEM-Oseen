@@ -27,7 +27,7 @@ template <  class WMatType,
             class YMatType,
             class DiscreteSigmaFunctionType,
 			class DiscreteVelocityFunctionType>
-class MatrixA_Operator : public OEMSolver::PreconditionInterface
+class MatrixA_Operator //: public OEMSolver::PreconditionInterface
 	{
 
     public:
