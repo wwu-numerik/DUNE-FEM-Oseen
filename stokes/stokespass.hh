@@ -470,6 +470,7 @@ class StokesPass
                 infoStream << "      maxGridWidth is " << maxGridWidth << std::endl;
                 infoStream << "- starting gridwalk" << std::endl;
             }
+			infoStream.Suspend();
 #endif
 
             // walk the grid
@@ -505,8 +506,6 @@ class StokesPass
                 const int numSigmaBaseFunctionsElement = sigmaBaseFunctionSetElement.numBaseFunctions();
                 const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
                 const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
-
-				infoStream.Suspend();
 
                 // get quadrature
                 const VolumeQuadratureType volumeQuadratureElement( entity,
@@ -2050,6 +2049,9 @@ class StokesPass
 				assert( !Stuff::FunctionContainsNanOrInf( H2rhs ) );
 				assert( !Stuff::FunctionContainsNanOrInf( H3rhs ) );
 				assert( !Stuff::FunctionContainsNanOrInf( H2_O_rhs ) );
+//				Zmatrix.matrix().scale( -1 );
+//				assert( areTransposed( Zmatrix.matrix(), Ematrix.matrix() ));
+//				Zmatrix.matrix().scale( -1 );
 			}
 
 			Logger().Info().Resume();
