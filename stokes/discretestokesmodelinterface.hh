@@ -73,22 +73,27 @@ namespace Dune
             }
 
             FactorType Factor( const std::string& name ) {
+				insertIfMissing( name );
                 return map_[name].second;
             }
 
-            void Factor( const std::string& name, FactorType new_factor ) {
+            void Factor( const std::string& name, FactorType new_factor ) {				
+				insertIfMissing( name );
                 map_[name].second = new_factor;
             }
 
 			void FactorFromParams( const std::string& name, const FactorType default_value = FactorType() ) {
+				insertIfMissing( name );
 				map_[name].second = Parameters().getParam( name, default_value );
 			}
 
             PowerType Power( const std::string& name ) {
+				insertIfMissing( name );
                 return map_[name].first;
             }
 
             void Power( const std::string& name, PowerType new_power ) {
+				insertIfMissing( name );
                 map_[name].first = new_power;
             }
 
@@ -120,6 +125,12 @@ namespace Dune
             bool Equals( const StabilizationCoefficients& other ) {
                 return std::equal( map_.begin(), map_.end(), other.map_.begin() );
             }
+		private:
+			void insertIfMissing( const std::string name )
+			{
+				if ( map_.find( name ) == map_.end() )
+					map_[name] = ValueType( invalid_power, invalid_factor );
+			}
     };
 
 /**
