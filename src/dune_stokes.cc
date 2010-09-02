@@ -82,6 +82,7 @@
 #include <dune/stuff/parametercontainer.hh>
 #include <dune/stuff/postprocessing.hh>
 #include <dune/stuff/profiler.hh>
+#include <dune/stuff/signals.hh>
 
 #include "analyticaldata.hh"
 #include "velocity.hh"
@@ -162,6 +163,7 @@ void eocCheck( const RunInfoVector& runInfos );
  **/
 int main( int argc, char** argv )
 {
+	Stuff::Signals::installSignalHandler();
   try{
 
 	Dune::MPIManager::initialize(argc, argv);
