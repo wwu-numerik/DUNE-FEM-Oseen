@@ -151,6 +151,31 @@ namespace Dune
 					DUNE_THROW( ParameterInvalid, "Parameter '" << name << "' missing." );
 				return it->second;
 			}
+		public:
+			//! gives a vector c such that c * normal = signum( v * n ) / 2
+			template < class FieldVectorType >
+			class C12 : public FieldVectorType {
+			public:
+				C12 (	const FieldVectorType& normal,
+						const StabilizationCoefficients& coeff,
+						const FieldVectorType v = FieldVectorType(1) )
+					: FieldVectorType( 0.0 )
+				{
+					const double v_normal = v * normal;
+					if ( v_normal != 0.0 ) {
+						const double a = copysign(1.0, v * normal ) / 2.0;
+						if ( normal[1] != 0 ) {
+							(*this)[0] = 1;
+							(*this)[1] = ( a - normal[0])/normal[1];
+						}
+						else {
+							(*this)[1] = 1;
+							(*this)[0] = ( a - normal[1])/normal[0];
+						}
+					}
+					*this *= coeff.Factor("C12");
+				}
+			};
     };
 
 /**

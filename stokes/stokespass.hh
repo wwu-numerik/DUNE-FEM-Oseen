@@ -186,6 +186,9 @@ class StokesPass
         static const int pressureSpaceOrder
             = DiscreteModelType::pressureSpaceOrder;
 
+		//! the stab coeff. for sigma is a vector field, paramterized by the element's normal
+		typedef StabilizationCoefficients::C12< VelocityRangeType >
+			C12;
 
         /**
          *  \name typedefs needed for interface compliance
@@ -2237,30 +2240,6 @@ class StokesPass
             }
             return ret;
         }
-
-		//! gives a vector c such that c * normal = signum( v * n ) / 2
-		class C12 : public VelocityRangeType {
-		public:
-			C12 (	const VelocityRangeType& normal,
-					const StabilizationCoefficients& coeff,
-					const VelocityRangeType v = VelocityRangeType(1) )
-				: VelocityRangeType( 0.0 )
-			{
-				const double v_normal = v * normal;
-				if ( v_normal != 0.0 ) {
-					const double a = copysign(1.0, v * normal ) / 2.0;
-					if ( normal[1] != 0 ) {
-						(*this)[0] = 1;
-						(*this)[1] = ( a - normal[0])/normal[1];
-					}
-					else {
-						(*this)[1] = 1;
-						(*this)[0] = ( a - normal[1])/normal[0];
-					}
-				}
-				*this *= coeff.Factor("C12");
-			}
-		};
 };
 
 }
