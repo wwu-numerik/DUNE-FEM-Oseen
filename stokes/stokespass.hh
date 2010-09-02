@@ -874,7 +874,7 @@ class StokesPass
 
                     // get flux coefficients
 					const double lengthOfIntersection = Stuff::getLenghtOfIntersection( intersection );
-					StabilizationCoefficients stabil_coeff ( discreteModel_.getStabilizationCoefficients() );
+					const StabilizationCoefficients& stabil_coeff ( discreteModel_.getStabilizationCoefficients() );
                     const double C_11 = stabil_coeff.Factor("C11") * std::pow( lengthOfIntersection, stabil_coeff.Power("C11") );
                     const double D_11 = stabil_coeff.Factor("D11") * std::pow( lengthOfIntersection, stabil_coeff.Power("D11") );
 					//we'll leave this on 0 for the time being so it does not generate any additional  penalty terms
@@ -949,7 +949,7 @@ class StokesPass
                                         velocityBaseFunctionSetElement.evaluate( j, x, v_j );
 
 										VelocityJacobianRangeType v_j_dyadic_normal = dyadicProduct( v_j, outerNormal );
-										C12 c_12( outerNormal );
+										C12 c_12( outerNormal, discreteModel_.getStabilizationCoefficients() );
 										VelocityRangeType v_j_dyadic_normal_times_C12( 0.0 );
 										v_j_dyadic_normal.mv( c_12, v_j_dyadic_normal_times_C12 );
 
@@ -995,7 +995,7 @@ class StokesPass
 
 										VelocityJacobianRangeType v_j_dyadic_normal = dyadicProduct( v_j, outerNormal );
 										VelocityRangeType v_j_dyadic_normal_times_C12( 0.0 );
-										C12 c_12( outerNormal );
+										C12 c_12( outerNormal, discreteModel_.getStabilizationCoefficients() );
 										v_j_dyadic_normal.mv( c_12, v_j_dyadic_normal_times_C12 );
 
                                         VelocityRangeType tau_i_times_normal( 0.0 );
@@ -1047,7 +1047,7 @@ class StokesPass
 
 										VelocityRangeType tau_j_times_normal( 0.0 );
 										tau_j.mv( outerNormal, tau_j_times_normal );
-										C12 c_12( outerNormal );
+										C12 c_12( outerNormal, discreteModel_.getStabilizationCoefficients() );
 										SigmaRangeType tau_j_times_normal_dyadic_C12
 												= dyadicProduct( tau_j_times_normal, c_12 );
 
@@ -1094,7 +1094,7 @@ class StokesPass
 
 										VelocityRangeType tau_j_times_normal( 0.0 );
 										tau_j.mv( outerNormal, tau_j_times_normal );
-										C12 c_12( outerNormal );
+										C12 c_12( outerNormal, discreteModel_.getStabilizationCoefficients() );
 										SigmaRangeType tau_j_times_normal_dyadic_C12
 												= dyadicProduct( tau_j_times_normal, c_12 );
 
@@ -2241,7 +2241,9 @@ class StokesPass
 		//! gives a vector c such that c * normal = signum( v * n ) / 2
 		class C12 : public VelocityRangeType {
 		public:
-			C12 ( const VelocityRangeType& normal, const VelocityRangeType v = VelocityRangeType(1) )
+			C12 (	const VelocityRangeType& normal,
+					const StabilizationCoefficients& coeff,
+					const VelocityRangeType v = VelocityRangeType(1) )
 				: VelocityRangeType( 0.0 )
 			{
 				const double v_normal = v * normal;
@@ -2256,6 +2258,7 @@ class StokesPass
 						(*this)[0] = ( a - normal[1])/normal[0];
 					}
 				}
+				*this *= coeff.Factor("C12");
 			}
 		};
 };

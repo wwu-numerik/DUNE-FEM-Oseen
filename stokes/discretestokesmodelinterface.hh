@@ -72,29 +72,24 @@ namespace Dune
                 map_["D12"] = ValueType( D12_pow, D12_fac );
             }
 
-            FactorType Factor( const std::string& name ) {
-				insertIfMissing( name );
-                return map_[name].second;
+            FactorType Factor( const std::string& name ) const {
+                return getValue(name).second;
             }
 
             void Factor( const std::string& name, FactorType new_factor ) {				
-				insertIfMissing( name );
-                map_[name].second = new_factor;
+                getValue(name).second = new_factor;
             }
 
 			void FactorFromParams( const std::string& name, const FactorType default_value = FactorType() ) {
-				insertIfMissing( name );
-				map_[name].second = Parameters().getParam( name, default_value );
+				getValue(name).second = Parameters().getParam( name, default_value );
 			}
 
-            PowerType Power( const std::string& name ) {
-				insertIfMissing( name );
-                return map_[name].first;
+            PowerType Power( const std::string& name ) const {
+                return getValue(name).first;
             }
 
             void Power( const std::string& name, PowerType new_power ) {
-				insertIfMissing( name );
-                map_[name].first = new_power;
+                getValue(name).first = new_power;
             }
 
             static StabilizationCoefficients getDefaultStabilizationCoefficients() {
@@ -128,10 +123,20 @@ namespace Dune
                 return std::equal( map_.begin(), map_.end(), other.map_.begin() );
             }
 		private:
-			void insertIfMissing( const std::string name )
+			ValueType& getValue( const std::string name )
 			{
-				if ( map_.find( name ) == map_.end() )
-					map_[name] = ValueType( invalid_power, invalid_factor );
+				CoefficientMap::iterator it = map_.find( name );
+				if ( it == map_.end() )
+					DUNE_THROW( ParameterInvalid, "Parameter '" << name << "' missing." );
+				return it->second;
+			}
+
+			const ValueType& getValue( const std::string name ) const
+			{
+				CoefficientMap::const_iterator it = map_.find( name );
+				if ( it == map_.end() )
+					DUNE_THROW( ParameterInvalid, "Parameter '" << name << "' missing." );
+				return it->second;
 			}
     };
 
@@ -486,7 +491,7 @@ class DiscreteStokesModelInterface
             outside
         };
 
-        StabilizationCoefficients getStabilizationCoefficients() const {
+        const StabilizationCoefficients& getStabilizationCoefficients() const {
             return asImp().getStabilizationCoefficients();
         }
 
@@ -1812,7 +1817,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         ~DiscreteStokesModelDefault()
         {}
 
-        StabilizationCoefficients getStabilizationCoefficients() const {
+        const StabilizationCoefficients& getStabilizationCoefficients() const {
             return stabil_coeff_;
         }
 
