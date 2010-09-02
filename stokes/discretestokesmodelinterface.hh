@@ -75,7 +75,7 @@ namespace Dune
 			void Add( const std::string& name, FactorType factor, PowerType power = invalid_power )
 			{
 				assert( map_.find(name) == map_.end() );
-				map_[name] = ValueType( factor, power );
+				map_[name] = ValueType( power, factor );
 			}
 
 			void Add( const std::string& name )
