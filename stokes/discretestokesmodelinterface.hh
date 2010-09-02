@@ -72,6 +72,18 @@ namespace Dune
                 map_["D12"] = ValueType( D12_pow, D12_fac );
             }
 
+			void Add( const std::string& name, FactorType factor, PowerType power = invalid_power )
+			{
+				assert( map_.find(name) == map_.end() );
+				map_[name] = ValueType( factor, power );
+			}
+
+			void Add( const std::string& name )
+			{
+				Add( name, Parameters().getParam( name, FactorType() ), invalid_power );
+			}
+
+
             FactorType Factor( const std::string& name ) const {
                 return getValue(name).second;
             }
@@ -111,10 +123,11 @@ namespace Dune
 				stream << std::endl;
             }
 
-            static std::vector<std::string> getCoefficientNames() {
-                const std::string names[] = { "C11","C12","D11","D12" };
-                const unsigned int num_names = sizeof ( names ) / sizeof ( names[0] );
-                return std::vector<std::string>( names, names + num_names ) ;
+            std::vector<std::string> getCoefficientNames() const {
+                std::vector<std::string> ret;
+				for( CoefficientMap::const_iterator it = map_.begin(); it != map_.end(); ++it )
+					ret.push_back( it->first );
+                return ret;
             }
 
             bool Equals( const StabilizationCoefficients& other ) {
