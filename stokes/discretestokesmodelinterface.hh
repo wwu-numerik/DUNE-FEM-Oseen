@@ -140,7 +140,7 @@ namespace Dune
 			{
 				CoefficientMap::iterator it = map_.find( name );
 				if ( it == map_.end() )
-					DUNE_THROW( ParameterInvalid, "Parameter '" << name << "' missing." );
+					DUNE_THROW( ParameterInvalid, "Stabilization Parameter '" << name << "' missing. (Did you forget to ::Add(name) it?" );
 				return it->second;
 			}
 
@@ -148,7 +148,7 @@ namespace Dune
 			{
 				CoefficientMap::const_iterator it = map_.find( name );
 				if ( it == map_.end() )
-					DUNE_THROW( ParameterInvalid, "Parameter '" << name << "' missing." );
+					DUNE_THROW( ParameterInvalid, "Stabilization Parameter '" << name << "' missing. (Did you forget to ::Add(name) it?" );
 				return it->second;
 			}
 		public:
