@@ -690,6 +690,7 @@ class DiscreteStokesFunctionWrapper
         inline DiscreteFunctionType& operator+= ( const DiscreteFunctionType& arg )
         {
             velocity_ += arg.discreteVelocity();
+			pressure_ += arg.discretePressure();
             return *this;
         }
 
@@ -698,9 +699,10 @@ class DiscreteStokesFunctionWrapper
          *  \todo   doc
          **/
         template < class DFType >
-        DiscreteFunctionType& operator-=( const DFType& /*arg*/ )
+        DiscreteFunctionType& operator-=( const DFType& arg )
         {
-            assert( false );
+            velocity_ -= arg.discreteVelocity();
+			pressure_ -= arg.discretePressure();
             return *this;
         }
 
@@ -711,6 +713,7 @@ class DiscreteStokesFunctionWrapper
         inline DiscreteFunctionType& operator*=( const RangeFieldType& scalar )
         {
             velocity_ *= scalar;
+			pressure_ *= scalar;
             return *this;
         }
 
@@ -721,6 +724,7 @@ class DiscreteStokesFunctionWrapper
         inline DiscreteFunctionType& operator/=( const RangeFieldType& scalar )
         {
             velocity_ /= scalar;
+			pressure_ /= scalar;
             return *this;
         }
 
