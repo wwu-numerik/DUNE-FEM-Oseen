@@ -7,10 +7,10 @@
 #define DISCRETESTOKESFUNCTIONSPACEWRAPPER_HH_INCLUDED
 
 #include <dune/fem/space/common/discretefunctionspace.hh>
-#include <dune/fem/space/dgspace/dgadaptmanager.hh>
 #include <dune/fem/space/common/restrictprolonginterface.hh>
 #include <dune/fem/io/file/vtkio.hh>
 #include <dune/fem/operator/projection/l2projection.hh>
+#include <dune/stuff/adaption.hh>
 
 namespace Dune
 {
@@ -450,78 +450,6 @@ class DiscreteStokesFunctionWrapperTraits
 }; // end of DiscreteStokesFunctionWrapperTraits
 
 /**
- *  \brief encapsulates the adaption handling for our DiscreteStokesFunctionWrapper
- *
- *
- **/
-
- template < class DiscreteStokesFunctionWrapperImp >
- class DiscreteStokesFunctionWrapperAdaptionManager
- {
-     protected:
-		typedef typename DiscreteStokesFunctionWrapperImp::GridType
-			GridType;
-
-		typedef Dune::RestrictProlongDefault< typename DiscreteStokesFunctionWrapperImp::DiscretePressureFunctionType >
-			RestrictProlongPressureType;
-		typedef Dune::AdaptationManager< GridType, RestrictProlongPressureType >
-			PressureAdaptationManagerType;
-
-		typedef Dune::RestrictProlongDefault< typename DiscreteStokesFunctionWrapperImp::DiscreteVelocityFunctionType >
-			RestrictProlongVelocityType;
-		typedef Dune::AdaptationManager< GridType, RestrictProlongVelocityType >
-			VelocityAdaptationManagerType;
-
-		typedef Dune::RestrictProlongPair<RestrictProlongVelocityType&, RestrictProlongPressureType& >
-            RestrictProlongPairType;
-
-        typedef Dune::AdaptationManager< GridType, RestrictProlongPairType >
-			AdaptationManagerType;
-
-	public:
-		DiscreteStokesFunctionWrapperAdaptionManager (  GridType& grid,
-														DiscreteStokesFunctionWrapperImp& functionWrapper )
-			:
-			grid_( grid ),
-			function_wrapper_( functionWrapper),
-			rpVelocity_             ( functionWrapper.discreteVelocity() ),
-			rpPressure_             ( functionWrapper.discretePressure() ),
-			restrictPair_( rpVelocity_, rpPressure_ ),
-			adaptManager_( grid, restrictPair_ )
-		{
-
-		}
-
-		~DiscreteStokesFunctionWrapperAdaptionManager()
-		{}
-
-		void adapt()
-		{
-		   adaptManager_.adapt();
-		}
-
-		DiscreteStokesFunctionWrapperAdaptionManager( DiscreteStokesFunctionWrapperAdaptionManager& other )
-			:
-			grid_( other.grid_ ),
-			function_wrapper_( other.function_wrapper_ ),
-			rpVelocity_             ( function_wrapper_.discreteVelocity() ),
-			rpPressure_             ( function_wrapper_.discretePressure() ),
-			restrictPair_( rpVelocity_, rpPressure_ ),
-			adaptManager_( grid_, restrictPair_ )
-		{
-
-		}
-
-	protected:
-		GridType& grid_;
-		DiscreteStokesFunctionWrapperImp& function_wrapper_;
-		RestrictProlongVelocityType rpVelocity_;
-		RestrictProlongPressureType rpPressure_;
-		RestrictProlongPairType restrictPair_;
-		AdaptationManagerType adaptManager_;
- };
-
-/**
  *  \todo   doc,
  *          should comply with the DiscreteFunctionInterface some time
  **/
@@ -831,7 +759,7 @@ class DiscreteStokesFunctionWrapper
 
         //declaration order is important here, do not change
     #if ENABLE_ADAPTIVE
-        AdaptionManagerType adaptionManager_;
+		AdaptionManagerType adaptionManager_;
     #endif
 		typename Traits::VtkWriterType vtkWriter_;
 
