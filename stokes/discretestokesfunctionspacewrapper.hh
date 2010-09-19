@@ -459,7 +459,7 @@ class DiscreteStokesFunctionWrapperTraits
  class DiscreteStokesFunctionWrapperAdaptionManager
  {
      protected:
-        typedef typename DiscreteStokesFunctionWrapperImp::DiscreteFunctionSpaceType::GridType
+		typedef typename DiscreteStokesFunctionWrapperImp::GridType
 			GridType;
 
 		typedef Dune::RestrictProlongDefault< typename DiscreteStokesFunctionWrapperImp::DiscretePressureFunctionType >
@@ -554,12 +554,16 @@ class DiscreteStokesFunctionWrapper
         //! type of range field
         typedef typename DiscreteVelocityFunctionType::RangeFieldType
             RangeFieldType;
+		typedef typename DiscreteFunctionSpaceType::GridPartType
+			GridPartType;
+		typedef typename GridPartType::GridType
+			GridType;
 
 //the adaption manager, etc. is not really tested for all gridparts/spaces so we need to be able to disable it
 #if ENABLE_ADAPTIVE
     protected:
 
-		typedef DiscreteStokesFunctionWrapperAdaptionManager< DiscreteStokesFunctionWrapper< Traits > >
+		typedef DiscreteStokesFunctionWrapperAdaptionManager< ThisType >
             AdaptionManagerType;
 
     public:
@@ -572,7 +576,7 @@ class DiscreteStokesFunctionWrapper
          **/
         DiscreteStokesFunctionWrapper(  const std::string name,
                                         DiscreteFunctionSpaceType& space,
-                                        typename DiscreteFunctionSpaceType::GridPartType& gridPart )
+										GridPartType& gridPart )
             : space_( space ),
             velocity_( name + std::string("_velocity"), space.discreteVelocitySpace() ),
 			pressure_( name + std::string("_pressure"), space.discretePressureSpace() ),
@@ -588,14 +592,14 @@ class DiscreteStokesFunctionWrapper
          *              wraps existing velocity and pressure
          *  \attention  by copying
          **/
-		DiscreteStokesFunctionWrapper(  const DiscreteFunctionSpaceType& space,
+		DiscreteStokesFunctionWrapper(  DiscreteFunctionSpaceType& space,
                                         DiscreteVelocityFunctionType& velocity,
                                         DiscretePressureFunctionType& pressure )
             : space_( space ),
             velocity_( velocity ),
 			pressure_( pressure ),
             #if ENABLE_ADAPTIVE
-				adaptionManager_ ( space.grid(), *this ),
+				adaptionManager_ ( pressure.space().gridPart().grid(), *this ),
             #endif
 			vtkWriter_( pressure.space().gridPart() )
         {}
@@ -804,6 +808,11 @@ class DiscreteStokesFunctionWrapper
 			return space_;
 		}
 
+		DiscreteFunctionSpaceType& space()
+		{
+			return space_;
+		}
+
     private:
 		template <class FunctionType>
 		inline const char* getPath( const FunctionType& f, const std::string& base_path, const std::string& postfix ) const
@@ -816,7 +825,7 @@ class DiscreteStokesFunctionWrapper
 			return ss.str().c_str();
 		}
 
-        const DiscreteFunctionSpaceType& space_;
+		DiscreteFunctionSpaceType& space_;
         DiscreteVelocityFunctionType velocity_;
         DiscretePressureFunctionType pressure_;
 

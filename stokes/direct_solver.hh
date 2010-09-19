@@ -239,7 +239,7 @@ class DirectKrylovSolver
 		f_func *= -1;
 		f_func += rhs2;
 
-		DomainType rhs_wrapper( arg.space(), f_func, g_func );
+		DomainType rhs_wrapper( dest.space(), f_func, g_func );
 
 		typedef CombinedDiscreteFunction< DomainType >
 			CombinedDiscreteFunctionType;
