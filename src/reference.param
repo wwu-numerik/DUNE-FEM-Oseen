@@ -83,7 +83,7 @@ inner_absLimit: 1e-08
 #reconstruct u at the ned of alt_solver instead of continually updating it
 use_velocity_reconstruct: 0
 #clear computed functions at start of every singleRun ?
-clear_u: 1
+clear_u: 0
 clear_p: 0
 
 #when nans are detected in solution solver accuracy is multiplied maximal max_adaptions-times by 0.1
@@ -93,13 +93,21 @@ max_adaptions: 5
 solverVerbosity: 1
 disableSolver: 0
 diff-tolerance: 0.01
-do-bfg: 0
+do-bfg: 1
 bfg-tau: 0.1
-minref: 3
+minref: 2
+maxref: 5
+C11: 1
+D11: 1
+C12: 0
+D12: 0
+E12: 0
 use_nested_cg_solver: 0
-use_full_solver: 1
+use_full_solver: 0
 viscosity: 1.0
-alpha: 1.0
+alpha: 0.0
+use_cks_convection: 0
+use_alternate_convection_volume_disc: 0
 #if using alternative solver break after max maxIter outer iterations
 maxIter: 5000
 #****************** end solver ******************************************************************
