@@ -496,7 +496,6 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     Logging::LogStream& infoStream = Logger().Info();
     Logging::LogStream& debugStream = Logger().Dbg();
 	stabil_coeff.Add( "E12", 0.0 );
-	stabil_coeff.print( infoStream );
     RunInfo info;
 
     debugStream << "\nsingleRun( ";
