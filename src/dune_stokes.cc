@@ -273,8 +273,9 @@ void RefineRun( CollectiveCommunication& mpicomm )
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
     Stuff::RefineOutput eoc_texwriter( errorColumnHeaders );
 
-    int maxref = Parameters().getParam( "maxref", 0 );
     int minref = Parameters().getParam( "minref", 0 );
+	// ensures maxref>=minref
+	const int maxref = Stuff::clamp( Parameters().getParam( "maxref", 0 ), minref, Parameters().getParam( "maxref", 0 ) );
 
 	Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
 	if ( Parameters().getParam( "custom_stabilization_coefficients", false ) ) {
