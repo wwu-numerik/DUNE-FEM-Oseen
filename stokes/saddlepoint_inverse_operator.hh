@@ -695,7 +695,6 @@ class ReducedInverseOperator
 		YmatrixType& y_mat      = Ymatrix.matrix();
 		YmatrixType& o_mat      = Omatrix.matrix();
 		B_t_matrixType& b_t_mat = Ematrix.matrix(); //! renamed
-		CmatrixType& c_mat      = Rmatrix.matrix(); //! renamed
 		BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
 		WmatrixType& w_mat      = Wmatrix.matrix();
 
