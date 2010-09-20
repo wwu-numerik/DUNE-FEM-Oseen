@@ -293,20 +293,14 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                     ret[ 1 ] = 0.0;
                 }
 #elif defined(COCKBURN_PROBLEM)
-                if ( id == 2 ) { // faces on inner hole
-                    ret[ 0 ] = 0.0;
-                    ret[ 1 ] = 0.0;
-                }
-                else {
-                    double exp_of_x1 = std::exp( x1 );
-                    double sin_of_x2 = std::sin( x2 );
-                    double cos_of_x2 = std::cos( x2 );
-                    //return
-                    ret[0] = x2 * cos_of_x2;
-                    ret[0] += sin_of_x2;
-                    ret[0] *= -1.0 * exp_of_x1;
-                    ret[1] = exp_of_x1 * x2 * sin_of_x2;
-                }
+                double exp_of_x1 = std::exp( x1 );
+                double sin_of_x2 = std::sin( x2 );
+                double cos_of_x2 = std::cos( x2 );
+                //return
+                ret[0] = x2 * cos_of_x2;
+                ret[0] += sin_of_x2;
+                ret[0] *= -1.0 * exp_of_x1;
+                ret[1] = exp_of_x1 * x2 * sin_of_x2;
 #else
 				LOGIC_ERROR
 #endif
