@@ -579,7 +579,7 @@ class StokesPass
                 } // done computing Minvs' volume integral
 
                 //                                                        // we will call this one
-                // (W)_{i,j} += \int_{T}v_{j}\cdot(\nabla\cdot\tau_{i})dx // W's volume integral
+				// (W)_{i,j} += \mu\int_{T}v_{j}\cdot(\nabla\cdot\tau_{i})dx // W's volume integral
                 //                                                        // see also "W's entitity surface integral", "W's neighbour surface integral" and "W's boundary integral" below
                 for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
@@ -598,6 +598,7 @@ class StokesPass
                             const double divergence_of_tau_i_times_v_j = sigmaBaseFunctionSetElement.evaluateGradientSingle( i, entity, x, prepareVelocityRangeTypeForSigmaDivergence( v_j ) );
                             W_i_j += elementVolume
                                 * integrationWeight
+								* viscosity
                                 * divergence_of_tau_i_times_v_j;
                         } // done sum over quadrature points
                         // if small, should be zero
@@ -935,6 +936,7 @@ class StokesPass
 										double flux_times_tau_i_times_normal = flux_value * tau_i_times_normal;
 										W_i_j -= elementVolume
                                             * integrationWeight
+											* viscosity
 											* flux_times_tau_i_times_normal;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -980,6 +982,7 @@ class StokesPass
 										double flux_times_tau_i_times_normal = flux_value * tau_i_times_normal;
 										W_i_j += elementVolume
                                             * integrationWeight
+											* viscosity
 											* flux_times_tau_i_times_normal;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -1560,6 +1563,7 @@ class StokesPass
                                     const double gD_times_tau_j_times_normal = gD * tau_j_times_normal;
                                     H1_j += elementVolume
                                         * integrationWeight
+										* viscosity
                                         * gD_times_tau_j_times_normal;
                                 } // done sum over all quadrature points
                                 // if small, should be zero
