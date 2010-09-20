@@ -285,7 +285,7 @@ class StokesPass
                 JacobianInverseTransposedType;
 
             // viscosity
-            const double mu = discreteModel_.viscosity();
+			const double viscosity = discreteModel_.viscosity();
 
             // generalized stokes alpha
             const double alpha = discreteModel_.alpha();
@@ -630,7 +630,6 @@ class StokesPass
                             const double gradient_of_v_i_times_tau_j = velocityBaseFunctionSetElement.evaluateGradientSingle( i, entity, x, tau_j );
                             X_i_j += elementVolume
                                 * integrationWeight
-                                * mu
                                 * gradient_of_v_i_times_tau_j;
                         } // done sum over quadrature points
                         // if small, should be zero
@@ -1036,7 +1035,6 @@ class StokesPass
 												= velocityBaseFunctionSetElement.evaluateSingle( i, x, flux_times_normal );
 										X_i_j -= elementVolume
 											* integrationWeight
-											* mu
 											* v_i_times_flux_times_normal;
 
                                     } // done sum over all quadrature points
@@ -1083,7 +1081,6 @@ class StokesPass
 												= velocityBaseFunctionSetNeighbour.evaluateSingle( i, xInside, flux_times_normal );
 										X_i_j -= elementVolume
                                             * integrationWeight
-                                            * mu
 											* v_i_times_flux_times_normal;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -1125,7 +1122,6 @@ class StokesPass
                                         Y_i_j += C_11
                                             * elementVolume
                                             * integrationWeight
-                                            * mu
                                             * v_i_times_v_j;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -1160,7 +1156,6 @@ class StokesPass
                                             * C_11
                                             * elementVolume
                                             * integrationWeight
-                                            * mu
                                             * v_i_times_v_j;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -1605,7 +1600,6 @@ class StokesPass
                                         X_i_j += -1.0
                                             * elementVolume
                                             * integrationWeight
-                                            * mu
                                             * v_i_times_tau_times_normal;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -1645,7 +1639,6 @@ class StokesPass
                                         Y_i_j += C_11
                                             * elementVolume
                                             * integrationWeight
-                                            * mu
                                             * v_i_times_v_j;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -1794,7 +1787,6 @@ class StokesPass
                                         H2_j += C_11
                                             * elementVolume
                                             * integrationWeight
-                                            * mu
                                             * v_j_times_gD_times_normal_times_normal;
 //                                    }
                                     // done computing H2's 1st boundary integral
