@@ -79,10 +79,11 @@
 #include <dune/stuff/signals.hh>
 #include <dune/stuff/tex.hh>
 
-#include "analyticaldata.hh"
-#include "velocity.hh"
-#include "pressure.hh"
-#include "problem.hh"
+#ifndef PROBLEM_NAMESPACE
+	#define PROBLEM_NAMESPACE StokesProblems::Simple
+#endif
+#include <dune/stokes/problems.hh>
+
 #include "estimator.hh"
 
 #ifndef COMMIT
@@ -539,7 +540,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 	#if 0 //defined( AORTA_PROBLEM )
     typedef Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
-                    Force,
+					PROBLEM_NAMESPACE::Force,
 					Dune::GeometryBasedBoundaryFunctionTraits<VariableDirichletData,FirstOrderBoundaryShapeFunction>,
                     gridDim,
                     polOrder,
@@ -549,8 +550,8 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 	#else
     typedef Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
-                    Force,
-					DefaultDirichletDataTraits<DIRICHLET_DATA>,
+					PROBLEM_NAMESPACE::Force,
+					DefaultDirichletDataTraits<StokesProblems::Simple::DirichletData>,
                     gridDim,
                     polOrder,
                     VELOCITY_POLORDER,
@@ -650,13 +651,8 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     infoStream << "\n- postprocesing" << std::endl;
     profiler().StartTiming( "Problem/Postprocessing" );
 
-#if 1 //defined (AORTA_PROBLEM) || defined (COCKBURN_PROBLEM) || defined (GENERALIZED_STOKES_PROBLEM) //bool tpl-param toggles ana-solution output in post-proc
-	typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, true, AnalyticalDirichletDataType >
+	typedef StokesProblems::Container< gridDim, DiscreteStokesFunctionWrapperType >
         ProblemType;
-#else
-	typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, false, AnalyticalDirichletDataType >
-        ProblemType;
-#endif
 	ProblemType problem( viscosity , computedSolutions, analyticalDirichletData );
 
     typedef PostProcessor< StokesPassType, ProblemType >
@@ -687,7 +683,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     info.inner_solver_accuracy = Parameters().getParam( "inner_absLimit", 1e-4 );
     info.bfg_tau = Parameters().getParam( "bfg-tau", 0.1 );
 
-	info.problemIdentifier = StokesProblem::ProblemIdentifier;
+	info.problemIdentifier = PROBLEM_NAMESPACE::identifier;
 
     profiler().StopTiming( "Problem/Postprocessing" );
     profiler().StopTiming( "SingleRun" );
