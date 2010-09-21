@@ -210,10 +210,10 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     profiler().StartTiming( "SingleRun" );
     Logging::LogStream& infoStream = Logger().Info();
     Logging::LogStream& debugStream = Logger().Dbg();
-	stabil_coeff.print( infoStream );
     RunInfo info;
 
     debugStream << "\nsingleRun( ";
+	stabil_coeff.Add( "E12", 0.0 );
     stabil_coeff.print( debugStream );
     debugStream << " )" << std::endl;
 
@@ -277,17 +277,20 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
 
     debugStream << "  - polOrder: " << polOrder << std::endl;
-	const double alpha_param = Parameters().getParam( "alpha", 1.0 );
-	const double alpha = 1.0;
-	const double scale_factor = 1 / alpha_param;
     const double viscosity_param = Parameters().getParam( "viscosity", 1.0 ) ;
-	const double viscosity = viscosity_param * scale_factor;
+	const double viscosity = 1.0;
+
+	const double scale_factor = 1 / viscosity_param;
+
+	const double alpha_param = Parameters().getParam( "alpha", 1.0 );
+	const double alpha = alpha_param * scale_factor;
+
     debugStream << "  - viscosity: " << viscosity << std::endl;
 	debugStream << "  - scaling  : " << scale_factor << std::endl;
 
     typedef StokesModelTraitsImp::AnalyticalForceType
         AnalyticalForceType;
-	AnalyticalForceType analyticalForce( viscosity_param, discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), alpha_param, scale_factor );
+	AnalyticalForceType analyticalForce( viscosity_param, discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), alpha, scale_factor );
 
     typedef StokesModelTraitsImp::AnalyticalDirichletDataType
         AnalyticalDirichletDataType;
