@@ -2147,6 +2147,11 @@ class StokesPass
 
 			}
 //			Stuff::printDiscreteFunctionMatlabStyle( H2_O_rhs, "H2_O_rhs", Logger().Dbg() );
+			if ( Parameters().getParam( "save_matrices", false ) ) {
+				Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+				Stuff::printDiscreteFunctionMatlabStyle( dest.discreteVelocity(), "u_exakt", matlabLogStream );
+				Stuff::printDiscreteFunctionMatlabStyle( dest.discretePressure(), "p_exakt", matlabLogStream );
+			}
         } // end of apply
 
         virtual void compute( const TotalArgumentType& /*arg*/, DestinationType& /*dest*/ ) const
