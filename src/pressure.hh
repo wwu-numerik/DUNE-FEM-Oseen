@@ -96,9 +96,7 @@ class Pressure : public Dune::Function < typename PressureTraitsImp::FunctionSpa
             else if ( dim_ == 2 ) {
                 double x1 = arg[0];
                 double x2 = arg[1];
-#ifdef SIMPLE_PROBLEM
-                ret[0] = -x2;
-#elif defined(CONSTANT_PROBLEM)
+#ifdef CONSTANT_PROBLEM
                 ret[0] = -x2;
 #elif defined(GENERALIZED_STOKES_PROBLEM)
                 ret[0] = std::sin( ( M_PI_2 ) * ( x1 - x2 ) );

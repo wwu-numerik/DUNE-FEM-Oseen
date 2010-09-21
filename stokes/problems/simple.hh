@@ -32,7 +32,7 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
 
 		inline void evaluate( const DomainType& arg, RangeType& ret ) const
 		{
-			Dune::CompileTimeChecker< ( dim_ > 1 && dim_ < 4 ) > __CLASS__Unsuitable_WorldDim;
+			ret = RangeType( 0 );
 		}
 
 	private:
@@ -65,8 +65,8 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 		template < class IntersectionType >
 		void evaluate( const DomainType& arg, RangeType& ret, const IntersectionType& intersection ) const
 		{
-			const int id = intersection.boundaryId();
-			Dune::CompileTimeChecker< ( dim_ > 1 && dim_ < 4 ) > DirichletData_Unsuitable_WorldDim;
+			ret = RangeType(0);
+			ret[0] = 1;
 		}
 
 		inline void evaluate( const DomainType& arg, RangeType& ret ) const { assert( false ); }
@@ -97,7 +97,8 @@ class Velocity : public Dune::Function < FunctionSpaceImp , Velocity < FunctionS
 
 		inline void evaluate( const DomainType& arg, RangeType& ret ) const
 		{
-			Dune::CompileTimeChecker< ( dim_ > 1 && dim_ < 4 ) > Velocity_Unsuitable_WorldDim;
+			ret = RangeType(0);
+			ret[0] = 1;
 		}
 
 		RangeType operator () ( const DomainType& arg)
@@ -143,7 +144,7 @@ class Pressure : public Dune::Function < FunctionSpaceImp , Pressure < FunctionS
 
 		inline void evaluate( const DomainType& arg, RangeType& ret ) const
 		{
-			Dune::CompileTimeChecker< ( dim_ > 1 && dim_ < 4 ) > Pressure_Unsuitable_WorldDim;
+			ret[0] = -arg[0];
 		}
 
 		RangeType operator () ( const DomainType& arg)

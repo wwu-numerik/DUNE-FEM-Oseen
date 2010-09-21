@@ -117,10 +117,7 @@ class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType ,
             else if ( dim_ == 2 ) {
                 double x1 = arg[0];
                 double x2 = arg[1];
-#ifdef SIMPLE_PROBLEM
-                ret[0] = 1;
-                ret[1] = 0;
-#elif defined(CONSTANT_PROBLEM)
+#ifdef defined(CONSTANT_PROBLEM)
                 ret[0] = 0;
                 ret[1] = 0;
 #elif defined(GENERALIZED_STOKES_PROBLEM)
@@ -139,9 +136,7 @@ class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType ,
 //                double x1 = arg[0];
 //                double x2 = arg[1];
 //                double x3 = arg[2];
-#ifdef SIMPLE_PROBLEM
-                assert( !"SIMPLE_PROBLEM not implemented in 3D" );
-#elif defined(CONSTANT_PROBLEM)
+#ifdef CONSTANT_PROBLEM
                 ret[0] = 0;
                 ret[1] = 0;
                 ret[2] = 0;
