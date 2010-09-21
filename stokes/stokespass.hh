@@ -886,11 +886,6 @@ class StokesPass
 					D_12 /= D_12.two_norm();
 					D_12 *= stabil_coeff.Factor("D12");
 					VelocityRangeType E_11(stabil_coeff.Factor("E12"));
-					{
-//						Logging::ResumeLocal a;
-						Stuff::printFieldVector( D_12, "D_12",  debugStream, "stabilzation" );
-						Stuff::printFieldVector( E_11, "E_12",  debugStream, "stabilzation" );
-					}
 
                     // if we are inside the grid
 					if ( intersection.neighbor() && !intersection.boundary() ) {
@@ -1203,8 +1198,8 @@ class StokesPass
                             } // done computing Y's surface integrals
 //                        }
 							//                                                                                                         // we call this one
-							// (O)_{i,j} += \int_{STUFF // O's element surface integral
-							//           += \int_{STUFF // O's neighbour surface integral
+							// (O)_{i,j} += \int_{ // O's element surface integral
+							//           += \int_{ // O's neighbour surface integral
 							//                                                                                                         // see also "O's boundary integral" below
 							if ( do_oseen_discretization ) {
 								for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
@@ -1223,18 +1218,17 @@ class StokesPass
 											const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
 											// get the quadrature weight
 											const double integrationWeight = faceQuadratureElement.weight( quad );
-											// compute -\mu v_{i}\cdot\hat{\sigma}^{U{+}}(v{j})\cdot n_{t}
 											const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 											VelocityRangeType v_i( 0.0 );
 											velocityBaseFunctionSetElement.evaluate( i, xInside, v_i );
 											VelocityRangeType v_j( 0.0 );
 											velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
 
-											//calc u^c_h \tensor beta * v \tensor n
 											VelocityRangeType beta_eval;
 											beta_->evaluate( xWorld, beta_eval );
 											const double beta_times_normal = beta_eval * outerNormal;
 											if ( !use_cks_convection ) {
+												//calc u^c_h \tensor beta * v \tensor n (self part)
 												VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j, outerNormal );
 												double c_s = beta_times_normal * 0.5;
 
@@ -1295,9 +1289,8 @@ class StokesPass
 											const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
 											// get the quadrature weight
 											const double integrationWeight = faceQuadratureNeighbour.weight( quad );
-											// compute -\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}
 											const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
-											//calc u^c_h \tensor beta * v \tensor n
+
 											VelocityRangeType v_i( 0.0 );
 											velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
 
@@ -1305,6 +1298,7 @@ class StokesPass
 											beta_->evaluate( xWorld, beta_eval );
 											const double beta_times_normal = beta_eval * outerNormal;
 											if ( !use_cks_convection ) {
+												//calc u^c_h \tensor beta * v \tensor n (neighbour part)
 												VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
 												double c_s = beta_times_normal * 0.5;
 
