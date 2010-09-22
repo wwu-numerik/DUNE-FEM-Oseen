@@ -402,7 +402,7 @@ class StokesPass
 			const double convection_scaling = discreteModel_.convection_scaling();
 			const double pressure_gradient_scaling = discreteModel_.pressure_gradient_scaling();
 			const bool use_cks_convection = Parameters().getParam( "use_cks_convection", false );
-			const bool use_alternate_vonctetion_volume_disc = Parameters().getParam( "use_alternate_convection_volume_disc", true );
+			const bool use_alternate_convection_volume_disc = Parameters().getParam( "use_alternate_convection_volume_disc", true );
 
 			Logger().Info() << "pressure_gradient/convection scaling : " << convection_scaling <<
 						  " | " << pressure_gradient_scaling << std::endl;
@@ -690,7 +690,7 @@ class StokesPass
 								beta_->localFunction( entity ).evaluate( x, beta_eval );
 								VelocityJacobianRangeType v_j_jacobian;
 								velocityBaseFunctionSetElement.jacobian( j, x, v_j_jacobian );
-								if ( use_alternate_vonctetion_volume_disc ) {
+								if ( use_alternate_convection_volume_disc ) {
 
 									VelocityJacobianRangeType v_i_jacobian;
 									velocityBaseFunctionSetElement.jacobian( j, x, v_i_jacobian );
