@@ -80,8 +80,8 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 const double y = arg[1];
 				const double cos_p = std::cos( M_PI_2 * (x+y) );
 				const double cos_m = std::cos( M_PI_2 * (x-y) );
-				const double pi_sq = std::pow( M_PI_2 , 2 );
-                const double tmp = alpha_ *  + M_PI_2 * M_PI * std::cos( M_PI_2 * ( x + y ) ) + M_PI_2 * std::cos( M_PI_2 * ( x - y ) ) ;
+				const double pi_sq = M_PI_2 * M_PI ;//std::pow( M_PI_2 , 2 );
+//                const double tmp = alpha_ *  + M_PI_2 * M_PI * std::cos( M_PI_2 * ( x + y ) ) + M_PI_2 * std::cos( M_PI_2 * ( x - y ) ) ;
                 ret[0]  = cos_p * ( alpha_ + viscosity_ * pi_sq ) + M_PI_2 * cos_m;
                 ret[1]  = cos_p * ( - alpha_ - viscosity_ * pi_sq ) - M_PI_2 * cos_m;
 
