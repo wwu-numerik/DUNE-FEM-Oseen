@@ -2135,6 +2135,7 @@ class StokesPass
 				Xmatrix.apply( rhs_datacontainer->velocity_gradient, velocity_tmp1 );
 				Ymatrix.apply( dest.discreteVelocity(), rhs_datacontainer->velocity_laplace );
 				rhs_datacontainer->velocity_laplace += velocity_tmp1;
+				rhs_datacontainer->velocity_laplace /= mu;
 
 				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
 				rhs_datacontainer->convection += H2_O_rhs;//just in case I've switched fluxes and H2_O_rhs is then non-zero
