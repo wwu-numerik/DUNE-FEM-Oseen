@@ -1229,8 +1229,8 @@ class StokesPass
 											const double beta_times_normal = beta_eval * outerNormal;
 											if ( !use_cks_convection ) {
 												//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
-												double c_s = beta_times_normal * 0.5;
-												VelocityRangeType u_h = v_i;
+												double c_s = (beta_times_normal) * 0.5;
+												VelocityRangeType u_h = v_j;
 												VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
 												mean_value *= 0.5;
 												VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
@@ -1239,8 +1239,8 @@ class StokesPass
 												flux_value += u_jump;
 
 												// \int_{dK} flux_value : ( v_j \ctimes n ) ds
-												VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j, outerNormal );
-												double ret  = Stuff::colonProduct( flux_value, v_j_tensor_n );
+												VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
+												double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
 
 												O_i_j += elementVolume
 													* integrationWeight
@@ -1300,8 +1300,8 @@ class StokesPass
 												VelocityRangeType v_j( 0.0 );
 												velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
 												//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
-												double c_s = beta_times_normal * 0.5;
-												VelocityRangeType u_h = v_i;
+												double c_s = (beta_times_normal) * 0.5;
+												VelocityRangeType u_h = v_j;
 												VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
 												mean_value *= 0.5;
 												VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
@@ -1310,8 +1310,8 @@ class StokesPass
 												flux_value += u_jump;
 
 												// \int_{dK} flux_value : ( v_j \ctimes n ) ds
-												VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j, outerNormal );
-												double ret  = Stuff::colonProduct( flux_value, v_j_tensor_n );
+												VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
+												double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
 
 												O_i_j += elementVolume
 													* integrationWeight
@@ -1746,13 +1746,11 @@ class StokesPass
 											velocityBaseFunctionSetElement.evaluate( j, x, v_j );
 											VelocityRangeType v_i( 0.0 );
 											velocityBaseFunctionSetElement.evaluate( i, x, v_i );
-											VelocityRangeType gD( 0.0 );
-											discreteModel_.dirichletData( intersection, 0.0, xWorld, gD );
 											VelocityRangeType beta_eval;
 											beta_->evaluate( xWorld, beta_eval );
 											const double beta_times_normal = beta_eval * outerNormal;
 											if ( !use_cks_convection ) {
-												VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
+
 												double c_s;
 
 												if ( beta_times_normal < 0 ) {
@@ -1762,19 +1760,22 @@ class StokesPass
 													c_s = - beta_times_normal * 0.5;
 												}
 
-												VelocityJacobianRangeType flux_value = dyadicProduct( v_j, beta_eval );
+												VelocityJacobianRangeType mean_value = dyadicProduct( v_j, beta_eval );
+												mean_value *= 0.5;
 
 												VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
 												u_jump *= c_s;
 
+												VelocityJacobianRangeType flux_value = mean_value;
 												flux_value += u_jump;
 
+												VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
 												double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
 												//inner edge (self)
-//												O_i_j += elementVolume
-//													* integrationWeight
-//													* convection_scaling
-//													* ret;
+												O_i_j += elementVolume
+													* integrationWeight
+													* convection_scaling
+													* ret;
 											}
 											else {
 												VelocityRangeType flux_value(0);
@@ -1944,9 +1945,25 @@ class StokesPass
 										}
 									}
 									else {
+										// u^c = 0.5 gD \otimes beta + Cs -gD \otimes n
 										VelocityJacobianRangeType gD_tensor_beta = dyadicProduct( gD, beta_eval );
+										gD_tensor_beta *= 0.5;
+										double c_s;
+
+										if ( beta_times_normal < 0 ) {
+											c_s = beta_times_normal * 0.5;
+										}
+										else {
+											c_s = - beta_times_normal * 0.5;
+										}
+										VelocityJacobianRangeType jump = dyadicProduct( gD, outerNormal );
+										jump *= c_s;
+
+										VelocityJacobianRangeType flux_value = gD_tensor_beta;
+										flux_value += jump;
+
 										VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j,  outerNormal );
-										const double ret = Stuff::colonProduct( gD_tensor_beta, v_j_tensor_n );
+										const double ret = Stuff::colonProduct( flux_value, v_j_tensor_n );
 										H2_O_j -= elementVolume
 												* convection_scaling
 												* integrationWeight
