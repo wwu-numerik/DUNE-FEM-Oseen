@@ -1228,21 +1228,20 @@ class StokesPass
 											beta_->evaluate( xWorld, beta_eval );
 											const double beta_times_normal = beta_eval * outerNormal;
 											if ( !use_cks_convection ) {
-												//calc u^c_h \tensor beta * v \tensor n (self part)
-												VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j, outerNormal );
+												//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
 												double c_s = beta_times_normal * 0.5;
-
-												VelocityRangeType u_h_half = v_j;
-												u_h_half *= 0.5;
-												VelocityJacobianRangeType flux_value = dyadicProduct( u_h_half, beta_eval );
-
+												VelocityRangeType u_h = v_i;
+												VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
+												mean_value *= 0.5;
 												VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
 												u_jump *= c_s;
-
+												VelocityJacobianRangeType flux_value = mean_value;
 												flux_value += u_jump;
 
+												// \int_{dK} flux_value : ( v_j \ctimes n ) ds
+												VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j, outerNormal );
 												double ret  = Stuff::colonProduct( flux_value, v_j_tensor_n );
-												//inner edge (self)
+
 												O_i_j += elementVolume
 													* integrationWeight
 													* convection_scaling
@@ -1298,21 +1297,22 @@ class StokesPass
 											beta_->evaluate( xWorld, beta_eval );
 											const double beta_times_normal = beta_eval * outerNormal;
 											if ( !use_cks_convection ) {
-												//calc u^c_h \tensor beta * v \tensor n (neighbour part)
-												VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
+												VelocityRangeType v_j( 0.0 );
+												velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+												//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
 												double c_s = beta_times_normal * 0.5;
-
-												VelocityRangeType u_h_half = v_i;
-												u_h_half *= 0.5;
-												VelocityJacobianRangeType flux_value = dyadicProduct( v_i, beta_eval );
-
-												VelocityJacobianRangeType u_jump = dyadicProduct( v_i, outerNormal );
+												VelocityRangeType u_h = v_i;
+												VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
+												mean_value *= 0.5;
+												VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
 												u_jump *= c_s;
-
+												VelocityJacobianRangeType flux_value = mean_value;
 												flux_value += u_jump;
 
-												double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
-												//inner edge (self)
+												// \int_{dK} flux_value : ( v_j \ctimes n ) ds
+												VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j, outerNormal );
+												double ret  = Stuff::colonProduct( flux_value, v_j_tensor_n );
+
 												O_i_j += elementVolume
 													* integrationWeight
 													* convection_scaling
@@ -1771,10 +1771,10 @@ class StokesPass
 
 												double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
 												//inner edge (self)
-												O_i_j += elementVolume
-													* integrationWeight
-													* convection_scaling
-													* ret;
+//												O_i_j += elementVolume
+//													* integrationWeight
+//													* convection_scaling
+//													* ret;
 											}
 											else {
 												VelocityRangeType flux_value(0);
@@ -1901,35 +1901,36 @@ class StokesPass
 									localH2rhs[ j ] += H2_j;
                             } // done computing H2's boundary integrals
                         }
-						if ( use_cks_convection ) {
+
 							//                                                                                                                 // we will call this one
 							// (H2_O)_{j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\left(  \beta n_{T} g_D v_j ds        \right) // H2_O's boundary integral
-							if ( do_oseen_discretization ) {
-								for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
-									double H2_O_j = 0.0;
-									// sum over all quadrature points
-									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-										// get x codim<0> and codim<1> coordinates
-										const ElementCoordinateType x = faceQuadratureElement.point( quad );
-										const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
-														// get the integration factor
-										const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
-										// get the quadrature weight
-										const double integrationWeight = faceQuadratureElement.weight( quad );
-										// prepare
-										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
-										VelocityRangeType v_j( 0.0 );
-										velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-										// compute \mu v_{j}\cdot\hat{\sigma}^{RHS}()\cdot n_{T}
-										const VelocityRangeType xIntersectionGlobal = intersection.intersectionSelfLocal().global( xLocal );
-										const VelocityRangeType xWorld = geometry.global( xIntersectionGlobal );
-										VelocityRangeType gD( 0.0 );
-										discreteModel_.dirichletData( intersection, 0.0, xWorld, gD );
+						if ( do_oseen_discretization ) {
+							for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+								double H2_O_j = 0.0;
+								// sum over all quadrature points
+								for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+									// get x codim<0> and codim<1> coordinates
+									const ElementCoordinateType x = faceQuadratureElement.point( quad );
+									const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
+													// get the integration factor
+									const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+									// get the quadrature weight
+									const double integrationWeight = faceQuadratureElement.weight( quad );
+									// prepare
+									const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+									VelocityRangeType v_j( 0.0 );
+									velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+									// compute \mu v_{j}\cdot\hat{\sigma}^{RHS}()\cdot n_{T}
+									const VelocityRangeType xIntersectionGlobal = intersection.intersectionSelfLocal().global( xLocal );
+									const VelocityRangeType xWorld = geometry.global( xIntersectionGlobal );
+									VelocityRangeType gD( 0.0 );
+									discreteModel_.dirichletData( intersection, 0.0, xWorld, gD );
 
-										VelocityRangeType beta_eval;
-										beta_->evaluate( xWorld, beta_eval );
-										const double beta_times_normal = beta_eval * outerNormal;
-										VelocityRangeType flux_value;
+									VelocityRangeType beta_eval;
+									beta_->evaluate( xWorld, beta_eval );
+									const double beta_times_normal = beta_eval * outerNormal;
+									VelocityRangeType flux_value;
+									if ( use_cks_convection ) {
 										if ( beta_times_normal < 0 ) {
 											//beta points 'outwards' so take value from this element
 											//the inverse case is handled in O's boundary integral
@@ -1942,13 +1943,23 @@ class StokesPass
 													* flux_times_v_j;
 										}
 									}
-									if ( fabs( H2_O_j ) < eps ) {
-											 H2_O_j = 0.0;
+									else {
+										VelocityJacobianRangeType gD_tensor_beta = dyadicProduct( gD, beta_eval );
+										VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j,  outerNormal );
+										const double ret = Stuff::colonProduct( gD_tensor_beta, v_j_tensor_n );
+										H2_O_j -= elementVolume
+												* convection_scaling
+												* integrationWeight
+												* ret;
+
 									}
-									else
-										// add to rhs
-										localH2_O_rhs[ j ] += H2_O_j;
 								}
+								if ( fabs( H2_O_j ) < eps ) {
+										 H2_O_j = 0.0;
+								}
+								else
+									// add to rhs
+									localH2_O_rhs[ j ] += H2_O_j;
 							}
 						}
 
