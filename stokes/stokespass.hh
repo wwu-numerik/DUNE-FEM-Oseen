@@ -314,7 +314,11 @@ class StokesPass
                 YmatrixType;
             YmatrixType Ymatrix( velocitySpace_, velocitySpace_ );
             Ymatrix.reserve();
-			YmatrixType Omatrix( velocitySpace_, velocitySpace_ );
+            typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
+											DiscreteVelocityFunctionSpaceType,
+											MatrixTraits<DiscreteVelocityFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
+                OmatrixType;
+			OmatrixType Omatrix( velocitySpace_, velocitySpace_ );
 			Omatrix.reserve();
             // Z\in R^{L\times K}
             typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
@@ -351,7 +355,7 @@ class StokesPass
             // Y\in R^{L\times L}
             typedef typename YmatrixType::LocalMatrixType
                 LocalYmatrixType;
-			typedef LocalYmatrixType
+			typedef typename OmatrixType::LocalMatrixType
 				LocalOmatrixType;
             // Z\in R^{L\times K}
             typedef typename ZmatrixType::LocalMatrixType
