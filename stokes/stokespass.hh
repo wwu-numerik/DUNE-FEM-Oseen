@@ -261,7 +261,8 @@ class StokesPass
          *  \todo doc
          *  \attention  think about quadrature orders
          **/
-		virtual void apply( const DomainType &arg, RangeType &dest, RhsDatacontainer* rhs_datacontainer = 0) const
+		template < class RhsDatacontainerType >
+		void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer = 0) const
         {
 
             // profiler information
@@ -2168,8 +2169,17 @@ class StokesPass
 				rhs_datacontainer->velocity_laplace -= velocity_tmp1;
 				rhs_datacontainer->velocity_laplace *= mu;
 
-				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
-				rhs_datacontainer->convection += H2_O_rhs;//just in case I've switched fluxes and H2_O_rhs is then non-zero
+				if ( do_oseen_discretization ) {
+					rhs_datacontainer->convection.clear();
+					Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+					Stuff::printDiscreteFunctionMatlabStyle( dest.discreteVelocity(), "pass_u", matlabLogStream );
+					Stuff::printSparseRowMatrixMatlabStyle( Omatrix.matrix(), "O", matlabLogStream );
+					Stuff::printDiscreteFunctionMatlabStyle( H2_O_rhs, "H_O", matlabLogStream );
+					Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
+					rhs_datacontainer->convection += H2_O_rhs;//just in case I've switched fluxes and H2_O_rhs is then non-zero
+					Stuff::printFunctionMinMax( Logger().Info(), rhs_datacontainer->convection);
+					Stuff::printDiscreteFunctionMatlabStyle( rhs_datacontainer->convection, "pass_convection", matlabLogStream );
+				}
 
 			}
 //			Stuff::printDiscreteFunctionMatlabStyle( H2_O_rhs, "H2_O_rhs", Logger().Dbg() );
