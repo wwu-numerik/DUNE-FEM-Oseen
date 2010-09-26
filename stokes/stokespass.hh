@@ -485,7 +485,7 @@ class StokesPass
             EntityIteratorType entityItEnd = velocitySpace_.end();
             for (   EntityIteratorType entityIt = velocitySpace_.begin();
                     entityIt != entityItEnd;
-                    ++entityIt ) {
+					++entityIt,++entityNR ) {
 
                 // get entity and geometry
                 const EntityType& entity = *entityIt;
