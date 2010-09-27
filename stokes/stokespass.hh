@@ -2171,7 +2171,7 @@ class StokesPass
 				velocity_tmp1.assign( dest.discreteVelocity() );
 				velocity_tmp1 *= alpha;
 				rhs_datacontainer->velocity_laplace -= velocity_tmp1;
-				rhs_datacontainer->velocity_laplace *= mu;
+				rhs_datacontainer->velocity_laplace *= -mu / 20;
 
 				if ( do_oseen_discretization ) {
 					rhs_datacontainer->convection.clear();
