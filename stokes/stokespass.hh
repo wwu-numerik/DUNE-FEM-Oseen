@@ -696,7 +696,7 @@ class StokesPass
 								VelocityJacobianRangeType v_j_jacobian;
 								velocityBaseFunctionSetElement.jacobian( j, x, v_j_jacobian );
 								if ( use_alternate_convection_volume_disc ) {
-
+									// ( \beta \cdot \nabla ) u \cdot vdx
 									VelocityJacobianRangeType v_i_jacobian;
 									velocityBaseFunctionSetElement.jacobian( j, x, v_i_jacobian );
 									VelocityJacobianRangeType beta_jacobian;
@@ -724,14 +724,13 @@ class StokesPass
 										* convection_scaling
 										* u_h_times_divergence_of_beta_v_j_tensor_beta;
 								} else {
-									//compute u_h \beta  ( \nabla * v_j )
-									double v_i_times_beta = v_i * beta_eval;
-									double v_j_jacobian_trace = matrixTrace( v_j_jacobian );
+									//compute u_h \beta  : ( \nabla * v_j )
+									VelocityJacobianRangeType v_i_tensor_beta = dyadicProduct( v_i, beta_eval );
+									const double ret = Stuff::colonProduct( v_i_tensor_beta, v_j_jacobian );
 									const double val = elementVolume
 											* integrationWeight
 											* convection_scaling
-											* v_i_times_beta
-											* v_j_jacobian_trace;
+											* ret;
 									O_i_j -= val;
 								}
 //								Stuff::printFieldVector( beta_eval, "beta", Logger().Dbg(), "DEBUG: " );
