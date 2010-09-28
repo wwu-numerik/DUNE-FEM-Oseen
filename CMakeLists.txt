@@ -3,11 +3,12 @@ PROJECT(dune-stokes)
 #set minimum cmake version
 cmake_minimum_required(VERSION 2.6)
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_CURRENT_SOURCE_DIR}/../dune-stuff/cmake )
+include(DuneUtils)
 include(UseDoxygen)
 
 FIND_PACKAGE(Boost 1.35.0 REQUIRED)
-INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+INCLUDE_DIR(${Boost_INCLUDE_DIR})
 
 #----------------------------------------------------------------------------------------------------
 # General Settings
@@ -79,7 +80,7 @@ SET( GRAPE_PATH
 	"GRAPE_PATH" )
 
 SET( CXX_FLAGS
-	"-Wall -O3 -fomit-frame-pointer -funroll-loops -g -ggdb -DENABLE_ADAPTIVE=1 -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME" CACHE STRING
+	-Wall -O3 -fomit-frame-pointer -funroll-loops -g -ggdb -DENABLE_ADAPTIVE=1 -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME CACHE STRING
 	"")
 
 SET( ENABLE_PARALELL
@@ -90,17 +91,20 @@ SET ( METIS_DIR
 	"/share/dune/Modules/modules_x86_64/ParMetis-3.1.1" CACHE STRING
 	"metis toplevel directory" )
 
+#needs to come first to include correct config.h
+INCLUDE_DIR( ${dune-stokes_SOURCE_DIR} )
+
 IF( ${GRIDTYPE} STREQUAL "UGGRID" )
-	ADD_DEFINITIONS( -I${UGGRID_BASE_PATH}/include -DENABLE_UG )
+	ADD_CXX_FLAGS( -I${UGGRID_BASE_PATH}/include -DENABLE_UG )
 	LINK_DIRECTORIES( ${UGGRID_BASE_PATH}/lib/ )
 	SET( UGLIBS "ugS3" "ugS2" "devS")
 ENDIF( ${GRIDTYPE} STREQUAL "UGGRID" )
 
-ADD_DEFINITIONS(-DHAVE_CONFIG_H )
-ADD_DEFINITIONS(-D${GRIDTYPE} -DGRIDDIM=${GRIDDIM} -D${PROBLEM} -DCOMMIT="${COMMIT}" -DDIRICHLET_DATA=${DIRICHLET_DATA} )
-ADD_DEFINITIONS(-DPOLORDER=${POLORDER} -DPRESSURE_POLORDER=${PRESSUREPOLORDER} -DVELOCITY_POLORDER=${VELOCITYPOLORDER} )
-ADD_DEFINITIONS(-DINNER_CG_SOLVERTYPE=${INNER_CG_SOLVERTYPE} -DOUTER_CG_SOLVERTYPE=${OUTER_CG_SOLVERTYPE} )
-ADD_DEFINITIONS( -I${GRAPE_PATH}
+ADD_CXX_FLAGS(-DHAVE_CONFIG_H )
+ADD_CXX_FLAGS(-D${GRIDTYPE} -DGRIDDIM=${GRIDDIM} -D${PROBLEM} -DCOMMIT="${COMMIT}" -DDIRICHLET_DATA=${DIRICHLET_DATA} )
+ADD_CXX_FLAGS(-DPOLORDER=${POLORDER} -DPRESSURE_POLORDER=${PRESSUREPOLORDER} -DVELOCITY_POLORDER=${VELOCITYPOLORDER} )
+ADD_CXX_FLAGS(-DINNER_CG_SOLVERTYPE=${INNER_CG_SOLVERTYPE} -DOUTER_CG_SOLVERTYPE=${OUTER_CG_SOLVERTYPE} )
+ADD_CXX_FLAGS( -I${GRAPE_PATH}
 	-I${ALUGRID_BASE_PATH}/include
 	-I${ALUGRID_BASE_PATH}/include/serial 
 	-I${ALUGRID_BASE_PATH}/include/duneinterface -DENABLE_ALUGRID )
@@ -108,24 +112,16 @@ ADD_DEFINITIONS( -I${GRAPE_PATH}
 IF ( ENABLE_PARALELL )
 	LINK_DIRECTORIES( ${METIS_DIR} )
 	Set ( ParaLIBS "-lparmetis -lmetis" )
-	ADD_DEFINITIONS( -I${ALUGRID_BASE_PATH}/include/parallel
+	ADD_CXX_FLAGS( -I${ALUGRID_BASE_PATH}/include/parallel
 					-DMPIPP_H -DENABLE_MPI=1
 					)
 
 ENDIF ( ENABLE_PARALELL )
 
+ADD_DUNE_MODULES( common istl grid fem stuff )
 
-#needs to come first to include correct config.h
-INCLUDE_DIRECTORIES( ${dune-stokes_SOURCE_DIR} )
-
-SET( MODULES common istl grid fem stuff )
-
-FOREACH( MODULE ${MODULES} )
-    INCLUDE_DIRECTORIES( ${dune-stokes_SOURCE_DIR}/../dune-${MODULE} )
-    LINK_DIRECTORIES(${dune-stokes_SOURCE_DIR}/../dune-${MODULE}/${MODULE}/.libs )
-ENDFOREACH(MODULE)
 LINK_DIRECTORIES( "/usr/lib" "${ALUGRID_BASE_PATH}/lib" "${GRAPE_PATH}" )
-ADD_DEFINITIONS( ${CXX_FLAGS} )
+ADD_CXX_FLAGS( ${CXX_FLAGS} )
 
 #----------------------------------------------------------------------------------------------------
 # Source listing
@@ -151,3 +147,5 @@ TARGET_LINK_LIBRARIES(minimal "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLI
 
 ADD_EXECUTABLE(visualisation src/visualisation.cc ${header} ${stokes} )
 TARGET_LINK_LIBRARIES(visualisation "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS})
+
+HEADERCHECK( ${header} ${stokes} )
