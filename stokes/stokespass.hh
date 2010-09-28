@@ -2084,6 +2084,7 @@ class StokesPass
 
             // do solving
 			YmatrixType null_matrix( velocitySpace_, velocitySpace_ );
+			null_matrix.reserve();
 			YmatrixType* actually_used_Omatrix = &null_matrix;
 			if ( do_oseen_discretization_ ) {
 				H2rhs -= H2_O_rhs;
