@@ -234,7 +234,8 @@ class StokesPass
                     DiscreteModelType& discreteModel,
                     GridPartType& gridPart,
 					DiscreteStokesFunctionSpaceWrapperType& spaceWrapper,
-					const DiscreteVelocityFunctionType* beta = 0 )
+					const DiscreteVelocityFunctionType& beta,
+					const bool do_oseen_discretization )//! \todo move to model
             : BaseType( prevPass ),
             discreteModel_( discreteModel ),
             gridPart_( gridPart ),
@@ -242,7 +243,8 @@ class StokesPass
             velocitySpace_( spaceWrapper.discreteVelocitySpace() ),
             pressureSpace_( spaceWrapper.discretePressureSpace() ),
 			sigmaSpace_( gridPart ),
-			beta_( beta )
+			beta_( beta ),
+			do_oseen_discretization_( do_oseen_discretization )
         {}
 
         /**
@@ -261,7 +263,8 @@ class StokesPass
          *  \todo doc
          *  \attention  think about quadrature orders
          **/
-		virtual void apply( const DomainType &arg, RangeType &dest, RhsDatacontainer* rhs_datacontainer = 0) const
+		template < class RhsDatacontainerType >
+		void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer = 0) const
         {
 
             // profiler information
@@ -280,8 +283,6 @@ class StokesPass
 
             // generalized stokes alpha
             const double alpha = discreteModel_.alpha();
-
-			const bool do_oseen_discretization = ( beta_ != NULL );
 
             // matrices
             // M\in R^{M\times M}
@@ -313,7 +314,11 @@ class StokesPass
                 YmatrixType;
             YmatrixType Ymatrix( velocitySpace_, velocitySpace_ );
             Ymatrix.reserve();
-			YmatrixType Omatrix( velocitySpace_, velocitySpace_ );
+            typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
+											DiscreteVelocityFunctionSpaceType,
+											MatrixTraits<DiscreteVelocityFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
+                OmatrixType;
+			OmatrixType Omatrix( velocitySpace_, velocitySpace_ );
 			Omatrix.reserve();
             // Z\in R^{L\times K}
             typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
@@ -350,7 +355,7 @@ class StokesPass
             // Y\in R^{L\times L}
             typedef typename YmatrixType::LocalMatrixType
                 LocalYmatrixType;
-			typedef LocalYmatrixType
+			typedef typename OmatrixType::LocalMatrixType
 				LocalOmatrixType;
             // Z\in R^{L\times K}
             typedef typename ZmatrixType::LocalMatrixType
@@ -480,7 +485,7 @@ class StokesPass
             EntityIteratorType entityItEnd = velocitySpace_.end();
             for (   EntityIteratorType entityIt = velocitySpace_.begin();
                     entityIt != entityItEnd;
-                    ++entityIt ) {
+					++entityIt,++entityNR ) {
 
                 // get entity and geometry
                 const EntityType& entity = *entityIt;
@@ -669,79 +674,44 @@ class StokesPass
                     }
                 } // done computing Y's volume integral
                 }
-				if ( do_oseen_discretization ) {
-					for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
-						for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
-							double O_i_j = 0.0;
-							// sum over all quadrature points
-							for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
-								// get x
-								const ElementCoordinateType x = volumeQuadratureElement.point( quad );
-								// get the integration factor
-								const double elementVolume = geometry.integrationElement( x );
-								// get the quadrature weight
-								const double integrationWeight = volumeQuadratureElement.weight( quad );
-								//calc u_h * \nabla * (v \tensor \beta )
-								VelocityRangeType v_i( 0.0 );
-								velocityBaseFunctionSetElement.evaluate( i, x, v_i );
-								VelocityRangeType v_j( 0.0 );
-								velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-								VelocityRangeType beta_eval;
-								beta_->localFunction( entity ).evaluate( x, beta_eval );
-								VelocityJacobianRangeType v_j_jacobian;
-								velocityBaseFunctionSetElement.jacobian( j, x, v_j_jacobian );
-								if ( use_alternate_convection_volume_disc ) {
 
-									VelocityJacobianRangeType v_i_jacobian;
-									velocityBaseFunctionSetElement.jacobian( j, x, v_i_jacobian );
-									VelocityJacobianRangeType beta_jacobian;
-									const typename DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
-											beta_->localFunction( entity );
-									beta_lf.jacobian( x, beta_jacobian );
+				for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+					for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+						double O_i_j = 0.0;
+						// sum over all quadrature points
+						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
+							// get x
+							const ElementCoordinateType x = volumeQuadratureElement.point( quad );
+							// get the integration factor
+							const double elementVolume = geometry.integrationElement( x );
+							// get the quadrature weight
+							const double integrationWeight = volumeQuadratureElement.weight( quad );
+							//calc u_h * \nabla * (v \tensor \beta )
+							VelocityRangeType v_i( 0.0 );
+							velocityBaseFunctionSetElement.evaluate( i, x, v_i );
+							VelocityRangeType v_j( 0.0 );
+							velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+							VelocityRangeType beta_eval;
+							beta_.localFunction( entity ).evaluate( x, beta_eval );
+							VelocityJacobianRangeType v_j_jacobian;
+							velocityBaseFunctionSetElement.jacobian( j, x, v_j_jacobian );
 
+							//compute u_h \ctimes \beta  : ( \nabla \ctimes v_j )
+							VelocityJacobianRangeType v_i_tensor_beta = dyadicProduct( v_i, beta_eval );
+							const double ret = Stuff::colonProduct( v_i_tensor_beta, v_j_jacobian );
+							const double val = elementVolume
+									* integrationWeight
+									* convection_scaling
+									* ret;
+							O_i_j -= val;
 
-									VelocityRangeType divergence_of_beta_v_j_tensor_beta;
-									for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
-										double row_result = 0;
-										for ( size_t m = 0; m < beta_eval.dim(); ++m ) {
-											row_result += beta_jacobian[l][m] * v_i[l] + v_i_jacobian[l][m] * beta_eval[l];
-										}
-										divergence_of_beta_v_j_tensor_beta[l] = row_result;
-									}
-									for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
-										assert( !isnan(divergence_of_beta_v_j_tensor_beta[l]) );
-									}
-
-									const double u_h_times_divergence_of_beta_v_j_tensor_beta =
-											v_j * divergence_of_beta_v_j_tensor_beta;
-									O_i_j -= elementVolume
-										* integrationWeight
-										* convection_scaling
-										* u_h_times_divergence_of_beta_v_j_tensor_beta;
-								} else {
-									//compute u_h \beta  ( \nabla * v_j )
-									double v_i_times_beta = v_i * beta_eval;
-									double v_j_jacobian_trace = matrixTrace( v_j_jacobian );
-									const double val = elementVolume
-											* integrationWeight
-											* convection_scaling
-											* v_i_times_beta
-											* v_j_jacobian_trace;
-									O_i_j -= val;
-								}
-//								Stuff::printFieldVector( beta_eval, "beta", Logger().Dbg(), "DEBUG: " );
-//								Stuff::printFieldVector( v_i, "v_i", Logger().Dbg(), "DEBUG: " );
-//								Logger().Dbg() << "DEBUG: v_j_jacobian_trace | v_i_times_beta " << v_j_jacobian_trace << " | " << v_i_times_beta << "\n";
-//								Logger().Dbg() << "DEBUG: val " << val << "\n";
-							}
-//								Logger().Dbg() << "DEBUG: val " << O_i_j << "\n";
-							if ( fabs( O_i_j ) < eps ) {
-								O_i_j = 0.0;
-							}
-							else {
-								// add to matrix
-								localOmatrixElement.add( i, j, O_i_j );
-							}
+						}
+						if ( fabs( O_i_j ) < eps ) {
+							O_i_j = 0.0;
+						}
+						else {
+							// add to matrix
+							localOmatrixElement.add( i, j, O_i_j );
 						}
 					}
 				}
@@ -1201,153 +1171,113 @@ class StokesPass
 							// (O)_{i,j} += \int_{ // O's element surface integral
 							//           += \int_{ // O's neighbour surface integral
 							//                                                                                                         // see also "O's boundary integral" below
-							if ( do_oseen_discretization ) {
-								for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
-									// compute Y's element surface integral
-									for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
-										double O_i_j = 0.0;
-										// sum over all quadrature points
-										for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-											// get x codim<0> and codim<1> coordinates
-											const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
-											const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
-											const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
-											const VelocityRangeType xWorld = geometry.global( xInside );
-											const VelocityRangeType xWorld_Outside = geometry.global( xOutside );
-											// get the integration factor
-											const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
-											// get the quadrature weight
-											const double integrationWeight = faceQuadratureElement.weight( quad );
-											const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
-											VelocityRangeType v_i( 0.0 );
-											velocityBaseFunctionSetElement.evaluate( i, xInside, v_i );
-											VelocityRangeType v_j( 0.0 );
-											velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
 
-											VelocityRangeType beta_eval;
-											beta_->evaluate( xWorld, beta_eval );
-											const double beta_times_normal = beta_eval * outerNormal;
-											if ( !use_cks_convection ) {
-												//calc u^c_h \tensor beta * v \tensor n (self part)
-												VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j, outerNormal );
-												double c_s = beta_times_normal * 0.5;
+							for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+								// compute Y's element surface integral
+								for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+									double O_i_j = 0.0;
+									// sum over all quadrature points
+									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+										// get x codim<0> and codim<1> coordinates
+										const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
+										const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
+										const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
+										const VelocityRangeType xWorld = geometry.global( xInside );
+										const VelocityRangeType xWorld_Outside = geometry.global( xOutside );
+										// get the integration factor
+										const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+										// get the quadrature weight
+										const double integrationWeight = faceQuadratureElement.weight( quad );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+										VelocityRangeType v_i( 0.0 );
+										velocityBaseFunctionSetElement.evaluate( i, xInside, v_i );
+										VelocityRangeType v_j( 0.0 );
+										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
 
-												VelocityRangeType u_h_half = v_j;
-												u_h_half *= 0.5;
-												VelocityJacobianRangeType flux_value = dyadicProduct( u_h_half, beta_eval );
+										VelocityRangeType beta_eval;
+										beta_.evaluate( xWorld, beta_eval );
+										const double beta_times_normal = beta_eval * outerNormal;
+										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
+										double c_s = (beta_times_normal) * 0.5;
+										VelocityRangeType u_h = v_j;
+										VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
+										mean_value *= 0.5;
+										VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
+										u_jump *= c_s;
+										VelocityJacobianRangeType flux_value = mean_value;
+										flux_value += u_jump;
 
-												VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
-												u_jump *= c_s;
+										// \int_{dK} flux_value : ( v_j \ctimes n ) ds
+										VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
+										double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
 
-												flux_value += u_jump;
+										O_i_j += elementVolume
+											* integrationWeight
+											* convection_scaling
+											* ret;
+									} // done sum over all quadrature points
+									// if small, should be zero
+									if ( fabs( O_i_j ) < eps ) {
+										O_i_j = 0.0;
+									}
+									else
+										// add to matrix
+										localOmatrixElement.add( i, j, O_i_j );
+								} // done computing Y's element surface integral
+								// compute O's neighbour surface integral
+								for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
+									double O_i_j = 0.0;
+									// sum over all quadrature points
+									for ( size_t quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
+										// get x codim<0> and codim<1> coordinates
+										const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
+										const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
+										const VelocityRangeType xWorld = geometry.global( xInside );
+										const VelocityRangeType xWorld_Outside = geometry.global( xOutside );
+										const LocalIntersectionCoordinateType xLocal = faceQuadratureNeighbour.localPoint( quad );
+										// get the integration factor
+										const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+										// get the quadrature weight
+										const double integrationWeight = faceQuadratureNeighbour.weight( quad );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 
-												double ret  = Stuff::colonProduct( flux_value, v_j_tensor_n );
-												//inner edge (self)
-												O_i_j += elementVolume
-													* integrationWeight
-													* convection_scaling
-													* ret;
-											} else {
-												VelocityRangeType flux_value;
-												flux_value = v_i;
-												flux_value *= 0.5;
-												SigmaRangeType jump = dyadicProduct( v_i, outerNormal );
-												VelocityRangeType jump_value;
-												jump.mv( E_11, jump );
-												flux_value += jump_value;
+										VelocityRangeType v_i( 0.0 );
+										velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
 
+										VelocityRangeType beta_eval;
+										beta_.evaluate( xWorld, beta_eval );
+										const double beta_times_normal = beta_eval * outerNormal;
+										VelocityRangeType v_j( 0.0 );
+										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
+										double c_s = (beta_times_normal) * 0.5;
+										VelocityRangeType u_h = v_j;
+										VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
+										mean_value *= 0.5;
+										VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
+										u_jump *= c_s;
+										VelocityJacobianRangeType flux_value = mean_value;
+										flux_value += u_jump;
 
-												const double flux_times_v_j = flux_value * v_j;
-												const double ret = beta_times_normal * flux_times_v_j;
-												O_i_j += elementVolume
-														* integrationWeight
-														* convection_scaling
-														* ret;
-											}
+										// \int_{dK} flux_value : ( v_j \ctimes n ) ds
+										VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
+										double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
 
-										} // done sum over all quadrature points
-										// if small, should be zero
-										if ( fabs( O_i_j ) < eps ) {
-											O_i_j = 0.0;
-										}
-										else
-											// add to matrix
-											localOmatrixElement.add( i, j, O_i_j );
-									} // done computing Y's element surface integral
-									// compute O's neighbour surface integral
-									for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
-										double O_i_j = 0.0;
-										// sum over all quadrature points
-										for ( size_t quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
-											// get x codim<0> and codim<1> coordinates
-											const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
-											const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
-											const VelocityRangeType xWorld = geometry.global( xInside );
-											const VelocityRangeType xWorld_Outside = geometry.global( xOutside );
-											const LocalIntersectionCoordinateType xLocal = faceQuadratureNeighbour.localPoint( quad );
-											// get the integration factor
-											const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
-											// get the quadrature weight
-											const double integrationWeight = faceQuadratureNeighbour.weight( quad );
-											const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+										O_i_j += elementVolume
+											* integrationWeight
+											* convection_scaling
+											* ret;
+									} // done sum over all quadrature points
+									// if small, should be zero
+									if ( fabs( O_i_j ) < eps ) {
+										O_i_j = 0.0;
+									}
+									else
+										// add to matrix
+										localOmatrixNeighbour.add( i, j, O_i_j );
+								} // done computing Y's neighbour surface integral
+							} // done computing Y's surface integrals
 
-											VelocityRangeType v_i( 0.0 );
-											velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
-
-											VelocityRangeType beta_eval;
-											beta_->evaluate( xWorld, beta_eval );
-											const double beta_times_normal = beta_eval * outerNormal;
-											if ( !use_cks_convection ) {
-												//calc u^c_h \tensor beta * v \tensor n (neighbour part)
-												VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
-												double c_s = beta_times_normal * 0.5;
-
-												VelocityRangeType u_h_half = v_i;
-												u_h_half *= 0.5;
-												VelocityJacobianRangeType flux_value = dyadicProduct( v_i, beta_eval );
-
-												VelocityJacobianRangeType u_jump = dyadicProduct( v_i, outerNormal );
-												u_jump *= c_s;
-
-												flux_value += u_jump;
-
-												double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
-												//inner edge (self)
-												O_i_j += elementVolume
-													* integrationWeight
-													* convection_scaling
-													* ret;
-											}
-											else {
-												VelocityRangeType v_j( 0.0 );
-												velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
-												VelocityRangeType flux_value;
-												flux_value = v_i;
-												flux_value *= 0.5;
-												SigmaRangeType jump = dyadicProduct( v_i, outerNormal );
-												VelocityRangeType jump_value;
-												jump.mv( E_11, jump );
-												flux_value -= jump_value;
-
-
-												const double flux_times_v_j = flux_value * v_j;
-												const double ret = beta_times_normal * flux_times_v_j;
-												O_i_j += elementVolume
-														* integrationWeight
-														* convection_scaling
-														* ret;
-											}
-										} // done sum over all quadrature points
-										// if small, should be zero
-										if ( fabs( O_i_j ) < eps ) {
-											O_i_j = 0.0;
-										}
-										else
-											// add to matrix
-											localOmatrixNeighbour.add( i, j, O_i_j );
-									} // done computing Y's neighbour surface integral
-								} // done computing Y's surface integrals
-							}
                         //                                                                                                  // we will call this one
                         // (Z)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's element surface integral
                         //           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{p}^{P^{-}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's neighbour surface integral
@@ -1726,80 +1656,62 @@ class StokesPass
 							//                                                                                                           // we will call this one
 							// (O)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}} STUFF n_{t}ds											// O's boundary integral
 							//                                                                                                           // see also "O's element surface integral" and "Y's neighbour surface integral" above
-							if ( do_oseen_discretization ) {
-								for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
-									for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
-										double O_i_j = 0.0;
-										// sum over all quadrature points
-										for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-											// get x codim<0> and codim<1> coordinates
-											const ElementCoordinateType x = faceQuadratureElement.point( quad );
-											const VelocityRangeType xWorld = geometry.global( x );
-											const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
-											// get the integration factor
-											const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
-											// get the quadrature weight
-											const double integrationWeight = faceQuadratureElement.weight( quad );
-											const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
-											//calc u^c_h \tensor beta * v \tensor n
-											VelocityRangeType v_j( 0.0 );
-											velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-											VelocityRangeType v_i( 0.0 );
-											velocityBaseFunctionSetElement.evaluate( i, x, v_i );
-											VelocityRangeType gD( 0.0 );
-											discreteModel_.dirichletData( intersection, 0.0, xWorld, gD );
-											VelocityRangeType beta_eval;
-											beta_->evaluate( xWorld, beta_eval );
-											const double beta_times_normal = beta_eval * outerNormal;
-											if ( !use_cks_convection ) {
-												VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
-												double c_s;
-
-												if ( beta_times_normal < 0 ) {
-													c_s = beta_times_normal * 0.5;
-												}
-												else {
-													c_s = - beta_times_normal * 0.5;
-												}
-
-												VelocityJacobianRangeType flux_value = dyadicProduct( v_j, beta_eval );
-
-												VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
-												u_jump *= c_s;
-
-												flux_value += u_jump;
-
-												double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
-												//inner edge (self)
-												O_i_j += elementVolume
-													* integrationWeight
-													* convection_scaling
-													* ret;
+							for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+								for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+									double O_i_j = 0.0;
+									// sum over all quadrature points
+									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+										// get x codim<0> and codim<1> coordinates
+										const ElementCoordinateType x = faceQuadratureElement.point( quad );
+										const VelocityRangeType xWorld = geometry.global( x );
+										const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
+										// get the integration factor
+										const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+										// get the quadrature weight
+										const double integrationWeight = faceQuadratureElement.weight( quad );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+										//calc u^c_h \tensor beta * v \tensor n
+										VelocityRangeType v_j( 0.0 );
+										velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+										VelocityRangeType v_i( 0.0 );
+										velocityBaseFunctionSetElement.evaluate( i, x, v_i );
+										VelocityRangeType beta_eval;
+										beta_.evaluate( xWorld, beta_eval );
+										const double beta_times_normal = beta_eval * outerNormal;
+											double c_s;
+											if ( beta_times_normal < 0 ) {
+												c_s = beta_times_normal * 0.5;
 											}
 											else {
-												VelocityRangeType flux_value(0);
-												if ( !(beta_times_normal < 0) ) {//beta points 'outwards' so take value from this element
-													//the inverse case is handled in H2_O
-													flux_value = v_i;
-													const double flux_value_v_j = flux_value * v_j;
-													const double ret = beta_times_normal * flux_value_v_j;
-													O_i_j += elementVolume
-														* integrationWeight
-														* convection_scaling
-														* ret;
-												}
+												c_s = - beta_times_normal * 0.5;
 											}
-										} // done sum over all quadrature points
-										// if small, should be zero
-										if ( fabs( O_i_j ) < eps ) {
-											O_i_j = 0.0;
-										}
-										else
-											// add to matrix
-											localOmatrixElement.add( i, j, O_i_j );
+
+											VelocityJacobianRangeType mean_value = dyadicProduct( v_j, beta_eval );
+											mean_value *= 0.5;
+
+											VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
+											u_jump *= c_s;
+
+											VelocityJacobianRangeType flux_value = mean_value;
+											flux_value += u_jump;
+
+											VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
+											double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
+											//inner edge (self)
+											O_i_j += elementVolume
+												* integrationWeight
+												* convection_scaling
+												* ret;
+									} // done sum over all quadrature points
+									// if small, should be zero
+									if ( fabs( O_i_j ) < eps ) {
+										O_i_j = 0.0;
 									}
-								} // done computing O's boundary integral
-							}
+									else
+										// add to matrix
+										localOmatrixElement.add( i, j, O_i_j );
+								}
+							} // done computing O's boundary integral
                         //                                                                                                  // we will call this one
                         // (Z)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's boundary integral
                         //                                                                                                  // see also "Z's volume integral", "Z's element surface integral" and "Z's neighbour surface integral" above
@@ -1901,55 +1813,63 @@ class StokesPass
 									localH2rhs[ j ] += H2_j;
                             } // done computing H2's boundary integrals
                         }
-						if ( use_cks_convection ) {
-							//                                                                                                                 // we will call this one
-							// (H2_O)_{j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\left(  \beta n_{T} g_D v_j ds        \right) // H2_O's boundary integral
-							if ( do_oseen_discretization ) {
-								for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
-									double H2_O_j = 0.0;
-									// sum over all quadrature points
-									for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-										// get x codim<0> and codim<1> coordinates
-										const ElementCoordinateType x = faceQuadratureElement.point( quad );
-										const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
-														// get the integration factor
-										const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
-										// get the quadrature weight
-										const double integrationWeight = faceQuadratureElement.weight( quad );
-										// prepare
-										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
-										VelocityRangeType v_j( 0.0 );
-										velocityBaseFunctionSetElement.evaluate( j, x, v_j );
-										// compute \mu v_{j}\cdot\hat{\sigma}^{RHS}()\cdot n_{T}
-										const VelocityRangeType xIntersectionGlobal = intersection.intersectionSelfLocal().global( xLocal );
-										const VelocityRangeType xWorld = geometry.global( xIntersectionGlobal );
-										VelocityRangeType gD( 0.0 );
-										discreteModel_.dirichletData( intersection, 0.0, xWorld, gD );
 
-										VelocityRangeType beta_eval;
-										beta_->evaluate( xWorld, beta_eval );
-										const double beta_times_normal = beta_eval * outerNormal;
-										VelocityRangeType flux_value;
-										if ( beta_times_normal < 0 ) {
-											//beta points 'outwards' so take value from this element
-											//the inverse case is handled in O's boundary integral
-											flux_value = gD;
-											const double flux_times_v_j = flux_value * v_j;
-											H2_O_j -= elementVolume
-													* convection_scaling
-													* integrationWeight
-													* beta_times_normal
-													* flux_times_v_j;
-										}
-									}
-									if ( fabs( H2_O_j ) < eps ) {
-											 H2_O_j = 0.0;
-									}
-									else
-										// add to rhs
-										localH2_O_rhs[ j ] += H2_O_j;
+						//                                                                                                                 // we will call this one
+						// (H2_O)_{j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\left(  \beta n_{T} g_D v_j ds        \right) // H2_O's boundary integral
+						for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+							double H2_O_j = 0.0;
+							// sum over all quadrature points
+							for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+								// get x codim<0> and codim<1> coordinates
+								const ElementCoordinateType x = faceQuadratureElement.point( quad );
+								const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
+												// get the integration factor
+								const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+								// get the quadrature weight
+								const double integrationWeight = faceQuadratureElement.weight( quad );
+								// prepare
+								const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+								VelocityRangeType v_j( 0.0 );
+								velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+								// compute \mu v_{j}\cdot\hat{\sigma}^{RHS}()\cdot n_{T}
+								const VelocityRangeType xIntersectionGlobal = intersection.intersectionSelfLocal().global( xLocal );
+								const VelocityRangeType xWorld = geometry.global( xIntersectionGlobal );
+								VelocityRangeType gD( 0.0 );
+								discreteModel_.dirichletData( intersection, 0.0, xWorld, gD );
+
+								VelocityRangeType beta_eval;
+								beta_.evaluate( xWorld, beta_eval );
+								const double beta_times_normal = beta_eval * outerNormal;
+
+								// u^c = 0.5 gD \otimes beta + Cs -gD \otimes n
+								VelocityJacobianRangeType gD_tensor_beta = dyadicProduct( gD, beta_eval );
+								gD_tensor_beta *= 0.5;
+								double c_s;
+								if ( beta_times_normal < 0 ) {
+									c_s = beta_times_normal * 0.5;
 								}
+								else {
+									c_s = - beta_times_normal * 0.5;
+								}
+								VelocityJacobianRangeType jump = dyadicProduct( gD, outerNormal );
+								jump *= c_s;
+
+								VelocityJacobianRangeType flux_value = gD_tensor_beta;
+								flux_value += jump;
+
+								VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j,  outerNormal );
+								const double ret = Stuff::colonProduct( flux_value, v_j_tensor_n );
+								H2_O_j -= elementVolume
+										* convection_scaling
+										* integrationWeight
+										* ret;
 							}
+							if ( fabs( H2_O_j ) < eps ) {
+									 H2_O_j = 0.0;
+							}
+							else
+								// add to rhs
+								localH2_O_rhs[ j ] += H2_O_j;
 						}
 
                         //                                                                                        // we will call this one
@@ -2056,8 +1976,12 @@ class StokesPass
             profiler().StartTiming("Pass -- SOLVER");
 
             // do solving
-			if ( do_oseen_discretization ) {
+			YmatrixType null_matrix( velocitySpace_, velocitySpace_ );
+			null_matrix.reserve();
+			YmatrixType* actually_used_Omatrix = &null_matrix;
+			if ( do_oseen_discretization_ ) {
 				H2rhs -= H2_O_rhs;
+				actually_used_Omatrix = &Omatrix;
 			}
 			if ( Parameters().getParam( "paranoid_checks", false ) )
 			{//paranoid checks
@@ -2082,40 +2006,29 @@ class StokesPass
 			Logger().Info() << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
 
 			//this lets us switch between standalone oseen and reduced oseen in  thete scheme easily
-			const bool use_reduced_solver = do_oseen_discretization && Parameters().getParam( "reduced_oseen_solver", false );
+			const bool use_reduced_solver = do_oseen_discretization_ && Parameters().getParam( "reduced_oseen_solver", false );
 			if( !use_reduced_solver ) {
 				if ( Parameters().getParam( "use_nested_cg_solver", false ) ) {
-					info_ = AltInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+					info_ = AltInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
+												  *actually_used_Omatrix, Ematrix, Rmatrix,
+												  Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 				}
 				else if ( Parameters().getParam( "use_full_solver", false ) ) {
-					info_ = DirectKrylovSolverType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+					info_ = DirectKrylovSolverType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
+															*actually_used_Omatrix, Ematrix, Rmatrix,
+															Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 				}
 				else {
-					info_ = InvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+					info_ = InvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
+											   *actually_used_Omatrix, Ematrix, Rmatrix,
+											   Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 				}
 			}
 			else {
-				info_ = ReducedInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix, Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
+				info_ = ReducedInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
+												  *actually_used_Omatrix, Ematrix, Rmatrix,
+												  Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 			}
-
-			//test of the combined function ( does come out again what goes in?)
-//			typedef CombinedDiscreteFunction< DomainType >
-//				CombinedDiscreteFunctionType;
-//			CombinedDiscreteFunctionType combined_arg( dest );
-
-//			DiscreteVelocityFunctionType d1("de",dest.discreteVelocity().space());
-//			DiscretePressureFunctionType d2("de",dest.discretePressure().space());
-
-//			d1.assign( dest.discreteVelocity() );
-//			d2.assign( dest.discretePressure() );
-//			combined_arg.copyBack( dest );
-
-////			dest.discreteVelocity() -= d1;
-////			dest.discretePressure() -= d2;
-
-//			Logger().Info() << "non null diff:\n";
-//			Stuff::printFunctionMinMax( Logger().Info(), dest.discreteVelocity() );
-//			Stuff::printFunctionMinMax( Logger().Info(), dest.discretePressure() );
 
             // do profiling
             profiler().StopTiming("Pass -- SOLVER");
@@ -2131,20 +2044,18 @@ class StokesPass
 				MInversMatrix.apply( sigma_tmp, rhs_datacontainer->velocity_gradient );
 
 				DiscreteVelocityFunctionType velocity_tmp1( "velocity_tmp1", dest.discreteVelocity().space() );
-//				DiscreteVelocityFunctionType velocity_tmp2( "velocity_tmp2", dest.discreteVelocity().space() );
 				Xmatrix.apply( rhs_datacontainer->velocity_gradient, velocity_tmp1 );
 				Ymatrix.apply( dest.discreteVelocity(), rhs_datacontainer->velocity_laplace );
 				rhs_datacontainer->velocity_laplace += velocity_tmp1;
 				velocity_tmp1.assign( dest.discreteVelocity() );
 				velocity_tmp1 *= alpha;
 				rhs_datacontainer->velocity_laplace -= velocity_tmp1;
-				rhs_datacontainer->velocity_laplace *= mu;
+				rhs_datacontainer->velocity_laplace *= -mu ;
 
+				rhs_datacontainer->convection.clear();
 				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
-				rhs_datacontainer->convection += H2_O_rhs;//just in case I've switched fluxes and H2_O_rhs is then non-zero
-
+				rhs_datacontainer->convection += H2_O_rhs;
 			}
-//			Stuff::printDiscreteFunctionMatlabStyle( H2_O_rhs, "H2_O_rhs", Logger().Dbg() );
 			if ( Parameters().getParam( "save_matrices", false ) ) {
 				Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
 				Stuff::printDiscreteFunctionMatlabStyle( dest.discreteVelocity(), "u_exakt", matlabLogStream );
@@ -2176,7 +2087,8 @@ class StokesPass
         DiscreteVelocityFunctionSpaceType& velocitySpace_;
         DiscretePressureFunctionSpaceType& pressureSpace_;
         DiscreteSigmaFunctionSpaceType sigmaSpace_;
-		const DiscreteVelocityFunctionType* beta_;
+		const DiscreteVelocityFunctionType& beta_;
+		const bool do_oseen_discretization_;
         mutable SaddlepointInverseOperatorInfo info_;
 
         /**

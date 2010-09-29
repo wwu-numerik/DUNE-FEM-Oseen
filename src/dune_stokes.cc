@@ -528,8 +528,10 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     const int polOrder = POLORDER;
     debugStream << "  - polOrder: " << polOrder << std::endl;
     const double viscosity = Parameters().getParam( "viscosity", 1.0 );
+	info.viscosity = viscosity;
     debugStream << "  - viscosity: " << viscosity << std::endl;
 	const double alpha = Parameters().getParam( "alpha", 0.0 );
+	info.alpha = alpha;
 
     // analytical data
 
