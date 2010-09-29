@@ -223,6 +223,12 @@ class StokesPass
 				velocity_gradient( "velocity_gradient", sigma_space ),
 				convection( "convection", space )
 			{}
+			void scale( double factor ) {
+				velocity_laplace	*= factor;
+				pressure_gradient	*= factor;
+				velocity_gradient	*= factor;
+				convection			*= factor;
+			}
 
 		};
 
@@ -2035,6 +2041,7 @@ class StokesPass
 
 			if ( rhs_datacontainer ) {
 				Zmatrix.apply( dest.discretePressure(), rhs_datacontainer->pressure_gradient );
+				rhs_datacontainer->pressure_gradient *= Parameters().getParam("pressure_gradient_scale", 1);
 
 				// \sigma = M^{-1} ( H_1 - Wu )
 				DiscreteSigmaFunctionType sigma_tmp( "sigma_dummy", sigmaSpace_ );
@@ -2050,11 +2057,18 @@ class StokesPass
 				velocity_tmp1.assign( dest.discreteVelocity() );
 				velocity_tmp1 *= alpha;
 				rhs_datacontainer->velocity_laplace -= velocity_tmp1;
-				rhs_datacontainer->velocity_laplace *= -mu ;
+				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
+				const double laplace_scale = Parameters().getParam("laplace_scale", -1/mu);
+				rhs_datacontainer->velocity_laplace *= laplace_scale;
+				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
+				Logger().Dbg().Resume();
+				Logger().Dbg() << boost::format( "laplace_scale: %f\n") % laplace_scale;
 
 				rhs_datacontainer->convection.clear();
 				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
 				rhs_datacontainer->convection += H2_O_rhs;
+
+				rhs_datacontainer->scale( std::sqrt(2) );
 			}
 			if ( Parameters().getParam( "save_matrices", false ) ) {
 				Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
