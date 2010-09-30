@@ -413,8 +413,10 @@ class StokesPass
 			const double convection_scaling = discreteModel_.convection_scaling();
 			const double pressure_gradient_scaling = discreteModel_.pressure_gradient_scaling();
 
-			Logger().Info() << "pressure_gradient/convection scaling : " << convection_scaling <<
-						  " | " << pressure_gradient_scaling << std::endl;
+			Logger().Info() << boost::format( "pressure_gradient/convection scaling: %e | %e\npass viscosity: %e\n")
+								% convection_scaling
+								% pressure_gradient_scaling
+								% mu;
 
 #ifndef NLOG
             // logging stuff
@@ -2066,7 +2068,7 @@ class StokesPass
 				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
 				rhs_datacontainer->convection += H2_O_rhs;
 
-				rhs_datacontainer->scale( std::sqrt(2) );
+//				rhs_datacontainer->scale( 1 / std::sqrt(2) );
 			}
 			if ( Parameters().getParam( "save_matrices", false ) ) {
 				Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
