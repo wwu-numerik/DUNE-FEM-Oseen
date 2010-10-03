@@ -416,7 +416,7 @@ class StokesPass
 			Logger().Info() << boost::format( "pressure_gradient/convection scaling: %e | %e\npass viscosity: %e\n")
 								% convection_scaling
 								% pressure_gradient_scaling
-								% mu;
+								% viscosity;
 
 #ifndef NLOG
             // logging stuff
@@ -2054,7 +2054,7 @@ class StokesPass
 				velocity_tmp1 *= alpha;
 				rhs_datacontainer->velocity_laplace -= velocity_tmp1;
 				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
-				const double laplace_scale = Parameters().getParam("laplace_scale", -1/mu);
+				const double laplace_scale = Parameters().getParam("laplace_scale", -1/viscosity);
 				rhs_datacontainer->velocity_laplace *= laplace_scale;
 				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
 				Logger().Dbg().Resume();
