@@ -239,7 +239,7 @@ class StokesPass
         StokesPass( PreviousPassType& prevPass,
                     DiscreteModelType& discreteModel,
                     GridPartType& gridPart,
-					DiscreteStokesFunctionSpaceWrapperType& spaceWrapper,
+					const DiscreteStokesFunctionSpaceWrapperType& spaceWrapper,
 					const DiscreteVelocityFunctionType& beta,
 					const bool do_oseen_discretization )//! \todo move to model
             : BaseType( prevPass ),
@@ -1942,6 +1942,7 @@ class StokesPass
 				Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
 				Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
 				Stuff::printDiscreteFunctionMatlabStyle( H2_O_rhs, "H_O", matlabLogStream );
+				matlabLogStream.Flush();
 			}
 //
 //            // log local matrices
@@ -2068,8 +2069,8 @@ class StokesPass
 			}
 			if ( Parameters().getParam( "save_matrices", false ) ) {
 				Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-				Stuff::printDiscreteFunctionMatlabStyle( dest.discreteVelocity(), "u_exakt", matlabLogStream );
-				Stuff::printDiscreteFunctionMatlabStyle( dest.discretePressure(), "p_exakt", matlabLogStream );
+				Stuff::printDiscreteFunctionMatlabStyle( dest.discreteVelocity(), "u_computed", matlabLogStream );
+				Stuff::printDiscreteFunctionMatlabStyle( dest.discretePressure(), "p_computed", matlabLogStream );
 			}
         } // end of apply
 
@@ -2092,10 +2093,10 @@ class StokesPass
 
     private:
         DiscreteModelType& discreteModel_;
-        GridPartType& gridPart_;
-        DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
-        DiscreteVelocityFunctionSpaceType& velocitySpace_;
-        DiscretePressureFunctionSpaceType& pressureSpace_;
+        const GridPartType& gridPart_;
+        const DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
+        const DiscreteVelocityFunctionSpaceType& velocitySpace_;
+        const DiscretePressureFunctionSpaceType& pressureSpace_;
         DiscreteSigmaFunctionSpaceType sigmaSpace_;
 		const DiscreteVelocityFunctionType& beta_;
 		const bool do_oseen_discretization_;
