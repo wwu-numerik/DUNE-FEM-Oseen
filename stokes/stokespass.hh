@@ -1202,7 +1202,7 @@ class StokesPass
 										beta_.evaluate( xWorld, beta_eval );
 										const double beta_times_normal = beta_eval * outerNormal;
 										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
-										double c_s = std::abs( (beta_times_normal)) * 0.5 ;
+										double c_s = (beta_times_normal) * 0.5;
 										VelocityRangeType u_h = v_j;
 										VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
 										mean_value *= 0.5;
@@ -1254,7 +1254,7 @@ class StokesPass
 										VelocityRangeType v_j( 0.0 );
 										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
 										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
-										double c_s = std::abs( (beta_times_normal)) * 0.5 ;
+										double c_s = (beta_times_normal) * 0.5;
 										VelocityRangeType u_h = v_j;
 										VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
 										mean_value *= 0.5;
