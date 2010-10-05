@@ -6,9 +6,10 @@
 namespace Dune {
 
 
-	/**
-		\brief DOCME
-	**/
+	/** the goal is to solve
+		\$ ( Y + O - X M^{-1} W )u = H_2 + X M^{-1} H_1 \$
+		for u
+	  **/
 	template < class StokesPassImp >
 	class ReducedInverseOperator
 	{
@@ -110,7 +111,6 @@ namespace Dune {
 			BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
 			WmatrixType& w_mat      = Wmatrix.matrix();
 
-
 			typedef InnerCGSolverWrapper< WmatrixType,
 									MmatrixType,
 									XmatrixType,
@@ -123,15 +123,28 @@ namespace Dune {
 														   o_mat, rhs1.space(), rhs2.space(), relLimit,
 														   current_inner_accuracy, solverVerbosity > 3 );
 
-	/*****************************************************************************************/
+			//invert m_inv_mat since we actually got M
+			m_inv_mat.scale( 1 / m_inv_mat(1,1) );
 
-			VelocityDiscreteFunctionType F( "f", velocity.space() );
-			F.assign(rhs2);
-			VelocityDiscreteFunctionType tmp1( "tmp1", velocity.space() );
+			w_mat.scale( m_inv_mat(0,0) );
+			rhs1 *=  m_inv_mat(0,0);
+
+			/** the goal is to solve
+				( Y + O - X M^{-1} W )u = H2 + X M^{-1} H1
+				for u
+			  **/
+
+			//build right hand side = H2 + X M^{-1} H1
+			DiscreteSigmaFunctionType tmp1( "tmp1", rhs1.space() );
 			tmp1.clear();
 
-			// u^0 = A^{-1} ( F - B * p^0 )
-			b_mat.apply( pressure, tmp1 );
+
+			m_inv_mat.apply( rhs1, tmp1 );
+			VelocityDiscreteFunctionType F( "f", velocity.space() );
+			x_mat.apply( tmp1, F );
+			F *= -1;
+			F += rhs2;
+
 			logInfo << "OSEEN: first apply\n" ;
 			SaddlepointInverseOperatorInfo info;
 			innerCGSolverWrapper.apply(F,velocity);
