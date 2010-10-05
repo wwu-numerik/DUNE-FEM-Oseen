@@ -1,7 +1,7 @@
 #ifndef DUNE_STOKES_DIRECT_SOLVER_HH
 #define DUNE_STOKES_DIRECT_SOLVER_HH
 
-#include <dune/stokes/solver_interface.hh>
+#include <dune/stokes/solver/solver_interface.hh>
 
 namespace Dune {
 
