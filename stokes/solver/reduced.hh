@@ -126,8 +126,8 @@ namespace Dune {
 			//invert m_inv_mat since we actually got M
 			m_inv_mat.scale( 1 / m_inv_mat(1,1) );
 
-			w_mat.scale( m_inv_mat(0,0) );
-			rhs1 *=  m_inv_mat(0,0);
+//			w_mat.scale( m_inv_mat(0,0) );
+//			rhs1 *=  m_inv_mat(0,0);
 
 			/** the goal is to solve
 				( Y + O - X M^{-1} W )u = H2 + X M^{-1} H1
@@ -145,7 +145,6 @@ namespace Dune {
 			F *= -1;
 			F += rhs2;
 
-			logInfo << "OSEEN: first apply\n" ;
 			SaddlepointInverseOperatorInfo info;
 			innerCGSolverWrapper.apply(F,velocity);
 			logInfo << "End ReducedInverseOperator " << std::endl;
