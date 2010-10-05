@@ -2,6 +2,7 @@
 #define DUNE_STOKES_SOLVERS_NESTED_CG_HH
 
 #include <dune/stokes/solver/solver_interface.hh>
+#include <dune/stokes/solver/schurkomplement.hh>
 
 namespace Dune {
 

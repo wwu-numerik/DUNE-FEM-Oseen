@@ -7,12 +7,7 @@ namespace Dune {
 
 
 	/**
-		\brief Saddlepoint Solver
-		The inner CG iteration is implemented by passing a custom Matrix operator to a given\n
-		Dune solver. The outer iteration is a implementation of the CG algorithm as described in\n
-		Kuhnibert
-		Optionally the BFG scheme as described in YADDA is uesd to control the inner solver tolerance.
-		/todo get references in doxygen right
+		\brief DOCME
 	**/
 	template < class StokesPassImp >
 	class ReducedInverseOperator
@@ -115,17 +110,7 @@ namespace Dune {
 			BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
 			WmatrixType& w_mat      = Wmatrix.matrix();
 
-	/*** making our matrices kuhnibert compatible ****/
-			b_t_mat.scale( -1 ); //since B_t = -E
-			w_mat.scale( m_inv_mat(0,0) );
-			rhs1 *=  m_inv_mat(0,0);
-			m_inv_mat.scale( 1 / m_inv_mat(0,0) );
 
-			//transformation from StokesPass::buildMatrix
-			VelocityDiscreteFunctionType v_tmp ( "v_tmp", velocity.space() );
-			x_mat.apply( rhs1, v_tmp );
-			rhs2 -= v_tmp;
-	/***********/
 			typedef InnerCGSolverWrapper< WmatrixType,
 									MmatrixType,
 									XmatrixType,
