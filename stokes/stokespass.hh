@@ -861,7 +861,6 @@ class StokesPass
 					VelocityRangeType D_12( 1 );//TODO FIXME
 					D_12 /= D_12.two_norm();
 					D_12 *= stabil_coeff.Factor("D12");
-					VelocityRangeType E_11(stabil_coeff.Factor("E12"));
 
                     // if we are inside the grid
 					if ( intersection.neighbor() && !intersection.boundary() ) {
