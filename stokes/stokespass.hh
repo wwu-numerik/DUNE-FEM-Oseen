@@ -717,6 +717,7 @@ class StokesPass
 						}
 						else {
 							// add to matrix
+							std::cerr << boost::format( "O volume value on entity %d: %e\n") % entityNR % O_i_j;
 							localOmatrixElement.add( i, j, O_i_j );
 						}
 					}
@@ -1202,17 +1203,17 @@ class StokesPass
 										const double beta_times_normal = beta_eval * outerNormal;
 										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
 										double c_s = (beta_times_normal) * 0.5;
-										VelocityRangeType u_h = v_j;
+										VelocityRangeType u_h = v_i;
 										VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
 										mean_value *= 0.5;
-										VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
+										VelocityJacobianRangeType u_jump = dyadicProduct( v_i, outerNormal );
 										u_jump *= c_s;
 										VelocityJacobianRangeType flux_value = mean_value;
 										flux_value += u_jump;
 
 										// \int_{dK} flux_value : ( v_j \ctimes n ) ds
-										VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
-										double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
+										VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j, outerNormal );
+										double ret  = Stuff::colonProduct( flux_value, v_j_tensor_n );
 
 										O_i_j += elementVolume
 											* integrationWeight
@@ -1223,9 +1224,11 @@ class StokesPass
 									if ( fabs( O_i_j ) < eps ) {
 										O_i_j = 0.0;
 									}
-									else
+									else {
 										// add to matrix
+										std::cerr<< boost::format( "O face value (el) on entity %d: %e\n") % entityNR % O_i_j;
 										localOmatrixElement.add( i, j, O_i_j );
+									}
 								} // done computing Y's element surface integral
 								// compute O's neighbour surface integral
 								for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
@@ -1245,40 +1248,42 @@ class StokesPass
 										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 
 										VelocityRangeType v_i( 0.0 );
-										velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
+										velocityBaseFunctionSetNeighbour.evaluate( i, xInside, v_i );
 
 										VelocityRangeType beta_eval;
 										beta_.evaluate( xWorld, beta_eval );
 										// * -1 ??
-										const double beta_times_normal = beta_eval * outerNormal;
+										const double beta_times_normal = - 1 * ( beta_eval * outerNormal );
 										VelocityRangeType v_j( 0.0 );
-										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+										velocityBaseFunctionSetElement.evaluate( j, xOutside, v_j );
 										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
-										double c_s = -1. * (beta_times_normal) * 0.5;
-										VelocityRangeType u_h = v_j;
+										double c_s =  (beta_times_normal) * 0.5;
+										VelocityRangeType u_h = v_i;
 										VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
 										mean_value *= 0.5;
-										VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
+										VelocityJacobianRangeType u_jump = dyadicProduct( v_i, outerNormal );
 										u_jump *= - c_s;
 										VelocityJacobianRangeType flux_value = mean_value;
 										flux_value += u_jump;
 
 										// \int_{dK} flux_value : ( v_j \ctimes n ) ds
-										VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
-										double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
+										VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j, outerNormal );
+										double ret  = Stuff::colonProduct( flux_value, v_j_tensor_n );
 
-										O_i_j += elementVolume
-											* integrationWeight
-											* convection_scaling
-											* ret;
+//										O_i_j += elementVolume
+//											* integrationWeight
+//											* convection_scaling
+//											* ret;
 									} // done sum over all quadrature points
 									// if small, should be zero
 									if ( fabs( O_i_j ) < eps ) {
 										O_i_j = 0.0;
 									}
-									else
+									else {
 										// add to matrix
+										std::cerr<< boost::format( "O face value (ne) on entity %d: %e\n") % entityNR % O_i_j;
 										localOmatrixNeighbour.add( i, j, O_i_j );
+									}
 								} // done computing Y's neighbour surface integral
 							} // done computing Y's surface integrals
 
@@ -1683,7 +1688,7 @@ class StokesPass
 										const double beta_times_normal = beta_eval * outerNormal;
 										double c_s = std::fabs( beta_times_normal * 0.5 );
 										VelocityJacobianRangeType mean_value = dyadicProduct( v_j, beta_eval );
-//										mean_value *= 0.5;
+										mean_value *= 0.5;
 
 										VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
 										u_jump *= c_s;
@@ -1694,18 +1699,20 @@ class StokesPass
 										VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
 										double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
 										//inner edge (self)
-										O_i_j += elementVolume
-											* integrationWeight
-											* convection_scaling
-											* ret;
+//										O_i_j += elementVolume
+//											* integrationWeight
+//											* convection_scaling
+//											* ret;
 									} // done sum over all quadrature points
 									// if small, should be zero
 									if ( fabs( O_i_j ) < eps ) {
 										O_i_j = 0.0;
 									}
-									else
+									else {
 										// add to matrix
+										std::cerr<< boost::format( "O face value (bnd) on entity %d: %e\n") % entityNR % O_i_j;
 										localOmatrixElement.add( i, j, O_i_j );
+									}
 								}
 							} // done computing O's boundary integral
                         //                                                                                                  // we will call this one
@@ -1857,9 +1864,11 @@ class StokesPass
 							if ( fabs( H2_O_j ) < eps ) {
 									 H2_O_j = 0.0;
 							}
-							else
+							else {
 								// add to rhs
+								std::cerr<< boost::format( "H2O value (bnd) on entity %d: %e\n") % entityNR % H2_O_j;
 								localH2_O_rhs[ j ] += H2_O_j;
+							}
 						}
 
                         //                                                                                        // we will call this one
