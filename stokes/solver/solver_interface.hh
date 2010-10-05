@@ -25,7 +25,7 @@
 
 #include <dune/fem/function/common/discretefunction.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
-#include <dune/stokes/cghelper.hh>
+#include <dune/stokes/solver/cghelper.hh>
 
 #include <dune/stuff/parametercontainer.hh>
 #include <dune/stuff/printing.hh>

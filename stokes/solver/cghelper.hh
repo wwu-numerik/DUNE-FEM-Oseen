@@ -3,8 +3,8 @@
  *  \brief  contains some stuff
  **/
 
-#ifndef INNERCG_HH_INCLUDED
-#define INNERCG_HH_INCLUDED
+#ifndef DUNE_STOKES_SOLVER_CGHELPER_HH
+#define DUNE_STOKES_SOLVER_CGHELPER_HH
 
 #include <dune/stuff/printing.hh>
 #include <dune/stuff/misc.hh>
@@ -388,4 +388,4 @@ class InnerCGSolverWrapper {
 
 }
 
-#endif // INNERCG_HH_INCLUDED
+#endif // DUNE_STOKES_SOLVER_CGHELPER_HH
