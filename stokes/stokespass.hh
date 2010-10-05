@@ -12,7 +12,7 @@
 #include <dune/fem/misc/l2norm.hh>
 
 #include <dune/stokes/saddlepoint_inverse_operator.hh>
-#include <dune/stokes/direct_solver.hh>
+//#include <dune/stokes/direct_solver.hh>
 
 #include <dune/common/stdstreams.hh>
 #include <dune/stuff/matrix.hh>
