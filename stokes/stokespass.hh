@@ -1971,7 +1971,7 @@ class StokesPass
 			null_matrix.reserve();
 			YmatrixType* actually_used_Omatrix = &null_matrix;
 			if ( do_oseen_discretization_ ) {
-				H2rhs -= H2_O_rhs;
+				H2rhs += H2_O_rhs;
 				actually_used_Omatrix = &Omatrix;
 			}
 			if ( Parameters().getParam( "paranoid_checks", false ) )
