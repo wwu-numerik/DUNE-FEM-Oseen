@@ -131,7 +131,7 @@ SET(dune-stokesSrc
 )
 
 FILE( GLOB header "src/*.hh" )
-FILE( GLOB_RECURSE stokes "stokes/*" )
+FILE( GLOB_RECURSE stokes "stokes/*.hh" )
 FILE( GLOB stuff "../dune-stuff/stuff/*.hh" )
 
 set_source_files_properties( ${stuff} ${stokes} ${header} PROPERTIES HEADER_FILE_ONLY 1 )
