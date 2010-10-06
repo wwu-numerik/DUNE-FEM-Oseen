@@ -1702,11 +1702,11 @@ class StokesPass
 										VelocityRangeType v_i( 0.0 );
 										velocityBaseFunctionSetElement.evaluate( i, x, v_i );
 										VelocityRangeType beta_eval;
-										beta_.evaluate( xWorld, beta_eval );
+										beta_.localFunction(entity).evaluate( x, beta_eval );
 										const double beta_times_normal = beta_eval * outerNormal;
 
 										VelocityRangeType flux_value(0);
-										if ( !(beta_times_normal < 0) ) {//beta points 'outwards' so take value from this element
+										if ( beta_times_normal < 0 ) {//beta points 'outwards' so take value from this element
 											//the inverse case is handled in H2_O
 											flux_value = v_i;
 											const double flux_value_v_j = flux_value * v_j;
@@ -1854,13 +1854,12 @@ class StokesPass
 								discreteModel_.dirichletData( intersection, 0.0, xWorld, gD );
 
 								VelocityRangeType beta_eval;
-								beta_.evaluate( xWorld, beta_eval );
+								beta_.localFunction(entity).evaluate( x, beta_eval );
 								const double beta_times_normal = beta_eval * outerNormal;
 
-
 								VelocityRangeType flux_value;
-								if ( beta_times_normal < 0 ) {
-									//beta points 'outwards' so take value from this element
+								if ( beta_times_normal >= 0 ) {
+									//beta points 'outwards' so take value from g_D
 									//the inverse case is handled in O's boundary integral
 									flux_value = gD;
 									const double flux_times_v_j = flux_value * v_j;
