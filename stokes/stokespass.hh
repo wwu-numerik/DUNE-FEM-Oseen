@@ -702,41 +702,32 @@ class StokesPass
 							VelocityJacobianRangeType v_j_jacobian;
 							velocityBaseFunctionSetElement.jacobian( j, x, v_j_jacobian );
 
-							//compute u_h \ctimes \beta  : ( \nabla \ctimes v_j )
-//							VelocityJacobianRangeType v_i_tensor_beta = dyadicProduct( v_i, beta_eval );
-//							const double ret = Stuff::colonProduct( v_i_tensor_beta, v_j_jacobian );
-//							const double val = elementVolume
-//									* integrationWeight
-//									* convection_scaling
-//									* ret;
-//							O_i_j -= val;
-
 							VelocityJacobianRangeType v_i_jacobian;
-																velocityBaseFunctionSetElement.jacobian( j, x, v_i_jacobian );
-																VelocityJacobianRangeType beta_jacobian;
-																const typename DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
-																		beta_.localFunction( entity );
-																beta_lf.jacobian( x, beta_jacobian );
+							velocityBaseFunctionSetElement.jacobian( j, x, v_i_jacobian );
+							VelocityJacobianRangeType beta_jacobian;
+							const typename DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
+									beta_.localFunction( entity );
+							beta_lf.jacobian( x, beta_jacobian );
 
 
-																VelocityRangeType divergence_of_beta_v_j_tensor_beta;
-																for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
-																	double row_result = 0;
-																	for ( size_t m = 0; m < beta_eval.dim(); ++m ) {
-																		row_result += beta_jacobian[l][m] * v_i[l] + v_i_jacobian[l][m] * beta_eval[l];
-																	}
-																	divergence_of_beta_v_j_tensor_beta[l] = row_result;
-																}
-																for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
-																	assert( !isnan(divergence_of_beta_v_j_tensor_beta[l]) );
-																}
+							VelocityRangeType divergence_of_beta_v_j_tensor_beta;
+							for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
+								double row_result = 0;
+								for ( size_t m = 0; m < beta_eval.dim(); ++m ) {
+									row_result += beta_jacobian[l][m] * v_i[l] + v_i_jacobian[l][m] * beta_eval[l];
+								}
+								divergence_of_beta_v_j_tensor_beta[l] = row_result;
+							}
+							for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
+								assert( !isnan(divergence_of_beta_v_j_tensor_beta[l]) );
+							}
 
-																const double u_h_times_divergence_of_beta_v_j_tensor_beta =
-																		v_j * divergence_of_beta_v_j_tensor_beta;
-																O_i_j -= elementVolume
-																	* integrationWeight
-																	* convection_scaling
-																	* u_h_times_divergence_of_beta_v_j_tensor_beta;
+							const double u_h_times_divergence_of_beta_v_j_tensor_beta =
+									v_j * divergence_of_beta_v_j_tensor_beta;
+							O_i_j -= elementVolume
+								* integrationWeight
+								* convection_scaling
+								* u_h_times_divergence_of_beta_v_j_tensor_beta;
 
 						}
 						if ( fabs( O_i_j ) < eps ) {
@@ -1229,39 +1220,22 @@ class StokesPass
 										VelocityRangeType beta_eval;
 										beta_.evaluate( xWorld, beta_eval );
 										const double beta_times_normal = beta_eval * outerNormal;
-										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
-										double c_s = (beta_times_normal) * 0.5;
-										VelocityRangeType u_h = v_i;
-										VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
-										mean_value *= 0.5;
-										VelocityJacobianRangeType u_jump = dyadicProduct( v_i, outerNormal );
-										u_jump *= c_s;
-//										VelocityJacobianRangeType flux_value = mean_value;
-//										flux_value += u_jump;
 
-										// \int_{dK} flux_value : ( v_j \ctimes n ) ds
-										VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j, outerNormal );
-//										double ret  = Stuff::colonProduct( flux_value, v_j_tensor_n );
-
-//										O_i_j += elementVolume
-//											* integrationWeight
-//											* convection_scaling
-//											* ret;
-																						VelocityRangeType flux_value;
-																						flux_value = v_i;
-																						flux_value *= 0.5;
-																						SigmaRangeType jump = dyadicProduct( v_i, outerNormal );
-																						VelocityRangeType jump_value;
-																						jump.mv( E_11, jump );
-																						flux_value += jump_value;
+										VelocityRangeType flux_value;
+										flux_value = v_i;
+										flux_value *= 0.5;
+										SigmaRangeType jump = dyadicProduct( v_i, outerNormal );
+										VelocityRangeType jump_value;
+										jump.mv( E_11, jump );
+										flux_value += jump_value;
 
 
-																						const double flux_times_v_j = flux_value * v_j;
-																						const double ret = beta_times_normal * flux_times_v_j;
-																						O_i_j += elementVolume
-																								* integrationWeight
-																								* convection_scaling
-																								* ret;
+										const double flux_times_v_j = flux_value * v_j;
+										const double ret = beta_times_normal * flux_times_v_j;
+										O_i_j += elementVolume
+												* integrationWeight
+												* convection_scaling
+												* ret;
 									} // done sum over all quadrature points
 									// if small, should be zero
 									if ( fabs( O_i_j ) < eps ) {
@@ -1299,42 +1273,23 @@ class StokesPass
 										const double beta_times_normal = - 1 * ( beta_eval * outerNormal );
 										VelocityRangeType v_j( 0.0 );
 										velocityBaseFunctionSetElement.evaluate( j, xOutside, v_j );
-										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
-										double c_s =  (beta_times_normal) * 0.5;
-										VelocityRangeType u_h = v_i;
-										VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
-										mean_value *= 0.5;
-										VelocityJacobianRangeType u_jump = dyadicProduct( v_i, outerNormal );
-										u_jump *= - c_s;
-//										VelocityJacobianRangeType flux_value = mean_value;
-//										flux_value += u_jump;
 
-//										// \int_{dK} flux_value : ( v_j \ctimes n ) ds
-//										VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j, outerNormal );
-//										double ret  = Stuff::colonProduct( flux_value, v_j_tensor_n );
-
-//										O_i_j += elementVolume
-//											* integrationWeight
-//											* convection_scaling
-//											* ret;
-
-//																						VelocityRangeType v_j( 0.0 );
-																						velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
-																						VelocityRangeType flux_value;
-																						flux_value = v_i;
-																						flux_value *= 0.5;
-																						SigmaRangeType jump = dyadicProduct( v_i, outerNormal );
-																						VelocityRangeType jump_value;
-																						jump.mv( E_11, jump );
-																						flux_value -= jump_value;
+										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+										VelocityRangeType flux_value;
+										flux_value = v_i;
+										flux_value *= 0.5;
+										SigmaRangeType jump = dyadicProduct( v_i, outerNormal );
+										VelocityRangeType jump_value;
+										jump.mv( E_11, jump );
+										flux_value -= jump_value;
 
 
-																						const double flux_times_v_j = flux_value * v_j;
-																						const double ret = beta_times_normal * flux_times_v_j;
-																						O_i_j += elementVolume
-																								* integrationWeight
-																								* convection_scaling
-																								* ret;
+										const double flux_times_v_j = flux_value * v_j;
+										const double ret = beta_times_normal * flux_times_v_j;
+										O_i_j += elementVolume
+												* integrationWeight
+												* convection_scaling
+												* ret;
 									} // done sum over all quadrature points
 									// if small, should be zero
 									if ( fabs( O_i_j ) < eps ) {
@@ -1747,34 +1702,18 @@ class StokesPass
 										VelocityRangeType beta_eval;
 										beta_.evaluate( xWorld, beta_eval );
 										const double beta_times_normal = beta_eval * outerNormal;
-										double c_s = std::fabs( beta_times_normal * 0.5 );
-//										VelocityJacobianRangeType mean_value = dyadicProduct( v_j, beta_eval );
-//										mean_value *= 0.5;
 
-//										VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
-//										u_jump *= c_s;
-
-//										VelocityJacobianRangeType flux_value = mean_value;
-//										flux_value += u_jump;
-
-//										VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
-//										double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
-										//inner edge (self)
-//										O_i_j += elementVolume
-//											* integrationWeight
-//											* convection_scaling
-//											* ret;
-																						VelocityRangeType flux_value(0);
-																						if ( !(beta_times_normal < 0) ) {//beta points 'outwards' so take value from this element
-																							//the inverse case is handled in H2_O
-																							flux_value = v_i;
-																							const double flux_value_v_j = flux_value * v_j;
-																							const double ret = beta_times_normal * flux_value_v_j;
-																							O_i_j += elementVolume
-																								* integrationWeight
-																								* convection_scaling
-																								* ret;
-																						}
+										VelocityRangeType flux_value(0);
+										if ( !(beta_times_normal < 0) ) {//beta points 'outwards' so take value from this element
+											//the inverse case is handled in H2_O
+											flux_value = v_i;
+											const double flux_value_v_j = flux_value * v_j;
+											const double ret = beta_times_normal * flux_value_v_j;
+											O_i_j += elementVolume
+												* integrationWeight
+												* convection_scaling
+												* ret;
+										}
 
 									} // done sum over all quadrature points
 									// if small, should be zero
@@ -1919,33 +1858,19 @@ class StokesPass
 								// u^c = 0.5 gD \otimes beta + Cs -gD \otimes n
 								VelocityJacobianRangeType gD_tensor_beta = dyadicProduct( gD, beta_eval );
 								gD_tensor_beta *= 0.5;
-								double c_s = std::fabs( beta_times_normal * 0.5 );
 
-								VelocityJacobianRangeType jump = dyadicProduct( gD, outerNormal );
-								jump *= - c_s;
-
-//								VelocityJacobianRangeType flux_value = gD_tensor_beta;
-//								flux_value += jump;
-
-//								VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j,  outerNormal );
-//								const double ret = Stuff::colonProduct( flux_value, v_j_tensor_n );
-//								H2_O_j -= elementVolume
-//										* convection_scaling
-//										* integrationWeight
-//										* ret;
-
-																		VelocityRangeType flux_value;
-																		if ( beta_times_normal < 0 ) {
-																			//beta points 'outwards' so take value from this element
-																			//the inverse case is handled in O's boundary integral
-																			flux_value = gD;
-																			const double flux_times_v_j = flux_value * v_j;
-																			H2_O_j -= elementVolume
-																					* convection_scaling
-																					* integrationWeight
-																					* beta_times_normal
-																					* flux_times_v_j;
-																		}
+								VelocityRangeType flux_value;
+								if ( beta_times_normal < 0 ) {
+									//beta points 'outwards' so take value from this element
+									//the inverse case is handled in O's boundary integral
+									flux_value = gD;
+									const double flux_times_v_j = flux_value * v_j;
+									H2_O_j -= elementVolume
+											* convection_scaling
+											* integrationWeight
+											* beta_times_normal
+											* flux_times_v_j;
+								}
 
 							}
 							if ( fabs( H2_O_j ) < eps ) {
