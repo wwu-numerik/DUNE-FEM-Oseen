@@ -2072,8 +2072,14 @@ class StokesPass
 
 				rhs_datacontainer->convection.clear();
 				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
-				rhs_datacontainer->convection -= H2_O_rhs;
+
+				rhs_datacontainer->convection += H2_O_rhs;
 				getConvection( dest.discreteVelocity(), rhs_datacontainer->velocity_gradient,rhs_datacontainer->convection );
+
+				Stuff::LocalFunctionPrintFunctor<DiscreteVelocityFunctionType, std::ostream, VolumeQuadratureType>
+				        printer ( rhs_datacontainer->convection, std::cout );
+				Stuff::GridWalk<DiscreteVelocityFunctionSpaceType> gw( velocitySpace_ );
+				gw( printer );
 
 //				rhs_datacontainer->scale( 1 / std::sqrt(2) );
 			}
