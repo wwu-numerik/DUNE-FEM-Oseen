@@ -735,7 +735,7 @@ class StokesPass
 						}
 						else {
 							// add to matrix
-							std::cerr << boost::format( "O volume value on entity %d: %e\n") % entityNR % O_i_j;
+//							std::cerr << boost::format( "O volume value on entity %d: %e\n") % entityNR % O_i_j;
 							localOmatrixElement.add( i, j, O_i_j );
 						}
 					}
@@ -1243,7 +1243,7 @@ class StokesPass
 									}
 									else {
 										// add to matrix
-										std::cerr<< boost::format( "O face value (el) on entity %d: %e\n") % entityNR % O_i_j;
+//										std::cerr<< boost::format( "O face value (el) on entity %d: %e\n") % entityNR % O_i_j;
 										localOmatrixElement.add( i, j, O_i_j );
 									}
 								} // done computing Y's element surface integral
@@ -1297,7 +1297,7 @@ class StokesPass
 									}
 									else {
 										// add to matrix
-										std::cerr<< boost::format( "O face value (ne) on entity %d: %e\n") % entityNR % O_i_j;
+//										std::cerr<< boost::format( "O face value (ne) on entity %d: %e\n") % entityNR % O_i_j;
 										localOmatrixNeighbour.add( i, j, O_i_j );
 									}
 								} // done computing Y's neighbour surface integral
@@ -1722,7 +1722,7 @@ class StokesPass
 									}
 									else {
 										// add to matrix
-										std::cerr<< boost::format( "O face value (bnd) on entity %d: %e\n") % entityNR % O_i_j;
+//										std::cerr<< boost::format( "O face value (bnd) on entity %d: %e\n") % entityNR % O_i_j;
 										localOmatrixElement.add( i, j, O_i_j );
 									}
 								}
@@ -1878,7 +1878,7 @@ class StokesPass
 							}
 							else {
 								// add to rhs
-								std::cerr<< boost::format( "H2O value (bnd) on entity %d: %e\n") % entityNR % H2_O_j;
+//								std::cerr<< boost::format( "H2O value (bnd) on entity %d: %e\n") % entityNR % H2_O_j;
 								localH2_O_rhs[ j ] += H2_O_j;
 							}
 						}
