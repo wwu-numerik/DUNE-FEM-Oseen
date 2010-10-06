@@ -1857,9 +1857,6 @@ class StokesPass
 								beta_.evaluate( xWorld, beta_eval );
 								const double beta_times_normal = beta_eval * outerNormal;
 
-								// u^c = 0.5 gD \otimes beta + Cs -gD \otimes n
-								VelocityJacobianRangeType gD_tensor_beta = dyadicProduct( gD, beta_eval );
-								gD_tensor_beta *= 0.5;
 
 								VelocityRangeType flux_value;
 								if ( beta_times_normal < 0 ) {
