@@ -2063,7 +2063,8 @@ class StokesPass
 
 				rhs_datacontainer->convection.clear();
 				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
-				rhs_datacontainer->convection += H2_O_rhs;
+				rhs_datacontainer->convection -= H2_O_rhs;
+				getConvection( dest.discreteVelocity(), rhs_datacontainer->velocity_gradient,rhs_datacontainer->convection );
 
 				rhs_datacontainer->scale( std::sqrt(2) );
 			}
@@ -2074,6 +2075,85 @@ class StokesPass
 			}
         } // end of apply
 
+		struct ConvectiveTerm : public DiscreteVelocityFunctionType::RangeType {
+			ConvectiveTerm( const typename DiscreteVelocityFunctionType::RangeType u,
+							typename DiscreteSigmaFunctionType::RangeType du)
+			{
+				for ( size_t d = 0; d< u.dim(); ++d )  {
+					typename DiscreteVelocityFunctionType::RangeType j;
+					for ( size_t i = 0; i< u.dim(); ++i )  {
+						j[i] = du(d,i);
+					}
+					(*this)[d] = u * j;
+				}
+			}
+		};
+
+		void getConvection( const DiscreteVelocityFunctionType& velocity, const DiscreteSigmaFunctionType& sigma, DiscreteVelocityFunctionType convection) const
+		{
+			convection.clear();
+			EntityIteratorType entityItEnd = velocitySpace_.end();
+			for (   EntityIteratorType entityIt = velocitySpace_.begin();
+					entityIt != entityItEnd;
+					++entityIt) {
+						const EntityType& entity = *entityIt;
+						typedef typename EntityType::Geometry
+							EntityGeometryType;
+						const EntityGeometryType& geo = entity.geometry();
+						typedef typename DiscreteSigmaFunctionSpaceType::BaseFunctionSetType
+							SigmaBaseFunctionSetType;
+						// of type u
+						typedef typename DiscreteVelocityFunctionSpaceType::BaseFunctionSetType
+							VelocityBaseFunctionSetType;
+						// of type p
+						typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType
+							PressureBaseFunctionSetType;
+
+						typename DiscreteVelocityFunctionType::LocalFunctionType velocity_local = velocity.localFunction( *entityIt );
+						typename DiscreteSigmaFunctionType::LocalFunctionType sigma_local = sigma.localFunction( *entityIt );
+						typename DiscreteVelocityFunctionType::LocalFunctionType convection_local = convection.localFunction( *entityIt );
+						const VolumeQuadratureType quad( entity, ( 4 * pressureSpaceOrder ) + 1 );
+						const VelocityBaseFunctionSetType velocityBaseFunctionSetElement = velocitySpace_.baseFunctionSet( entity );
+//						const PressureBaseFunctionSetType pressureBaseFunctionSetElement = pressureSpace_.baseFunctionSet( entity );
+//						const int numSigmaBaseFunctionsElement = sigmaBaseFunctionSetElement.numBaseFunctions();
+						const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
+//						const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
+						const int quadNop = quad.nop();
+
+						//volume part
+						for(int qP = 0; qP < quadNop ; ++qP)
+						{
+							const typename DiscreteVelocityFunctionSpaceType::DomainType xLocal = quad.point(qP);
+
+							const double intel = (false) ?
+								quad.weight(qP): // affine case
+								quad.weight(qP)* geo.integrationElement( xLocal ); // general case
+
+							typename DiscreteVelocityFunctionSpaceType::DomainType
+								xWorld = geo.global( xLocal );
+
+							// evaluate function
+							typename DiscreteSigmaFunctionType::RangeType
+								sigma_eval;
+							sigma_local.evaluate( quad[qP], sigma_eval );
+
+							typename DiscreteVelocityFunctionType::RangeType
+								velocity_eval;
+							velocity_local.evaluate( quad[qP], velocity_eval );
+
+							ConvectiveTerm c(velocity_eval,sigma_eval);
+
+							// do projection
+							for(int i=0; i<numVelocityBaseFunctionsElement; ++i)
+							{
+								typename DiscreteVelocityFunctionType::RangeType phi (0.0);
+								convection_local.baseFunctionSet().evaluate(i, quad[qP], phi);
+								convection_local[i] += intel * ( c * phi );
+							}
+						}
+
+					}
+		}
         virtual void compute( const TotalArgumentType& /*arg*/, DestinationType& /*dest*/ ) const
         {}
 
