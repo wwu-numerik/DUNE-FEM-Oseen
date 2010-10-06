@@ -131,7 +131,7 @@ namespace Dune {
 			double current_inner_accuracy = inner_absLimit;
 			InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
 														   o_mat, rhs1.space(), rhs2.space(), relLimit,
-														   current_inner_accuracy, solverVerbosity > 3 );
+														   current_inner_accuracy, solverVerbosity );
 
 	/*****************************************************************************************/
 
