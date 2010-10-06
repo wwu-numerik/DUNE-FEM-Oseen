@@ -699,35 +699,35 @@ class StokesPass
 							velocityBaseFunctionSetElement.evaluate( j, x, v_j );
 							VelocityRangeType beta_eval;
 							beta_.localFunction( entity ).evaluate( x, beta_eval );
-							VelocityJacobianRangeType v_j_jacobian;
-							velocityBaseFunctionSetElement.jacobian( j, x, v_j_jacobian );
+//							VelocityJacobianRangeType v_j_jacobian;
+//							velocityBaseFunctionSetElement.jacobian( j, x, v_j_jacobian );
 
 							VelocityJacobianRangeType v_i_jacobian;
-							velocityBaseFunctionSetElement.jacobian( j, x, v_i_jacobian );
+							velocityBaseFunctionSetElement.jacobian( i, x, v_i_jacobian );
 							VelocityJacobianRangeType beta_jacobian;
 							const typename DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
 									beta_.localFunction( entity );
 							beta_lf.jacobian( x, beta_jacobian );
 
 
-							VelocityRangeType divergence_of_beta_v_j_tensor_beta;
+							VelocityRangeType divergence_of_beta_v_i_tensor_beta;
 							for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
 								double row_result = 0;
 								for ( size_t m = 0; m < beta_eval.dim(); ++m ) {
 									row_result += beta_jacobian[l][m] * v_i[l] + v_i_jacobian[l][m] * beta_eval[l];
 								}
-								divergence_of_beta_v_j_tensor_beta[l] = row_result;
+								divergence_of_beta_v_i_tensor_beta[l] = row_result;
 							}
 							for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
-								assert( !isnan(divergence_of_beta_v_j_tensor_beta[l]) );
+								assert( !isnan(divergence_of_beta_v_i_tensor_beta[l]) );
 							}
 
-							const double u_h_times_divergence_of_beta_v_j_tensor_beta =
-									v_j * divergence_of_beta_v_j_tensor_beta;
+							const double u_h_times_divergence_of_beta_v_i_tensor_beta =
+									v_j * divergence_of_beta_v_i_tensor_beta;
 							O_i_j -= elementVolume
 								* integrationWeight
 								* convection_scaling
-								* u_h_times_divergence_of_beta_v_j_tensor_beta;
+								* u_h_times_divergence_of_beta_v_i_tensor_beta;
 
 						}
 						if ( fabs( O_i_j ) < eps ) {
@@ -1232,6 +1232,7 @@ class StokesPass
 
 										const double flux_times_v_j = flux_value * v_j;
 										const double ret = beta_times_normal * flux_times_v_j;
+										if ( beta_times_normal > 0 )
 										O_i_j += elementVolume
 												* integrationWeight
 												* convection_scaling
@@ -1272,21 +1273,22 @@ class StokesPass
 										// * -1 ??
 										const double beta_times_normal = - 1 * ( beta_eval * outerNormal );
 										VelocityRangeType v_j( 0.0 );
-										velocityBaseFunctionSetElement.evaluate( j, xOutside, v_j );
+//										velocityBaseFunctionSetElement.evaluate( j, xOutside, v_j );
 
-										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+										velocityBaseFunctionSetElement.evaluate( j, xOutside, v_j );
 										VelocityRangeType flux_value;
 										flux_value = v_i;
 										flux_value *= 0.5;
 										SigmaRangeType jump = dyadicProduct( v_i, outerNormal );
 										VelocityRangeType jump_value;
 										jump.mv( E_11, jump );
-										flux_value -= jump_value;
+										flux_value += jump_value;
 
 
 										const double flux_times_v_j = flux_value * v_j;
 										const double ret = beta_times_normal * flux_times_v_j;
-										O_i_j += elementVolume
+										if ( beta_times_normal <= 0 )
+										O_i_j -= elementVolume
 												* integrationWeight
 												* convection_scaling
 												* ret;
@@ -2073,13 +2075,13 @@ class StokesPass
 				rhs_datacontainer->convection.clear();
 				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
 
-				rhs_datacontainer->convection += H2_O_rhs;
+//				rhs_datacontainer->convection += H2_O_rhs;
 				getConvection( dest.discreteVelocity(), rhs_datacontainer->velocity_gradient,rhs_datacontainer->convection );
 
-				Stuff::LocalFunctionPrintFunctor<DiscreteVelocityFunctionType, std::ostream, VolumeQuadratureType>
-				        printer ( rhs_datacontainer->convection, std::cout );
-				Stuff::GridWalk<DiscreteVelocityFunctionSpaceType> gw( velocitySpace_ );
-				gw( printer );
+//				Stuff::LocalFunctionPrintFunctor<DiscreteVelocityFunctionType, std::ostream, VolumeQuadratureType>
+//				        printer ( rhs_datacontainer->convection, std::cout );
+//				Stuff::GridWalk<DiscreteVelocityFunctionSpaceType> gw( velocitySpace_ );
+//				gw( printer );
 
 //				rhs_datacontainer->scale( 1 / std::sqrt(2) );
 			}
