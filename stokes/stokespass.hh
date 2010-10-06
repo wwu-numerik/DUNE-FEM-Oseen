@@ -1221,18 +1221,19 @@ class StokesPass
 										beta_.evaluate( xWorld, beta_eval );
 										const double beta_times_normal = beta_eval * outerNormal;
 
+//										VelocityRangeType flux_value;
+//										flux_value = v_i;
+//										flux_value *= 0.5;
+//										SigmaRangeType jump = dyadicProduct( v_i, outerNormal );
+//										VelocityRangeType jump_value;
+//										jump.mv( E_11, jump );
+//										flux_value += jump_value;
+
 										VelocityRangeType flux_value;
 										flux_value = v_i;
-										flux_value *= 0.5;
-										SigmaRangeType jump = dyadicProduct( v_i, outerNormal );
-										VelocityRangeType jump_value;
-										jump.mv( E_11, jump );
-										flux_value += jump_value;
-
-
 										const double flux_times_v_j = flux_value * v_j;
 										const double ret = beta_times_normal * flux_times_v_j;
-										if ( beta_times_normal > 0 )
+										if ( beta_times_normal < 0 )
 										O_i_j += elementVolume
 												* integrationWeight
 												* convection_scaling
@@ -1271,23 +1272,24 @@ class StokesPass
 										VelocityRangeType beta_eval;
 										beta_.evaluate( xWorld, beta_eval );
 										// * -1 ??
-										const double beta_times_normal = - 1 * ( beta_eval * outerNormal );
+										const double beta_times_normal =  1 * ( beta_eval * outerNormal );
 										VelocityRangeType v_j( 0.0 );
 //										velocityBaseFunctionSetElement.evaluate( j, xOutside, v_j );
 
 										velocityBaseFunctionSetElement.evaluate( j, xOutside, v_j );
+//										VelocityRangeType flux_value;
+//										flux_value = v_i;
+//										flux_value *= 0.5;
+//										SigmaRangeType jump = dyadicProduct( v_i, outerNormal );
+//										VelocityRangeType jump_value;
+//										jump.mv( E_11, jump );
+//										flux_value += jump_value;
+
 										VelocityRangeType flux_value;
 										flux_value = v_i;
-										flux_value *= 0.5;
-										SigmaRangeType jump = dyadicProduct( v_i, outerNormal );
-										VelocityRangeType jump_value;
-										jump.mv( E_11, jump );
-										flux_value += jump_value;
-
-
 										const double flux_times_v_j = flux_value * v_j;
 										const double ret = beta_times_normal * flux_times_v_j;
-										if ( beta_times_normal <= 0 )
+										if ( beta_times_normal >= 0 )
 										O_i_j -= elementVolume
 												* integrationWeight
 												* convection_scaling
