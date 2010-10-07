@@ -1194,7 +1194,6 @@ class StokesPass
 							//                                                                                                         // see also "O's boundary integral" below
 
 							for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
-								// compute Y's element surface integral
 								for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
 									double O_i_j = 0.0;
 									// sum over all quadrature points
@@ -1216,7 +1215,7 @@ class StokesPass
 										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
 
 										VelocityRangeType beta_eval;
-										beta_.evaluate( xWorld, beta_eval );
+										beta_.localFunction(entity).evaluate( xInside, beta_eval );
 										const double beta_times_normal = beta_eval * outerNormal;
 
 										VelocityRangeType flux_value;
@@ -1260,7 +1259,7 @@ class StokesPass
 										velocityBaseFunctionSetNeighbour.evaluate( i, xInside, v_i );
 
 										VelocityRangeType beta_eval;
-										beta_.evaluate( xWorld, beta_eval );
+										beta_.localFunction(entity).evaluate( xOutside, beta_eval );
 										const double beta_times_normal =  ( beta_eval * outerNormal );
 										VelocityRangeType v_j( 0.0 );
 										velocityBaseFunctionSetElement.evaluate( j, xOutside, v_j );
@@ -2061,7 +2060,7 @@ class StokesPass
 //				Stuff::GridWalk<DiscreteVelocityFunctionSpaceType> gw( velocitySpace_ );
 //				gw( printer );
 
-//				rhs_datacontainer->scale( 1 / std::sqrt(2) );
+//				rhs_datacontainer->scale( std::sqrt(2) );
 			}
 			if ( Parameters().getParam( "save_matrices", false ) ) {
 				Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
