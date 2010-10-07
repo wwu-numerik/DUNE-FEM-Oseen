@@ -712,7 +712,7 @@ class StokesPass
 							for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
 								double row_result = 0;
 								for ( size_t m = 0; m < beta_eval.dim(); ++m ) {
-									row_result += beta_jacobian[l][m] * v_i[l] + v_i_jacobian[l][m] * beta_eval[l];
+									row_result += beta_jacobian[l][m] * v_i[l] + v_i_jacobian[l][m] * beta_eval[m];
 								}
 								divergence_of_beta_v_i_tensor_beta[l] = row_result;
 							}
@@ -1222,7 +1222,7 @@ class StokesPass
 										flux_value = v_i;
 										const double flux_times_v_j = flux_value * v_j;
 										const double ret = beta_times_normal * flux_times_v_j;
-										if ( beta_times_normal < 0 )
+										if ( beta_times_normal > 0 )
 											O_i_j += elementVolume
 													* integrationWeight
 													* convection_scaling
@@ -1268,11 +1268,11 @@ class StokesPass
 										flux_value = v_i;
 										const double flux_times_v_j = flux_value * v_j;
 										const double ret = beta_times_normal * flux_times_v_j;
-										if ( beta_times_normal >= 0 )
-											O_i_j += -1 * elementVolume // -1 cause i need to take normal from the Element
-													* integrationWeight
-													* convection_scaling
-													* ret;
+//										if ( beta_times_normal > 0 )
+//											O_i_j -=  elementVolume // -1 cause i need to take normal from the Element
+//													* integrationWeight
+//													* convection_scaling
+//													* ret;
 									} // done sum over all quadrature points
 									// if small, should be zero
 									if ( fabs( O_i_j ) < eps ) {
@@ -1697,6 +1697,7 @@ class StokesPass
 												* convection_scaling
 												* ret;
 										}
+										std::cout << boost::format( "outerNormal %f\n") % outerNormal;
 
 									} // done sum over all quadrature points
 									// if small, should be zero
@@ -1750,7 +1751,7 @@ class StokesPass
                                 }
                             } // done computing Z's boundary integral
 //                        }
-
+	std::cout << std::endl;
                         //                                                                                                                 // we will call this one
                         // (H2)_{j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\left( \mu v_{j}\cdot\hat{\sigma}^{RHS}()\cdot n_{T}ds         // H2's 1st boundary integral
                         //                                                         -\hat{p}^{RHS}()\cdot v_{j}\cdot n_{T}ds        \right) // H2's 2nd boundary integral
@@ -1837,7 +1838,7 @@ class StokesPass
 								VelocityRangeType beta_eval;
 								beta_.localFunction(entity).evaluate( x, beta_eval );
 								const double beta_times_normal = beta_eval * outerNormal;
-
+								std::cout << boost::format( "outerNormal %f\n") % outerNormal;
 								VelocityRangeType flux_value;
 								if ( beta_times_normal < 0 ) {
 									//beta points 'inwards' so take value from g_D
