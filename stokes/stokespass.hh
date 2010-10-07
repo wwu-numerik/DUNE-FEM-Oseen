@@ -1687,7 +1687,7 @@ class StokesPass
 										const double beta_times_normal = beta_eval * outerNormal;
 
 										VelocityRangeType flux_value(0);
-										if ( beta_times_normal < 0 ) {//beta points 'outwards' so take value from this element
+										if ( beta_times_normal >= 0 ) {//beta points 'outwards' so take value from this element
 											//the inverse case is handled in H2_O
 											flux_value = v_i;
 											const double flux_value_v_j = flux_value * v_j;
@@ -1839,7 +1839,7 @@ class StokesPass
 								const double beta_times_normal = beta_eval * outerNormal;
 
 								VelocityRangeType flux_value;
-								if ( beta_times_normal >= 0 ) {
+								if ( beta_times_normal < 0 ) {
 									//beta points 'inwards' so take value from g_D
 									//the inverse case is handled in O's boundary integral
 									flux_value = gD;
@@ -2052,7 +2052,7 @@ class StokesPass
 				rhs_datacontainer->convection.clear();
 				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
 
-//				rhs_datacontainer->convection += H2_O_rhs;
+				rhs_datacontainer->convection -= H2_O_rhs;
 				getConvection( dest.discreteVelocity(), rhs_datacontainer->velocity_gradient,rhs_datacontainer->convection );
 
 //				Stuff::LocalFunctionPrintFunctor<DiscreteVelocityFunctionType, std::ostream, VolumeQuadratureType>
