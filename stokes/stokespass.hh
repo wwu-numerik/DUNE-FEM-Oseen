@@ -733,7 +733,6 @@ class StokesPass
 						}
 						else {
 							// add to matrix
-//							std::cerr << boost::format( "O volume value on entity %d: %e\n") % entityNR % O_i_j;
 							localOmatrixElement.add( i, j, O_i_j );
 						}
 					}
@@ -1234,7 +1233,6 @@ class StokesPass
 									}
 									else {
 										// add to matrix
-//										std::cerr<< boost::format( "O face value (el) on entity %d: %e\n") % entityNR % O_i_j;
 										localOmatrixElement.add( i, j, O_i_j );
 									}
 								} // done computing Y's element surface integral
@@ -1280,7 +1278,6 @@ class StokesPass
 									}
 									else {
 										// add to matrix
-//										std::cerr<< boost::format( "O face value (ne) on entity %d: %e\n") % entityNR % O_i_j;
 										localOmatrixNeighbour.add( i, j, O_i_j );
 									}
 								} // done computing Y's neighbour surface integral
@@ -1697,8 +1694,6 @@ class StokesPass
 												* convection_scaling
 												* ret;
 										}
-										std::cout << boost::format( "outerNormal %f\n") % outerNormal;
-
 									} // done sum over all quadrature points
 									// if small, should be zero
 									if ( fabs( O_i_j ) < eps ) {
@@ -1706,7 +1701,6 @@ class StokesPass
 									}
 									else {
 										// add to matrix
-//										std::cerr<< boost::format( "O face value (bnd) on entity %d: %e\n") % entityNR % O_i_j;
 										localOmatrixElement.add( i, j, O_i_j );
 									}
 								}
@@ -1838,7 +1832,6 @@ class StokesPass
 								VelocityRangeType beta_eval;
 								beta_.localFunction(entity).evaluate( x, beta_eval );
 								const double beta_times_normal = beta_eval * outerNormal;
-								std::cout << boost::format( "outerNormal %f\n") % outerNormal;
 								VelocityRangeType flux_value;
 								if ( beta_times_normal < 0 ) {
 									//beta points 'inwards' so take value from g_D
@@ -1850,6 +1843,7 @@ class StokesPass
 											* integrationWeight
 											* beta_times_normal
 											* flux_times_v_j;
+
 								}
 
 							}
@@ -1858,7 +1852,6 @@ class StokesPass
 							}
 							else {
 								// add to rhs
-//								std::cerr<< boost::format( "H2O value (bnd) on entity %d: %e\n") % entityNR % H2_O_j;
 								localH2_O_rhs[ j ] += H2_O_j;
 							}
 						}
