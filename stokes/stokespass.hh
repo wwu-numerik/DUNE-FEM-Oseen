@@ -699,8 +699,6 @@ class StokesPass
 							velocityBaseFunctionSetElement.evaluate( j, x, v_j );
 							VelocityRangeType beta_eval;
 							beta_.localFunction( entity ).evaluate( x, beta_eval );
-//							VelocityJacobianRangeType v_j_jacobian;
-//							velocityBaseFunctionSetElement.jacobian( j, x, v_j_jacobian );
 
 							VelocityJacobianRangeType v_i_jacobian;
 							velocityBaseFunctionSetElement.jacobian( i, x, v_i_jacobian );
@@ -1221,23 +1219,15 @@ class StokesPass
 										beta_.evaluate( xWorld, beta_eval );
 										const double beta_times_normal = beta_eval * outerNormal;
 
-//										VelocityRangeType flux_value;
-//										flux_value = v_i;
-//										flux_value *= 0.5;
-//										SigmaRangeType jump = dyadicProduct( v_i, outerNormal );
-//										VelocityRangeType jump_value;
-//										jump.mv( E_11, jump );
-//										flux_value += jump_value;
-
 										VelocityRangeType flux_value;
 										flux_value = v_i;
 										const double flux_times_v_j = flux_value * v_j;
 										const double ret = beta_times_normal * flux_times_v_j;
 										if ( beta_times_normal < 0 )
-										O_i_j += elementVolume
-												* integrationWeight
-												* convection_scaling
-												* ret;
+											O_i_j += elementVolume
+													* integrationWeight
+													* convection_scaling
+													* ret;
 									} // done sum over all quadrature points
 									// if small, should be zero
 									if ( fabs( O_i_j ) < eps ) {
@@ -1271,29 +1261,19 @@ class StokesPass
 
 										VelocityRangeType beta_eval;
 										beta_.evaluate( xWorld, beta_eval );
-										// * -1 ??
-										const double beta_times_normal =  1 * ( beta_eval * outerNormal );
+										const double beta_times_normal =  ( beta_eval * outerNormal );
 										VelocityRangeType v_j( 0.0 );
-//										velocityBaseFunctionSetElement.evaluate( j, xOutside, v_j );
-
 										velocityBaseFunctionSetElement.evaluate( j, xOutside, v_j );
-//										VelocityRangeType flux_value;
-//										flux_value = v_i;
-//										flux_value *= 0.5;
-//										SigmaRangeType jump = dyadicProduct( v_i, outerNormal );
-//										VelocityRangeType jump_value;
-//										jump.mv( E_11, jump );
-//										flux_value += jump_value;
 
 										VelocityRangeType flux_value;
 										flux_value = v_i;
 										const double flux_times_v_j = flux_value * v_j;
 										const double ret = beta_times_normal * flux_times_v_j;
 										if ( beta_times_normal >= 0 )
-										O_i_j -= elementVolume
-												* integrationWeight
-												* convection_scaling
-												* ret;
+											O_i_j += -1 * elementVolume // -1 cause i need to take normal from the Element
+													* integrationWeight
+													* convection_scaling
+													* ret;
 									} // done sum over all quadrature points
 									// if small, should be zero
 									if ( fabs( O_i_j ) < eps ) {
@@ -1861,7 +1841,7 @@ class StokesPass
 
 								VelocityRangeType flux_value;
 								if ( beta_times_normal >= 0 ) {
-									//beta points 'outwards' so take value from g_D
+									//beta points 'inwards' so take value from g_D
 									//the inverse case is handled in O's boundary integral
 									flux_value = gD;
 									const double flux_times_v_j = flux_value * v_j;
