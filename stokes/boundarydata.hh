@@ -20,7 +20,7 @@ struct DefaultDirichletDataTraits {
 	};
 };
 
-
+//! \todo RENE needs to doc me and move me to stuff
 template < class FunctionSpaceImp >
 class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFluxDirichletData < FunctionSpaceImp > >
 {
@@ -129,7 +129,7 @@ class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFl
 		const int dim_;
 };
 
-
+//! \todo RENE needs to doc me and move me to stuff
 template < class FunctionSpaceImp, class GridPartType >
 class FirstOrderBoundaryShapeFunction : public Dune::BoundaryShapeFunctionBase< FunctionSpaceImp, GridPartType >
 {
@@ -158,6 +158,7 @@ class FirstOrderBoundaryShapeFunction : public Dune::BoundaryShapeFunctionBase< 
 		}
 };
 
+//! \todo RENE needs to doc me and move me to stuff
 template < class FunctionSpaceImp, class GridPartType >
 class SecondOrderBoundaryShapeFunction : public Dune::BoundaryShapeFunctionBase< FunctionSpaceImp, GridPartType >
 {
@@ -191,6 +192,7 @@ class SecondOrderBoundaryShapeFunction : public Dune::BoundaryShapeFunctionBase<
 		const double parabolic_stretch_;
 };
 
+//! \todo RENE needs to doc me and move me to stuff
 template < class FunctionSpaceImp, class GridPartType, template <class ,class> class BoundaryFunctionImp =  FirstOrderBoundaryShapeFunction >
 class VariableDirichletData : public Dune::Function < FunctionSpaceImp, VariableDirichletData < FunctionSpaceImp, GridPartType > >
 {
