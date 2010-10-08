@@ -842,7 +842,7 @@ class StokesPass
                     // get intersection geometry
                     typedef typename IntersectionIteratorType::Geometry
                         IntersectionGeometryType;
-					const IntersectionGeometryType& intersectionGeoemtry = intersection.intersectionGlobal();
+					const IntersectionGeometryType& intersectionGeometry = intersection.intersectionGlobal();
                     // get intersection quadrature, seen from inside
                     const FaceQuadratureType faceQuadratureElement( gridPart_,
 																	intersection,
@@ -908,7 +908,7 @@ class StokesPass
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
                                         // get the integration factor
-                                        const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                        const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute \hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{j}\cdot n_{T}
@@ -953,7 +953,7 @@ class StokesPass
                                         const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
                                         // get the integration factor
-                                        const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                        const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute \hat{u}_{\sigma}^{U^{-}}(v_{j})\cdot\tau_{j}\cdot n_{T}
@@ -1008,7 +1008,7 @@ class StokesPass
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
                                         // get the integration factor
-                                        const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                        const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
@@ -1055,7 +1055,7 @@ class StokesPass
                                         const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureNeighbour.localPoint( quad );
                                         // get the integration factor
-                                        const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                        const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}
@@ -1109,7 +1109,7 @@ class StokesPass
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
                                         // get the integration factor
-                                        const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                        const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute -\mu v_{i}\cdot\hat{\sigma}^{U{+}}(v{j})\cdot n_{t}
@@ -1143,7 +1143,7 @@ class StokesPass
                                         const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureNeighbour.localPoint( quad );
                                         // get the integration factor
-                                        const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                        const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
                                         // compute -\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}
@@ -1187,7 +1187,7 @@ class StokesPass
 										const VelocityRangeType xWorld = geometry.global( xInside );
 										const VelocityRangeType xWorld_Outside = geometry.global( xOutside );
 										// get the integration factor
-										const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+										const double elementVolume = intersectionGeometry.integrationElement( xLocal );
 										// get the quadrature weight
 										const double integrationWeight = faceQuadratureElement.weight( quad );
 										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
@@ -1296,7 +1296,7 @@ class StokesPass
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
                                         // get the integration factor
-                                        const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                        const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
@@ -1334,7 +1334,7 @@ class StokesPass
                                         const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureNeighbour.localPoint( quad );
                                         // get the integration factor
-                                        const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                        const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
                                         // compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
@@ -1381,7 +1381,7 @@ class StokesPass
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
                                         // get the integration factor
-                                        const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                        const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute \hat{u}_{p}^{U^{+}}(v_{j})\cdot n_{T}q_{i}
@@ -1422,7 +1422,7 @@ class StokesPass
                                         const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureNeighbour.localPoint( quad );
                                         // get the integration factor
-                                        const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                        const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
                                         // compute \hat{u}_{p}^{U^{-}}(v_{j})\cdot n_{T}q_{i}
@@ -1472,7 +1472,7 @@ class StokesPass
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
                                         // get the integration factor
-                                        const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                        const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute \hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}
@@ -1505,7 +1505,7 @@ class StokesPass
                                         const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureNeighbour.localPoint( quad );
                                         // get the integration factor
-                                        const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                        const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureNeighbour.weight( quad );
                                         // compute \hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}
@@ -1547,7 +1547,7 @@ class StokesPass
                                     const VelocityRangeType xWorld = geometry.global( x );
                                     const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
                                     // get the integration factor
-                                    const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                    const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureElement.weight( quad );
                                     // compute \hat{u}_{\sigma}^{RHS}()\cdot\tau_{j}\cdot n_{T}
@@ -1586,7 +1586,7 @@ class StokesPass
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
                                         // get the integration factor
-                                        const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                        const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
@@ -1628,7 +1628,7 @@ class StokesPass
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
                                         // get the integration factor
-                                        const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                        const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute -\mu v_{i}\cdot\hat{\sigma}^{U^{+}}(v_{j})\cdot n_{t}
@@ -1668,7 +1668,7 @@ class StokesPass
 										const VelocityRangeType xWorld = geometry.global( x );
 										const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
 										// get the integration factor
-										const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+										const double elementVolume = intersectionGeometry.integrationElement( xLocal );
 										// get the quadrature weight
 										const double integrationWeight = faceQuadratureElement.weight( quad );
 										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
@@ -1728,7 +1728,7 @@ class StokesPass
                                         const ElementCoordinateType x = faceQuadratureElement.point( quad );
                                         const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
                                         // get the integration factor
-                                        const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                        const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                         // get the quadrature weight
                                         const double integrationWeight = faceQuadratureElement.weight( quad );
                                         // compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
@@ -1769,7 +1769,7 @@ class StokesPass
                                     const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
                                     const VelocityRangeType globalX = geometry.global( x );
                                     // get the integration factor
-                                    const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                    const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureElement.weight( quad );
                                     // prepare
@@ -1826,7 +1826,7 @@ class StokesPass
 								const ElementCoordinateType x = faceQuadratureElement.point( quad );
 								const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
 												// get the integration factor
-								const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+								const double elementVolume = intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = faceQuadratureElement.weight( quad );
 								// prepare
@@ -1886,7 +1886,7 @@ class StokesPass
                                     const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
                                     const VelocityRangeType xWorld = geometry.global( x );
                                     // get the integration factor
-                                    const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+                                    const double elementVolume = intersectionGeometry.integrationElement( xLocal );
                                     // get the quadrature weight
                                     const double integrationWeight = faceQuadratureElement.weight( quad );
                                     // compute -\hat{u}_{p}^{RHS}()\cdot n_{T}q_{j}
