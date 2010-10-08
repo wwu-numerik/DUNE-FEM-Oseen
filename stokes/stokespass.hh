@@ -1236,6 +1236,51 @@ class StokesPass
 										localOmatrixElement.add( i, j, O_i_j );
 									}
 								} // done computing Y's element surface integral
+								// compute O's neighbour surface integral
+								for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
+									double O_i_j = 0.0;
+									// sum over all quadrature points
+									for ( size_t quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
+										// get x codim<0> and codim<1> coordinates
+										const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
+										const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
+										const VelocityRangeType xWorld = geometry.global( xInside );
+										const VelocityRangeType xWorld_Outside = geometry.global( xOutside );
+										const LocalIntersectionCoordinateType xLocal = faceQuadratureNeighbour.localPoint( quad );
+										// get the integration factor
+										const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+										// get the quadrature weight
+										const double integrationWeight = faceQuadratureNeighbour.weight( quad );
+										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+
+										VelocityRangeType v_i( 0.0 );
+										velocityBaseFunctionSetNeighbour.evaluate( i, xInside, v_i );
+
+										VelocityRangeType beta_eval;
+										beta_.localFunction(entity).evaluate( xOutside, beta_eval );
+										const double beta_times_normal =  ( beta_eval * outerNormal );
+										VelocityRangeType v_j( 0.0 );
+										velocityBaseFunctionSetElement.evaluate( j, xOutside, v_j );
+
+										VelocityRangeType flux_value;
+										flux_value = v_i;
+										const double flux_times_v_j = flux_value * v_j;
+										const double ret = beta_times_normal * flux_times_v_j;
+//										if ( beta_times_normal > 0 )
+//											O_i_j -=  elementVolume // -1 cause i need to take normal from the Element
+//													* integrationWeight
+//													* convection_scaling
+//													* ret;
+									} // done sum over all quadrature points
+									// if small, should be zero
+									if ( fabs( O_i_j ) < eps ) {
+										O_i_j = 0.0;
+									}
+									else {
+										// add to matrix
+										localOmatrixNeighbour.add( i, j, O_i_j );
+									}
+								} // done computing Y's neighbour surface integral
 							} // done computing Y's surface integrals
 
                         //                                                                                                  // we will call this one
