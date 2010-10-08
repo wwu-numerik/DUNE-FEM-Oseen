@@ -11,6 +11,7 @@
 
 namespace Dune {
 
+//! \todo RENE needs to doc me and move me to stuff
 template <class GridPartType>
 class BoundaryInfo
 {
@@ -169,7 +170,7 @@ class BoundaryInfo
         }
 };//end BoundaryInfo
 
-
+//! \todo RENE needs to doc me and move me to stuff
 template < class FunctionSpaceImp, class GridPartType >
 class BoundaryShapeFunctionBase : public Dune::Function < FunctionSpaceImp, BoundaryShapeFunctionBase < FunctionSpaceImp, GridPartType > >
 {
@@ -212,7 +213,7 @@ class BoundaryShapeFunctionBase : public Dune::Function < FunctionSpaceImp, Boun
 
 };
 
-
+//! \todo RENE needs to doc me and move me to stuff
 template < template <class,class, template <class,class> class> class AnalyticalDirichletDataImp,
 			template <class,class> class BoundaryFunctionImp =  BoundaryShapeFunctionBase >
 struct GeometryBasedBoundaryFunctionTraits {
