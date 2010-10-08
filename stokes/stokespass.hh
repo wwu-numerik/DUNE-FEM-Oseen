@@ -709,13 +709,23 @@ class StokesPass
 
 
 							VelocityRangeType divergence_of_beta_v_i_tensor_beta;
-							for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
-								double row_result = 0;
-								for ( size_t m = 0; m < beta_eval.dim(); ++m ) {
-									row_result += beta_jacobian[l][m] * v_i[l] + v_i_jacobian[l][m] * beta_eval[m];
-								}
-								divergence_of_beta_v_i_tensor_beta[l] = row_result;
-							}
+//							for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
+//								double row_result = 0;
+//								for ( size_t m = 0; m < beta_eval.dim(); ++m ) {
+//									row_result += beta_jacobian[l][m] * v_i[l] + v_i_jacobian[l][m] * beta_eval[l];
+//								}
+//								divergence_of_beta_v_i_tensor_beta[l] = row_result;
+//							}
+							divergence_of_beta_v_i_tensor_beta[0] = beta_eval[0] * v_i_jacobian[0][0]
+							        + v_i[0] * beta_jacobian[0][0]
+							        + beta_eval[0] * v_i_jacobian[1][1]
+							        + v_i[1] * beta_jacobian[0][1];
+							divergence_of_beta_v_i_tensor_beta[1] = beta_eval[1] * v_i_jacobian[0][0]
+							        + v_i[0] * beta_jacobian[1][0]
+							        + beta_eval[1] * v_i_jacobian[1][1]
+							        + v_i[1] * beta_jacobian[1][1];
+
+
 							for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
 								assert( !isnan(divergence_of_beta_v_i_tensor_beta[l]) );
 							}
