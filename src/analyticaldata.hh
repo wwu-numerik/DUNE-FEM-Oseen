@@ -6,6 +6,7 @@
 #ifndef ANALYTICALDATA_HH
 #define ANALYTICALDATA_HH
 
+#include <dune/fem/function/common/function.hh>
 #include <cmath>
 
 //#include <dune/common/fvector.hh>
