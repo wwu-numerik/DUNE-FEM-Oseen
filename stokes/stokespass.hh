@@ -1994,7 +1994,7 @@ class StokesPass
 				velocity_tmp1 *= alpha;
 				rhs_datacontainer->velocity_laplace -= velocity_tmp1;
 				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
-				const double laplace_scale = Parameters().getParam("laplace_scale", -1/viscosity);
+				const double laplace_scale = Parameters().getParam("laplace_scale", viscosity > 0 ? -1.0f/viscosity : 0);
 //				rhs_datacontainer->velocity_laplace *= laplace_scale;
 				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
 				Logger().Dbg().Resume();
