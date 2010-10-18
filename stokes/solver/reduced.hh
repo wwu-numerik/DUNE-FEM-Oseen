@@ -109,7 +109,17 @@ namespace Dune {
 			B_t_matrixType& b_t_mat = Ematrix.matrix(); //! renamed
 			BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
 			WmatrixType& w_mat      = Wmatrix.matrix();
+			/*** making our matrices kuhnibert compatible ****/
+					b_t_mat.scale( -1 ); //since B_t = -E
+					w_mat.scale( m_inv_mat(0,0) );
+					rhs1 *=  m_inv_mat(0,0);
+					m_inv_mat.scale( 1 / m_inv_mat(0,0) );
 
+					//transformation from StokesPass::buildMatrix
+					VelocityDiscreteFunctionType v_tmp ( "v_tmp", velocity.space() );
+					x_mat.apply( rhs1, v_tmp );
+					rhs2 -= v_tmp;
+			/***********/
 
 			typedef InnerCGSolverWrapper< WmatrixType,
 									MmatrixType,
