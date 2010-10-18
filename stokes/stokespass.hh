@@ -1859,7 +1859,7 @@ class StokesPass
 
 								VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j,  outerNormal );
 								const double ret = Stuff::colonProduct( flux_value, v_j_tensor_n );
-								H2_O_j -= elementVolume
+								H2_O_j += elementVolume
 										* convection_scaling
 										* integrationWeight
 										* ret;
@@ -1980,7 +1980,7 @@ class StokesPass
 			null_matrix.reserve();
 			YmatrixType* actually_used_Omatrix = &null_matrix;
 			if ( do_oseen_discretization_ ) {
-				H2rhs -= H2_O_rhs;
+				H2rhs += H2_O_rhs;
 				actually_used_Omatrix = &Omatrix;
 			}
 			if ( Parameters().getParam( "paranoid_checks", false ) )
