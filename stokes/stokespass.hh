@@ -1192,8 +1192,8 @@ class StokesPass
 										const double integrationWeight = faceQuadratureElement.weight( quad );
 										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 										VelocityRangeType v_i( 0.0 );
-										velocityBaseFunctionSetElement.evaluate( i, xInside, v_i );
 										VelocityRangeType v_j( 0.0 );
+										velocityBaseFunctionSetElement.evaluate( i, xInside, v_i );
 										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
 
 										VelocityRangeType beta_eval;
@@ -1244,13 +1244,14 @@ class StokesPass
 										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 
 										VelocityRangeType v_i( 0.0 );
+										VelocityRangeType v_j( 0.0 );
 										velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
+										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
 
 										VelocityRangeType beta_eval;
 										beta_.localFunction(entity).evaluate( xInside, beta_eval );
 										const double beta_times_normal =  ( beta_eval * outerNormal );
-										VelocityRangeType v_j( 0.0 );
-										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+
 										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
 										double c_s = (beta_times_normal) * 0.5;
 										VelocityRangeType u_h = v_j;
