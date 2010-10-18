@@ -1238,7 +1238,7 @@ class StokesPass
 										const VelocityRangeType xWorld_Outside = geometry.global( xOutside );
 										const LocalIntersectionCoordinateType xLocal = faceQuadratureNeighbour.localPoint( quad );
 										// get the integration factor
-										const double elementVolume = intersectionGeoemtry.integrationElement( xLocal );
+										const double elementVolume = intersectionGeometry.integrationElement( xLocal );
 										// get the quadrature weight
 										const double integrationWeight = faceQuadratureNeighbour.weight( quad );
 										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
