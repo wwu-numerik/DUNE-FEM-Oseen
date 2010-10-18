@@ -2040,11 +2040,13 @@ class StokesPass
 				rhs_datacontainer->pressure_gradient *= Parameters().getParam("pressure_gradient_scale", 1);
 
 				// \sigma = M^{-1} ( H_1 - Wu )
-				DiscreteSigmaFunctionType sigma_tmp( "sigma_dummy", sigmaSpace_ );
+				DiscreteSigmaFunctionType& sigma_tmp = rhs_datacontainer->velocity_gradient;//( "sigma_dummy", sigmaSpace_ );
 				Wmatrix.apply( dest.discreteVelocity(), sigma_tmp );
 				sigma_tmp *= -1;
 				sigma_tmp += H1rhs;
+				sigma_tmp *= 1/ MInversMatrix.matrix()(0,0) ; // == m^-1 * sigma_tmp
 				MInversMatrix.apply( sigma_tmp, rhs_datacontainer->velocity_gradient );
+//				rhs_datacontainer->velocity_gradient /= viscosity;
 
 				DiscreteVelocityFunctionType velocity_tmp1( "velocity_tmp1", dest.discreteVelocity().space() );
 				Xmatrix.apply( rhs_datacontainer->velocity_gradient, velocity_tmp1 );
@@ -2054,19 +2056,23 @@ class StokesPass
 				velocity_tmp1 *= alpha;
 				rhs_datacontainer->velocity_laplace -= velocity_tmp1;
 				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
-				const double laplace_scale = Parameters().getParam("laplace_scale", -1/mu);
-				rhs_datacontainer->velocity_laplace *= laplace_scale;
+				const double laplace_scale = Parameters().getParam("laplace_scale", -1/viscosity);
+//				rhs_datacontainer->velocity_laplace *= laplace_scale;
 				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
 				Logger().Dbg().Resume();
 				Logger().Dbg() << boost::format( "laplace_scale: %f\n") % laplace_scale;
 
 				rhs_datacontainer->convection.clear();
 				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
-				rhs_datacontainer->convection -= H2_O_rhs;
-				getConvection( dest.discreteVelocity(), rhs_datacontainer->velocity_gradient,rhs_datacontainer->convection );
+				rhs_datacontainer->convection += H2_O_rhs;
+
+				getConvection( beta_, rhs_datacontainer->velocity_gradient,rhs_datacontainer->convection );
 
 //				Stuff::LocalFunctionPrintFunctor<DiscreteVelocityFunctionType, std::ostream, VolumeQuadratureType>
 //				        printer ( rhs_datacontainer->convection, std::cout );
+//				Stuff::LocalFunctionPrintFunctor<DiscreteSigmaFunctionType, std::ostream, VolumeQuadratureType>
+//						printer ( rhs_datacontainer->velocity_gradient, std::cout );
+
 //				Stuff::GridWalk<DiscreteVelocityFunctionSpaceType> gw( velocitySpace_ );
 //				gw( printer );
 
@@ -2080,20 +2086,20 @@ class StokesPass
         } // end of apply
 
 		struct ConvectiveTerm : public DiscreteVelocityFunctionType::RangeType {
-			ConvectiveTerm( const typename DiscreteVelocityFunctionType::RangeType u,
-							typename DiscreteSigmaFunctionType::RangeType du)
+			ConvectiveTerm( const typename DiscreteVelocityFunctionType::RangeType& beta,
+							const typename DiscreteSigmaFunctionType::RangeType& du)
 			{
-				for ( size_t d = 0; d< u.dim(); ++d )  {
+				for ( size_t d = 0; d< beta.dim(); ++d )  {
 					typename DiscreteVelocityFunctionType::RangeType j;
-					for ( size_t i = 0; i< u.dim(); ++i )  {
+					for ( size_t i = 0; i< beta.dim(); ++i )  {
 						j[i] = du(d,i);
 					}
-					(*this)[d] = u * j;
+					(*this)[d] = beta * j;
 				}
 			}
 		};
 
-		void getConvection( const DiscreteVelocityFunctionType& velocity, const DiscreteSigmaFunctionType& sigma, DiscreteVelocityFunctionType convection) const
+		void getConvection( const DiscreteVelocityFunctionType& beta, const DiscreteSigmaFunctionType& sigma, DiscreteVelocityFunctionType convection) const
 		{
 			convection.clear();
 			EntityIteratorType entityItEnd = velocitySpace_.end();
@@ -2113,7 +2119,6 @@ class StokesPass
 						typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType
 							PressureBaseFunctionSetType;
 
-						typename DiscreteVelocityFunctionType::LocalFunctionType velocity_local = velocity.localFunction( *entityIt );
 						typename DiscreteSigmaFunctionType::LocalFunctionType sigma_local = sigma.localFunction( *entityIt );
 						typename DiscreteVelocityFunctionType::LocalFunctionType convection_local = convection.localFunction( *entityIt );
 						const VolumeQuadratureType quad( entity, ( 4 * pressureSpaceOrder ) + 1 );
@@ -2142,10 +2147,10 @@ class StokesPass
 							sigma_local.evaluate( quad[qP], sigma_eval );
 
 							typename DiscreteVelocityFunctionType::RangeType
-								velocity_eval;
-							velocity_local.evaluate( quad[qP], velocity_eval );
+							        beta_eval;
+							beta.localFunction( entity ).evaluate( quad[qP], beta_eval );
 
-							ConvectiveTerm c(velocity_eval,sigma_eval);
+							ConvectiveTerm c( beta_eval,sigma_eval );
 
 							// do projection
 							for(int i=0; i<numVelocityBaseFunctionsElement; ++i)
