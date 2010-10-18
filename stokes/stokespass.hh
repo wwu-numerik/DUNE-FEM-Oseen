@@ -2036,18 +2036,20 @@ class StokesPass
             profiler().StopTiming("Pass -- SOLVER");
 
 			if ( rhs_datacontainer ) {
+				//pressure gradient reconstruct
 				Zmatrix.apply( dest.discretePressure(), rhs_datacontainer->pressure_gradient );
 				rhs_datacontainer->pressure_gradient *= Parameters().getParam("pressure_gradient_scale", 1);
+				//
 
 				// \sigma = M^{-1} ( H_1 - Wu )
-				DiscreteSigmaFunctionType& sigma_tmp = rhs_datacontainer->velocity_gradient;//( "sigma_dummy", sigmaSpace_ );
-				Wmatrix.apply( dest.discreteVelocity(), sigma_tmp );
-				sigma_tmp *= -1;
-				sigma_tmp += H1rhs;
-				sigma_tmp *= 1/ MInversMatrix.matrix()(0,0) ; // == m^-1 * sigma_tmp
-				MInversMatrix.apply( sigma_tmp, rhs_datacontainer->velocity_gradient );
-//				rhs_datacontainer->velocity_gradient /= viscosity;
+				DiscreteSigmaFunctionType& sigma_tmp = rhs_datacontainer->velocity_gradient;
+				Wmatrix.apply( dest.discreteVelocity(), rhs_datacontainer->velocity_gradient );
+				rhs_datacontainer->velocity_gradient *= -1;
+				rhs_datacontainer->velocity_gradient += H1rhs;
+				rhs_datacontainer->velocity_gradient *= 1.0f / MInversMatrix.matrix()(0,0); //this is m^-1 apply in fast
+				// end sigma
 
+				// laplace reconstruct
 				DiscreteVelocityFunctionType velocity_tmp1( "velocity_tmp1", dest.discreteVelocity().space() );
 				Xmatrix.apply( rhs_datacontainer->velocity_gradient, velocity_tmp1 );
 				Ymatrix.apply( dest.discreteVelocity(), rhs_datacontainer->velocity_laplace );
@@ -2061,12 +2063,23 @@ class StokesPass
 				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
 				Logger().Dbg().Resume();
 				Logger().Dbg() << boost::format( "laplace_scale: %f\n") % laplace_scale;
+				// end laplace
 
+				// convective reconstruct
 				rhs_datacontainer->convection.clear();
 				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
 				rhs_datacontainer->convection += H2_O_rhs;
 
+
 				getConvection( beta_, rhs_datacontainer->velocity_gradient,rhs_datacontainer->convection );
+
+				Stuff::LocalFunctionPrintFunctor<DiscreteVelocityFunctionType, std::ostream, VolumeQuadratureType>
+				        printer ( rhs_datacontainer->convection, std::cout );
+				Stuff::GridWalk<DiscreteVelocityFunctionSpaceType> gw( velocitySpace_ );
+//				gw( printer );
+//				getConvection( beta_, rhs_datacontainer->velocity_gradient,rhs_datacontainer->convection );
+				//
+
 
 //				Stuff::LocalFunctionPrintFunctor<DiscreteVelocityFunctionType, std::ostream, VolumeQuadratureType>
 //				        printer ( rhs_datacontainer->convection, std::cout );
