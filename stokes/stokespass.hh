@@ -1689,16 +1689,16 @@ class StokesPass
 												c_s = - beta_times_normal * 0.5;
 											}
 
-											VelocityJacobianRangeType mean_value = dyadicProduct( v_j, beta_eval );
+											VelocityJacobianRangeType mean_value = dyadicProduct( v_i, beta_eval );
 											mean_value *= 0.5;
 
-											VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
+											VelocityJacobianRangeType u_jump = dyadicProduct( v_i, outerNormal );
 											u_jump *= c_s;
 
 											VelocityJacobianRangeType flux_value = mean_value;
 											flux_value += u_jump;
 
-											VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
+											VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_j, outerNormal );
 											double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
 											//inner edge (self)
 											O_i_j += elementVolume
