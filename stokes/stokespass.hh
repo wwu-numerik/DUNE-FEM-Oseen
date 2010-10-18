@@ -1201,16 +1201,16 @@ class StokesPass
 										const double beta_times_normal = beta_eval * outerNormal;
 										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
 										double c_s = (beta_times_normal) * 0.5;
-										VelocityRangeType u_h = v_j;
+										VelocityRangeType u_h = v_i;
 										VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
 										mean_value *= 0.5;
-										VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
+										VelocityJacobianRangeType u_jump = dyadicProduct( v_i, outerNormal );
 										u_jump *= c_s;
 										VelocityJacobianRangeType flux_value = mean_value;
 										flux_value += u_jump;
 
 										// \int_{dK} flux_value : ( v_j \ctimes n ) ds
-										VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
+										VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_j, outerNormal );
 										double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
 
 										O_i_j += elementVolume
@@ -1254,16 +1254,16 @@ class StokesPass
 
 										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
 										double c_s = (beta_times_normal) * 0.5;
-										VelocityRangeType u_h = v_j;
+										VelocityRangeType u_h = v_i;
 										VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
 										mean_value *= 0.5;
-										VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
+										VelocityJacobianRangeType u_jump = dyadicProduct( v_i, outerNormal );
 										u_jump *= c_s;
 										VelocityJacobianRangeType flux_value = mean_value;
 										flux_value += u_jump;
 
 										// \int_{dK} flux_value : ( v_j \ctimes n ) ds
-										VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
+										VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_j, outerNormal );
 										double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
 
 										O_i_j += elementVolume
