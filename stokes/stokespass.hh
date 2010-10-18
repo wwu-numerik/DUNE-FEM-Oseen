@@ -1176,7 +1176,6 @@ class StokesPass
 							//                                                                                                         // see also "O's boundary integral" below
 
 							for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
-								// compute Y's element surface integral
 								for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
 									double O_i_j = 0.0;
 									// sum over all quadrature points
@@ -1198,7 +1197,7 @@ class StokesPass
 										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
 
 										VelocityRangeType beta_eval;
-										beta_.evaluate( xWorld, beta_eval );
+										beta_.localFunction(entity).evaluate( xInside, beta_eval );
 										const double beta_times_normal = beta_eval * outerNormal;
 										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
 										double c_s = (beta_times_normal) * 0.5;
@@ -1248,8 +1247,8 @@ class StokesPass
 										velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
 
 										VelocityRangeType beta_eval;
-										beta_.evaluate( xWorld, beta_eval );
-										const double beta_times_normal = beta_eval * outerNormal;
+										beta_.localFunction(entity).evaluate( xInside, beta_eval );
+										const double beta_times_normal =  ( beta_eval * outerNormal );
 										VelocityRangeType v_j( 0.0 );
 										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
 										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
@@ -2066,7 +2065,12 @@ class StokesPass
 				rhs_datacontainer->convection -= H2_O_rhs;
 				getConvection( dest.discreteVelocity(), rhs_datacontainer->velocity_gradient,rhs_datacontainer->convection );
 
-				rhs_datacontainer->scale( std::sqrt(2) );
+//				Stuff::LocalFunctionPrintFunctor<DiscreteVelocityFunctionType, std::ostream, VolumeQuadratureType>
+//				        printer ( rhs_datacontainer->convection, std::cout );
+//				Stuff::GridWalk<DiscreteVelocityFunctionSpaceType> gw( velocitySpace_ );
+//				gw( printer );
+
+//				rhs_datacontainer->scale( std::sqrt(2) );
 			}
 			if ( Parameters().getParam( "save_matrices", false ) ) {
 				Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
