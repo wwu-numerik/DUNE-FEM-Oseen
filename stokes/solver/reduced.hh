@@ -110,6 +110,17 @@ namespace Dune {
 			B_t_matrixType& b_t_mat = Ematrix.matrix(); //! renamed
 			BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
 			WmatrixType& w_mat      = Wmatrix.matrix();
+			/*** making our matrices kuhnibert compatible ****/
+					b_t_mat.scale( -1 ); //since B_t = -E
+					w_mat.scale( m_inv_mat(0,0) );
+					rhs1 *=  m_inv_mat(0,0);
+					m_inv_mat.scale( 1 / m_inv_mat(0,0) );
+
+					//transformation from StokesPass::buildMatrix
+					VelocityDiscreteFunctionType v_tmp ( "v_tmp", velocity.space() );
+					x_mat.apply( rhs1, v_tmp );
+					rhs2 -= v_tmp;
+			/***********/
 
 			typedef InnerCGSolverWrapper< WmatrixType,
 									MmatrixType,
@@ -121,29 +132,20 @@ namespace Dune {
 			double current_inner_accuracy = inner_absLimit;
 			InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
 														   o_mat, rhs1.space(), rhs2.space(), relLimit,
-														   current_inner_accuracy, solverVerbosity > 3 );
-
-			//invert m_inv_mat since we actually got M
-			m_inv_mat.scale( 1 / m_inv_mat(1,1) );
-
-//			w_mat.scale( m_inv_mat(0,0) );
-//			rhs1 *=  m_inv_mat(0,0);
-
-			/** the goal is to solve
-				( Y + O - X M^{-1} W )u = H2 + X M^{-1} H1
-				for u
-			  **/
-
-			//build right hand side = H2 + X M^{-1} H1
-			DiscreteSigmaFunctionType tmp1( "tmp1", rhs1.space() );
+										VelocityDiscreteFunctionType F( "f", velocity.space() );
+			F.assign(rhs2);
+			VelocityDiscreteFunctionType tmp1( "tmp1", velocity.space() );
 			tmp1.clear();
 
+			// u^0 = A^{-1} ( F - B * p^0 )
+			b_mat.apply( pressure, tmp1 );
+			logInfo << "OSEEN: first apply\n" ;
+			SaddlepointInverseOperatorInfo info;
+			innerCGSolverWrapper.apply(F,velocity);
+			logInfo << "End ReducedInverseOperator " << std::endl;
+			return info;							   current_inner_accuracy, solverVerbosity > 3 );
 
-			m_inv_mat.apply( rhs1, tmp1 );
-			VelocityDiscreteFunctionType F( "f", velocity.space() );
-			x_mat.apply( tmp1, F );
-			F *= -1;
-			F += rhs2;
+
 
 			SaddlepointInverseOperatorInfo info;
 			innerCGSolverWrapper.apply(F,velocity);
