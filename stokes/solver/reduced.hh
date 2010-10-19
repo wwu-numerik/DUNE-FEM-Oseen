@@ -132,7 +132,8 @@ namespace Dune {
 			double current_inner_accuracy = inner_absLimit;
 			InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
 														   o_mat, rhs1.space(), rhs2.space(), relLimit,
-										VelocityDiscreteFunctionType F( "f", velocity.space() );
+														  current_inner_accuracy, solverVerbosity  );
+			VelocityDiscreteFunctionType F( "f", velocity.space() );
 			F.assign(rhs2);
 			VelocityDiscreteFunctionType tmp1( "tmp1", velocity.space() );
 			tmp1.clear();
@@ -143,11 +144,11 @@ namespace Dune {
 			SaddlepointInverseOperatorInfo info;
 			innerCGSolverWrapper.apply(F,velocity);
 			logInfo << "End ReducedInverseOperator " << std::endl;
-			return info;							   current_inner_accuracy, solverVerbosity > 3 );
+			return info;
 
 
 
-			SaddlepointInverseOperatorInfo info;
+//			SaddlepointInverseOperatorInfo info;
 			innerCGSolverWrapper.apply(F,velocity);
 			logInfo << "End ReducedInverseOperator " << std::endl;
 			return info;
