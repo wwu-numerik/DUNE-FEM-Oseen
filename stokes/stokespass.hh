@@ -702,41 +702,33 @@ class StokesPass
 							VelocityJacobianRangeType v_j_jacobian;
 							velocityBaseFunctionSetElement.jacobian( j, x, v_j_jacobian );
 
-							//compute u_h \ctimes \beta  : ( \nabla \ctimes v_j )
-//							VelocityJacobianRangeType v_i_tensor_beta = dyadicProduct( v_i, beta_eval );
-//							const double ret = Stuff::colonProduct( v_i_tensor_beta, v_j_jacobian );
-//							const double val = elementVolume
-//									* integrationWeight
-//									* convection_scaling
-//									* ret;
-//							O_i_j -= val;
 
 							VelocityJacobianRangeType v_i_jacobian;
-																velocityBaseFunctionSetElement.jacobian( j, x, v_i_jacobian );
-																VelocityJacobianRangeType beta_jacobian;
-																const typename DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
-																		beta_.localFunction( entity );
-																beta_lf.jacobian( x, beta_jacobian );
+							velocityBaseFunctionSetElement.jacobian( j, x, v_i_jacobian );
+							VelocityJacobianRangeType beta_jacobian;
+							const typename DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
+									beta_.localFunction( entity );
+							beta_lf.jacobian( x, beta_jacobian );
 
 
-																VelocityRangeType divergence_of_beta_v_j_tensor_beta;
-																for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
-																	double row_result = 0;
-																	for ( size_t m = 0; m < beta_eval.dim(); ++m ) {
-																		row_result += beta_jacobian[l][m] * v_i[l] + v_i_jacobian[l][m] * beta_eval[l];
-																	}
-																	divergence_of_beta_v_j_tensor_beta[l] = row_result;
-																}
-																for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
-																	assert( !isnan(divergence_of_beta_v_j_tensor_beta[l]) );
-																}
+							VelocityRangeType divergence_of_beta_v_j_tensor_beta;
+							for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
+								double row_result = 0;
+								for ( size_t m = 0; m < beta_eval.dim(); ++m ) {
+									row_result += beta_jacobian[l][m] * v_i[l] + v_i_jacobian[l][m] * beta_eval[l];
+								}
+								divergence_of_beta_v_j_tensor_beta[l] = row_result;
+							}
+							for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
+								assert( !isnan(divergence_of_beta_v_j_tensor_beta[l]) );
+							}
 
-																const double u_h_times_divergence_of_beta_v_j_tensor_beta =
-																		v_j * divergence_of_beta_v_j_tensor_beta;
-																O_i_j -= elementVolume
-																	* integrationWeight
-																	* convection_scaling
-																	* u_h_times_divergence_of_beta_v_j_tensor_beta;
+							const double u_h_times_divergence_of_beta_v_j_tensor_beta =
+									v_j * divergence_of_beta_v_j_tensor_beta;
+							O_i_j -= elementVolume
+								* integrationWeight
+								* convection_scaling
+								* u_h_times_divergence_of_beta_v_j_tensor_beta;
 
 						}
 						if ( fabs( O_i_j ) < eps ) {
