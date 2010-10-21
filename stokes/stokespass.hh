@@ -699,36 +699,49 @@ class StokesPass
 							velocityBaseFunctionSetElement.evaluate( j, x, v_j );
 							VelocityRangeType beta_eval;
 							beta_.localFunction( entity ).evaluate( x, beta_eval );
-							VelocityJacobianRangeType v_j_jacobian;
-							velocityBaseFunctionSetElement.jacobian( j, x, v_j_jacobian );
-
 
 							VelocityJacobianRangeType v_i_jacobian;
-							velocityBaseFunctionSetElement.jacobian( j, x, v_i_jacobian );
+							velocityBaseFunctionSetElement.jacobian( i, x, v_i_jacobian );
+							VelocityJacobianRangeType v_j_jacobian;
+							velocityBaseFunctionSetElement.jacobian( j, x, v_j_jacobian );
 							VelocityJacobianRangeType beta_jacobian;
 							const typename DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
 									beta_.localFunction( entity );
 							beta_lf.jacobian( x, beta_jacobian );
 
 
-							VelocityRangeType divergence_of_beta_v_j_tensor_beta;
+							VelocityRangeType divergence_of_v_i_tensor_beta;
 							for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
 								double row_result = 0;
 								for ( size_t m = 0; m < beta_eval.dim(); ++m ) {
 									row_result += beta_jacobian[l][m] * v_i[l] + v_i_jacobian[l][m] * beta_eval[l];
 								}
-								divergence_of_beta_v_j_tensor_beta[l] = row_result;
+								divergence_of_v_i_tensor_beta[l] = row_result;
 							}
 							for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
-								assert( !isnan(divergence_of_beta_v_j_tensor_beta[l]) );
+								assert( !isnan(divergence_of_v_i_tensor_beta[l]) );
 							}
 
+						   divergence_of_v_i_tensor_beta[1] = beta_eval[0] * v_i_jacobian[0][0]
+								   + v_i[0] * beta_jacobian[0][0]
+								   + beta_eval[0] * v_i_jacobian[1][1]
+								   + v_i[1] * beta_jacobian[0][1];
+						   divergence_of_v_i_tensor_beta[0] = beta_eval[1] * v_i_jacobian[0][0]
+								   + v_i[0] * beta_jacobian[1][0]
+								   + beta_eval[1] * v_i_jacobian[1][1]
+								   + v_i[1] * beta_jacobian[1][1];
+
+
 							const double u_h_times_divergence_of_beta_v_j_tensor_beta =
-									v_j * divergence_of_beta_v_j_tensor_beta;
+									v_j * divergence_of_v_i_tensor_beta;
+//							VelocityJacobianRangeType v_j_tensor_beta = dyadicProduct( v_j, beta_eval );
+//							const double ret = Stuff::colonProduct( v_j_tensor_beta, v_i_jacobian );
+
 							O_i_j -= elementVolume
 								* integrationWeight
 								* convection_scaling
 								* u_h_times_divergence_of_beta_v_j_tensor_beta;
+//									* ret;
 
 						}
 						if ( fabs( O_i_j ) < eps ) {
@@ -1220,22 +1233,25 @@ class StokesPass
 
 										VelocityRangeType beta_eval;
 										beta_.evaluate( xWorld, beta_eval );
-										const double beta_times_normal = beta_eval * outerNormal;
+										const double beta_times_normal = (beta_eval * outerNormal);
 										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
 
-										VelocityRangeType E_11(0);
+										VelocityRangeType E_11(1);
 										E_11 = beta_eval;
+//										E_11 = xWorld;
+//										E_11 *= -0.5;
 										VelocityRangeType flux_value;
 										flux_value = v_j;
 										flux_value *= 0.5;
 										SigmaRangeType jump = dyadicProduct( v_j, outerNormal );
 										VelocityRangeType jump_value;
-										jump.mv( E_11, jump );
+										jump.mv( E_11, jump_value );
 										flux_value += jump_value;
 
 
 										const double flux_times_v_j = flux_value * v_i;
 										const double ret = beta_times_normal * flux_times_v_j;
+//										if ( beta_times_normal > 0 )
 										O_i_j += elementVolume
 												* integrationWeight
 												* convection_scaling
@@ -1269,30 +1285,32 @@ class StokesPass
 										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 
 										VelocityRangeType v_i( 0.0 );
-										velocityBaseFunctionSetNeighbour.evaluate( i, xInside, v_i );
+										velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
 
 										VelocityRangeType beta_eval;
 										beta_.evaluate( xWorld, beta_eval );
 										// * -1 ??
-										const double beta_times_normal = -1 * ( beta_eval * outerNormal );
+										const double beta_times_normal =  -( beta_eval * outerNormal );
 										VelocityRangeType v_j( 0.0 );
-										velocityBaseFunctionSetElement.evaluate( j, xOutside, v_j );
+										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
 
-										VelocityRangeType E_11(0);
+										VelocityRangeType E_11(1);
 										E_11 = beta_eval;
 //										E_11 *=-1;
-										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+//										E_11 = xWorld;
+//										E_11 *= -0.5;
 										VelocityRangeType flux_value;
 										flux_value = v_j;
-										flux_value *= 0.5;
+										flux_value *= -0.5;
 										SigmaRangeType jump = dyadicProduct( v_j, outerNormal );
 										VelocityRangeType jump_value;
-										jump.mv( E_11, jump );
+										jump.mv( E_11, jump_value );
 										flux_value += jump_value;
 
 
 										const double flux_times_v_j = flux_value * v_i;
 										const double ret = beta_times_normal * flux_times_v_j;
+//										if ( beta_times_normal > 0 )
 										O_i_j += elementVolume
 												* integrationWeight
 												* convection_scaling
@@ -2074,8 +2092,8 @@ class StokesPass
 
 				rhs_datacontainer->convection.clear();
 				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
-				rhs_datacontainer->convection -= H2_O_rhs;
-				getConvection( dest.discreteVelocity(), rhs_datacontainer->velocity_gradient,rhs_datacontainer->convection );
+				rhs_datacontainer->convection += H2_O_rhs;
+				getConvection( beta_, rhs_datacontainer->velocity_gradient,rhs_datacontainer->convection );
 
 //				rhs_datacontainer->scale( 1 / std::sqrt(2) );
 			}
@@ -2100,7 +2118,7 @@ class StokesPass
 			}
 		};
 
-		void getConvection( const DiscreteVelocityFunctionType& velocity, const DiscreteSigmaFunctionType& sigma, DiscreteVelocityFunctionType convection) const
+		void getConvection( const DiscreteVelocityFunctionType& beta, const DiscreteSigmaFunctionType& sigma, DiscreteVelocityFunctionType convection) const
 		{
 			convection.clear();
 			EntityIteratorType entityItEnd = velocitySpace_.end();
@@ -2120,7 +2138,7 @@ class StokesPass
 						typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType
 							PressureBaseFunctionSetType;
 
-						typename DiscreteVelocityFunctionType::LocalFunctionType velocity_local = velocity.localFunction( *entityIt );
+						typename DiscreteVelocityFunctionType::LocalFunctionType beta_local = beta.localFunction( *entityIt );
 						typename DiscreteSigmaFunctionType::LocalFunctionType sigma_local = sigma.localFunction( *entityIt );
 						typename DiscreteVelocityFunctionType::LocalFunctionType convection_local = convection.localFunction( *entityIt );
 						const VolumeQuadratureType quad( entity, ( 4 * pressureSpaceOrder ) + 1 );
@@ -2150,7 +2168,7 @@ class StokesPass
 
 							typename DiscreteVelocityFunctionType::RangeType
 								velocity_eval;
-							velocity_local.evaluate( quad[qP], velocity_eval );
+							beta_local.evaluate( quad[qP], velocity_eval );
 
 							ConvectiveTerm c(velocity_eval,sigma_eval);
 
