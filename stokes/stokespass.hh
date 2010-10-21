@@ -1239,7 +1239,7 @@ class StokesPass
 										VelocityRangeType E_11(1);
 										E_11 = beta_eval;
 //										E_11 = xWorld;
-//										E_11 *= -0.5;
+										E_11 *= 0.5;
 										VelocityRangeType flux_value;
 										flux_value = v_j;
 										flux_value *= 0.5;
@@ -1285,23 +1285,23 @@ class StokesPass
 										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 
 										VelocityRangeType v_i( 0.0 );
-										velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
+										velocityBaseFunctionSetElement.evaluate( i, xInside, v_i );
 
 										VelocityRangeType beta_eval;
 										beta_.evaluate( xWorld, beta_eval );
 										// * -1 ??
-										const double beta_times_normal =  -( beta_eval * outerNormal );
+										const double beta_times_normal =  ( beta_eval * outerNormal );
 										VelocityRangeType v_j( 0.0 );
-										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+										velocityBaseFunctionSetNeighbour.evaluate( j, xOutside, v_j );
 
 										VelocityRangeType E_11(1);
 										E_11 = beta_eval;
 //										E_11 *=-1;
 //										E_11 = xWorld;
-//										E_11 *= -0.5;
+										E_11 *= -0.5;
 										VelocityRangeType flux_value;
 										flux_value = v_j;
-										flux_value *= -0.5;
+										flux_value *= 0.5;
 										SigmaRangeType jump = dyadicProduct( v_j, outerNormal );
 										VelocityRangeType jump_value;
 										jump.mv( E_11, jump_value );
