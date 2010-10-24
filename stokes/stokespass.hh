@@ -722,11 +722,11 @@ class StokesPass
 								assert( !isnan(divergence_of_v_i_tensor_beta[l]) );
 							}
 
-						   divergence_of_v_i_tensor_beta[1] = beta_eval[0] * v_i_jacobian[0][0]
+						   divergence_of_v_i_tensor_beta[0] = beta_eval[0] * v_i_jacobian[0][0]
 								   + v_i[0] * beta_jacobian[0][0]
 								   + beta_eval[0] * v_i_jacobian[1][1]
 								   + v_i[1] * beta_jacobian[0][1];
-						   divergence_of_v_i_tensor_beta[0] = beta_eval[1] * v_i_jacobian[0][0]
+						   divergence_of_v_i_tensor_beta[1] = beta_eval[1] * v_i_jacobian[0][0]
 								   + v_i[0] * beta_jacobian[1][0]
 								   + beta_eval[1] * v_i_jacobian[1][1]
 								   + v_i[1] * beta_jacobian[1][1];
@@ -1237,7 +1237,7 @@ class StokesPass
 										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
 
 										VelocityRangeType E_11(1);
-										E_11 = beta_eval;
+//										E_11 = beta_eval;
 //										E_11 = xWorld;
 										E_11 *= 0.5;
 										VelocityRangeType flux_value;
@@ -1290,15 +1290,15 @@ class StokesPass
 										VelocityRangeType beta_eval;
 										beta_.evaluate( xWorld, beta_eval );
 										// * -1 ??
-										const double beta_times_normal =  ( beta_eval * outerNormal );
+										const double beta_times_normal =  -( beta_eval * outerNormal );
 										VelocityRangeType v_j( 0.0 );
 										velocityBaseFunctionSetNeighbour.evaluate( j, xOutside, v_j );
 
 										VelocityRangeType E_11(1);
-										E_11 = beta_eval;
+//										E_11 = beta_eval;
 //										E_11 *=-1;
 //										E_11 = xWorld;
-										E_11 *= -0.5;
+										E_11 *= 0.5;
 										VelocityRangeType flux_value;
 										flux_value = v_j;
 										flux_value *= 0.5;
