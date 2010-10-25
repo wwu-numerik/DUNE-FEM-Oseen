@@ -55,13 +55,13 @@ namespace Dune {
 					MmatrixObjectType& Mmatrix,
 					YmatrixObjectType& Ymatrix,
 					YmatrixObjectType& Omatrix,
-					EmatrixObjectType& Ematrix,
-					RmatrixObjectType& Rmatrix,
-					ZmatrixObjectType& Zmatrix,
+					EmatrixObjectType& /*Ematrix*/,
+					RmatrixObjectType& /*Rmatrix*/,
+					ZmatrixObjectType& /*Zmatrix*/,
 					WmatrixObjectType& Wmatrix,
 					DiscreteSigmaFunctionType& rhs1,
 					DiscreteVelocityFunctionType& rhs2,
-					DiscretePressureFunctionType& rhs3 ) const
+					DiscretePressureFunctionType& /*rhs3*/ ) const
 		{
 
 			Logging::LogStream& logDebug = Logger().Dbg();
