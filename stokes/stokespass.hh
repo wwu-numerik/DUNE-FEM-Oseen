@@ -2074,6 +2074,8 @@ class StokesPass
 				Wmatrix.apply( dest.discreteVelocity(), sigma_tmp );
 				sigma_tmp *= -1;
 				sigma_tmp += H1rhs;
+				if ( viscosity != 0.0f )
+					sigma_tmp /= viscosity;//since mu is assmenled into both W and H1
 				MInversMatrix.apply( sigma_tmp, rhs_datacontainer->velocity_gradient );
 
 				DiscreteVelocityFunctionType velocity_tmp1( "velocity_tmp1", dest.discreteVelocity().space() );
