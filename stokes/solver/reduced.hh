@@ -85,7 +85,6 @@ namespace Dune {
 
 			logDebug.Resume();
 			//get some refs for more readability
-			PressureDiscreteFunctionType& pressure = dest.discretePressure();
 			VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
 
 			typedef typename  XmatrixObjectType::MatrixType
@@ -94,12 +93,6 @@ namespace Dune {
 				MmatrixType;
 			typedef typename  YmatrixObjectType::MatrixType
 				YmatrixType;
-			typedef typename  EmatrixObjectType::MatrixType
-				B_t_matrixType;                             //! renamed
-			typedef typename  RmatrixObjectType::MatrixType
-				CmatrixType;                                //! renamed
-			typedef typename  ZmatrixObjectType::MatrixType
-				BmatrixType;                                //! renamed
 			typedef typename  WmatrixObjectType::MatrixType
 				WmatrixType;
 
@@ -107,20 +100,14 @@ namespace Dune {
 			MmatrixType& m_inv_mat  = Mmatrix.matrix();
 			YmatrixType& y_mat      = Ymatrix.matrix();
 			YmatrixType& o_mat      = Omatrix.matrix();
-			B_t_matrixType& b_t_mat = Ematrix.matrix(); //! renamed
-			BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
 			WmatrixType& w_mat      = Wmatrix.matrix();
-			/*** making our matrices kuhnibert compatible ****/
-					b_t_mat.scale( -1 ); //since B_t = -E
-					w_mat.scale( m_inv_mat(0,0) );
-					rhs1 *=  m_inv_mat(0,0);
-					m_inv_mat.scale( 1 / m_inv_mat(0,0) );
 
-					//transformation from StokesPass::buildMatrix
-					VelocityDiscreteFunctionType v_tmp ( "v_tmp", velocity.space() );
-					x_mat.apply( rhs1, v_tmp );
-					rhs2 -= v_tmp;
-			/***********/
+			VelocityDiscreteFunctionType F( "f", velocity.space() );
+			// F = H_2 - X M^{-1} H_1
+			rhs1 *=  m_inv_mat(0,0);
+			x_mat.apply( rhs1, F );
+			F *= -1;
+			F += rhs2;
 
 			typedef InnerCGSolverWrapper< WmatrixType,
 									MmatrixType,
@@ -129,26 +116,10 @@ namespace Dune {
 									DiscreteSigmaFunctionType,
 									DiscreteVelocityFunctionType >
 				InnerCGSolverWrapperType;
-			double current_inner_accuracy = inner_absLimit;
 			InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
 														   o_mat, rhs1.space(), rhs2.space(), relLimit,
-														  current_inner_accuracy, solverVerbosity  );
-			VelocityDiscreteFunctionType F( "f", velocity.space() );
-			F.assign(rhs2);
-			VelocityDiscreteFunctionType tmp1( "tmp1", velocity.space() );
-			tmp1.clear();
-
-			// u^0 = A^{-1} ( F - B * p^0 )
-			b_mat.apply( pressure, tmp1 );
-			logInfo << "OSEEN: first apply\n" ;
+														  inner_absLimit, solverVerbosity  );
 			SaddlepointInverseOperatorInfo info;
-			innerCGSolverWrapper.apply(F,velocity);
-			logInfo << "End ReducedInverseOperator " << std::endl;
-			return info;
-
-
-
-//			SaddlepointInverseOperatorInfo info;
 			innerCGSolverWrapper.apply(F,velocity);
 			logInfo << "End ReducedInverseOperator " << std::endl;
 			return info;
