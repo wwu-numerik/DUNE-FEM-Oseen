@@ -269,8 +269,8 @@ class StokesPass
          *  \todo doc
          *  \attention  think about quadrature orders
          **/
-		template < class RhsDatacontainerType >
-		void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer = 0) const
+		template < class RhsDatacontainerType, class ExactSigmaType >
+		void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer, const ExactSigmaType& sigma_exact) const
         {
 
             // profiler information
@@ -684,6 +684,7 @@ class StokesPass
 				for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
 					for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
 						double O_i_j = 0.0;
+						double O_i_j_d = 0.0;
 						// sum over all quadrature points
 						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
 							// get x
@@ -734,14 +735,19 @@ class StokesPass
 
 							const double u_h_times_divergence_of_beta_v_j_tensor_beta =
 									v_j * divergence_of_v_i_tensor_beta;
-//							VelocityJacobianRangeType v_j_tensor_beta = dyadicProduct( v_j, beta_eval );
-//							const double ret = Stuff::colonProduct( v_j_tensor_beta, v_i_jacobian );
+							VelocityJacobianRangeType v_j_tensor_beta = dyadicProduct( v_j, beta_eval );
+							const double ret = Stuff::colonProduct( v_j_tensor_beta, v_i_jacobian );
 
 							O_i_j -= elementVolume
 								* integrationWeight
 								* convection_scaling
-								* u_h_times_divergence_of_beta_v_j_tensor_beta;
-//									* ret;
+//								* u_h_times_divergence_of_beta_v_j_tensor_beta;
+									* ret;
+							O_i_j_d-= elementVolume
+							        * integrationWeight
+									* convection_scaling
+									* u_h_times_divergence_of_beta_v_j_tensor_beta;
+//										* ret;
 
 						}
 						if ( fabs( O_i_j ) < eps ) {
@@ -751,6 +757,8 @@ class StokesPass
 							// add to matrix
 //							std::cerr << boost::format( "O volume value on entity %d: %e\n") % entityNR % O_i_j;
 							localOmatrixElement.add( i, j, O_i_j );
+//							double diff = O_i_j- O_i_j_d;
+//							std::cout << boost::format( "DIFF %e\n") % diff;
 						}
 					}
 				}
@@ -907,7 +915,7 @@ class StokesPass
                         LocalWmatrixType localWmatrixNeighbour = Wmatrix.localMatrix( neighbour, entity );
                         LocalXmatrixType localXmatrixNeighbour = Xmatrix.localMatrix( entity, neighbour );
                         LocalYmatrixType localYmatrixNeighbour = Ymatrix.localMatrix( neighbour, entity );
-						LocalOmatrixType localOmatrixNeighbour = Omatrix.localMatrix( neighbour, entity );
+						LocalOmatrixType localOmatrixNeighbour = Omatrix.localMatrix( entity, neighbour );
                         LocalZmatrixType localZmatrixNeighbour = Zmatrix.localMatrix( entity, neighbour );
                         LocalEmatrixType localEmatrixNeighbour = Ematrix.localMatrix( neighbour, entity );
                         LocalRmatrixType localRmatrixNeighbour = Rmatrix.localMatrix( entity, neighbour );
@@ -1239,7 +1247,7 @@ class StokesPass
 										VelocityRangeType E_11(1);
 //										E_11 = beta_eval;
 //										E_11 = xWorld;
-										E_11 *= 0.5;
+//										E_11 *= -1;
 										VelocityRangeType flux_value;
 										flux_value = v_j;
 										flux_value *= 0.5;
@@ -1298,7 +1306,7 @@ class StokesPass
 //										E_11 = beta_eval;
 //										E_11 *=-1;
 //										E_11 = xWorld;
-										E_11 *= 0.5;
+//										E_11 *= -1;
 										VelocityRangeType flux_value;
 										flux_value = v_j;
 										flux_value *= 0.5;
@@ -2120,7 +2128,8 @@ class StokesPass
 			}
 		};
 
-		void getConvection( const DiscreteVelocityFunctionType& beta, const DiscreteSigmaFunctionType& sigma, DiscreteVelocityFunctionType convection) const
+		template < class BLH >
+		void getConvection( const DiscreteVelocityFunctionType& beta, const BLH& sigma, DiscreteVelocityFunctionType& convection) const
 		{
 			convection.clear();
 			EntityIteratorType entityItEnd = velocitySpace_.end();
@@ -2131,8 +2140,8 @@ class StokesPass
 						typedef typename EntityType::Geometry
 							EntityGeometryType;
 						const EntityGeometryType& geo = entity.geometry();
-						typedef typename DiscreteSigmaFunctionSpaceType::BaseFunctionSetType
-							SigmaBaseFunctionSetType;
+//						typedef typename BLH::BaseFunctionSetType
+//							SigmaBaseFunctionSetType;
 						// of type u
 						typedef typename DiscreteVelocityFunctionSpaceType::BaseFunctionSetType
 							VelocityBaseFunctionSetType;
@@ -2141,7 +2150,7 @@ class StokesPass
 							PressureBaseFunctionSetType;
 
 						typename DiscreteVelocityFunctionType::LocalFunctionType beta_local = beta.localFunction( *entityIt );
-						typename DiscreteSigmaFunctionType::LocalFunctionType sigma_local = sigma.localFunction( *entityIt );
+//						typename BLH::LocalFunctionType sigma_local = sigma.localFunction( *entityIt );
 						typename DiscreteVelocityFunctionType::LocalFunctionType convection_local = convection.localFunction( *entityIt );
 						const VolumeQuadratureType quad( entity, ( 4 * pressureSpaceOrder ) + 1 );
 						const VelocityBaseFunctionSetType velocityBaseFunctionSetElement = velocitySpace_.baseFunctionSet( entity );
@@ -2164,9 +2173,9 @@ class StokesPass
 								xWorld = geo.global( xLocal );
 
 							// evaluate function
-							typename DiscreteSigmaFunctionType::RangeType
+							typename BLH::RangeType
 								sigma_eval;
-							sigma_local.evaluate( quad[qP], sigma_eval );
+							sigma.evaluate( xWorld, sigma_eval );
 
 							typename DiscreteVelocityFunctionType::RangeType
 								velocity_eval;
