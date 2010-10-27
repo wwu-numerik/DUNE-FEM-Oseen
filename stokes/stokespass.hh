@@ -741,13 +741,13 @@ class StokesPass
 							O_i_j -= elementVolume
 								* integrationWeight
 								* convection_scaling
-//								* u_h_times_divergence_of_beta_v_j_tensor_beta;
-									* ret;
+								* u_h_times_divergence_of_beta_v_j_tensor_beta;
+//									* ret;
 							O_i_j_d-= elementVolume
 							        * integrationWeight
 									* convection_scaling
-									* u_h_times_divergence_of_beta_v_j_tensor_beta;
-//										* ret;
+//									* u_h_times_divergence_of_beta_v_j_tensor_beta;
+										* ret;
 
 						}
 						if ( fabs( O_i_j ) < eps ) {
