@@ -2100,10 +2100,11 @@ class StokesPass
 				Logger().Dbg().Resume();
 				Logger().Dbg() << boost::format( "laplace_scale: %f\n") % laplace_scale;
 
-				rhs_datacontainer->convection.clear();
-				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
-				rhs_datacontainer->convection += H2_O_rhs;
-				getConvection( beta_, rhs_datacontainer->velocity_gradient,rhs_datacontainer->convection );
+//				rhs_datacontainer->convection.clear();
+//				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
+//				rhs_datacontainer->convection += H2_O_rhs;
+				getConvection( beta_, rhs_datacontainer->velocity_gradient, rhs_datacontainer->convection );
+//				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->convection );
 
 //				rhs_datacontainer->scale( 1 / std::sqrt(2) );
 			}
