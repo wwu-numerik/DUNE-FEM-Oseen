@@ -2078,13 +2078,23 @@ class StokesPass
 				rhs_datacontainer->pressure_gradient *= Parameters().getParam("pressure_gradient_scale", 1);
 
 				// \sigma = M^{-1} ( H_1 - Wu )
+				const double m_inv_scale = MInversMatrix.matrix()(0,0);
+				rhs_datacontainer->velocity_gradient.assign( H1rhs );
+				rhs_datacontainer->velocity_gradient.clear();
 				DiscreteSigmaFunctionType sigma_tmp( "sigma_dummy", sigmaSpace_ );
 				Wmatrix.apply( dest.discreteVelocity(), sigma_tmp );
-				sigma_tmp *= -1;
-				sigma_tmp += H1rhs;
+				rhs_datacontainer->velocity_gradient -= sigma_tmp;
 				if ( viscosity != 0.0f )
-					sigma_tmp /= viscosity;//since mu is assmenled into both W and H1
-				MInversMatrix.apply( sigma_tmp, rhs_datacontainer->velocity_gradient );
+					rhs_datacontainer->velocity_gradient /= viscosity;//since mu is assmenled into both W and H1
+				rhs_datacontainer->velocity_gradient *= m_inv_scale;
+
+				//recheck M\sigma + Wu == H1
+				/*rhs_datacontainer->velocity_gradient *= 1.0 / MInversMatrix.matrix()(0,0);
+				Wmatrix.apply( dest.discreteVelocity(), sigma_tmp );
+				rhs_datacontainer->velocity_gradient += sigma_tmp;
+				rhs_datacontainer->velocity_gradient -= H1rhs*/;
+
+//				Stuff::printFunctionMinMax( std::cout, H1rhs );
 
 				DiscreteVelocityFunctionType velocity_tmp1( "velocity_tmp1", dest.discreteVelocity().space() );
 				Xmatrix.apply( rhs_datacontainer->velocity_gradient, velocity_tmp1 );
@@ -2093,10 +2103,10 @@ class StokesPass
 				velocity_tmp1.assign( dest.discreteVelocity() );
 				velocity_tmp1 *= alpha;
 				rhs_datacontainer->velocity_laplace -= velocity_tmp1;
-				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
+//				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
 				const double laplace_scale = Parameters().getParam("laplace_scale", -1/viscosity);
 				rhs_datacontainer->velocity_laplace *= laplace_scale;
-				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
+//				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
 				Logger().Dbg().Resume();
 				Logger().Dbg() << boost::format( "laplace_scale: %f\n") % laplace_scale;
 
