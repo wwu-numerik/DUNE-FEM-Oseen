@@ -1889,7 +1889,7 @@ class StokesPass
 
 								VelocityRangeType flux_value;
 								if ( beta_times_normal < 0 ) {
-									//beta points 'outwards' so take value from this element
+									//beta points 'inwards' so take value from this element
 									//the inverse case is handled in O's boundary integral
 									flux_value = gD;
 									const double flux_times_v_j = flux_value * v_j;
