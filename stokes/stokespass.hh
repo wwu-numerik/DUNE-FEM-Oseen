@@ -2165,7 +2165,7 @@ class StokesPass
 						{
 							const typename DiscreteVelocityFunctionSpaceType::DomainType xLocal = quad.point(qP);
 
-							const double intel = (false) ?
+							const double intel = (true) ?
 								quad.weight(qP): // affine case
 								quad.weight(qP)* geo.integrationElement( xLocal ); // general case
 
