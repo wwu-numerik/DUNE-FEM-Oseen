@@ -2139,71 +2139,67 @@ class StokesPass
 			}
 		};
 
-		template < class BLH >
-		void getConvection( const DiscreteVelocityFunctionType& beta, const BLH& sigma, DiscreteVelocityFunctionType& convection) const
+		template < class GradientFunctionType >
+		void getConvection( const DiscreteVelocityFunctionType& beta, const GradientFunctionType& sigma, DiscreteVelocityFunctionType& convection) const
 		{
 			convection.clear();
 			EntityIteratorType entityItEnd = velocitySpace_.end();
 			for (   EntityIteratorType entityIt = velocitySpace_.begin();
 					entityIt != entityItEnd;
-					++entityIt) {
-						const EntityType& entity = *entityIt;
-						typedef typename EntityType::Geometry
-							EntityGeometryType;
-						const EntityGeometryType& geo = entity.geometry();
-//						typedef typename BLH::BaseFunctionSetType
+					++entityIt)
+			{
+				const EntityType& entity = *entityIt;
+				typedef typename EntityType::Geometry
+					EntityGeometryType;
+				const EntityGeometryType& geo = entity.geometry();
+//						typedef typename GradientFunctionType::BaseFunctionSetType
 //							SigmaBaseFunctionSetType;
-						// of type u
-						typedef typename DiscreteVelocityFunctionSpaceType::BaseFunctionSetType
-							VelocityBaseFunctionSetType;
-						// of type p
-						typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType
-							PressureBaseFunctionSetType;
+				// of type u
+				typedef typename DiscreteVelocityFunctionSpaceType::BaseFunctionSetType
+					VelocityBaseFunctionSetType;
+				// of type p
+				typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType
+					PressureBaseFunctionSetType;
 
-						typename DiscreteVelocityFunctionType::LocalFunctionType beta_local = beta.localFunction( *entityIt );
-//						typename BLH::LocalFunctionType sigma_local = sigma.localFunction( *entityIt );
-						typename DiscreteVelocityFunctionType::LocalFunctionType convection_local = convection.localFunction( *entityIt );
-						const VolumeQuadratureType quad( entity, ( 4 * pressureSpaceOrder ) + 1 );
-						const VelocityBaseFunctionSetType velocityBaseFunctionSetElement = velocitySpace_.baseFunctionSet( entity );
-//						const PressureBaseFunctionSetType pressureBaseFunctionSetElement = pressureSpace_.baseFunctionSet( entity );
-//						const int numSigmaBaseFunctionsElement = sigmaBaseFunctionSetElement.numBaseFunctions();
-						const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
-//						const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
-						const int quadNop = quad.nop();
+				typename DiscreteVelocityFunctionType::LocalFunctionType beta_local = beta.localFunction( *entityIt );
+//						typename GradientFunctionType::LocalFunctionType sigma_local = sigma.localFunction( *entityIt );
+				typename DiscreteVelocityFunctionType::LocalFunctionType convection_local = convection.localFunction( *entityIt );
+				const VolumeQuadratureType quad( entity, ( 4 * pressureSpaceOrder ) + 1 );
+				const VelocityBaseFunctionSetType velocityBaseFunctionSetElement = velocitySpace_.baseFunctionSet( entity );
+				const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
+				const int quadNop = quad.nop();
 
-						//volume part
-						for(int qP = 0; qP < quadNop ; ++qP)
-						{
-							const typename DiscreteVelocityFunctionSpaceType::DomainType xLocal = quad.point(qP);
+				for(int qP = 0; qP < quadNop ; ++qP)
+				{
+					const typename DiscreteVelocityFunctionSpaceType::DomainType xLocal = quad.point(qP);
 
-							const double intel = (true) ?
-								quad.weight(qP): // affine case
-								quad.weight(qP)* geo.integrationElement( xLocal ); // general case
+					const double intel = (true) ?
+						quad.weight(qP): // affine case
+						quad.weight(qP)* geo.integrationElement( xLocal ); // general case
 
-							typename DiscreteVelocityFunctionSpaceType::DomainType
-								xWorld = geo.global( xLocal );
+					typename DiscreteVelocityFunctionSpaceType::DomainType
+						xWorld = geo.global( xLocal );
 
-							// evaluate function
-							typename BLH::RangeType
-								sigma_eval;
-							sigma.evaluate( xWorld, sigma_eval );
+					// evaluate function
+					typename GradientFunctionType::RangeType
+						sigma_eval;
+					sigma.evaluate( xWorld, sigma_eval );
 
-							typename DiscreteVelocityFunctionType::RangeType
-								velocity_eval;
-							beta_local.evaluate( quad[qP], velocity_eval );
+					typename DiscreteVelocityFunctionType::RangeType
+						velocity_eval;
+					beta_local.evaluate( quad[qP], velocity_eval );
 
-							ConvectiveTerm c(velocity_eval,sigma_eval);
+					ConvectiveTerm c(velocity_eval,sigma_eval);
 
-							// do projection
-							for(int i=0; i<numVelocityBaseFunctionsElement; ++i)
-							{
-								typename DiscreteVelocityFunctionType::RangeType phi (0.0);
-								convection_local.baseFunctionSet().evaluate(i, quad[qP], phi);
-								convection_local[i] += intel * ( c * phi );
-							}
-						}
-
+					// do projection
+					for(int i=0; i<numVelocityBaseFunctionsElement; ++i)
+					{
+						typename DiscreteVelocityFunctionType::RangeType phi (0.0);
+						convection_local.baseFunctionSet().evaluate(i, quad[qP], phi);
+						convection_local[i] += intel * ( c * phi );
 					}
+				}
+			}
 		}
         virtual void compute( const TotalArgumentType& /*arg*/, DestinationType& /*dest*/ ) const
         {}
