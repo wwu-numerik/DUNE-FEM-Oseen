@@ -1247,7 +1247,7 @@ class StokesPass
 										VelocityRangeType E_11(1);
 //										E_11 = beta_eval;
 //										E_11 = xWorld;
-//										E_11 *= -1;
+										E_11 *= 0.5;
 										VelocityRangeType flux_value;
 										flux_value = v_j;
 										flux_value *= 0.5;
@@ -1304,7 +1304,7 @@ class StokesPass
 
 										VelocityRangeType E_11(1);
 //										E_11 = beta_eval;
-//										E_11 *=-1;
+										E_11 *= 0.5;
 //										E_11 = xWorld;
 //										E_11 *= -1;
 										VelocityRangeType flux_value;
@@ -2084,8 +2084,8 @@ class StokesPass
 				DiscreteSigmaFunctionType sigma_tmp( "sigma_dummy", sigmaSpace_ );
 				Wmatrix.apply( dest.discreteVelocity(), sigma_tmp );
 				rhs_datacontainer->velocity_gradient -= sigma_tmp;
-				if ( viscosity != 0.0f )
-					rhs_datacontainer->velocity_gradient /= viscosity;//since mu is assmenled into both W and H1
+//				if ( viscosity != 0.0f )
+//					rhs_datacontainer->velocity_gradient /= viscosity;//since mu is assmenled into both W and H1
 				rhs_datacontainer->velocity_gradient *= m_inv_scale;
 
 				Stuff::printFunctionMinMax( std::cout, H1rhs );
