@@ -2079,8 +2079,8 @@ class StokesPass
 
 				// \sigma = M^{-1} ( H_1 - Wu )
 				const double m_inv_scale = MInversMatrix.matrix()(0,0);
+				H1rhs /= m_inv_scale;//we scaled rhs1 in reduced solver, invert that
 				rhs_datacontainer->velocity_gradient.assign( H1rhs );
-				rhs_datacontainer->velocity_gradient.clear();
 				DiscreteSigmaFunctionType sigma_tmp( "sigma_dummy", sigmaSpace_ );
 				Wmatrix.apply( dest.discreteVelocity(), sigma_tmp );
 				rhs_datacontainer->velocity_gradient -= sigma_tmp;
@@ -2088,13 +2088,7 @@ class StokesPass
 					rhs_datacontainer->velocity_gradient /= viscosity;//since mu is assmenled into both W and H1
 				rhs_datacontainer->velocity_gradient *= m_inv_scale;
 
-				//recheck M\sigma + Wu == H1
-				/*rhs_datacontainer->velocity_gradient *= 1.0 / MInversMatrix.matrix()(0,0);
-				Wmatrix.apply( dest.discreteVelocity(), sigma_tmp );
-				rhs_datacontainer->velocity_gradient += sigma_tmp;
-				rhs_datacontainer->velocity_gradient -= H1rhs*/;
-
-//				Stuff::printFunctionMinMax( std::cout, H1rhs );
+				Stuff::printFunctionMinMax( std::cout, H1rhs );
 
 				DiscreteVelocityFunctionType velocity_tmp1( "velocity_tmp1", dest.discreteVelocity().space() );
 				Xmatrix.apply( rhs_datacontainer->velocity_gradient, velocity_tmp1 );
