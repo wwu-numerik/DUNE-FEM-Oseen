@@ -59,8 +59,8 @@ class MatrixA_Operator //: public OEMSolver::PreconditionInterface
             sig_tmp2( "sig_tmp2", sig_space ),
             space_(space),
             precondition_matrix_( y_mat_.rows(), y_mat_.cols(), 10 ),
-            precondition_matrix_invers( y_mat_.cols(), y_mat_.rows(), 10 ),
-            precondition_diagonal_( "diag1", space )
+			precondition_diagonal_( "diag1", space ),
+			precondition_matrix_invers( y_mat_.cols(), y_mat_.rows(), 10 )
         {
 			x_mat_.getDiag( m_mat_, w_mat_, precondition_diagonal_);
 			precondition_diagonal_ *= -1;

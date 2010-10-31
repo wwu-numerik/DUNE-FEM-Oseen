@@ -137,7 +137,7 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
         }
 
     private:
-        mutable A_SolverType& a_solver_;
+		A_SolverType& a_solver_;
         const B_t_matrixType& b_t_mat_;
         const CmatrixType& c_mat_;
         const BmatrixType& b_mat_;
