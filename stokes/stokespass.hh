@@ -270,6 +270,12 @@ class StokesPass
 		{
 			apply<RhsDatacontainer,DiscreteSigmaFunctionType>( arg, dest, 0,0 );
 		}
+
+		template < class RhsDatacontainerType >
+		void apply( const DomainType &arg, RangeType &dest,RhsDatacontainerType* rhs_datacontainer ) const
+		{
+			apply<RhsDatacontainerType,DiscreteSigmaFunctionType>( arg, dest, rhs_datacontainer,0 );
+		}
         /**
          *  \todo doc
          *  \attention  think about quadrature orders
