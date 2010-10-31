@@ -266,10 +266,9 @@ class StokesPass
         }
 
 
-		template < class RhsDatacontainerType>
-		void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer ) const
+		void apply( const DomainType &arg, RangeType &dest ) const
 		{
-			apply<RhsDatacontainer,void>( arg, dest, rhs_datacontainer, 0 );
+			apply<RhsDatacontainer,DiscreteSigmaFunctionType>( arg, dest, 0,0 );
 		}
         /**
          *  \todo doc

@@ -578,6 +578,10 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
         computedSolutions(  "computed_",
                             discreteStokesFunctionSpaceWrapper,
                             gridPart );
+	DiscreteStokesFunctionWrapperType
+		dummyFunctions(  "dummy_",
+							discreteStokesFunctionSpaceWrapper,
+							gridPart );
 #if ENABLE_ADAPTIVE
     if ( !firstRun ) {
         Dune::Estimator<DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType>
@@ -631,10 +635,12 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     StokesPassType stokesPass(  startPass,
                                 stokesModel,
                                 gridPart,
-                                discreteStokesFunctionSpaceWrapper );
+								discreteStokesFunctionSpaceWrapper,
+								dummyFunctions.discreteVelocity(),
+								false );
 
     profiler().StartTiming( "Pass -- APPLY" );
-	stokesPass.apply( computedSolutions, computedSolutions );
+	stokesPass.apply( computedSolutions, computedSolutions);
     profiler().StopTiming( "Pass -- APPLY" );
     info.run_time = profiler().GetTiming( "Pass -- APPLY" );
     stokesPass.getRuninfo( info );
