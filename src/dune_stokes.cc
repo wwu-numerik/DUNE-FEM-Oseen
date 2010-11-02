@@ -263,7 +263,7 @@ int main( int argc, char** argv )
 void RefineRun( CollectiveCommunication& mpicomm )
 {
 #if !(ENABLE_ADAPTIVE)
-	throw std::exception("refine runs don't work with adaptation disabled");
+	throw std::runtime_error("refine runs don't work with adaptation disabled");
 #endif
     Logger().Info() << "starting refine run " << std::endl;
     // column headers for eoc table output
