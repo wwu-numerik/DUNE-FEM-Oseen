@@ -692,7 +692,7 @@ class StokesPass
                 } // done computing Y's volume integral
                 }
 
-				for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+				for ( int i = 0; i < numVelocityBaseFunctionsElement, do_oseen_discretization_; ++i ) {
 					for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
 						double O_i_j = 0.0;
 						double O_i_j_d = 0.0;
@@ -1228,8 +1228,8 @@ class StokesPass
 							//           += \int_{ // O's neighbour surface integral
 							//                                                                                                         // see also "O's boundary integral" below
 
-							for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
-								// compute Y's element surface integral
+							for ( int j = 0; j < numVelocityBaseFunctionsElement, do_oseen_discretization_; ++j ) {
+								// compute O's element surface integral
 								for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
 									double O_i_j = 0.0;
 									// sum over all quadrature points
@@ -1724,7 +1724,7 @@ class StokesPass
 							//                                                                                                           // we will call this one
 							// (O)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}} STUFF n_{t}ds											// O's boundary integral
 							//                                                                                                           // see also "O's element surface integral" and "Y's neighbour surface integral" above
-							for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+							for ( int i = 0; i < numVelocityBaseFunctionsElement, do_oseen_discretization_; ++i ) {
 								for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
 									double O_i_j = 0.0;
 									// sum over all quadrature points
