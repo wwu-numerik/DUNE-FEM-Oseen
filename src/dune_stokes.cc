@@ -252,8 +252,8 @@ int main( int argc, char** argv )
       Logger().Info().Resume();
       Stuff::meminfo( Logger().Info() );
   }
-  catch ( assert_exception& a ) {
-      std::cerr << "Exception thrown at:\n" << a.what() << std::endl ;
+  catch ( std::runtime_error& a ) {
+      std::cerr << "Runtime error:\n" << a.what() << std::endl ;
   }
   catch (...){
     std::cerr << "Unknown exception thrown!" << std::endl;
