@@ -62,8 +62,8 @@ namespace Dune {
 					RmatrixObjectType& Rmatrix,
 					ZmatrixObjectType& Zmatrix,
 					WmatrixObjectType& Wmatrix,
-					DiscreteSigmaFunctionType& rhs1,
-					DiscreteVelocityFunctionType& rhs2,
+					DiscreteSigmaFunctionType& rhs1_orig,
+					DiscreteVelocityFunctionType& rhs2_orig,
 					DiscretePressureFunctionType& rhs3 ) const
 		{
 
@@ -128,11 +128,13 @@ namespace Dune {
 	/*** making our matrices kuhnibert compatible ****/
 			const double m_scale = m_inv_mat(0,0);
 			b_t_mat.scale( -1 ); //since B_t = -E
+			DiscreteSigmaFunctionType rhs1 = rhs1_orig;
 			rhs1 *=  m_scale;
 
 			//transformation from StokesPass::buildMatrix
 			VelocityDiscreteFunctionType v_tmp ( "v_tmp", velocity.space() );
 			x_mat.apply( rhs1, v_tmp );
+			DiscreteVelocityFunctionType rhs2 = rhs2_orig;
 			rhs2 -= v_tmp;
 	/***********/
 
@@ -304,8 +306,6 @@ namespace Dune {
 	#endif
 			// undo scaling and stuff ***************************
 			b_t_mat.scale( -1 );
-			rhs1 /=  m_scale;
-			rhs2 += v_tmp;
 			// ***************************
 			return info;
 		} //end SaddlepointInverseOperator::solve
