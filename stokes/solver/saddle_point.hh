@@ -126,8 +126,9 @@ namespace Dune {
 			WmatrixType& w_mat      = Wmatrix.matrix();
 
 	/*** making our matrices kuhnibert compatible ****/
+			const double m_scale = m_inv_mat(0,0);
 			b_t_mat.scale( -1 ); //since B_t = -E
-			rhs1 *=  m_inv_mat(0,0);
+			rhs1 *=  m_scale;
 
 			//transformation from StokesPass::buildMatrix
 			VelocityDiscreteFunctionType v_tmp ( "v_tmp", velocity.space() );
@@ -301,6 +302,11 @@ namespace Dune {
 			info.iterations_outer_total = iteration;
 			info.max_inner_accuracy = max_inner_accuracy;
 	#endif
+			// undo scaling and stuff ***************************
+			b_t_mat.scale( -1 );
+			rhs1 /=  m_scale;
+			rhs2 += v_tmp;
+			// ***************************
 			return info;
 		} //end SaddlepointInverseOperator::solve
 
