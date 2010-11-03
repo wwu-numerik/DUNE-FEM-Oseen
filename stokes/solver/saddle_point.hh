@@ -127,9 +127,7 @@ namespace Dune {
 
 	/*** making our matrices kuhnibert compatible ****/
 			b_t_mat.scale( -1 ); //since B_t = -E
-			w_mat.scale( m_inv_mat(0,0) );
 			rhs1 *=  m_inv_mat(0,0);
-			m_inv_mat.scale( 1 / m_inv_mat(0,0) );
 
 			//transformation from StokesPass::buildMatrix
 			VelocityDiscreteFunctionType v_tmp ( "v_tmp", velocity.space() );
