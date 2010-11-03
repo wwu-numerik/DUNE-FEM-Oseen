@@ -2070,7 +2070,7 @@ class StokesPass
 															Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 				}
 				else {
-					info_ = InvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
+					info_ = SolverCaller<InvOpType>::solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
 											   *actually_used_Omatrix, Ematrix, Rmatrix,
 											   Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 				}

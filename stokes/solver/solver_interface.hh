@@ -46,6 +46,43 @@ struct SaddlepointInverseOperatorInfo {
 	double max_inner_accuracy;
 };
 
+template<class SolverType>
+struct SolverCaller {
+	template <  class DomainType,
+				class RangeType,
+				class XmatrixObjectType,
+				class MInversMatrixObjectType,
+				class YmatrixObjectType,
+				class EmatrixObjectType,
+				class RmatrixObjectType,
+				class ZmatrixObjectType,
+				class WmatrixObjectType,
+				class DiscreteSigmaFunctionType,
+				class DiscreteVelocityFunctionType,
+				class DiscretePressureFunctionType  >
+	static SaddlepointInverseOperatorInfo solve( const DomainType& arg,
+				RangeType& dest,
+				XmatrixObjectType& Xmatrix,
+				MInversMatrixObjectType& MInversMatrix,
+				YmatrixObjectType& Ymatrix,
+				YmatrixObjectType& Omatrix,
+				EmatrixObjectType& Ematrix,
+				RmatrixObjectType& Rmatrix,
+				ZmatrixObjectType& Zmatrix,
+				WmatrixObjectType& Wmatrix,
+				DiscreteSigmaFunctionType& H1rhs,
+				DiscreteVelocityFunctionType& H2rhs,
+				DiscretePressureFunctionType& H3rhs )
+	{
+		SolverType().solve( arg, dest,
+							Xmatrix, MInversMatrix, Ymatrix,
+							Omatrix, Ematrix, Rmatrix,
+							Zmatrix, Wmatrix,
+							H1rhs, H2rhs, H3rhs );
+	}
+
+};
+
 } //end namespace Dune
 
 #endif // DUNE_STOKES_SOLVER_INTERFACE_HH
