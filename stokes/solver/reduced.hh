@@ -104,8 +104,9 @@ namespace Dune {
 
 			VelocityDiscreteFunctionType F( "f", velocity.space() );
 			// F = H_2 - X M^{-1} H_1
-			rhs1 *=  m_inv_mat(0,0);
-			x_mat.apply( rhs1, F );
+			DiscreteSigmaFunctionType sig_tmp( "sig_tmp", rhs1.space() );
+			m_inv_mat.apply( rhs1, sig_tmp );
+			x_mat.apply( sig_tmp, F );
 			F *= -1;
 			F += rhs2;
 
@@ -122,6 +123,7 @@ namespace Dune {
 			SaddlepointInverseOperatorInfo info;
 			innerCGSolverWrapper.apply(F,velocity);
 			logInfo << "End ReducedInverseOperator " << std::endl;
+
 			return info;
 		} //end ReducedInverseOperator::solve
 

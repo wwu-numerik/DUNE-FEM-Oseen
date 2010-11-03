@@ -2090,7 +2090,6 @@ class StokesPass
 
 				// \sigma = M^{-1} ( H_1 - Wu )
 				const double m_inv_scale = MInversMatrix.matrix()(0,0);
-				H1rhs /= m_inv_scale;//we scaled rhs1 in reduced solver, invert that
 				rhs_datacontainer->velocity_gradient.assign( H1rhs );
 				DiscreteSigmaFunctionType sigma_tmp( "sigma_dummy", sigmaSpace_ );
 				Wmatrix.apply( dest.discreteVelocity(), sigma_tmp );
