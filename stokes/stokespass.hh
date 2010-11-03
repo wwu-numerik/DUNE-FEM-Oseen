@@ -2060,12 +2060,12 @@ class StokesPass
 			const bool use_reduced_solver = do_oseen_discretization_ && Parameters().getParam( "reduced_oseen_solver", false );
 			if( !use_reduced_solver ) {
 				if ( Parameters().getParam( "use_nested_cg_solver", false ) ) {
-					info_ = AltInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
+					info_ = SolverCaller<AltInvOpType>::solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
 												  *actually_used_Omatrix, Ematrix, Rmatrix,
 												  Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 				}
 				else if ( Parameters().getParam( "use_full_solver", false ) ) {
-					info_ = DirectKrylovSolverType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
+					info_ = SolverCaller<DirectKrylovSolverType>::solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
 															*actually_used_Omatrix, Ematrix, Rmatrix,
 															Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 				}
@@ -2076,7 +2076,7 @@ class StokesPass
 				}
 			}
 			else {
-				info_ = ReducedInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
+				info_ = SolverCaller<ReducedInvOpType>::solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
 												  *actually_used_Omatrix, Ematrix, Rmatrix,
 												  Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 			}
