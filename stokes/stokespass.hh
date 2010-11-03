@@ -2129,6 +2129,64 @@ class StokesPass
 			}
         } // end of apply
 
+		template <class MatrixObjectType, class PressureGradientDiscreteFunctionType>
+		void getPressureGradient(const MatrixObjectType& matrix_object, const DiscretePressureFunctionType& pressure, PressureGradientDiscreteFunctionType& pressure_gradient ) const
+		{
+			typedef typename DiscretePressureFunctionType::FunctionSpaceType
+			        SpaceType;
+			typedef typename SpaceType::GridPartType
+	            GridPart;
+	        typedef typename GridPart::template Codim< 0 >::IteratorType
+	            EntityIteratorType;
+	        typedef typename GridPart::IntersectionIteratorType
+	            IntersectionIteratorType;
+	        typedef typename IntersectionIteratorType::EntityPointer
+	            EntityPointer;
+			typedef typename MatrixObjectType::LocalMatrixType
+				LocalMatrixType;
+			typedef typename PressureGradientDiscreteFunctionType::LocalFunctionType
+				PressureGradientLocalFunction;
+			typedef typename DiscretePressureFunctionType::LocalFunctionType
+				PressureLocalFunction;
+			const SpaceType& space_ = pressure.space();
+			const GridPart& gridPart_ = space_.gridPart();
+			Logger().Err().Resume( 9001 );
+			Stuff::LocalMatrixPrintFunctor< MatrixObjectType, Logging::LogStream > local_print( matrix_object, Logger().Err(), std::string("LOCAL Z" ) );
+			Stuff::LocalFunctionVerbatimPrintFunctor< PressureGradientDiscreteFunctionType, Logging::LogStream > local_print_pressure_grad( pressure_gradient, Logger().Err() );
+			Stuff::LocalFunctionVerbatimPrintFunctor< DiscretePressureFunctionType, Logging::LogStream > local_print_pressure( pressure, Logger().Err() );
+			EntityIteratorType entityItEndLog = space_.end();
+			for (   EntityIteratorType it = space_.begin();
+					it != entityItEndLog;
+					++it )
+			{
+				LocalMatrixType local_matrix = matrix_object.localMatrix( *it, *it );
+				PressureGradientLocalFunction local_pressure_gradient = pressure_gradient.localFunction( * it );
+				PressureLocalFunction local_pressure = pressure.localFunction( * it );
+				local_print(*it,*it,0,0);
+				local_print_pressure_grad(*it,*it,0,0);
+				local_print_pressure(*it,*it,0,0);
+				Logger().Err() << std::endl;
+//				local_matrix.multiplyAdd( local_pressure, local_pressure_gradient );
+				const int rows = local_matrix.rows();
+	            const int cols = local_matrix.columns();
+	            for ( int i = 0; i < rows; ++i ) {
+					local_pressure_gradient[i] = 0;
+	                for ( int j = 0; j < cols; ++j ) {
+						local_pressure_gradient[i] += local_matrix.get(i,j) * local_pressure[j];
+					}
+				}
+
+				IntersectionIteratorType intItEnd = gridPart_.iend( *it );
+				for (   IntersectionIteratorType intIt = gridPart_.ibegin( *it );
+						intIt != intItEnd;
+						++intIt ) {
+					if ( !intIt.boundary() ) {
+
+					}
+				}
+			}
+		}
+
 		struct ConvectiveTerm : public DiscreteVelocityFunctionType::RangeType {
 			ConvectiveTerm( const typename DiscreteVelocityFunctionType::RangeType u,
 							typename DiscreteSigmaFunctionType::RangeType du)
