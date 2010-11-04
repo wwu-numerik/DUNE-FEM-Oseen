@@ -54,17 +54,17 @@ namespace Dune {
 					class DiscretePressureFunctionType  >
 		SaddlepointInverseOperatorInfo solve( const DomainType& /*arg*/,
 					RangeType& dest,
-					XmatrixObjectType& Xmatrix,
-					MmatrixObjectType& Mmatrix,
-					YmatrixObjectType& Ymatrix,
-					YmatrixObjectType& Omatrix,
-					EmatrixObjectType& Ematrix,
-					RmatrixObjectType& Rmatrix,
-					ZmatrixObjectType& Zmatrix,
-					WmatrixObjectType& Wmatrix,
-					DiscreteSigmaFunctionType& rhs1_orig,
-					DiscreteVelocityFunctionType& rhs2_orig,
-					DiscretePressureFunctionType& rhs3 ) const
+					const XmatrixObjectType& Xmatrix,
+					const MmatrixObjectType& Mmatrix,
+					const YmatrixObjectType& Ymatrix,
+					const YmatrixObjectType& Omatrix,
+					const EmatrixObjectType& Ematrix,
+					const RmatrixObjectType& Rmatrix,
+					const ZmatrixObjectType& Zmatrix,
+					const WmatrixObjectType& Wmatrix,
+					const DiscreteSigmaFunctionType& rhs1_orig,
+					const DiscreteVelocityFunctionType& rhs2_orig,
+					const DiscretePressureFunctionType& rhs3 ) const
 		{
 
 			Logging::LogStream& logDebug = Logger().Dbg();
