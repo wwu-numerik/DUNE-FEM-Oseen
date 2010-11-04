@@ -42,7 +42,7 @@ namespace Dune {
 
 		/** takes raw matrices and right hand sides from pass as input, executes nested cg algorithm and outputs solution
 		*/
-		template <  class XmatrixObjectType,
+		template <  class XmatrixType,
 					class MmatrixObjectType,
 					class YmatrixObjectType,
 					class EmatrixObjectType,
@@ -54,7 +54,7 @@ namespace Dune {
 					class DiscretePressureFunctionType  >
 		SaddlepointInverseOperatorInfo solve( const DomainType& /*arg*/,
 					RangeType& dest,
-					const XmatrixObjectType& Xmatrix,
+					XmatrixType& Xmatrix,
 					const MmatrixObjectType& Mmatrix,
 					const YmatrixObjectType& Ymatrix,
 					const YmatrixObjectType& Omatrix,
@@ -101,8 +101,6 @@ namespace Dune {
 			PressureDiscreteFunctionType& pressure = dest.discretePressure();
 			VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
 
-			typedef typename  XmatrixObjectType::MatrixType
-				XmatrixType;
 			typedef typename  MmatrixObjectType::MatrixType
 				MmatrixType;
 			typedef typename  YmatrixObjectType::MatrixType
@@ -116,7 +114,7 @@ namespace Dune {
 			typedef typename  WmatrixObjectType::MatrixType
 				WmatrixType;
 
-			XmatrixType& x_mat      = Xmatrix.matrix();
+			XmatrixType& x_mat      = Xmatrix;
 			MmatrixType& m_inv_mat  = Mmatrix.matrix();
 			YmatrixType& y_mat      = Ymatrix.matrix();
 			YmatrixType& o_mat      = Omatrix.matrix();

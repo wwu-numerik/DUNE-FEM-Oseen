@@ -33,6 +33,7 @@
 #include <dune/stuff/logging.hh>
 
 #include <cmath>
+#include <boost/utility.hpp>
 
 
 
@@ -44,6 +45,67 @@ struct SaddlepointInverseOperatorInfo {
 	int iterations_inner_max;
 	int iterations_outer_total;
 	double max_inner_accuracy;
+};
+
+template < class MatrixObjectType >
+class MatrixWrapper : boost::noncopyable {
+	private:
+		typedef typename MatrixObjectType::MatrixType
+			MatrixType;
+	public:
+		MatrixWrapper( const MatrixObjectType& matrix_object )
+			:matrix_object_( matrix_object ),
+			cumulative_scale_factor_( 1.0 )
+		{}
+
+		~MatrixWrapper()
+		{
+			assert( cumulative_scale_factor_ != 0 );
+			matrix_object_.matrix().scale( 1.0/cumulative_scale_factor_ );
+		}
+
+		template <class DiscFType, class DiscFuncType>
+		void apply(const DiscFType &f, DiscFuncType &ret) const
+		{
+			matrix_object_.apply( f, ret );
+		}
+		//! return diagonal of (this * A * B)
+		template <class DiscrecteFunctionType>
+		void getDiag(const MatrixType& A, const MatrixType& B, DiscrecteFunctionType& rhs) const
+		{
+			matrix_object_.matrix().getDiag( A, B, rhs );
+		}
+
+		//! return diagonal of (this * A)
+		template <class DiscrecteFunctionType>
+		void getDiag(const MatrixType& A, DiscrecteFunctionType& rhs) const
+		{
+			matrix_object_.matrix().getDiag( A, rhs );
+		}
+
+		//! same as apply A * x = ret, used by OEM-Solvers
+		template <class VECtype>
+		void multOEM(const VECtype *x, VECtype * ret) const
+		{
+			matrix_object_.matrix().multOEM( x, ret );
+		}
+
+		//! calculates ret += A * x
+		template <class VECtype>
+		void multOEMAdd(const VECtype *x, VECtype * ret) const
+		{
+			matrix_object_.matrix().multOEMAdd( x, ret );
+		}
+
+		void scale( const double factor )
+		{
+			cumulative_scale_factor_ *= factor;
+			matrix_object_.matrix().scale( factor );
+		}
+
+	private:
+		const MatrixObjectType& matrix_object_;
+		double cumulative_scale_factor_;
 };
 
 template<class SolverType>
@@ -74,8 +136,9 @@ struct SolverCaller {
 				const DiscreteVelocityFunctionType& H2rhs,
 				const DiscretePressureFunctionType& H3rhs )
 	{
+		MatrixWrapper<XmatrixObjectType> X(Xmatrix);
 		SolverType().solve(	arg, dest,
-							Xmatrix, MInversMatrix, Ymatrix,
+							X, MInversMatrix, Ymatrix,
 							Omatrix, Ematrix, Rmatrix,
 							Zmatrix, Wmatrix,
 							H1rhs, H2rhs, H3rhs );
