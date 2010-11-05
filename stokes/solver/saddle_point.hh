@@ -290,8 +290,6 @@ namespace Dune {
 			info.iterations_outer_total = iteration;
 			info.max_inner_accuracy = max_inner_accuracy;
 	#endif
-			// undo scaling and stuff ***************************
-			b_t_mat.scale( -1 );
 			// ***************************
 			return info;
 		} //end SaddlepointInverseOperator::solve
