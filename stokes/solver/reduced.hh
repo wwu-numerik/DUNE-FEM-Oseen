@@ -39,26 +39,27 @@ namespace Dune {
 
 		/** takes raw matrices and right hand sides from pass as input, executes nested cg algorithm and outputs solution
 		*/
-		template <  class XmatrixObjectType,
-					class MmatrixObjectType,
-					class YmatrixObjectType,
-					class EmatrixObjectType,
-					class RmatrixObjectType,
-					class ZmatrixObjectType,
-					class WmatrixObjectType,
+		template <  class X_MatrixType,
+					class M_invers_matrixType,
+					class Y_MatrixType,
+					class O_MatrixType,
+					class E_MatrixType,
+					class R_MatrixType,
+					class Z_MatrixType,
+					class W_MatrixType,
 					class DiscreteSigmaFunctionType,
 					class DiscreteVelocityFunctionType,
 					class DiscretePressureFunctionType  >
 		SaddlepointInverseOperatorInfo solve( const DomainType& /*arg*/,
 					RangeType& dest,
-					const XmatrixObjectType& Xmatrix,
-					const MmatrixObjectType& Mmatrix,
-					const YmatrixObjectType& Ymatrix,
-					const YmatrixObjectType& Omatrix,
-					const EmatrixObjectType& /*Ematrix*/,
-					const RmatrixObjectType& /*Rmatrix*/,
-					const ZmatrixObjectType& /*Zmatrix*/,
-					const WmatrixObjectType& Wmatrix,
+					X_MatrixType& Xmatrix,
+					M_invers_matrixType& Mmatrix,
+					Y_MatrixType& Ymatrix,
+					O_MatrixType& Omatrix,
+					E_MatrixType& /*Ematrix*/,
+					R_MatrixType& /*Rmatrix*/,
+					Z_MatrixType& /*Zmatrix*/,
+					W_MatrixType& Wmatrix,
 					const DiscreteSigmaFunctionType& rhs1,
 					const DiscreteVelocityFunctionType& rhs2,
 					const DiscretePressureFunctionType& /*rhs3*/ ) const
@@ -87,20 +88,11 @@ namespace Dune {
 			//get some refs for more readability
 			VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
 
-			typedef typename  XmatrixObjectType::MatrixType
-				XmatrixType;
-			typedef typename  MmatrixObjectType::MatrixType
-				MmatrixType;
-			typedef typename  YmatrixObjectType::MatrixType
-				YmatrixType;
-			typedef typename  WmatrixObjectType::MatrixType
-				WmatrixType;
-
-			XmatrixType& x_mat      = Xmatrix.matrix();
-			MmatrixType& m_inv_mat  = Mmatrix.matrix();
-			YmatrixType& y_mat      = Ymatrix.matrix();
-			YmatrixType& o_mat      = Omatrix.matrix();
-			WmatrixType& w_mat      = Wmatrix.matrix();
+			X_MatrixType& x_mat      = Xmatrix;
+			M_invers_matrixType& m_inv_mat  = Mmatrix;
+			Y_MatrixType& y_mat      = Ymatrix;
+			O_MatrixType& o_mat      = Omatrix;
+			W_MatrixType& w_mat      = Wmatrix;
 
 			VelocityDiscreteFunctionType F( "f", velocity.space() );
 			// F = H_2 - X M^{-1} H_1
@@ -110,10 +102,10 @@ namespace Dune {
 			F *= -1;
 			F += rhs2;
 
-			typedef InnerCGSolverWrapper< WmatrixType,
-									MmatrixType,
-									XmatrixType,
-									YmatrixType,
+			typedef InnerCGSolverWrapper< W_MatrixType,
+									M_invers_matrixType,
+									X_MatrixType,
+									Y_MatrixType,
 									DiscreteSigmaFunctionType,
 									DiscreteVelocityFunctionType >
 				InnerCGSolverWrapperType;

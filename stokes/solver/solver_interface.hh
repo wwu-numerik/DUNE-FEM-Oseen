@@ -49,10 +49,12 @@ struct SaddlepointInverseOperatorInfo {
 
 template < class MatrixObjectType >
 class MatrixWrapper : boost::noncopyable {
-	private:
+	public:
 		typedef typename MatrixObjectType::MatrixType
 			MatrixType;
-	public:
+		typedef typename MatrixObjectType::MatrixType
+			RealMatrixType;
+
 		MatrixWrapper( const MatrixObjectType& matrix_object )
 			:matrix_object_( matrix_object ),
 			cumulative_scale_factor_( 1.0 )
@@ -97,6 +99,21 @@ class MatrixWrapper : boost::noncopyable {
 			matrix_object_.matrix().multOEMAdd( x, ret );
 		}
 
+		double operator ()(const size_t i, const size_t j ) const
+		{
+			return matrix_object_.matrix()(i,j);
+		}
+
+		size_t rows() const
+		{
+			return matrix_object_.matrix().rows();
+		}
+
+		size_t cols() const
+		{
+			return matrix_object_.matrix().cols();
+		}
+
 		void scale( const double factor )
 		{
 			cumulative_scale_factor_ *= factor;
@@ -115,6 +132,7 @@ struct SolverCaller {
 				class XmatrixObjectType,
 				class MInversMatrixObjectType,
 				class YmatrixObjectType,
+				class OmatrixObjectType,
 				class EmatrixObjectType,
 				class RmatrixObjectType,
 				class ZmatrixObjectType,
@@ -127,7 +145,7 @@ struct SolverCaller {
 				const XmatrixObjectType& Xmatrix,
 				const MInversMatrixObjectType& MInversMatrix,
 				const YmatrixObjectType& Ymatrix,
-				const YmatrixObjectType& Omatrix,
+				const OmatrixObjectType& Omatrix,
 				const EmatrixObjectType& Ematrix,
 				const RmatrixObjectType& Rmatrix,
 				const ZmatrixObjectType& Zmatrix,
@@ -137,10 +155,17 @@ struct SolverCaller {
 				const DiscretePressureFunctionType& H3rhs )
 	{
 		MatrixWrapper<XmatrixObjectType> X(Xmatrix);
+		MatrixWrapper<MInversMatrixObjectType> M_invers(MInversMatrix);
+		MatrixWrapper<YmatrixObjectType> Y(Ymatrix);
+		MatrixWrapper<OmatrixObjectType> O(Omatrix);
+		MatrixWrapper<EmatrixObjectType> E(Ematrix);
+		MatrixWrapper<RmatrixObjectType> R(Rmatrix);
+		MatrixWrapper<ZmatrixObjectType> Z(Zmatrix);
+		MatrixWrapper<WmatrixObjectType> W(Wmatrix);
+
 		SolverType().solve(	arg, dest,
-							X, MInversMatrix, Ymatrix,
-							Omatrix, Ematrix, Rmatrix,
-							Zmatrix, Wmatrix,
+							X, M_invers, Y,
+							O, E, R, Z, W,
 							H1rhs, H2rhs, H3rhs );
 	}
 
