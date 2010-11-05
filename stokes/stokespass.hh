@@ -11,8 +11,7 @@
 #include <dune/fem/quadrature/caching/twistutility.hh>
 #include <dune/fem/misc/l2norm.hh>
 
-#include <dune/stokes/saddlepoint_inverse_operator.hh>
-//#include <dune/stokes/direct_solver.hh>
+#include <dune/stokes/solver/solvercaller.hh>
 
 #include <dune/common/stdstreams.hh>
 #include <dune/stuff/matrix.hh>
@@ -163,18 +162,6 @@ class StokesPass
         //! type of codim 0 entity
         typedef typename GridType::template Codim< 0 >::Entity
             EntityType;
-
-		//! alternative solver implementation
-        typedef NestedCgSaddlepointInverseOperator< ThisType >
-			AltInvOpType;
-		//! type of the used solver
-        typedef SaddlepointInverseOperator< ThisType >
-			InvOpType;
-		//! this is used for reduced (no pressure, incompress. condition) oseen pass
-		typedef ReducedInverseOperator< ThisType >
-			ReducedInvOpType;
-		typedef DirectKrylovSolver< ThisType >
-			DirectKrylovSolverType;
 
         //! polynomial order for the discrete sigma function space
         static const int sigmaSpaceOrder
@@ -2058,28 +2045,23 @@ class StokesPass
 
 			//this lets us switch between standalone oseen and reduced oseen in  thete scheme easily
 			const bool use_reduced_solver = do_oseen_discretization_ && Parameters().getParam( "reduced_oseen_solver", false );
+			typedef SolverCaller< ThisType >
+				SolverCallerType;
+
+			//Select which solver we want to use
+			typename SolverCallerType::SolverID solver_ID = SolverCallerType::SaddlePoint_Solver_ID;
 			if( !use_reduced_solver ) {
-				if ( Parameters().getParam( "use_nested_cg_solver", false ) ) {
-					info_ = SolverCaller<AltInvOpType>::solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
-												  *actually_used_Omatrix, Ematrix, Rmatrix,
-												  Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-				}
-				else if ( Parameters().getParam( "use_full_solver", false ) ) {
-					info_ = SolverCaller<DirectKrylovSolverType>::solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
-															*actually_used_Omatrix, Ematrix, Rmatrix,
-															Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-				}
-				else {
-					info_ = SolverCaller<InvOpType>::solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
-											   *actually_used_Omatrix, Ematrix, Rmatrix,
-											   Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-				}
+				if ( Parameters().getParam( "use_nested_cg_solver", false ) )
+					solver_ID = SolverCallerType::NestedCG_Solver_ID;
+				else if ( Parameters().getParam( "use_full_solver", false ) )
+					solver_ID = SolverCallerType::FullSystem_Solver_ID;
 			}
-			else {
-				info_ = SolverCaller<ReducedInvOpType>::solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
-												  *actually_used_Omatrix, Ematrix, Rmatrix,
-												  Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-			}
+			else
+				solver_ID = SolverCallerType::Reduced_Solver_ID;
+
+			info_ = SolverCallerType::solve(solver_ID, arg, dest, Xmatrix, MInversMatrix, Ymatrix,
+											*actually_used_Omatrix, Ematrix, Rmatrix,
+											Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 
             // do profiling
             profiler().StopTiming("Pass -- SOLVER");

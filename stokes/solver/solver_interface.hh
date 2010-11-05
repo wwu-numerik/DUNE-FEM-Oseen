@@ -125,51 +125,6 @@ class MatrixWrapper : boost::noncopyable {
 		double cumulative_scale_factor_;
 };
 
-template<class SolverType>
-struct SolverCaller {
-	template <  class DomainType,
-				class RangeType,
-				class XmatrixObjectType,
-				class MInversMatrixObjectType,
-				class YmatrixObjectType,
-				class OmatrixObjectType,
-				class EmatrixObjectType,
-				class RmatrixObjectType,
-				class ZmatrixObjectType,
-				class WmatrixObjectType,
-				class DiscreteSigmaFunctionType,
-				class DiscreteVelocityFunctionType,
-				class DiscretePressureFunctionType  >
-	static SaddlepointInverseOperatorInfo solve( const DomainType& arg,
-				RangeType& dest,
-				const XmatrixObjectType& Xmatrix,
-				const MInversMatrixObjectType& MInversMatrix,
-				const YmatrixObjectType& Ymatrix,
-				const OmatrixObjectType& Omatrix,
-				const EmatrixObjectType& Ematrix,
-				const RmatrixObjectType& Rmatrix,
-				const ZmatrixObjectType& Zmatrix,
-				const WmatrixObjectType& Wmatrix,
-				const DiscreteSigmaFunctionType& H1rhs,
-				const DiscreteVelocityFunctionType& H2rhs,
-				const DiscretePressureFunctionType& H3rhs )
-	{
-		MatrixWrapper<XmatrixObjectType> X(Xmatrix);
-		MatrixWrapper<MInversMatrixObjectType> M_invers(MInversMatrix);
-		MatrixWrapper<YmatrixObjectType> Y(Ymatrix);
-		MatrixWrapper<OmatrixObjectType> O(Omatrix);
-		MatrixWrapper<EmatrixObjectType> E(Ematrix);
-		MatrixWrapper<RmatrixObjectType> R(Rmatrix);
-		MatrixWrapper<ZmatrixObjectType> Z(Zmatrix);
-		MatrixWrapper<WmatrixObjectType> W(Wmatrix);
-
-		SolverType().solve(	arg, dest,
-							X, M_invers, Y,
-							O, E, R, Z, W,
-							H1rhs, H2rhs, H3rhs );
-	}
-
-};
 
 } //end namespace Dune
 
