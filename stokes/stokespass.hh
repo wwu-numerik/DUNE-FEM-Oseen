@@ -1711,7 +1711,7 @@ class StokesPass
 							//                                                                                                           // we will call this one
 							// (O)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}} STUFF n_{t}ds											// O's boundary integral
 							//                                                                                                           // see also "O's element surface integral" and "Y's neighbour surface integral" above
-							for ( int i = 0; (j < numVelocityBaseFunctionsElement ) && do_oseen_discretization_; ++i ) {
+							for ( int i = 0; (i < numVelocityBaseFunctionsElement ) && do_oseen_discretization_; ++i ) {
 								for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
 									double O_i_j = 0.0;
 									// sum over all quadrature points
