@@ -2170,15 +2170,15 @@ class StokesPass
 		}
 
 		struct ConvectiveTerm : public DiscreteVelocityFunctionType::RangeType {
-			ConvectiveTerm( const typename DiscreteVelocityFunctionType::RangeType u,
+			ConvectiveTerm( const typename DiscreteVelocityFunctionType::RangeType beta,
 							typename DiscreteSigmaFunctionType::RangeType du)
 			{
-				for ( size_t d = 0; d< u.dim(); ++d )  {
+				for ( size_t d = 0; d< beta.dim(); ++d )  {
 					typename DiscreteVelocityFunctionType::RangeType j;
-					for ( size_t i = 0; i< u.dim(); ++i )  {
+					for ( size_t i = 0; i< beta.dim(); ++i )  {
 						j[i] = du(d,i);
 					}
-					(*this)[d] = u * j;
+					(*this)[d] = beta * j;
 				}
 			}
 		};
@@ -2196,19 +2196,14 @@ class StokesPass
 				typedef typename EntityType::Geometry
 					EntityGeometryType;
 				const EntityGeometryType& geo = entity.geometry();
-//						typedef typename GradientFunctionType::BaseFunctionSetType
-//							SigmaBaseFunctionSetType;
-				// of type u
 				typedef typename DiscreteVelocityFunctionSpaceType::BaseFunctionSetType
 					VelocityBaseFunctionSetType;
-				// of type p
 				typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType
 					PressureBaseFunctionSetType;
 
 				typename DiscreteVelocityFunctionType::LocalFunctionType beta_local = beta.localFunction( *entityIt );
-//						typename GradientFunctionType::LocalFunctionType sigma_local = sigma.localFunction( *entityIt );
 				typename DiscreteVelocityFunctionType::LocalFunctionType convection_local = convection.localFunction( *entityIt );
-				const VolumeQuadratureType quad( entity, ( 4 * pressureSpaceOrder ) + 1 );
+				const VolumeQuadratureType quad( entity, ( 2 * pressureSpaceOrder ) + 1 );
 				const VelocityBaseFunctionSetType velocityBaseFunctionSetElement = velocitySpace_.baseFunctionSet( entity );
 				const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
 				const int quadNop = quad.nop();
@@ -2217,8 +2212,8 @@ class StokesPass
 				{
 					const typename DiscreteVelocityFunctionSpaceType::DomainType xLocal = quad.point(qP);
 
-					const double intel = (true) ?
-						quad.weight(qP): // affine case
+//					const double intel = quad.weight(qP); // affine case, would need mult thingy at bottom
+					const double intel =
 						quad.weight(qP)* geo.integrationElement( xLocal ); // general case
 
 					typename DiscreteVelocityFunctionSpaceType::DomainType
@@ -2230,10 +2225,10 @@ class StokesPass
 					sigma.evaluate( xWorld, sigma_eval );
 
 					typename DiscreteVelocityFunctionType::RangeType
-						velocity_eval;
-					beta_local.evaluate( quad[qP], velocity_eval );
+						beta_eval;
+					beta_local.evaluate( quad[qP], beta_eval );
 
-					ConvectiveTerm c(velocity_eval,sigma_eval);
+					ConvectiveTerm c(beta_eval,sigma_eval);
 
 					// do projection
 					for(int i=0; i<numVelocityBaseFunctionsElement; ++i)
