@@ -80,7 +80,7 @@ SET( GRAPE_PATH
 	"GRAPE_PATH" )
 
 SET( CXX_FLAGS
-	-Wall -O3 -fomit-frame-pointer -funroll-loops -g -ggdb -DENABLE_ADAPTIVE=1 -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME CACHE STRING
+	-Wall -O3 -fomit-frame-pointer -DDNDEBUG- funroll-loops -g -ggdb -DENABLE_ADAPTIVE=1 -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME CACHE STRING
 	"")
 
 SET( ENABLE_PARALELL
@@ -135,17 +135,18 @@ FILE( GLOB_RECURSE stokes "stokes/*.hh" )
 FILE( GLOB stuff "../dune-stuff/stuff/*.hh" )
 
 set_source_files_properties( ${stuff} ${stokes} ${header} PROPERTIES HEADER_FILE_ONLY 1 )
+set( COMMON_LIBS "fem" "grid" "common" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS} )
 
 ADD_EXECUTABLE(dune_stokes ${dune-stokesSrc} ${header} ${stokes} ${stuff} )
-TARGET_LINK_LIBRARIES(dune_stokes "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS} )
+TARGET_LINK_LIBRARIES(dune_stokes ${COMMON_LIBS}  )
 
 ADD_EXECUTABLE(scaling_test src/scaling_test.cc ${header} ${stokes} ${stuff} )
-TARGET_LINK_LIBRARIES(scaling_test "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS} )
+TARGET_LINK_LIBRARIES(scaling_test ${COMMON_LIBS}  )
 
 ADD_EXECUTABLE(minimal src/minimal.cc ${header} ${stokes} )
-TARGET_LINK_LIBRARIES(minimal "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS})
+TARGET_LINK_LIBRARIES(minimal ${COMMON_LIBS} )
 
 ADD_EXECUTABLE(visualisation src/visualisation.cc ${header} ${stokes} )
-TARGET_LINK_LIBRARIES(visualisation "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS})
+TARGET_LINK_LIBRARIES(visualisation ${COMMON_LIBS} )
 
 HEADERCHECK( ${header} ${stokes} )
