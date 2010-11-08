@@ -62,15 +62,15 @@ class MatrixA_Operator //: public OEMSolver::PreconditionInterface
 			precondition_diagonal_( "diag1", space ),
 			precondition_matrix_invers( y_mat_.cols(), y_mat_.rows(), 10 )
         {
-			x_mat_.getDiag( m_mat_, w_mat_, precondition_diagonal_);
-			precondition_diagonal_ *= -1;
-			y_mat_.addDiag( precondition_diagonal_ );
-			o_mat_.addDiag( precondition_diagonal_ );
-			setMatrixDiag( precondition_matrix_, precondition_diagonal_ );
-			DiscreteVelocityFunctionType precondition_diagonal_inv( "diag_inv", space );
-			precondition_diagonal_inv.assign( precondition_diagonal_ );
-			Stuff::invertFunctionDofs( precondition_diagonal_inv );
-			setMatrixDiag( precondition_matrix_invers, precondition_diagonal_inv );
+//			x_mat_.getDiag( m_mat_, w_mat_, precondition_diagonal_);
+//			precondition_diagonal_ *= -1;
+//			y_mat_.addDiag( precondition_diagonal_ );
+//			o_mat_.addDiag( precondition_diagonal_ );
+//			setMatrixDiag( precondition_matrix_, precondition_diagonal_ );
+//			DiscreteVelocityFunctionType precondition_diagonal_inv( "diag_inv", space );
+//			precondition_diagonal_inv.assign( precondition_diagonal_ );
+//			Stuff::invertFunctionDofs( precondition_diagonal_inv );
+//			setMatrixDiag( precondition_matrix_invers, precondition_diagonal_inv );
 		}
 
         ~MatrixA_Operator()
@@ -119,7 +119,7 @@ class MatrixA_Operator //: public OEMSolver::PreconditionInterface
 
         bool hasPreconditionMatrix () const
         {
-            return true;
+			return false;
         }
 
         bool rightPrecondition() const
@@ -144,9 +144,9 @@ class MatrixA_Operator //: public OEMSolver::PreconditionInterface
         mutable DiscreteSigmaFunctionType sig_tmp1;
         mutable DiscreteSigmaFunctionType sig_tmp2;
 		const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& space_;
-		YMatType precondition_matrix_;
+		typename YMatType::MatrixType precondition_matrix_;
 		DiscreteVelocityFunctionType precondition_diagonal_;
-		YMatType precondition_matrix_invers;
+		typename YMatType::MatrixType precondition_matrix_invers;
 };
 
 
@@ -228,7 +228,7 @@ class InnerCGSolverWrapper {
 #endif
 
     private:
-        const MMatType precond_;
+//        const MMatType precond_;
         const WMatType& w_mat_;
         const MMatType& m_mat_;
         const XMatType& x_mat_;

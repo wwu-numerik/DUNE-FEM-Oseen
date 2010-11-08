@@ -11,8 +11,7 @@
 #include <dune/fem/quadrature/caching/twistutility.hh>
 #include <dune/fem/misc/l2norm.hh>
 
-#include <dune/stokes/saddlepoint_inverse_operator.hh>
-//#include <dune/stokes/direct_solver.hh>
+#include <dune/stokes/solver/solvercaller.hh>
 
 #include <dune/common/stdstreams.hh>
 #include <dune/stuff/matrix.hh>
@@ -163,18 +162,6 @@ class StokesPass
         //! type of codim 0 entity
         typedef typename GridType::template Codim< 0 >::Entity
             EntityType;
-
-		//! alternative solver implementation
-        typedef NestedCgSaddlepointInverseOperator< ThisType >
-			AltInvOpType;
-		//! type of the used solver
-        typedef SaddlepointInverseOperator< ThisType >
-			InvOpType;
-		//! this is used for reduced (no pressure, incompress. condition) oseen pass
-		typedef ReducedInverseOperator< ThisType >
-			ReducedInvOpType;
-		typedef DirectKrylovSolver< ThisType >
-			DirectKrylovSolverType;
 
         //! polynomial order for the discrete sigma function space
         static const int sigmaSpaceOrder
@@ -692,7 +679,7 @@ class StokesPass
                 } // done computing Y's volume integral
                 }
 
-				for ( int i = 0; i < numVelocityBaseFunctionsElement, do_oseen_discretization_; ++i ) {
+				for ( int i = 0; (i < numVelocityBaseFunctionsElement ) && do_oseen_discretization_; ++i ) {
 					for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
 						double O_i_j = 0.0;
 						double O_i_j_d = 0.0;
@@ -757,8 +744,8 @@ class StokesPass
 							O_i_j_d-= elementVolume
 							        * integrationWeight
 									* convection_scaling
-//									* u_h_times_divergence_of_beta_v_j_tensor_beta;
-										* ret;
+									* u_h_times_divergence_of_beta_v_j_tensor_beta;
+//										* ret;
 
 						}
 						if ( fabs( O_i_j ) < eps ) {
@@ -1228,7 +1215,7 @@ class StokesPass
 							//           += \int_{ // O's neighbour surface integral
 							//                                                                                                         // see also "O's boundary integral" below
 
-							for ( int j = 0; j < numVelocityBaseFunctionsElement, do_oseen_discretization_; ++j ) {
+							for ( int j = 0; (j < numVelocityBaseFunctionsElement ) && do_oseen_discretization_; ++j ) {
 								// compute O's element surface integral
 								for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
 									double O_i_j = 0.0;
@@ -1256,7 +1243,7 @@ class StokesPass
 										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
 
 										VelocityRangeType E_11(1);
-//										E_11 = beta_eval;
+										E_11 = beta_eval;
 //										E_11 = xWorld;
 										E_11 *= 0.5;
 										VelocityRangeType flux_value;
@@ -1314,7 +1301,7 @@ class StokesPass
 										velocityBaseFunctionSetNeighbour.evaluate( j, xOutside, v_j );
 
 										VelocityRangeType E_11(1);
-//										E_11 = beta_eval;
+										E_11 = beta_eval;
 										E_11 *= 0.5;
 //										E_11 = xWorld;
 //										E_11 *= -1;
@@ -1724,7 +1711,7 @@ class StokesPass
 							//                                                                                                           // we will call this one
 							// (O)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}} STUFF n_{t}ds											// O's boundary integral
 							//                                                                                                           // see also "O's element surface integral" and "Y's neighbour surface integral" above
-							for ( int i = 0; i < numVelocityBaseFunctionsElement, do_oseen_discretization_; ++i ) {
+							for ( int i = 0; (i < numVelocityBaseFunctionsElement ) && do_oseen_discretization_; ++i ) {
 								for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
 									double O_i_j = 0.0;
 									// sum over all quadrature points
@@ -1752,10 +1739,10 @@ class StokesPass
 											flux_value = v_j;
 											const double flux_value_v_j = flux_value * v_i;
 											const double ret = beta_times_normal * flux_value_v_j;
-											O_i_j += elementVolume
-												* integrationWeight
-												* convection_scaling
-												* ret;
+//											O_i_j += elementVolume
+//												* integrationWeight
+//												* convection_scaling
+//												* ret;
 										}
 
 									} // done sum over all quadrature points
@@ -1904,11 +1891,11 @@ class StokesPass
 									//the inverse case is handled in O's boundary integral
 									flux_value = gD;
 									const double flux_times_v_j = flux_value * v_j;
-									H2_O_j -= elementVolume
-											* convection_scaling
-											* integrationWeight
-											* beta_times_normal
-											* flux_times_v_j;
+//									H2_O_j -= elementVolume
+//											* convection_scaling
+//											* integrationWeight
+//											* beta_times_normal
+//											* flux_times_v_j;
 								}
 
 							}
@@ -2058,28 +2045,23 @@ class StokesPass
 
 			//this lets us switch between standalone oseen and reduced oseen in  thete scheme easily
 			const bool use_reduced_solver = do_oseen_discretization_ && Parameters().getParam( "reduced_oseen_solver", false );
+			typedef SolverCaller< ThisType >
+				SolverCallerType;
+
+			//Select which solver we want to use
+			typename SolverCallerType::SolverID solver_ID = SolverCallerType::SaddlePoint_Solver_ID;
 			if( !use_reduced_solver ) {
-				if ( Parameters().getParam( "use_nested_cg_solver", false ) ) {
-					info_ = SolverCaller<AltInvOpType>::solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
-												  *actually_used_Omatrix, Ematrix, Rmatrix,
-												  Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-				}
-				else if ( Parameters().getParam( "use_full_solver", false ) ) {
-					info_ = SolverCaller<DirectKrylovSolverType>::solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
-															*actually_used_Omatrix, Ematrix, Rmatrix,
-															Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-				}
-				else {
-					info_ = SolverCaller<InvOpType>::solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
-											   *actually_used_Omatrix, Ematrix, Rmatrix,
-											   Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-				}
+				if ( Parameters().getParam( "use_nested_cg_solver", false ) )
+					solver_ID = SolverCallerType::NestedCG_Solver_ID;
+				else if ( Parameters().getParam( "use_full_solver", false ) )
+					solver_ID = SolverCallerType::FullSystem_Solver_ID;
 			}
-			else {
-				info_ = SolverCaller<ReducedInvOpType>::solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
-												  *actually_used_Omatrix, Ematrix, Rmatrix,
-												  Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-			}
+			else
+				solver_ID = SolverCallerType::Reduced_Solver_ID;
+
+			info_ = SolverCallerType::solve(solver_ID, arg, dest, Xmatrix, MInversMatrix, Ymatrix,
+											*actually_used_Omatrix, Ematrix, Rmatrix,
+											Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
 
             // do profiling
             profiler().StopTiming("Pass -- SOLVER");
@@ -2087,6 +2069,7 @@ class StokesPass
 			if ( rhs_datacontainer ) {
 				Zmatrix.apply( dest.discretePressure(), rhs_datacontainer->pressure_gradient );
 				rhs_datacontainer->pressure_gradient *= Parameters().getParam("pressure_gradient_scale", 1);
+				getPressureGradient( Zmatrix,  dest.discretePressure(),  rhs_datacontainer->pressure_gradient);
 
 				// \sigma = M^{-1} ( H_1 - Wu )
 				const double m_inv_scale = MInversMatrix.matrix()(0,0);
@@ -2172,37 +2155,38 @@ class StokesPass
 					it != entityItEndLog;
 					++it )
 			{
-				LocalMatrixType local_matrix = matrix_object.localMatrix( *it, *it );
-				PressureGradientLocalFunction local_pressure_gradient = pressure_gradient.localFunction( * it );
-				PressureLocalFunction local_pressure = pressure.localFunction( * it );
-				local_print(*it,*it,0,0);
-				local_print_pressure_grad(*it,*it,0,0);
-				local_print_pressure(*it,*it,0,0);
-				Logger().Err() << std::endl;
-//				local_matrix.multiplyAdd( local_pressure, local_pressure_gradient );
-				naiveMatrixMult( local_matrix, local_pressure, local_pressure_gradient );
-
+				bool hasBoundaryFace = false;
 				IntersectionIteratorType intItEnd = gridPart_.iend( *it );
 				for (   IntersectionIteratorType intIt = gridPart_.ibegin( *it );
 						intIt != intItEnd;
 						++intIt ) {
-					if ( !intIt.boundary() ) {
-
+					if ( intIt.boundary() ) {
+						hasBoundaryFace = true;
 					}
 				}
+				LocalMatrixType local_matrix = matrix_object.localMatrix( *it, *it );
+				PressureGradientLocalFunction local_pressure_gradient = pressure_gradient.localFunction( * it );
+				PressureLocalFunction local_pressure = pressure.localFunction( * it );
+//				local_print(*it,*it,0,0);
+//				local_print_pressure_grad(*it,*it,0,0);
+//				local_print_pressure(*it,*it,0,0);
+//				Logger().Err() << std::endl;
+//				local_matrix.multiplyAdd( local_pressure, local_pressure_gradient );
+				naiveMatrixMult( local_matrix, local_pressure, local_pressure_gradient );
+
 			}
 		}
 
 		struct ConvectiveTerm : public DiscreteVelocityFunctionType::RangeType {
-			ConvectiveTerm( const typename DiscreteVelocityFunctionType::RangeType u,
+			ConvectiveTerm( const typename DiscreteVelocityFunctionType::RangeType beta,
 							typename DiscreteSigmaFunctionType::RangeType du)
 			{
-				for ( size_t d = 0; d< u.dim(); ++d )  {
+				for ( size_t d = 0; d< beta.dim(); ++d )  {
 					typename DiscreteVelocityFunctionType::RangeType j;
-					for ( size_t i = 0; i< u.dim(); ++i )  {
+					for ( size_t i = 0; i< beta.dim(); ++i )  {
 						j[i] = du(d,i);
 					}
-					(*this)[d] = u * j;
+					(*this)[d] = beta * j;
 				}
 			}
 		};
@@ -2220,19 +2204,14 @@ class StokesPass
 				typedef typename EntityType::Geometry
 					EntityGeometryType;
 				const EntityGeometryType& geo = entity.geometry();
-//						typedef typename GradientFunctionType::BaseFunctionSetType
-//							SigmaBaseFunctionSetType;
-				// of type u
 				typedef typename DiscreteVelocityFunctionSpaceType::BaseFunctionSetType
 					VelocityBaseFunctionSetType;
-				// of type p
 				typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType
 					PressureBaseFunctionSetType;
 
 				typename DiscreteVelocityFunctionType::LocalFunctionType beta_local = beta.localFunction( *entityIt );
-//						typename GradientFunctionType::LocalFunctionType sigma_local = sigma.localFunction( *entityIt );
 				typename DiscreteVelocityFunctionType::LocalFunctionType convection_local = convection.localFunction( *entityIt );
-				const VolumeQuadratureType quad( entity, ( 4 * pressureSpaceOrder ) + 1 );
+				const VolumeQuadratureType quad( entity, ( 2 * pressureSpaceOrder ) + 1 );
 				const VelocityBaseFunctionSetType velocityBaseFunctionSetElement = velocitySpace_.baseFunctionSet( entity );
 				const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
 				const int quadNop = quad.nop();
@@ -2241,8 +2220,8 @@ class StokesPass
 				{
 					const typename DiscreteVelocityFunctionSpaceType::DomainType xLocal = quad.point(qP);
 
-					const double intel = (true) ?
-						quad.weight(qP): // affine case
+//					const double intel = quad.weight(qP); // affine case, would need mult thingy at bottom
+					const double intel =
 						quad.weight(qP)* geo.integrationElement( xLocal ); // general case
 
 					typename DiscreteVelocityFunctionSpaceType::DomainType
@@ -2254,10 +2233,10 @@ class StokesPass
 					sigma.evaluate( xWorld, sigma_eval );
 
 					typename DiscreteVelocityFunctionType::RangeType
-						velocity_eval;
-					beta_local.evaluate( quad[qP], velocity_eval );
+						beta_eval;
+					beta_local.evaluate( quad[qP], beta_eval );
 
-					ConvectiveTerm c(velocity_eval,sigma_eval);
+					ConvectiveTerm c(beta_eval,sigma_eval);
 
 					// do projection
 					for(int i=0; i<numVelocityBaseFunctionsElement; ++i)
