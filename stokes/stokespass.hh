@@ -905,8 +905,11 @@ class StokesPass
                     // if we are inside the grid
 					if ( intersection.neighbor() && !intersection.boundary() ) {
                         // get neighbour
+						//! DO NOT TRY TO DEREF outside() DIRECTLY
 						const typename IntersectionIteratorType::EntityPointer neighbourPtr = intersection.outside();
+						//there's some (copy ctor? / implicit type conversion) at play here which will make shit fail if you do
                         const EntityType& neighbour = *neighbourPtr;
+						// esp. these two line ARE NOT equiv. to const EntityType& neighbour = * (static_cast<const typename IntersectionIteratorType::EntityPointer>(intersection.outside()) );
 
                         // get local matrices for the surface integrals
                         LocalMInversMatrixType localMInversMatrixNeighbour = MInversMatrix.localMatrix( entity, neighbour );
