@@ -744,8 +744,8 @@ class StokesPass
 							O_i_j_d-= elementVolume
 							        * integrationWeight
 									* convection_scaling
-//									* u_h_times_divergence_of_beta_v_j_tensor_beta;
-										* ret;
+									* u_h_times_divergence_of_beta_v_j_tensor_beta;
+//										* ret;
 
 						}
 						if ( fabs( O_i_j ) < eps ) {
@@ -1243,7 +1243,7 @@ class StokesPass
 										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
 
 										VelocityRangeType E_11(1);
-//										E_11 = beta_eval;
+										E_11 = beta_eval;
 //										E_11 = xWorld;
 										E_11 *= 0.5;
 										VelocityRangeType flux_value;
@@ -1301,7 +1301,7 @@ class StokesPass
 										velocityBaseFunctionSetNeighbour.evaluate( j, xOutside, v_j );
 
 										VelocityRangeType E_11(1);
-//										E_11 = beta_eval;
+										E_11 = beta_eval;
 										E_11 *= 0.5;
 //										E_11 = xWorld;
 //										E_11 *= -1;
@@ -1739,10 +1739,10 @@ class StokesPass
 											flux_value = v_j;
 											const double flux_value_v_j = flux_value * v_i;
 											const double ret = beta_times_normal * flux_value_v_j;
-											O_i_j += elementVolume
-												* integrationWeight
-												* convection_scaling
-												* ret;
+//											O_i_j += elementVolume
+//												* integrationWeight
+//												* convection_scaling
+//												* ret;
 										}
 
 									} // done sum over all quadrature points
@@ -1891,11 +1891,11 @@ class StokesPass
 									//the inverse case is handled in O's boundary integral
 									flux_value = gD;
 									const double flux_times_v_j = flux_value * v_j;
-									H2_O_j -= elementVolume
-											* convection_scaling
-											* integrationWeight
-											* beta_times_normal
-											* flux_times_v_j;
+//									H2_O_j -= elementVolume
+//											* convection_scaling
+//											* integrationWeight
+//											* beta_times_normal
+//											* flux_times_v_j;
 								}
 
 							}
@@ -2069,6 +2069,7 @@ class StokesPass
 			if ( rhs_datacontainer ) {
 				Zmatrix.apply( dest.discretePressure(), rhs_datacontainer->pressure_gradient );
 				rhs_datacontainer->pressure_gradient *= Parameters().getParam("pressure_gradient_scale", 1);
+				getPressureGradient( Zmatrix,  dest.discretePressure(),  rhs_datacontainer->pressure_gradient);
 
 				// \sigma = M^{-1} ( H_1 - Wu )
 				const double m_inv_scale = MInversMatrix.matrix()(0,0);
@@ -2144,10 +2145,10 @@ class StokesPass
 				LocalMatrixType local_matrix = matrix_object.localMatrix( *it, *it );
 				PressureGradientLocalFunction local_pressure_gradient = pressure_gradient.localFunction( * it );
 				PressureLocalFunction local_pressure = pressure.localFunction( * it );
-				local_print(*it,*it,0,0);
-				local_print_pressure_grad(*it,*it,0,0);
-				local_print_pressure(*it,*it,0,0);
-				Logger().Err() << std::endl;
+//				local_print(*it,*it,0,0);
+//				local_print_pressure_grad(*it,*it,0,0);
+//				local_print_pressure(*it,*it,0,0);
+//				Logger().Err() << std::endl;
 //				local_matrix.multiplyAdd( local_pressure, local_pressure_gradient );
 				const int rows = local_matrix.rows();
 	            const int cols = local_matrix.columns();
