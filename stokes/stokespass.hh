@@ -905,8 +905,11 @@ class StokesPass
                     // if we are inside the grid
 					if ( intersection.neighbor() && !intersection.boundary() ) {
                         // get neighbour
+						//! DO NOT TRY TO DEREF outside() DIRECTLY
 						const typename IntersectionIteratorType::EntityPointer neighbourPtr = intersection.outside();
+						//there's some (copy ctor? / implicit type conversion) at play here which will make shit fail if you do
                         const EntityType& neighbour = *neighbourPtr;
+						// esp. these two line ARE NOT equiv. to const EntityType& neighbour = * (static_cast<const typename IntersectionIteratorType::EntityPointer>(intersection.outside()) );
 
                         // get local matrices for the surface integrals
                         LocalMInversMatrixType localMInversMatrixNeighbour = MInversMatrix.localMatrix( entity, neighbour );
@@ -2112,13 +2115,42 @@ class StokesPass
 			}
         } // end of apply
 
+		template < class MatrixType, class OperandFunctionType, class ResultFunctionType >
+		static inline void naiveMatrixMult( const MatrixType& matrix, const OperandFunctionType& operand, ResultFunctionType& result )
+		{
+			const int rows = matrix.rows();
+            const int cols = matrix.columns();
+            for ( int i = 0; i < rows; ++i ) {
+				result[i] = 0;
+                for ( int j = 0; j < cols; ++j ) {
+					result[i] += matrix.get(i,j) * operand[j];
+				}
+			}
+		}
+
+		template < class MatrixType, class OperandFunctionType, class ResultFunctionType >
+		static inline void naiveMatrixMultAdd( const MatrixType& matrix, const OperandFunctionType& operand, ResultFunctionType& result )
+		{
+			const int rows = matrix.rows();
+            const int cols = matrix.columns();
+            for ( int i = 0; i < rows; ++i ) {
+				double row_val = 0;
+                for ( int j = 0; j < cols; ++j ) {
+					row_val += matrix.get(i,j) * operand[j];
+				}
+				result[i] += row_val;
+			}
+		}
+
 		template <class MatrixObjectType, class PressureGradientDiscreteFunctionType>
-		void getPressureGradient(const MatrixObjectType& matrix_object, const DiscretePressureFunctionType& pressure, PressureGradientDiscreteFunctionType& pressure_gradient ) const
+		void getPressureGradient( MatrixObjectType& matrix_object, const DiscretePressureFunctionType& pressure, PressureGradientDiscreteFunctionType& pressure_gradient ) const
 		{
 			typedef typename DiscretePressureFunctionType::FunctionSpaceType
-			        SpaceType;
+				SpaceType;
 			typedef typename SpaceType::GridPartType
 	            GridPart;
+			typedef typename GridPart::GridType::template Codim< 0 >::Entity
+				EntityType;
 	        typedef typename GridPart::template Codim< 0 >::IteratorType
 	            EntityIteratorType;
 	        typedef typename GridPart::IntersectionIteratorType
@@ -2142,15 +2174,7 @@ class StokesPass
 					it != entityItEndLog;
 					++it )
 			{
-				bool hasBoundaryFace = false;
-				IntersectionIteratorType intItEnd = gridPart_.iend( *it );
-				for (   IntersectionIteratorType intIt = gridPart_.ibegin( *it );
-						intIt != intItEnd;
-						++intIt ) {
-					if ( intIt.boundary() ) {
-						hasBoundaryFace = true;
-					}
-				}
+				const EntityType& entity = *it;
 				LocalMatrixType local_matrix = matrix_object.localMatrix( *it, *it );
 				PressureGradientLocalFunction local_pressure_gradient = pressure_gradient.localFunction( * it );
 				PressureLocalFunction local_pressure = pressure.localFunction( * it );
@@ -2159,15 +2183,22 @@ class StokesPass
 //				local_print_pressure(*it,*it,0,0);
 //				Logger().Err() << std::endl;
 //				local_matrix.multiplyAdd( local_pressure, local_pressure_gradient );
-				const int rows = local_matrix.rows();
-	            const int cols = local_matrix.columns();
-	            for ( int i = 0; i < rows; ++i ) {
-					local_pressure_gradient[i] = 0;
-	                for ( int j = 0; j < cols; ++j ) {
-						local_pressure_gradient[i] += local_matrix.get(i,j) * local_pressure[j];
+				naiveMatrixMult( local_matrix, local_pressure, local_pressure_gradient );
+
+
+				IntersectionIteratorType intItEnd = space_.gridPart().iend( *it );
+				for (   IntersectionIteratorType intIt = space_.gridPart().ibegin( *it );
+						intIt != intItEnd;
+						++intIt ) {
+					const typename IntersectionIteratorType::Intersection& intersection = *intIt;
+					if ( intersection.neighbor() && !intersection.boundary() ) {
+						const typename IntersectionIteratorType::EntityPointer neighbourPtr = intersection.outside();
+                        const EntityType& neighbour = *neighbourPtr;
+						LocalMatrixType local_matrix_neighbour = matrix_object.localMatrix( entity, neighbour );
+						PressureLocalFunction local_pressure_neighbour = pressure.localFunction( neighbour );
+						naiveMatrixMultAdd( local_matrix_neighbour, local_pressure_neighbour, local_pressure_gradient );
 					}
 				}
-
 			}
 		}
 
