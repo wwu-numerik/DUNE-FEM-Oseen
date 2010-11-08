@@ -2129,6 +2129,19 @@ class StokesPass
 			}
         } // end of apply
 
+		template < class MatrixType, class OperandFunctionType, class ResultFunctionType >
+		static inline void naiveMatrixMult( const MatrixType& matrix, const OperandFunctionType& operand, ResultFunctionType& result )
+		{
+			const int rows = matrix.rows();
+            const int cols = matrix.columns();
+            for ( int i = 0; i < rows; ++i ) {
+				result[i] = 0;
+                for ( int j = 0; j < cols; ++j ) {
+					result[i] += matrix.get(i,j) * operand[j];
+				}
+			}
+		}
+
 		template <class MatrixObjectType, class PressureGradientDiscreteFunctionType>
 		void getPressureGradient(const MatrixObjectType& matrix_object, const DiscretePressureFunctionType& pressure, PressureGradientDiscreteFunctionType& pressure_gradient ) const
 		{
@@ -2167,14 +2180,7 @@ class StokesPass
 				local_print_pressure(*it,*it,0,0);
 				Logger().Err() << std::endl;
 //				local_matrix.multiplyAdd( local_pressure, local_pressure_gradient );
-				const int rows = local_matrix.rows();
-	            const int cols = local_matrix.columns();
-	            for ( int i = 0; i < rows; ++i ) {
-					local_pressure_gradient[i] = 0;
-	                for ( int j = 0; j < cols; ++j ) {
-						local_pressure_gradient[i] += local_matrix.get(i,j) * local_pressure[j];
-					}
-				}
+				naiveMatrixMult( local_matrix, local_pressure, local_pressure_gradient );
 
 				IntersectionIteratorType intItEnd = gridPart_.iend( *it );
 				for (   IntersectionIteratorType intIt = gridPart_.ibegin( *it );
