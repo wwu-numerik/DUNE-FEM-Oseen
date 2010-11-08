@@ -2142,6 +2142,15 @@ class StokesPass
 					it != entityItEndLog;
 					++it )
 			{
+				bool hasBoundaryFace = false;
+				IntersectionIteratorType intItEnd = gridPart_.iend( *it );
+				for (   IntersectionIteratorType intIt = gridPart_.ibegin( *it );
+						intIt != intItEnd;
+						++intIt ) {
+					if ( intIt.boundary() ) {
+						hasBoundaryFace = true;
+					}
+				}
 				LocalMatrixType local_matrix = matrix_object.localMatrix( *it, *it );
 				PressureGradientLocalFunction local_pressure_gradient = pressure_gradient.localFunction( * it );
 				PressureLocalFunction local_pressure = pressure.localFunction( * it );
@@ -2159,14 +2168,6 @@ class StokesPass
 					}
 				}
 
-				IntersectionIteratorType intItEnd = gridPart_.iend( *it );
-				for (   IntersectionIteratorType intIt = gridPart_.ibegin( *it );
-						intIt != intItEnd;
-						++intIt ) {
-					if ( !intIt.boundary() ) {
-
-					}
-				}
 			}
 		}
 
