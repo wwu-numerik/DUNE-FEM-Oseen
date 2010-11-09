@@ -2071,10 +2071,14 @@ class StokesPass
             profiler().StopTiming("Pass -- SOLVER");
 
 			if ( rhs_datacontainer ) {
-				Zmatrix.apply( dest.discretePressure(), rhs_datacontainer->pressure_gradient );
-				rhs_datacontainer->pressure_gradient *= Parameters().getParam("pressure_gradient_scale", 1);
-				getPressureGradient( Zmatrix,  dest.discretePressure(),  rhs_datacontainer->pressure_gradient);
+				DiscreteVelocityFunctionType velocity_tmp1( "velocity_tmp1", dest.discreteVelocity().space() );
 
+//				Zmatrix.apply( dest.discretePressure(), rhs_datacontainer->pressure_gradient );
+//				rhs_datacontainer->pressure_gradient *= Parameters().getParam("pressure_gradient_scale", 1);
+				getPressureGradient( Zmatrix,  dest.discretePressure(),  rhs_datacontainer->pressure_gradient);
+				Stuff::GradientAdapterFunction< DiscretePressureFunctionType, DiscreteVelocityFunctionType,Stuff::ProductFunctorScalar >
+						pressure_grad ( dest.discretePressure(), velocity_tmp1 );
+				rhs_datacontainer->pressure_gradient .assign( pressure_grad );
 				// \sigma = M^{-1} ( H_1 - Wu )
 //				const double m_inv_scale = MInversMatrix.matrix()(0,0);
 //				rhs_datacontainer->velocity_gradient.assign( H1rhs );
@@ -2084,13 +2088,14 @@ class StokesPass
 ////				if ( viscosity != 0.0f )
 ////					rhs_datacontainer->velocity_gradient /= viscosity;//since mu is assmenled into both W and H1
 //				rhs_datacontainer->velocity_gradient *= m_inv_scale;
-				Stuff::GradientAdapterFunction< DiscreteVelocityFunctionType, DiscreteSigmaFunctionType >
+				Stuff::GradientAdapterFunction< DiscreteVelocityFunctionType, DiscreteSigmaFunctionType,Stuff::ProductFunctorVectorial >
 						grad ( dest.discreteVelocity(), sigma_tmp );
 				rhs_datacontainer->velocity_gradient .assign( grad );
 
+
 				Stuff::printFunctionMinMax( std::cout, H1rhs );
 
-				DiscreteVelocityFunctionType velocity_tmp1( "velocity_tmp1", dest.discreteVelocity().space() );
+
 				Xmatrix.apply( rhs_datacontainer->velocity_gradient, velocity_tmp1 );
 				Ymatrix.apply( dest.discreteVelocity(), rhs_datacontainer->velocity_laplace );
 				rhs_datacontainer->velocity_laplace += velocity_tmp1;
