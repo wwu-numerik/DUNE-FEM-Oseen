@@ -2076,7 +2076,7 @@ class StokesPass
 //				Zmatrix.apply( dest.discretePressure(), rhs_datacontainer->pressure_gradient );
 //				rhs_datacontainer->pressure_gradient *= Parameters().getParam("pressure_gradient_scale", 1);
 				getPressureGradient( Zmatrix,  dest.discretePressure(),  rhs_datacontainer->pressure_gradient);
-				Stuff::GradientAdapterFunction< DiscretePressureFunctionType, DiscreteVelocityFunctionType,Stuff::ProductFunctorScalar >
+				Stuff::GradientAdapterFunction< DiscretePressureFunctionType, DiscreteVelocityFunctionType,Stuff::ProductFunctorMatrixVector >
 						pressure_grad ( dest.discretePressure(), velocity_tmp1 );
 				rhs_datacontainer->pressure_gradient .assign( pressure_grad );
 				// \sigma = M^{-1} ( H_1 - Wu )
@@ -2088,7 +2088,7 @@ class StokesPass
 ////				if ( viscosity != 0.0f )
 ////					rhs_datacontainer->velocity_gradient /= viscosity;//since mu is assmenled into both W and H1
 //				rhs_datacontainer->velocity_gradient *= m_inv_scale;
-				Stuff::GradientAdapterFunction< DiscreteVelocityFunctionType, DiscreteSigmaFunctionType,Stuff::ProductFunctorVectorial >
+				Stuff::GradientAdapterFunction< DiscreteVelocityFunctionType, DiscreteSigmaFunctionType,Stuff::ProductFunctorMatrices >
 						grad ( dest.discreteVelocity(), sigma_tmp );
 				rhs_datacontainer->velocity_gradient .assign( grad );
 
