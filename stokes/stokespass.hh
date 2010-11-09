@@ -15,6 +15,7 @@
 
 #include <dune/common/stdstreams.hh>
 #include <dune/stuff/matrix.hh>
+#include <dune/stuff/functionadapter.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
 
 template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
@@ -2075,14 +2076,17 @@ class StokesPass
 				getPressureGradient( Zmatrix,  dest.discretePressure(),  rhs_datacontainer->pressure_gradient);
 
 				// \sigma = M^{-1} ( H_1 - Wu )
-				const double m_inv_scale = MInversMatrix.matrix()(0,0);
-				rhs_datacontainer->velocity_gradient.assign( H1rhs );
+//				const double m_inv_scale = MInversMatrix.matrix()(0,0);
+//				rhs_datacontainer->velocity_gradient.assign( H1rhs );
 				DiscreteSigmaFunctionType sigma_tmp( "sigma_dummy", sigmaSpace_ );
-				Wmatrix.apply( dest.discreteVelocity(), sigma_tmp );
-				rhs_datacontainer->velocity_gradient -= sigma_tmp;
-//				if ( viscosity != 0.0f )
-//					rhs_datacontainer->velocity_gradient /= viscosity;//since mu is assmenled into both W and H1
-				rhs_datacontainer->velocity_gradient *= m_inv_scale;
+//				Wmatrix.apply( dest.discreteVelocity(), sigma_tmp );
+//				rhs_datacontainer->velocity_gradient -= sigma_tmp;
+////				if ( viscosity != 0.0f )
+////					rhs_datacontainer->velocity_gradient /= viscosity;//since mu is assmenled into both W and H1
+//				rhs_datacontainer->velocity_gradient *= m_inv_scale;
+				Stuff::GradientAdapterFunction< DiscreteVelocityFunctionType, DiscreteSigmaFunctionType >
+						grad ( dest.discreteVelocity(), sigma_tmp );
+				rhs_datacontainer->velocity_gradient .assign( grad );
 
 				Stuff::printFunctionMinMax( std::cout, H1rhs );
 
