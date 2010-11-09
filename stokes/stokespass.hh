@@ -2092,6 +2092,8 @@ class StokesPass
 						grad ( dest.discreteVelocity(), sigma_tmp );
 				rhs_datacontainer->velocity_gradient .assign( grad );
 
+				Stuff::LaplaceAdapterFunction< DiscreteVelocityFunctionType, DiscreteSigmaFunctionType,Stuff::ProductFunctorMatrices >
+				        laplace( dest.discreteVelocity(), sigma_tmp );
 
 				Stuff::printFunctionMinMax( std::cout, H1rhs );
 
