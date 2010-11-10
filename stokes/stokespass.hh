@@ -2094,22 +2094,23 @@ class StokesPass
 
 				Stuff::LaplaceAdapterFunction< DiscreteVelocityFunctionType, DiscreteSigmaFunctionType,Stuff::ProductFunctorMatrices >
 				        laplace( dest.discreteVelocity(), sigma_tmp );
+				rhs_datacontainer->velocity_laplace.assign( laplace );
 
-				Stuff::printFunctionMinMax( std::cout, H1rhs );
+//				Stuff::printFunctionMinMax( std::cout, H1rhs );
 
 
-				Xmatrix.apply( rhs_datacontainer->velocity_gradient, velocity_tmp1 );
-				Ymatrix.apply( dest.discreteVelocity(), rhs_datacontainer->velocity_laplace );
-				rhs_datacontainer->velocity_laplace += velocity_tmp1;
-				velocity_tmp1.assign( dest.discreteVelocity() );
-				velocity_tmp1 *= alpha;
-				rhs_datacontainer->velocity_laplace -= velocity_tmp1;
-//				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
-				const double laplace_scale = Parameters().getParam("laplace_scale", -1/viscosity);
-				rhs_datacontainer->velocity_laplace *= laplace_scale;
-//				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
-				Logger().Dbg().Resume();
-				Logger().Dbg() << boost::format( "laplace_scale: %f\n") % laplace_scale;
+//				Xmatrix.apply( rhs_datacontainer->velocity_gradient, velocity_tmp1 );
+//				Ymatrix.apply( dest.discreteVelocity(), rhs_datacontainer->velocity_laplace );
+//				rhs_datacontainer->velocity_laplace += velocity_tmp1;
+//				velocity_tmp1.assign( dest.discreteVelocity() );
+//				velocity_tmp1 *= alpha;
+//				rhs_datacontainer->velocity_laplace -= velocity_tmp1;
+////				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
+//				const double laplace_scale = Parameters().getParam("laplace_scale", -1/viscosity);
+//				rhs_datacontainer->velocity_laplace *= laplace_scale;
+////				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
+//				Logger().Dbg().Resume();
+//				Logger().Dbg() << boost::format( "laplace_scale: %f\n") % laplace_scale;
 
 //				rhs_datacontainer->convection.clear();
 //				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
