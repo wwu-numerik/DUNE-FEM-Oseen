@@ -2021,7 +2021,7 @@ class StokesPass
 			YmatrixType null_matrix( velocitySpace_, velocitySpace_ );
 			null_matrix.reserve();
 			YmatrixType* actually_used_Omatrix = &null_matrix;
-			if ( do_oseen_discretization_ ) {
+			if ( do_oseen_discretization_ && !( Parameters().getParam( "fakeO", false ) ) ) {
 				H2rhs += H2_O_rhs;
 				actually_used_Omatrix = &Omatrix;
 			}
@@ -2115,7 +2115,11 @@ class StokesPass
 //				rhs_datacontainer->convection.clear();
 //				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
 //				rhs_datacontainer->convection += H2_O_rhs;
-				getConvection( beta_, rhs_datacontainer->velocity_gradient, rhs_datacontainer->convection );
+				if ( sigma_exact )
+					getConvection( beta_, *sigma_exact, rhs_datacontainer->convection );
+				else
+					getConvection( beta_, rhs_datacontainer->velocity_gradient, rhs_datacontainer->convection );
+//				dest.discreteVelocity() += rhs_datacontainer->convection;
 //				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->convection );
 
 //				rhs_datacontainer->scale( 1 / std::sqrt(2) );
@@ -2248,7 +2252,7 @@ class StokesPass
 
 				typename DiscreteVelocityFunctionType::LocalFunctionType beta_local = beta.localFunction( *entityIt );
 				typename DiscreteVelocityFunctionType::LocalFunctionType convection_local = convection.localFunction( *entityIt );
-				const VolumeQuadratureType quad( entity, ( 2 * pressureSpaceOrder ) + 1 );
+				const VolumeQuadratureType quad( entity, ( 4 * pressureSpaceOrder ) + 1 );
 				const VelocityBaseFunctionSetType velocityBaseFunctionSetElement = velocitySpace_.baseFunctionSet( entity );
 				const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
 				const int quadNop = quad.nop();
