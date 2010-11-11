@@ -9,6 +9,9 @@ include(UseDoxygen)
 
 FIND_PACKAGE(Boost 1.35.0 REQUIRED)
 INCLUDE_DIR(${Boost_INCLUDE_DIR})
+FIND_PACKAGE( PkgConfig )
+pkg_check_modules( CCGNU REQUIRED libccgnu2 )
+ADD_CXX_FLAGS( "${CCGNU_CFLAGS}" )
 
 #----------------------------------------------------------------------------------------------------
 # General Settings
@@ -23,6 +26,7 @@ EXECUTE_PROCESS(
 	ERROR_VARIABLE shell_error
 	OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+
 
 #----------------------------------------------------------------------------------------------------
 # Options, that can be changed be the User in order to customise dune-stokes
@@ -120,7 +124,7 @@ ENDIF ( ENABLE_PARALELL )
 
 ADD_DUNE_MODULES( common istl grid fem stuff )
 
-LINK_DIRECTORIES( "/usr/lib" "${ALUGRID_BASE_PATH}/lib" "${GRAPE_PATH}" )
+LINK_DIRECTORIES( "/usr/lib" "${ALUGRID_BASE_PATH}/lib" "${GRAPE_PATH}" ${CCGNU_LIBRARY_DIRS} )
 ADD_CXX_FLAGS( ${CXX_FLAGS} )
 
 #----------------------------------------------------------------------------------------------------
@@ -135,7 +139,7 @@ FILE( GLOB_RECURSE stokes "stokes/*.hh" )
 FILE( GLOB stuff "../dune-stuff/stuff/*.hh" )
 
 set_source_files_properties( ${stuff} ${stokes} ${header} PROPERTIES HEADER_FILE_ONLY 1 )
-set( COMMON_LIBS "fem" "grid" "common" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS} )
+set( COMMON_LIBS "fem" "grid" "common" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS} ${CCGNU_LIBRARIES} )
 
 ADD_EXECUTABLE(dune_stokes ${dune-stokesSrc} ${header} ${stokes} ${stuff} )
 TARGET_LINK_LIBRARIES(dune_stokes ${COMMON_LIBS}  )
