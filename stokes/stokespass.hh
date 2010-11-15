@@ -2247,8 +2247,6 @@ class StokesPass
 				const EntityGeometryType& geo = entity.geometry();
 				typedef typename DiscreteVelocityFunctionSpaceType::BaseFunctionSetType
 					VelocityBaseFunctionSetType;
-				typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType
-					PressureBaseFunctionSetType;
 
 				typename DiscreteVelocityFunctionType::LocalFunctionType beta_local = beta.localFunction( *entityIt );
 				typename DiscreteVelocityFunctionType::LocalFunctionType convection_local = convection.localFunction( *entityIt );
@@ -2261,9 +2259,9 @@ class StokesPass
 				{
 					const typename DiscreteVelocityFunctionSpaceType::DomainType xLocal = quad.point(qP);
 
-//					const double intel = quad.weight(qP); // affine case, would need mult thingy at bottom
-					const double intel =
-						quad.weight(qP)* geo.integrationElement( xLocal ); // general case
+					const double intel = quad.weight(qP);
+//					const double intel =
+//						quad.weight(qP)* geo.integrationElement( xLocal ); // wrong!
 
 					typename DiscreteVelocityFunctionSpaceType::DomainType
 						xWorld = geo.global( xLocal );
@@ -2284,7 +2282,7 @@ class StokesPass
 					{
 						typename DiscreteVelocityFunctionType::RangeType phi (0.0);
 						convection_local.baseFunctionSet().evaluate(i, quad[qP], phi);
-						convection_local[i] += intel * ( c * phi );
+						convection_local[i] +=  intel * ( c * phi );
 					}
 				}
 			}
