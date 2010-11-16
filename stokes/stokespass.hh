@@ -2075,7 +2075,7 @@ class StokesPass
 
 //				Zmatrix.apply( dest.discretePressure(), rhs_datacontainer->pressure_gradient );
 //				rhs_datacontainer->pressure_gradient *= Parameters().getParam("pressure_gradient_scale", 1);
-				getPressureGradient( Zmatrix,  dest.discretePressure(),  rhs_datacontainer->pressure_gradient);
+//				getPressureGradient( Zmatrix,  dest.discretePressure(),  rhs_datacontainer->pressure_gradient);
 				Stuff::GradientAdapterFunction< DiscretePressureFunctionType, DiscreteVelocityFunctionType,Stuff::ProductFunctorMatrixVector >
 						pressure_grad ( dest.discretePressure(), velocity_tmp1 );
 				rhs_datacontainer->pressure_gradient .assign( pressure_grad );
@@ -2115,9 +2115,9 @@ class StokesPass
 //				rhs_datacontainer->convection.clear();
 //				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
 //				rhs_datacontainer->convection += H2_O_rhs;
-				if ( sigma_exact )
-					getConvection( beta_, *sigma_exact, rhs_datacontainer->convection );
-				else
+//				if ( sigma_exact )
+//					getConvection( beta_, *sigma_exact, rhs_datacontainer->convection );
+//				else
 					getConvection( beta_, rhs_datacontainer->velocity_gradient, rhs_datacontainer->convection );
 //				dest.discreteVelocity() += rhs_datacontainer->convection;
 //				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->convection );
