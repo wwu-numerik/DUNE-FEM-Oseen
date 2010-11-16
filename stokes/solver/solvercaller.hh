@@ -5,10 +5,11 @@
 #include <dune/stokes/solver/reduced.hh>
 #include <dune/stokes/solver/fullsystem.hh>
 #include <dune/stokes/solver/saddle_point.hh>
+#include <dune/stokes/solver/reconstruction.hh>
 
 namespace Dune {
 
-template<class StokesPassType>
+template<class StokesPassType, template <class T,class S> class ReconstructionPolicyType = BruteForceReconstruction >
 struct SolverCaller {
 	//! alternative solver implementation
 	typedef NestedCgSaddlepointInverseOperator< StokesPassType >
@@ -41,10 +42,12 @@ struct SolverCaller {
 				class WmatrixObjectType,
 				class DiscreteSigmaFunctionType,
 				class DiscreteVelocityFunctionType,
-				class DiscretePressureFunctionType  >
-	static SaddlepointInverseOperatorInfo solve( const SolverID solverID,
+				class DiscretePressureFunctionType,
+				class DataContainerType >
+	static SaddlepointInverseOperatorInfo solve( RangeType& dest,
+				DataContainerType* rhs_datacontainer,
+				const SolverID solverID,
 				const DomainType& arg,
-				RangeType& dest,
 				const XmatrixObjectType& Xmatrix,
 				const MInversMatrixObjectType& MInversMatrix,
 				const YmatrixObjectType& Ymatrix,
@@ -55,7 +58,8 @@ struct SolverCaller {
 				const WmatrixObjectType& Wmatrix,
 				const DiscreteSigmaFunctionType& H1rhs,
 				const DiscreteVelocityFunctionType& H2rhs,
-				const DiscretePressureFunctionType& H3rhs )
+				const DiscretePressureFunctionType& H3rhs,
+				const DiscreteVelocityFunctionType& beta )
 	{
 		MatrixWrapper<XmatrixObjectType> X(Xmatrix);
 		MatrixWrapper<MInversMatrixObjectType> M_invers(MInversMatrix);
@@ -66,25 +70,38 @@ struct SolverCaller {
 		MatrixWrapper<ZmatrixObjectType> Z(Zmatrix);
 		MatrixWrapper<WmatrixObjectType> W(Wmatrix);
 
+		SaddlepointInverseOperatorInfo result;
 		switch ( solverID ) {
-			case NestedCG_Solver_ID: return NestedCgSolverType().solve(	arg, dest,
+			case NestedCG_Solver_ID:		result = NestedCgSolverType().solve(	arg, dest,
 															 X, M_invers, Y,
 															 O, E, R, Z, W,
 															 H1rhs, H2rhs, H3rhs );
-			case Reduced_Solver_ID: return ReducedSolverType().solve(	arg, dest,
+											break;
+			case Reduced_Solver_ID:			result = ReducedSolverType().solve(	arg, dest,
 															 X, M_invers, Y,
 															 O, E, R, Z, W,
 															 H1rhs, H2rhs, H3rhs );
-			case SaddlePoint_Solver_ID: return SaddlepointSolverType().solve(	arg, dest,
+											break;
+			case SaddlePoint_Solver_ID:		result = SaddlepointSolverType().solve(	arg, dest,
 															 X, M_invers, Y,
 															 O, E, R, Z, W,
 															 H1rhs, H2rhs, H3rhs );
-			case FullSystem_Solver_ID: return FullsytemSolverType().solve(	arg, dest,
+											break;
+			case FullSystem_Solver_ID:		result = FullsytemSolverType().solve(	arg, dest,
 															 X, M_invers, Y,
 															 O, E, R, Z, W,
 															 H1rhs, H2rhs, H3rhs );
+											break;
 			default: throw std::runtime_error("invalid Solver ID selected");
 		}
+		if ( rhs_datacontainer ) {
+			ReconstructionPolicyType<DataContainerType,typename StokesPassType::DiscreteModelType>
+					::reconstruct(	*rhs_datacontainer, dest, beta,
+									X, M_invers, Y,
+									O, E, R, Z, W,
+									H1rhs, H2rhs, H3rhs );
+		}
+		return result;
 	}
 };
 
