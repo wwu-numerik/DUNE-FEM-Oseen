@@ -5,6 +5,7 @@
 #include <dune/fem/misc/mpimanager.hh> // An initializer of MPI
 #include <dune/stuff/parametercontainer.hh>
 #include <dune/stuff/misc.hh>
+#include <dune/stuff/progressbar.hh>
 //do whatever you like to this file to test out simple and small stuff
 
 int main( int argc, char** argv ) {
@@ -27,6 +28,13 @@ int main( int argc, char** argv ) {
 	nums.output( std::cout );
 	nums.push( 	4.0 );
 	nums.output( std::cout );
+
+	unsigned k = 10;
+	Stuff::SimpleProgressBar<> pbar(k);
+	 for(int i=0; i<k+1; i++,++pbar) {
+		 sleep( 1 );
+	  }
+	 	++pbar;
 
 	return 0;
 }

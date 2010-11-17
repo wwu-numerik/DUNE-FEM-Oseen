@@ -11,8 +11,7 @@
 #include <dune/fem/quadrature/caching/twistutility.hh>
 #include <dune/fem/misc/l2norm.hh>
 
-#include <dune/stokes/saddlepoint_inverse_operator.hh>
-#include <dune/stokes/direct_solver.hh>
+#include <dune/stokes/solver/solvercaller.hh>
 
 #include <dune/common/stdstreams.hh>
 #include <dune/stuff/matrix.hh>
@@ -164,18 +163,6 @@ class StokesPass
         typedef typename GridType::template Codim< 0 >::Entity
             EntityType;
 
-		//! alternative solver implementation
-        typedef NestedCgSaddlepointInverseOperator< ThisType >
-			AltInvOpType;
-		//! type of the used solver
-        typedef SaddlepointInverseOperator< ThisType >
-			InvOpType;
-		//! this is used for reduced (no pressure, incompress. condition) oseen pass
-		typedef ReducedInverseOperator< ThisType >
-			ReducedInvOpType;
-		typedef DirectKrylovSolver< ThisType >
-			DirectKrylovSolverType;
-
         //! polynomial order for the discrete sigma function space
         static const int sigmaSpaceOrder
             = DiscreteModelType::sigmaSpaceOrder;
@@ -239,7 +226,7 @@ class StokesPass
         StokesPass( PreviousPassType& prevPass,
                     DiscreteModelType& discreteModel,
                     GridPartType& gridPart,
-					DiscreteStokesFunctionSpaceWrapperType& spaceWrapper,
+					const DiscreteStokesFunctionSpaceWrapperType& spaceWrapper,
 					const DiscreteVelocityFunctionType& beta,
 					const bool do_oseen_discretization )//! \todo move to model
             : BaseType( prevPass ),
@@ -265,12 +252,23 @@ class StokesPass
             return spaceWrapper_;
         }
 
+
+		void apply( const DomainType &arg, RangeType &dest ) const
+		{
+			apply<RhsDatacontainer,DiscreteSigmaFunctionType>( arg, dest, 0,0 );
+		}
+
+		template < class RhsDatacontainerType >
+		void apply( const DomainType &arg, RangeType &dest,RhsDatacontainerType* rhs_datacontainer ) const
+		{
+			apply<RhsDatacontainerType,DiscreteSigmaFunctionType>( arg, dest, rhs_datacontainer,0 );
+		}
         /**
          *  \todo doc
          *  \attention  think about quadrature orders
          **/
-		template < class RhsDatacontainerType >
-		void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer = 0) const
+		template < class RhsDatacontainerType, class ExactSigmaType >
+		void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer, const ExactSigmaType* sigma_exact ) const
         {
 
             // profiler information
@@ -285,7 +283,7 @@ class StokesPass
                 JacobianInverseTransposedType;
 
             // viscosity
-            const double mu = discreteModel_.viscosity();
+			const double viscosity = discreteModel_.viscosity();
 
             // generalized stokes alpha
             const double alpha = discreteModel_.alpha();
@@ -416,7 +414,7 @@ class StokesPass
 			Logger().Info() << boost::format( "pressure_gradient/convection scaling: %e | %e\npass viscosity: %e\n")
 								% convection_scaling
 								% pressure_gradient_scaling
-								% mu;
+								% viscosity;
 
 #ifndef NLOG
             // logging stuff
@@ -579,7 +577,7 @@ class StokesPass
                 } // done computing Minvs' volume integral
 
                 //                                                        // we will call this one
-                // (W)_{i,j} += \int_{T}v_{j}\cdot(\nabla\cdot\tau_{i})dx // W's volume integral
+				// (W)_{i,j} += \mu\int_{T}v_{j}\cdot(\nabla\cdot\tau_{i})dx // W's volume integral
                 //                                                        // see also "W's entitity surface integral", "W's neighbour surface integral" and "W's boundary integral" below
                 for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
                     for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
@@ -598,6 +596,7 @@ class StokesPass
                             const double divergence_of_tau_i_times_v_j = sigmaBaseFunctionSetElement.evaluateGradientSingle( i, entity, x, prepareVelocityRangeTypeForSigmaDivergence( v_j ) );
                             W_i_j += elementVolume
                                 * integrationWeight
+								* viscosity
                                 * divergence_of_tau_i_times_v_j;
                         } // done sum over quadrature points
                         // if small, should be zero
@@ -630,7 +629,6 @@ class StokesPass
                             const double gradient_of_v_i_times_tau_j = velocityBaseFunctionSetElement.evaluateGradientSingle( i, entity, x, tau_j );
                             X_i_j += elementVolume
                                 * integrationWeight
-                                * mu
                                 * gradient_of_v_i_times_tau_j;
                         } // done sum over quadrature points
                         // if small, should be zero
@@ -681,9 +679,10 @@ class StokesPass
                 } // done computing Y's volume integral
                 }
 
-				for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+				for ( int i = 0; (i < numVelocityBaseFunctionsElement ) && do_oseen_discretization_; ++i ) {
 					for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
 						double O_i_j = 0.0;
+						double O_i_j_d = 0.0;
 						// sum over all quadrature points
 						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
 							// get x
@@ -699,17 +698,54 @@ class StokesPass
 							velocityBaseFunctionSetElement.evaluate( j, x, v_j );
 							VelocityRangeType beta_eval;
 							beta_.localFunction( entity ).evaluate( x, beta_eval );
+
+							VelocityJacobianRangeType v_i_jacobian;
+							velocityBaseFunctionSetElement.jacobian( i, x, v_i_jacobian );
 							VelocityJacobianRangeType v_j_jacobian;
 							velocityBaseFunctionSetElement.jacobian( j, x, v_j_jacobian );
+							VelocityJacobianRangeType beta_jacobian;
+							const typename DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
+									beta_.localFunction( entity );
+							beta_lf.jacobian( x, beta_jacobian );
 
-							//compute u_h \ctimes \beta  : ( \nabla \ctimes v_j )
-							VelocityJacobianRangeType v_i_tensor_beta = dyadicProduct( v_i, beta_eval );
-							const double ret = Stuff::colonProduct( v_i_tensor_beta, v_j_jacobian );
-							const double val = elementVolume
-									* integrationWeight
+
+							VelocityRangeType divergence_of_v_i_tensor_beta;
+							for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
+								double row_result = 0;
+								for ( size_t m = 0; m < beta_eval.dim(); ++m ) {
+									row_result += beta_jacobian[l][m] * v_i[l] + v_i_jacobian[l][m] * beta_eval[l];
+								}
+								divergence_of_v_i_tensor_beta[l] = row_result;
+							}
+							for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
+								assert( !isnan(divergence_of_v_i_tensor_beta[l]) );
+							}
+
+						   divergence_of_v_i_tensor_beta[0] = beta_eval[0] * v_i_jacobian[0][0]
+								   + v_i[0] * beta_jacobian[0][0]
+								   + beta_eval[0] * v_i_jacobian[1][1]
+								   + v_i[1] * beta_jacobian[0][1];
+						   divergence_of_v_i_tensor_beta[1] = beta_eval[1] * v_i_jacobian[0][0]
+								   + v_i[0] * beta_jacobian[1][0]
+								   + beta_eval[1] * v_i_jacobian[1][1]
+								   + v_i[1] * beta_jacobian[1][1];
+
+
+							const double u_h_times_divergence_of_beta_v_j_tensor_beta =
+									v_j * divergence_of_v_i_tensor_beta;
+							VelocityJacobianRangeType v_j_tensor_beta = dyadicProduct( v_j, beta_eval );
+							const double ret = Stuff::colonProduct( v_j_tensor_beta, v_i_jacobian );
+
+							O_i_j -= elementVolume
+								* integrationWeight
+								* convection_scaling
+								* u_h_times_divergence_of_beta_v_j_tensor_beta;
+//									* ret;
+							O_i_j_d-= elementVolume
+							        * integrationWeight
 									* convection_scaling
-									* ret;
-							O_i_j -= val;
+									* u_h_times_divergence_of_beta_v_j_tensor_beta;
+//										* ret;
 
 						}
 						if ( fabs( O_i_j ) < eps ) {
@@ -717,7 +753,10 @@ class StokesPass
 						}
 						else {
 							// add to matrix
+//							std::cerr << boost::format( "O volume value on entity %d: %e\n") % entityNR % O_i_j;
 							localOmatrixElement.add( i, j, O_i_j );
+//							double diff = O_i_j- O_i_j_d;
+//							std::cout << boost::format( "DIFF %e\n") % diff;
 						}
 					}
 				}
@@ -861,20 +900,23 @@ class StokesPass
 					VelocityRangeType D_12( 1 );//TODO FIXME
 					D_12 /= D_12.two_norm();
 					D_12 *= stabil_coeff.Factor("D12");
-					VelocityRangeType E_11(stabil_coeff.Factor("E12"));
+//					VelocityRangeType E_11(stabil_coeff.Factor("E12"));
 
                     // if we are inside the grid
 					if ( intersection.neighbor() && !intersection.boundary() ) {
                         // get neighbour
+						//! DO NOT TRY TO DEREF outside() DIRECTLY
 						const typename IntersectionIteratorType::EntityPointer neighbourPtr = intersection.outside();
+						//there's some (copy ctor? / implicit type conversion) at play here which will make shit fail if you do
                         const EntityType& neighbour = *neighbourPtr;
+						// esp. these two line ARE NOT equiv. to const EntityType& neighbour = * (static_cast<const typename IntersectionIteratorType::EntityPointer>(intersection.outside()) );
 
                         // get local matrices for the surface integrals
                         LocalMInversMatrixType localMInversMatrixNeighbour = MInversMatrix.localMatrix( entity, neighbour );
                         LocalWmatrixType localWmatrixNeighbour = Wmatrix.localMatrix( neighbour, entity );
                         LocalXmatrixType localXmatrixNeighbour = Xmatrix.localMatrix( entity, neighbour );
                         LocalYmatrixType localYmatrixNeighbour = Ymatrix.localMatrix( neighbour, entity );
-						LocalOmatrixType localOmatrixNeighbour = Omatrix.localMatrix( neighbour, entity );
+						LocalOmatrixType localOmatrixNeighbour = Omatrix.localMatrix( entity, neighbour );
                         LocalZmatrixType localZmatrixNeighbour = Zmatrix.localMatrix( entity, neighbour );
                         LocalEmatrixType localEmatrixNeighbour = Ematrix.localMatrix( neighbour, entity );
                         LocalRmatrixType localRmatrixNeighbour = Rmatrix.localMatrix( entity, neighbour );
@@ -936,6 +978,7 @@ class StokesPass
 										double flux_times_tau_i_times_normal = flux_value * tau_i_times_normal;
 										W_i_j -= elementVolume
                                             * integrationWeight
+											* viscosity
 											* flux_times_tau_i_times_normal;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -981,6 +1024,7 @@ class StokesPass
 										double flux_times_tau_i_times_normal = flux_value * tau_i_times_normal;
 										W_i_j += elementVolume
                                             * integrationWeight
+											* viscosity
 											* flux_times_tau_i_times_normal;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -1036,7 +1080,6 @@ class StokesPass
 												= velocityBaseFunctionSetElement.evaluateSingle( i, x, flux_times_normal );
 										X_i_j -= elementVolume
 											* integrationWeight
-											* mu
 											* v_i_times_flux_times_normal;
 
                                     } // done sum over all quadrature points
@@ -1083,7 +1126,6 @@ class StokesPass
 												= velocityBaseFunctionSetNeighbour.evaluateSingle( i, xInside, flux_times_normal );
 										X_i_j -= elementVolume
                                             * integrationWeight
-                                            * mu
 											* v_i_times_flux_times_normal;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -1125,7 +1167,6 @@ class StokesPass
                                         Y_i_j += C_11
                                             * elementVolume
                                             * integrationWeight
-                                            * mu
                                             * v_i_times_v_j;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -1160,7 +1201,6 @@ class StokesPass
                                             * C_11
                                             * elementVolume
                                             * integrationWeight
-                                            * mu
                                             * v_i_times_v_j;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -1178,8 +1218,8 @@ class StokesPass
 							//           += \int_{ // O's neighbour surface integral
 							//                                                                                                         // see also "O's boundary integral" below
 
-							for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
-								// compute Y's element surface integral
+							for ( int j = 0; (j < numVelocityBaseFunctionsElement ) && do_oseen_discretization_; ++j ) {
+								// compute O's element surface integral
 								for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
 									double O_i_j = 0.0;
 									// sum over all quadrature points
@@ -1202,33 +1242,39 @@ class StokesPass
 
 										VelocityRangeType beta_eval;
 										beta_.evaluate( xWorld, beta_eval );
-										const double beta_times_normal = beta_eval * outerNormal;
+										const double beta_times_normal = (beta_eval * outerNormal);
 										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
-										double c_s = (beta_times_normal) * 0.5;
-										VelocityRangeType u_h = v_j;
-										VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
-										mean_value *= 0.5;
-										VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
-										u_jump *= c_s;
-										VelocityJacobianRangeType flux_value = mean_value;
-										flux_value += u_jump;
 
-										// \int_{dK} flux_value : ( v_j \ctimes n ) ds
-										VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
-										double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
+										VelocityRangeType E_11(1);
+										E_11 = beta_eval;
+//										E_11 = xWorld;
+										E_11 *= 0.5;
+										VelocityRangeType flux_value;
+										flux_value = v_j;
+										flux_value *= 0.5;
+										SigmaRangeType jump = dyadicProduct( v_j, outerNormal );
+										VelocityRangeType jump_value;
+										jump.mv( E_11, jump_value );
+										flux_value += jump_value;
 
+
+										const double flux_times_v_j = flux_value * v_i;
+										const double ret = beta_times_normal * flux_times_v_j;
+//										if ( beta_times_normal > 0 )
 										O_i_j += elementVolume
-											* integrationWeight
-											* convection_scaling
-											* ret;
+												* integrationWeight
+												* convection_scaling
+												* ret;
 									} // done sum over all quadrature points
 									// if small, should be zero
 									if ( fabs( O_i_j ) < eps ) {
 										O_i_j = 0.0;
 									}
-									else
+									else {
 										// add to matrix
+//										std::cerr<< boost::format( "O face value (el) on entity %d: %e\n") % entityNR % O_i_j;
 										localOmatrixElement.add( i, j, O_i_j );
+									}
 								} // done computing Y's element surface integral
 								// compute O's neighbour surface integral
 								for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
@@ -1248,39 +1294,46 @@ class StokesPass
 										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 
 										VelocityRangeType v_i( 0.0 );
-										velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
+										velocityBaseFunctionSetElement.evaluate( i, xInside, v_i );
 
 										VelocityRangeType beta_eval;
 										beta_.evaluate( xWorld, beta_eval );
-										const double beta_times_normal = beta_eval * outerNormal;
+										// * -1 ??
+										const double beta_times_normal =  -( beta_eval * outerNormal );
 										VelocityRangeType v_j( 0.0 );
-										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
-										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
-										double c_s = (beta_times_normal) * 0.5;
-										VelocityRangeType u_h = v_j;
-										VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
-										mean_value *= 0.5;
-										VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
-										u_jump *= c_s;
-										VelocityJacobianRangeType flux_value = mean_value;
-										flux_value += u_jump;
+										velocityBaseFunctionSetNeighbour.evaluate( j, xOutside, v_j );
 
-										// \int_{dK} flux_value : ( v_j \ctimes n ) ds
-										VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
-										double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
+										VelocityRangeType E_11(1);
+										E_11 = beta_eval;
+										E_11 *= 0.5;
+//										E_11 = xWorld;
+//										E_11 *= -1;
+										VelocityRangeType flux_value;
+										flux_value = v_j;
+										flux_value *= 0.5;
+										SigmaRangeType jump = dyadicProduct( v_j, outerNormal );
+										VelocityRangeType jump_value;
+										jump.mv( E_11, jump_value );
+										flux_value += jump_value;
 
+
+										const double flux_times_v_j = flux_value * v_i;
+										const double ret = beta_times_normal * flux_times_v_j;
+//										if ( beta_times_normal > 0 )
 										O_i_j += elementVolume
-											* integrationWeight
-											* convection_scaling
-											* ret;
+												* integrationWeight
+												* convection_scaling
+												* ret;
 									} // done sum over all quadrature points
 									// if small, should be zero
 									if ( fabs( O_i_j ) < eps ) {
 										O_i_j = 0.0;
 									}
-									else
+									else {
 										// add to matrix
+//										std::cerr<< boost::format( "O face value (ne) on entity %d: %e\n") % entityNR % O_i_j;
 										localOmatrixNeighbour.add( i, j, O_i_j );
+									}
 								} // done computing Y's neighbour surface integral
 							} // done computing Y's surface integrals
 
@@ -1565,6 +1618,7 @@ class StokesPass
                                     const double gD_times_tau_j_times_normal = gD * tau_j_times_normal;
                                     H1_j += elementVolume
                                         * integrationWeight
+										* viscosity
                                         * gD_times_tau_j_times_normal;
                                 } // done sum over all quadrature points
                                 // if small, should be zero
@@ -1605,7 +1659,6 @@ class StokesPass
                                         X_i_j += -1.0
                                             * elementVolume
                                             * integrationWeight
-                                            * mu
                                             * v_i_times_tau_times_normal;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -1645,7 +1698,6 @@ class StokesPass
                                         Y_i_j += C_11
                                             * elementVolume
                                             * integrationWeight
-                                            * mu
                                             * v_i_times_v_j;
                                     } // done sum over all quadrature points
                                     // if small, should be zero
@@ -1662,7 +1714,7 @@ class StokesPass
 							//                                                                                                           // we will call this one
 							// (O)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}} STUFF n_{t}ds											// O's boundary integral
 							//                                                                                                           // see also "O's element surface integral" and "Y's neighbour surface integral" above
-							for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+							for ( int i = 0; (i < numVelocityBaseFunctionsElement ) && do_oseen_discretization_; ++i ) {
 								for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
 									double O_i_j = 0.0;
 									// sum over all quadrature points
@@ -1684,38 +1736,28 @@ class StokesPass
 										VelocityRangeType beta_eval;
 										beta_.evaluate( xWorld, beta_eval );
 										const double beta_times_normal = beta_eval * outerNormal;
-											double c_s;
-											if ( beta_times_normal < 0 ) {
-												c_s = beta_times_normal * 0.5;
-											}
-											else {
-												c_s = - beta_times_normal * 0.5;
-											}
+										VelocityRangeType flux_value(0);
+										if ( !(beta_times_normal < 0) ) {//beta points 'outwards' so take value from this element
+											//the inverse case is handled in H2_O
+											flux_value = v_j;
+											const double flux_value_v_j = flux_value * v_i;
+											const double ret = beta_times_normal * flux_value_v_j;
+//											O_i_j += elementVolume
+//												* integrationWeight
+//												* convection_scaling
+//												* ret;
+										}
 
-											VelocityJacobianRangeType mean_value = dyadicProduct( v_j, beta_eval );
-											mean_value *= 0.5;
-
-											VelocityJacobianRangeType u_jump = dyadicProduct( v_j, outerNormal );
-											u_jump *= c_s;
-
-											VelocityJacobianRangeType flux_value = mean_value;
-											flux_value += u_jump;
-
-											VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_i, outerNormal );
-											double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
-											//inner edge (self)
-											O_i_j += elementVolume
-												* integrationWeight
-												* convection_scaling
-												* ret;
 									} // done sum over all quadrature points
 									// if small, should be zero
 									if ( fabs( O_i_j ) < eps ) {
 										O_i_j = 0.0;
 									}
-									else
+									else {
 										// add to matrix
+//										std::cerr<< boost::format( "O face value (bnd) on entity %d: %e\n") % entityNR % O_i_j;
 										localOmatrixElement.add( i, j, O_i_j );
+									}
 								}
 							} // done computing O's boundary integral
                         //                                                                                                  // we will call this one
@@ -1794,7 +1836,6 @@ class StokesPass
                                         H2_j += C_11
                                             * elementVolume
                                             * integrationWeight
-                                            * mu
                                             * v_j_times_gD_times_normal_times_normal;
 //                                    }
                                     // done computing H2's 1st boundary integral
@@ -1847,35 +1888,28 @@ class StokesPass
 								beta_.evaluate( xWorld, beta_eval );
 								const double beta_times_normal = beta_eval * outerNormal;
 
-								// u^c = 0.5 gD \otimes beta + Cs -gD \otimes n
-								VelocityJacobianRangeType gD_tensor_beta = dyadicProduct( gD, beta_eval );
-								gD_tensor_beta *= 0.5;
-								double c_s;
+								VelocityRangeType flux_value;
 								if ( beta_times_normal < 0 ) {
-									c_s = beta_times_normal * 0.5;
+									//beta points 'inwards' so take value from this element
+									//the inverse case is handled in O's boundary integral
+									flux_value = gD;
+									const double flux_times_v_j = flux_value * v_j;
+//									H2_O_j -= elementVolume
+//											* convection_scaling
+//											* integrationWeight
+//											* beta_times_normal
+//											* flux_times_v_j;
 								}
-								else {
-									c_s = - beta_times_normal * 0.5;
-								}
-								VelocityJacobianRangeType jump = dyadicProduct( gD, outerNormal );
-								jump *= c_s;
 
-								VelocityJacobianRangeType flux_value = gD_tensor_beta;
-								flux_value += jump;
-
-								VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j,  outerNormal );
-								const double ret = Stuff::colonProduct( flux_value, v_j_tensor_n );
-								H2_O_j -= elementVolume
-										* convection_scaling
-										* integrationWeight
-										* ret;
 							}
 							if ( fabs( H2_O_j ) < eps ) {
 									 H2_O_j = 0.0;
 							}
-							else
+							else {
 								// add to rhs
+//								std::cerr<< boost::format( "H2O value (bnd) on entity %d: %e\n") % entityNR % H2_O_j;
 								localH2_O_rhs[ j ] += H2_O_j;
+							}
 						}
 
                         //                                                                                        // we will call this one
@@ -1946,6 +1980,7 @@ class StokesPass
 				Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
 				Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
 				Stuff::printDiscreteFunctionMatlabStyle( H2_O_rhs, "H_O", matlabLogStream );
+				matlabLogStream.Flush();
 			}
 //
 //            // log local matrices
@@ -1985,8 +2020,8 @@ class StokesPass
 			YmatrixType null_matrix( velocitySpace_, velocitySpace_ );
 			null_matrix.reserve();
 			YmatrixType* actually_used_Omatrix = &null_matrix;
-			if ( do_oseen_discretization_ ) {
-				H2rhs -= H2_O_rhs;
+			if ( do_oseen_discretization_ && !( Parameters().getParam( "fakeO", false ) ) ) {
+				H2rhs += H2_O_rhs;
 				actually_used_Omatrix = &Omatrix;
 			}
 			if ( Parameters().getParam( "paranoid_checks", false ) )
@@ -2013,67 +2048,31 @@ class StokesPass
 
 			//this lets us switch between standalone oseen and reduced oseen in  thete scheme easily
 			const bool use_reduced_solver = do_oseen_discretization_ && Parameters().getParam( "reduced_oseen_solver", false );
+			typedef SolverCaller< ThisType >
+				SolverCallerType;
+
+			//Select which solver we want to use
+			typename SolverCallerType::SolverID solver_ID = SolverCallerType::SaddlePoint_Solver_ID;
 			if( !use_reduced_solver ) {
-				if ( Parameters().getParam( "use_nested_cg_solver", false ) ) {
-					info_ = AltInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
-												  *actually_used_Omatrix, Ematrix, Rmatrix,
-												  Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-				}
-				else if ( Parameters().getParam( "use_full_solver", false ) ) {
-					info_ = DirectKrylovSolverType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
-															*actually_used_Omatrix, Ematrix, Rmatrix,
-															Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-				}
-				else {
-					info_ = InvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
-											   *actually_used_Omatrix, Ematrix, Rmatrix,
-											   Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-				}
+				if ( Parameters().getParam( "use_nested_cg_solver", false ) )
+					solver_ID = SolverCallerType::NestedCG_Solver_ID;
+				else if ( Parameters().getParam( "use_full_solver", false ) )
+					solver_ID = SolverCallerType::FullSystem_Solver_ID;
 			}
-			else {
-				info_ = ReducedInvOpType().solve( arg, dest, Xmatrix, MInversMatrix, Ymatrix,
-												  *actually_used_Omatrix, Ematrix, Rmatrix,
-												  Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs );
-			}
+			else
+				solver_ID = SolverCallerType::Reduced_Solver_ID;
+
+			info_ = SolverCallerType::solve( dest, rhs_datacontainer, solver_ID, arg, Xmatrix, MInversMatrix,
+			                                Ymatrix, *actually_used_Omatrix, Ematrix, Rmatrix,
+											Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs, beta_ );
 
             // do profiling
             profiler().StopTiming("Pass -- SOLVER");
 
-			if ( rhs_datacontainer ) {
-				Zmatrix.apply( dest.discretePressure(), rhs_datacontainer->pressure_gradient );
-				rhs_datacontainer->pressure_gradient *= Parameters().getParam("pressure_gradient_scale", 1);
-
-				// \sigma = M^{-1} ( H_1 - Wu )
-				DiscreteSigmaFunctionType sigma_tmp( "sigma_dummy", sigmaSpace_ );
-				Wmatrix.apply( dest.discreteVelocity(), sigma_tmp );
-				sigma_tmp *= -1;
-				sigma_tmp += H1rhs;
-				MInversMatrix.apply( sigma_tmp, rhs_datacontainer->velocity_gradient );
-
-				DiscreteVelocityFunctionType velocity_tmp1( "velocity_tmp1", dest.discreteVelocity().space() );
-				Xmatrix.apply( rhs_datacontainer->velocity_gradient, velocity_tmp1 );
-				Ymatrix.apply( dest.discreteVelocity(), rhs_datacontainer->velocity_laplace );
-				rhs_datacontainer->velocity_laplace += velocity_tmp1;
-				velocity_tmp1.assign( dest.discreteVelocity() );
-				velocity_tmp1 *= alpha;
-				rhs_datacontainer->velocity_laplace -= velocity_tmp1;
-				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
-				const double laplace_scale = Parameters().getParam("laplace_scale", -1/mu);
-				rhs_datacontainer->velocity_laplace *= laplace_scale;
-				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
-				Logger().Dbg().Resume();
-				Logger().Dbg() << boost::format( "laplace_scale: %f\n") % laplace_scale;
-
-				rhs_datacontainer->convection.clear();
-				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
-				rhs_datacontainer->convection += H2_O_rhs;
-
-//				rhs_datacontainer->scale( 1 / std::sqrt(2) );
-			}
 			if ( Parameters().getParam( "save_matrices", false ) ) {
 				Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-				Stuff::printDiscreteFunctionMatlabStyle( dest.discreteVelocity(), "u_exakt", matlabLogStream );
-				Stuff::printDiscreteFunctionMatlabStyle( dest.discretePressure(), "p_exakt", matlabLogStream );
+				Stuff::printDiscreteFunctionMatlabStyle( dest.discreteVelocity(), "u_computed", matlabLogStream );
+				Stuff::printDiscreteFunctionMatlabStyle( dest.discretePressure(), "p_computed", matlabLogStream );
 			}
         } // end of apply
 
@@ -2096,10 +2095,10 @@ class StokesPass
 
     private:
         DiscreteModelType& discreteModel_;
-        GridPartType& gridPart_;
-        DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
-        DiscreteVelocityFunctionSpaceType& velocitySpace_;
-        DiscretePressureFunctionSpaceType& pressureSpace_;
+        const GridPartType& gridPart_;
+        const DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
+        const DiscreteVelocityFunctionSpaceType& velocitySpace_;
+        const DiscretePressureFunctionSpaceType& pressureSpace_;
         DiscreteSigmaFunctionSpaceType sigmaSpace_;
 		const DiscreteVelocityFunctionType& beta_;
 		const bool do_oseen_discretization_;

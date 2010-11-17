@@ -1,7 +1,7 @@
 #ifndef DUNE_STOKES_DIRECT_SOLVER_HH
 #define DUNE_STOKES_DIRECT_SOLVER_HH
 
-#include <dune/stokes/solver_interface.hh>
+#include <dune/stokes/solver/solver_interface.hh>
 
 namespace Dune {
 
@@ -76,7 +76,7 @@ namespace Dune {
 				return *this;
 			}
 
-			IdentityMatrix<CmatrixType>& preconditionMatrix()
+			IdentityMatrix<typename CmatrixType::RealMatrixType>& preconditionMatrix()
 			{
 				return precond_;
 			}
@@ -104,7 +104,7 @@ namespace Dune {
 			}
 
 		private:
-			mutable A_OperatorType& a_operator_;
+			A_OperatorType& a_operator_;
 			const B_t_matrixType& b_t_mat_;
 			const CmatrixType& c_mat_;
 			const BmatrixType& b_mat_;
@@ -114,7 +114,7 @@ namespace Dune {
 			mutable long total_inner_iterations;
 			const typename DiscretePressureFunctionType::DiscreteFunctionSpaceType& pressure_space_;
 			const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& velocity_space_;
-			IdentityMatrix<CmatrixType> precond_;
+			IdentityMatrix<typename CmatrixType::RealMatrixType> precond_;
 	};
 
 
@@ -150,29 +150,30 @@ class DirectKrylovSolver
 
 	/** takes raw matrices from pass
 	*/
-	template <  class XmatrixObjectType,
-				class MmatrixObjectType,
-				class YmatrixObjectType,
-				class EmatrixObjectType,
-				class RmatrixObjectType,
-				class ZmatrixObjectType,
-				class WmatrixObjectType,
+	template <  class X_MatrixType,
+				class M_inverse_MatrixType,
+				class Y_MatrixType,
+				class O_MatrixType,
+				class E_MatrixType,
+				class R_MatrixType,
+				class Z_MatrixType,
+				class W_MatrixType,
 				class DiscreteSigmaFunctionType,
 				class DiscreteVelocityFunctionType,
 				class DiscretePressureFunctionType  >
 	SaddlepointInverseOperatorInfo solve( const DomainType& arg,
 				RangeType& dest,
-				XmatrixObjectType& Xmatrix,
-				MmatrixObjectType& Mmatrix,
-				YmatrixObjectType& Ymatrix,
-				YmatrixObjectType& Omatrix,
-				EmatrixObjectType& Ematrix,
-				RmatrixObjectType& Rmatrix,
-				ZmatrixObjectType& Zmatrix,
-				WmatrixObjectType& Wmatrix,
+				X_MatrixType& Xmatrix,
+				M_inverse_MatrixType& Mmatrix,
+				Y_MatrixType& Ymatrix,
+				O_MatrixType& Omatrix,
+				E_MatrixType& Ematrix,
+				R_MatrixType& Rmatrix,
+				Z_MatrixType& Zmatrix,
+				W_MatrixType& Wmatrix,
 				const DiscreteSigmaFunctionType& rhs1,
-				DiscreteVelocityFunctionType& rhs2,
-				DiscretePressureFunctionType& rhs3 ) const
+				const DiscreteVelocityFunctionType& rhs2,
+				const DiscretePressureFunctionType& rhs3 ) const
 	{
 
 		Logging::LogStream& logDebug = Logger().Dbg();
@@ -198,33 +199,18 @@ class DirectKrylovSolver
 		PressureDiscreteFunctionType& pressure = dest.discretePressure();
 		VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
 
-		typedef typename  XmatrixObjectType::MatrixType
-			XmatrixType;
-		typedef typename  MmatrixObjectType::MatrixType
-			MmatrixType;
-		typedef typename  YmatrixObjectType::MatrixType
-			YmatrixType;
-		typedef typename  EmatrixObjectType::MatrixType
-			B_t_matrixType;                             //! renamed
-		typedef typename  RmatrixObjectType::MatrixType
-			CmatrixType;                                //! renamed
-		typedef typename  ZmatrixObjectType::MatrixType
-			BmatrixType;                                //! renamed
-		typedef typename  WmatrixObjectType::MatrixType
-			WmatrixType;
-
-		XmatrixType& x_mat      = Xmatrix.matrix();
-		MmatrixType& m_inv_mat  = Mmatrix.matrix();
-		YmatrixType& y_mat      = Ymatrix.matrix();
-		YmatrixType& o_mat      = Omatrix.matrix();
-		B_t_matrixType& b_t_mat = Ematrix.matrix(); //! renamed
-		CmatrixType& c_mat      = Rmatrix.matrix(); //! renamed
-		BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
-		WmatrixType& w_mat      = Wmatrix.matrix();
+		X_MatrixType& x_mat      = Xmatrix;
+		M_inverse_MatrixType& m_inv_mat  = Mmatrix;
+		Y_MatrixType& y_mat      = Ymatrix;
+		O_MatrixType& o_mat      = Omatrix;
+		E_MatrixType& b_t_mat = Ematrix; //! renamed
+		R_MatrixType& c_mat      = Rmatrix; //! renamed
+		Z_MatrixType& b_mat      = Zmatrix; //! renamed
+		W_MatrixType& w_mat      = Wmatrix;
 
 		c_mat.scale( -1 ); //since B_t = -E
 
-		DiscretePressureFunctionType& g_func = rhs3;
+		DiscretePressureFunctionType g_func = rhs3;
 		g_func *= ( -1 ); //since G = -H_3
 
 		//Stuff::DiagonalMult( m_inv_mat, rhs1 ); //calc m_inv * H_1 "in-place"
@@ -246,19 +232,19 @@ class DirectKrylovSolver
 		CombinedDiscreteFunctionType combined_dest( dest );
 		CombinedDiscreteFunctionType combined_rhs( rhs_wrapper );
 
-		typedef MatrixA_Operator<   WmatrixType,
-									MmatrixType,
-									XmatrixType,
-									YmatrixType,
+		typedef MatrixA_Operator<   W_MatrixType,
+									M_inverse_MatrixType,
+									X_MatrixType,
+									Y_MatrixType,
 									DiscreteSigmaFunctionType,
 									DiscreteVelocityFunctionType>
 				A_OperatorType;
 		A_OperatorType a_operator( w_mat, m_inv_mat, x_mat, y_mat, o_mat, rhs1.space() , velocity.space() );
 
 		typedef FullSytemOperator< A_OperatorType,
-									B_t_matrixType,
-									CmatrixType,
-									BmatrixType,
+									E_MatrixType,
+									R_MatrixType,
+									Z_MatrixType,
 									DiscreteVelocityFunctionType,
 									DiscretePressureFunctionType >
 			FullSytemOperatorType;

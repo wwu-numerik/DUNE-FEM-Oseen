@@ -9,6 +9,9 @@ include(UseDoxygen)
 
 FIND_PACKAGE(Boost 1.35.0 REQUIRED)
 INCLUDE_DIR(${Boost_INCLUDE_DIR})
+FIND_PACKAGE( PkgConfig )
+pkg_check_modules( CCGNU REQUIRED libccgnu2 )
+ADD_CXX_FLAGS( "${CCGNU_CFLAGS}" )
 
 #----------------------------------------------------------------------------------------------------
 # General Settings
@@ -23,6 +26,7 @@ EXECUTE_PROCESS(
 	ERROR_VARIABLE shell_error
 	OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+
 
 #----------------------------------------------------------------------------------------------------
 # Options, that can be changed be the User in order to customise dune-stokes
@@ -80,7 +84,7 @@ SET( GRAPE_PATH
 	"GRAPE_PATH" )
 
 SET( CXX_FLAGS
-	-Wall -O3 -fomit-frame-pointer -funroll-loops -g -ggdb -DENABLE_ADAPTIVE=1 -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME CACHE STRING
+	-Wall -O3 -fomit-frame-pointer -DDNDEBUG- funroll-loops -g -ggdb -DENABLE_ADAPTIVE=1 -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME CACHE STRING
 	"")
 
 SET( ENABLE_PARALELL
@@ -120,7 +124,7 @@ ENDIF ( ENABLE_PARALELL )
 
 ADD_DUNE_MODULES( common istl grid fem stuff )
 
-LINK_DIRECTORIES( "/usr/lib" "${ALUGRID_BASE_PATH}/lib" "${GRAPE_PATH}" )
+LINK_DIRECTORIES( "/usr/lib" "${ALUGRID_BASE_PATH}/lib" "${GRAPE_PATH}" ${CCGNU_LIBRARY_DIRS} )
 ADD_CXX_FLAGS( ${CXX_FLAGS} )
 
 #----------------------------------------------------------------------------------------------------
@@ -131,21 +135,22 @@ SET(dune-stokesSrc
 )
 
 FILE( GLOB header "src/*.hh" )
-FILE( GLOB_RECURSE stokes "stokes/*" )
+FILE( GLOB_RECURSE stokes "stokes/*.hh" )
 FILE( GLOB stuff "../dune-stuff/stuff/*.hh" )
 
 set_source_files_properties( ${stuff} ${stokes} ${header} PROPERTIES HEADER_FILE_ONLY 1 )
+set( COMMON_LIBS "fem" "grid" "common" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS} ${CCGNU_LIBRARIES} )
 
 ADD_EXECUTABLE(dune_stokes ${dune-stokesSrc} ${header} ${stokes} ${stuff} )
-TARGET_LINK_LIBRARIES(dune_stokes "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS} )
+TARGET_LINK_LIBRARIES(dune_stokes ${COMMON_LIBS}  )
 
 ADD_EXECUTABLE(scaling_test src/scaling_test.cc ${header} ${stokes} ${stuff} )
-TARGET_LINK_LIBRARIES(scaling_test "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS} )
+TARGET_LINK_LIBRARIES(scaling_test ${COMMON_LIBS}  )
 
 ADD_EXECUTABLE(minimal src/minimal.cc ${header} ${stokes} )
-TARGET_LINK_LIBRARIES(minimal "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS})
+TARGET_LINK_LIBRARIES(minimal ${COMMON_LIBS} )
 
 ADD_EXECUTABLE(visualisation src/visualisation.cc ${header} ${stokes} )
-TARGET_LINK_LIBRARIES(visualisation "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS})
+TARGET_LINK_LIBRARIES(visualisation ${COMMON_LIBS} )
 
 HEADERCHECK( ${header} ${stokes} )
