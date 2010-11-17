@@ -241,6 +241,7 @@ struct SmartReconstruction {
 				class DiscretePressureFunctionType  >
 	static void reconstruct( DataContainerType& rhs_datacontainer,
 				const FunctionWrapperType& solution,
+				const DiscreteVelocityFunctionType& beta,
 				const XmatrixObjectType& Xmatrix,
 				const MInversMatrixObjectType& MInversMatrix,
 				const YmatrixObjectType& Ymatrix,
