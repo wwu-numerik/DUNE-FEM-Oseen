@@ -16,6 +16,7 @@
 #include <dune/common/stdstreams.hh>
 #include <dune/stuff/matrix.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
+#include <dune/stuff/progressbar.hh>
 
 template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
 struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
@@ -471,9 +472,6 @@ class StokesPass
                 infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
                 infoStream << "      maxGridWidth is " << maxGridWidth << std::endl;
                 infoStream << "- starting gridwalk" << std::endl;
-                fivePercentOfEntities = int( std::floor(double(numberOfEntities) / double(20)));
-                infoStream << "  [ assembling         ]" << std::endl;
-                infoStream << "  [";
             } else {
                 infoStream << "found " << numberOfEntities << " entities," << std::endl;
                 infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
@@ -486,10 +484,13 @@ class StokesPass
 #endif
 
             // walk the grid
+
             EntityIteratorType entityItEnd = velocitySpace_.end();
-            for (   EntityIteratorType entityIt = velocitySpace_.begin();
+			EntityIteratorType entityIt = velocitySpace_.begin();
+			infoStream.Resume();
+            for (   Stuff::SimpleProgressBar<Logging::LogStream> progress( (numberOfEntities-1), infoStream, 40 );
                     entityIt != entityItEnd;
-					++entityIt,++entityNR ) {
+					++entityIt,++entityNR,++progress ) {
 
                 // get entity and geometry
                 const EntityType& entity = *entityIt;
@@ -522,21 +523,6 @@ class StokesPass
                 // get quadrature
                 const VolumeQuadratureType volumeQuadratureElement( entity,
                                                                     ( 4 * pressureSpaceOrder ) + 1 );
-
-#ifndef NLOG
-                if ( numberOfEntities > 19 ) {
-                    if ( ( entityNR % fivePercentOfEntities ) == 0 ) {
-                        if ( fivePercents < 20 ) {
-                            infoStream.Resume();
-                            infoStream << "=";
-                            infoStream.Flush();
-                            infoStream.Suspend();
-                            ++fivePercents;
-                        }
-                    }
-                }
-                debugStream.Suspend(); // disable logging
-#endif
 
                 // compute volume integrals
 
@@ -1956,15 +1942,6 @@ class StokesPass
             } // done walking the grid
 
 
-#ifndef NLOG
-            infoStream.Resume();
-            if ( numberOfEntities > 19 ) {
-                infoStream << "]";
-            }
-            infoStream << "\n- gridwalk done" << std::endl << std::endl;
-            infoStream.Suspend();
-
-#endif
 //            // do the matlab logging stuff
 			if ( Parameters().getParam( "save_matrices", false ) ) {
 				Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
