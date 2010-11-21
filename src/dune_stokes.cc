@@ -200,8 +200,7 @@ int main( int argc, char** argv )
 
     int err = 0;
 
-    //a little trickery so felix doesn't scream at me for breaking any of his scripts/parameterfiles
-    const int runtype = Parameters().getParam( "runtype", -1 ) != -1  ? Parameters().getParam( "runtype", -1 ) : Parameters().getParam( "multirun", true );
+	const int runtype = Parameters().getParam( "runtype", 5 );
     switch ( runtype ) {
         case 1: {
             StabRun( mpicomm );
