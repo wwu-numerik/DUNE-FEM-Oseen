@@ -422,18 +422,11 @@ class StokesPass
             Logging::LogStream& infoStream = Logger().Info();
 //            Logging::LogStream& debugStream = Logger().Info();
             Logging::LogStream& debugStream = Logger().Dbg(); // sometimes Dbg() doesn't work
-            bool entityOutput = false;
-            bool intersectionOutput = false;
-            const int outputEntity = 0;
-            const int outputIntersection = -1;
             int entityNR = 0;
-            int intersectionNR = 0;
             int numberOfEntities = 0;
             int numberOfIntersections = 0;
             int numberOfBoundaryIntersections = 0;
             int numberOfInnerIntersections = 0;
-            int fivePercentOfEntities = 0;
-            int fivePercents = 0;
             infoStream << "this is StokesPass::apply()" << std::endl;
 
             // do an empty grid walk to get informations
@@ -719,14 +712,14 @@ class StokesPass
 
 							const double u_h_times_divergence_of_beta_v_j_tensor_beta =
 									v_j * divergence_of_v_i_tensor_beta;
-							VelocityJacobianRangeType v_j_tensor_beta = dyadicProduct( v_j, beta_eval );
-							const double ret = Stuff::colonProduct( v_j_tensor_beta, v_i_jacobian );
+							VelocityJacobianRangeType v_i_tensor_beta = dyadicProduct( v_i, beta_eval );
+							const double ret = Stuff::colonProduct( v_i_tensor_beta, v_j_jacobian );
 
 							O_i_j -= elementVolume
 								* integrationWeight
 								* convection_scaling
-								* u_h_times_divergence_of_beta_v_j_tensor_beta;
-//									* ret;
+//								* u_h_times_divergence_of_beta_v_j_tensor_beta;
+									* ret;
 							O_i_j_d-= elementVolume
 							        * integrationWeight
 									* convection_scaling
@@ -902,7 +895,7 @@ class StokesPass
                         LocalWmatrixType localWmatrixNeighbour = Wmatrix.localMatrix( neighbour, entity );
                         LocalXmatrixType localXmatrixNeighbour = Xmatrix.localMatrix( entity, neighbour );
                         LocalYmatrixType localYmatrixNeighbour = Ymatrix.localMatrix( neighbour, entity );
-						LocalOmatrixType localOmatrixNeighbour = Omatrix.localMatrix( entity, neighbour );
+						LocalOmatrixType localOmatrixNeighbour = Omatrix.localMatrix( neighbour, entity );
                         LocalZmatrixType localZmatrixNeighbour = Zmatrix.localMatrix( entity, neighbour );
                         LocalEmatrixType localEmatrixNeighbour = Ematrix.localMatrix( neighbour, entity );
                         LocalRmatrixType localRmatrixNeighbour = Rmatrix.localMatrix( entity, neighbour );
@@ -1227,25 +1220,39 @@ class StokesPass
 										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
 
 										VelocityRangeType beta_eval;
-										beta_.evaluate( xWorld, beta_eval );
-										const double beta_times_normal = (beta_eval * outerNormal);
-										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
+//										beta_.evaluate( xWorld, beta_eval );
+//										const double beta_times_normal = (beta_eval * outerNormal);
+//										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
 
-										VelocityRangeType E_11(1);
-										E_11 = beta_eval;
-//										E_11 = xWorld;
-										E_11 *= 0.5;
-										VelocityRangeType flux_value;
-										flux_value = v_j;
-										flux_value *= 0.5;
-										SigmaRangeType jump = dyadicProduct( v_j, outerNormal );
-										VelocityRangeType jump_value;
-										jump.mv( E_11, jump_value );
-										flux_value += jump_value;
+//										VelocityRangeType E_11(1);
+//										E_11 = beta_eval;
+////										E_11 = xWorld;
+//										E_11 *= 0.5;
+//										VelocityRangeType flux_value;
+//										flux_value = v_j;
+//										flux_value *= 0.5;
+//										SigmaRangeType jump = dyadicProduct( v_j, outerNormal );
+//										VelocityRangeType jump_value;
+//										jump.mv( E_11, jump_value );
+//										flux_value += jump_value;
 
+																				beta_.localFunction(entity).evaluate( xInside, beta_eval );
+																				const double beta_times_normal = beta_eval * outerNormal;
+																				//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
+																				double c_s = (beta_times_normal) * 0.5;
+																				VelocityRangeType u_h = v_i;
+																				VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
+																				mean_value *= 0.5;
+																				VelocityJacobianRangeType u_jump = dyadicProduct( v_i, outerNormal );
+																				u_jump *= c_s;
+																				VelocityJacobianRangeType flux_value = mean_value;
+																				flux_value += u_jump;
 
-										const double flux_times_v_j = flux_value * v_i;
-										const double ret = beta_times_normal * flux_times_v_j;
+																				// \int_{dK} flux_value : ( v_j \ctimes n ) ds
+																				VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_j, outerNormal );
+																				double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
+//										const double flux_times_v_j = flux_value * v_i;
+//										const double ret = beta_times_normal * flux_times_v_j;
 //										if ( beta_times_normal > 0 )
 										O_i_j += elementVolume
 												* integrationWeight
@@ -1280,32 +1287,28 @@ class StokesPass
 										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 
 										VelocityRangeType v_i( 0.0 );
-										velocityBaseFunctionSetElement.evaluate( i, xInside, v_i );
-
+//										velocityBaseFunctionSetElement.evaluate( i, xInside, v_i );
+																				VelocityRangeType v_j( 0.0 );
+																				velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
+																				velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
 										VelocityRangeType beta_eval;
-										beta_.evaluate( xWorld, beta_eval );
-										// * -1 ??
-										const double beta_times_normal =  -( beta_eval * outerNormal );
-										VelocityRangeType v_j( 0.0 );
-										velocityBaseFunctionSetNeighbour.evaluate( j, xOutside, v_j );
+										beta_.localFunction(entity).evaluate( xInside, beta_eval );
+										const double beta_times_normal =  ( beta_eval * outerNormal );
 
-										VelocityRangeType E_11(1);
-										E_11 = beta_eval;
-										E_11 *= 0.5;
-//										E_11 = xWorld;
-//										E_11 *= -1;
-										VelocityRangeType flux_value;
-										flux_value = v_j;
-										flux_value *= 0.5;
-										SigmaRangeType jump = dyadicProduct( v_j, outerNormal );
-										VelocityRangeType jump_value;
-										jump.mv( E_11, jump_value );
-										flux_value += jump_value;
+										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
+										double c_s = (beta_times_normal) * 0.5;
+										VelocityRangeType u_h = v_i;
+										VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
+										mean_value *= 0.5;
+										VelocityJacobianRangeType u_jump = dyadicProduct( v_i, outerNormal );
+										u_jump *= c_s;
+										VelocityJacobianRangeType flux_value = mean_value;
+										flux_value += u_jump;
 
+										// \int_{dK} flux_value : ( v_j \ctimes n ) ds
+										VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_j, outerNormal );
+										double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
 
-										const double flux_times_v_j = flux_value * v_i;
-										const double ret = beta_times_normal * flux_times_v_j;
-//										if ( beta_times_normal > 0 )
 										O_i_j += elementVolume
 												* integrationWeight
 												* convection_scaling
@@ -1722,17 +1725,31 @@ class StokesPass
 										VelocityRangeType beta_eval;
 										beta_.evaluate( xWorld, beta_eval );
 										const double beta_times_normal = beta_eval * outerNormal;
-										VelocityRangeType flux_value(0);
-										if ( !(beta_times_normal < 0) ) {//beta points 'outwards' so take value from this element
-											//the inverse case is handled in H2_O
-											flux_value = v_j;
-											const double flux_value_v_j = flux_value * v_i;
-											const double ret = beta_times_normal * flux_value_v_j;
-//											O_i_j += elementVolume
-//												* integrationWeight
-//												* convection_scaling
-//												* ret;
+
+										double c_s;
+										if ( beta_times_normal < 0 ) {
+											c_s = beta_times_normal * 0.5;
 										}
+										else {
+											c_s = - beta_times_normal * 0.5;
+										}
+
+										VelocityJacobianRangeType mean_value = dyadicProduct( v_i, beta_eval );
+										mean_value *= 0.5;
+
+										VelocityJacobianRangeType u_jump = dyadicProduct( v_i, outerNormal );
+										u_jump *= c_s;
+
+										VelocityJacobianRangeType flux_value = mean_value;
+										flux_value += u_jump;
+
+										VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_j, outerNormal );
+										double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
+										//inner edge (self)
+										O_i_j += elementVolume
+											* integrationWeight
+											* convection_scaling
+											* ret;
 
 									} // done sum over all quadrature points
 									// if small, should be zero
@@ -1874,26 +1891,33 @@ class StokesPass
 								beta_.evaluate( xWorld, beta_eval );
 								const double beta_times_normal = beta_eval * outerNormal;
 
-								VelocityRangeType flux_value;
+								// u^c = 0.5 gD \otimes beta + Cs -gD \otimes n
+								VelocityJacobianRangeType gD_tensor_beta = dyadicProduct( gD, beta_eval );
+								gD_tensor_beta *= 0.5;
+								double c_s;
 								if ( beta_times_normal < 0 ) {
-									//beta points 'inwards' so take value from this element
-									//the inverse case is handled in O's boundary integral
-									flux_value = gD;
-									const double flux_times_v_j = flux_value * v_j;
-//									H2_O_j -= elementVolume
-//											* convection_scaling
-//											* integrationWeight
-//											* beta_times_normal
-//											* flux_times_v_j;
+									c_s = beta_times_normal * 0.5;
 								}
+								else {
+									c_s = - beta_times_normal * 0.5;
+								}
+								VelocityJacobianRangeType jump = dyadicProduct( gD, outerNormal );
+								jump *= c_s;
 
+								VelocityJacobianRangeType flux_value = gD_tensor_beta;
+								flux_value += jump;
+
+								VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j,  outerNormal );
+								const double ret = Stuff::colonProduct( flux_value, v_j_tensor_n );
+								H2_O_j += elementVolume
+										* convection_scaling
+										* integrationWeight
+										* ret;
 							}
 							if ( fabs( H2_O_j ) < eps ) {
 									 H2_O_j = 0.0;
 							}
 							else {
-								// add to rhs
-//								std::cerr<< boost::format( "H2O value (bnd) on entity %d: %e\n") % entityNR % H2_O_j;
 								localH2_O_rhs[ j ] += H2_O_j;
 							}
 						}
@@ -1993,14 +2017,6 @@ class StokesPass
 
             profiler().StartTiming("Pass -- SOLVER");
 
-            // do solving
-			YmatrixType null_matrix( velocitySpace_, velocitySpace_ );
-			null_matrix.reserve();
-			YmatrixType* actually_used_Omatrix = &null_matrix;
-			if ( do_oseen_discretization_ && !( Parameters().getParam( "fakeO", false ) ) ) {
-				H2rhs += H2_O_rhs;
-				actually_used_Omatrix = &Omatrix;
-			}
 			if ( Parameters().getParam( "paranoid_checks", false ) )
 			{//paranoid checks
 				assert( !Stuff::MatrixContainsNanOrInf( Omatrix.matrix() ) );
@@ -2023,6 +2039,10 @@ class StokesPass
 			Logger().Info().Resume();
 			Logger().Info() << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
 
+			// do solving
+			if ( do_oseen_discretization_  ) {
+				H2rhs += H2_O_rhs;
+			}
 			//this lets us switch between standalone oseen and reduced oseen in  thete scheme easily
 			const bool use_reduced_solver = do_oseen_discretization_ && Parameters().getParam( "reduced_oseen_solver", false );
 			typedef SolverCaller< ThisType >
@@ -2040,7 +2060,7 @@ class StokesPass
 				solver_ID = SolverCallerType::Reduced_Solver_ID;
 
 			info_ = SolverCallerType::solve( dest, rhs_datacontainer, solver_ID, arg, Xmatrix, MInversMatrix,
-			                                Ymatrix, *actually_used_Omatrix, Ematrix, Rmatrix,
+											Ymatrix, Omatrix, Ematrix, Rmatrix,
 											Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs, beta_ );
 
             // do profiling
