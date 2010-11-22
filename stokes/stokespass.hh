@@ -1220,40 +1220,22 @@ class StokesPass
 										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
 
 										VelocityRangeType beta_eval;
-//										beta_.evaluate( xWorld, beta_eval );
-//										const double beta_times_normal = (beta_eval * outerNormal);
-//										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
+										beta_.localFunction(entity).evaluate( xInside, beta_eval );
+										const double beta_times_normal = beta_eval * outerNormal;
+										//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
+										double c_s = (beta_times_normal) * 0.5;
+										VelocityRangeType u_h = v_i;
+										VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
+										mean_value *= 0.5;
+										VelocityJacobianRangeType u_jump = dyadicProduct( v_i, outerNormal );
+										u_jump *= c_s;
+										VelocityJacobianRangeType flux_value = mean_value;
+										flux_value += u_jump;
 
-//										VelocityRangeType E_11(1);
-//										E_11 = beta_eval;
-////										E_11 = xWorld;
-//										E_11 *= 0.5;
-//										VelocityRangeType flux_value;
-//										flux_value = v_j;
-//										flux_value *= 0.5;
-//										SigmaRangeType jump = dyadicProduct( v_j, outerNormal );
-//										VelocityRangeType jump_value;
-//										jump.mv( E_11, jump_value );
-//										flux_value += jump_value;
+										// \int_{dK} flux_value : ( v_j \ctimes n ) ds
+										VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_j, outerNormal );
+										double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
 
-																				beta_.localFunction(entity).evaluate( xInside, beta_eval );
-																				const double beta_times_normal = beta_eval * outerNormal;
-																				//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
-																				double c_s = (beta_times_normal) * 0.5;
-																				VelocityRangeType u_h = v_i;
-																				VelocityJacobianRangeType mean_value = dyadicProduct( u_h, beta_eval );
-																				mean_value *= 0.5;
-																				VelocityJacobianRangeType u_jump = dyadicProduct( v_i, outerNormal );
-																				u_jump *= c_s;
-																				VelocityJacobianRangeType flux_value = mean_value;
-																				flux_value += u_jump;
-
-																				// \int_{dK} flux_value : ( v_j \ctimes n ) ds
-																				VelocityJacobianRangeType v_i_tensor_n = dyadicProduct( v_j, outerNormal );
-																				double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
-//										const double flux_times_v_j = flux_value * v_i;
-//										const double ret = beta_times_normal * flux_times_v_j;
-//										if ( beta_times_normal > 0 )
 										O_i_j += elementVolume
 												* integrationWeight
 												* convection_scaling
@@ -1287,10 +1269,9 @@ class StokesPass
 										const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 
 										VelocityRangeType v_i( 0.0 );
-//										velocityBaseFunctionSetElement.evaluate( i, xInside, v_i );
-																				VelocityRangeType v_j( 0.0 );
-																				velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
-																				velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+										VelocityRangeType v_j( 0.0 );
+										velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
+										velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
 										VelocityRangeType beta_eval;
 										beta_.localFunction(entity).evaluate( xInside, beta_eval );
 										const double beta_times_normal =  ( beta_eval * outerNormal );
