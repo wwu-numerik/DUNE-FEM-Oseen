@@ -849,7 +849,7 @@ public:
 	{
 		size_t i = 0;
 		for (	ConstDofIteratorTypeA it = wrapper.discreteVelocity().dbegin();
-				i < space_A_.size() && wrapper.discreteVelocity().dend() != it;
+				int(i) < space_A_.size() && wrapper.discreteVelocity().dend() != it;
 				++it,++i)
 		{
 			dofVec_[i] = *it;
@@ -857,7 +857,7 @@ public:
 
 		i = space_A_.size();
 		for (	ConstDofIteratorTypeB it = wrapper.discretePressure().dbegin();
-				i < space_A_.size() + space_B_.size() && wrapper.discretePressure().dend() != it;
+				int(i) < space_A_.size() + space_B_.size() && wrapper.discretePressure().dend() != it;
 				++it,++i )
 		{
 			dofVec_[i] = *it;
@@ -870,7 +870,7 @@ public:
 	{
 		size_t i = 0;
 		for (	DofIteratorTypeA it = wrapper.discreteVelocity().dbegin();
-				i < space_A_.size() && wrapper.discreteVelocity().dend() != it;
+				int(i) < space_A_.size() && wrapper.discreteVelocity().dend() != it;
 				++it,++i)
 		{
 			*it = dofVec_[i];
@@ -878,7 +878,7 @@ public:
 
 		i = space_A_.size();
 		for (	DofIteratorTypeB it = wrapper.discretePressure().dbegin();
-				i < space_A_.size() + space_B_.size() && wrapper.discretePressure().dend() != it;
+				int(i) < space_A_.size() + space_B_.size() && wrapper.discretePressure().dend() != it;
 				++it,++i )
 		{
 			*it = dofVec_[i];

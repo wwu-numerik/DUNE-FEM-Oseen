@@ -109,7 +109,7 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
             return *this;
         }
 
-        IdentityMatrix<CmatrixType>& preconditionMatrix()
+		IdentityMatrix<typename CmatrixType::RealMatrixType>& preconditionMatrix()
         {
             return precond_;
         }
@@ -137,7 +137,7 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
         }
 
     private:
-        mutable A_SolverType& a_solver_;
+		A_SolverType& a_solver_;
         const B_t_matrixType& b_t_mat_;
         const CmatrixType& c_mat_;
         const BmatrixType& b_mat_;
@@ -147,7 +147,7 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
         bool do_bfg;
         mutable long total_inner_iterations;
 		const typename DiscretePressureFunctionType::DiscreteFunctionSpaceType& pressure_space_;
-		IdentityMatrix<CmatrixType> precond_;
+		IdentityMatrix<typename CmatrixType::RealMatrixType> precond_;
 };
 
 } //end namespace Dune

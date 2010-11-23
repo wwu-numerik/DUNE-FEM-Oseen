@@ -200,8 +200,7 @@ int main( int argc, char** argv )
 
     int err = 0;
 
-    //a little trickery so felix doesn't scream at me for breaking any of his scripts/parameterfiles
-    const int runtype = Parameters().getParam( "runtype", -1 ) != -1  ? Parameters().getParam( "runtype", -1 ) : Parameters().getParam( "multirun", true );
+	const int runtype = Parameters().getParam( "runtype", 5 );
     switch ( runtype ) {
         case 1: {
             StabRun( mpicomm );
@@ -252,8 +251,8 @@ int main( int argc, char** argv )
       Logger().Info().Resume();
       Stuff::meminfo( Logger().Info() );
   }
-  catch ( assert_exception& a ) {
-      std::cerr << "Exception thrown at:\n" << a.what() << std::endl ;
+  catch ( std::runtime_error& a ) {
+      std::cerr << "Runtime error:\n" << a.what() << std::endl ;
   }
   catch (...){
     std::cerr << "Unknown exception thrown!" << std::endl;
@@ -262,6 +261,9 @@ int main( int argc, char** argv )
 
 void RefineRun( CollectiveCommunication& mpicomm )
 {
+#if !(ENABLE_ADAPTIVE)
+	throw std::runtime_error("refine runs don't work with adaptation disabled");
+#endif
     Logger().Info() << "starting refine run " << std::endl;
     // column headers for eoc table output
     const std::string errheaders[] = { "h", "el't","Laufzeit (s)","Geschwindigkeit", "Druck" };
@@ -578,6 +580,10 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
         computedSolutions(  "computed_",
                             discreteStokesFunctionSpaceWrapper,
                             gridPart );
+	DiscreteStokesFunctionWrapperType
+		dummyFunctions(  "dummy_",
+							discreteStokesFunctionSpaceWrapper,
+							gridPart );
 #if ENABLE_ADAPTIVE
     if ( !firstRun ) {
         Dune::Estimator<DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType>
@@ -631,10 +637,12 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     StokesPassType stokesPass(  startPass,
                                 stokesModel,
                                 gridPart,
-                                discreteStokesFunctionSpaceWrapper );
+								discreteStokesFunctionSpaceWrapper,
+								dummyFunctions.discreteVelocity(),
+								false );
 
     profiler().StartTiming( "Pass -- APPLY" );
-	stokesPass.apply( computedSolutions, computedSolutions );
+	stokesPass.apply( computedSolutions, computedSolutions);
     profiler().StopTiming( "Pass -- APPLY" );
     info.run_time = profiler().GetTiming( "Pass -- APPLY" );
     stokesPass.getRuninfo( info );

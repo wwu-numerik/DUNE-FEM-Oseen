@@ -43,29 +43,30 @@ namespace Dune {
 
 	  /** takes raw matrices from pass
 	  */
-	  template <  class XmatrixObjectType,
-				  class MmatrixObjectType,
-				  class YmatrixObjectType,
-				  class EmatrixObjectType,
-				  class RmatrixObjectType,
-				  class ZmatrixObjectType,
-				  class WmatrixObjectType,
+	  template <  class X_MatrixType,
+				  class M_invers_MatrixType,
+				  class Y_MatrixType,
+				  class O_MatrixType,
+				  class E_MatrixType,
+				  class R_MatrixType,
+				  class Z_MatrixType,
+				  class W_MatrixType,
 				  class DiscreteSigmaFunctionType,
 				  class DiscreteVelocityFunctionType,
 				  class DiscretePressureFunctionType  >
 	  SaddlepointInverseOperatorInfo solve( const DomainType& arg,
 				  RangeType& dest,
-				  XmatrixObjectType& Xmatrix,
-				  MmatrixObjectType& Mmatrix,
-				  YmatrixObjectType& Ymatrix,
-				  YmatrixObjectType& Omatrix,
-				  EmatrixObjectType& Ematrix,
-				  RmatrixObjectType& Rmatrix,
-				  ZmatrixObjectType& Zmatrix,
-				  WmatrixObjectType& Wmatrix,
+				  X_MatrixType& Xmatrix,
+				  M_invers_MatrixType& Mmatrix,
+				  Y_MatrixType& Ymatrix,
+				  O_MatrixType& Omatrix,
+				  E_MatrixType& Ematrix,
+				  R_MatrixType& Rmatrix,
+				  Z_MatrixType& Zmatrix,
+				  W_MatrixType& Wmatrix,
 				  const DiscreteSigmaFunctionType& rhs1,
-				  DiscreteVelocityFunctionType& rhs2,
-				  DiscretePressureFunctionType& rhs3 ) const
+				  const DiscreteVelocityFunctionType& rhs2,
+				  const DiscretePressureFunctionType& rhs3 ) const
 	  {
 
 		  Logging::LogStream& logDebug = Logger().Dbg();
@@ -91,33 +92,18 @@ namespace Dune {
 		  PressureDiscreteFunctionType& pressure = dest.discretePressure();
 		  VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
 
-		  typedef typename  XmatrixObjectType::MatrixType
-			  XmatrixType;
-		  typedef typename  MmatrixObjectType::MatrixType
-			  MmatrixType;
-		  typedef typename  YmatrixObjectType::MatrixType
-			  YmatrixType;
-		  typedef typename  EmatrixObjectType::MatrixType
-			  B_t_matrixType;                             //! renamed
-		  typedef typename  RmatrixObjectType::MatrixType
-			  CmatrixType;                                //! renamed
-		  typedef typename  ZmatrixObjectType::MatrixType
-			  BmatrixType;                                //! renamed
-		  typedef typename  WmatrixObjectType::MatrixType
-			  WmatrixType;
-
-		  XmatrixType& x_mat      = Xmatrix.matrix();
-		  MmatrixType& m_inv_mat  = Mmatrix.matrix();
-		  YmatrixType& y_mat      = Ymatrix.matrix();
-		  YmatrixType& o_mat      = Omatrix.matrix();
-		  B_t_matrixType& b_t_mat = Ematrix.matrix(); //! renamed
-		  CmatrixType& c_mat      = Rmatrix.matrix(); //! renamed
-		  BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
-		  WmatrixType& w_mat      = Wmatrix.matrix();
+		  X_MatrixType& x_mat      = Xmatrix;
+		  M_invers_MatrixType& m_inv_mat  = Mmatrix;
+		  Y_MatrixType& y_mat      = Ymatrix;
+		  O_MatrixType& o_mat      = Omatrix;
+		  E_MatrixType& b_t_mat = Ematrix; //! renamed
+		  R_MatrixType& c_mat      = Rmatrix; //! renamed
+		  Z_MatrixType& b_mat      = Zmatrix; //! renamed
+		  W_MatrixType& w_mat      = Wmatrix;
 
 		  b_t_mat.scale( -1 ); //since B_t = -E
 
-		  DiscretePressureFunctionType& g_func = rhs3;
+		  DiscretePressureFunctionType g_func = rhs3;
 		  g_func *= ( -1 ); //since G = -H_3
 
 		  logInfo << " \n\tbegin calc new_f,f_func " << std::endl;
@@ -133,10 +119,10 @@ namespace Dune {
 		  f_func -= rhs2;
 
 
-		  typedef InnerCGSolverWrapper< WmatrixType,
-								  MmatrixType,
-								  XmatrixType,
-								  YmatrixType,
+		  typedef InnerCGSolverWrapper< W_MatrixType,
+								  M_invers_MatrixType,
+								  X_MatrixType,
+								  Y_MatrixType,
 								  DiscreteSigmaFunctionType,
 								  DiscreteVelocityFunctionType >
 			  InnerCGSolverWrapperType;
@@ -195,10 +181,10 @@ namespace Dune {
 		  logInfo << " \n\tend calc new_f,f_func " << std::endl;
 
 		  typedef SchurkomplementOperator<    InnerCGSolverWrapperType,
-											  B_t_matrixType,
-											  CmatrixType,
-											  BmatrixType,
-											  MmatrixType,
+											  E_MatrixType,
+											  R_MatrixType,
+											  Z_MatrixType,
+											  M_invers_MatrixType,
 											  DiscreteVelocityFunctionType,
 											  DiscretePressureFunctionType >
 				  Sk_Operator;

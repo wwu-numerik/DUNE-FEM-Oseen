@@ -267,6 +267,10 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
         computedSolutions(  "computed_",
                             discreteStokesFunctionSpaceWrapper,
                             gridPart );
+	DiscreteStokesFunctionWrapperType
+		dummyFunctions(  "dummy_",
+							discreteStokesFunctionSpaceWrapper,
+							gridPart );
 
 	info.codim0 = gridPtr->size( 0 );
 	const double grid_width = Dune::GridWidth::calcGridWidth( gridPart );
@@ -318,7 +322,9 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     StokesPassType stokesPass(  startPass,
                                 stokesModel,
                                 gridPart,
-                                discreteStokesFunctionSpaceWrapper );
+								discreteStokesFunctionSpaceWrapper,
+								dummyFunctions.discreteVelocity(),
+								false );
 
     profiler().StartTiming( "Pass -- APPLY" );
 	stokesPass.apply( computedSolutions, computedSolutions );

@@ -42,29 +42,30 @@ namespace Dune {
 
 		/** takes raw matrices and right hand sides from pass as input, executes nested cg algorithm and outputs solution
 		*/
-		template <  class XmatrixObjectType,
-					class MmatrixObjectType,
-					class YmatrixObjectType,
-					class EmatrixObjectType,
-					class RmatrixObjectType,
-					class ZmatrixObjectType,
-					class WmatrixObjectType,
+		template <  class X_MatrixType,
+					class M_invers_matrixType,
+					class Y_MatrixType,
+					class O_MatrixType,
+					class E_MatrixType,
+					class R_MatrixType,
+					class Z_MatrixType,
+					class W_MatrixType,
 					class DiscreteSigmaFunctionType,
 					class DiscreteVelocityFunctionType,
 					class DiscretePressureFunctionType  >
 		SaddlepointInverseOperatorInfo solve( const DomainType& /*arg*/,
 					RangeType& dest,
-					XmatrixObjectType& Xmatrix,
-					MmatrixObjectType& Mmatrix,
-					YmatrixObjectType& Ymatrix,
-					YmatrixObjectType& Omatrix,
-					EmatrixObjectType& Ematrix,
-					RmatrixObjectType& Rmatrix,
-					ZmatrixObjectType& Zmatrix,
-					WmatrixObjectType& Wmatrix,
-					DiscreteSigmaFunctionType& rhs1,
-					DiscreteVelocityFunctionType& rhs2,
-					DiscretePressureFunctionType& rhs3 ) const
+					X_MatrixType& Xmatrix,
+					M_invers_matrixType& Mmatrix,
+					Y_MatrixType& Ymatrix,
+					O_MatrixType& Omatrix,
+					E_MatrixType& Ematrix,
+					R_MatrixType& Rmatrix,
+					Z_MatrixType& Zmatrix,
+					W_MatrixType& Wmatrix,
+					const DiscreteSigmaFunctionType& rhs1_orig,
+					const DiscreteVelocityFunctionType& rhs2_orig,
+					const DiscretePressureFunctionType& rhs3 ) const
 		{
 
 			Logging::LogStream& logDebug = Logger().Dbg();
@@ -101,46 +102,32 @@ namespace Dune {
 			PressureDiscreteFunctionType& pressure = dest.discretePressure();
 			VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
 
-			typedef typename  XmatrixObjectType::MatrixType
-				XmatrixType;
-			typedef typename  MmatrixObjectType::MatrixType
-				MmatrixType;
-			typedef typename  YmatrixObjectType::MatrixType
-				YmatrixType;
-			typedef typename  EmatrixObjectType::MatrixType
-				B_t_matrixType;                             //! renamed
-			typedef typename  RmatrixObjectType::MatrixType
-				CmatrixType;                                //! renamed
-			typedef typename  ZmatrixObjectType::MatrixType
-				BmatrixType;                                //! renamed
-			typedef typename  WmatrixObjectType::MatrixType
-				WmatrixType;
-
-			XmatrixType& x_mat      = Xmatrix.matrix();
-			MmatrixType& m_inv_mat  = Mmatrix.matrix();
-			YmatrixType& y_mat      = Ymatrix.matrix();
-			YmatrixType& o_mat      = Omatrix.matrix();
-			B_t_matrixType& b_t_mat = Ematrix.matrix(); //! renamed
-			CmatrixType& c_mat      = Rmatrix.matrix(); //! renamed
-			BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
-			WmatrixType& w_mat      = Wmatrix.matrix();
+			X_MatrixType& x_mat      = Xmatrix;
+			M_invers_matrixType& m_inv_mat  = Mmatrix;
+			Y_MatrixType& y_mat      = Ymatrix;
+			Y_MatrixType& o_mat      = Omatrix;
+			E_MatrixType& b_t_mat = Ematrix; //! renamed
+			R_MatrixType& c_mat      = Rmatrix; //! renamed
+			Z_MatrixType& b_mat      = Zmatrix; //! renamed
+			W_MatrixType& w_mat      = Wmatrix;
 
 	/*** making our matrices kuhnibert compatible ****/
+			const double m_scale = m_inv_mat(0,0);
 			b_t_mat.scale( -1 ); //since B_t = -E
-			w_mat.scale( m_inv_mat(0,0) );
-			rhs1 *=  m_inv_mat(0,0);
-			m_inv_mat.scale( 1 / m_inv_mat(0,0) );
+			DiscreteSigmaFunctionType rhs1 = rhs1_orig;
+			rhs1 *=  m_scale;
 
 			//transformation from StokesPass::buildMatrix
 			VelocityDiscreteFunctionType v_tmp ( "v_tmp", velocity.space() );
 			x_mat.apply( rhs1, v_tmp );
+			DiscreteVelocityFunctionType rhs2 = rhs2_orig;
 			rhs2 -= v_tmp;
 	/***********/
 
-			typedef InnerCGSolverWrapper< WmatrixType,
-									MmatrixType,
-									XmatrixType,
-									YmatrixType,
+			typedef InnerCGSolverWrapper< W_MatrixType,
+									M_invers_matrixType,
+									X_MatrixType,
+									Y_MatrixType,
 									DiscreteSigmaFunctionType,
 									DiscreteVelocityFunctionType >
 				InnerCGSolverWrapperType;
@@ -303,6 +290,7 @@ namespace Dune {
 			info.iterations_outer_total = iteration;
 			info.max_inner_accuracy = max_inner_accuracy;
 	#endif
+			// ***************************
 			return info;
 		} //end SaddlepointInverseOperator::solve
 

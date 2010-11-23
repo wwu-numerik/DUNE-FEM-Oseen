@@ -39,29 +39,30 @@ namespace Dune {
 
 		/** takes raw matrices and right hand sides from pass as input, executes nested cg algorithm and outputs solution
 		*/
-		template <  class XmatrixObjectType,
-					class MmatrixObjectType,
-					class YmatrixObjectType,
-					class EmatrixObjectType,
-					class RmatrixObjectType,
-					class ZmatrixObjectType,
-					class WmatrixObjectType,
+		template <  class X_MatrixType,
+					class M_invers_matrixType,
+					class Y_MatrixType,
+					class O_MatrixType,
+					class E_MatrixType,
+					class R_MatrixType,
+					class Z_MatrixType,
+					class W_MatrixType,
 					class DiscreteSigmaFunctionType,
 					class DiscreteVelocityFunctionType,
 					class DiscretePressureFunctionType  >
 		SaddlepointInverseOperatorInfo solve( const DomainType& /*arg*/,
 					RangeType& dest,
-					XmatrixObjectType& Xmatrix,
-					MmatrixObjectType& Mmatrix,
-					YmatrixObjectType& Ymatrix,
-					YmatrixObjectType& Omatrix,
-					EmatrixObjectType& Ematrix,
-					RmatrixObjectType& Rmatrix,
-					ZmatrixObjectType& Zmatrix,
-					WmatrixObjectType& Wmatrix,
-					DiscreteSigmaFunctionType& rhs1,
-					DiscreteVelocityFunctionType& rhs2,
-					DiscretePressureFunctionType& rhs3 ) const
+					X_MatrixType& Xmatrix,
+					M_invers_matrixType& Mmatrix,
+					Y_MatrixType& Ymatrix,
+					O_MatrixType& Omatrix,
+					E_MatrixType& /*Ematrix*/,
+					R_MatrixType& /*Rmatrix*/,
+					Z_MatrixType& /*Zmatrix*/,
+					W_MatrixType& Wmatrix,
+					const DiscreteSigmaFunctionType& rhs1,
+					const DiscreteVelocityFunctionType& rhs2,
+					const DiscretePressureFunctionType& /*rhs3*/ ) const
 		{
 
 			Logging::LogStream& logDebug = Logger().Dbg();
@@ -85,69 +86,36 @@ namespace Dune {
 
 			logDebug.Resume();
 			//get some refs for more readability
-			PressureDiscreteFunctionType& pressure = dest.discretePressure();
 			VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
 
-			typedef typename  XmatrixObjectType::MatrixType
-				XmatrixType;
-			typedef typename  MmatrixObjectType::MatrixType
-				MmatrixType;
-			typedef typename  YmatrixObjectType::MatrixType
-				YmatrixType;
-			typedef typename  EmatrixObjectType::MatrixType
-				B_t_matrixType;                             //! renamed
-			typedef typename  RmatrixObjectType::MatrixType
-				CmatrixType;                                //! renamed
-			typedef typename  ZmatrixObjectType::MatrixType
-				BmatrixType;                                //! renamed
-			typedef typename  WmatrixObjectType::MatrixType
-				WmatrixType;
+			X_MatrixType& x_mat      = Xmatrix;
+			M_invers_matrixType& m_inv_mat  = Mmatrix;
+			Y_MatrixType& y_mat      = Ymatrix;
+			O_MatrixType& o_mat      = Omatrix;
+			W_MatrixType& w_mat      = Wmatrix;
 
-			XmatrixType& x_mat      = Xmatrix.matrix();
-			MmatrixType& m_inv_mat  = Mmatrix.matrix();
-			YmatrixType& y_mat      = Ymatrix.matrix();
-			YmatrixType& o_mat      = Omatrix.matrix();
-			B_t_matrixType& b_t_mat = Ematrix.matrix(); //! renamed
-			BmatrixType& b_mat      = Zmatrix.matrix(); //! renamed
-			WmatrixType& w_mat      = Wmatrix.matrix();
-
-			typedef InnerCGSolverWrapper< WmatrixType,
-									MmatrixType,
-									XmatrixType,
-									YmatrixType,
-									DiscreteSigmaFunctionType,
-									DiscreteVelocityFunctionType >
-				InnerCGSolverWrapperType;
-			double current_inner_accuracy = inner_absLimit;
-			InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
-														   o_mat, rhs1.space(), rhs2.space(), relLimit,
-														   current_inner_accuracy, solverVerbosity );
-
-			//invert m_inv_mat since we actually got M
-			m_inv_mat.scale( 1 / m_inv_mat(1,1) );
-
-//			w_mat.scale( m_inv_mat(0,0) );
-//			rhs1 *=  m_inv_mat(0,0);
-
-			/** the goal is to solve
-				( Y + O - X M^{-1} W )u = H2 + X M^{-1} H1
-				for u
-			  **/
-
-			//build right hand side = H2 + X M^{-1} H1
-			DiscreteSigmaFunctionType tmp1( "tmp1", rhs1.space() );
-			tmp1.clear();
-
-
-			m_inv_mat.apply( rhs1, tmp1 );
 			VelocityDiscreteFunctionType F( "f", velocity.space() );
-			x_mat.apply( tmp1, F );
+			// F = H_2 - X M^{-1} H_1
+			DiscreteSigmaFunctionType sig_tmp( "sig_tmp", rhs1.space() );
+			m_inv_mat.apply( rhs1, sig_tmp );
+			x_mat.apply( sig_tmp, F );
 			F *= -1;
 			F += rhs2;
 
+			typedef InnerCGSolverWrapper< W_MatrixType,
+									M_invers_matrixType,
+									X_MatrixType,
+									Y_MatrixType,
+									DiscreteSigmaFunctionType,
+									DiscreteVelocityFunctionType >
+				InnerCGSolverWrapperType;
+			InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
+														   o_mat, rhs1.space(), rhs2.space(), relLimit,
+														  inner_absLimit, solverVerbosity  );
 			SaddlepointInverseOperatorInfo info;
 			innerCGSolverWrapper.apply(F,velocity);
 			logInfo << "End ReducedInverseOperator " << std::endl;
+
 			return info;
 		} //end ReducedInverseOperator::solve
 

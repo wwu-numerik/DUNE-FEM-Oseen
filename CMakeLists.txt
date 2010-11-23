@@ -9,6 +9,9 @@ include(UseDoxygen)
 
 FIND_PACKAGE(Boost 1.35.0 REQUIRED)
 INCLUDE_DIR(${Boost_INCLUDE_DIR})
+FIND_PACKAGE( PkgConfig )
+pkg_check_modules( CCGNU REQUIRED libccgnu2 )
+ADD_CXX_FLAGS( "${CCGNU_CFLAGS}" )
 
 #----------------------------------------------------------------------------------------------------
 # General Settings
@@ -23,6 +26,7 @@ EXECUTE_PROCESS(
 	ERROR_VARIABLE shell_error
 	OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+
 
 #----------------------------------------------------------------------------------------------------
 # Options, that can be changed be the User in order to customise dune-stokes
@@ -80,7 +84,7 @@ SET( GRAPE_PATH
 	"GRAPE_PATH" )
 
 SET( CXX_FLAGS
-	-Wall -O3 -fomit-frame-pointer -funroll-loops -g -ggdb -DENABLE_ADAPTIVE=1 -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME CACHE STRING
+	-Wall -O3 -fomit-frame-pointer -DDNDEBUG- funroll-loops -g -ggdb -DENABLE_ADAPTIVE=1 -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME CACHE STRING
 	"")
 
 SET( ENABLE_PARALELL
@@ -117,7 +121,7 @@ ENDIF ( ENABLE_PARALELL )
 
 ADD_DUNE_MODULES( common istl grid fem stuff )
 
-LINK_DIRECTORIES( "/usr/lib" "${ALUGRID_BASE_PATH}/lib" "${GRAPE_PATH}" )
+LINK_DIRECTORIES( "/usr/lib" "${ALUGRID_BASE_PATH}/lib" "${GRAPE_PATH}" ${CCGNU_LIBRARY_DIRS} )
 ADD_CXX_FLAGS( ${CXX_FLAGS} )
 
 FILE( GLOB header "src/*.hh" )
