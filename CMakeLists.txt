@@ -12,7 +12,9 @@ INCLUDE_DIR(${Boost_INCLUDE_DIR})
 FIND_PACKAGE( PkgConfig )
 pkg_check_modules( CCGNU REQUIRED libccgnu2 )
 ADD_CXX_FLAGS( "${CCGNU_CFLAGS}" )
-
+#some defaults
+LIST( APPEND CMAKE_CXX_FLAGS " -Wall -O3 -DDNDEBUG -funroll-loops -g -ggdb -DENABLE_ADAPTIVE=1 -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME --no-strict-aliasing" )
+SET (CMAKE_VERBOSE_MAKEFILE "on" )
 #----------------------------------------------------------------------------------------------------
 # General Settings
 #----------------------------------------------------------------------------------------------------
@@ -27,6 +29,10 @@ EXECUTE_PROCESS(
 	OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+INCLUDE (CheckIncludeFileCXX)
+CHECK_INCLUDE_FILE_CXX("malloc.h" HAVE_MALLOC_H)
+CHECK_INCLUDE_FILE_CXX("valgrind/memcheck.h" HAVE_VALGRIND)
+CHECK_INCLUDE_FILE_CXX("tr1/array" HAVE_TR1_ARRAY)
 
 #----------------------------------------------------------------------------------------------------
 # Options, that can be changed be the User in order to customise dune-stokes
@@ -83,10 +89,6 @@ SET( GRAPE_PATH
 	"/share/dune/Modules/modules_x86_64/grape" CACHE STRING
 	"GRAPE_PATH" )
 
-SET( CXX_FLAGS
-	-Wall -O3 -fomit-frame-pointer -DDNDEBUG- funroll-loops -g -ggdb -DENABLE_ADAPTIVE=1 -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME CACHE STRING
-	"")
-
 SET( ENABLE_PARALELL
 	0 CACHE BOOL
 	"Enable parallel features" )
@@ -95,7 +97,7 @@ SET ( METIS_DIR
 	"/share/dune/Modules/modules_x86_64/ParMetis-3.1.1" CACHE STRING
 	"metis toplevel directory" )
 
-CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/cmake_config.h )
+CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/cmake_config.h )
 
 #needs to come first to include correct config.h
 INCLUDE_DIR( ${dune-stokes_BINARY_DIR} ${dune-stokes_SOURCE_DIR} )
@@ -130,7 +132,7 @@ FILE( GLOB stuff "../dune-stuff/stuff/*.hh" )
 
 set_source_files_properties( ${DUNE_HEADERS} ${stuff} ${stokes} ${header} PROPERTIES HEADER_FILE_ONLY 1 )
 
-set( COMMON_LIBS "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS} )
+set( COMMON_LIBS "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS} ${CCGNU_LIBRARIES} )
 set( COMMON_HEADER ${header} ${stokes} ${stuff} ${DUNE_HEADERS} )
 
 ADD_EXECUTABLE(dune_stokes src/dune_stokes.cc ${COMMON_HEADER} )
@@ -139,8 +141,9 @@ TARGET_LINK_LIBRARIES(dune_stokes ${COMMON_LIBS} )
 ADD_EXECUTABLE(scaling_test src/scaling_test.cc ${COMMON_HEADER} )
 TARGET_LINK_LIBRARIES(scaling_test ${COMMON_LIBS} )
 
-ADD_DUNE_EXECUTABLE(minimal src/minimal.cc ${COMMON_HEADER} )
-# TARGET_LINK_LIBRARIES(minimal ${COMMON_LIBS} )
+# ADD_DUNE_EXECUTABLE(minimal src/minimal.cc ${COMMON_HEADER} ${COMMON_LIBS} )
+ADD_EXECUTABLE(minimal src/minimal.cc ${COMMON_HEADER}  )
+TARGET_LINK_LIBRARIES(minimal ${COMMON_LIBS} )
 
 ADD_EXECUTABLE(visualisation src/visualisation.cc ${COMMON_HEADER} )
 TARGET_LINK_LIBRARIES(visualisation ${COMMON_LIBS} )
