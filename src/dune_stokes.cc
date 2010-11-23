@@ -4,13 +4,7 @@
  *  \brief  brief
  **/
 
-#ifdef HAVE_CONFIG_H
-	#include "config.h"
-#endif
-
-#ifdef NDEBUG
-	#define DNDEBUG
-#endif
+#include "cmake_config.h"
 
 #include <cstdio>
 #if defined(USE_PARDG_ODE_SOLVER) && defined(USE_BFG_CG_SCHEME)
