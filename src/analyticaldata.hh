@@ -7,6 +7,7 @@
 #define ANALYTICALDATA_HH
 
 #include <dune/fem/function/common/function.hh>
+#include <dune/stuff/static_assert.hh>
 #include <cmath>
 
 //#include <dune/common/fvector.hh>
@@ -56,7 +57,7 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
          **/
         inline void evaluate( const DomainType& arg, RangeType& ret ) const
         {
-			Dune::CompileTimeChecker< ( dim_ > 1 && dim_ < 4 ) > Force_Unsuitable_WorldDim;
+			dune_static_assert( dim_ > 1 && dim_ < 4, "Force_Unsuitable_WorldDim");
 
 			if ( dim_ == 2 ) {
                 const double x1 = arg[0];
@@ -186,7 +187,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 		void evaluate( const DomainType& arg, RangeType& ret, const IntersectionType& intersection ) const
         {
 			const int id = intersection.boundaryId();
-			Dune::CompileTimeChecker< ( dim_ > 1 && dim_ < 4 ) > DirichletData_Unsuitable_WorldDim;
+			dune_static_assert( dim_ > 1 && dim_ < 4 , "DirichletData_Unsuitable_WorldDim");
 			if ( dim_ == 2 ) {
                 // some computations
                 const double x1 = arg[0];
