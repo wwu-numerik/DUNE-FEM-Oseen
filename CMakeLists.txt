@@ -12,8 +12,6 @@ INCLUDE_DIR(${Boost_INCLUDE_DIR})
 FIND_PACKAGE( PkgConfig )
 pkg_check_modules( CCGNU REQUIRED libccgnu2 )
 ADD_CXX_FLAGS( "${CCGNU_CFLAGS}" )
-#some defaults
-LIST( APPEND CMAKE_CXX_FLAGS " -Wall -O3 -DDNDEBUG -funroll-loops -g -ggdb -DENABLE_ADAPTIVE=1 -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME --no-strict-aliasing" )
 SET (CMAKE_VERBOSE_MAKEFILE "on" )
 #----------------------------------------------------------------------------------------------------
 # General Settings
@@ -40,7 +38,8 @@ CHECK_INCLUDE_FILE_CXX("tr1/array" HAVE_TR1_ARRAY)
 SET( BLAS_LIB
 	"blas" CACHE STRING
 	"" )
-
+SET( CUSTOM_FLAGS
+	"-Wall -O3 -DDNDEBUG -funroll-loops -g -ggdb -DENABLE_ADAPTIVE=1 -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME --no-strict-aliasing" CACHE LIST  "" )
 SET( GRIDTYPE
 	"ALUGRID_SIMPLEX" CACHE STRING
 	"GRIDTYPE" )
@@ -101,6 +100,7 @@ CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_config.h.in ${CMAKE_CURR
 
 #needs to come first to include correct config.h
 INCLUDE_DIR( ${dune-stokes_BINARY_DIR} ${dune-stokes_SOURCE_DIR} )
+ADD_CXX_FLAGS( ${CUSTOM_FLAGS} )
 
 IF( ${GRIDTYPE} STREQUAL "UGGRID" )
 	ADD_CXX_FLAGS( -I${UGGRID_BASE_PATH}/include -DENABLE_UG )
@@ -121,10 +121,9 @@ IF ( ENABLE_PARALELL )
 					)
 ENDIF ( ENABLE_PARALELL )
 
-ADD_DUNE_MODULES( common istl grid fem stuff )
+ADD_DUNE_MODULES( common istl grid stuff fem )
 
 LINK_DIRECTORIES( "/usr/lib" "${ALUGRID_BASE_PATH}/lib" "${GRAPE_PATH}" ${CCGNU_LIBRARY_DIRS} )
-ADD_CXX_FLAGS( ${CXX_FLAGS} )
 
 FILE( GLOB header "src/*.hh" )
 FILE( GLOB_RECURSE stokes "stokes/*.hh" )
