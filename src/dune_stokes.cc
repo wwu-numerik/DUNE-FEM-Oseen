@@ -278,7 +278,7 @@ void RefineRun( CollectiveCommunication& mpicomm )
 		stab_coeff.FactorFromParams( "D11" );
 	}
     // setting this to true will give each run a unique logilfe name
-    bool per_run_log_target = Parameters().getParam( "per-run-log-target", true );
+	bool per_run_log_target = Parameters().getParam( "per-run-log-target", true );
 
     profiler().Reset( maxref - minref + 1 );
     for ( int ref = minref; ref <= maxref; ++ref ) {
@@ -424,7 +424,7 @@ void StabRun( CollectiveCommunication& mpicomm )
     Logger().Info() << "beginning " << coeff_vector.size() << " runs" << std::endl ;
     profiler().Reset( coeff_vector.size() );
 	CoeffVector::iterator it = coeff_vector.begin();
-    for ( ; it != coeff_vector.end(); ++it ) {
+	for ( unsigned i = 0; it != coeff_vector.end(); ++it,++i ) {
         RunInfo info = singleRun( mpicomm, ref, *it );
         run_infos.push_back( info );
 
@@ -436,6 +436,8 @@ void StabRun( CollectiveCommunication& mpicomm )
         eoc_output.write( eoc_texwriter, ( (it+1) == coeff_vector.end() ) );
 
         profiler().NextRun(); //finish this run
+		if ( per_run_log_target )
+			Logger().SetPrefix( "dune_stokes_permutation_"+Stuff::toString(i) );
     }
     Logger().Info().Resume();
     Logger().Info() << "completed " << coeff_vector.size() << " runs" << std::endl ;

@@ -33,7 +33,7 @@ int main( int argc, char** argv ) {
 
 	unsigned k = 10;
 	Stuff::SimpleProgressBar<> pbar(k);
-	 for(int i=0; i<k+1; i++,++pbar) {
+	 for(unsigned i=0; i<k+1; i++,++pbar) {
 		 sleep( 1 );
 	  }
 	 	++pbar;

@@ -45,6 +45,12 @@ struct SaddlepointInverseOperatorInfo {
 	int iterations_inner_max;
 	int iterations_outer_total;
 	double max_inner_accuracy;
+
+	SaddlepointInverseOperatorInfo()
+		:iterations_inner_avg(-1.0f),iterations_inner_min(-1),
+		iterations_inner_max(-1),iterations_outer_total(-1),
+		max_inner_accuracy(-1.0f)
+	{}
 };
 
 template < class MatrixObjectType >

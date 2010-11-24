@@ -114,11 +114,8 @@ namespace Dune
     }
 
     //! mark all elements due to given tolerance 
-    bool mark ( const double tolerance ) const
+	bool mark ( const double /*tolerance*/ ) const
     {
-      // get local tolerance 
-      const double localTol2 = tolerance * tolerance / (double)indexSet_.size( 0 );
-
       bool marked = false;
       // loop over all elements 
       const IteratorType end = dfSpace_.end();

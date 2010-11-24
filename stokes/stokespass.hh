@@ -420,8 +420,6 @@ class StokesPass
 #ifndef NLOG
             // logging stuff
             Logging::LogStream& infoStream = Logger().Info();
-//            Logging::LogStream& debugStream = Logger().Info();
-            Logging::LogStream& debugStream = Logger().Dbg(); // sometimes Dbg() doesn't work
             int entityNR = 0;
             int numberOfEntities = 0;
             int numberOfIntersections = 0;

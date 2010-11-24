@@ -177,7 +177,6 @@ class DirectKrylovSolver
 	{
 
 		Logging::LogStream& logDebug = Logger().Dbg();
-		Logging::LogStream& logError = Logger().Err();
 		Logging::LogStream& logInfo = Logger().Info();
 
 		if ( Parameters().getParam( "disableSolver", false ) ) {
