@@ -39,7 +39,9 @@ SET( BLAS_LIB
 	"blas" CACHE STRING
 	"" )
 SET( CUSTOM_FLAGS
-	"-Wall -O3 -DDNDEBUG -funroll-loops -g -ggdb -DENABLE_ADAPTIVE=1 -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME --no-strict-aliasing" CACHE LIST  "" )
+	"-Wall -O3 -DDNDEBUG -funroll-loops -g -ggdb -DENABLE_ADAPTIVE=1 -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME -fno-strict-aliasing -std=c++0x " CACHE LIST  
+	"CUSTOM FLAGS" )
+	
 SET( GRIDTYPE
 	"ALUGRID_SIMPLEX" CACHE STRING
 	"GRIDTYPE" )
@@ -127,12 +129,10 @@ LINK_DIRECTORIES( "/usr/lib" "${ALUGRID_BASE_PATH}/lib" "${GRAPE_PATH}" ${CCGNU_
 
 FILE( GLOB header "src/*.hh" )
 FILE( GLOB_RECURSE stokes "stokes/*.hh" )
-FILE( GLOB stuff "../dune-stuff/stuff/*.hh" )
-
-set_source_files_properties( ${DUNE_HEADERS} ${stuff} ${stokes} ${header} PROPERTIES HEADER_FILE_ONLY 1 )
 
 set( COMMON_LIBS "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS} ${CCGNU_LIBRARIES} )
 set( COMMON_HEADER ${header} ${stokes} ${stuff} ${DUNE_HEADERS} )
+set_source_files_properties( ${COMMON_HEADER} PROPERTIES HEADER_FILE_ONLY 1 )
 
 ADD_EXECUTABLE(dune_stokes src/dune_stokes.cc ${COMMON_HEADER} )
 TARGET_LINK_LIBRARIES(dune_stokes ${COMMON_LIBS} )
