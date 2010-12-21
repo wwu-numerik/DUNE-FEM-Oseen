@@ -2,6 +2,7 @@
 #define DUNE_STOKES_SOLVER_SCHURKOMPLEMENT_HH
 
 #include <dune/stuff/matrix.hh>
+
 namespace Dune {
 
 /** \brief Operator wrapping Matrix vector multiplication for
@@ -14,7 +15,7 @@ template <  class A_SolverType,
             class MmatrixType,
             class DiscreteVelocityFunctionType ,
             class DiscretePressureFunctionType>
-class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
+class SchurkomplementOperator : public OEMSolver::PreconditionInterface
 {
     public:
 
@@ -117,7 +118,7 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
 
         bool hasPreconditionMatrix () const
         {
-            return false;
+			return true;
         }
 
         bool rightPrecondition() const
