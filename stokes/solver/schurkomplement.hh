@@ -1,6 +1,7 @@
 #ifndef DUNE_STOKES_SOLVER_SCHURKOMPLEMENT_HH
 #define DUNE_STOKES_SOLVER_SCHURKOMPLEMENT_HH
 
+#include <dune/stuff/matrix.hh>
 namespace Dune {
 
 /** \brief Operator wrapping Matrix vector multiplication for
