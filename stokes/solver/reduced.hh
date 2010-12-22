@@ -18,7 +18,7 @@ namespace Dune {
 		typedef StokesPassImp
 			StokesPassType;
 
-		typedef typename StokesPassType::DiscreteStokesFunctionWrapperType
+		typedef typename StokesPassType::Traits::DiscreteStokesFunctionWrapperType
 			DiscreteStokesFunctionWrapperType;
 
 		typedef typename StokesPassType::DomainType

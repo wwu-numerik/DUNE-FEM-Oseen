@@ -43,6 +43,121 @@ struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp
 namespace Dune
 {
 
+template < class DiscreteModelImp >
+struct StokesTraits
+{
+	//! discrete model type
+	typedef DiscreteModelImp
+		DiscreteModelType;
+
+	//! volume quadrature type
+	typedef typename DiscreteModelType::VolumeQuadratureType
+		VolumeQuadratureType;
+
+	//! face quadrature type
+	typedef typename DiscreteModelType::FaceQuadratureType
+		FaceQuadratureType;
+
+	//! type of discrete function space wrapper
+	typedef typename DiscreteModelType::DiscreteStokesFunctionSpaceWrapperType
+		DiscreteStokesFunctionSpaceWrapperType;
+
+	//! discrete function wrapper type
+	typedef typename DiscreteModelType::DiscreteStokesFunctionWrapperType
+		DiscreteStokesFunctionWrapperType;
+
+	//! discrete function type for the velocity
+	typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
+		DiscreteVelocityFunctionType;
+
+	//! discrete function space type for the velocity
+	typedef typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType
+		DiscreteVelocityFunctionSpaceType;
+
+	//! discrete function type for sigma
+	typedef typename DiscreteModelType::DiscreteSigmaFunctionType
+		DiscreteSigmaFunctionType;
+
+	//! discrete function space type for sigma
+	typedef typename DiscreteSigmaFunctionType::DiscreteFunctionSpaceType
+		DiscreteSigmaFunctionSpaceType;
+
+	//! discrete fucntion type for the pressure
+	typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
+		DiscretePressureFunctionType;
+
+	//! discrete function space type for the pressure
+	typedef typename DiscretePressureFunctionType::DiscreteFunctionSpaceType
+		DiscretePressureFunctionSpaceType;
+
+	//! Coordinate type on the element
+	typedef typename DiscreteVelocityFunctionSpaceType::DomainType
+		ElementCoordinateType;
+
+	//! Coordinate type on an intersection
+	typedef typename FaceQuadratureType::LocalCoordinateType
+		IntersectionCoordinateType;
+
+	//! Vector type of the velocity's discrete function space's range
+	typedef typename DiscreteVelocityFunctionSpaceType::RangeType
+		VelocityRangeType;
+
+	typedef typename DiscreteVelocityFunctionSpaceType::BaseFunctionSetType::JacobianRangeType
+		VelocityJacobianRangeType;
+
+	//! vector type of sigmas' discrete functions space's range
+	typedef typename DiscreteSigmaFunctionSpaceType::RangeType
+		SigmaRangeType;
+
+	typedef typename DiscreteSigmaFunctionSpaceType::BaseFunctionSetType::JacobianRangeType
+		SigmaJacobianRangeType;
+
+	//! Vector type of the pressure's discrete function space's range
+	typedef typename DiscretePressureFunctionSpaceType::RangeType
+		PressureRangeType;
+
+	typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType::JacobianRangeType
+		PressureJacobianRangeType;
+
+	//! Type of GridPart
+	typedef typename DiscreteVelocityFunctionSpaceType::GridPartType
+		GridPartType;
+
+	//! Intersection iterator of the gridpart
+	typedef typename GridPartType::IntersectionIteratorType
+		IntersectionIteratorType;
+
+	//! local coordinate type on an intersection
+	typedef typename FaceQuadratureType::LocalCoordinateType
+		LocalIntersectionCoordinateType;
+
+	//! entity iterator of the gridpart
+	typedef typename GridPartType::template Codim< 0 >::IteratorType
+		EntityIteratorType;
+
+	//! type of the grid
+	typedef typename GridPartType::GridType
+		GridType;
+
+	//! type of codim 0 entity
+	typedef typename GridType::template Codim< 0 >::Entity
+		EntityType;
+
+	//! polynomial order for the discrete sigma function space
+	static const int sigmaSpaceOrder
+		= DiscreteModelType::sigmaSpaceOrder;
+	//! polynomial order for the discrete velocity function space
+	static const int velocitySpaceOrder
+		= DiscreteModelType::velocitySpaceOrder;
+	//! polynomial order for the discrete pressure function space
+	static const int pressureSpaceOrder
+		= DiscreteModelType::pressureSpaceOrder;
+
+	//! the stab coeff. for sigma is a vector field, paramterized by the element's normal
+	typedef StabilizationCoefficients::C12< VelocityRangeType >
+		C12;
+};
+
 /**
  *  \brief  StokesPass
  *
@@ -50,7 +165,8 @@ namespace Dune
  **/
 template <  class DiscreteModelImp,
             class PreviousPassImp,
-            int PassID = 0 >
+			int PassID = 0,
+		  template <class> class TraitsImp = StokesTraits >
 class StokesPass
     : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
 {
@@ -71,112 +187,8 @@ class StokesPass
         typedef DiscreteModelImp
             DiscreteModelType;
 
-        //! volume quadrature type
-        typedef typename DiscreteModelType::VolumeQuadratureType
-            VolumeQuadratureType;
-
-        //! face quadrature type
-        typedef typename DiscreteModelType::FaceQuadratureType
-            FaceQuadratureType;
-
-        //! type of discrete function space wrapper
-        typedef typename DiscreteModelType::DiscreteStokesFunctionSpaceWrapperType
-            DiscreteStokesFunctionSpaceWrapperType;
-
-        //! discrete function wrapper type
-        typedef typename DiscreteModelType::DiscreteStokesFunctionWrapperType
-            DiscreteStokesFunctionWrapperType;
-
-        //! discrete function type for the velocity
-        typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
-            DiscreteVelocityFunctionType;
-
-        //! discrete function space type for the velocity
-        typedef typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType
-            DiscreteVelocityFunctionSpaceType;
-
-        //! discrete function type for sigma
-        typedef typename DiscreteModelType::DiscreteSigmaFunctionType
-            DiscreteSigmaFunctionType;
-
-        //! discrete function space type for sigma
-        typedef typename DiscreteSigmaFunctionType::DiscreteFunctionSpaceType
-            DiscreteSigmaFunctionSpaceType;
-
-        //! discrete fucntion type for the pressure
-        typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
-            DiscretePressureFunctionType;
-
-        //! discrete function space type for the pressure
-        typedef typename DiscretePressureFunctionType::DiscreteFunctionSpaceType
-            DiscretePressureFunctionSpaceType;
-
-        //! Coordinate type on the element
-        typedef typename DiscreteVelocityFunctionSpaceType::DomainType
-            ElementCoordinateType;
-
-        //! Coordinate type on an intersection
-        typedef typename FaceQuadratureType::LocalCoordinateType
-            IntersectionCoordinateType;
-
-        //! Vector type of the velocity's discrete function space's range
-        typedef typename DiscreteVelocityFunctionSpaceType::RangeType
-            VelocityRangeType;
-
-        typedef typename DiscreteVelocityFunctionSpaceType::BaseFunctionSetType::JacobianRangeType
-            VelocityJacobianRangeType;
-
-        //! vector type of sigmas' discrete functions space's range
-        typedef typename DiscreteSigmaFunctionSpaceType::RangeType
-            SigmaRangeType;
-
-        typedef typename DiscreteSigmaFunctionSpaceType::BaseFunctionSetType::JacobianRangeType
-            SigmaJacobianRangeType;
-
-        //! Vector type of the pressure's discrete function space's range
-        typedef typename DiscretePressureFunctionSpaceType::RangeType
-            PressureRangeType;
-
-        typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType::JacobianRangeType
-            PressureJacobianRangeType;
-
-        //! Type of GridPart
-        typedef typename DiscreteVelocityFunctionSpaceType::GridPartType
-            GridPartType;
-
-        //! Intersection iterator of the gridpart
-        typedef typename GridPartType::IntersectionIteratorType
-            IntersectionIteratorType;
-
-        //! local coordinate type on an intersection
-        typedef typename FaceQuadratureType::LocalCoordinateType
-            LocalIntersectionCoordinateType;
-
-        //! entity iterator of the gridpart
-        typedef typename GridPartType::template Codim< 0 >::IteratorType
-            EntityIteratorType;
-
-        //! type of the grid
-        typedef typename GridPartType::GridType
-            GridType;
-
-        //! type of codim 0 entity
-        typedef typename GridType::template Codim< 0 >::Entity
-            EntityType;
-
-        //! polynomial order for the discrete sigma function space
-        static const int sigmaSpaceOrder
-            = DiscreteModelType::sigmaSpaceOrder;
-        //! polynomial order for the discrete velocity function space
-        static const int velocitySpaceOrder
-            = DiscreteModelType::velocitySpaceOrder;
-        //! polynomial order for the discrete pressure function space
-        static const int pressureSpaceOrder
-            = DiscreteModelType::pressureSpaceOrder;
-
-		//! the stab coeff. for sigma is a vector field, paramterized by the element's normal
-		typedef StabilizationCoefficients::C12< VelocityRangeType >
-			C12;
+		typedef TraitsImp< DiscreteModelType >
+			Traits;
 
         /**
          *  \name typedefs needed for interface compliance
@@ -199,13 +211,13 @@ class StokesPass
 
 		//! when requested we store \f$ \vardelta u, \nabla p (u \cdot \nabla ) u\f$ in this struct after the solver
 		struct RhsDatacontainer {
-			DiscreteVelocityFunctionType velocity_laplace;
-			DiscreteVelocityFunctionType pressure_gradient;
-			DiscreteSigmaFunctionType velocity_gradient;
-			DiscreteVelocityFunctionType convection;
+			typename Traits::DiscreteVelocityFunctionType velocity_laplace;
+			typename Traits::DiscreteVelocityFunctionType pressure_gradient;
+			typename Traits::DiscreteSigmaFunctionType velocity_gradient;
+			typename Traits::DiscreteVelocityFunctionType convection;
 
-			RhsDatacontainer( const DiscreteVelocityFunctionSpaceType& space,
-							  const DiscreteSigmaFunctionSpaceType& sigma_space)
+			RhsDatacontainer( const typename Traits::DiscreteVelocityFunctionSpaceType& space,
+							  const typename Traits::DiscreteSigmaFunctionSpaceType& sigma_space)
 				: velocity_laplace( "velocity_laplace", space ),
 				pressure_gradient( "pressure_gradient", space ),
 				velocity_gradient( "velocity_gradient", sigma_space ),
@@ -226,9 +238,9 @@ class StokesPass
          **/
         StokesPass( PreviousPassType& prevPass,
                     DiscreteModelType& discreteModel,
-                    GridPartType& gridPart,
-					const DiscreteStokesFunctionSpaceWrapperType& spaceWrapper,
-					const DiscreteVelocityFunctionType& beta,
+					typename Traits::GridPartType& gridPart,
+					const typename Traits::DiscreteStokesFunctionSpaceWrapperType& spaceWrapper,
+					const typename Traits::DiscreteVelocityFunctionType& beta,
 					const bool do_oseen_discretization )//! \todo move to model
             : BaseType( prevPass ),
             discreteModel_( discreteModel ),
@@ -248,7 +260,7 @@ class StokesPass
         {}
 
         //! used in Postprocessing to get refs to gridparts, spaces
-        const DiscreteStokesFunctionSpaceWrapperType& GetFunctionSpaceWrapper() const
+		const typename Traits::DiscreteStokesFunctionSpaceWrapperType& GetFunctionSpaceWrapper() const
         {
             return spaceWrapper_;
         }
@@ -256,13 +268,13 @@ class StokesPass
 
 		void apply( const DomainType &arg, RangeType &dest ) const
 		{
-			apply<RhsDatacontainer,DiscreteSigmaFunctionType>( arg, dest, 0,0 );
+			apply<RhsDatacontainer,typename Traits::DiscreteSigmaFunctionType>( arg, dest, 0,0 );
 		}
 
 		template < class RhsDatacontainerType >
 		void apply( const DomainType &arg, RangeType &dest,RhsDatacontainerType* rhs_datacontainer ) const
 		{
-			apply<RhsDatacontainerType,DiscreteSigmaFunctionType>( arg, dest, rhs_datacontainer,0 );
+			apply<RhsDatacontainerType,typename Traits::DiscreteSigmaFunctionType>( arg, dest, rhs_datacontainer,0 );
 		}
         /**
          *  \todo doc
@@ -276,7 +288,7 @@ class StokesPass
             profiler().StartTiming("Pass -- ASSEMBLE");
 
             // entity and geometry types
-            typedef typename EntityType::Geometry
+			typedef typename Traits::EntityType::Geometry
                 EntityGeometryType;
             typedef typename Dune::FieldMatrix< typename EntityGeometryType::ctype,
                                                 EntityGeometryType::coorddimension,
@@ -291,7 +303,9 @@ class StokesPass
 
             // matrices
             // M\in R^{M\times M}
-            typedef SparseRowMatrixObject<  DiscreteSigmaFunctionSpaceType,
+			typedef typename Traits::DiscreteSigmaFunctionSpaceType
+				DiscreteSigmaFunctionSpaceType;
+			typedef SparseRowMatrixObject<  DiscreteSigmaFunctionSpaceType,
 											DiscreteSigmaFunctionSpaceType,
 											MatrixTraits<DiscreteSigmaFunctionSpaceType,DiscreteSigmaFunctionSpaceType> >
                 MInversMatrixType;
@@ -299,6 +313,8 @@ class StokesPass
             MInversMatrix.reserve();
             assert( MInversMatrix.matrix().rows() == MInversMatrix.matrix().cols() );
             // W\in R^{M\times L}
+			typedef typename Traits::DiscreteVelocityFunctionSpaceType
+				DiscreteVelocityFunctionSpaceType;
             typedef SparseRowMatrixObject<  DiscreteSigmaFunctionSpaceType,
 											DiscreteVelocityFunctionSpaceType,
 											MatrixTraits<DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType> >
@@ -326,6 +342,8 @@ class StokesPass
 			OmatrixType Omatrix( velocitySpace_, velocitySpace_ );
 			Omatrix.reserve();
             // Z\in R^{L\times K}
+			typedef typename Traits::DiscretePressureFunctionSpaceType
+				DiscretePressureFunctionSpaceType;
             typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
 											DiscretePressureFunctionSpaceType,
 											MatrixTraits<DiscreteVelocityFunctionSpaceType,DiscretePressureFunctionSpaceType> >
@@ -374,26 +392,26 @@ class StokesPass
 
             // right hand sides
             // H_{1}\in R^{M}
-            DiscreteSigmaFunctionType H1rhs( "H1", sigmaSpace_ );
+			typename Traits::DiscreteSigmaFunctionType H1rhs( "H1", sigmaSpace_ );
             H1rhs.clear();
             // H_{2}\in R^{L}
-            DiscreteVelocityFunctionType H2rhs( "H2", velocitySpace_ );
+			typename Traits::DiscreteVelocityFunctionType H2rhs( "H2", velocitySpace_ );
             H2rhs.clear();
-			DiscreteVelocityFunctionType H2_O_rhs( "H2_O", velocitySpace_ );
+			typename Traits::DiscreteVelocityFunctionType H2_O_rhs( "H2_O", velocitySpace_ );
 			H2_O_rhs.clear();
             // H_{3}\in R^{K}
-            DiscretePressureFunctionType H3rhs( "H3", pressureSpace_ );
+			typename Traits::DiscretePressureFunctionType H3rhs( "H3", pressureSpace_ );
             H3rhs.clear();
 
             // local right hand sides
             // H_{1}\in R^{M}
-            typedef typename DiscreteSigmaFunctionType::LocalFunctionType
+			typedef typename Traits::DiscreteSigmaFunctionType::LocalFunctionType
                 LocalH1rhsType;
             // H_{2}\in R^{L}
-            typedef typename DiscreteVelocityFunctionType::LocalFunctionType
+			typedef typename Traits::DiscreteVelocityFunctionType::LocalFunctionType
                 LocalH2rhsType;
             // H_{3}\in R^{K}
-            typedef typename DiscretePressureFunctionType::LocalFunctionType
+			typedef typename Traits::DiscretePressureFunctionType::LocalFunctionType
                 LocalH3rhsType;
 
             // base functions
@@ -429,16 +447,16 @@ class StokesPass
 
             // do an empty grid walk to get informations
             double maxGridWidth( 0.0 );
-            EntityIteratorType entityItEndLog = velocitySpace_.end();
-            for (   EntityIteratorType entityItLog = velocitySpace_.begin();
+			typename Traits::EntityIteratorType entityItEndLog = velocitySpace_.end();
+			for (   typename Traits::EntityIteratorType entityItLog = velocitySpace_.begin();
                     entityItLog != entityItEndLog;
                     ++entityItLog ) {
-                const EntityType& entity = *entityItLog;
+				const typename Traits::EntityType& entity = *entityItLog;
                 // count entities
                 ++numberOfEntities;
                 // walk the intersections
-                IntersectionIteratorType intItEnd = gridPart_.iend( entity );
-                for (   IntersectionIteratorType intIt = gridPart_.ibegin( entity );
+				typename Traits::IntersectionIteratorType intItEnd = gridPart_.iend( entity );
+				for (   typename Traits::IntersectionIteratorType intIt = gridPart_.ibegin( entity );
                         intIt != intItEnd;
                         ++intIt ) {
                     // count intersections
@@ -476,16 +494,16 @@ class StokesPass
 
             // walk the grid
 
-            EntityIteratorType entityItEnd = velocitySpace_.end();
-			EntityIteratorType entityIt = velocitySpace_.begin();
+			typename Traits::EntityIteratorType entityItEnd = velocitySpace_.end();
+			typename Traits::EntityIteratorType entityIt = velocitySpace_.begin();
 			infoStream.Resume();
             for (   Stuff::SimpleProgressBar<Logging::LogStream> progress( (numberOfEntities-1), infoStream, 40 );
                     entityIt != entityItEnd;
 					++entityIt,++entityNR,++progress ) {
 
                 // get entity and geometry
-                const EntityType& entity = *entityIt;
-                const EntityGeometryType& geometry = entity.geometry();
+				const typename Traits::EntityType& entity = *entityIt;
+				const EntityGeometryType& geometry = entity.geometry();
 
                 // get local matrices for the volume integral
                 LocalMInversMatrixType localMInversMatrixElement = MInversMatrix.localMatrix( entity, entity );
@@ -504,18 +522,29 @@ class StokesPass
                 LocalH3rhsType localH3rhs = H3rhs.localFunction( entity );
 
                 // get basefunctionsets
-                const SigmaBaseFunctionSetType sigmaBaseFunctionSetElement = sigmaSpace_.baseFunctionSet( entity );
-                const VelocityBaseFunctionSetType velocityBaseFunctionSetElement = velocitySpace_.baseFunctionSet( entity );
-                const PressureBaseFunctionSetType pressureBaseFunctionSetElement = pressureSpace_.baseFunctionSet( entity );
+				const SigmaBaseFunctionSetType sigmaBaseFunctionSetElement = sigmaSpace_.baseFunctionSet( entity );
+				const VelocityBaseFunctionSetType velocityBaseFunctionSetElement = velocitySpace_.baseFunctionSet( entity );
+				const PressureBaseFunctionSetType pressureBaseFunctionSetElement = pressureSpace_.baseFunctionSet( entity );
                 const int numSigmaBaseFunctionsElement = sigmaBaseFunctionSetElement.numBaseFunctions();
                 const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
                 const int numPressureBaseFunctionsElement = pressureBaseFunctionSetElement.numBaseFunctions();
 
                 // get quadrature
-                const VolumeQuadratureType volumeQuadratureElement( entity,
-                                                                    ( 4 * pressureSpaceOrder ) + 1 );
+				const typename Traits::VolumeQuadratureType volumeQuadratureElement( entity,
+																	( 4 * Traits::pressureSpaceOrder ) + 1 );
 
-                // compute volume integrals
+				typedef typename Traits::ElementCoordinateType
+					ElementCoordinateType;
+				typedef typename Traits::SigmaRangeType
+					SigmaRangeType;
+				typedef typename Traits::VelocityRangeType
+					VelocityRangeType;
+				typedef typename Traits::PressureRangeType
+					PressureRangeType;
+				typedef typename Traits::VelocityJacobianRangeType
+					VelocityJacobianRangeType;
+				typedef typename Traits::PressureJacobianRangeType
+					PressureJacobianRangeType;
 
                 //                                                     // we will call this one
                 // (M^{-1})_{i,j} = (\int_{T}\tau_{j}:\tau_{i}dx)^{-1} // Minvs' volume integral
@@ -552,7 +581,6 @@ class StokesPass
                         }
                     }
                 } // done computing Minvs' volume integral
-
                 //                                                        // we will call this one
 				// (W)_{i,j} += \mu\int_{T}v_{j}\cdot(\nabla\cdot\tau_{i})dx // W's volume integral
                 //                                                        // see also "W's entitity surface integral", "W's neighbour surface integral" and "W's boundary integral" below
@@ -681,7 +709,7 @@ class StokesPass
 							VelocityJacobianRangeType v_j_jacobian;
 							velocityBaseFunctionSetElement.jacobian( j, x, v_j_jacobian );
 							VelocityJacobianRangeType beta_jacobian;
-							const typename DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
+							const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
 									beta_.localFunction( entity );
 							beta_lf.jacobian( x, beta_jacobian );
 
@@ -850,21 +878,21 @@ class StokesPass
                 } // done computing E's volume integral
 
                 // walk the intersections
-                IntersectionIteratorType intItEnd = gridPart_.iend( entity );
-				for (   IntersectionIteratorType intIt = gridPart_.ibegin( entity );
+				typename Traits::IntersectionIteratorType intItEnd = gridPart_.iend( entity );
+				for (   typename Traits::IntersectionIteratorType intIt = gridPart_.ibegin( entity );
 						intIt != intItEnd;
 						++intIt ) {
-					const typename IntersectionIteratorType::Intersection& intersection = *intIt;
+					const typename Traits::IntersectionIteratorType::Intersection& intersection = *intIt;
 
                     // get intersection geometry
-                    typedef typename IntersectionIteratorType::Geometry
+					typedef typename Traits::IntersectionIteratorType::Geometry
                         IntersectionGeometryType;
 					const IntersectionGeometryType& intersectionGeometry = intersection.intersectionGlobal();
                     // get intersection quadrature, seen from inside
-                    const FaceQuadratureType faceQuadratureElement( gridPart_,
+					const typename Traits::FaceQuadratureType faceQuadratureElement( gridPart_,
 																	intersection,
-                                                                    ( 4 * pressureSpaceOrder ) + 1,
-                                                                    FaceQuadratureType::INSIDE );
+																	( 4 * Traits::pressureSpaceOrder ) + 1,
+																	Traits::FaceQuadratureType::INSIDE );
 
                     // get flux coefficients
 					const double lengthOfIntersection = Stuff::getLenghtOfIntersection( intersection );
@@ -882,9 +910,9 @@ class StokesPass
 					if ( intersection.neighbor() && !intersection.boundary() ) {
                         // get neighbour
 						//! DO NOT TRY TO DEREF outside() DIRECTLY
-						const typename IntersectionIteratorType::EntityPointer neighbourPtr = intersection.outside();
+						const typename Traits::IntersectionIteratorType::EntityPointer neighbourPtr = intersection.outside();
 						//there's some (copy ctor? / implicit type conversion) at play here which will make shit fail if you do
-                        const EntityType& neighbour = *neighbourPtr;
+						const typename Traits::EntityType& neighbour = *neighbourPtr;
 						// esp. these two line ARE NOT equiv. to const EntityType& neighbour = * (static_cast<const typename IntersectionIteratorType::EntityPointer>(intersection.outside()) );
 
                         // get local matrices for the surface integrals
@@ -906,10 +934,12 @@ class StokesPass
                         const int numPressureBaseFunctionsNeighbour = pressureBaseFunctionSetNeighbour.numBaseFunctions();
 
                         // get intersection quadrature, seen from outside
-                        const FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
+						const typename Traits::FaceQuadratureType faceQuadratureNeighbour(   gridPart_,
 																			intersection,
-                                                                            ( 4 * pressureSpaceOrder ) + 1,
-                                                                            FaceQuadratureType::OUTSIDE );
+																			( 4 * Traits::pressureSpaceOrder ) + 1,
+																			Traits::FaceQuadratureType::OUTSIDE );
+						typedef typename Traits::LocalIntersectionCoordinateType
+							LocalIntersectionCoordinateType;
 
                         // compute surface integrals
 
@@ -941,7 +971,7 @@ class StokesPass
                                         velocityBaseFunctionSetElement.evaluate( j, x, v_j );
 
 										VelocityJacobianRangeType v_j_dyadic_normal = dyadicProduct( v_j, outerNormal );
-										C12 c_12( outerNormal, discreteModel_.getStabilizationCoefficients() );
+										typename Traits::C12 c_12( outerNormal, discreteModel_.getStabilizationCoefficients() );
 										VelocityRangeType v_j_dyadic_normal_times_C12( 0.0 );
 										v_j_dyadic_normal.mv( c_12, v_j_dyadic_normal_times_C12 );
 
@@ -988,7 +1018,7 @@ class StokesPass
 
 										VelocityJacobianRangeType v_j_dyadic_normal = dyadicProduct( v_j, outerNormal );
 										VelocityRangeType v_j_dyadic_normal_times_C12( 0.0 );
-										C12 c_12( outerNormal, discreteModel_.getStabilizationCoefficients() );
+										typename Traits::C12 c_12( outerNormal, discreteModel_.getStabilizationCoefficients() );
 										v_j_dyadic_normal.mv( c_12, v_j_dyadic_normal_times_C12 );
 
                                         VelocityRangeType tau_i_times_normal( 0.0 );
@@ -1041,7 +1071,7 @@ class StokesPass
 
 										VelocityRangeType tau_j_times_normal( 0.0 );
 										tau_j.mv( outerNormal, tau_j_times_normal );
-										C12 c_12( outerNormal, discreteModel_.getStabilizationCoefficients() );
+										typename Traits::C12 c_12( outerNormal, discreteModel_.getStabilizationCoefficients() );
 										SigmaRangeType tau_j_times_normal_dyadic_C12
 												= dyadicProduct( tau_j_times_normal, c_12 );
 
@@ -1087,7 +1117,7 @@ class StokesPass
 
 										VelocityRangeType tau_j_times_normal( 0.0 );
 										tau_j.mv( outerNormal, tau_j_times_normal );
-										C12 c_12( outerNormal, discreteModel_.getStabilizationCoefficients() );
+										typename Traits::C12 c_12( outerNormal, discreteModel_.getStabilizationCoefficients() );
 										SigmaRangeType tau_j_times_normal_dyadic_C12
 												= dyadicProduct( tau_j_times_normal, c_12 );
 
@@ -1557,6 +1587,8 @@ class StokesPass
 //                        }
                     } // done with those inside the grid
 
+					typedef typename Traits::LocalIntersectionCoordinateType
+						LocalIntersectionCoordinateType;
                     // if we are on the boundary of the grid
 					if ( !intersection.neighbor() && intersection.boundary() ) {
                         //                                                                                                    // we will call this one
@@ -2070,12 +2102,12 @@ class StokesPass
 
     private:
         DiscreteModelType& discreteModel_;
-        const GridPartType& gridPart_;
-        const DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
-        const DiscreteVelocityFunctionSpaceType& velocitySpace_;
-        const DiscretePressureFunctionSpaceType& pressureSpace_;
-        DiscreteSigmaFunctionSpaceType sigmaSpace_;
-		const DiscreteVelocityFunctionType& beta_;
+		const typename Traits::GridPartType& gridPart_;
+		const typename Traits::DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
+		const typename Traits::DiscreteVelocityFunctionSpaceType& velocitySpace_;
+		const typename Traits::DiscretePressureFunctionSpaceType& pressureSpace_;
+		typename Traits::DiscreteSigmaFunctionSpaceType sigmaSpace_;
+		const typename Traits::DiscreteVelocityFunctionType& beta_;
 		const bool do_oseen_discretization_;
         mutable SaddlepointInverseOperatorInfo info_;
 
@@ -2088,15 +2120,16 @@ class StokesPass
          *
          *          Implements \f$\left(arg_{1} \otimes arg_{2}\right)_{i,j}:={arg_{1}}_{i} {arg_{2}}_{j}\f$
          **/
-		static SigmaRangeType dyadicProduct(   const VelocityRangeType& arg1,
-										const VelocityRangeType& arg2 )
+		static typename Traits::SigmaRangeType dyadicProduct(
+										const typename Traits::VelocityRangeType& arg1,
+										const typename Traits::VelocityRangeType& arg2 )
         {
-            SigmaRangeType ret( 0.0 );
-            typedef typename SigmaRangeType::RowIterator
+			typename Traits::SigmaRangeType ret( 0.0 );
+			typedef typename Traits::SigmaRangeType::RowIterator
                 MatrixRowIteratorType;
-            typedef typename VelocityRangeType::ConstIterator
+			typedef typename Traits::VelocityRangeType::ConstIterator
                 ConstVectorIteratorType;
-            typedef typename VelocityRangeType::Iterator
+			typedef typename Traits::VelocityRangeType::Iterator
                 VectorIteratorType;
             MatrixRowIteratorType rItEnd = ret.end();
             ConstVectorIteratorType arg1It = arg1.begin();
@@ -2118,13 +2151,14 @@ class StokesPass
         // SigmaJacobianRangeType to be a Matrixmapping and
         // SigmaJacobianRangeType[i] to be a FieldVector
         //! \todo   doc me
-		static SigmaJacobianRangeType prepareVelocityRangeTypeForSigmaDivergence( const VelocityRangeType& arg )
+		static typename Traits::SigmaJacobianRangeType prepareVelocityRangeTypeForSigmaDivergence(
+													const typename Traits::VelocityRangeType& arg )
         {
-            SigmaJacobianRangeType ret( 0.0 );
+			typename Traits::SigmaJacobianRangeType ret( 0.0 );
             assert( arg.dim() == ret[0].dim() );
             for ( int i = 0; i < int(arg.dim()) ; ++i ) {
                 for ( int j = 0; j < int(arg.dim()); ++j ) {
-                    VelocityRangeType row( 0.0 );
+					typename Traits::VelocityRangeType row( 0.0 );
                     row[ j ] = arg[ i ];
                     ret[ i * arg.dim() + j ] = row;
                 }
@@ -2133,11 +2167,12 @@ class StokesPass
         }
 
         //! \todo   doc me
-		static VelocityJacobianRangeType preparePressureRangeTypeForVelocityDivergence( const PressureRangeType& arg )
+		static typename Traits::VelocityJacobianRangeType preparePressureRangeTypeForVelocityDivergence(
+													const typename Traits::PressureRangeType& arg )
         {
-            VelocityJacobianRangeType ret( 0.0 );
+			typename Traits::VelocityJacobianRangeType ret( 0.0 );
             for ( unsigned int i = 0; i < ret[0].dim(); ++i ) {
-                VelocityRangeType row( 0.0 );
+				typename Traits::VelocityRangeType row( 0.0 );
                 row[ i ] = arg;
                 ret[ i ] = row;
             }
