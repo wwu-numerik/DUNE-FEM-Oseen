@@ -78,17 +78,23 @@ class MatrixWrapper : boost::noncopyable {
 			matrix_object_.apply( f, ret );
 		}
 		//! return diagonal of (this * A * B)
-		template <class DiscrecteFunctionType>
-		void getDiag(const MatrixType& A, const MatrixType& B, DiscrecteFunctionType& rhs) const
+		template <class DiscrecteFunctionType, class OtherMatrixType_A, class OtherMatrixType_B>
+		void getDiag(const OtherMatrixType_A& A, const OtherMatrixType_B& B, DiscrecteFunctionType& rhs) const
 		{
-			matrix_object_.matrix().getDiag( A, B, rhs );
+			matrix_object_.matrix().getDiag( A.matrix(), B.matrix(), rhs );
 		}
 
 		//! return diagonal of (this * A)
-		template <class DiscrecteFunctionType>
-		void getDiag(const MatrixType& A, DiscrecteFunctionType& rhs) const
+		template <class DiscrecteFunctionType, class OtherMatrixType_A>
+		void getDiag(const OtherMatrixType_A& A, DiscrecteFunctionType& rhs) const
 		{
 			matrix_object_.matrix().getDiag( A, rhs );
+		}
+
+		template <class DiscrecteFunctionType>
+		void addDiag(DiscrecteFunctionType& rhs) const
+		{
+			matrix_object_.matrix().addDiag( rhs );
 		}
 
 		//! same as apply A * x = ret, used by OEM-Solvers
@@ -124,6 +130,11 @@ class MatrixWrapper : boost::noncopyable {
 		{
 			cumulative_scale_factor_ *= factor;
 			matrix_object_.matrix().scale( factor );
+		}
+
+		const MatrixType& matrix() const
+		{
+			return matrix_object_.matrix();
 		}
 
 	private:

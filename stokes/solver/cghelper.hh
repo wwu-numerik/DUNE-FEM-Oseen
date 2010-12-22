@@ -62,15 +62,15 @@ class MatrixA_Operator : public OEMSolver::PreconditionInterface
 			precondition_diagonal_( "diag1", space ),
 			precondition_matrix_invers( y_mat_.cols(), y_mat_.rows(), 10 )
         {
-//			x_mat_.getDiag( m_mat_, w_mat_, precondition_diagonal_);
-//			precondition_diagonal_ *= -1;
-//			y_mat_.addDiag( precondition_diagonal_ );
-//			o_mat_.addDiag( precondition_diagonal_ );
-//			setMatrixDiag( precondition_matrix_, precondition_diagonal_ );
-//			DiscreteVelocityFunctionType precondition_diagonal_inv( "diag_inv", space );
-//			precondition_diagonal_inv.assign( precondition_diagonal_ );
-//			Stuff::invertFunctionDofs( precondition_diagonal_inv );
-//			setMatrixDiag( precondition_matrix_invers, precondition_diagonal_inv );
+			x_mat_.getDiag( m_mat_, w_mat_, precondition_diagonal_);
+			precondition_diagonal_ *= -1;
+			y_mat_.addDiag( precondition_diagonal_ );
+			o_mat_.addDiag( precondition_diagonal_ );
+			setMatrixDiag( precondition_matrix_, precondition_diagonal_ );
+			DiscreteVelocityFunctionType precondition_diagonal_inv( "diag_inv", space );
+			precondition_diagonal_inv.assign( precondition_diagonal_ );
+			Stuff::invertFunctionDofs( precondition_diagonal_inv );
+			setMatrixDiag( precondition_matrix_invers, precondition_diagonal_inv );
 		}
 
         ~MatrixA_Operator()
@@ -119,7 +119,7 @@ class MatrixA_Operator : public OEMSolver::PreconditionInterface
 
         bool hasPreconditionMatrix () const
         {
-			return true;
+			return Parameters().getParam( "innerPrecond", false );
         }
 
         bool rightPrecondition() const

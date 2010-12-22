@@ -118,7 +118,7 @@ class SchurkomplementOperator : public OEMSolver::PreconditionInterface
 
         bool hasPreconditionMatrix () const
         {
-			return true;
+			return Parameters().getParam( "outerPrecond", false );
         }
 
         bool rightPrecondition() const
