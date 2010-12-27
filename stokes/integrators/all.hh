@@ -1,7 +1,7 @@
 #ifndef DUNE_STOKES_INTEGRATORS_HH
 #define DUNE_STOKES_INTEGRATORS_HH
 
-#include "integrators_base.hh"
+#include <dune/stokes/integrators/base.hh>
 
 namespace Dune {
 namespace Stokes {

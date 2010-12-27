@@ -12,7 +12,7 @@
 #include <dune/fem/misc/l2norm.hh>
 
 #include <dune/stokes/solver/solvercaller.hh>
-#include <dune/stokes/integrators.hh>
+#include <dune/stokes/integrators/all.hh>
 
 #include <dune/common/stdstreams.hh>
 #include <dune/stuff/matrix.hh>
