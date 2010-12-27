@@ -26,7 +26,7 @@ namespace Integrators {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-		typedef typename EntityType::Geometry
+		typedef typename Traits::EntityType::Geometry
 			EntityGeometryType;
 		typedef typename Dune::FieldMatrix< typename EntityGeometryType::ctype,
 											EntityGeometryType::coorddimension,
@@ -74,7 +74,7 @@ namespace Integrators {
 								* gradient_of_q_i_times_v_j;
 						} // done sum over all quadrature points
 						// if small, should be zero
-						if ( fabs( E_i_j ) < eps ) {
+						if ( fabs( E_i_j ) < info.eps ) {
 							E_i_j = 0.0;
 						}
 						else
@@ -106,7 +106,7 @@ namespace Integrators {
 								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute \hat{u}_{p}^{U^{+}}(v_{j})\cdot n_{T}q_{i}
@@ -118,7 +118,7 @@ namespace Integrators {
 								VelocityRangeType flux_value = v_j;
 								flux_value *= 0.5;
 								const double v_j_times_outerNormal = v_j * outerNormal;
-								VelocityRangeType jump = D_12;
+								VelocityRangeType jump = info.D_12;
 								jump *= v_j_times_outerNormal;
 								flux_value += jump;
 								VelocityRangeType q_i_times_flux = flux_value;
@@ -130,7 +130,7 @@ namespace Integrators {
 									* q_i_times_flux_times_outerNormal;
 							} // done sum over all quadrature points
 							// if small, should be zero
-							if ( fabs( E_i_j ) < eps ) {
+							if ( fabs( E_i_j ) < info.eps ) {
 								E_i_j = 0.0;
 							}
 							else
@@ -147,7 +147,7 @@ namespace Integrators {
 								const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureNeighbour.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
 								// compute \hat{u}_{p}^{U^{-}}(v_{j})\cdot n_{T}q_{i}
@@ -160,7 +160,7 @@ namespace Integrators {
 								VelocityRangeType flux_value = v_j;
 								flux_value *= 0.5;
 								const double v_j_times_outerNormal = v_j * outerNormal;
-								VelocityRangeType jump = D_12;
+								VelocityRangeType jump = info.D_12;
 								jump *= v_j_times_outerNormal;
 								flux_value += jump;
 								VelocityRangeType q_i_times_flux = flux_value;
@@ -172,7 +172,7 @@ namespace Integrators {
 									* q_i_times_flux_times_outerNormal;
 							} // done sum over all quadrature points
 							// if small, should be zero
-							if ( fabs( E_i_j ) < eps ) {
+							if ( fabs( E_i_j ) < info.eps ) {
 								E_i_j = 0.0;
 							}
 							else

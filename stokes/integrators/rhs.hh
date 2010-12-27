@@ -1,6 +1,7 @@
 #ifndef DUNE_STOKES_INTEGRATORS_RHS_HH
 #define DUNE_STOKES_INTEGRATORS_RHS_HH
 
+#include <dune/stokes/integrators/base.hh>
 
 namespace Dune {
 namespace Stokes {
@@ -191,12 +192,12 @@ class H2
 						info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 						// compute \mu v_{j}\cdot\hat{\sigma}^{RHS}()\cdot n_{T}
 //                                    if ( info.discrete_model.hasSigmaFlux() ) {
-							const VelocityRangeType xIntersectionGlobal = info.intersection.info.intersectionSelfLocal().global( xLocal );
+							const VelocityRangeType xIntersectionGlobal = info.intersection.intersectionSelfLocal().global( xLocal );
 							const VelocityRangeType xWorld = info.geometry.global( xIntersectionGlobal );
 							VelocityRangeType gD( 0.0 );
 							info.discrete_model.dirichletData( info.intersection, 0.0, xWorld, gD );
 							SigmaRangeType gD_times_normal( 0.0 );
-							gD_times_normal = dyadicProduct( gD, outerNormal );
+							gD_times_normal = Stuff::dyadicProduct<SigmaRangeType,VelocityRangeType>( gD, outerNormal );
 							VelocityRangeType gD_times_normal_times_normal( 0.0 );
 							gD_times_normal.mv( outerNormal, gD_times_normal_times_normal );
 							const double v_j_times_gD_times_normal_times_normal= v_j * gD_times_normal_times_normal;
@@ -290,7 +291,7 @@ class H2_O
 					VelocityRangeType v_j( 0.0 );
 					info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 					// compute \mu v_{j}\cdot\hat{\sigma}^{RHS}()\cdot n_{T}
-					const VelocityRangeType xIntersectionGlobal = info.intersection.info.intersectionSelfLocal().global( xLocal );
+					const VelocityRangeType xIntersectionGlobal = info.intersection.intersectionSelfLocal().global( xLocal );
 					const VelocityRangeType xWorld = info.geometry.global( xIntersectionGlobal );
 					VelocityRangeType gD( 0.0 );
 					info.discrete_model.dirichletData( info.intersection, 0.0, xWorld, gD );
@@ -300,7 +301,8 @@ class H2_O
 					const double beta_times_normal = beta_eval * outerNormal;
 
 					// u^c = 0.5 gD \otimes beta + Cs -gD \otimes n
-					VelocityJacobianRangeType gD_tensor_beta = dyadicProduct( gD, beta_eval );
+					VelocityJacobianRangeType gD_tensor_beta
+							= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( gD, beta_eval );
 					gD_tensor_beta *= 0.5;
 					double c_s;
 					if ( beta_times_normal < 0 ) {
@@ -309,13 +311,15 @@ class H2_O
 					else {
 						c_s = - beta_times_normal * 0.5;
 					}
-					VelocityJacobianRangeType jump = dyadicProduct( gD, outerNormal );
+					VelocityJacobianRangeType jump
+							= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( gD, outerNormal );
 					jump *= c_s;
 
 					VelocityJacobianRangeType flux_value = gD_tensor_beta;
 					flux_value += jump;
 
-					VelocityJacobianRangeType v_j_tensor_n = dyadicProduct( v_j,  outerNormal );
+					VelocityJacobianRangeType v_j_tensor_n
+							= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( v_j,  outerNormal );
 					const double ret = Stuff::colonProduct( flux_value, v_j_tensor_n );
 					H2_O_j += elementVolume
 							* info.convection_scaling

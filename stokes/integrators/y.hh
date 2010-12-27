@@ -60,11 +60,11 @@ namespace Integrators {
 							const double v_i_times_v_j = v_i * v_j;
 							Y_i_j += elementVolume
 								* integrationWeight
-								* alpha
+								* info.alpha
 								* v_i_times_v_j;
 						} // done sum over quadrature points
 						// if small, should be zero
-						if ( fabs( Y_i_j ) < eps ) {
+						if ( fabs( Y_i_j ) < info.eps ) {
 							Y_i_j = 0.0;
 						}
 						else
@@ -96,7 +96,7 @@ namespace Integrators {
 								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{U{+}}(v{j})\cdot n_{t}
@@ -106,13 +106,13 @@ namespace Integrators {
 								VelocityRangeType v_i( 0.0 );
 								info.velocity_basefunction_set_element.evaluate( i, x, v_i );
 								const double v_i_times_v_j = v_i * v_j;
-								Y_i_j += C_11
+								Y_i_j += info.C_11
 									* elementVolume
 									* integrationWeight
 									* v_i_times_v_j;
 							} // done sum over all quadrature points
 							// if small, should be zero
-							if ( fabs( Y_i_j ) < eps ) {
+							if ( fabs( Y_i_j ) < info.eps ) {
 								Y_i_j = 0.0;
 							}
 							else
@@ -120,7 +120,7 @@ namespace Integrators {
 								localYmatrixElement.add( i, j, Y_i_j );
 						} // done computing Y's element surface integral
 						// compute Y's neighbour surface integral
-						for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
+						for ( int i = 0; i < info.numVelocityBaseFunctionsNeighbour; ++i ) {
 							double Y_i_j = 0.0;
 							// sum over all quadrature points
 							for ( size_t quad = 0; quad < info.faceQuadratureNeighbour.nop(); ++quad ) {
@@ -129,24 +129,24 @@ namespace Integrators {
 								const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureNeighbour.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}
 								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_i( 0.0 );
-								velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
+								info.velocity_basefunction_set_neighbour.evaluate( i, xOutside, v_i );
 								VelocityRangeType v_j( 0.0 );
 								info.velocity_basefunction_set_element.evaluate( j, xInside, v_j );
 								const double v_i_times_v_j = v_i * v_j;
 								Y_i_j += -1.0
-									* C_11
+									* info.C_11
 									* elementVolume
 									* integrationWeight
 									* v_i_times_v_j;
 							} // done sum over all quadrature points
 							// if small, should be zero
-							if ( fabs( Y_i_j ) < eps ) {
+							if ( fabs( Y_i_j ) < info.eps ) {
 								Y_i_j = 0.0;
 							}
 							else
@@ -175,7 +175,7 @@ namespace Integrators {
 								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{U^{+}}(v_{j})\cdot n_{t}
@@ -185,13 +185,13 @@ namespace Integrators {
 								VelocityRangeType v_i( 0.0 );
 								info.velocity_basefunction_set_element.evaluate( i, x, v_i );
 								const double v_i_times_v_j = v_i * v_j;
-								Y_i_j += C_11
+								Y_i_j += info.C_11
 									* elementVolume
 									* integrationWeight
 									* v_i_times_v_j;
 							} // done sum over all quadrature points
 							// if small, should be zero
-							if ( fabs( Y_i_j ) < eps ) {
+							if ( fabs( Y_i_j ) < info.eps ) {
 								Y_i_j = 0.0;
 							}
 							else

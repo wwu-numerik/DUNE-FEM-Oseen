@@ -55,13 +55,13 @@ namespace Integrators {
 							// compute \tau_{j}:\nabla v_{i}
 							SigmaRangeType tau_j( 0.0 );
 							info.sigma_basefunction_set_element.evaluate( j, x, tau_j );
-							const double gradient_of_v_i_times_tau_j = info.velocity_basefunction_set_element.evaluateGradientSingle( i, entity, x, tau_j );
+							const double gradient_of_v_i_times_tau_j = info.velocity_basefunction_set_element.evaluateGradientSingle( i, info.entity, x, tau_j );
 							X_i_j += elementVolume
 								* integrationWeight
 								* gradient_of_v_i_times_tau_j;
 						} // done sum over quadrature points
 						// if small, should be zero
-						if ( fabs( X_i_j ) < eps ) {
+						if ( fabs( X_i_j ) < info.eps ) {
 							X_i_j = 0.0;
 						}
 						else
@@ -93,7 +93,7 @@ namespace Integrators {
 								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
@@ -105,7 +105,7 @@ namespace Integrators {
 								tau_j.mv( outerNormal, tau_j_times_normal );
 								typename Traits::C12 c_12( outerNormal, info.discrete_model.getStabilizationCoefficients() );
 								SigmaRangeType tau_j_times_normal_dyadic_C12
-										= dyadicProduct( tau_j_times_normal, c_12 );
+										= Stuff::dyadicProduct<SigmaRangeType,VelocityRangeType>( tau_j_times_normal, c_12 );
 
 								SigmaRangeType flux_value = tau_j;
 								flux_value *= 0.5;
@@ -122,7 +122,7 @@ namespace Integrators {
 
 							} // done sum over all quadrature points
 							// if small, should be zero
-							if ( fabs( X_i_j ) < eps ) {
+							if ( fabs( X_i_j ) < info.eps ) {
 								X_i_j = 0.0;
 							}
 							else
@@ -130,7 +130,7 @@ namespace Integrators {
 								localXmatrixElement.add( i, j, X_i_j );
 						} // done computing X's element sourface integral
 						// compute X's neighbour sourface integral
-						for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
+						for ( int i = 0; i < info.numVelocityBaseFunctionsNeighbour; ++i ) {
 							double X_i_j = 0.0;
 							// sum over all quadrature points
 							for ( size_t quad = 0; quad < info.faceQuadratureNeighbour.nop(); ++quad ) {
@@ -139,19 +139,19 @@ namespace Integrators {
 								const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureNeighbour.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}
 								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 								SigmaRangeType tau_j( 0.0 );
-								sigmaBaseFunctionSetNeighbour.evaluate( j, xOutside, tau_j );
+								info.sigma_basefunction_set_element.evaluate( j, xOutside, tau_j );
 
 								VelocityRangeType tau_j_times_normal( 0.0 );
 								tau_j.mv( outerNormal, tau_j_times_normal );
 								typename Traits::C12 c_12( outerNormal, info.discrete_model.getStabilizationCoefficients() );
 								SigmaRangeType tau_j_times_normal_dyadic_C12
-										= dyadicProduct( tau_j_times_normal, c_12 );
+										= Stuff::dyadicProduct<SigmaRangeType,VelocityRangeType>( tau_j_times_normal, c_12 );
 
 								SigmaRangeType flux_value = tau_j;
 								flux_value *= 0.5;
@@ -161,13 +161,13 @@ namespace Integrators {
 								flux_value.mv( outerNormal, flux_times_normal );
 
 								const double v_i_times_flux_times_normal
-										= velocityBaseFunctionSetNeighbour.evaluateSingle( i, xInside, flux_times_normal );
+										= info.velocity_basefunction_set_element.evaluateSingle( i, xInside, flux_times_normal );
 								X_i_j -= elementVolume
 									* integrationWeight
 									* v_i_times_flux_times_normal;
 							} // done sum over all quadrature points
 							// if small, should be zero
-							if ( fabs( X_i_j ) < eps ) {
+							if ( fabs( X_i_j ) < info.eps ) {
 								X_i_j = 0.0;
 							}
 							else
@@ -195,7 +195,7 @@ namespace Integrators {
 								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
@@ -213,7 +213,7 @@ namespace Integrators {
 									* v_i_times_tau_times_normal;
 							} // done sum over all quadrature points
 							// if small, should be zero
-							if ( fabs( X_i_j ) < eps ) {
+							if ( fabs( X_i_j ) < info.eps ) {
 								X_i_j = 0.0;
 							}
 							else

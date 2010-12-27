@@ -63,7 +63,7 @@ namespace Integrators {
 								* tau_i_times_tau_j;
 						} // done sum over quadrature points
 						// if small, should be zero
-						if ( fabs( M_i_j ) < eps ) {
+						if ( fabs( M_i_j ) < info.eps ) {
 							M_i_j = 0.0;
 						} // else invert
 						else {

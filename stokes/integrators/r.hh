@@ -59,7 +59,7 @@ namespace Integrators {
 								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute \hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}
@@ -69,13 +69,13 @@ namespace Integrators {
 								PressureRangeType q_j( 0.0 );
 								info.pressure_basefunction_set_element.evaluate( j, x, q_j );
 								const double q_i_times_q_j = q_i * q_j;
-								R_i_j += D_11
+								R_i_j += info.D_11
 									* elementVolume
 									* integrationWeight
 									* q_i_times_q_j;
 							} // done sum over all quadrature points
 							// if small, should be zero
-							if ( fabs( R_i_j ) < eps ) {
+							if ( fabs( R_i_j ) < info.eps ) {
 								R_i_j = 0.0;
 							}
 							else
@@ -92,7 +92,7 @@ namespace Integrators {
 								const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureNeighbour.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
 								// compute \hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}
@@ -103,13 +103,13 @@ namespace Integrators {
 								info.pressure_basefunction_set_element.evaluate( i, xInside, q_i );
 								const double q_i_times_q_j = q_i * q_j;
 								R_i_j += -1.0
-									* D_11
+									* info.D_11
 									* elementVolume
 									* integrationWeight
 									* q_i_times_q_j;
 							} // done sum over all quadrature points
 							// if small, should be zero
-							if ( fabs( R_i_j ) < eps ) {
+							if ( fabs( R_i_j ) < info.eps ) {
 								R_i_j = 0.0;
 							}
 							else

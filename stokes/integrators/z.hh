@@ -55,15 +55,17 @@ namespace Integrators {
 							// compute q_{j}\cdot(\nabla\cdot v_i)
 							PressureRangeType q_j( 0.0 );
 							info.pressure_basefunction_set_element.evaluate( j, x, q_j );
-							const double divergence_of_v_i_times_q_j = info.velocity_basefunction_set_element.evaluateGradientSingle( i, entity, x, preparePressureRangeTypeForVelocityDivergence( q_j ) );
+							const double divergence_of_v_i_times_q_j =
+									info.velocity_basefunction_set_element.evaluateGradientSingle( i, info.entity, x,
+																								  preparePressureRangeTypeForVelocityDivergence<Traits>( q_j ) );
 							Z_i_j += -1.0
 								* elementVolume
 								* integrationWeight
-								* pressure_gradient_scaling
+								* info.pressure_gradient_scaling
 								* divergence_of_v_i_times_q_j;
 						} // done sum over all quadrature points
 						// if small, should be zero
-						if ( fabs( Z_i_j ) < eps ) {
+						if ( fabs( Z_i_j ) < info.eps ) {
 							Z_i_j = 0.0;
 						}
 						else
@@ -95,7 +97,7 @@ namespace Integrators {
 								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
@@ -106,17 +108,17 @@ namespace Integrators {
 								info.pressure_basefunction_set_element.evaluate( j, x, q_j );
 								const double v_i_times_normal = v_i * outerNormal;
 
-								const double p_factor = ( 0.5 - ( D_12 * outerNormal ) );// (0.5 p - p D_12 ) n ) <- p+
+								const double p_factor = ( 0.5 - ( info.D_12 * outerNormal ) );// (0.5 p - p D_12 ) n ) <- p+
 //										const double p_factor = ( 0.5 - ( 1 ) );// (0.5 p - p D_12 ) n ) <- p+
 								const double q_j_times_v_i_times_normal =  q_j * v_i_times_normal;
 								Z_i_j += p_factor
 									* elementVolume
 									* integrationWeight
-									* pressure_gradient_scaling
+									* info.pressure_gradient_scaling
 									* q_j_times_v_i_times_normal;
 							} // done sum over all quadrature points
 							// if small, should be zero
-							if ( fabs( Z_i_j ) < eps ) {
+							if ( fabs( Z_i_j ) < info.eps ) {
 								Z_i_j = 0.0;
 							}
 							else
@@ -124,7 +126,7 @@ namespace Integrators {
 								localZmatrixElement.add( i, j, Z_i_j );
 						} // done computing Z's element surface integral
 						// compute Z's neighbour surface integral
-						for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
+						for ( int i = 0; i < info.numVelocityBaseFunctionsNeighbour; ++i ) {
 							double Z_i_j = 0.0;
 							// sum over all quadrature points
 							for ( size_t quad = 0; quad < info.faceQuadratureNeighbour.nop(); ++quad ) {
@@ -133,7 +135,7 @@ namespace Integrators {
 								const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureNeighbour.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
 								// compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
@@ -144,17 +146,17 @@ namespace Integrators {
 								info.pressure_basefunction_set_neighbour.evaluate( j, xOutside, q_j );
 								const double v_i_times_normal = v_i * outerNormal;
 
-								const double p_factor = ( 0.5 + ( D_12 * outerNormal ) );// (0.5 p + p D_12 ) n ) <- p-
+								const double p_factor = ( 0.5 + ( info.D_12 * outerNormal ) );// (0.5 p + p D_12 ) n ) <- p-
 //										const double p_factor = ( 0.5 + ( 1 ) );// (0.5 p + p D_12 ) n ) <- p-
 								const double q_j_times_v_i_times_normal = q_j * v_i_times_normal;
 								Z_i_j += p_factor
 									* elementVolume
 									* integrationWeight
-									* pressure_gradient_scaling
+									* info.pressure_gradient_scaling
 									* q_j_times_v_i_times_normal;
 							} // done sum over all quadrature points
 							// if small, should be zero
-							if ( fabs( Z_i_j ) < eps ) {
+							if ( fabs( Z_i_j ) < info.eps ) {
 								Z_i_j = 0.0;
 							}
 							else
@@ -183,7 +185,7 @@ namespace Integrators {
 								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
@@ -196,11 +198,11 @@ namespace Integrators {
 								const double q_j_times_v_times_normal = q_j * v_i_times_normal;
 								Z_i_j += elementVolume
 									* integrationWeight
-									* pressure_gradient_scaling
+									* info.pressure_gradient_scaling
 									* q_j_times_v_times_normal;
 							} // done sum over all quadrature points
 							// if small, should be zero
-							if ( fabs( Z_i_j ) < eps ) {
+							if ( fabs( Z_i_j ) < info.eps ) {
 								Z_i_j = 0.0;
 							}
 							else

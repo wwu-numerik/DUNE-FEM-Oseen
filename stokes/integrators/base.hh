@@ -25,6 +25,19 @@ namespace Integrators {
 		return ret;
 	}
 
+	template < class Traits >
+	static typename Traits::VelocityJacobianRangeType preparePressureRangeTypeForVelocityDivergence(
+												const typename Traits::PressureRangeType& arg )
+	{
+		typename Traits::VelocityJacobianRangeType ret( 0.0 );
+		for ( unsigned int i = 0; i < ret[0].dim(); ++i ) {
+			typename Traits::VelocityRangeType row( 0.0 );
+			row[ i ] = arg;
+			ret[ i ] = row;
+		}
+		return ret;
+	}
+
 	template < class Traits, class IntegratorTuple >
 	class Coordinator
 	{
