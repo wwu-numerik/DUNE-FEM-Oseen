@@ -40,42 +40,42 @@ namespace Integrators {
 				typename MatrixObjectType::LocalMatrixType
 						local_matrix = matrix_object_.localMatrix( info.entity, info.entity );
 				const double viscosity = info.discrete_model.viscosity();
-					//                                                        // we will call this one
-					// (W)_{i,j} += \mu\int_{T}v_{j}\cdot(\nabla\cdot\tau_{i})dx // W's volume integral
-					//                                                        // see also "W's entitity surface integral", "W's neighbour surface integral" and "W's boundary integral" below
-					for ( int i = 0; i < info.numSigmaBaseFunctionsElement; ++i ) {
-						for ( int j = 0; j < info.numVelocityBaseFunctionsElement; ++j ) {
-							double W_i_j = 0.0;
-							// sum over all quadrature points
-							for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++quad ) {
-								// get x
-								const ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
-								// get the integration factor
-								const double elementVolume = info.geometry.integrationElement( x );
-								// get the quadrature weight
-								const double integrationWeight = info.volumeQuadratureElement.weight( quad );
-								// compute v_j^t \cdot ( \nabla \cdot \tau_i^t )
-								VelocityRangeType v_j( 0.0 );
-								info.velocity_basefunction_set_element.evaluate( j, x, v_j );
-								SigmaJacobianRangeType v_j_temp_for_div
-										= prepareVelocityRangeTypeForSigmaDivergence<SigmaJacobianRangeType,VelocityRangeType>( v_j );
-								const double divergence_of_tau_i_times_v_j
-										= info.sigma_basefunction_set_element.evaluateGradientSingle( i, info.entity,
-																									 x, v_j_temp_for_div );
-								W_i_j += elementVolume
+				//                                                        // we will call this one
+				// (W)_{i,j} += \mu\int_{T}v_{j}\cdot(\nabla\cdot\tau_{i})dx // W's volume integral
+				//                                                        // see also "W's entitity surface integral", "W's neighbour surface integral" and "W's boundary integral" below
+				for ( int i = 0; i < info.numSigmaBaseFunctionsElement; ++i ) {
+					for ( int j = 0; j < info.numVelocityBaseFunctionsElement; ++j ) {
+						double W_i_j = 0.0;
+						// sum over all quadrature points
+						for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++quad ) {
+							// get x
+							const ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
+							// get the integration factor
+							const double elementVolume = info.geometry.integrationElement( x );
+							// get the quadrature weight
+							const double integrationWeight = info.volumeQuadratureElement.weight( quad );
+							// compute v_j^t \cdot ( \nabla \cdot \tau_i^t )
+							VelocityRangeType v_j( 0.0 );
+							info.velocity_basefunction_set_element.evaluate( j, x, v_j );
+							SigmaJacobianRangeType v_j_temp_for_div
+									= prepareVelocityRangeTypeForSigmaDivergence<SigmaJacobianRangeType,VelocityRangeType>( v_j );
+							const double divergence_of_tau_i_times_v_j
+									= info.sigma_basefunction_set_element.evaluateGradientSingle( i, info.entity,
+																								 x, v_j_temp_for_div );
+							W_i_j += elementVolume
 									* integrationWeight
 									* viscosity
 									* divergence_of_tau_i_times_v_j;
-							} // done sum over quadrature points
-							// if small, should be zero
-							if ( fabs( W_i_j ) < info.eps ) {
-								W_i_j = 0.0;
-							}
-							else
-								// add to matrix
-								local_matrix.add( i, j, W_i_j );
+						} // done sum over quadrature points
+						// if small, should be zero
+						if ( fabs( W_i_j ) < info.eps ) {
+							W_i_j = 0.0;
 						}
-					} // done computing W's volume integral
+						else
+							// add to matrix
+							local_matrix.add( i, j, W_i_j );
+					}
+				} // done computing W's volume integral
 			}
 
 			template < class InfoContainerFaceType >
