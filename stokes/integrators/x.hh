@@ -39,20 +39,20 @@ namespace Integrators {
 			{
 				// (X)_{i,j} += \mu\int_{T}\tau_{j}:\nabla v_{i} dx // X's volume integral
 				//                                                  // see also "X's entitity surface integral", "X's neighbour surface integral" and "X's boundary integral" below
-				for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
-					for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
+				for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
+					for ( int j = 0; j < info.numSigmaBaseFunctionsElement; ++j ) {
 						double X_i_j = 0.0;
 						// sum over all quadrature points
-						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
+						for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++quad ) {
 							// get x
-							const ElementCoordinateType x = volumeQuadratureElement.point( quad );
+							const ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
 							// get the integration factor
 							const double elementVolume = geometry.integrationElement( x );
 							// get the quadrature weight
-							const double integrationWeight = volumeQuadratureElement.weight( quad );
+							const double integrationWeight = info.volumeQuadratureElement.weight( quad );
 							// compute \tau_{j}:\nabla v_{i}
 							SigmaRangeType tau_j( 0.0 );
-							sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
+							info.sigma_basefunction_set_element.evaluate( j, x, tau_j );
 							const double gradient_of_v_i_times_tau_j = velocityBaseFunctionSetElement.evaluateGradientSingle( i, entity, x, tau_j );
 							X_i_j += elementVolume
 								* integrationWeight
@@ -80,28 +80,28 @@ namespace Integrators {
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}ds // X's neighbour sourface integral
 				//                                                                                                                   // see also "X's boundary integral" below
 				//                                                                                                                   // and "X's volume integral" above
-//                        if ( discreteModel_.hasSigmaFlux() ) {
-					for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
+//                        if ( info.discrete_model.hasSigmaFlux() ) {
+					for ( int j = 0; j < info.numSigmaBaseFunctionsElement; ++j ) {
 						// compute X's element sourface integral
-						for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+						for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
 							double X_i_j = 0.0;
 							// sum over all quadrature points
-							for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+							for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
 								// get x in codim<0> and codim<1> coordinates
-								const ElementCoordinateType x = faceQuadratureElement.point( quad );
-								const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
+								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
+								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
-								const double integrationWeight = faceQuadratureElement.weight( quad );
+								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
 								const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 								SigmaRangeType tau_j( 0.0 );
-								sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
+								info.sigma_basefunction_set_element.evaluate( j, x, tau_j );
 
 								VelocityRangeType tau_j_times_normal( 0.0 );
 								tau_j.mv( outerNormal, tau_j_times_normal );
-								typename Traits::C12 c_12( outerNormal, discreteModel_.getStabilizationCoefficients() );
+								typename Traits::C12 c_12( outerNormal, info.discrete_model.getStabilizationCoefficients() );
 								SigmaRangeType tau_j_times_normal_dyadic_C12
 										= dyadicProduct( tau_j_times_normal, c_12 );
 
@@ -131,15 +131,15 @@ namespace Integrators {
 						for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
 							double X_i_j = 0.0;
 							// sum over all quadrature points
-							for ( size_t quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
+							for ( size_t quad = 0; quad < info.faceQuadratureNeighbour.nop(); ++quad ) {
 								// get x codim<0> and codim<1> coordinates
-								const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
-								const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
-								const LocalIntersectionCoordinateType xLocal = faceQuadratureNeighbour.localPoint( quad );
+								const ElementCoordinateType xInside = info.faceQuadratureElement.point( quad );
+								const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
+								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureNeighbour.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
-								const double integrationWeight = faceQuadratureElement.weight( quad );
+								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}
 								const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 								SigmaRangeType tau_j( 0.0 );
@@ -147,7 +147,7 @@ namespace Integrators {
 
 								VelocityRangeType tau_j_times_normal( 0.0 );
 								tau_j.mv( outerNormal, tau_j_times_normal );
-								typename Traits::C12 c_12( outerNormal, discreteModel_.getStabilizationCoefficients() );
+								typename Traits::C12 c_12( outerNormal, info.discrete_model.getStabilizationCoefficients() );
 								SigmaRangeType tau_j_times_normal_dyadic_C12
 										= dyadicProduct( tau_j_times_normal, c_12 );
 
@@ -183,23 +183,23 @@ namespace Integrators {
 						localWmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				// (X)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}ds // X's boundary integral
 				//                                                                                                                   // see also "X's volume integral", "X's element surface integral" and "X's neighbour surface integral" above
-//                        if ( discreteModel_.hasSigmaFlux() ) {
-					for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
-						for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
+//                        if ( info.discrete_model.hasSigmaFlux() ) {
+					for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
+						for ( int j = 0; j < info.numSigmaBaseFunctionsElement; ++j ) {
 							double X_i_j = 0.0;
 							// sum over all quadrature points
-							for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+							for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
 								// get x codim<0> and codim<1> coordinates
-								const ElementCoordinateType x = faceQuadratureElement.point( quad );
-								const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
+								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
+								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
-								const double integrationWeight = faceQuadratureElement.weight( quad );
+								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
 								const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 								SigmaRangeType tau_j( 0.0 );
-								sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
+								info.sigma_basefunction_set_element.evaluate( j, x, tau_j );
 								VelocityRangeType v_i( 0.0 );
 								velocityBaseFunctionSetElement.evaluate( i, x, v_i );
 								VelocityRangeType tau_times_normal( 0.0 );

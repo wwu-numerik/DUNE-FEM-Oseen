@@ -39,20 +39,20 @@ namespace Integrators {
 			{
 				// (Z)_{i,j} += -\int_{T}q_{j}(\nabla\cdot v_{i})dx // Z's volume integral
 				//                                                  // see also "Z's entitity surface integral", "Z's neighbour surface integral" and "Z's boundary integral" below
-				for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
-					for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
+				for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
+					for ( int j = 0; j < info.numPressureBaseFunctionsElement; ++j ) {
 						double Z_i_j = 0.0;
 						// sum over all quadratur points
-						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++ quad ) {
+						for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++ quad ) {
 							// get x
-							const ElementCoordinateType x = volumeQuadratureElement.point( quad );
+							const ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
 							// get the integration factor
 							const double elementVolume = geometry.integrationElement( x );
 							// get the quadrature weight
-							const double integrationWeight = volumeQuadratureElement.weight( quad );
+							const double integrationWeight = info.volumeQuadratureElement.weight( quad );
 							// compute q_{j}\cdot(\nabla\cdot v_i)
 							PressureRangeType q_j( 0.0 );
-							pressureBaseFunctionSetElement.evaluate( j, x, q_j );
+							info.pressure_basefunction_set_element.evaluate( j, x, q_j );
 							const double divergence_of_v_i_times_q_j = velocityBaseFunctionSetElement.evaluateGradientSingle( i, entity, x, preparePressureRangeTypeForVelocityDivergence( q_j ) );
 							Z_i_j += -1.0
 								* elementVolume
@@ -82,26 +82,26 @@ namespace Integrators {
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{p}^{P^{-}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's neighbour surface integral
 				//                                                                                                  // see also "Z's boundary integral" below
 				//                                                                                                  // and "Z's volume integral" above
-//                        if ( discreteModel_.hasPressureFlux() ) {
-					for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
+//                        if ( info.discrete_model.hasPressureFlux() ) {
+					for ( int j = 0; j < info.numPressureBaseFunctionsElement; ++j ) {
 						// compute Z's element surface integral
-						for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+						for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
 							double Z_i_j = 0.0;
 							// sum over all quadrature points
-							for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+							for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
 								// get x codim<0> and codim<1> coordinates
-								const ElementCoordinateType x = faceQuadratureElement.point( quad );
-								const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
+								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
+								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
-								const double integrationWeight = faceQuadratureElement.weight( quad );
+								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
 								const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_i( 0.0 );
 								velocityBaseFunctionSetElement.evaluate( i, x, v_i );
 								PressureRangeType q_j( 0.0 );
-								pressureBaseFunctionSetElement.evaluate( j, x, q_j );
+								info.pressure_basefunction_set_element.evaluate( j, x, q_j );
 								const double v_i_times_normal = v_i * outerNormal;
 
 								const double p_factor = ( 0.5 - ( D_12 * outerNormal ) );// (0.5 p - p D_12 ) n ) <- p+
@@ -125,21 +125,21 @@ namespace Integrators {
 						for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
 							double Z_i_j = 0.0;
 							// sum over all quadrature points
-							for ( size_t quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
+							for ( size_t quad = 0; quad < info.faceQuadratureNeighbour.nop(); ++quad ) {
 								// get x codim<0> and codim<1> coordinates
-								const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
-								const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
-								const LocalIntersectionCoordinateType xLocal = faceQuadratureNeighbour.localPoint( quad );
+								const ElementCoordinateType xInside = info.faceQuadratureElement.point( quad );
+								const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
+								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureNeighbour.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
-								const double integrationWeight = faceQuadratureNeighbour.weight( quad );
+								const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
 								// compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
 								const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_i( 0.0 );
 								velocityBaseFunctionSetElement.evaluate( i, xInside, v_i );
 								PressureRangeType q_j( 0.0 );
-								pressureBaseFunctionSetNeighbour.evaluate( j, xOutside, q_j );
+								info.pressure_basefunction_set_neighbour.evaluate( j, xOutside, q_j );
 								const double v_i_times_normal = v_i * outerNormal;
 
 								const double p_factor = ( 0.5 + ( D_12 * outerNormal ) );// (0.5 p + p D_12 ) n ) <- p-
@@ -170,26 +170,26 @@ namespace Integrators {
 						localWmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				// (Z)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's boundary integral
 				//                                                                                                  // see also "Z's volume integral", "Z's element surface integral" and "Z's neighbour surface integral" above
-//                        if ( discreteModel_.hasPressureFlux() ) {
-					for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+//                        if ( info.discrete_model.hasPressureFlux() ) {
+					for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
 						// compute the boundary integral
-						for ( int j = 0; j < numPressureBaseFunctionsElement; ++j ) {
+						for ( int j = 0; j < info.numPressureBaseFunctionsElement; ++j ) {
 							double Z_i_j = 0.0;
 							// sum over all quadrature points
-							for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+							for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
 								// get x codim<0> and codim<1> coordinates
-								const ElementCoordinateType x = faceQuadratureElement.point( quad );
-								const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
+								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
+								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
-								const double integrationWeight = faceQuadratureElement.weight( quad );
+								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
 								const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_i( 0.0 );
 								velocityBaseFunctionSetElement.evaluate( i, x, v_i );
 								PressureRangeType q_j( 0.0 );
-								pressureBaseFunctionSetElement.evaluate( j, x, q_j );
+								info.pressure_basefunction_set_element.evaluate( j, x, q_j );
 								const double v_i_times_normal = v_i * outerNormal;
 								const double q_j_times_v_times_normal = q_j * v_i_times_normal;
 								Z_i_j += elementVolume

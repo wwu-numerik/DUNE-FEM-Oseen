@@ -37,18 +37,18 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				for ( int i = 0; (i < numVelocityBaseFunctionsElement ) && do_oseen_discretization_; ++i ) {
-					for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+				for ( int i = 0; (i < info.numVelocityBaseFunctionsElement ) && do_oseen_discretization_; ++i ) {
+					for ( int j = 0; j < info.numVelocityBaseFunctionsElement; ++j ) {
 						double O_i_j = 0.0;
 						double O_i_j_d = 0.0;
 						// sum over all quadrature points
-						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
+						for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++quad ) {
 							// get x
-							const ElementCoordinateType x = volumeQuadratureElement.point( quad );
+							const ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
 							// get the integration factor
 							const double elementVolume = geometry.integrationElement( x );
 							// get the quadrature weight
-							const double integrationWeight = volumeQuadratureElement.weight( quad );
+							const double integrationWeight = info.volumeQuadratureElement.weight( quad );
 							//calc u_h * \nabla * (v \tensor \beta )
 							VelocityRangeType v_i( 0.0 );
 							velocityBaseFunctionSetElement.evaluate( i, x, v_i );
@@ -131,22 +131,22 @@ namespace Integrators {
 				//           += \int_{ // O's neighbour surface integral
 				//                                                                                                         // see also "O's boundary integral" below
 
-				for ( int j = 0; (j < numVelocityBaseFunctionsElement ) && do_oseen_discretization_; ++j ) {
+				for ( int j = 0; (j < info.numVelocityBaseFunctionsElement ) && do_oseen_discretization_; ++j ) {
 					// compute O's element surface integral
-					for ( int i = 0; i < numVelocityBaseFunctionsElement; ++i ) {
+					for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
 						double O_i_j = 0.0;
 						// sum over all quadrature points
-						for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+						for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
 							// get x codim<0> and codim<1> coordinates
-							const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
-							const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
-							const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
+							const ElementCoordinateType xInside = info.faceQuadratureElement.point( quad );
+							const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
+							const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 							const VelocityRangeType xWorld = geometry.global( xInside );
 							const VelocityRangeType xWorld_Outside = geometry.global( xOutside );
 							// get the integration factor
-							const double elementVolume = intersectionGeometry.integrationElement( xLocal );
+							const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 							// get the quadrature weight
-							const double integrationWeight = faceQuadratureElement.weight( quad );
+							const double integrationWeight = info.faceQuadratureElement.weight( quad );
 							const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 							VelocityRangeType v_i( 0.0 );
 							velocityBaseFunctionSetElement.evaluate( i, xInside, v_i );
@@ -189,17 +189,17 @@ namespace Integrators {
 					for ( int i = 0; i < numVelocityBaseFunctionsNeighbour; ++i ) {
 						double O_i_j = 0.0;
 						// sum over all quadrature points
-						for ( size_t quad = 0; quad < faceQuadratureNeighbour.nop(); ++quad ) {
+						for ( size_t quad = 0; quad < info.faceQuadratureNeighbour.nop(); ++quad ) {
 							// get x codim<0> and codim<1> coordinates
-							const ElementCoordinateType xInside = faceQuadratureElement.point( quad );
-							const ElementCoordinateType xOutside = faceQuadratureNeighbour.point( quad );
+							const ElementCoordinateType xInside = info.faceQuadratureElement.point( quad );
+							const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
 							const VelocityRangeType xWorld = geometry.global( xInside );
 							const VelocityRangeType xWorld_Outside = geometry.global( xOutside );
-							const LocalIntersectionCoordinateType xLocal = faceQuadratureNeighbour.localPoint( quad );
+							const LocalIntersectionCoordinateType xLocal = info.faceQuadratureNeighbour.localPoint( quad );
 							// get the integration factor
-							const double elementVolume = intersectionGeometry.integrationElement( xLocal );
+							const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 							// get the quadrature weight
-							const double integrationWeight = faceQuadratureNeighbour.weight( quad );
+							const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
 							const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 
 							VelocityRangeType v_i( 0.0 );
@@ -247,19 +247,19 @@ namespace Integrators {
 			{
 				// (O)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}} STUFF n_{t}ds											// O's boundary integral
 				//                                                                                                           // see also "O's element surface integral" and "Y's neighbour surface integral" above
-				for ( int i = 0; (i < numVelocityBaseFunctionsElement ) && do_oseen_discretization_; ++i ) {
-					for ( int j = 0; j < numVelocityBaseFunctionsElement; ++j ) {
+				for ( int i = 0; (i < info.numVelocityBaseFunctionsElement ) && do_oseen_discretization_; ++i ) {
+					for ( int j = 0; j < info.numVelocityBaseFunctionsElement; ++j ) {
 						double O_i_j = 0.0;
 						// sum over all quadrature points
-						for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
+						for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
 							// get x codim<0> and codim<1> coordinates
-							const ElementCoordinateType x = faceQuadratureElement.point( quad );
+							const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
 							const VelocityRangeType xWorld = geometry.global( x );
-							const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
+							const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 							// get the integration factor
-							const double elementVolume = intersectionGeometry.integrationElement( xLocal );
+							const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 							// get the quadrature weight
-							const double integrationWeight = faceQuadratureElement.weight( quad );
+							const double integrationWeight = info.faceQuadratureElement.weight( quad );
 							const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
 							//calc u^c_h \tensor beta * v \tensor n
 							VelocityRangeType v_j( 0.0 );

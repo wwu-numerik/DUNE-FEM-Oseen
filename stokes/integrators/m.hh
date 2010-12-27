@@ -38,22 +38,22 @@ namespace Integrators {
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
 				// (M^{-1})_{i,j} = (\int_{T}\tau_{j}:\tau_{i}dx)^{-1} // Minvs' volume integral
-				for ( int i = 0; i < numSigmaBaseFunctionsElement; ++i ) {
-					for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
+				for ( int i = 0; i < info.numSigmaBaseFunctionsElement; ++i ) {
+					for ( int j = 0; j < info.numSigmaBaseFunctionsElement; ++j ) {
 						double M_i_j = 0.0;
 						// sum over all quadrature points
-						for ( size_t quad = 0; quad < volumeQuadratureElement.nop(); ++quad ) {
+						for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++quad ) {
 							// get x
-							const ElementCoordinateType x = volumeQuadratureElement.point( quad );
+							const ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
 							// get the integration factor
 							const double elementVolume = geometry.integrationElement( x );
 							// get the quadrature weight
-							const double integrationWeight = volumeQuadratureElement.weight( quad );
+							const double integrationWeight = info.volumeQuadratureElement.weight( quad );
 							// compute \tau_{i}:\tau_{j}
 							SigmaRangeType tau_i( 0.0 );
 							SigmaRangeType tau_j( 0.0 );
-							sigmaBaseFunctionSetElement.evaluate( i, x, tau_i );
-							sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
+							info.sigma_basefunction_set_element.evaluate( i, x, tau_i );
+							info.sigma_basefunction_set_element.evaluate( j, x, tau_j );
 							const double tau_i_times_tau_j = Stuff::colonProduct( tau_i, tau_j );
 							// compute M_i_j
 							M_i_j += elementVolume
@@ -74,11 +74,11 @@ namespace Integrators {
 			}
 
 			template < class InfoContainerInteriorFaceType >
-			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
+			void applyInteriorFace( const InfoContainerInteriorFaceType& )
 			{}
 
 			template < class InfoContainerFaceType >
-			void applyBoundaryFace( const InfoContainerFaceType& info )
+			void applyBoundaryFace( const InfoContainerFaceType& )
 			{}
 	};
 
