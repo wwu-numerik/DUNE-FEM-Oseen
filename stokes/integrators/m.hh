@@ -8,7 +8,7 @@ namespace Stokes {
 namespace Integrators {
 
 	template < class MatrixObjectType, class Traits >
-	class Dummy
+	class M
 	{
 		typedef typename Traits::ElementCoordinateType
 			ElementCoordinateType;
@@ -30,13 +30,15 @@ namespace Integrators {
 
 		MatrixObjectType& matrix_object_;
 		public:
-			Dummy( MatrixObjectType& matrix_object	)
+			M( MatrixObjectType& matrix_object	)
 				:matrix_object_(matrix_object)
 			{}
 
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
+				typename MatrixObjectType::LocalMatrixType
+						localMInversMatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				// (M^{-1})_{i,j} = (\int_{T}\tau_{j}:\tau_{i}dx)^{-1} // Minvs' volume integral
 				for ( int i = 0; i < info.numSigmaBaseFunctionsElement; ++i ) {
 					for ( int j = 0; j < info.numSigmaBaseFunctionsElement; ++j ) {

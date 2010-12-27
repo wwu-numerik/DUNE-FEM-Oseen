@@ -83,7 +83,7 @@ namespace Integrators {
 					pressure_basefunction_set_element;
 			const int numSigmaBaseFunctionsElement;
 			const int numVelocityBaseFunctionsElement;
-				const int numPressureBaseFunctionsElement;
+			const int numPressureBaseFunctionsElement;
 			const typename Traits::VolumeQuadratureType volumeQuadratureElement;
 			const typename Traits::DiscreteModelType&	discrete_model;
 			const double eps;

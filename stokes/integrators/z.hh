@@ -37,6 +37,8 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
+				typename MatrixObjectType::LocalMatrixType
+						localZmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				// (Z)_{i,j} += -\int_{T}q_{j}(\nabla\cdot v_{i})dx // Z's volume integral
 				//                                                  // see also "Z's entitity surface integral", "Z's neighbour surface integral" and "Z's boundary integral" below
 				for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
@@ -75,9 +77,9 @@ namespace Integrators {
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
 				typename MatrixObjectType::LocalMatrixType
-						localWmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+						localZmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				typename MatrixObjectType::LocalMatrixType
-						localWmatrixNeighbour = matrix_object_.localMatrix( info.neighbour, info.entity );
+						localZmatrixNeighbour = matrix_object_.localMatrix( info.entity, info.neighbour );
 				// (Z)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's element surface integral
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{p}^{P^{-}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's neighbour surface integral
 				//                                                                                                  // see also "Z's boundary integral" below
@@ -167,7 +169,7 @@ namespace Integrators {
 			void applyBoundaryFace( const InfoContainerFaceType& info )
 			{
 				typename MatrixObjectType::LocalMatrixType
-						localWmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+						localZmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				// (Z)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's boundary integral
 				//                                                                                                  // see also "Z's volume integral", "Z's element surface integral" and "Z's neighbour surface integral" above
 //                        if ( info.discrete_model.hasPressureFlux() ) {

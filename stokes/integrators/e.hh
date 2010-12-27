@@ -37,6 +37,8 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
+				typename MatrixObjectType::LocalMatrixType
+						localEmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				// (E)_{i,j} += -\int_{T}v_{j}\cdot\nabla q_{i}dx // E's volume integral
 				//                                                // see also "E's entitity surface integral", "E's neighbour surface integral" and "E's boundary integral" below
 				for ( int i = 0; i < info.numPressureBaseFunctionsElement; ++i ) {
@@ -80,9 +82,9 @@ namespace Integrators {
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
 				typename MatrixObjectType::LocalMatrixType
-						localWmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+						localEmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				typename MatrixObjectType::LocalMatrixType
-						localWmatrixNeighbour = matrix_object_.localMatrix( info.neighbour, info.entity );
+						localEmatrixNeighbour = matrix_object_.localMatrix( info.neighbour, info.entity );
 				// (E)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{U^{+}}(v_{j})\cdot n_{T}q_{i}ds // E's element surface integral
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{U^{-}}(v_{j})\cdot n_{T}q_{i}ds // E's neighbour surface integral
 				//                                                                                                // see also "E's boundary integral" below

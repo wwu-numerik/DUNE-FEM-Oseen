@@ -37,6 +37,8 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
+				typename MatrixObjectType::LocalMatrixType
+						localOmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				for ( int i = 0; (i < info.numVelocityBaseFunctionsElement ) && do_oseen_discretization_; ++i ) {
 					for ( int j = 0; j < info.numVelocityBaseFunctionsElement; ++j ) {
 						double O_i_j = 0.0;
@@ -123,9 +125,9 @@ namespace Integrators {
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
 				typename MatrixObjectType::LocalMatrixType
-						localWmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+						localOmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				typename MatrixObjectType::LocalMatrixType
-						localWmatrixNeighbour = matrix_object_.localMatrix( info.neighbour, info.entity );
+						localOmatrixNeighbour = matrix_object_.localMatrix( info.neighbour, info.entity );
 				//                                                                                                         // we call this one
 				// (O)_{i,j} += \int_{ // O's element surface integral
 				//           += \int_{ // O's neighbour surface integral

@@ -42,9 +42,9 @@ namespace Integrators {
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
 				typename MatrixObjectType::LocalMatrixType
-						localWmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+						localRmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				typename MatrixObjectType::LocalMatrixType
-						localWmatrixNeighbour = matrix_object_.localMatrix( info.neighbour, info.entity );
+						localRmatrixNeighbour = matrix_object_.localMatrix( info.entity, info.neighbour );
 				// (R)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}ds // R's element surface integral
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}ds // R's neighbour surface integral
 				//                                                                                                // see also "R's boundary integral" below
@@ -121,11 +121,8 @@ namespace Integrators {
 			}
 
 			template < class InfoContainerFaceType >
-			void applyBoundaryFace( const InfoContainerFaceType& info )
-			{
-				typename MatrixObjectType::LocalMatrixType
-						localWmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
-			}
+			void applyBoundaryFace( const InfoContainerFaceType& )
+			{}
 	};
 
 } // end namespace Integrators

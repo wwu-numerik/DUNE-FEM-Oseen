@@ -37,6 +37,8 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
+				typename MatrixObjectType::LocalMatrixType
+						localXmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				// (X)_{i,j} += \mu\int_{T}\tau_{j}:\nabla v_{i} dx // X's volume integral
 				//                                                  // see also "X's entitity surface integral", "X's neighbour surface integral" and "X's boundary integral" below
 				for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
@@ -73,9 +75,9 @@ namespace Integrators {
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
 				typename MatrixObjectType::LocalMatrixType
-						localWmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+						localXmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				typename MatrixObjectType::LocalMatrixType
-						localWmatrixNeighbour = matrix_object_.localMatrix( info.neighbour, info.entity );
+						localXmatrixNeighbour = matrix_object_.localMatrix( info.entity, info.neighbour );
 				// (X)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}ds // X's element sourface integral
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}ds // X's neighbour sourface integral
 				//                                                                                                                   // see also "X's boundary integral" below
@@ -180,7 +182,7 @@ namespace Integrators {
 			void applyBoundaryFace( const InfoContainerFaceType& info )
 			{
 				typename MatrixObjectType::LocalMatrixType
-						localWmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+						localXmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				// (X)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}ds // X's boundary integral
 				//                                                                                                                   // see also "X's volume integral", "X's element surface integral" and "X's neighbour surface integral" above
 //                        if ( info.discrete_model.hasSigmaFlux() ) {

@@ -37,8 +37,8 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				// (Y)
-				//
+				typename MatrixObjectType::LocalMatrixType
+						localYmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 //                if ( info.discrete_model.isGeneralized() )
 				{
 				for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
@@ -79,9 +79,9 @@ namespace Integrators {
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
 				typename MatrixObjectType::LocalMatrixType
-						localWmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+						localYmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				typename MatrixObjectType::LocalMatrixType
-						localWmatrixNeighbour = matrix_object_.localMatrix( info.neighbour, info.entity );
+						localYmatrixNeighbour = matrix_object_.localMatrix( info.neighbour, info.entity );
 				// (Y)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U{+}}(v{j})\cdot n_{t}ds // Y's element surface integral
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}ds // Y's neighbour surface integral
 				//                                                                                                         // see also "Y's boundary integral" below
@@ -162,7 +162,7 @@ namespace Integrators {
 			void applyBoundaryFace( const InfoContainerFaceType& info )
 			{
 				typename MatrixObjectType::LocalMatrixType
-						localWmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+						localYmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				// (Y)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U^{+}}(v_{j})\cdot n_{t}ds // Y's boundary integral
 				//                                                                                                           // see also "Y's element surface integral" and "Y's neighbour surface integral" above
 //                        if ( info.discrete_model.hasSigmaFlux() ) {
