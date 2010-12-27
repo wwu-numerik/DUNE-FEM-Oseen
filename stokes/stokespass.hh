@@ -8,9 +8,8 @@
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/fem/space/dgspace.hh>
-#include <dune/fem/quadrature/caching/twistutility.hh>
-#include <dune/fem/misc/l2norm.hh>
 
+#include <dune/stokes/defaulttraits.hh>
 #include <dune/stokes/solver/solvercaller.hh>
 #include <dune/stokes/integrators/all.hh>
 
@@ -32,7 +31,6 @@ struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp
 	};
 };
 
-
 #ifndef NLOG // if we want logging, should be removed in the end
     #include <dune/stuff/printing.hh>
     #include <dune/stuff/misc.hh>
@@ -47,121 +45,6 @@ struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp
 namespace Dune
 {
 
-template < class DiscreteModelImp >
-struct StokesTraits
-{
-	//! discrete model type
-	typedef DiscreteModelImp
-		DiscreteModelType;
-
-	//! volume quadrature type
-	typedef typename DiscreteModelType::VolumeQuadratureType
-		VolumeQuadratureType;
-
-	//! face quadrature type
-	typedef typename DiscreteModelType::FaceQuadratureType
-		FaceQuadratureType;
-
-	//! type of discrete function space wrapper
-	typedef typename DiscreteModelType::DiscreteStokesFunctionSpaceWrapperType
-		DiscreteStokesFunctionSpaceWrapperType;
-
-	//! discrete function wrapper type
-	typedef typename DiscreteModelType::DiscreteStokesFunctionWrapperType
-		DiscreteStokesFunctionWrapperType;
-
-	//! discrete function type for the velocity
-	typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
-		DiscreteVelocityFunctionType;
-
-	//! discrete function space type for the velocity
-	typedef typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType
-		DiscreteVelocityFunctionSpaceType;
-
-	//! discrete function type for sigma
-	typedef typename DiscreteModelType::DiscreteSigmaFunctionType
-		DiscreteSigmaFunctionType;
-
-	//! discrete function space type for sigma
-	typedef typename DiscreteSigmaFunctionType::DiscreteFunctionSpaceType
-		DiscreteSigmaFunctionSpaceType;
-
-	//! discrete fucntion type for the pressure
-	typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
-		DiscretePressureFunctionType;
-
-	//! discrete function space type for the pressure
-	typedef typename DiscretePressureFunctionType::DiscreteFunctionSpaceType
-		DiscretePressureFunctionSpaceType;
-
-	//! Coordinate type on the element
-	typedef typename DiscreteVelocityFunctionSpaceType::DomainType
-		ElementCoordinateType;
-
-	//! Coordinate type on an intersection
-	typedef typename FaceQuadratureType::LocalCoordinateType
-		IntersectionCoordinateType;
-
-	//! Vector type of the velocity's discrete function space's range
-	typedef typename DiscreteVelocityFunctionSpaceType::RangeType
-		VelocityRangeType;
-
-	typedef typename DiscreteVelocityFunctionSpaceType::BaseFunctionSetType::JacobianRangeType
-		VelocityJacobianRangeType;
-
-	//! vector type of sigmas' discrete functions space's range
-	typedef typename DiscreteSigmaFunctionSpaceType::RangeType
-		SigmaRangeType;
-
-	typedef typename DiscreteSigmaFunctionSpaceType::BaseFunctionSetType::JacobianRangeType
-		SigmaJacobianRangeType;
-
-	//! Vector type of the pressure's discrete function space's range
-	typedef typename DiscretePressureFunctionSpaceType::RangeType
-		PressureRangeType;
-
-	typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType::JacobianRangeType
-		PressureJacobianRangeType;
-
-	//! Type of GridPart
-	typedef typename DiscreteVelocityFunctionSpaceType::GridPartType
-		GridPartType;
-
-	//! Intersection iterator of the gridpart
-	typedef typename GridPartType::IntersectionIteratorType
-		IntersectionIteratorType;
-
-	//! local coordinate type on an intersection
-	typedef typename FaceQuadratureType::LocalCoordinateType
-		LocalIntersectionCoordinateType;
-
-	//! entity iterator of the gridpart
-	typedef typename GridPartType::template Codim< 0 >::IteratorType
-		EntityIteratorType;
-
-	//! type of the grid
-	typedef typename GridPartType::GridType
-		GridType;
-
-	//! type of codim 0 entity
-	typedef typename GridType::template Codim< 0 >::Entity
-		EntityType;
-
-	//! polynomial order for the discrete sigma function space
-	static const int sigmaSpaceOrder
-		= DiscreteModelType::sigmaSpaceOrder;
-	//! polynomial order for the discrete velocity function space
-	static const int velocitySpaceOrder
-		= DiscreteModelType::velocitySpaceOrder;
-	//! polynomial order for the discrete pressure function space
-	static const int pressureSpaceOrder
-		= DiscreteModelType::pressureSpaceOrder;
-
-	//! the stab coeff. for sigma is a vector field, paramterized by the element's normal
-	typedef StabilizationCoefficients::C12< VelocityRangeType >
-		C12;
-};
-
 /**
  *  \brief  StokesPass
  *
@@ -174,6 +57,12 @@ template <  class DiscreteModelImp,
 class StokesPass
     : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
 {
+		/**
+		 *  \brief  empty constructor
+		 **/
+		StokesPass()
+		{}
+
     public:
         //! own type
         typedef StokesPass< DiscreteModelImp, PreviousPassImp, PassID >
@@ -233,7 +122,6 @@ class StokesPass
 				velocity_gradient	*= factor;
 				convection			*= factor;
 			}
-
 		};
 
         /**
@@ -255,12 +143,6 @@ class StokesPass
 			sigmaSpace_( gridPart ),
 			beta_( beta ),
 			do_oseen_discretization_( do_oseen_discretization )
-        {}
-
-        /**
-         *  \brief  empty constructor
-         **/
-        StokesPass()
         {}
 
 		void printInfo() const
@@ -510,17 +392,6 @@ class StokesPass
 			rhs_coordinator.apply( rhs_tuple );
 #endif
 
-//			int entityNR = 0;
-//			Logging::LogStream& infoStream = Logger().Info();
-//			typename Traits::EntityIteratorType entityItEnd = velocitySpace_.end();
-//			typename Traits::EntityIteratorType entityIt = velocitySpace_.begin();
-//			infoStream.Resume();
-//            for (   Stuff::SimpleProgressBar<Logging::LogStream> progress( (numberOfEntities-1), infoStream, 40 );
-//                    entityIt != entityItEnd;
-//					++entityIt,++entityNR,++progress ) {
-//            } // done walking the grid
-
-
 //            // do the matlab logging stuff
 			if ( Parameters().getParam( "save_matrices", false ) ) {
 				Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
@@ -655,70 +526,6 @@ class StokesPass
 		const typename Traits::DiscreteVelocityFunctionType& beta_;
 		const bool do_oseen_discretization_;
         mutable SaddlepointInverseOperatorInfo info_;
-
-        /**
-         *  \brief  dyadic product
-         *
-         *          Implements \f$\left(arg_{1} \otimes arg_{2}\right)_{i,j}:={arg_{1}}_{i} {arg_{2}}_{j}\f$
-         **/
-		static typename Traits::SigmaRangeType dyadicProduct(
-										const typename Traits::VelocityRangeType& arg1,
-										const typename Traits::VelocityRangeType& arg2 )
-        {
-			typename Traits::SigmaRangeType ret( 0.0 );
-			typedef typename Traits::SigmaRangeType::RowIterator
-                MatrixRowIteratorType;
-			typedef typename Traits::VelocityRangeType::ConstIterator
-                ConstVectorIteratorType;
-			typedef typename Traits::VelocityRangeType::Iterator
-                VectorIteratorType;
-            MatrixRowIteratorType rItEnd = ret.end();
-            ConstVectorIteratorType arg1It = arg1.begin();
-            for ( MatrixRowIteratorType rIt = ret.begin(); rIt != rItEnd; ++rIt ) {
-                ConstVectorIteratorType arg2It = arg2.begin();
-                VectorIteratorType vItEnd = rIt->end();
-                for (   VectorIteratorType vIt = rIt->begin();
-                        vIt != vItEnd;
-                        ++vIt ) {
-                    *vIt = *arg1It * *arg2It;
-                    ++arg2It;
-                }
-                ++arg1It;
-            }
-            return ret;
-        }
-
-        // VelocityRangeType is expected to be a FieldVector,
-        // SigmaJacobianRangeType to be a Matrixmapping and
-        // SigmaJacobianRangeType[i] to be a FieldVector
-        //! \todo   doc me
-		static typename Traits::SigmaJacobianRangeType prepareVelocityRangeTypeForSigmaDivergence(
-													const typename Traits::VelocityRangeType& arg )
-        {
-			typename Traits::SigmaJacobianRangeType ret( 0.0 );
-            assert( arg.dim() == ret[0].dim() );
-            for ( int i = 0; i < int(arg.dim()) ; ++i ) {
-                for ( int j = 0; j < int(arg.dim()); ++j ) {
-					typename Traits::VelocityRangeType row( 0.0 );
-                    row[ j ] = arg[ i ];
-                    ret[ i * arg.dim() + j ] = row;
-                }
-            }
-            return ret;
-        }
-
-        //! \todo   doc me
-		static typename Traits::VelocityJacobianRangeType preparePressureRangeTypeForVelocityDivergence(
-													const typename Traits::PressureRangeType& arg )
-        {
-			typename Traits::VelocityJacobianRangeType ret( 0.0 );
-            for ( unsigned int i = 0; i < ret[0].dim(); ++i ) {
-				typename Traits::VelocityRangeType row( 0.0 );
-                row[ i ] = arg;
-                ret[ i ] = row;
-            }
-            return ret;
-        }
 };
 
 }
