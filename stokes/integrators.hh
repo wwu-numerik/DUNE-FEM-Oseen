@@ -242,88 +242,10 @@ namespace Integrators {
 			}
 	}; //end W integrator
 
-	template < class DiscreteFunctionType, class Traits >
-	class H1
-	{
-		typedef typename Traits::ElementCoordinateType
-			ElementCoordinateType;
-		typedef typename Traits::SigmaRangeType
-			SigmaRangeType;
-		typedef typename Traits::VelocityRangeType
-			VelocityRangeType;
-		typedef typename Traits::PressureRangeType
-			PressureRangeType;
-		typedef typename Traits::VelocityJacobianRangeType
-			VelocityJacobianRangeType;
-		typedef typename Traits::PressureJacobianRangeType
-			PressureJacobianRangeType;
-		typedef typename Traits::SigmaJacobianRangeType
-			SigmaJacobianRangeType;
-		typedef typename Traits::LocalIntersectionCoordinateType
-			LocalIntersectionCoordinateType;
-
-
-		DiscreteFunctionType& discrete_function_;
-		public:
-			H1( DiscreteFunctionType& df_func )
-				:discrete_function_(df_func)
-			{}
-
-			template < class InfoContainerVolumeType >
-			void applyVolume( const InfoContainerVolumeType& info )
-			{}
-
-			template < class InfoContainerInteriorFaceType >
-			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
-			{}
-
-			template < class InfoContainerFaceType >
-			void applyBoundaryFace( const InfoContainerFaceType& info )
-			{
-				typename DiscreteFunctionType::LocalFunctionType
-						localH1rhs = discrete_function_.localFunction( info.entity );
-				//                                                                                                    // we will call this one
-				// (H1)_{j} = \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{u}_{\sigma}^{RHS}()\cdot\tau_{j}\cdot n_{T}ds // H1's boundary integral
-				if ( info.discrete_model.hasVelocitySigmaFlux() ) {
-					for ( int j = 0; j < info.numSigmaBaseFunctionsElement; ++j ) {
-						double H1_j = 0.0;
-						// sum over all quadrature points
-						for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
-							// get x codim<0> and codim<1> coordinates
-							const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
-							const VelocityRangeType xWorld = info.geometry.global( x );
-							const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
-							// get the integration factor
-							const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
-							// get the quadrature weight
-							const double integrationWeight = info.faceQuadratureElement.weight( quad );
-							// compute \hat{u}_{\sigma}^{RHS}()\cdot\tau_{j}\cdot n_{T}
-							const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
-							SigmaRangeType tau_j( 0.0 );
-							info.sigma_basefunction_set_element.evaluate( j, x, tau_j );
-							VelocityRangeType tau_j_times_normal( 0.0 );
-							tau_j.mv( outerNormal, tau_j_times_normal );
-							VelocityRangeType gD( 0.0 );
-							info.discrete_model.dirichletData( info.intersection, 0.0, xWorld,  gD );
-							const double gD_times_tau_j_times_normal = gD * tau_j_times_normal;
-							H1_j += elementVolume
-								* integrationWeight
-								* info.viscosity
-								* gD_times_tau_j_times_normal;
-						} // done sum over all quadrature points
-						// if small, should be zero
-						if ( fabs( H1_j ) < info.eps ) {
-							H1_j = 0.0;
-						}
-						else
-							// add to rhs
-							localH1rhs[ j ] += H1_j;
-					} // done computing H1's boundary integral
-				}
-			}
-	};
 } // end namespace Integrators
 } // end namespace Stokes
 } // end namespace Dune
+
+#include <dune/stokes/integrators/rhs.hh>
 
 #endif // DUNE_STOKES_INTEGRATORS_HH
