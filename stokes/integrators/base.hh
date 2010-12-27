@@ -88,6 +88,10 @@ namespace Integrators {
 			const typename Traits::DiscreteModelType&	discrete_model;
 			const double eps;
 			const double viscosity;
+			const double convection_scaling;
+			const double pressure_gradient_scaling;
+			//! generalized stokes alpha
+			const double alpha;
 			InfoContainerVolume(const CoordinatorType& interface,
 								const typename Traits::EntityType& ent,
 								const typename Traits::DiscreteModelType& discrete_modelIn )
@@ -102,7 +106,10 @@ namespace Integrators {
 				  volumeQuadratureElement( entity, ( 4 * Traits::pressureSpaceOrder ) + 1 ),
 				  discrete_model( discrete_modelIn ),
 				  eps( Parameters().getParam( "eps", 1.0e-14 ) ),
-				  viscosity( discrete_modelIn.viscosity() )
+				  viscosity( discrete_modelIn.viscosity() ),
+				  convection_scaling( discrete_modelIn.convection_scaling() ),
+				  pressure_gradient_scaling( discrete_modelIn.pressure_gradient_scaling() ),
+				  alpha( discrete_modelIn.alpha() )
 			{}
 		};
 		struct InfoContainerFace : public InfoContainerVolume {

@@ -263,6 +263,68 @@ class StokesPass
         StokesPass()
         {}
 
+		void printInfo() const
+		{
+#ifndef NLOG
+			Logging::LogStream& infoStream = Logger().Info();
+			infoStream << boost::format( "pressure_gradient/convection scaling: %e | %e\npass viscosity: %e\n")
+								% discreteModel_.convection_scaling()
+								% discreteModel_.pressure_gradient_scaling()
+								% discreteModel_.viscosity();
+			int numberOfEntities = 0;
+			int numberOfIntersections = 0;
+			int numberOfBoundaryIntersections = 0;
+			int numberOfInnerIntersections = 0;
+			infoStream << "this is StokesPass::apply()" << std::endl;
+
+			// do an empty grid walk to get informations
+			double maxGridWidth( 0.0 );
+			typename Traits::EntityIteratorType entityItEndLog = velocitySpace_.end();
+			for (   typename Traits::EntityIteratorType entityItLog = velocitySpace_.begin();
+					entityItLog != entityItEndLog;
+					++entityItLog ) {
+				const typename Traits::EntityType& entity = *entityItLog;
+				// count entities
+				++numberOfEntities;
+				// walk the intersections
+				typename Traits::IntersectionIteratorType intItEnd = gridPart_.iend( entity );
+				for (   typename Traits::IntersectionIteratorType intIt = gridPart_.ibegin( entity );
+						intIt != intItEnd;
+						++intIt ) {
+					// count intersections
+					++numberOfIntersections;
+					maxGridWidth = std::max( Stuff::getLenghtOfIntersection( *intIt ), maxGridWidth );
+					// if we are inside the grid
+					if ( intIt->neighbor() && !intIt->boundary() ) {
+						// count inner intersections
+						++numberOfInnerIntersections;
+					}
+					// if we are on the boundary of the grid
+					if ( !intIt->neighbor() && intIt->boundary() ) {
+						// count boundary intersections
+						++numberOfBoundaryIntersections;
+					}
+				}
+			}
+			if ( numberOfEntities > 19 ) {
+				infoStream << "found " << numberOfEntities << " entities," << std::endl;
+				infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
+				infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
+				infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
+				infoStream << "      maxGridWidth is " << maxGridWidth << std::endl;
+				infoStream << "- starting gridwalk" << std::endl;
+			} else {
+				infoStream << "found " << numberOfEntities << " entities," << std::endl;
+				infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
+				infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
+				infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
+				infoStream << "      maxGridWidth is " << maxGridWidth << std::endl;
+				infoStream << "- starting gridwalk" << std::endl;
+			}
+			infoStream.Suspend();
+#endif
+		}
+
         //! used in Postprocessing to get refs to gridparts, spaces
 		const typename Traits::DiscreteStokesFunctionSpaceWrapperType& GetFunctionSpaceWrapper() const
         {
@@ -287,23 +349,8 @@ class StokesPass
 		template < class RhsDatacontainerType, class ExactSigmaType >
 		void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer, const ExactSigmaType* sigma_exact ) const
         {
-
             // profiler information
             profiler().StartTiming("Pass -- ASSEMBLE");
-
-            // entity and geometry types
-			typedef typename Traits::EntityType::Geometry
-                EntityGeometryType;
-            typedef typename Dune::FieldMatrix< typename EntityGeometryType::ctype,
-                                                EntityGeometryType::coorddimension,
-                                                EntityGeometryType::mydimension >
-                JacobianInverseTransposedType;
-
-            // viscosity
-			const double viscosity = discreteModel_.viscosity();
-
-            // generalized stokes alpha
-            const double alpha = discreteModel_.alpha();
 
             // matrices
             // M\in R^{M\times M}
@@ -369,28 +416,6 @@ class StokesPass
             RmatrixType Rmatrix( pressureSpace_, pressureSpace_ );
             Rmatrix.reserve();
 
-            // local matrices
-            // M\in R^{M\times M}
-            typedef typename MInversMatrixType::LocalMatrixType
-                LocalMInversMatrixType;
-            // X\in R^{L\times M}
-            typedef typename XmatrixType::LocalMatrixType
-                LocalXmatrixType;
-            // Y\in R^{L\times L}
-            typedef typename YmatrixType::LocalMatrixType
-                LocalYmatrixType;
-			typedef typename OmatrixType::LocalMatrixType
-				LocalOmatrixType;
-            // Z\in R^{L\times K}
-            typedef typename ZmatrixType::LocalMatrixType
-                LocalZmatrixType;
-            // E\in R^{K\times L}
-            typedef typename EmatrixType::LocalMatrixType
-                LocalEmatrixType;
-            // R\in R^{K\times K}
-            typedef typename RmatrixType::LocalMatrixType
-                LocalRmatrixType;
-
             // right hand sides
             // H_{1}\in R^{M}
 			typename Traits::DiscreteSigmaFunctionType H1rhs( "H1", sigmaSpace_ );
@@ -404,95 +429,7 @@ class StokesPass
 			typename Traits::DiscretePressureFunctionType H3rhs( "H3", pressureSpace_ );
             H3rhs.clear();
 
-            // local right hand sides
-            // H_{1}\in R^{M}
-			typedef typename Traits::DiscreteSigmaFunctionType::LocalFunctionType
-                LocalH1rhsType;
-            // H_{2}\in R^{L}
-			typedef typename Traits::DiscreteVelocityFunctionType::LocalFunctionType
-                LocalH2rhsType;
-            // H_{3}\in R^{K}
-			typedef typename Traits::DiscretePressureFunctionType::LocalFunctionType
-                LocalH3rhsType;
-
-            // base functions
-            // of type sigma
-            typedef typename DiscreteSigmaFunctionSpaceType::BaseFunctionSetType
-                SigmaBaseFunctionSetType;
-            // of type u
-            typedef typename DiscreteVelocityFunctionSpaceType::BaseFunctionSetType
-                VelocityBaseFunctionSetType;
-            // of type p
-            typedef typename DiscretePressureFunctionSpaceType::BaseFunctionSetType
-                PressureBaseFunctionSetType;
-
-            // eps
-            const double eps = Parameters().getParam( "eps", 1.0e-14 );
-			const double convection_scaling = discreteModel_.convection_scaling();
-			const double pressure_gradient_scaling = discreteModel_.pressure_gradient_scaling();
-
-			Logger().Info() << boost::format( "pressure_gradient/convection scaling: %e | %e\npass viscosity: %e\n")
-								% convection_scaling
-								% pressure_gradient_scaling
-								% viscosity;
-
-#ifndef NLOG
-            // logging stuff
-            Logging::LogStream& infoStream = Logger().Info();
-            int entityNR = 0;
-            int numberOfEntities = 0;
-            int numberOfIntersections = 0;
-            int numberOfBoundaryIntersections = 0;
-            int numberOfInnerIntersections = 0;
-            infoStream << "this is StokesPass::apply()" << std::endl;
-
-            // do an empty grid walk to get informations
-            double maxGridWidth( 0.0 );
-			typename Traits::EntityIteratorType entityItEndLog = velocitySpace_.end();
-			for (   typename Traits::EntityIteratorType entityItLog = velocitySpace_.begin();
-                    entityItLog != entityItEndLog;
-                    ++entityItLog ) {
-				const typename Traits::EntityType& entity = *entityItLog;
-                // count entities
-                ++numberOfEntities;
-                // walk the intersections
-				typename Traits::IntersectionIteratorType intItEnd = gridPart_.iend( entity );
-				for (   typename Traits::IntersectionIteratorType intIt = gridPart_.ibegin( entity );
-                        intIt != intItEnd;
-                        ++intIt ) {
-                    // count intersections
-                    ++numberOfIntersections;
-					maxGridWidth = std::max( Stuff::getLenghtOfIntersection( *intIt ), maxGridWidth );
-                    // if we are inside the grid
-					if ( intIt->neighbor() && !intIt->boundary() ) {
-                        // count inner intersections
-                        ++numberOfInnerIntersections;
-                    }
-                    // if we are on the boundary of the grid
-					if ( !intIt->neighbor() && intIt->boundary() ) {
-                        // count boundary intersections
-                        ++numberOfBoundaryIntersections;
-                    }
-                }
-            }
-            if ( numberOfEntities > 19 ) {
-                infoStream << "found " << numberOfEntities << " entities," << std::endl;
-                infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
-                infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
-                infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
-                infoStream << "      maxGridWidth is " << maxGridWidth << std::endl;
-                infoStream << "- starting gridwalk" << std::endl;
-            } else {
-                infoStream << "found " << numberOfEntities << " entities," << std::endl;
-                infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
-                infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
-                infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
-                infoStream << "      maxGridWidth is " << maxGridWidth << std::endl;
-                infoStream << "- starting gridwalk" << std::endl;
-            }
-			infoStream.Suspend();
-#endif
-
+			printInfo();
             // walk the grid
 #define use_openMP 1
 #if use_openMP
@@ -514,13 +451,15 @@ class StokesPass
 					tuples;
 #endif
 
-			typename Traits::EntityIteratorType entityItEnd = velocitySpace_.end();
-			typename Traits::EntityIteratorType entityIt = velocitySpace_.begin();
-			infoStream.Resume();
-            for (   Stuff::SimpleProgressBar<Logging::LogStream> progress( (numberOfEntities-1), infoStream, 40 );
-                    entityIt != entityItEnd;
-					++entityIt,++entityNR,++progress ) {
-            } // done walking the grid
+//			int entityNR = 0;
+//			Logging::LogStream& infoStream = Logger().Info();
+//			typename Traits::EntityIteratorType entityItEnd = velocitySpace_.end();
+//			typename Traits::EntityIteratorType entityIt = velocitySpace_.begin();
+//			infoStream.Resume();
+//            for (   Stuff::SimpleProgressBar<Logging::LogStream> progress( (numberOfEntities-1), infoStream, 40 );
+//                    entityIt != entityItEnd;
+//					++entityIt,++entityNR,++progress ) {
+//            } // done walking the grid
 
 
 //            // do the matlab logging stuff
