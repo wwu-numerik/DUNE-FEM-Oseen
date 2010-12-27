@@ -47,13 +47,13 @@ namespace Integrators {
 							// get x
 							const ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
 							// get the integration factor
-							const double elementVolume = geometry.integrationElement( x );
+							const double elementVolume = info.geometry.integrationElement( x );
 							// get the quadrature weight
 							const double integrationWeight = info.volumeQuadratureElement.weight( quad );
 							// compute \tau_{j}:\nabla v_{i}
 							SigmaRangeType tau_j( 0.0 );
 							info.sigma_basefunction_set_element.evaluate( j, x, tau_j );
-							const double gradient_of_v_i_times_tau_j = velocityBaseFunctionSetElement.evaluateGradientSingle( i, entity, x, tau_j );
+							const double gradient_of_v_i_times_tau_j = info.velocity_basefunction_set_element.evaluateGradientSingle( i, entity, x, tau_j );
 							X_i_j += elementVolume
 								* integrationWeight
 								* gradient_of_v_i_times_tau_j;
@@ -91,11 +91,11 @@ namespace Integrators {
 								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
-								const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 								SigmaRangeType tau_j( 0.0 );
 								info.sigma_basefunction_set_element.evaluate( j, x, tau_j );
 
@@ -113,7 +113,7 @@ namespace Integrators {
 								flux_value.mv( outerNormal, flux_times_normal );
 
 								const double v_i_times_flux_times_normal
-										= velocityBaseFunctionSetElement.evaluateSingle( i, x, flux_times_normal );
+										= info.velocity_basefunction_set_element.evaluateSingle( i, x, flux_times_normal );
 								X_i_j -= elementVolume
 									* integrationWeight
 									* v_i_times_flux_times_normal;
@@ -137,11 +137,11 @@ namespace Integrators {
 								const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureNeighbour.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}
-								const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 								SigmaRangeType tau_j( 0.0 );
 								sigmaBaseFunctionSetNeighbour.evaluate( j, xOutside, tau_j );
 
@@ -193,15 +193,15 @@ namespace Integrators {
 								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
-								const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 								SigmaRangeType tau_j( 0.0 );
 								info.sigma_basefunction_set_element.evaluate( j, x, tau_j );
 								VelocityRangeType v_i( 0.0 );
-								velocityBaseFunctionSetElement.evaluate( i, x, v_i );
+								info.velocity_basefunction_set_element.evaluate( i, x, v_i );
 								VelocityRangeType tau_times_normal( 0.0 );
 								tau_j.mv( outerNormal, tau_times_normal );
 								const double v_i_times_tau_times_normal = v_i * tau_times_normal;

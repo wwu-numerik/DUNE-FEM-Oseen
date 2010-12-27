@@ -47,16 +47,16 @@ namespace Integrators {
 							// get x
 							ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
 							// get the integration factor
-							double elementVolume = geometry.integrationElement( x );
+							double elementVolume = info.geometry.integrationElement( x );
 							// get the quadrature weight
 							double integrationWeight = info.volumeQuadratureElement.weight( quad );
 							// compute v_{j}\cdot(\nabla q_i)
 							VelocityRangeType v_j( 0.0 );
-							velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+							info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 							PressureJacobianRangeType jacobian_of_q_i( 0.0 );
 							info.pressure_basefunction_set_element.jacobian( i, x, jacobian_of_q_i );
 							const VelocityRangeType gradient_of_q_i_untransposed( jacobian_of_q_i[0] );
-							const JacobianInverseTransposedType jacobianInverseTransposed = geometry.jacobianInverseTransposed( x );
+							const JacobianInverseTransposedType jacobianInverseTransposed = info.geometry.jacobianInverseTransposed( x );
 							VelocityRangeType gradient_of_q_i( 0.0 );
 							jacobianInverseTransposed.mv( gradient_of_q_i_untransposed, gradient_of_q_i );
 							const double gradient_of_q_i_times_v_j = gradient_of_q_i * v_j;
@@ -98,13 +98,13 @@ namespace Integrators {
 								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute \hat{u}_{p}^{U^{+}}(v_{j})\cdot n_{T}q_{i}
-								const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_j( 0.0 );
-								velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+								info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 								PressureRangeType q_i( 0.0 );
 								info.pressure_basefunction_set_element.evaluate( i, x, q_i );
 								VelocityRangeType flux_value = v_j;
@@ -130,7 +130,7 @@ namespace Integrators {
 								localEmatrixElement.add( i, j, E_i_j );
 						} // done computing E's element surface integral
 						// compute E's neighbour surface integral
-						for ( int i = 0; i < numPressureBaseFunctionsNeighbour; ++i ) {
+						for ( int i = 0; i < info.numPressureBaseFunctionsNeighbour; ++i ) {
 							double E_i_j = 0.0;
 							// sum over all quadrature points
 							for ( size_t quad = 0; quad < info.faceQuadratureNeighbour.nop(); ++quad ) {
@@ -139,13 +139,13 @@ namespace Integrators {
 								const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureNeighbour.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
 								// compute \hat{u}_{p}^{U^{-}}(v_{j})\cdot n_{T}q_{i}
-								const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_j( 0.0 );
-								velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+								info.velocity_basefunction_set_element.evaluate( j, xInside, v_j );
 								PressureRangeType q_i( 0.0 );
 								info.pressure_basefunction_set_neighbour.evaluate( i, xOutside, q_i );
 

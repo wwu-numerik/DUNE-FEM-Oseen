@@ -59,11 +59,11 @@ namespace Integrators {
 								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute \hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}
-								const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 								PressureRangeType q_i( 0.0 );
 								info.pressure_basefunction_set_element.evaluate( i, x, q_i );
 								PressureRangeType q_j( 0.0 );
@@ -83,7 +83,7 @@ namespace Integrators {
 								localRmatrixElement.add( i, j, R_i_j );
 						} // done computing R's element surface integral
 						// compute R's neighbour surface integral
-						for ( int i = 0; i < numPressureBaseFunctionsNeighbour; ++i ) {
+						for ( int i = 0; i < info.numPressureBaseFunctionsNeighbour; ++i ) {
 							double R_i_j = 0.0;
 							// sum over all quadrature points
 							for ( size_t quad = 0; quad < info.faceQuadratureNeighbour.nop(); ++quad ) {
@@ -92,11 +92,11 @@ namespace Integrators {
 								const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureNeighbour.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
 								// compute \hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}
-								const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 								PressureRangeType q_j( 0.0 );
 								info.pressure_basefunction_set_neighbour.evaluate( j, xOutside, q_j );
 								PressureRangeType q_i( 0.0 );

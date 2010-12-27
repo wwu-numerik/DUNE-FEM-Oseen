@@ -46,7 +46,7 @@ namespace Integrators {
 							// get x
 							const ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
 							// get the integration factor
-							const double elementVolume = geometry.integrationElement( x );
+							const double elementVolume = info.geometry.integrationElement( x );
 							// get the quadrature weight
 							const double integrationWeight = info.volumeQuadratureElement.weight( quad );
 							// compute \tau_{i}:\tau_{j}

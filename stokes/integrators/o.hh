@@ -46,21 +46,21 @@ namespace Integrators {
 							// get x
 							const ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
 							// get the integration factor
-							const double elementVolume = geometry.integrationElement( x );
+							const double elementVolume = info.geometry.integrationElement( x );
 							// get the quadrature weight
 							const double integrationWeight = info.volumeQuadratureElement.weight( quad );
 							//calc u_h * \nabla * (v \tensor \beta )
 							VelocityRangeType v_i( 0.0 );
-							velocityBaseFunctionSetElement.evaluate( i, x, v_i );
+							info.velocity_basefunction_set_element.evaluate( i, x, v_i );
 							VelocityRangeType v_j( 0.0 );
-							velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+							info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 							VelocityRangeType beta_eval;
 							beta_.localFunction( entity ).evaluate( x, beta_eval );
 
 							VelocityJacobianRangeType v_i_jacobian;
-							velocityBaseFunctionSetElement.jacobian( i, x, v_i_jacobian );
+							info.velocity_basefunction_set_element.jacobian( i, x, v_i_jacobian );
 							VelocityJacobianRangeType v_j_jacobian;
-							velocityBaseFunctionSetElement.jacobian( j, x, v_j_jacobian );
+							info.velocity_basefunction_set_element.jacobian( j, x, v_j_jacobian );
 							VelocityJacobianRangeType beta_jacobian;
 							const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
 									beta_.localFunction( entity );
@@ -141,17 +141,17 @@ namespace Integrators {
 							const ElementCoordinateType xInside = info.faceQuadratureElement.point( quad );
 							const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
 							const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
-							const VelocityRangeType xWorld = geometry.global( xInside );
-							const VelocityRangeType xWorld_Outside = geometry.global( xOutside );
+							const VelocityRangeType xWorld = info.geometry.global( xInside );
+							const VelocityRangeType xWorld_Outside = info.geometry.global( xOutside );
 							// get the integration factor
-							const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+							const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
 							// get the quadrature weight
 							const double integrationWeight = info.faceQuadratureElement.weight( quad );
-							const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+							const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 							VelocityRangeType v_i( 0.0 );
-							velocityBaseFunctionSetElement.evaluate( i, xInside, v_i );
+							info.velocity_basefunction_set_element.evaluate( i, xInside, v_i );
 							VelocityRangeType v_j( 0.0 );
-							velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+							info.velocity_basefunction_set_element.evaluate( j, xInside, v_j );
 
 							VelocityRangeType beta_eval;
 							beta_.localFunction(entity).evaluate( xInside, beta_eval );
@@ -193,19 +193,19 @@ namespace Integrators {
 							// get x codim<0> and codim<1> coordinates
 							const ElementCoordinateType xInside = info.faceQuadratureElement.point( quad );
 							const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
-							const VelocityRangeType xWorld = geometry.global( xInside );
-							const VelocityRangeType xWorld_Outside = geometry.global( xOutside );
+							const VelocityRangeType xWorld = info.geometry.global( xInside );
+							const VelocityRangeType xWorld_Outside = info.geometry.global( xOutside );
 							const LocalIntersectionCoordinateType xLocal = info.faceQuadratureNeighbour.localPoint( quad );
 							// get the integration factor
-							const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+							const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
 							// get the quadrature weight
 							const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
-							const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+							const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 
 							VelocityRangeType v_i( 0.0 );
 							VelocityRangeType v_j( 0.0 );
 							velocityBaseFunctionSetNeighbour.evaluate( i, xOutside, v_i );
-							velocityBaseFunctionSetElement.evaluate( j, xInside, v_j );
+							info.velocity_basefunction_set_element.evaluate( j, xInside, v_j );
 							VelocityRangeType beta_eval;
 							beta_.localFunction(entity).evaluate( xInside, beta_eval );
 							const double beta_times_normal =  ( beta_eval * outerNormal );
@@ -254,18 +254,18 @@ namespace Integrators {
 						for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
 							// get x codim<0> and codim<1> coordinates
 							const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
-							const VelocityRangeType xWorld = geometry.global( x );
+							const VelocityRangeType xWorld = info.geometry.global( x );
 							const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 							// get the integration factor
-							const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+							const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
 							// get the quadrature weight
 							const double integrationWeight = info.faceQuadratureElement.weight( quad );
-							const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+							const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 							//calc u^c_h \tensor beta * v \tensor n
 							VelocityRangeType v_j( 0.0 );
-							velocityBaseFunctionSetElement.evaluate( j, x, v_j );
+							info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 							VelocityRangeType v_i( 0.0 );
-							velocityBaseFunctionSetElement.evaluate( i, x, v_i );
+							info.velocity_basefunction_set_element.evaluate( i, x, v_i );
 							VelocityRangeType beta_eval;
 							beta_.localFunction(entity).evaluate( x, beta_eval );
 							const double beta_times_normal = beta_eval * outerNormal;

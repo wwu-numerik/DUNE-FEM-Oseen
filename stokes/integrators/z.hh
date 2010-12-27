@@ -47,13 +47,13 @@ namespace Integrators {
 							// get x
 							const ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
 							// get the integration factor
-							const double elementVolume = geometry.integrationElement( x );
+							const double elementVolume = info.geometry.integrationElement( x );
 							// get the quadrature weight
 							const double integrationWeight = info.volumeQuadratureElement.weight( quad );
 							// compute q_{j}\cdot(\nabla\cdot v_i)
 							PressureRangeType q_j( 0.0 );
 							info.pressure_basefunction_set_element.evaluate( j, x, q_j );
-							const double divergence_of_v_i_times_q_j = velocityBaseFunctionSetElement.evaluateGradientSingle( i, entity, x, preparePressureRangeTypeForVelocityDivergence( q_j ) );
+							const double divergence_of_v_i_times_q_j = info.velocity_basefunction_set_element.evaluateGradientSingle( i, entity, x, preparePressureRangeTypeForVelocityDivergence( q_j ) );
 							Z_i_j += -1.0
 								* elementVolume
 								* integrationWeight
@@ -93,13 +93,13 @@ namespace Integrators {
 								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
-								const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_i( 0.0 );
-								velocityBaseFunctionSetElement.evaluate( i, x, v_i );
+								info.velocity_basefunction_set_element.evaluate( i, x, v_i );
 								PressureRangeType q_j( 0.0 );
 								info.pressure_basefunction_set_element.evaluate( j, x, q_j );
 								const double v_i_times_normal = v_i * outerNormal;
@@ -131,13 +131,13 @@ namespace Integrators {
 								const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureNeighbour.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
 								// compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
-								const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_i( 0.0 );
-								velocityBaseFunctionSetElement.evaluate( i, xInside, v_i );
+								info.velocity_basefunction_set_element.evaluate( i, xInside, v_i );
 								PressureRangeType q_j( 0.0 );
 								info.pressure_basefunction_set_neighbour.evaluate( j, xOutside, q_j );
 								const double v_i_times_normal = v_i * outerNormal;
@@ -181,13 +181,13 @@ namespace Integrators {
 								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
 								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+								const double elementVolume = info.info.intersectionGeometry.integrationElement( xLocal );
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute \hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}
-								const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
+								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_i( 0.0 );
-								velocityBaseFunctionSetElement.evaluate( i, x, v_i );
+								info.velocity_basefunction_set_element.evaluate( i, x, v_i );
 								PressureRangeType q_j( 0.0 );
 								info.pressure_basefunction_set_element.evaluate( j, x, q_j );
 								const double v_i_times_normal = v_i * outerNormal;
