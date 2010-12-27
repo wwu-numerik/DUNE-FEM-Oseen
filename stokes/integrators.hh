@@ -84,7 +84,7 @@ namespace Integrators {
 				typename MatrixObjectType::LocalMatrixType
 						localWmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				typename MatrixObjectType::LocalMatrixType
-						localWmatrixNeighbour = matrix_object_.localMatrix( info.entity, info.entity );
+						localWmatrixNeighbour = matrix_object_.localMatrix( info.neighbour, info.entity );
 
 				//                                                                                                               // we will call this one
 				// (W)_{i,j} += \int_{\varepsilon\in \Epsilon_{I}^{T}}-\hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // W's element surface integral
