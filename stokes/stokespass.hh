@@ -497,11 +497,14 @@ class StokesPass
 #define use_openMP 1
 #if use_openMP
 //		#section
-			typedef Tuple< Stokes::Integrators::W< WmatrixType, Traits > > T1;
+			typedef Tuple< Stokes::Integrators::W< WmatrixType, Traits >,
+							Stokes::Integrators::H1< typename Traits::DiscreteSigmaFunctionType, Traits >  >
+				T1;
 			Stokes::Integrators::Coordinator< Traits, T1 >
 					coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
 			Stokes::Integrators::W< WmatrixType, Traits> w_integrator( Wmatrix );
-			T1 t1 = Stuff::makeTuple( w_integrator );
+			Stokes::Integrators::H1< typename Traits::DiscreteSigmaFunctionType, Traits > h1_integrator( H1rhs );
+			T1 t1 = Stuff::makeTuple( w_integrator, h1_integrator );
 			coordinator.apply( t1 );
 //		#section
 //			Stokes::Integrators::MatrxInterface< Traits, Tuple< Stokes::Integrators::X< Traits, XmatrixType > >
@@ -1476,45 +1479,6 @@ class StokesPass
 						LocalIntersectionCoordinateType;
                     // if we are on the boundary of the grid
 					if ( !intersection.neighbor() && intersection.boundary() ) {
-                        //                                                                                                    // we will call this one
-                        // (H1)_{j} = \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{u}_{\sigma}^{RHS}()\cdot\tau_{j}\cdot n_{T}ds // H1's boundary integral
-                        if ( discreteModel_.hasVelocitySigmaFlux() ) {
-                            for ( int j = 0; j < numSigmaBaseFunctionsElement; ++j ) {
-                                double H1_j = 0.0;
-                                // sum over all quadrature points
-								for ( size_t quad = 0; quad < faceQuadratureElement.nop(); ++quad ) {
-                                    // get x codim<0> and codim<1> coordinates
-                                    const ElementCoordinateType x = faceQuadratureElement.point( quad );
-                                    const VelocityRangeType xWorld = geometry.global( x );
-                                    const LocalIntersectionCoordinateType xLocal = faceQuadratureElement.localPoint( quad );
-                                    // get the integration factor
-                                    const double elementVolume = intersectionGeometry.integrationElement( xLocal );
-                                    // get the quadrature weight
-                                    const double integrationWeight = faceQuadratureElement.weight( quad );
-                                    // compute \hat{u}_{\sigma}^{RHS}()\cdot\tau_{j}\cdot n_{T}
-									const VelocityRangeType outerNormal = intersection.unitOuterNormal( xLocal );
-                                    SigmaRangeType tau_j( 0.0 );
-                                    sigmaBaseFunctionSetElement.evaluate( j, x, tau_j );
-                                    VelocityRangeType tau_j_times_normal( 0.0 );
-                                    tau_j.mv( outerNormal, tau_j_times_normal );
-                                    VelocityRangeType gD( 0.0 );
-									discreteModel_.dirichletData( intersection, 0.0, xWorld,  gD );
-                                    const double gD_times_tau_j_times_normal = gD * tau_j_times_normal;
-                                    H1_j += elementVolume
-                                        * integrationWeight
-										* viscosity
-                                        * gD_times_tau_j_times_normal;
-                                } // done sum over all quadrature points
-                                // if small, should be zero
-                                if ( fabs( H1_j ) < eps ) {
-                                    H1_j = 0.0;
-                                }
-								else
-									// add to rhs
-									localH1rhs[ j ] += H1_j;
-                            } // done computing H1's boundary integral
-                        }
-
                         //                                                                                                                   // we will call this one
                         // (X)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}ds // X's boundary integral
                         //                                                                                                                   // see also "X's volume integral", "X's element surface integral" and "X's neighbour surface integral" above

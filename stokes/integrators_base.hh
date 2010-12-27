@@ -25,11 +25,11 @@ namespace Integrators {
 		return ret;
 	}
 
-	template < class Traits, class MatrixIntegratorTuple >
+	template < class Traits, class IntegratorTuple >
 	class Coordinator
 	{
 	protected:
-		typedef Coordinator< Traits, MatrixIntegratorTuple >
+		typedef Coordinator< Traits, IntegratorTuple >
 			CoordinatorType;
 
 		const typename Traits::DiscreteModelType&					discrete_model_;
@@ -105,51 +105,27 @@ namespace Integrators {
 				  viscosity( discrete_modelIn.viscosity() )
 			{}
 		};
-		struct InfoContainerInteriorFace : public InfoContainerVolume {
-			const typename Traits::EntityType& neighbour;
-
-			const SigmaBaseFunctionSetType
-					sigma_basefunction_set_neighbour;
-			const VelocityBaseFunctionSetType
-					velocity_basefunction_set_neighbour;
-			const PressureBaseFunctionSetType
-					pressure_basefunction_set_neighbour;
-			const int numSigmaBaseFunctionsNeighbour;
-			const int numVelocityBaseFunctionsNeighbour;
-			const int numPressureBaseFunctionsNeighbour;
+		struct InfoContainerFace : public InfoContainerVolume {
 			const typename Traits::IntersectionIteratorType::Intersection& intersection;
 			const typename Traits::IntersectionIteratorType::Geometry& intersectionGeometry;
 			const typename Traits::FaceQuadratureType faceQuadratureElement;
-			const typename Traits::FaceQuadratureType faceQuadratureNeighbour;
 			const double lengthOfIntersection;
 			const StabilizationCoefficients& stabil_coeff;
 			const double C_11;
 			const double D_11;
 			typename Traits::VelocityRangeType D_12;
 
-			InfoContainerInteriorFace (const CoordinatorType& interface,
+			InfoContainerFace (const CoordinatorType& interface,
 								const typename Traits::EntityType& ent,
-							   const typename Traits::EntityType& nei,
 							   const typename Traits::IntersectionIteratorType::Intersection& inter,
 								const typename Traits::DiscreteModelType& discrete_modelIn )
 				:InfoContainerVolume( interface, ent, discrete_modelIn ),
-				  neighbour( nei ),
-				  sigma_basefunction_set_neighbour( interface.sigma_space_.baseFunctionSet( neighbour ) ),
-				  velocity_basefunction_set_neighbour( interface.velocity_space_.baseFunctionSet( neighbour ) ),
-				  pressure_basefunction_set_neighbour( interface.pressure_space_.baseFunctionSet( neighbour ) ),
-				  numSigmaBaseFunctionsNeighbour( sigma_basefunction_set_neighbour.numBaseFunctions() ),
-				  numVelocityBaseFunctionsNeighbour( velocity_basefunction_set_neighbour.numBaseFunctions() ),
-				  numPressureBaseFunctionsNeighbour( pressure_basefunction_set_neighbour.numBaseFunctions() ),
 				  intersection( inter ),
 				  intersectionGeometry( intersection.intersectionGlobal() ),
 				  faceQuadratureElement( interface.sigma_space_.gridPart(),
 																  intersection,
 																  ( 4 * Traits::pressureSpaceOrder ) + 1,
 																  Traits::FaceQuadratureType::INSIDE ),
-				  faceQuadratureNeighbour( interface.sigma_space_.gridPart(),
-																  intersection,
-																  ( 4 * Traits::pressureSpaceOrder ) + 1,
-																  Traits::FaceQuadratureType::OUTSIDE ),
 				  lengthOfIntersection( Stuff::getLenghtOfIntersection( intersection ) ),
 				  stabil_coeff( discrete_modelIn.getStabilizationCoefficients() ),
 				  C_11( stabil_coeff.Factor("C11") * std::pow( lengthOfIntersection, stabil_coeff.Power("C11") ) ),
@@ -161,25 +137,59 @@ namespace Integrators {
 			}
 		};
 
+		struct InfoContainerInteriorFace : public InfoContainerFace {
+			const typename Traits::EntityType& neighbour;
+			const SigmaBaseFunctionSetType
+					sigma_basefunction_set_neighbour;
+			const VelocityBaseFunctionSetType
+					velocity_basefunction_set_neighbour;
+			const PressureBaseFunctionSetType
+					pressure_basefunction_set_neighbour;
+			const int numSigmaBaseFunctionsNeighbour;
+			const int numVelocityBaseFunctionsNeighbour;
+			const int numPressureBaseFunctionsNeighbour;
+			const typename Traits::FaceQuadratureType faceQuadratureNeighbour;
+
+			InfoContainerInteriorFace (const CoordinatorType& interface,
+								const typename Traits::EntityType& ent,
+							   const typename Traits::EntityType& nei,
+							   const typename Traits::IntersectionIteratorType::Intersection& inter,
+								const typename Traits::DiscreteModelType& discrete_modelIn )
+				:InfoContainerFace( interface, ent, inter, discrete_modelIn ),
+				  neighbour( nei ),
+				  sigma_basefunction_set_neighbour( interface.sigma_space_.baseFunctionSet( neighbour ) ),
+				  velocity_basefunction_set_neighbour( interface.velocity_space_.baseFunctionSet( neighbour ) ),
+				  pressure_basefunction_set_neighbour( interface.pressure_space_.baseFunctionSet( neighbour ) ),
+				  numSigmaBaseFunctionsNeighbour( sigma_basefunction_set_neighbour.numBaseFunctions() ),
+				  numVelocityBaseFunctionsNeighbour( velocity_basefunction_set_neighbour.numBaseFunctions() ),
+				  numPressureBaseFunctionsNeighbour( pressure_basefunction_set_neighbour.numBaseFunctions() ),
+				  faceQuadratureNeighbour( interface.sigma_space_.gridPart(),
+																  inter,
+																  ( 4 * Traits::pressureSpaceOrder ) + 1,
+																  Traits::FaceQuadratureType::OUTSIDE )
+			{}
+
+		};
+
 		struct ApplyVolume {
-			template < class IntegratorType, class InfoType >
-			static void apply( IntegratorType& integrator, const InfoType& info )
+			template < class IntegratorType >
+			static void apply( IntegratorType& integrator, const InfoContainerVolume& info )
 			{
 				integrator.applyVolume( info );
 			}
 		};
 
 		struct ApplyInteriorFace {
-			template < class IntegratorType, class InfoType >
-			static void apply( IntegratorType& integrator, const InfoType& info )
+			template < class IntegratorType >
+			static void apply( IntegratorType& integrator, const InfoContainerInteriorFace& info )
 			{
 				integrator.applyInteriorFace( info );
 			}
 		};
 
 		struct ApplyBoundaryFace {
-			template < class IntegratorType, class InfoType >
-			static void apply( IntegratorType& integrator, const InfoType& info )
+			template < class IntegratorType >
+			static void apply( IntegratorType& integrator, const InfoContainerFace& info )
 			{
 				integrator.applyBoundaryFace( info );
 			}
@@ -191,7 +201,7 @@ namespace Integrators {
 		public:
 			//! \brief Constructor
 			//! \param tuple The tuple which we want to process.
-			ForEachIntegrator(MatrixIntegratorTuple& tuple, const InfoType& info)
+			ForEachIntegrator(IntegratorTuple& tuple, const InfoType& info)
 				: tuple_(tuple),
 				  info_(info)
 			{
@@ -211,11 +221,11 @@ namespace Integrators {
 				apply(pair.second());
 			}
 		private:
-			MatrixIntegratorTuple& tuple_;
+			IntegratorTuple& tuple_;
 			const InfoType& info_;
 		};
 
-		void apply ( MatrixIntegratorTuple& matrix_integrator_tuple ) const
+		void apply ( IntegratorTuple& integrator_tuple ) const
 		{
 			typedef typename GridType::LeafGridView
 				GridView;
@@ -232,7 +242,7 @@ namespace Integrators {
 			{
 				const typename Traits::EntityType& entity = *entityIt;
 				InfoContainerVolume info( *this, entity, discrete_model_ );
-				ForEachIntegrator<ApplyVolume,InfoContainerVolume>(matrix_integrator_tuple, info );
+				ForEachIntegrator<ApplyVolume,InfoContainerVolume>( integrator_tuple, info );
 
 				// walk the intersections
 				const typename Traits::IntersectionIteratorType intItEnd = gridView.iend( entity );
@@ -248,11 +258,12 @@ namespace Integrators {
 						//! DO NOT TRY TO DEREF outside() DIRECTLY
 						const typename Traits::IntersectionIteratorType::EntityPointer neighbourPtr = intersection.outside();
 						InfoContainerInteriorFace info( *this, entity, *neighbourPtr, intersection, discrete_model_ );
-						ForEachIntegrator<ApplyInteriorFace,InfoContainerInteriorFace>(matrix_integrator_tuple, info );
+						ForEachIntegrator<ApplyInteriorFace,InfoContainerInteriorFace>( integrator_tuple, info );
 					}
 					else if ( !intersection.neighbor() && intersection.boundary() )
 					{
-//						applyBoundaryFace();
+						InfoContainerFace info( *this, entity, intersection, discrete_model_ );
+						ForEachIntegrator<ApplyBoundaryFace,InfoContainerFace>( integrator_tuple, info );
 					}
 				}
 			}
