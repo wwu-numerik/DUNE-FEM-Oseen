@@ -16,6 +16,7 @@
 
 #include <dune/common/stdstreams.hh>
 #include <dune/stuff/matrix.hh>
+#include <dune/stuff/tuple.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/stuff/progressbar.hh>
 
@@ -493,10 +494,22 @@ class StokesPass
 #endif
 
             // walk the grid
-
-			Stokes::Integrators::W< Traits >
-					w_integrator( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_ );
-			w_integrator.apply( Wmatrix );
+#define use_openMP 1
+#if use_openMP
+//		#section
+			typedef Tuple< Stokes::Integrators::W< WmatrixType, Traits > > T1;
+			Stokes::Integrators::MatrixInterface< Traits, T1 >
+					meh ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
+			Stokes::Integrators::W< WmatrixType, Traits> w_int( Wmatrix );
+			T1 t1 = Stuff::makeTuple( w_int );
+			meh.apply( t1 );
+//		#section
+//			Stokes::Integrators::MatrxInterface< Traits, Tuple< Stokes::Integrators::X< Traits, XmatrixType > >
+//					( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  ).apply( Xmatrix );
+#else
+			Tuple< Stokes::Integrators::X< Traits, XmatrixType >, Stokes::Integrators::W< Traits, WmatrixType > >
+					tuples;
+#endif
 
 			typename Traits::EntityIteratorType entityItEnd = velocitySpace_.end();
 			typename Traits::EntityIteratorType entityIt = velocitySpace_.begin();
