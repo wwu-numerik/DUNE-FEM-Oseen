@@ -360,6 +360,8 @@ class StokesPass
 											DiscreteSigmaFunctionSpaceType,
 											MatrixTraits<DiscreteSigmaFunctionSpaceType,DiscreteSigmaFunctionSpaceType> >
                 MInversMatrixType;
+			typedef Stokes::Integrators::M< MInversMatrixType, Traits >
+				MInversMatrixIntegratorType;
             MInversMatrixType MInversMatrix( sigmaSpace_, sigmaSpace_ );
             MInversMatrix.reserve();
             assert( MInversMatrix.matrix().rows() == MInversMatrix.matrix().cols() );
@@ -370,6 +372,8 @@ class StokesPass
 											DiscreteVelocityFunctionSpaceType,
 											MatrixTraits<DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType> >
                 WmatrixType;
+			typedef Stokes::Integrators::W< WmatrixType, Traits >
+				WmatrixTypeIntegratorType;
             WmatrixType Wmatrix( sigmaSpace_, velocitySpace_ );
             Wmatrix.reserve();
             // X\in R^{L\times M}
@@ -377,6 +381,8 @@ class StokesPass
 											DiscreteSigmaFunctionSpaceType,
 											MatrixTraits<DiscreteVelocityFunctionSpaceType, DiscreteSigmaFunctionSpaceType> >
                 XmatrixType;
+			typedef Stokes::Integrators::X< XmatrixType, Traits >
+				XmatrixTypeIntegratorType;
             XmatrixType Xmatrix( velocitySpace_, sigmaSpace_ );
             Xmatrix.reserve();
             // Y\in R^{L\times L}
@@ -384,12 +390,16 @@ class StokesPass
 											DiscreteVelocityFunctionSpaceType,
 											MatrixTraits<DiscreteVelocityFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
                 YmatrixType;
+			typedef Stokes::Integrators::Y< YmatrixType, Traits >
+				YmatrixTypeIntegratorType;
             YmatrixType Ymatrix( velocitySpace_, velocitySpace_ );
             Ymatrix.reserve();
             typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
 											DiscreteVelocityFunctionSpaceType,
 											MatrixTraits<DiscreteVelocityFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
                 OmatrixType;
+			typedef Stokes::Integrators::O< OmatrixType, Traits >
+				OmatrixTypeIntegratorType;
 			OmatrixType Omatrix( velocitySpace_, velocitySpace_ );
 			Omatrix.reserve();
             // Z\in R^{L\times K}
@@ -399,6 +409,8 @@ class StokesPass
 											DiscretePressureFunctionSpaceType,
 											MatrixTraits<DiscreteVelocityFunctionSpaceType,DiscretePressureFunctionSpaceType> >
                 ZmatrixType;
+			typedef Stokes::Integrators::Z< ZmatrixType, Traits >
+				ZmatrixTypeIntegratorType;
             ZmatrixType Zmatrix( velocitySpace_, pressureSpace_ );
             Zmatrix.reserve();
             // E\in R^{K\times L}
@@ -406,6 +418,8 @@ class StokesPass
 											DiscreteVelocityFunctionSpaceType,
 											MatrixTraits<DiscretePressureFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
                 EmatrixType;
+			typedef Stokes::Integrators::E< EmatrixType, Traits >
+				EmatrixTypeIntegratorType;
             EmatrixType Ematrix( pressureSpace_, velocitySpace_ );
             Ematrix.reserve();
             // R\in R^{K\times K}
@@ -413,28 +427,38 @@ class StokesPass
 											DiscretePressureFunctionSpaceType,
 											MatrixTraits<DiscretePressureFunctionSpaceType,DiscretePressureFunctionSpaceType> >
                 RmatrixType;
+			typedef Stokes::Integrators::R< WmatrixType, Traits >
+				RmatrixTypeIntegratorType;
             RmatrixType Rmatrix( pressureSpace_, pressureSpace_ );
             Rmatrix.reserve();
 
             // right hand sides
             // H_{1}\in R^{M}
 			typename Traits::DiscreteSigmaFunctionType H1rhs( "H1", sigmaSpace_ );
+			typedef Stokes::Integrators::H1< typename Traits::DiscreteSigmaFunctionType, Traits >
+				H1_IntegratorType;
             H1rhs.clear();
             // H_{2}\in R^{L}
 			typename Traits::DiscreteVelocityFunctionType H2rhs( "H2", velocitySpace_ );
+			typedef Stokes::Integrators::H2< typename Traits::DiscreteVelocityFunctionType , Traits >
+				H2_IntegratorType;
             H2rhs.clear();
 			typename Traits::DiscreteVelocityFunctionType H2_O_rhs( "H2_O", velocitySpace_ );
+			typedef Stokes::Integrators::H2_O< typename Traits::DiscreteVelocityFunctionType , Traits, typename Traits::DiscreteVelocityFunctionType >
+				H2_O_IntegratorType;
 			H2_O_rhs.clear();
             // H_{3}\in R^{K}
 			typename Traits::DiscretePressureFunctionType H3rhs( "H3", pressureSpace_ );
+			typedef Stokes::Integrators::H3< typename Traits::DiscretePressureFunctionType, Traits >
+				H3_IntegratorType;
             H3rhs.clear();
 
 			printInfo();
             // walk the grid
-#define use_openMP 1
+#define use_openMP 0
 #if use_openMP
 //		#section
-			typedef Tuple< Stokes::Integrators::W< WmatrixType, Traits >,
+			typedef Tuple< MInversMatrixIntegratorType
 							Stokes::Integrators::H1< typename Traits::DiscreteSigmaFunctionType, Traits >  >
 				T1;
 			Stokes::Integrators::Coordinator< Traits, T1 >
@@ -447,8 +471,37 @@ class StokesPass
 //			Stokes::Integrators::MatrxInterface< Traits, Tuple< Stokes::Integrators::X< Traits, XmatrixType > >
 //					( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  ).apply( Xmatrix );
 #else
-			Tuple< Stokes::Integrators::X< Traits, XmatrixType >, Stokes::Integrators::W< Traits, WmatrixType > >
-					tuples;
+			typedef Tuple<	MInversMatrixIntegratorType,
+							WmatrixTypeIntegratorType,
+							XmatrixTypeIntegratorType,
+							YmatrixTypeIntegratorType,
+							OmatrixTypeIntegratorType,
+							ZmatrixTypeIntegratorType,
+							EmatrixTypeIntegratorType,
+							RmatrixTypeIntegratorType,
+							H1_IntegratorType,
+							H2_IntegratorType,
+							H2_O_IntegratorType,
+							H3_IntegratorType >
+				IntegratorTuple;
+			Stokes::Integrators::Coordinator< Traits, IntegratorTuple >
+					coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
+			MInversMatrixIntegratorType m_integrator( MInversMatrix );
+			WmatrixTypeIntegratorType	w_integrator( Wmatrix );
+			XmatrixTypeIntegratorType	x_integrator( Xmatrix );
+			YmatrixTypeIntegratorType	y_integrator( Ymatrix );
+			OmatrixTypeIntegratorType	o_integrator( Omatrix );
+			ZmatrixTypeIntegratorType	z_integrator( Zmatrix );
+			EmatrixTypeIntegratorType	e_integrator( Ematrix );
+			RmatrixTypeIntegratorType	r_integrator( Rmatrix );
+			H1_IntegratorType			h1_integrator( H1rhs );
+			H2_IntegratorType			h2_integrator( H2rhs );
+			H2_O_IntegratorType			h2_o_integrator( H2_O_rhs );
+			H3_IntegratorType			h3_integrator( H3rhs );
+			IntegratorTuple tuple( m_integrator, w_integrator, x_integrator, y_integrator,
+								  o_integrator, z_integrator, e_integrator, r_integrator,
+								  h1_integrator, h2_integrator, h2_o_integrator, h3_integrator );
+			coordinator.apply( tuple );
 #endif
 
 //			int entityNR = 0;
