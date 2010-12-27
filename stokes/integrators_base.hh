@@ -26,16 +26,11 @@ namespace Integrators {
 	}
 
 	template < class Traits, class MatrixIntegratorTuple >
-	class MatrixInterface
+	class Coordinator
 	{
 	protected:
-		typedef MatrixInterface < Traits, MatrixIntegratorTuple >
-			MatrixInterfaceType;
-
-		// VelocityRangeType is expected to be a FieldVector,
-		// SigmaJacobianRangeType to be a Matrixmapping and
-		// SigmaJacobianRangeType[i] to be a FieldVector
-		//! \todo   doc me
+		typedef Coordinator< Traits, MatrixIntegratorTuple >
+			CoordinatorType;
 
 		const typename Traits::DiscreteModelType&					discrete_model_;
 		const typename Traits::GridPartType&						grid_part_;
@@ -63,7 +58,7 @@ namespace Integrators {
 		typedef typename Traits::DiscretePressureFunctionSpaceType::BaseFunctionSetType
 			PressureBaseFunctionSetType;
 
-		MatrixInterface(const typename Traits::DiscreteModelType&					discrete_model,
+		Coordinator(const typename Traits::DiscreteModelType&					discrete_model,
 						const typename Traits::GridPartType&						grid_part,
 						const typename Traits::DiscreteVelocityFunctionSpaceType&	velocity_space,
 						const typename Traits::DiscretePressureFunctionSpaceType&	pressure_space,
@@ -93,7 +88,7 @@ namespace Integrators {
 			const typename Traits::DiscreteModelType&	discrete_model;
 			const double eps;
 			const double viscosity;
-			InfoContainerVolume(const MatrixInterfaceType& interface,
+			InfoContainerVolume(const CoordinatorType& interface,
 								const typename Traits::EntityType& ent,
 								const typename Traits::DiscreteModelType& discrete_modelIn )
 				: entity( ent ),
@@ -132,7 +127,7 @@ namespace Integrators {
 			const double D_11;
 			typename Traits::VelocityRangeType D_12;
 
-			InfoContainerInteriorFace (const MatrixInterfaceType& interface,
+			InfoContainerInteriorFace (const CoordinatorType& interface,
 								const typename Traits::EntityType& ent,
 							   const typename Traits::EntityType& nei,
 							   const typename Traits::IntersectionIteratorType::Intersection& inter,

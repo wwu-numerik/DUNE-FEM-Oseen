@@ -498,11 +498,11 @@ class StokesPass
 #if use_openMP
 //		#section
 			typedef Tuple< Stokes::Integrators::W< WmatrixType, Traits > > T1;
-			Stokes::Integrators::MatrixInterface< Traits, T1 >
-					meh ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
-			Stokes::Integrators::W< WmatrixType, Traits> w_int( Wmatrix );
-			T1 t1 = Stuff::makeTuple( w_int );
-			meh.apply( t1 );
+			Stokes::Integrators::Coordinator< Traits, T1 >
+					coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
+			Stokes::Integrators::W< WmatrixType, Traits> w_integrator( Wmatrix );
+			T1 t1 = Stuff::makeTuple( w_integrator );
+			coordinator.apply( t1 );
 //		#section
 //			Stokes::Integrators::MatrxInterface< Traits, Tuple< Stokes::Integrators::X< Traits, XmatrixType > >
 //					( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  ).apply( Xmatrix );
