@@ -1,5 +1,5 @@
-#ifndef DUNE_STOKES_INTEGRATORS_HH
-#define DUNE_STOKES_INTEGRATORS_HH
+#ifndef DUNE_STOKES_INTEGRATORS_M_HH
+#define DUNE_STOKES_INTEGRATORS_M_HH
 
 #include <dune/stokes/integrators/base.hh>
 
@@ -88,4 +88,4 @@ namespace Integrators {
 } // end namespace Stokes
 } // end namespace Dune
 
-#endif // DUNE_STOKES_INTEGRATORS_HH
+#endif // DUNE_STOKES_INTEGRATORS_M_HH

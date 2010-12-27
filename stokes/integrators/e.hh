@@ -1,5 +1,5 @@
-#ifndef DUNE_STOKES_INTEGRATORS_HH
-#define DUNE_STOKES_INTEGRATORS_HH
+#ifndef DUNE_STOKES_INTEGRATORS_E_HH
+#define DUNE_STOKES_INTEGRATORS_E_HH
 
 #include <dune/stokes/integrators/base.hh>
 
@@ -26,6 +26,12 @@ namespace Integrators {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
+		typedef typename EntityType::Geometry
+			EntityGeometryType;
+		typedef typename Dune::FieldMatrix< typename EntityGeometryType::ctype,
+											EntityGeometryType::coorddimension,
+											EntityGeometryType::mydimension >
+			JacobianInverseTransposedType;
 
 
 		MatrixObjectType& matrix_object_;
@@ -189,4 +195,4 @@ namespace Integrators {
 } // end namespace Stokes
 } // end namespace Dune
 
-#endif // DUNE_STOKES_INTEGRATORS_HH
+#endif // DUNE_STOKES_INTEGRATORS_E_HH
