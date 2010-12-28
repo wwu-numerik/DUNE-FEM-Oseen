@@ -29,19 +29,20 @@ template <  class WMatType,
 			class DiscreteVelocityFunctionType>
 class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterface
 {
+	typedef MatrixA_Operator<   WMatType,
+					MMatType,
+					XMatType,
+					YMatType,
+					DiscreteSigmaFunctionType,
+					DiscreteVelocityFunctionType>
+				ThisType;
+
+	friend class Conversion<ThisType,OEMSolver::PreconditionInterface>;
 	typedef typename YMatType::WrappedMatrixObjectType
 		PreconditionMatrixType;
 
     public:
-
-        typedef MatrixA_Operator<   WMatType,
-                        MMatType,
-                        XMatType,
-                        YMatType,
-                        DiscreteSigmaFunctionType,
-						DiscreteVelocityFunctionType>
-                    ThisType;
-        /** The operator needs the
+		/** The operator needs the
 
 
         **/
