@@ -27,8 +27,10 @@ template <  class WMatType,
             class YMatType,
             class DiscreteSigmaFunctionType,
 			class DiscreteVelocityFunctionType>
-class MatrixA_Operator : public OEMSolver::PreconditionInterface
-	{
+class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterface
+{
+	typedef typename YMatType::WrappedMatrixObjectType
+		PreconditionMatrixType;
 
     public:
 
@@ -58,15 +60,16 @@ class MatrixA_Operator : public OEMSolver::PreconditionInterface
             sig_tmp1( "sig_tmp1", sig_space ),
             sig_tmp2( "sig_tmp2", sig_space ),
             space_(space),
-            precondition_matrix_( y_mat_.rows(), y_mat_.cols(), 10 ),
+			precondition_matrix_( space, space ),
 			precondition_diagonal_( "diag1", space ),
 			precondition_matrix_invers( y_mat_.cols(), y_mat_.rows(), 10 )
         {
+			precondition_matrix_.reserve();
 			x_mat_.getDiag( m_mat_, w_mat_, precondition_diagonal_);
 			precondition_diagonal_ *= -1;
 			y_mat_.addDiag( precondition_diagonal_ );
 			o_mat_.addDiag( precondition_diagonal_ );
-			setMatrixDiag( precondition_matrix_, precondition_diagonal_ );
+			setMatrixDiag( precondition_matrix_.matrix(), precondition_diagonal_ );
 			DiscreteVelocityFunctionType precondition_diagonal_inv( "diag_inv", space );
 			precondition_diagonal_inv.assign( precondition_diagonal_ );
 			Stuff::invertFunctionDofs( precondition_diagonal_inv );
@@ -112,9 +115,9 @@ class MatrixA_Operator : public OEMSolver::PreconditionInterface
             return *this;
         }
 
-		typename YMatType::MatrixType& preconditionMatrix()
+		const ThisType& preconditionMatrix() const
         {
-            return precondition_matrix_;
+			return *this;
         }
 
         bool hasPreconditionMatrix () const
@@ -130,7 +133,6 @@ class MatrixA_Operator : public OEMSolver::PreconditionInterface
         template <class VecType>
         void precondition( const VecType* tmp, VecType* dest ) const
         {
-			assert( false );
 			precondition_matrix_invers.multOEM( tmp, dest );
         }
 
@@ -144,7 +146,7 @@ class MatrixA_Operator : public OEMSolver::PreconditionInterface
         mutable DiscreteSigmaFunctionType sig_tmp1;
         mutable DiscreteSigmaFunctionType sig_tmp2;
 		const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& space_;
-		typename YMatType::MatrixType precondition_matrix_;
+		PreconditionMatrixType precondition_matrix_;
 		DiscreteVelocityFunctionType precondition_diagonal_;
 		typename YMatType::MatrixType precondition_matrix_invers;
 };

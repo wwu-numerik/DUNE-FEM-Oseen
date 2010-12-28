@@ -15,7 +15,7 @@ template <  class A_SolverType,
             class MmatrixType,
             class DiscreteVelocityFunctionType ,
             class DiscretePressureFunctionType>
-class SchurkomplementOperator : public OEMSolver::PreconditionInterface
+class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::PreconditionInterface
 {
     public:
 

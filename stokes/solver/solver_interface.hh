@@ -18,9 +18,11 @@
 		IterationInfo;
 	#include <dune/stokes/oemsolver/oemsolver.hh>
 	#define SOLVER_NAMESPACE DuneStokes
+	#define SOLVER_INTERFACE_NAMESPACE StokesOEMSolver
 #else
 	#include <dune/fem/solver/oemsolver/oemsolver.hh>
 	#define SOLVER_NAMESPACE Dune
+	#define SOLVER_INTERFACE_NAMESPACE OEMSolver
 #endif
 
 #include <dune/fem/function/common/discretefunction.hh>
@@ -60,6 +62,8 @@ class MatrixWrapper : boost::noncopyable {
 			MatrixType;
 		typedef typename MatrixObjectType::MatrixType
 			RealMatrixType;
+		typedef MatrixObjectType
+			WrappedMatrixObjectType;
 
 		MatrixWrapper( const MatrixObjectType& matrix_object )
 			:matrix_object_( matrix_object ),

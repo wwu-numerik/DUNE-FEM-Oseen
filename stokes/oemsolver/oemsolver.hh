@@ -120,6 +120,13 @@ using namespace DuneCBlas;
 	  // call multOEM of the matrix
 	  m.multOEM(x,ret, info );
 	}
+	template <class MatrixImp, class VectorType>
+	void mult(const MatrixImp & m, const VectorType * x, VectorType * ret )
+	{
+		IterationInfo dummy;
+	  // call multOEM of the matrix
+	  m.multOEM(x,ret,dummy );
+	}
 
 #else
 	template <class MatrixImp, class VectorType>
