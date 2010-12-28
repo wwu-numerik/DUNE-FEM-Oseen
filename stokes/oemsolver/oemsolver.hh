@@ -267,7 +267,7 @@ struct Mult<Matrix,Matrix,false>
 		IterationInfo dummy;
 		mult(A,arg,dest,dummy);
 	#else
-		mult(A,arg,dest);
+		StokesOEMSolver::mult(A,arg,dest);
 	#endif
 
     // first mult like right precon
@@ -302,7 +302,7 @@ struct Mult<Matrix,Matrix,false>
     assert( &A == &C );
 
     // call mult of Matrix A
-    mult(A,arg,dest);
+	StokesOEMSolver::mult(A,arg,dest);
   }
 #endif
 

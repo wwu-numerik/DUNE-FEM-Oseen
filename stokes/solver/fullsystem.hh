@@ -46,12 +46,13 @@ namespace Dune {
 			{
 			}
 
-//			double ddotOEM(const double*v, const double* w) const
-//			{
-//				DiscretePressureFunctionType V( "ddot V", pressure_space_, v );
-//				DiscretePressureFunctionType W( "ddot W", pressure_space_, w );
-//				return V.scalarProductDofs( W );
-//			}
+			double ddotOEM(const double*v, const double* w) const
+			{
+				ASSERT_EXCEPTION( false, "this cannot possibly work w/o a properly constructed space");
+				DiscretePressureFunctionType V( "ddot V", pressure_space_, v );
+				DiscretePressureFunctionType W( "ddot W", pressure_space_, w );
+				return V.scalarProductDofs( W );
+			}
 
 			template <class VECtype>
 			void multOEM(const VECtype *x, VECtype * ret) const

@@ -112,7 +112,7 @@ class MatrixA_Operator : public OEMSolver::PreconditionInterface
             return *this;
         }
 
-        YMatType& preconditionMatrix()
+		typename YMatType::MatrixType& preconditionMatrix()
         {
             return precondition_matrix_;
         }

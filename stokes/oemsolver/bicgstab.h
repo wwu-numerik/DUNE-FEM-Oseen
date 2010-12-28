@@ -118,9 +118,9 @@ bicgstab_algo2( const CommunicatorType & comm,
   if( usePC && (!rightPreCon) )
   {
 #ifdef USE_BFG_CG_SCHEME
-    mult(C,rhs,tmp,info);
+	mult(C,rhs,tmp,info);
 #else
-	mult(C,rhs,tmp);
+	StokesOEMSolver::mult(C,rhs,tmp);
 #endif
     daxpy(N,-1.,tmp,1,r,1);
     bb = ddot(N,tmp,1,tmp,1);

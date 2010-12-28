@@ -11,7 +11,7 @@
 #endif
 
 
-#ifdef USE_BFG_CG_SCHEME
+#if defined(USE_BFG_CG_SCHEME) || defined(FORCE_CUSTOM_SOLVER)
 	#include <utility>
 	//< iteration no , < absLimit, residuum > >
 	typedef std::pair<int,std::pair<double,double> >
