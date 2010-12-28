@@ -469,6 +469,9 @@ class StokesPass
 			if ( do_oseen_discretization_  ) {
 				H2rhs += H2_O_rhs;
 			}
+			else {
+				Omatrix.clear();
+			}
 			//this lets us switch between standalone oseen and reduced oseen in  thete scheme easily
 			const bool use_reduced_solver = do_oseen_discretization_ && Parameters().getParam( "reduced_oseen_solver", false );
 			typedef SolverCaller< ThisType >
