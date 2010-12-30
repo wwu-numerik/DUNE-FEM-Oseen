@@ -29,6 +29,7 @@ template <  class WMatType,
 			class DiscreteVelocityFunctionType>
 class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterface
 {
+	public:
 	typedef MatrixA_Operator<   WMatType,
 					MMatType,
 					XMatType,
@@ -38,8 +39,48 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 				ThisType;
 
 	friend class Conversion<ThisType,OEMSolver::PreconditionInterface>;
-	typedef typename YMatType::WrappedMatrixObjectType
-		PreconditionMatrixType;
+	typedef IdentityMatrixObject<typename YMatType::WrappedMatrixObjectType>
+		PreconditionMatrixBaseType;
+
+	class PreconditionMatrix : public PreconditionMatrixBaseType {
+		const ThisType& a_operator_;
+		DiscreteVelocityFunctionType precondition_diagonal_;
+		typename YMatType::MatrixType precondition_matrix_invers;
+		PreconditionMatrixBaseType precondition_matrix_invers2;
+
+	public:
+		PreconditionMatrix( const ThisType& a_operator)
+			: PreconditionMatrixBaseType( a_operator.space_, a_operator.space_ ),
+			a_operator_( a_operator ),
+			  precondition_diagonal_( "diag1", a_operator_.space_ ),
+			  precondition_matrix_invers( a_operator_.y_mat_.cols(), a_operator_.y_mat_.rows(), 10 ),
+			  precondition_matrix_invers2( a_operator.space_, a_operator.space_  )
+		{
+			a_operator_.x_mat_.getDiag( a_operator_.m_mat_, a_operator_.w_mat_, precondition_diagonal_);
+			precondition_diagonal_ *= -1;
+			a_operator_.y_mat_.addDiag( precondition_diagonal_ );
+			a_operator_.o_mat_.addDiag( precondition_diagonal_ );
+
+			DiscreteVelocityFunctionType precondition_diagonal_inv( "diag_inv", a_operator_.space_ );
+			precondition_diagonal_inv.assign( precondition_diagonal_ );
+			Stuff::invertFunctionDofs( precondition_diagonal_inv );
+			setMatrixDiag( precondition_matrix_invers, precondition_diagonal_inv);
+			setMatrixDiag( PreconditionMatrixBaseType::matrix(), precondition_diagonal_ );
+		}
+
+		template <class VecType>
+		void precondition( const VecType* tmp, VecType* dest ) const
+		{
+			if ( rightPrecondition() )
+				precondition_matrix_invers2.multOEM( tmp, dest );
+			else
+				PreconditionMatrixBaseType::multOEM( tmp, dest );
+		}
+		bool rightPrecondition() const
+		{
+			return Parameters().getParam( "rightPrecond", false );
+		}
+	};
 
     public:
 		/** The operator needs the
@@ -61,21 +102,8 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
             sig_tmp1( "sig_tmp1", sig_space ),
             sig_tmp2( "sig_tmp2", sig_space ),
             space_(space),
-			precondition_matrix_( space, space ),
-			precondition_diagonal_( "diag1", space ),
-			precondition_matrix_invers( y_mat_.cols(), y_mat_.rows(), 10 )
-        {
-			precondition_matrix_.reserve();
-			x_mat_.getDiag( m_mat_, w_mat_, precondition_diagonal_);
-			precondition_diagonal_ *= -1;
-			y_mat_.addDiag( precondition_diagonal_ );
-			o_mat_.addDiag( precondition_diagonal_ );
-			setMatrixDiag( precondition_matrix_.matrix(), precondition_diagonal_ );
-			DiscreteVelocityFunctionType precondition_diagonal_inv( "diag_inv", space );
-			precondition_diagonal_inv.assign( precondition_diagonal_ );
-			Stuff::invertFunctionDofs( precondition_diagonal_inv );
-			setMatrixDiag( precondition_matrix_invers, precondition_diagonal_inv );
-		}
+			precondition_matrix_( *this )
+		{}
 
         ~MatrixA_Operator()
         {}
@@ -103,6 +131,7 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
             multOEM(x,ret);
         }
 #endif
+
         double ddotOEM(const double*v, const double* w) const
 		{
 	        DiscreteVelocityFunctionType V( "ddot V", space_, v );
@@ -116,9 +145,9 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
             return *this;
         }
 
-		const ThisType& preconditionMatrix() const
+		const PreconditionMatrix& preconditionMatrix() const
         {
-			return *this;
+			return precondition_matrix_;
         }
 
         bool hasPreconditionMatrix () const
@@ -126,19 +155,7 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 			return Parameters().getParam( "innerPrecond", false );
         }
 
-        bool rightPrecondition() const
-        {
-            return false;
-        }
-
-        template <class VecType>
-        void precondition( const VecType* tmp, VecType* dest ) const
-        {
-			precondition_matrix_invers.multOEM( tmp, dest );
-        }
-
-
-    private:
+	protected:
         const WMatType& w_mat_;
         const MMatType& m_mat_;
         const XMatType& x_mat_;
@@ -147,9 +164,8 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
         mutable DiscreteSigmaFunctionType sig_tmp1;
         mutable DiscreteSigmaFunctionType sig_tmp2;
 		const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& space_;
-		PreconditionMatrixType precondition_matrix_;
-		DiscreteVelocityFunctionType precondition_diagonal_;
-		typename YMatType::MatrixType precondition_matrix_invers;
+		PreconditionMatrix precondition_matrix_;
+
 };
 
 
@@ -229,6 +245,7 @@ class InnerCGSolverWrapper {
             cg_solver.setAbsoluteLimit( abs );
         }
 #endif
+		const A_OperatorType& getOperator() const { return a_op_;}
 
     private:
 //        const MMatType precond_;
