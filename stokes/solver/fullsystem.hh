@@ -48,10 +48,16 @@ namespace Dune {
 
 			double ddotOEM(const double*v, const double* w) const
 			{
-				ASSERT_EXCEPTION( false, "this cannot possibly work w/o a properly constructed space");
-				DiscretePressureFunctionType V( "ddot V", pressure_space_, v );
-				DiscretePressureFunctionType W( "ddot W", pressure_space_, w );
-				return V.scalarProductDofs( W );
+//				ASSERT_EXCEPTION( false, "this cannot possibly work w/o a properly constructed space");
+				const size_t numDofs_velocity = velocity_space_.size();
+				DiscreteVelocityFunctionType U( "ddot V", velocity_space_, v );
+				DiscreteVelocityFunctionType X( "ddot W", velocity_space_, w );
+				double ret = U.scalarProductDofs( X );
+
+				DiscretePressureFunctionType V( "ddot V", pressure_space_, v + numDofs_velocity);
+				DiscretePressureFunctionType W( "ddot W", pressure_space_, w + numDofs_velocity);
+				ret += V.scalarProductDofs( W );
+				return ret;
 			}
 
 			template <class VECtype>
