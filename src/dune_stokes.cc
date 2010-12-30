@@ -77,6 +77,7 @@
 #include <dune/stuff/postprocessing.hh>
 #include <dune/stuff/profiler.hh>
 #include <dune/stuff/signals.hh>
+#include <dune/stuff/tex.hh>
 
 #include "analyticaldata.hh"
 #include "velocity.hh"

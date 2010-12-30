@@ -22,6 +22,7 @@
 #endif
 
 #include <dune/stuff/misc.hh>
+#include <dune/stuff/debug.hh>
 
 #include <algorithm>
 
