@@ -39,7 +39,7 @@ inline
 std::pair < int , double >
 cghs_algo2( const CommunicatorType & comm,
       unsigned int N, const MATRIX &A, const PC_MATRIX& C,
-	  const double *b_orig, double *x, double eps,
+      const double *b, double *x, double eps,
       bool detailed )
 {
   if ( N==0 )
@@ -56,25 +56,17 @@ cghs_algo2( const CommunicatorType & comm,
   double* tmp = 0;
 
 #ifdef USE_MEMPROVIDER
-  cghsMem.resize( (usePC) ? 5*N : 4*N );
+  cghsMem.resize( (usePC) ? 4*N : 3*N );
 
   double *p = cghsMem.getMem (N);
   double *r = cghsMem.getMem (N);
   double *g = cghsMem.getMem (N);
-  double* b = cghsMem.getMem(N);
-  if( usePC ) {
-	  tmp = cghsMem.getMem(N);
-
-  }
+  if( usePC ) tmp = cghsMem.getMem(N);
 #else
   double *g = new double[N];
   double *r = new double[N];
   double *p = new double[N];
-  double* b = new double [N];
-  if( usePC ) {
-	  tmp = new double [N];
-
-  }
+  if( usePC ) tmp = new double [N];
 #endif
 
   for(size_t k =0 ; k<N; ++k)
@@ -82,10 +74,6 @@ cghs_algo2( const CommunicatorType & comm,
     g[k] = 0.0;
     r[k] = 0.0;
     p[k] = 0.0;
-	b[k] = b_orig[k];
-  }
-  if( usePC ) {
-	 C.multOEM( b_orig, b );
   }
 
   int its=0;
@@ -154,7 +142,6 @@ cghs_algo2( const CommunicatorType & comm,
   delete[] r;
   delete[] p;
   if( tmp ) delete [] tmp;
-  delete [] b;
 #endif
 
   return val;
