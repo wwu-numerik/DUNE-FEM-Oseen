@@ -108,8 +108,14 @@ public:
   }
 };
 
-// use cblas implementations
-using namespace DuneCBlas;
+// use cblas implementations 
+using namespace DuneCBlas;  
+
+using DuneCBlas :: daxpy;
+using DuneCBlas :: dcopy;
+using DuneCBlas :: ddot;
+using DuneCBlas :: dnrm2;
+using DuneCBlas :: dscal;
 
 //! this method is called from all solvers and is only a wrapper
 //! this method is mainly from SparseRowMatrix
@@ -140,7 +146,13 @@ using namespace DuneCBlas;
 //! mult method when given pre conditioning matrix
 template <class Matrix , class PC_Matrix , bool use_pc >
 struct Mult
-{
+{  
+	static inline double ddot( const Matrix& A,
+                             const double *x, 
+                             const double *y)
+  {
+    return A.ddotOEM(x,y);
+  }
 #ifdef USE_BFG_CG_SCHEME
   typedef void mult_t(const Matrix &A,
                       const PC_Matrix & C,
@@ -247,6 +259,12 @@ struct Mult
 template <class Matrix>
 struct Mult<Matrix,Matrix,false>
 {
+	static inline double ddot( const Matrix& A,
+							 const double *x,
+							 const double *y)
+  {
+	return A.ddotOEM(x,y);
+  }
 #ifdef USE_BFG_CG_SCHEME
   typedef void mult_t(const Matrix &A,
                       const Matrix &C,
