@@ -186,7 +186,10 @@ namespace Integrators {
 																  inter,
 																  ( 4 * Traits::pressureSpaceOrder ) + 1,
 																  Traits::FaceQuadratureType::OUTSIDE )
-			{}
+			{
+				//some integration logic depends on this
+				assert( InfoContainerFace::faceQuadratureElement.nop() == faceQuadratureNeighbour.nop() );
+			}
 
 		};
 
