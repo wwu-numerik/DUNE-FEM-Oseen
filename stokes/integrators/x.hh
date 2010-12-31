@@ -83,100 +83,65 @@ namespace Integrators {
 				//                                                                                                                   // see also "X's boundary integral" below
 				//                                                                                                                   // and "X's volume integral" above
 //                        if ( info.discrete_model.hasSigmaFlux() ) {
+				// sum over all quadrature points
+				for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
+					// get x in codim<0> and codim<1> coordinates
+					const ElementCoordinateType xInside = info.faceQuadratureElement.point( quad );
+					const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
+					const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
+					// get the integration factor
+					const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+					// get the quadrature weight
+					const double integrationWeight = info.faceQuadratureElement.weight( quad );
+					// compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
+					const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
+					typename Traits::C12 c_12( outerNormal, info.discrete_model.getStabilizationCoefficients() );
 					for ( int j = 0; j < info.numSigmaBaseFunctionsElement; ++j ) {
+						SigmaRangeType tau_j( 0.0 );
+						info.sigma_basefunction_set_element.evaluate( j, xInside, tau_j );
 						// compute X's element sourface integral
+						VelocityRangeType tau_j_times_normal( 0.0 );
+						tau_j.mv( outerNormal, tau_j_times_normal );
+
+						SigmaRangeType tau_j_times_normal_dyadic_C12
+								= Stuff::dyadicProduct<SigmaRangeType,VelocityRangeType>( tau_j_times_normal, c_12 );
+						SigmaRangeType flux_value = tau_j;
+						flux_value *= 0.5;
+						flux_value -= tau_j_times_normal_dyadic_C12;
+						VelocityRangeType flux_times_normal( 0.0 );
+						flux_value.mv( outerNormal, flux_times_normal );
+
 						for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
-							double X_i_j = 0.0;
-							// sum over all quadrature points
-							for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
-								// get x in codim<0> and codim<1> coordinates
-								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
-								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
-								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
-								// get the quadrature weight
-								const double integrationWeight = info.faceQuadratureElement.weight( quad );
-								// compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
-								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
-								SigmaRangeType tau_j( 0.0 );
-								info.sigma_basefunction_set_element.evaluate( j, x, tau_j );
-
-								VelocityRangeType tau_j_times_normal( 0.0 );
-								tau_j.mv( outerNormal, tau_j_times_normal );
-								typename Traits::C12 c_12( outerNormal, info.discrete_model.getStabilizationCoefficients() );
-								SigmaRangeType tau_j_times_normal_dyadic_C12
-										= Stuff::dyadicProduct<SigmaRangeType,VelocityRangeType>( tau_j_times_normal, c_12 );
-
-								SigmaRangeType flux_value = tau_j;
-								flux_value *= 0.5;
-								flux_value -= tau_j_times_normal_dyadic_C12;
-
-								VelocityRangeType flux_times_normal( 0.0 );
-								flux_value.mv( outerNormal, flux_times_normal );
-
-								const double v_i_times_flux_times_normal
-										= info.velocity_basefunction_set_element.evaluateSingle( i, x, flux_times_normal );
-								X_i_j -= elementVolume
-									* integrationWeight
-									* v_i_times_flux_times_normal;
-
-							} // done sum over all quadrature points
-							// if small, should be zero
-							if ( fabs( X_i_j ) < info.eps ) {
-								X_i_j = 0.0;
-							}
-							else
-								// add to matrix
-								localXmatrixElement.add( i, j, X_i_j );
+							const double v_i_times_flux_times_normal
+									= info.velocity_basefunction_set_element.evaluateSingle( i, xInside, flux_times_normal );
+							const double X_i_j = -elementVolume
+								* integrationWeight
+								* v_i_times_flux_times_normal;
+							// add to matrix
+							localXmatrixElement.add( i, j, X_i_j );
 						} // done computing X's element sourface integral
 						// compute X's neighbour sourface integral
+						info.sigma_basefunction_set_element.evaluate( j, xOutside, tau_j );
+						tau_j.mv( outerNormal, tau_j_times_normal );
+						tau_j_times_normal_dyadic_C12
+							= Stuff::dyadicProduct<SigmaRangeType,VelocityRangeType>( tau_j_times_normal, c_12 );
+						flux_value = tau_j;
+						flux_value *= 0.5;
+						flux_value -= tau_j_times_normal_dyadic_C12;
+						flux_value.mv( outerNormal, flux_times_normal );
 						for ( int i = 0; i < info.numVelocityBaseFunctionsNeighbour; ++i ) {
-							double X_i_j = 0.0;
-							// sum over all quadrature points
-							for ( size_t quad = 0; quad < info.faceQuadratureNeighbour.nop(); ++quad ) {
-								// get x codim<0> and codim<1> coordinates
-								const ElementCoordinateType xInside = info.faceQuadratureElement.point( quad );
-								const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
-								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureNeighbour.localPoint( quad );
-								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
-								// get the quadrature weight
-								const double integrationWeight = info.faceQuadratureElement.weight( quad );
-								// compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}
-								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
-								SigmaRangeType tau_j( 0.0 );
-								info.sigma_basefunction_set_element.evaluate( j, xOutside, tau_j );
-
-								VelocityRangeType tau_j_times_normal( 0.0 );
-								tau_j.mv( outerNormal, tau_j_times_normal );
-								typename Traits::C12 c_12( outerNormal, info.discrete_model.getStabilizationCoefficients() );
-								SigmaRangeType tau_j_times_normal_dyadic_C12
-										= Stuff::dyadicProduct<SigmaRangeType,VelocityRangeType>( tau_j_times_normal, c_12 );
-
-								SigmaRangeType flux_value = tau_j;
-								flux_value *= 0.5;
-								flux_value += tau_j_times_normal_dyadic_C12;
-
-								VelocityRangeType flux_times_normal( 0.0 );
-								flux_value.mv( outerNormal, flux_times_normal );
-
-								const double v_i_times_flux_times_normal
-										= info.velocity_basefunction_set_element.evaluateSingle( i, xInside, flux_times_normal );
-								X_i_j -= elementVolume
-									* integrationWeight
-									* v_i_times_flux_times_normal;
-							} // done sum over all quadrature points
-							// if small, should be zero
-							if ( fabs( X_i_j ) < info.eps ) {
-								X_i_j = 0.0;
-							}
-							else
-								// add to matrix
-								localXmatrixNeighbour.add( i, j, X_i_j );
+							// compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}
+							const double v_i_times_flux_times_normal
+								= info.velocity_basefunction_set_element.evaluateSingle( i, xInside, flux_times_normal );
+							const double X_i_j = -elementVolume
+								* integrationWeight
+								* v_i_times_flux_times_normal;
+							localXmatrixNeighbour.add( i, j, X_i_j );
 						} // done computing X's neighbour sourface integral
 					} // done computing X's sourface integrals
-//                        }
+				}
 			}
+			//                        }
 
 			template < class InfoContainerFaceType >
 			void applyBoundaryFace( const InfoContainerFaceType& info )
