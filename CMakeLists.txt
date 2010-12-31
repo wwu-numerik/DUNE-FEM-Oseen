@@ -93,7 +93,9 @@ SET( GRAPE_PATH
 SET( ENABLE_PARALELL
 	0 CACHE BOOL
 	"Enable parallel features" )
-
+SET( ENABLE_OMP
+	0 CACHE BOOL
+	"Enable openmp features" )
 SET ( METIS_DIR
 	"/share/dune/Modules/modules_x86_64/ParMetis-3.1.1" CACHE STRING
 	"metis toplevel directory" )
@@ -122,6 +124,14 @@ IF ( ENABLE_PARALELL )
 					-DMPIPP_H -DENABLE_MPI=1
 					)
 ENDIF ( ENABLE_PARALELL )
+
+SET( USE_OMP "0" )
+IF( ENABLE_OMP )
+	ADD_CXX_FLAGS( -fopenmp -DUSE_OMP=1)
+	LIST( APPEND ParaLIBS "-fopenmp" )
+ELSEIF( ENABLE_OMP )
+	ADD_CXX_FLAGS( -DUSE_OMP=0)
+ENDIF( ENABLE_OMP )
 
 ADD_DUNE_MODULES( common istl grid stuff fem )
 
