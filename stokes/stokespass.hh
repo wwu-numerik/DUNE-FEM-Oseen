@@ -19,8 +19,6 @@
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/stuff/progressbar.hh>
 
-#include <omp.h>
-
 template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
 struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
 	struct StencilType {
@@ -336,23 +334,7 @@ class StokesPass
             H3rhs.clear();
 
 			printInfo();
-            // walk the grid
-#define use_openMP 0
-#if use_openMP
-//		#section
-			typedef Tuple< MInversMatrixIntegratorType
-							Stokes::Integrators::H1< typename Traits::DiscreteSigmaFunctionType, Traits >  >
-				T1;
-			Stokes::Integrators::Coordinator< Traits, T1 >
-					coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
-			Stokes::Integrators::W< WmatrixType, Traits> w_integrator( Wmatrix );
-			Stokes::Integrators::H1< typename Traits::DiscreteSigmaFunctionType, Traits > h1_integrator( H1rhs );
-			T1 t1 = Stuff::makeTuple( w_integrator, h1_integrator );
-			coordinator.apply( t1 );
-//		#section
-//			Stokes::Integrators::MatrxInterface< Traits, Tuple< Stokes::Integrators::X< Traits, XmatrixType > >
-//					( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  ).apply( Xmatrix );
-#else
+
 			//because of the 9-element limit in dune tuples i have to split the assembly in two...
 			typedef Tuple<	MInversMatrixIntegratorType,
 							WmatrixTypeIntegratorType,
@@ -390,7 +372,6 @@ class StokesPass
 			H3_IntegratorType			h3_integrator( H3rhs );
 			RhsIntegratorTuple rhs_tuple( h1_integrator, h2_integrator, h2_o_integrator, h3_integrator );
 			rhs_coordinator.apply( rhs_tuple );
-#endif
 
 //            // do the matlab logging stuff
 			if ( Parameters().getParam( "save_matrices", false ) ) {
