@@ -57,7 +57,6 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 			a_operator_.y_mat_.addDiag( precondition_diagonal_ );
 			a_operator_.o_mat_.addDiag( precondition_diagonal_ );
 
-			precondition_diagonal_ *= -1;
 			Stuff::invertFunctionDofs( precondition_diagonal_ );
 			setMatrixDiag( PreconditionMatrixBaseType::matrix(), precondition_diagonal_ );
 		}
