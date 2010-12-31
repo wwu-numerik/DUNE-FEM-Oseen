@@ -131,7 +131,7 @@ using DuneCBlas :: dscal;
 	{
 		IterationInfo dummy;
 	  // call multOEM of the matrix
-	  m.multOEM(x,ret,dummy );
+	  m.multOEM(x,ret );
 	}
 
 #else
@@ -834,18 +834,9 @@ private:
       int size = arg.space().size();
       if(op.hasPreconditionMatrix())
       {
-		if( !op.preconditionMatrix().rightPrecondition() )
-		{
-			DiscreteFunctionImp precond_arg( "precond_arg", arg.space() );
-			op.preconditionMatrix().precondition( arg.leakPointer(), precond_arg.leakPointer() );
-			return StokesOEMSolver::gmres(arg.space().grid().comm(),
-					  size,op.systemMatrix(),op.preconditionMatrix(),
-					  precond_arg.leakPointer(),dest.leakPointer(),eps,verbose );
-		}
-		else
-			return StokesOEMSolver::gmres(arg.space().grid().comm(),
-					  size,op.systemMatrix(),op.preconditionMatrix(),
-					  arg.leakPointer(),dest.leakPointer(),eps,verbose );
+		return StokesOEMSolver::gmres(arg.space().grid().comm(),
+				  inner, size,op.systemMatrix(),op.preconditionMatrix(),
+				  arg.leakPointer(),dest.leakPointer(),eps,verbose );
       }
       // in parallel case we need special treatment, if no preconditoner exist
       else if( arg.space().grid().comm().size() > 1 )

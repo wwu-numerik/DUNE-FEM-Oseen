@@ -45,41 +45,43 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 	class PreconditionMatrix : public PreconditionMatrixBaseType {
 		const ThisType& a_operator_;
 		DiscreteVelocityFunctionType precondition_diagonal_;
-		typename YMatType::MatrixType precondition_matrix_invers;
-		PreconditionMatrixBaseType precondition_matrix_invers2;
 
 	public:
 		PreconditionMatrix( const ThisType& a_operator)
 			: PreconditionMatrixBaseType( a_operator.space_, a_operator.space_ ),
 			a_operator_( a_operator ),
-			  precondition_diagonal_( "diag1", a_operator_.space_ ),
-			  precondition_matrix_invers( a_operator_.y_mat_.cols(), a_operator_.y_mat_.rows(), 10 ),
-			  precondition_matrix_invers2( a_operator.space_, a_operator.space_  )
+			precondition_diagonal_( "diag1", a_operator_.space_ )
 		{
 			a_operator_.x_mat_.getDiag( a_operator_.m_mat_, a_operator_.w_mat_, precondition_diagonal_);
 			precondition_diagonal_ *= -1;
 			a_operator_.y_mat_.addDiag( precondition_diagonal_ );
 			a_operator_.o_mat_.addDiag( precondition_diagonal_ );
 
-			DiscreteVelocityFunctionType precondition_diagonal_inv( "diag_inv", a_operator_.space_ );
-			precondition_diagonal_inv.assign( precondition_diagonal_ );
-			Stuff::invertFunctionDofs( precondition_diagonal_inv );
-			setMatrixDiag( precondition_matrix_invers, precondition_diagonal_inv);
+			precondition_diagonal_ *= -1;
+			Stuff::invertFunctionDofs( precondition_diagonal_ );
 			setMatrixDiag( PreconditionMatrixBaseType::matrix(), precondition_diagonal_ );
+		}
+
+#ifdef USE_BFG_CG_SCHEME
+		template <class VECtype>
+		void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& info ) const
+		{
+			multOEM(x,ret);
+		}
+#endif
+		template <class VecType>
+		void multOEM( const VecType* tmp, VecType* dest ) const
+		{
+			precondition(tmp,dest);
 		}
 
 		template <class VecType>
 		void precondition( const VecType* tmp, VecType* dest ) const
 		{
-			if ( rightPrecondition() )
-				precondition_matrix_invers2.multOEM( tmp, dest );
-			else
-				PreconditionMatrixBaseType::multOEM( tmp, dest );
+			PreconditionMatrixBaseType::matrix().multOEM( tmp, dest );
 		}
-		bool rightPrecondition() const
-		{
-			return Parameters().getParam( "rightPrecond", false );
-		}
+
+		bool rightPrecondition() const { return false; }
 	};
 
     public:
