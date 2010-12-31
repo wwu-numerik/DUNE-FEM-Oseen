@@ -343,10 +343,15 @@ class StokesPass
 							OmatrixTypeIntegratorType,
 							ZmatrixTypeIntegratorType,
 							EmatrixTypeIntegratorType,
-							RmatrixTypeIntegratorType >
-				MatrixIntegratorTuple;
-			Stokes::Integrators::Coordinator< Traits, MatrixIntegratorTuple >
-					matrix_coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
+							RmatrixTypeIntegratorType,
+							H1_IntegratorType,
+							H2_IntegratorType,
+							H2_O_IntegratorType,
+							H3_IntegratorType >
+				IntegratorTuple;
+
+			Stokes::Integrators::Coordinator< Traits, IntegratorTuple >
+					coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
 			MInversMatrixIntegratorType m_integrator( MInversMatrix );
 			WmatrixTypeIntegratorType	w_integrator( Wmatrix );
 			XmatrixTypeIntegratorType	x_integrator( Xmatrix );
@@ -355,23 +360,15 @@ class StokesPass
 			ZmatrixTypeIntegratorType	z_integrator( Zmatrix );
 			EmatrixTypeIntegratorType	e_integrator( Ematrix );
 			RmatrixTypeIntegratorType	r_integrator( Rmatrix );
-			MatrixIntegratorTuple matrix_tuple( m_integrator, w_integrator, x_integrator, y_integrator,
-								  o_integrator, z_integrator, e_integrator, r_integrator );
-			matrix_coordinator.apply( matrix_tuple );
-
-			typedef Tuple<	H1_IntegratorType,
-							H2_IntegratorType,
-							H2_O_IntegratorType,
-							H3_IntegratorType >
-				RhsIntegratorTuple;
-			Stokes::Integrators::Coordinator< Traits, RhsIntegratorTuple >
-					rhs_coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
 			H1_IntegratorType			h1_integrator( H1rhs );
 			H2_IntegratorType			h2_integrator( H2rhs );
 			H2_O_IntegratorType			h2_o_integrator( H2_O_rhs, beta_ );
 			H3_IntegratorType			h3_integrator( H3rhs );
-			RhsIntegratorTuple rhs_tuple( h1_integrator, h2_integrator, h2_o_integrator, h3_integrator );
-			rhs_coordinator.apply( rhs_tuple );
+
+			IntegratorTuple tuple(	m_integrator, w_integrator, x_integrator, y_integrator,
+									o_integrator, z_integrator, e_integrator, r_integrator,
+									h1_integrator, h2_integrator,h2_o_integrator, h3_integrator );
+			coordinator.apply( tuple );
 
 //            // do the matlab logging stuff
 			if ( Parameters().getParam( "save_matrices", false ) ) {
