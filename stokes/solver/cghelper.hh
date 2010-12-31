@@ -44,43 +44,38 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 
 	class PreconditionMatrix : public PreconditionMatrixBaseType {
 		const ThisType& a_operator_;
-		DiscreteVelocityFunctionType precondition_diagonal_;
 
-	public:
-		PreconditionMatrix( const ThisType& a_operator)
-			: PreconditionMatrixBaseType( a_operator.space_, a_operator.space_ ),
-			a_operator_( a_operator ),
-			precondition_diagonal_( "diag1", a_operator_.space_ )
-		{
-			a_operator_.x_mat_.getDiag( a_operator_.m_mat_, a_operator_.w_mat_, precondition_diagonal_);
-			precondition_diagonal_ *= -1;
-			a_operator_.y_mat_.addDiag( precondition_diagonal_ );
-			a_operator_.o_mat_.addDiag( precondition_diagonal_ );
+		public:
+			PreconditionMatrix( const ThisType& a_operator)
+				: PreconditionMatrixBaseType( a_operator.space_, a_operator.space_ ),
+				a_operator_( a_operator )
+			{
+				DiscreteVelocityFunctionType precondition_diagonal( "diag1", a_operator_.space_ );
+				a_operator_.getDiag( precondition_diagonal );
+				Stuff::invertFunctionDofs( precondition_diagonal );
+				setMatrixDiag( PreconditionMatrixBaseType::matrix(), precondition_diagonal );
+			}
 
-			Stuff::invertFunctionDofs( precondition_diagonal_ );
-			setMatrixDiag( PreconditionMatrixBaseType::matrix(), precondition_diagonal_ );
-		}
+	#ifdef USE_BFG_CG_SCHEME
+			template <class VECtype>
+			void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& info ) const
+			{
+				multOEM(x,ret);
+			}
+	#endif
+			template <class VecType>
+			void multOEM( const VecType* tmp, VecType* dest ) const
+			{
+				precondition(tmp,dest);
+			}
 
-#ifdef USE_BFG_CG_SCHEME
-		template <class VECtype>
-		void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& info ) const
-		{
-			multOEM(x,ret);
-		}
-#endif
-		template <class VecType>
-		void multOEM( const VecType* tmp, VecType* dest ) const
-		{
-			precondition(tmp,dest);
-		}
+			template <class VecType>
+			void precondition( const VecType* tmp, VecType* dest ) const
+			{
+				PreconditionMatrixBaseType::matrix().multOEM( tmp, dest );
+			}
 
-		template <class VecType>
-		void precondition( const VecType* tmp, VecType* dest ) const
-		{
-			PreconditionMatrixBaseType::matrix().multOEM( tmp, dest );
-		}
-
-		bool rightPrecondition() const { return false; }
+			bool rightPrecondition() const { return false; }
 	};
 
     public:
@@ -155,6 +150,16 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
         {
 			return Parameters().getParam( "innerPrecond", false );
         }
+
+		//! return diagonal entries of this matrix
+		template <class DiscFuncType>
+		void getDiag(DiscFuncType &precondition_diagonal_) const
+		{
+			x_mat_.getDiag( m_mat_, w_mat_, precondition_diagonal_);
+			precondition_diagonal_ *= -1;
+			y_mat_.addDiag( precondition_diagonal_ );
+			o_mat_.addDiag( precondition_diagonal_ );
+		}
 
 	protected:
         const WMatType& w_mat_;
