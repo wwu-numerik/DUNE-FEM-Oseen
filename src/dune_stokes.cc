@@ -58,7 +58,6 @@
 
 #include <dune/fem/solver/oemsolver/oemsolver.hh>
 #include <dune/fem/space/dgspace.hh>
-#include <dune/fem/space/combinedspace.hh>
 #include <dune/fem/space/dgspace/dgadaptiveleafgridpart.hh>
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction

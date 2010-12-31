@@ -3,7 +3,6 @@
 
 #include <dune/stuff/grid.hh>
 #include <dune/stuff/misc.hh>
-#include <dune/fem/misc/femtuples.hh>
 
 namespace Dune {
 namespace Stokes {
