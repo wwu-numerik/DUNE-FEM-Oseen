@@ -108,9 +108,6 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret) const
         {
-            sig_tmp1.clear();
-            sig_tmp2.clear();
-
             w_mat_.multOEM( x, sig_tmp1.leakPointer() );
             m_mat_.apply( sig_tmp1, sig_tmp2 );//Stuff:DiagmUlt
 
