@@ -41,36 +41,27 @@ namespace Integrators {
 						localZmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
 				// (Z)_{i,j} += -\int_{T}q_{j}(\nabla\cdot v_{i})dx // Z's volume integral
 				//                                                  // see also "Z's entitity surface integral", "Z's neighbour surface integral" and "Z's boundary integral" below
-				for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
+				for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++ quad ) {
+					const ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
+					// get the integration factor
+					const double elementVolume = info.geometry.integrationElement( x );
+					// get the quadrature weight
+					const double integrationWeight = info.volumeQuadratureElement.weight( quad );
+					// compute q_{j}\cdot(\nabla\cdot v_i)
+					PressureRangeType q_j( 0.0 );
 					for ( int j = 0; j < info.numPressureBaseFunctionsElement; ++j ) {
-						double Z_i_j = 0.0;
-						// sum over all quadratur points
-						for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++ quad ) {
-							// get x
-							const ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
-							// get the integration factor
-							const double elementVolume = info.geometry.integrationElement( x );
-							// get the quadrature weight
-							const double integrationWeight = info.volumeQuadratureElement.weight( quad );
-							// compute q_{j}\cdot(\nabla\cdot v_i)
-							PressureRangeType q_j( 0.0 );
-							info.pressure_basefunction_set_element.evaluate( j, x, q_j );
+						info.pressure_basefunction_set_element.evaluate( j, x, q_j );
+						for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
 							const double divergence_of_v_i_times_q_j =
 									info.velocity_basefunction_set_element.evaluateGradientSingle( i, info.entity, x,
 																								  preparePressureRangeTypeForVelocityDivergence<Traits>( q_j ) );
-							Z_i_j += -1.0
+							const double Z_i_j = -1.0
 								* elementVolume
 								* integrationWeight
 								* info.pressure_gradient_scaling
 								* divergence_of_v_i_times_q_j;
-						} // done sum over all quadrature points
-						// if small, should be zero
-						if ( fabs( Z_i_j ) < info.eps ) {
-							Z_i_j = 0.0;
-						}
-						else
-							// add to matrix
 							localZmatrixElement.add( i, j, Z_i_j );
+						}
 					}
 				} // done computing Z's volume integral
 			}
