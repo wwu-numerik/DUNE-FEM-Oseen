@@ -108,8 +108,14 @@ public:
   }
 };
 
-// use cblas implementations
-using namespace DuneCBlas;
+// use cblas implementations 
+using namespace DuneCBlas;  
+
+using DuneCBlas :: daxpy;
+using DuneCBlas :: dcopy;
+using DuneCBlas :: ddot;
+using DuneCBlas :: dnrm2;
+using DuneCBlas :: dscal;
 
 //! this method is called from all solvers and is only a wrapper
 //! this method is mainly from SparseRowMatrix
@@ -119,6 +125,13 @@ using namespace DuneCBlas;
 	{
 	  // call multOEM of the matrix
 	  m.multOEM(x,ret, info );
+	}
+	template <class MatrixImp, class VectorType>
+	void mult(const MatrixImp & m, const VectorType * x, VectorType * ret )
+	{
+		IterationInfo dummy;
+	  // call multOEM of the matrix
+	  m.multOEM(x,ret );
 	}
 
 #else
@@ -133,7 +146,13 @@ using namespace DuneCBlas;
 //! mult method when given pre conditioning matrix
 template <class Matrix , class PC_Matrix , bool use_pc >
 struct Mult
-{
+{  
+	static inline double ddot( const Matrix& A,
+                             const double *x, 
+                             const double *y)
+  {
+    return A.ddotOEM(x,y);
+  }
 #ifdef USE_BFG_CG_SCHEME
   typedef void mult_t(const Matrix &A,
                       const PC_Matrix & C,
@@ -240,6 +259,12 @@ struct Mult
 template <class Matrix>
 struct Mult<Matrix,Matrix,false>
 {
+	static inline double ddot( const Matrix& A,
+							 const double *x,
+							 const double *y)
+  {
+	return A.ddotOEM(x,y);
+  }
 #ifdef USE_BFG_CG_SCHEME
   typedef void mult_t(const Matrix &A,
                       const Matrix &C,
@@ -267,7 +292,7 @@ struct Mult<Matrix,Matrix,false>
 		IterationInfo dummy;
 		mult(A,arg,dest,dummy);
 	#else
-		mult(A,arg,dest);
+		StokesOEMSolver::mult(A,arg,dest);
 	#endif
 
     // first mult like right precon
@@ -302,7 +327,7 @@ struct Mult<Matrix,Matrix,false>
     assert( &A == &C );
 
     // call mult of Matrix A
-    mult(A,arg,dest);
+	StokesOEMSolver::mult(A,arg,dest);
   }
 #endif
 
@@ -427,10 +452,19 @@ private:
 
       if(op.hasPreconditionMatrix())
       {
-		return StokesOEMSolver::cghs(arg.space().grid().comm(),
-                   size,op.systemMatrix(),op.preconditionMatrix(),
-                   arg.leakPointer(),dest.leakPointer(),eps,verbose );
-      }
+		  if( !op.preconditionMatrix().rightPrecondition() )
+		  {
+			  DiscreteFunctionImp precond_arg( "precond_arg", arg.space() );
+			  op.preconditionMatrix().precondition( arg.leakPointer(), precond_arg.leakPointer() );
+			  return StokesOEMSolver::cghs(arg.space().grid().comm(),
+						size,op.systemMatrix(),op.preconditionMatrix(),
+						precond_arg.leakPointer(),dest.leakPointer(),eps,verbose );
+		  }
+		  else
+			  return StokesOEMSolver::cghs(arg.space().grid().comm(),
+						size,op.systemMatrix(),op.preconditionMatrix(),
+						arg.leakPointer(),dest.leakPointer(),eps,verbose );
+	  }
       else
       {
 		return StokesOEMSolver::cghs(arg.space().grid().comm(),
@@ -577,8 +611,8 @@ private:
       if(op.hasPreconditionMatrix())
       {
 		return StokesOEMSolver::bicgstab(arg.space().grid().comm(),
-                  size,op.systemMatrix(),op.preconditionMatrix(),
-                  arg.leakPointer(),dest.leakPointer(),eps,verbose );
+				  size,op.systemMatrix(),op.preconditionMatrix(),
+				  arg.leakPointer(),dest.leakPointer(),eps,verbose );
       }
       else
       {
@@ -801,8 +835,8 @@ private:
       if(op.hasPreconditionMatrix())
       {
 		return StokesOEMSolver::gmres(arg.space().grid().comm(),
-                 inner,size,op.systemMatrix(),op.preconditionMatrix(),
-                 arg.leakPointer(),dest.leakPointer(),eps,verbose);
+				  inner, size,op.systemMatrix(),op.preconditionMatrix(),
+				  arg.leakPointer(),dest.leakPointer(),eps,verbose );
       }
       // in parallel case we need special treatment, if no preconditoner exist
       else if( arg.space().grid().comm().size() > 1 )

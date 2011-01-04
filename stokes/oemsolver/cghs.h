@@ -78,47 +78,41 @@ cghs_algo2( const CommunicatorType & comm,
 
   int its=0;
   double t, gam;
-  // send and recive buffer for rho,tau and sig
-  double commVal[3] = { 0.0,0.0,0.0} ;
-  double * commBuff = (double *) &commVal[0];
+  double rho, sig, tau;
+  
+  double err= eps * eps * MultType :: ddot(A,b,b);
 
-  double & rho = commVal[0];
-  double & sig = commVal[1];
-  double & tau = commVal[2];
-
-  double bb = ddot(N,b,1,b,1);
-  double err=eps*eps* comm.sum( bb );
-
-  // apply first multiplication
-  MultType :: first_mult(A,C,x,g,tmp);
-
+#ifdef USE_BFG_CG_SCHEME
+  IterationInfo info;
+#endif
+  // apply first multiplication 
+  #ifdef USE_BFG_CG_SCHEME
+	MultType :: mult_pc(A,C,x,g,tmp, info);
+#else
+	MultType :: mult_pc(A,C,x,g,tmp);
+#endif
+    
   daxpy(N,-1.,b,1,g,1);
   dscal(N,-1.,g,1);
   dcopy(N,g,1,r,1);
 
-  double gg = ddot(N,g,1,g,1);
-  double ddo = comm.sum( gg );
+  double gg = MultType :: ddot(A,g,g);
 
-  #ifdef USE_BFG_CG_SCHEME
-    IterationInfo info;
-  #endif
-  while ( ddo>err )
+  while ( gg >err )
   {
     // apply multiplication
 #ifdef USE_BFG_CG_SCHEME
         info.first = its+1;
-        info.second = std::pair<double,double>(eps,sqrt(ddo));
+		info.second = std::pair<double,double>(eps,sqrt(gg));
         MultType :: mult_pc(A,C,r,p,tmp,info);
 #else
         MultType :: mult_pc(A,C,r,p,tmp);
 #endif
 
-    rho=ddot(N,p,1,p,1);
-    sig=ddot(N,r,1,p,1);
-    tau=ddot(N,g,1,r,1);
-
-    comm.sum ( commBuff , 3 );
-
+    rho = MultType :: ddot(A,p,p);
+    sig = MultType :: ddot(A,r,p);
+    tau = MultType :: ddot(A,g,r);
+    
     t=tau/sig;
     daxpy(N,t,r,1,x,1);
 
@@ -126,13 +120,12 @@ cghs_algo2( const CommunicatorType & comm,
     gam=(t*t*rho-tau)/tau;
     dscal(N,gam,r,1);
     daxpy(N,1.,g,1,r,1);
-
-    gg = ddot(N,g,1,g,1);
-    ddo = comm.sum( gg );
-
+    
+	gg = MultType :: ddot(A,g,g);
+    
     if ( detailed && (comm.rank() == 0) )
     {
-      std::cout<<"cghs "<<its<<"\t"<<sqrt(ddo)<< std::endl;
+      std::cout<<"cghs "<<its<<"\t"<<sqrt(gg)<< std::endl;
     }
     ++its;
   }

@@ -1,6 +1,9 @@
 #ifndef DUNE_STOKES_SOLVER_SCHURKOMPLEMENT_HH
 #define DUNE_STOKES_SOLVER_SCHURKOMPLEMENT_HH
 
+#include <dune/stuff/matrix.hh>
+#include <dune/stuff/preconditioning.hh>
+
 namespace Dune {
 
 /** \brief Operator wrapping Matrix vector multiplication for
@@ -13,22 +16,78 @@ template <  class A_SolverType,
             class MmatrixType,
             class DiscreteVelocityFunctionType ,
             class DiscretePressureFunctionType>
-class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
+class SchurkomplementOperator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterface
 {
     public:
+		typedef SchurkomplementOperator <   A_SolverType,
+											B_t_matrixType,
+											CmatrixType,
+											BmatrixType,
+											MmatrixType,
+											DiscreteVelocityFunctionType,
+											DiscretePressureFunctionType>
+				ThisType;
+			typedef typename A_SolverType::A_OperatorType::PreconditionMatrix
+				A_PreconditionMatrix;
+		typedef IdentityMatrixObject<typename CmatrixType::WrappedMatrixObjectType>
+			PreconditionMatrixBaseType;
+		friend class Conversion<ThisType,OEMSolver::PreconditionInterface>;
 
-        typedef SchurkomplementOperator <   A_SolverType,
-                                            B_t_matrixType,
-                                            CmatrixType,
-                                            BmatrixType,
-                                            MmatrixType,
-                                            DiscreteVelocityFunctionType,
-                                            DiscretePressureFunctionType>
-                ThisType;
+		class PreconditionOperator {
+			const ThisType& sk_op_;
+			const A_PreconditionMatrix& a_precond_;
+			mutable DiscreteVelocityFunctionType velo_tmp;
+			mutable DiscreteVelocityFunctionType velo_tmp2;
+			const typename BmatrixType::WrappedMatrixObjectType::RangeSpaceType& pressure_space_;
+
+			public:
+				PreconditionOperator( const A_SolverType& a_solver,
+								   const ThisType& sk_op,
+								   const typename B_t_matrixType::WrappedMatrixObjectType::RangeSpaceType& velocity_space,
+								   const typename BmatrixType::WrappedMatrixObjectType::RangeSpaceType& pressure_space)
+					: sk_op_( sk_op),
+					a_precond_( a_solver.getOperator().preconditionMatrix() ),
+					velo_tmp( "sdeio", velocity_space ),
+					velo_tmp2( "2sdeio", velocity_space ),
+					pressure_space_(pressure_space)
+				{}
+
+#ifdef USE_BFG_CG_SCHEME
+				template <class VECtype>
+				void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& ) const
+				{
+					multOEM(x,ret);
+				}
+#endif
+				template <class VECtype>
+				void multOEM(const VECtype *x, VECtype * ret) const
+				{
+					sk_op_.b_mat_.matrix().multOEM( x,velo_tmp.leakPointer());
+					a_precond_.apply( velo_tmp, velo_tmp2);
+					sk_op_.b_t_mat_.matrix().multOEM( velo_tmp2.leakPointer(),ret);
+					sk_op_.c_mat_.matrix().multOEMAdd( x, ret);
+				}
+
+				PreconditionOperator& systemMatrix () { return *this; }
+
+				double ddotOEM(const double*v, const double* w) const
+				{
+					DiscretePressureFunctionType V( "ddot_V2", pressure_space_, v );
+					DiscretePressureFunctionType W( "ddot_W1", pressure_space_, w );
+					return V.scalarProductDofs( W );
+				}
+		};
+
+		typedef Stuff::OperatorBasedPreconditioner< PreconditionOperator,
+													SOLVER_NAMESPACE::OUTER_CG_SOLVERTYPE,
+													DiscretePressureFunctionType>
+			PreconditionMatrix;
+
 #ifdef USE_BFG_CG_SCHEME
         typedef typename A_SolverType::ReturnValueType
                 ReturnValueType;
 #endif
+
         SchurkomplementOperator( A_SolverType& a_solver,
                                 const B_t_matrixType& b_t_mat,
                                 const CmatrixType& c_mat,
@@ -46,15 +105,14 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
             do_bfg( Parameters().getParam( "do-bfg", true ) ),
             total_inner_iterations( 0 ),
 			pressure_space_(pressure_space),
-			precond_( c_mat_.rows() )
-        {
-			precond_.scale( 4 );
-		}
+			precond_operator_( a_solver, *this, velocity_space, pressure_space),
+			precond_( precond_operator_, pressure_space_ )
+		{}
 
         double ddotOEM(const double*v, const double* w) const
 		{
-	        DiscretePressureFunctionType V( "ddot V", pressure_space_, v );
-	        DiscretePressureFunctionType W( "ddot W", pressure_space_, w );
+			DiscretePressureFunctionType V( "ddot_V2", pressure_space_, v );
+			DiscretePressureFunctionType W( "ddot_W1", pressure_space_, w );
 	        return V.scalarProductDofs( W );
 		}
 
@@ -62,7 +120,7 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
         void multOEM(const VECtype *x, VECtype * ret) const
         {
             Logging::LogStream& info = Logger().Info();
-            const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
+			const bool solverVerbosity = true;// Parameters().getParam( "solverVerbosity", 0 );
             tmp1.clear();
 
 			// ret = ( ( B_t * ( A^-1 * ( B * x ) ) ) + ( C * x ) )
@@ -109,14 +167,14 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
             return *this;
         }
 
-		IdentityMatrix<typename CmatrixType::RealMatrixType>& preconditionMatrix()
+		const PreconditionMatrix& preconditionMatrix() const
         {
             return precond_;
         }
 
         bool hasPreconditionMatrix () const
         {
-            return false;
+			return Parameters().getParam( "outerPrecond", false );
         }
 
         bool rightPrecondition() const
@@ -124,14 +182,7 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
             return false;
         }
 
-        template <class VecType>
-        void precondition( const VecType* tmp, VecType* dest ) const
-        {
-			assert( false );
-			precond_.multOEM( tmp, dest );
-        }
-
-        long getTotalInnerIterations()
+		long getTotalInnerIterations() const
         {
             return total_inner_iterations;
         }
@@ -147,7 +198,8 @@ class SchurkomplementOperator //: public OEMSolver::PreconditionInterface
         bool do_bfg;
         mutable long total_inner_iterations;
 		const typename DiscretePressureFunctionType::DiscreteFunctionSpaceType& pressure_space_;
-		IdentityMatrix<typename CmatrixType::RealMatrixType> precond_;
+		PreconditionOperator precond_operator_;
+		PreconditionMatrix precond_;
 };
 
 } //end namespace Dune

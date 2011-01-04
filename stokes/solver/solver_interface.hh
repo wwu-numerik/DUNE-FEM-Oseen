@@ -11,16 +11,18 @@
 #endif
 
 
-#ifdef USE_BFG_CG_SCHEME
+#if defined(USE_BFG_CG_SCHEME) || defined(FORCE_CUSTOM_SOLVER)
 	#include <utility>
 	//< iteration no , < absLimit, residuum > >
 	typedef std::pair<int,std::pair<double,double> >
 		IterationInfo;
 	#include <dune/stokes/oemsolver/oemsolver.hh>
 	#define SOLVER_NAMESPACE DuneStokes
+	#define SOLVER_INTERFACE_NAMESPACE StokesOEMSolver
 #else
 	#include <dune/fem/solver/oemsolver/oemsolver.hh>
 	#define SOLVER_NAMESPACE Dune
+	#define SOLVER_INTERFACE_NAMESPACE OEMSolver
 #endif
 
 #include <dune/fem/function/common/discretefunction.hh>
@@ -60,6 +62,8 @@ class MatrixWrapper : boost::noncopyable {
 			MatrixType;
 		typedef typename MatrixObjectType::MatrixType
 			RealMatrixType;
+		typedef MatrixObjectType
+			WrappedMatrixObjectType;
 
 		MatrixWrapper( const MatrixObjectType& matrix_object )
 			:matrix_object_( matrix_object ),
@@ -78,17 +82,23 @@ class MatrixWrapper : boost::noncopyable {
 			matrix_object_.apply( f, ret );
 		}
 		//! return diagonal of (this * A * B)
-		template <class DiscrecteFunctionType>
-		void getDiag(const MatrixType& A, const MatrixType& B, DiscrecteFunctionType& rhs) const
+		template <class DiscrecteFunctionType, class OtherMatrixType_A, class OtherMatrixType_B>
+		void getDiag(const OtherMatrixType_A& A, const OtherMatrixType_B& B, DiscrecteFunctionType& rhs) const
 		{
-			matrix_object_.matrix().getDiag( A, B, rhs );
+			matrix_object_.matrix().getDiag( A.matrix(), B.matrix(), rhs );
 		}
 
 		//! return diagonal of (this * A)
-		template <class DiscrecteFunctionType>
-		void getDiag(const MatrixType& A, DiscrecteFunctionType& rhs) const
+		template <class DiscrecteFunctionType, class OtherMatrixType_A>
+		void getDiag(const OtherMatrixType_A& A, DiscrecteFunctionType& rhs) const
 		{
 			matrix_object_.matrix().getDiag( A, rhs );
+		}
+
+		template <class DiscrecteFunctionType>
+		void addDiag(DiscrecteFunctionType& rhs) const
+		{
+			matrix_object_.matrix().addDiag( rhs );
 		}
 
 		//! same as apply A * x = ret, used by OEM-Solvers
@@ -124,6 +134,11 @@ class MatrixWrapper : boost::noncopyable {
 		{
 			cumulative_scale_factor_ *= factor;
 			matrix_object_.matrix().scale( factor );
+		}
+
+		const MatrixType& matrix() const
+		{
+			return matrix_object_.matrix();
 		}
 
 	private:
