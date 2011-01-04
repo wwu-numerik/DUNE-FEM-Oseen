@@ -39,12 +39,19 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
+				applyVolume_alt1( info );
+			}
+
+			template < class InfoContainerVolumeType >
+			void applyVolume_alt1( const InfoContainerVolumeType& info )
+			{
 				typename MatrixObjectType::LocalMatrixType
 						localOmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
+						beta_.localFunction( info.entity );
 				for ( int i = 0; (i < info.numVelocityBaseFunctionsElement ) ; ++i ) {
 					for ( int j = 0; j < info.numVelocityBaseFunctionsElement; ++j ) {
 						double O_i_j = 0.0;
-						double O_i_j_d = 0.0;
 						// sum over all quadrature points
 						for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++quad ) {
 							// get x
@@ -59,42 +66,13 @@ namespace Integrators {
 							VelocityRangeType v_j( 0.0 );
 							info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 							VelocityRangeType beta_eval;
-							beta_.localFunction( info.entity ).evaluate( x, beta_eval );
+							beta_lf.evaluate( x, beta_eval );
 
 							VelocityJacobianRangeType v_i_jacobian;
 							info.velocity_basefunction_set_element.jacobian( i, x, v_i_jacobian );
 							VelocityJacobianRangeType v_j_jacobian;
 							info.velocity_basefunction_set_element.jacobian( j, x, v_j_jacobian );
-							VelocityJacobianRangeType beta_jacobian;
-							const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
-									beta_.localFunction( info.entity );
-							beta_lf.jacobian( x, beta_jacobian );
 
-
-							VelocityRangeType divergence_of_v_i_tensor_beta;
-							for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
-								double row_result = 0;
-								for ( size_t m = 0; m < beta_eval.dim(); ++m ) {
-									row_result += beta_jacobian[l][m] * v_i[l] + v_i_jacobian[l][m] * beta_eval[l];
-								}
-								divergence_of_v_i_tensor_beta[l] = row_result;
-							}
-							for ( size_t l = 0; l < beta_eval.dim(); ++l ) {
-								assert( !isnan(divergence_of_v_i_tensor_beta[l]) );
-							}
-
-						   divergence_of_v_i_tensor_beta[0] = beta_eval[0] * v_i_jacobian[0][0]
-								   + v_i[0] * beta_jacobian[0][0]
-								   + beta_eval[0] * v_i_jacobian[1][1]
-								   + v_i[1] * beta_jacobian[0][1];
-						   divergence_of_v_i_tensor_beta[1] = beta_eval[1] * v_i_jacobian[0][0]
-								   + v_i[0] * beta_jacobian[1][0]
-								   + beta_eval[1] * v_i_jacobian[1][1]
-								   + v_i[1] * beta_jacobian[1][1];
-
-
-							const double u_h_times_divergence_of_beta_v_j_tensor_beta =
-									v_j * divergence_of_v_i_tensor_beta;
 							VelocityJacobianRangeType v_i_tensor_beta
 									= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( v_i, beta_eval );
 							const double ret = Stuff::colonProduct( v_i_tensor_beta, v_j_jacobian );
@@ -102,23 +80,73 @@ namespace Integrators {
 							O_i_j -= elementVolume
 								* integrationWeight
 								* info.convection_scaling
-//								* u_h_times_divergence_of_beta_v_j_tensor_beta;
-									* ret;
-							O_i_j_d-= elementVolume
-									* integrationWeight
-									* info.convection_scaling
-									* u_h_times_divergence_of_beta_v_j_tensor_beta;
-//										* ret;
-
+								* ret;
 						}
 						if ( fabs( O_i_j ) < info.eps ) {
 							O_i_j = 0.0;
 						}
 						else {
-							// add to matrix
 							localOmatrixElement.add( i, j, O_i_j );
-//							double diff = O_i_j- O_i_j_d;
-//							std::cout << boost::format( "DIFF %e\n") % diff;
+						}
+					}
+				}
+			}
+
+			template < class InfoContainerVolumeType >
+			void applyVolume_alt2( const InfoContainerVolumeType& info )
+			{
+				typename MatrixObjectType::LocalMatrixType
+						localOmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
+						beta_.localFunction( info.entity );
+				for ( int i = 0; (i < info.numVelocityBaseFunctionsElement ) ; ++i ) {
+					for ( int j = 0; j < info.numVelocityBaseFunctionsElement; ++j ) {
+						double O_i_j = 0.0;
+						// sum over all quadrature points
+						for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++quad ) {
+							// get x
+							const ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
+							// get the integration factor
+							const double elementVolume = info.geometry.integrationElement( x );
+							// get the quadrature weight
+							const double integrationWeight = info.volumeQuadratureElement.weight( quad );
+							//calc u_h * \nabla * (v \tensor \beta )
+							VelocityRangeType v_i( 0.0 );
+							info.velocity_basefunction_set_element.evaluate( i, x, v_i );
+							VelocityRangeType v_j( 0.0 );
+							info.velocity_basefunction_set_element.evaluate( j, x, v_j );
+							VelocityRangeType beta_eval;
+							beta_lf.evaluate( x, beta_eval );
+
+							VelocityJacobianRangeType v_i_jacobian;
+							info.velocity_basefunction_set_element.jacobian( i, x, v_i_jacobian );
+							VelocityJacobianRangeType beta_jacobian;
+							beta_lf.jacobian( x, beta_jacobian );
+							VelocityRangeType divergence_of_v_i_tensor_beta;
+
+							divergence_of_v_i_tensor_beta[0] = beta_eval[0] * v_i_jacobian[0][0]
+								   + v_i[0] * beta_jacobian[0][0]
+								   + beta_eval[0] * v_i_jacobian[1][1]
+								   + v_i[1] * beta_jacobian[0][1];
+							divergence_of_v_i_tensor_beta[1] = beta_eval[1] * v_i_jacobian[0][0]
+								   + v_i[0] * beta_jacobian[1][0]
+								   + beta_eval[1] * v_i_jacobian[1][1]
+								   + v_i[1] * beta_jacobian[1][1];
+
+
+							const double u_h_times_divergence_of_beta_v_j_tensor_beta =
+									v_j * divergence_of_v_i_tensor_beta;
+
+							O_i_j-= elementVolume
+									* integrationWeight
+									* info.convection_scaling
+									* u_h_times_divergence_of_beta_v_j_tensor_beta;
+						}
+						if ( fabs( O_i_j ) < info.eps ) {
+							O_i_j = 0.0;
+						}
+						else {
+							localOmatrixElement.add( i, j, O_i_j );
 						}
 					}
 				}
