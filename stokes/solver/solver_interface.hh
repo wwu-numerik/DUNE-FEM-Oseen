@@ -32,6 +32,7 @@
 #include <dune/stuff/parametercontainer.hh>
 #include <dune/stuff/printing.hh>
 #include <dune/stuff/misc.hh>
+#include <dune/stuff/matrix.hh>
 #include <dune/stuff/logging.hh>
 
 #include <cmath>
@@ -65,10 +66,12 @@ class MatrixWrapper : boost::noncopyable {
 		typedef MatrixObjectType
 			WrappedMatrixObjectType;
 
-		MatrixWrapper( const MatrixObjectType& matrix_object )
+		MatrixWrapper( const MatrixObjectType& matrix_object, std::string name )
 			:matrix_object_( matrix_object ),
 			cumulative_scale_factor_( 1.0 )
-		{}
+		{
+			Stuff::Matrix::printMemUsage( matrix_object_.matrix(), Logger().Dbg(), name );
+		}
 
 		~MatrixWrapper()
 		{
