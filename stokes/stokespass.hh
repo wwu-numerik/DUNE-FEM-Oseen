@@ -22,9 +22,17 @@
 template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
 struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
 	struct StencilType {
-		template <class T>
-		static int nonZerosEstimate( T& rangeSpace_ ) {
-			return 100;
+		static int nonZerosEstimate( const ColSpaceImp& rangeSpace ) {
+			return rangeSpace.maxNumLocalDofs() * 1.5f;
+		}
+	};
+};
+
+template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
+struct DiagonalMatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
+	struct StencilType {
+		static int nonZerosEstimate( const ColSpaceImp& ) {
+			return 1;
 		}
 	};
 };
@@ -176,7 +184,7 @@ class StokesPass
 				DiscreteSigmaFunctionSpaceType;
 			typedef SparseRowMatrixObject<  DiscreteSigmaFunctionSpaceType,
 											DiscreteSigmaFunctionSpaceType,
-											MatrixTraits<DiscreteSigmaFunctionSpaceType,DiscreteSigmaFunctionSpaceType> >
+											DiagonalMatrixTraits<DiscreteSigmaFunctionSpaceType,DiscreteSigmaFunctionSpaceType> >
                 MInversMatrixType;
 			typedef Stokes::Integrators::M< MInversMatrixType, Traits >
 				MInversMatrixIntegratorType;
