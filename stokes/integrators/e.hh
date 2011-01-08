@@ -184,12 +184,13 @@ namespace Integrators {
 			}
 
 			template < class InfoContainerFaceType >
-			void applyBoundaryFace( const InfoContainerFaceType& info )
-			{
-				typename MatrixObjectType::LocalMatrixType
-						localWmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
-			}
+			void applyBoundaryFace( const InfoContainerFaceType&  )
+			{}
+
+			static const std::string name;
 	};
+
+	template < class T, class R > const std::string E<T,R>::name = "E";
 
 } // end namespace Integrators
 } // end namespace Stokes

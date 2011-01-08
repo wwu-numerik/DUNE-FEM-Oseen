@@ -240,7 +240,10 @@ namespace Integrators {
 					} // done computing W's neighbour surface integral
 				} // done computing W's surface integrals
 			}
-	}; //end W integrator
+			static const std::string name;
+	};
+
+	template < class T, class R > const std::string W<T,R>::name = "W";
 
 } // end namespace Integrators
 } // end namespace Stokes

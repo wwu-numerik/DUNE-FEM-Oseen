@@ -212,7 +212,10 @@ namespace Integrators {
 					} // done computing Z's boundary integral
 //                        }
 			}
+			static const std::string name;
 	};
+
+	template < class T, class R > const std::string Z<T,R>::name = "Z";
 
 } // end namespace Integrators
 } // end namespace Stokes
