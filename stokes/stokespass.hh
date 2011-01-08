@@ -176,7 +176,7 @@ class StokesPass
 		void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer, const ExactSigmaType* sigma_exact ) const
         {
             // profiler information
-            profiler().StartTiming("Pass -- ASSEMBLE");
+			profiler().StartTiming("Pass_init");
 
             // matrices
             // M\in R^{M\times M}
@@ -287,7 +287,10 @@ class StokesPass
 				H3_IntegratorType;
             H3rhs.clear();
 
+		#ifndef NDEBUG
 			printInfo();
+		#endif
+			profiler().StopTiming("Pass_init");
 
 			//because of the 9-element limit in dune tuples i have to split the assembly in two...
 			typedef Tuple<	MInversMatrixIntegratorType,
@@ -324,6 +327,7 @@ class StokesPass
 									h1_integrator, h2_integrator,h2_o_integrator, h3_integrator );
 			coordinator.apply( tuple );
 
+		#ifndef NDEBUG
 //            // do the matlab logging stuff
 			if ( Parameters().getParam( "save_matrices", false ) ) {
 				Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
@@ -361,7 +365,7 @@ class StokesPass
 //                gw( f_E );
 //                gw( f_R );
             // do profiling
-            profiler().StopTiming("Pass -- ASSEMBLE");
+
 
 			if ( Parameters().getParam( "outputMatrixPlots", false ) ) {
                 Stuff::matrixToGnuplotFile( Ematrix.matrix(),       std::string( "mat_E.gnuplot")       );
@@ -372,8 +376,6 @@ class StokesPass
                 Stuff::matrixToGnuplotFile( Rmatrix.matrix(),       std::string( "mat_R.gnuplot")       );
                 Stuff::matrixToGnuplotFile( MInversMatrix.matrix(), std::string( "mat_M.gnuplot")   );
             }
-
-            profiler().StartTiming("Pass -- SOLVER");
 
 			if ( Parameters().getParam( "paranoid_checks", false ) )
 			{//paranoid checks
@@ -393,6 +395,7 @@ class StokesPass
 //				assert( areTransposed( Zmatrix.matrix(), Ematrix.matrix() ));
 //				Zmatrix.matrix().scale( -1 );
 			}
+		#endif
 
 			Logger().Info().Resume();
 			Logger().Info() << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
@@ -424,14 +427,13 @@ class StokesPass
 											Ymatrix, Omatrix, Ematrix, Rmatrix,
 											Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs, beta_ );
 
-            // do profiling
-            profiler().StopTiming("Pass -- SOLVER");
-
+		#ifndef NDEBUG
 			if ( Parameters().getParam( "save_matrices", false ) ) {
 				Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
 				Stuff::printDiscreteFunctionMatlabStyle( dest.discreteVelocity(), "u_computed", matlabLogStream );
 				Stuff::printDiscreteFunctionMatlabStyle( dest.discretePressure(), "p_computed", matlabLogStream );
 			}
+		#endif
         } // end of apply
 
         virtual void compute( const TotalArgumentType& /*arg*/, DestinationType& /*dest*/ ) const

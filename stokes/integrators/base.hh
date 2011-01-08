@@ -3,6 +3,7 @@
 
 #include <dune/stuff/grid.hh>
 #include <dune/stuff/misc.hh>
+#include <dune/stuff/profiler.hh>
 
 namespace Dune {
 namespace Stokes {
@@ -190,7 +191,6 @@ namespace Integrators {
 				//some integration logic depends on this
 				assert( InfoContainerFace::faceQuadratureElement.nop() == faceQuadratureNeighbour.nop() );
 			}
-
 		};
 
 		struct ApplyVolume {
@@ -249,6 +249,7 @@ namespace Integrators {
 
 		void apply ( IntegratorTuple& integrator_tuple ) const
 		{
+			Profiler::ScopedTiming assembler_time("assembler");
 			typedef typename GridType::LeafGridView
 				GridView;
 			typedef typename GridView::template Codim<0>::
