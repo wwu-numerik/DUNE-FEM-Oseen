@@ -197,6 +197,7 @@ namespace Integrators {
 			template < class IntegratorType >
 			static void apply( IntegratorType& integrator, const InfoContainerVolume& info )
 			{
+				Profiler::ScopedTiming s(integrator.name);
 				integrator.applyVolume( info );
 			}
 		};
@@ -205,6 +206,7 @@ namespace Integrators {
 			template < class IntegratorType >
 			static void apply( IntegratorType& integrator, const InfoContainerInteriorFace& info )
 			{
+				Profiler::ScopedTiming s(integrator.name);
 				integrator.applyInteriorFace( info );
 			}
 		};
@@ -213,6 +215,7 @@ namespace Integrators {
 			template < class IntegratorType >
 			static void apply( IntegratorType& integrator, const InfoContainerFace& info )
 			{
+				Profiler::ScopedTiming s(integrator.name);
 				integrator.applyBoundaryFace( info );
 			}
 		};
