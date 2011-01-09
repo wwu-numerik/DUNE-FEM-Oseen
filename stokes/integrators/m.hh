@@ -38,8 +38,10 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
+				//using the proxy here would be potentially fatal because of the inversion
 				typename MatrixObjectType::LocalMatrixType
 						localMInversMatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+
 				// (M^{-1})_{i,j} = (\int_{T}\tau_{j}:\tau_{i}dx)^{-1} // Minvs' volume integral
 				for ( int i = 0; i < info.numSigmaBaseFunctionsElement; ++i ) {
 					for ( int j = 0; j < info.numSigmaBaseFunctionsElement; ++j ) {
