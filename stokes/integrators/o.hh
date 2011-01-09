@@ -2,6 +2,7 @@
 #define DUNE_STOKES_INTEGRATORS_O_HH
 
 #include <dune/stokes/integrators/base.hh>
+#include <dune/stuff/matrix.hh>
 
 namespace Dune {
 namespace Stokes {
@@ -26,7 +27,8 @@ namespace Integrators {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-
+		typedef Stuff::Matrix::LocalMatrixProxy<MatrixObjectType>
+			LocalMatrixProxyType;
 
 		MatrixObjectType& matrix_object_;
 		const BetaFunctionType& beta_;
@@ -45,8 +47,7 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume_alt1( const InfoContainerVolumeType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localOmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+				LocalMatrixProxyType localOmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
 						beta_.localFunction( info.entity );
 				for ( int i = 0; (i < info.numVelocityBaseFunctionsElement ) ; ++i ) {
@@ -82,12 +83,7 @@ namespace Integrators {
 								* info.convection_scaling
 								* ret;
 						}
-						if ( fabs( O_i_j ) < info.eps ) {
-							O_i_j = 0.0;
-						}
-						else {
-							localOmatrixElement.add( i, j, O_i_j );
-						}
+						localOmatrixElement.add( i, j, O_i_j );
 					}
 				}
 			}
