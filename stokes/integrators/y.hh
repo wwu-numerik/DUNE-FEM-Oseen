@@ -79,10 +79,8 @@ namespace Integrators {
 			template < class InfoContainerInteriorFaceType >
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localYmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
-				typename MatrixObjectType::LocalMatrixType
-						localYmatrixNeighbour = matrix_object_.localMatrix( info.neighbour, info.entity );
+				LocalMatrixProxyType localYmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localYmatrixNeighbour( matrix_object_, info.neighbour, info.entity, info.eps );
 				// (Y)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U{+}}(v{j})\cdot n_{t}ds // Y's element surface integral
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}ds // Y's neighbour surface integral
 				//                                                                                                         // see also "Y's boundary integral" below
@@ -112,13 +110,7 @@ namespace Integrators {
 									* integrationWeight
 									* v_i_times_v_j;
 							} // done sum over all quadrature points
-							// if small, should be zero
-							if ( fabs( Y_i_j ) < info.eps ) {
-								Y_i_j = 0.0;
-							}
-							else
-								// add to matrix
-								localYmatrixElement.add( i, j, Y_i_j );
+							localYmatrixElement.add( i, j, Y_i_j );
 						} // done computing Y's element surface integral
 						// compute Y's neighbour surface integral
 						for ( int i = 0; i < info.numVelocityBaseFunctionsNeighbour; ++i ) {
@@ -146,13 +138,7 @@ namespace Integrators {
 									* integrationWeight
 									* v_i_times_v_j;
 							} // done sum over all quadrature points
-							// if small, should be zero
-							if ( fabs( Y_i_j ) < info.eps ) {
-								Y_i_j = 0.0;
-							}
-							else
-								// add to matrix
-								localYmatrixNeighbour.add( i, j, Y_i_j );
+							localYmatrixNeighbour.add( i, j, Y_i_j );
 						} // done computing Y's neighbour surface integral
 					} // done computing Y's surface integrals
 //                        }
@@ -162,8 +148,7 @@ namespace Integrators {
 			template < class InfoContainerFaceType >
 			void applyBoundaryFace( const InfoContainerFaceType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localYmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+				LocalMatrixProxyType localYmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				// (Y)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U^{+}}(v_{j})\cdot n_{t}ds // Y's boundary integral
 				//                                                                                                           // see also "Y's element surface integral" and "Y's neighbour surface integral" above
 //                        if ( info.discrete_model.hasSigmaFlux() ) {
@@ -191,13 +176,7 @@ namespace Integrators {
 									* integrationWeight
 									* v_i_times_v_j;
 							} // done sum over all quadrature points
-							// if small, should be zero
-							if ( fabs( Y_i_j ) < info.eps ) {
-								Y_i_j = 0.0;
-							}
-							else
-								// add to matrix
-								localYmatrixElement.add( i, j, Y_i_j );
+							localYmatrixElement.add( i, j, Y_i_j );
 						}
 					} // done computing Y's boundary integral
 //                        }
