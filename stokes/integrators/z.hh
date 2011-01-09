@@ -70,10 +70,8 @@ namespace Integrators {
 			template < class InfoContainerInteriorFaceType >
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localZmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
-				typename MatrixObjectType::LocalMatrixType
-						localZmatrixNeighbour = matrix_object_.localMatrix( info.entity, info.neighbour );
+				LocalMatrixProxyType localZmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localZmatrixNeighbour( matrix_object_, info.entity, info.neighbour, info.eps );
 				// (Z)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's element surface integral
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{p}^{P^{-}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's neighbour surface integral
 				//                                                                                                  // see also "Z's boundary integral" below
@@ -109,13 +107,7 @@ namespace Integrators {
 									* info.pressure_gradient_scaling
 									* q_j_times_v_i_times_normal;
 							} // done sum over all quadrature points
-							// if small, should be zero
-							if ( fabs( Z_i_j ) < info.eps ) {
-								Z_i_j = 0.0;
-							}
-							else
-								// add to matrix
-								localZmatrixElement.add( i, j, Z_i_j );
+							localZmatrixElement.add( i, j, Z_i_j );
 						} // done computing Z's element surface integral
 						// compute Z's neighbour surface integral
 						for ( int i = 0; i < info.numVelocityBaseFunctionsNeighbour; ++i ) {
@@ -147,13 +139,7 @@ namespace Integrators {
 									* info.pressure_gradient_scaling
 									* q_j_times_v_i_times_normal;
 							} // done sum over all quadrature points
-							// if small, should be zero
-							if ( fabs( Z_i_j ) < info.eps ) {
-								Z_i_j = 0.0;
-							}
-							else
-								// add to matrix
-								localZmatrixNeighbour.add( i, j, Z_i_j );
+							localZmatrixNeighbour.add( i, j, Z_i_j );
 						} // done computing Z's neighbour surface integral
 					} // done computing Z's surface integrals
 				//}
@@ -162,8 +148,7 @@ namespace Integrators {
 			template < class InfoContainerFaceType >
 			void applyBoundaryFace( const InfoContainerFaceType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localZmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+				LocalMatrixProxyType localZmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				// (Z)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's boundary integral
 				//                                                                                                  // see also "Z's volume integral", "Z's element surface integral" and "Z's neighbour surface integral" above
 //                        if ( info.discrete_model.hasPressureFlux() ) {
@@ -193,13 +178,7 @@ namespace Integrators {
 									* info.pressure_gradient_scaling
 									* q_j_times_v_times_normal;
 							} // done sum over all quadrature points
-							// if small, should be zero
-							if ( fabs( Z_i_j ) < info.eps ) {
-								Z_i_j = 0.0;
-							}
-							else
-								// add to matrix
-								localZmatrixElement.add( i, j, Z_i_j );
+							localZmatrixElement.add( i, j, Z_i_j );
 						}
 					} // done computing Z's boundary integral
 //                        }
