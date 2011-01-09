@@ -42,10 +42,8 @@ namespace Integrators {
 			template < class InfoContainerInteriorFaceType >
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localRmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
-				typename MatrixObjectType::LocalMatrixType
-						localRmatrixNeighbour = matrix_object_.localMatrix( info.entity, info.neighbour );
+				LocalMatrixProxyType localRmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localRmatrixNeighbour( matrix_object_, info.entity, info.neighbour, info.eps );
 				// (R)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}ds // R's element surface integral
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}ds // R's neighbour surface integral
 				//                                                                                                // see also "R's boundary integral" below
@@ -75,13 +73,7 @@ namespace Integrators {
 									* integrationWeight
 									* q_i_times_q_j;
 							} // done sum over all quadrature points
-							// if small, should be zero
-							if ( fabs( R_i_j ) < info.eps ) {
-								R_i_j = 0.0;
-							}
-							else
-								// add to matrix
-								localRmatrixElement.add( i, j, R_i_j );
+							localRmatrixElement.add( i, j, R_i_j );
 						} // done computing R's element surface integral
 						// compute R's neighbour surface integral
 						for ( int i = 0; i < info.numPressureBaseFunctionsNeighbour; ++i ) {
@@ -109,13 +101,7 @@ namespace Integrators {
 									* integrationWeight
 									* q_i_times_q_j;
 							} // done sum over all quadrature points
-							// if small, should be zero
-							if ( fabs( R_i_j ) < info.eps ) {
-								R_i_j = 0.0;
-							}
-							else
-								// add to matrix
-								localRmatrixNeighbour.add( i, j, R_i_j );
+							localRmatrixNeighbour.add( i, j, R_i_j );
 						} // done computing R's neighbour surface integral
 					} // done computing R's surface integrals
 //                        }
