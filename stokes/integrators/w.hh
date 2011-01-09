@@ -74,7 +74,8 @@ namespace Integrators {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-
+		typedef Stuff::Matrix::LocalMatrixProxy<MatrixObjectType>
+			LocalMatrixProxyType;
 
 		MatrixObjectType& matrix_object_;
 		public:
@@ -85,8 +86,7 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						local_matrix = matrix_object_.localMatrix( info.entity, info.entity );
+				LocalMatrixProxyType local_matrix( matrix_object_, info.entity, info.entity, info.eps );
 				const double viscosity = info.discrete_model.viscosity();
 				//                                                        // we will call this one
 				// (W)_{i,j} += \mu\int_{T}v_{j}\cdot(\nabla\cdot\tau_{i})dx // W's volume integral
@@ -115,28 +115,20 @@ namespace Integrators {
 									* viscosity
 									* divergence_of_tau_i_times_v_j;
 						} // done sum over quadrature points
-						// if small, should be zero
-						if ( fabs( W_i_j ) < info.eps ) {
-							W_i_j = 0.0;
-						}
-						else
-							// add to matrix
-							local_matrix.add( i, j, W_i_j );
+						local_matrix.add( i, j, W_i_j );
 					}
 				} // done computing W's volume integral
 			}
 
 			template < class InfoContainerFaceType >
-			void applyBoundaryFace( const InfoContainerFaceType& info )
+			void applyBoundaryFace( const InfoContainerFaceType& )
 			{}
 
 			template < class InfoContainerFaceType >
 			void applyInteriorFace( const InfoContainerFaceType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localWmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
-				typename MatrixObjectType::LocalMatrixType
-						localWmatrixNeighbour = matrix_object_.localMatrix( info.neighbour, info.entity );
+				LocalMatrixProxyType localWmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localWmatrixNeighbour( matrix_object_, info.neighbour, info.entity, info.eps );
 
 				//                                                                                                               // we will call this one
 				// (W)_{i,j} += \int_{\varepsilon\in \Epsilon_{I}^{T}}-\hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // W's element surface integral
@@ -183,13 +175,7 @@ namespace Integrators {
 									* info.viscosity
 									* flux_times_tau_i_times_normal;
 						} // done sum over all quadrature points
-						// if small, should be zero
-						if ( fabs( W_i_j ) < info.eps ) {
-							W_i_j = 0.0;
-						}
-						else
-							// add to matrix
-							localWmatrixElement.add( i, j, W_i_j );
+						localWmatrixElement.add( i, j, W_i_j );
 					} // done computing W's element surface integral
 					// compute W's neighbour surface integral
 					for ( int i = 0; i < info.numSigmaBaseFunctionsNeighbour; ++i ) {
@@ -230,13 +216,7 @@ namespace Integrators {
 									* info.viscosity
 									* flux_times_tau_i_times_normal;
 						} // done sum over all quadrature points
-						// if small, should be zero
-						if ( fabs( W_i_j ) < info.eps ) {
-							W_i_j = 0.0;
-						}
-						else
-							// add to matrix
-							localWmatrixNeighbour.add( i, j, W_i_j );
+						localWmatrixNeighbour.add( i, j, W_i_j );
 					} // done computing W's neighbour surface integral
 				} // done computing W's surface integrals
 			}
