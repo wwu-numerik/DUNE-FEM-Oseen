@@ -123,7 +123,11 @@ namespace Integrators {
 			template < class InfoContainerFaceType >
 			void applyBoundaryFace( const InfoContainerFaceType& )
 			{}
+
+			static const std::string name;
 	};
+
+	template < class T, class Y > const std::string R<T,Y>::name = "R";
 
 } // end namespace Integrators
 } // end namespace Stokes

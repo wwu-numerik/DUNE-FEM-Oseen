@@ -6,6 +6,7 @@
 #include <dune/stokes/solver/fullsystem.hh>
 #include <dune/stokes/solver/saddle_point.hh>
 #include <dune/stokes/solver/reconstruction.hh>
+#include <dune/stuff/profiler.hh>
 
 namespace Dune {
 
@@ -61,14 +62,15 @@ struct SolverCaller {
 				const DiscretePressureFunctionType& H3rhs,
 				const DiscreteVelocityFunctionType& beta )
 	{
-		MatrixWrapper<XmatrixObjectType> X(Xmatrix);
-		MatrixWrapper<MInversMatrixObjectType> M_invers(MInversMatrix);
-		MatrixWrapper<YmatrixObjectType> Y(Ymatrix);
-		MatrixWrapper<OmatrixObjectType> O(Omatrix);
-		MatrixWrapper<EmatrixObjectType> E(Ematrix);
-		MatrixWrapper<RmatrixObjectType> R(Rmatrix);
-		MatrixWrapper<ZmatrixObjectType> Z(Zmatrix);
-		MatrixWrapper<WmatrixObjectType> W(Wmatrix);
+		Profiler::ScopedTiming solver_time("solver");
+		MatrixWrapper<MInversMatrixObjectType> M_invers(MInversMatrix, "M");
+		MatrixWrapper<WmatrixObjectType> W(Wmatrix, "W");
+		MatrixWrapper<XmatrixObjectType> X(Xmatrix, "X");
+		MatrixWrapper<YmatrixObjectType> Y(Ymatrix, "Y");
+		MatrixWrapper<OmatrixObjectType> O(Omatrix, "O");
+		MatrixWrapper<ZmatrixObjectType> Z(Zmatrix, "Z");
+		MatrixWrapper<EmatrixObjectType> E(Ematrix, "E");
+		MatrixWrapper<RmatrixObjectType> R(Rmatrix, "R");
 
 		SaddlepointInverseOperatorInfo result;
 		switch ( solverID ) {
