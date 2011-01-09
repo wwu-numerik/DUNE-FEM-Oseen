@@ -38,8 +38,7 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localXmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+				LocalMatrixProxyType localXmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				// (X)_{i,j} += \mu\int_{T}\tau_{j}:\nabla v_{i} dx // X's volume integral
 				//                                                  // see also "X's entitity surface integral", "X's neighbour surface integral" and "X's boundary integral" below
 				for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
@@ -61,13 +60,7 @@ namespace Integrators {
 								* integrationWeight
 								* gradient_of_v_i_times_tau_j;
 						} // done sum over quadrature points
-						// if small, should be zero
-						if ( fabs( X_i_j ) < info.eps ) {
-							X_i_j = 0.0;
-						}
-						else
-							// add to matrix
-							localXmatrixElement.add( i, j, X_i_j );
+						localXmatrixElement.add( i, j, X_i_j );
 					}
 				} // done computing X's volume integral
 			}
@@ -75,10 +68,8 @@ namespace Integrators {
 			template < class InfoContainerInteriorFaceType >
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localXmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
-				typename MatrixObjectType::LocalMatrixType
-						localXmatrixNeighbour = matrix_object_.localMatrix( info.entity, info.neighbour );
+				LocalMatrixProxyType localXmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localXmatrixNeighbour( matrix_object_, info.entity, info.neighbour, info.eps );
 				// (X)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}ds // X's element sourface integral
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}ds // X's neighbour sourface integral
 				//                                                                                                                   // see also "X's boundary integral" below
@@ -147,8 +138,7 @@ namespace Integrators {
 			template < class InfoContainerFaceType >
 			void applyBoundaryFace( const InfoContainerFaceType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localXmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+				LocalMatrixProxyType localXmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				// (X)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}ds // X's boundary integral
 				//                                                                                                                   // see also "X's volume integral", "X's element surface integral" and "X's neighbour surface integral" above
 //                        if ( info.discrete_model.hasSigmaFlux() ) {
@@ -178,13 +168,7 @@ namespace Integrators {
 									* integrationWeight
 									* v_i_times_tau_times_normal;
 							} // done sum over all quadrature points
-							// if small, should be zero
-							if ( fabs( X_i_j ) < info.eps ) {
-								X_i_j = 0.0;
-							}
-							else
-								// add to matrix
-								localXmatrixElement.add( i, j, X_i_j );
+							localXmatrixElement.add( i, j, X_i_j );
 						}
 					} // done computing X's boundary integral
 			}
