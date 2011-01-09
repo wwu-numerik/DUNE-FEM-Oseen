@@ -32,7 +32,8 @@ namespace Integrators {
 											EntityGeometryType::coorddimension,
 											EntityGeometryType::mydimension >
 			JacobianInverseTransposedType;
-
+		typedef Stuff::Matrix::LocalMatrixProxy<MatrixObjectType>
+			LocalMatrixProxyType;
 
 		MatrixObjectType& matrix_object_;
 		public:

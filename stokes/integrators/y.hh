@@ -26,7 +26,8 @@ namespace Integrators {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-
+		typedef Stuff::Matrix::LocalMatrixProxy<MatrixObjectType>
+			LocalMatrixProxyType;
 
 		MatrixObjectType& matrix_object_;
 		public:
