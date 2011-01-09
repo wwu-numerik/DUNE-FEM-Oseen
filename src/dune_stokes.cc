@@ -52,6 +52,7 @@
 #include <dune/fem/misc/mpimanager.hh> // An initializer of MPI
 #include <dune/common/exceptions.hh> // We use exceptions
 #include <dune/grid/common/capabilities.hh>
+#include <dune/grid/common/referenceelements.hh>
 
 //!ATTENTION: undef's GRIDDIM
 #include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
