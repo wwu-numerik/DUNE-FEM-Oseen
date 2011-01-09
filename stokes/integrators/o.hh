@@ -41,8 +41,7 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume_alt1( const InfoContainerVolumeType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localOmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+				LocalMatrixProxyType localOmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
 						beta_.localFunction( info.entity );
 				for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++quad ) {
@@ -88,8 +87,7 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume_alt2( const InfoContainerVolumeType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localOmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+				LocalMatrixProxyType localOmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
 						beta_.localFunction( info.entity );
 				for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++quad ) {
@@ -163,10 +161,8 @@ namespace Integrators {
 			template < class InfoContainerInteriorFaceType >
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localOmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
-				typename MatrixObjectType::LocalMatrixType
-						localOmatrixNeighbour = matrix_object_.localMatrix( info.neighbour, info.entity );
+				LocalMatrixProxyType localOmatrixNeighbour( matrix_object_, info.neighbour, info.entity, info.eps );
+				LocalMatrixProxyType localOmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
 						beta_.localFunction( info.entity );
 				//                                                                                                         // we call this one
@@ -273,8 +269,7 @@ namespace Integrators {
 			template < class InfoContainerFaceType >
 			void applyBoundaryFace( const InfoContainerFaceType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localOmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+				LocalMatrixProxyType localOmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				// (O)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}} STUFF n_{t}ds											// O's boundary integral
 				//                                                                                                           // see also "O's element surface integral" and "Y's neighbour surface integral" above
 				for ( int i = 0; (i < info.numVelocityBaseFunctionsElement ); ++i ) {
@@ -284,7 +279,6 @@ namespace Integrators {
 						for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
 							// get x codim<0> and codim<1> coordinates
 							const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
-							const VelocityRangeType xWorld = info.geometry.global( x );
 							const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
 							// get the integration factor
 							const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
@@ -329,15 +323,7 @@ namespace Integrators {
 								* ret;
 
 						} // done sum over all quadrature points
-						// if small, should be zero
-						if ( fabs( O_i_j ) < info.eps ) {
-							O_i_j = 0.0;
-						}
-						else {
-							// add to matrix
-//										std::cerr<< boost::format( "O face value (bnd) on entity %d: %e\n") % entityNR % O_i_j;
-							localOmatrixElement.add( i, j, O_i_j );
-						}
+						localOmatrixElement.add( i, j, O_i_j );
 					}
 				} // done computing O's boundary integral
 			}
