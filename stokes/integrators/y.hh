@@ -202,7 +202,10 @@ namespace Integrators {
 //                        }
 
 			}
+			static const std::string name;
 	};
+
+	template < class T, class R > const std::string Y<T,R>::name = "Y";
 
 } // end namespace Integrators
 } // end namespace Stokes

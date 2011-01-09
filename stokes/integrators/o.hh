@@ -2,6 +2,7 @@
 #define DUNE_STOKES_INTEGRATORS_O_HH
 
 #include <dune/stokes/integrators/base.hh>
+#include <dune/stuff/matrix.hh>
 
 namespace Dune {
 namespace Stokes {
@@ -26,7 +27,8 @@ namespace Integrators {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-
+		typedef Stuff::Matrix::LocalMatrixProxy<MatrixObjectType>
+			LocalMatrixProxyType;
 
 		MatrixObjectType& matrix_object_;
 		const BetaFunctionType& beta_;
@@ -339,7 +341,10 @@ namespace Integrators {
 					}
 				} // done computing O's boundary integral
 			}
+			static const std::string name;
 	};
+
+	template < class T, class R, class F > const std::string O<T,R,F>::name = "O";
 
 } // end namespace Integrators
 } // end namespace Stokes

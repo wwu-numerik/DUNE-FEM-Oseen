@@ -35,11 +35,11 @@ class H1
 		{}
 
 		template < class InfoContainerVolumeType >
-		void applyVolume( const InfoContainerVolumeType& info )
+		void applyVolume( const InfoContainerVolumeType& )
 		{}
 
 		template < class InfoContainerInteriorFaceType >
-		void applyInteriorFace( const InfoContainerInteriorFaceType& info )
+		void applyInteriorFace( const InfoContainerInteriorFaceType& )
 		{}
 
 		template < class InfoContainerFaceType >
@@ -86,7 +86,10 @@ class H1
 				} // done computing H1's boundary integral
 			}
 		}
+		static const std::string name;
 };
+
+template < class T, class R > const std::string H1<T,R>::name = "H1";
 
 template < class DiscreteFunctionType, class Traits >
 class H2
@@ -229,7 +232,10 @@ class H2
 				} // done computing H2's boundary integrals
 			}
 		}
-}; //end H2
+		static const std::string name;
+};
+
+template < class T, class R > const std::string H2<T,R>::name = "H2";
 
 template < class DiscreteFunctionType, class Traits, class BetaFunctionType >
 class H2_O
@@ -334,7 +340,10 @@ class H2_O
 				}
 			}
 		}
-}; //end H2_O
+		static const std::string name;
+};
+
+template < class T, class R, class F > const std::string H2_O<T,R,F>::name = "H2_O";
 
 template < class DiscreteFunctionType, class Traits >
 class H3
@@ -414,7 +423,10 @@ class H3
 				} // done computing H3's boundary integral
 //                        }
 		}
-}; //end H3
+		static const std::string name;
+};
+
+template < class T, class R > const std::string H3<T,R>::name = "H3";
 
 } // end namespace Integrators
 } // end namespace Stokes

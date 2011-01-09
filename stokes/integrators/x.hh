@@ -187,7 +187,10 @@ namespace Integrators {
 						}
 					} // done computing X's boundary integral
 			}
+			static const std::string name;
 	};
+
+	template < class T, class R > const std::string X<T,R>::name = "X";
 
 } // end namespace Integrators
 } // end namespace Stokes
