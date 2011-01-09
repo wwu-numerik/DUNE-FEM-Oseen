@@ -44,8 +44,7 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localEmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+				LocalMatrixProxyType localEmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				// (E)_{i,j} += -\int_{T}v_{j}\cdot\nabla q_{i}dx // E's volume integral
 				//                                                // see also "E's entitity surface integral", "E's neighbour surface integral" and "E's boundary integral" below
 				for ( int i = 0; i < info.numPressureBaseFunctionsElement; ++i ) {
@@ -74,13 +73,7 @@ namespace Integrators {
 								* integrationWeight
 								* gradient_of_q_i_times_v_j;
 						} // done sum over all quadrature points
-						// if small, should be zero
-						if ( fabs( E_i_j ) < info.eps ) {
-							E_i_j = 0.0;
-						}
-						else
-							// add to matrix
-							localEmatrixElement.add( i, j, E_i_j );
+						localEmatrixElement.add( i, j, E_i_j );
 					}
 				} // done computing E's volume integral
 			}
@@ -88,10 +81,8 @@ namespace Integrators {
 			template < class InfoContainerInteriorFaceType >
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localEmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
-				typename MatrixObjectType::LocalMatrixType
-						localEmatrixNeighbour = matrix_object_.localMatrix( info.neighbour, info.entity );
+				LocalMatrixProxyType localEmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localEmatrixNeighbour( matrix_object_, info.neighbour, info.entity, info.eps );
 				// (E)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{U^{+}}(v_{j})\cdot n_{T}q_{i}ds // E's element surface integral
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{U^{-}}(v_{j})\cdot n_{T}q_{i}ds // E's neighbour surface integral
 				//                                                                                                // see also "E's boundary integral" below
@@ -130,13 +121,7 @@ namespace Integrators {
 									* integrationWeight
 									* q_i_times_flux_times_outerNormal;
 							} // done sum over all quadrature points
-							// if small, should be zero
-							if ( fabs( E_i_j ) < info.eps ) {
-								E_i_j = 0.0;
-							}
-							else
-								// add to matrix
-								localEmatrixElement.add( i, j, E_i_j );
+							localEmatrixElement.add( i, j, E_i_j );
 						} // done computing E's element surface integral
 						// compute E's neighbour surface integral
 						for ( int i = 0; i < info.numPressureBaseFunctionsNeighbour; ++i ) {
@@ -172,13 +157,7 @@ namespace Integrators {
 									* integrationWeight
 									* q_i_times_flux_times_outerNormal;
 							} // done sum over all quadrature points
-							// if small, should be zero
-							if ( fabs( E_i_j ) < info.eps ) {
-								E_i_j = 0.0;
-							}
-							else
-								// add to matrix
-								localEmatrixNeighbour.add( i, j, E_i_j );
+							localEmatrixNeighbour.add( i, j, E_i_j );
 						} // done computing E's neighbour surface integral
 					} // done computing E's surface integrals
 //                        }
