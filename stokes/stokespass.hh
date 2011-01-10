@@ -464,6 +464,7 @@ class StokesPass
 		const bool do_oseen_discretization_;
         mutable SaddlepointInverseOperatorInfo info_;
 
+	public:
 		void printInfo() const
 		{
 #ifndef NLOG
