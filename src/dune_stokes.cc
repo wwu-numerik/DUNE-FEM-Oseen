@@ -265,7 +265,7 @@ void RefineRun( CollectiveCommunication& mpicomm )
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
     RunInfoVector run_infos;
-    Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
+	Stuff::FemEoc& eoc_output = Stuff::FemEoc::instance( );
 	eoc_output.initialize( Parameters().getParam("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
     Stuff::RefineOutput eoc_texwriter( errorColumnHeaders );
@@ -306,7 +306,7 @@ void AccuracyRun( CollectiveCommunication& mpicomm )
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
     RunInfoVector run_infos;
-    Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
+	Stuff::FemEoc& eoc_output = Stuff::FemEoc::instance( );
 	eoc_output.initialize( Parameters().getParam("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
     Stuff::AccurracyOutput  eoc_texwriter( errorColumnHeaders );
@@ -359,7 +359,7 @@ void AccuracyRunOuter( CollectiveCommunication& mpicomm )
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
     RunInfoVector run_infos;
-    Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
+	Stuff::FemEoc& eoc_output = Stuff::FemEoc::instance( );
 	eoc_output.initialize( Parameters().getParam("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
     Stuff::AccurracyOutputOuter  eoc_texwriter( errorColumnHeaders );
@@ -409,7 +409,7 @@ void StabRun( CollectiveCommunication& mpicomm )
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
     RunInfoVector run_infos;
-    Dune::FemEoc& eoc_output = Dune::FemEoc::instance( );
+	Stuff::FemEoc& eoc_output = Stuff::FemEoc::instance( );
 	eoc_output.initialize( Parameters().getParam("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
     Stuff::EocOutput eoc_texwriter( errorColumnHeaders );
@@ -460,7 +460,7 @@ void BfgRun( CollectiveCommunication& mpicomm )
     ColumnHeaders bfgColumnHeaders ( bfgheaders, bfgheaders + num_bfgheaders ) ;
     run_infos.push_back( nobfg_info );
 
-    Dune::FemEoc& bfg_output = Dune::FemEoc::instance( );
+	Stuff::FemEoc& bfg_output = Stuff::FemEoc::instance( );
 	bfg_output.initialize( Parameters().getParam("fem.io.datadir", std::string("data") ),"eoc-file", "bfg-desc", "eoc-template.tex" );
     size_t idx = bfg_output.addEntry( bfgColumnHeaders );
     Stuff::BfgOutput bfg_texwriter( bfgColumnHeaders, nobfg_info );
