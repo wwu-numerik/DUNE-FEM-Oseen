@@ -74,8 +74,8 @@ namespace Dune {
 		  Logging::LogStream& logInfo = Logger().Info();
 
 		  if ( Parameters().getParam( "disableSolver", false ) ) {
-			  logInfo.Resume();
-			  logInfo << "solving disabled via parameter file" << std::endl;
+			  logError.Resume();
+			  logError << "solving disabled via parameter file" << std::endl;
 			  return SaddlepointInverseOperatorInfo();
 		  }
 
