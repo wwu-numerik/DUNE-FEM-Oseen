@@ -433,6 +433,11 @@ class StokesPass
 				Stuff::printDiscreteFunctionMatlabStyle( dest.discreteVelocity(), "u_computed", matlabLogStream );
 				Stuff::printDiscreteFunctionMatlabStyle( dest.discretePressure(), "p_computed", matlabLogStream );
 			}
+			if ( Parameters().getParam( "paranoid_checks", false ) )
+			{//paranoid checks
+				assert( !Stuff::FunctionContainsNanOrInf( dest.discretePressure() ) );
+				assert( !Stuff::FunctionContainsNanOrInf( dest.discreteVelocity() ) );
+			}
 		#endif
         } // end of apply
 
