@@ -155,8 +155,9 @@ set_source_files_properties( ${COMMON_HEADER} PROPERTIES HEADER_FILE_ONLY 1 )
 ADD_EXECUTABLE(dune_stokes src/dune_stokes.cc ${COMMON_HEADER} )
 TARGET_LINK_LIBRARIES(dune_stokes ${COMMON_LIBS} )
 
-ADD_EXECUTABLE(scaling_test src/scaling_test.cc ${COMMON_HEADER} )
-TARGET_LINK_LIBRARIES(scaling_test ${COMMON_LIBS} )
+#legacy dbg binary
+#ADD_EXECUTABLE(scaling_test src/scaling_test.cc ${COMMON_HEADER} )
+#TARGET_LINK_LIBRARIES(scaling_test ${COMMON_LIBS} )
 
 # ADD_DUNE_EXECUTABLE(minimal src/minimal.cc ${COMMON_HEADER} ${COMMON_LIBS} )
 ADD_EXECUTABLE(minimal src/minimal.cc ${COMMON_HEADER}  )
