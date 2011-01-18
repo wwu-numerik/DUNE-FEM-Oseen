@@ -70,7 +70,7 @@ class MatrixWrapper : boost::noncopyable {
 			:matrix_object_( matrix_object ),
 			cumulative_scale_factor_( 1.0 )
 		{
-			Stuff::Matrix::printMemUsage( matrix_object_.matrix(), Logger().Dbg(), name );
+//			Stuff::Matrix::printMemUsage( matrix_object_.matrix(), Logger().Dbg(), name );
 		}
 
 		~MatrixWrapper()
