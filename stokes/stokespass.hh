@@ -287,9 +287,6 @@ class StokesPass
 				H3_IntegratorType;
             H3rhs.clear();
 
-		#ifndef NDEBUG
-			printInfo();
-		#endif
 			profiler().StopTiming("Pass_init");
 
 			//because of the 9-element limit in dune tuples i have to split the assembly in two...
