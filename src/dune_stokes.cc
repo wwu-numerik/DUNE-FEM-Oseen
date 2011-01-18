@@ -606,12 +606,10 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
         AnalyticalForceType;
 	AnalyticalForceType analyticalForce( viscosity, discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), alpha );
 
-//    Logger().Info().Suspend();
     typedef StokesModelTraitsImp::AnalyticalDirichletDataType
         AnalyticalDirichletDataType;
 	AnalyticalDirichletDataType analyticalDirichletData =
 			StokesModelTraitsImp::AnalyticalDirichletDataTraitsImplementation::getInstance( discreteStokesFunctionSpaceWrapper );
-//    Logger().Info().Resume();
 
     StokesModelImpType stokesModel( stabil_coeff,
                                     analyticalForce,
@@ -639,6 +637,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 								false );
 
     profiler().StartTiming( "Pass -- APPLY" );
+	stokesPass.printInfo();
 	stokesPass.apply( computedSolutions, computedSolutions);
     profiler().StopTiming( "Pass -- APPLY" );
     info.run_time = profiler().GetTiming( "Pass -- APPLY" );
