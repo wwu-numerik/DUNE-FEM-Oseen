@@ -648,8 +648,6 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
      * Problem postprocessing
      * ********************************************************************** */
     infoStream << "\n- postprocesing" << std::endl;
-
-
     profiler().StartTiming( "Problem/Postprocessing" );
 
 #if 1 //defined (AORTA_PROBLEM) || defined (COCKBURN_PROBLEM) || defined (GENERALIZED_STOKES_PROBLEM) //bool tpl-param toggles ana-solution output in post-proc
@@ -690,88 +688,6 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
     profiler().StopTiming( "Problem/Postprocessing" );
     profiler().StopTiming( "SingleRun" );
-
-    /*
-     * save solutions
-     */
-    Dune::VTKIO< GridPartType > vtkWriter( gridPart );
-    std::string vtkWriterFilename = "";
-
-#ifdef MICRO_PROBLEM_X
-    Stuff::saveDiscreteFunction(    computedSolutions.discreteVelocity(),
-                                    info.gridname,
-                                    refine_level,
-                                    Parameters().DgfFilename( gridDim ),
-                                    std::string( "data/micro_reference_velocity_X_ref_" ) + Stuff::toString( refine_level ),
-                                    Logger().Err() );
-
-    vtkWriterFilename = std::string( "data/micro_reference_velocity_X_ref_" ) + Stuff::toString( refine_level );
-    vtkWriter.addVectorVertexData( computedSolutions.discreteVelocity() );
-    vtkWriter.write( vtkWriterFilename.c_str() );
-    vtkWriter.clear();
-
-    Stuff::saveDiscreteFunction(    computedSolutions.discretePressure(),
-                                    info.gridname,
-                                    refine_level,
-                                    Parameters().DgfFilename( gridDim ),
-                                    std::string( "data/micro_reference_pressure_X_ref_" ) + Stuff::toString( refine_level ),
-                                    Logger().Err() );
-
-    vtkWriterFilename = std::string( "data/micro_reference_pressure_X_ref_" ) + Stuff::toString( refine_level );
-    vtkWriter.addVertexData( computedSolutions.discretePressure() );
-    vtkWriter.write( vtkWriterFilename.c_str() );
-    vtkWriter.clear();
-#endif
-#ifdef MICRO_PROBLEM_Y
-    Stuff::saveDiscreteFunction(    computedSolutions.discreteVelocity(),
-                                    info.gridname,
-                                    refine_level,
-                                    Parameters().DgfFilename( gridDim ),
-                                    std::string( "data/micro_reference_velocity_Y_ref_" ) + Stuff::toString( refine_level ),
-                                    Logger().Err() );
-
-    vtkWriterFilename = std::string( "data/micro_reference_velocity_Y_ref_" ) + Stuff::toString( refine_level );
-    vtkWriter.addVectorVertexData( computedSolutions.discreteVelocity() );
-    vtkWriter.write( vtkWriterFilename.c_str() );
-    vtkWriter.clear();
-
-    Stuff::saveDiscreteFunction(    computedSolutions.discretePressure(),
-                                    info.gridname,
-                                    refine_level,
-                                    Parameters().DgfFilename( gridDim ),
-                                    std::string( "data/micro_reference_pressure_Y_ref_" ) + Stuff::toString( refine_level ),
-                                    Logger().Err() );
-
-    vtkWriterFilename = std::string( "data/micro_reference_pressure_Y_ref_" ) + Stuff::toString( refine_level );
-    vtkWriter.addVertexData( computedSolutions.discretePressure() );
-    vtkWriter.write( vtkWriterFilename.c_str() );
-    vtkWriter.clear();
-#endif
-#ifdef DARCY_PROBLEM
-    Stuff::saveDiscreteFunction(    computedSolutions.discreteVelocity(),
-                                    info.gridname,
-                                    refine_level,
-                                    Parameters().DgfFilename( gridDim ),
-                                    std::string( "data/fullscale_perforated_velocity_ref_" ) + Stuff::toString( refine_level ),
-                                    Logger().Err() );
-
-    vtkWriterFilename = std::string( "data/fullscale_perforated_velocity_ref_" ) + Stuff::toString( refine_level );
-    vtkWriter.addVectorVertexData( computedSolutions.discreteVelocity() );
-    vtkWriter.write( vtkWriterFilename.c_str() );
-    vtkWriter.clear();
-
-    Stuff::saveDiscreteFunction(    computedSolutions.discretePressure(),
-                                    info.gridname,
-                                    refine_level,
-                                    Parameters().DgfFilename( gridDim ),
-                                    std::string( "data/fullscale_perforated_pressure_ref_" ) + Stuff::toString( refine_level ),
-                                    Logger().Err() );
-
-    vtkWriterFilename = std::string( "data/fullscale_perforated_pressure_ref_" ) + Stuff::toString( refine_level );
-    vtkWriter.addVertexData( computedSolutions.discretePressure() );
-    vtkWriter.write( vtkWriterFilename.c_str() );
-    vtkWriter.clear();
-#endif
 
     firstRun = false;
 
