@@ -663,7 +663,10 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
     PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );
 
-    postProcessor.save( *gridPtr, computedSolutions, refine_level );
+	if ( Parameters().getParam( "save_solutions", true ) )
+		postProcessor.save( *gridPtr, computedSolutions, refine_level );
+	else
+		postProcessor.calcError( computedSolutions );
     info.L2Errors = postProcessor.getError();
     typedef Dune::StabilizationCoefficients::ValueType
         Pair;
