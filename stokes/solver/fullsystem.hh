@@ -168,7 +168,7 @@ class DirectKrylovSolver
 				class DiscreteSigmaFunctionType,
 				class DiscreteVelocityFunctionType,
 				class DiscretePressureFunctionType  >
-	SaddlepointInverseOperatorInfo solve( const DomainType& arg,
+	SaddlepointInverseOperatorInfo solve( const DomainType& /*arg*/,
 				RangeType& dest,
 				X_MatrixType& Xmatrix,
 				M_inverse_MatrixType& Mmatrix,
