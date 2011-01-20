@@ -302,10 +302,19 @@ class StokesPass
 							H2_IntegratorType,
 							H2_O_IntegratorType,
 							H3_IntegratorType >
-				IntegratorTuple;
+				OseenIntegratorTuple;
+			typedef Tuple<	MInversMatrixIntegratorType,
+							WmatrixTypeIntegratorType,
+							XmatrixTypeIntegratorType,
+							YmatrixTypeIntegratorType,
+							ZmatrixTypeIntegratorType,
+							EmatrixTypeIntegratorType,
+							RmatrixTypeIntegratorType,
+							H1_IntegratorType,
+							H2_IntegratorType,
+							H3_IntegratorType >
+				StokesIntegratorTuple;
 
-			Stokes::Integrators::Coordinator< Traits, IntegratorTuple >
-					coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
 			MInversMatrixIntegratorType m_integrator( MInversMatrix );
 			WmatrixTypeIntegratorType	w_integrator( Wmatrix );
 			XmatrixTypeIntegratorType	x_integrator( Xmatrix );
@@ -316,13 +325,29 @@ class StokesPass
 			RmatrixTypeIntegratorType	r_integrator( Rmatrix );
 			H1_IntegratorType			h1_integrator( H1rhs );
 			H2_IntegratorType			h2_integrator( H2rhs );
-			H2_O_IntegratorType			h2_o_integrator( H2_O_rhs, beta_ );
+			H2_O_IntegratorType			h2_o_integrator( H2rhs, beta_ );
 			H3_IntegratorType			h3_integrator( H3rhs );
+			if ( do_oseen_discretization_ )
+			{
+				Stokes::Integrators::Coordinator< Traits, OseenIntegratorTuple >
+						coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
 
-			IntegratorTuple tuple(	m_integrator, w_integrator, x_integrator, y_integrator,
-									o_integrator, z_integrator, e_integrator, r_integrator,
-									h1_integrator, h2_integrator,h2_o_integrator, h3_integrator );
-			coordinator.apply( tuple );
+				OseenIntegratorTuple tuple(	m_integrator, w_integrator, x_integrator, y_integrator,
+										o_integrator, z_integrator, e_integrator, r_integrator,
+										h1_integrator, h2_integrator,h2_o_integrator, h3_integrator );
+				coordinator.apply( tuple );
+			}
+			else
+			{
+				Stokes::Integrators::Coordinator< Traits, StokesIntegratorTuple >
+						coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
+
+				StokesIntegratorTuple tuple(	m_integrator, w_integrator, x_integrator, y_integrator,
+										z_integrator, e_integrator, r_integrator,
+										h1_integrator, h2_integrator,h3_integrator );
+				coordinator.apply( tuple );
+			}
+
 
 		#ifndef NDEBUG
 //            // do the matlab logging stuff
@@ -398,12 +423,7 @@ class StokesPass
 			Logger().Info() << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
 
 			// do solving
-			if ( do_oseen_discretization_  ) {
-				H2rhs += H2_O_rhs;
-			}
-			else {
-				Omatrix.clear();
-			}
+
 			//this lets us switch between standalone oseen and reduced oseen in  thete scheme easily
 			const bool use_reduced_solver = do_oseen_discretization_ && Parameters().getParam( "reduced_oseen_solver", false );
 			typedef SolverCaller< ThisType >
