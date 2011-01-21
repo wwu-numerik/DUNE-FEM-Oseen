@@ -143,7 +143,7 @@ class H2
 						info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 						VelocityRangeType f( 0.0 );
 #if MODEL_PROVIDES_LOCALFUNCTION
-									info.discrete_model.forceF().localFunction(entity).evaluate( x, f );
+									info.discrete_model.forceF().localFunction(info.entity).evaluate( x, f );
 #else
 									info.discrete_model.force( 0.0, xWorld, f );
 #endif
