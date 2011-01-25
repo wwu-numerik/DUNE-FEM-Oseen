@@ -30,7 +30,7 @@
 #include <iostream>
 #include <assert.h>
 #include "cblas.h"
-#undef USE_MEMPROVIDER
+
 // ============================================================================
 #include "tmpmem.hh"
 //template < class Stream, class Type >
