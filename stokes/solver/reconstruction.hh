@@ -255,47 +255,50 @@ struct SmartReconstruction {
 				const DiscretePressureFunctionType& H3rhs )
 	{
 		CompileTimeChecker<false> dysfunctionalCode;
-		//				Zmatrix.apply( dest.discretePressure(), rhs_datacontainer->pressure_gradient );
-		//				rhs_datacontainer->pressure_gradient *= Parameters().getParam("pressure_gradient_scale", 1);
-		//				getPressureGradient( Zmatrix,  dest.discretePressure(),  rhs_datacontainer->pressure_gradient);
+						Zmatrix.apply( solution.discretePressure(), rhs_datacontainer.pressure_gradient );
+//						rhs_datacontainer.pressure_gradient *= Parameters().getParam("pressure_gradient_scale", 1);
+//						getPressureGradient( Zmatrix,  solution.discretePressure(),  rhs_datacontainer.pressure_gradient);
 
-						// \sigma = M^{-1} ( H_1 - Wu )
-		//				const double m_inv_scale = MInversMatrix.matrix()(0,0);
-		//				rhs_datacontainer->velocity_gradient.assign( H1rhs );
+						 //\sigma = M^{-1} ( H_1 - Wu )
+						const double m_inv_scale = MInversMatrix.matrix()(0,0);
+						rhs_datacontainer.velocity_gradient.assign( H1rhs );
 
-		//				Wmatrix.apply( dest.discreteVelocity(), sigma_tmp );
-		//				rhs_datacontainer->velocity_gradient -= sigma_tmp;
-		////				if ( viscosity != 0.0f )
-		////					rhs_datacontainer->velocity_gradient /= viscosity;//since mu is assmenled into both W and H1
-		//				rhs_datacontainer->velocity_gradient *= m_inv_scale;
+						DiscreteSigmaFunctionType sigma_tmp ("s_tmp", H1rhs.space() );
+						DiscreteVelocityFunctionType velocity_tmp1 ("s_tmp", H2rhs.space() );
 
-		//				Stuff::printFunctionMinMax( std::cout, H1rhs );
+						Wmatrix.apply( solution.discreteVelocity(), sigma_tmp );
+						rhs_datacontainer.velocity_gradient -= sigma_tmp;
+		//				if ( viscosity != 0.0f )
+		//					rhs_datacontainer.velocity_gradient /= viscosity;//since mu is assmenled into both W and H1
+						rhs_datacontainer.velocity_gradient *= m_inv_scale;
+
+//						Stuff::printFunctionMinMax( std::cout, H1rhs );
 
 
-		//				Xmatrix.apply( rhs_datacontainer->velocity_gradient, velocity_tmp1 );
-		//				Ymatrix.apply( dest.discreteVelocity(), rhs_datacontainer->velocity_laplace );
-		//				rhs_datacontainer->velocity_laplace += velocity_tmp1;
-		//				velocity_tmp1.assign( dest.discreteVelocity() );
-		//				velocity_tmp1 *= alpha;
-		//				rhs_datacontainer->velocity_laplace -= velocity_tmp1;
-		////				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
-		//				const double laplace_scale = Parameters().getParam("laplace_scale", -1/viscosity);
-		//				rhs_datacontainer->velocity_laplace *= laplace_scale;
-		////				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->velocity_laplace );
-		//				Logger().Dbg().Resume();
-		//				Logger().Dbg() << boost::format( "laplace_scale: %f\n") % laplace_scale;
+						Xmatrix.apply( rhs_datacontainer.velocity_gradient, velocity_tmp1 );
+						Ymatrix.apply( solution.discreteVelocity(), rhs_datacontainer.velocity_laplace );
+						rhs_datacontainer.velocity_laplace += velocity_tmp1;
+						velocity_tmp1.assign( solution.discreteVelocity() );
+//						velocity_tmp1 *= alpha;
+						rhs_datacontainer.velocity_laplace -= velocity_tmp1;
+		//				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer.velocity_laplace );
+//						const double laplace_scale = Parameters().getParam("laplace_scale", -1/viscosity);
+//						rhs_datacontainer.velocity_laplace *= laplace_scale;
+		//				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer.velocity_laplace );
+//						Logger().Dbg().Resume();
+//						Logger().Dbg() << boost::format( "laplace_scale: %f\n") % laplace_scale;
 
-		//				rhs_datacontainer->convection.clear();
-		//				Omatrix.apply( dest.discreteVelocity(), rhs_datacontainer->convection );
-		//				rhs_datacontainer->convection += H2_O_rhs;
-		//				if ( sigma_exact )
-		//					getConvection( beta_, *sigma_exact, rhs_datacontainer->convection );
-		//				else
+						rhs_datacontainer.convection.clear();
+						Omatrix.apply( solution.discreteVelocity(), rhs_datacontainer.convection );
+//						rhs_datacontainer.convection += H2_O_rhs;
+//						if ( sigma_exact )
+//							getConvection( beta_, *sigma_exact, rhs_datacontainer.convection );
+//						else
 
-		//				dest.discreteVelocity() += rhs_datacontainer->convection;
-		//				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer->convection );
+//						dest.discreteVelocity() += rhs_datacontainer.convection;
+//						Stuff::printFunctionMinMax( std::cout, rhs_datacontainer.convection );
 
-		//				rhs_datacontainer->scale( 1 / std::sqrt(2) );
+//						rhs_datacontainer.scale( 1 / std::sqrt(2) );
 
 	}
 };
