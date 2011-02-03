@@ -116,7 +116,7 @@ namespace Integrators {
 				  numSigmaBaseFunctionsElement( sigma_basefunction_set_element.numBaseFunctions() ),
 				  numVelocityBaseFunctionsElement( velocity_basefunction_set_element.numBaseFunctions() ),
 				  numPressureBaseFunctionsElement( pressure_basefunction_set_element.numBaseFunctions() ),
-				  volumeQuadratureElement( entity, ( 4 * Traits::pressureSpaceOrder ) + 1 ),
+				  volumeQuadratureElement( entity, ( 2 * Traits::pressureSpaceOrder ) + 1 ),
 				  discrete_model( discrete_modelIn ),
 				  eps( Parameters().getParam( "eps", 1.0e-14 ) ),
 				  viscosity( discrete_modelIn.viscosity() ),
@@ -144,7 +144,7 @@ namespace Integrators {
 				  intersectionGeometry( intersection.intersectionGlobal() ),
 				  faceQuadratureElement( interface.sigma_space_.gridPart(),
 																  intersection,
-																  ( 4 * Traits::pressureSpaceOrder ) + 1,
+																  ( 2 * Traits::pressureSpaceOrder ) + 1,
 																  Traits::FaceQuadratureType::INSIDE ),
 				  lengthOfIntersection( Stuff::getLenghtOfIntersection( intersection ) ),
 				  stabil_coeff( discrete_modelIn.getStabilizationCoefficients() ),
@@ -185,7 +185,7 @@ namespace Integrators {
 				  numPressureBaseFunctionsNeighbour( pressure_basefunction_set_neighbour.numBaseFunctions() ),
 				  faceQuadratureNeighbour( interface.sigma_space_.gridPart(),
 																  inter,
-																  ( 4 * Traits::pressureSpaceOrder ) + 1,
+																  ( 2 * Traits::pressureSpaceOrder ) + 1,
 																  Traits::FaceQuadratureType::OUTSIDE )
 			{
 				//some integration logic depends on this
