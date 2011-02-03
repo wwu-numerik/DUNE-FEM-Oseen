@@ -350,6 +350,7 @@ class StokesPass
 
 
 		#ifndef NDEBUG
+			{
 //            // do the matlab logging stuff
 			if ( Parameters().getParam( "save_matrices", false ) ) {
 				Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
@@ -416,6 +417,7 @@ class StokesPass
 //				Zmatrix.matrix().scale( -1 );
 //				assert( areTransposed( Zmatrix.matrix(), Ematrix.matrix() ));
 //				Zmatrix.matrix().scale( -1 );
+			}
 			}
 		#endif
 
