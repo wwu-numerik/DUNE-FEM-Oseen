@@ -601,7 +601,7 @@ class DiscreteStokesModelInterface
         {
             return asImp().isGeneralized();
         }
-
+#if 0
         /**
          *  \brief  Implementation of \f$\hat{u}_{\sigma}^{U^{+}}\f$ and
          *          \f$\hat{u}_{\sigma}^{U^{-}}\f$ for a face inside
@@ -1261,7 +1261,7 @@ class DiscreteStokesModelInterface
                                             x,
                                             rhsReturn ) );
         }
-
+#endif
         /**
          *  \brief  Implementation of \f$f\f$.
          *          Calls the implementation of the derived class.
@@ -1914,7 +1914,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         {
             return true;
         }
-
+#if 0
         /**
          *  \brief  Implementation of \f$\hat{u}_{\sigma}^{U^{+}}\f$ and
          *          \f$\hat{u}_{\sigma}^{U^{-}}\f$ for a face inside
@@ -2729,7 +2729,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             rhsReturn = dyadicProduct( gD, outerNormal );
             rhsReturn *= C_11;
         }
-
+#endif
         /**
          *  \brief  Implementation of \f$f\f$.
          *
