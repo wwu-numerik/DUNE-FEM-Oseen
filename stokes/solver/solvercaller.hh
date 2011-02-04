@@ -48,6 +48,7 @@ struct SolverCaller {
 	static SaddlepointInverseOperatorInfo solve( RangeType& dest,
 				DataContainerType* rhs_datacontainer,
 				const SolverID solverID,
+				const bool with_oseen_discretization,
 				const DomainType& arg,
 				const XmatrixObjectType& Xmatrix,
 				const MInversMatrixObjectType& MInversMatrix,
@@ -102,6 +103,10 @@ struct SolverCaller {
 									X, M_invers, Y,
 									O, E, R, Z, W,
 									H1rhs, H2rhs, H3rhs );
+			if (!with_oseen_discretization)
+				rhs_datacontainer->convection.clear();
+			if (solverID == Reduced_Solver_ID)
+				rhs_datacontainer->pressure_gradient.clear();
 		}
 		return result;
 	}

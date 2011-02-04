@@ -427,7 +427,8 @@ class StokesPass
 			// do solving
 
 			//this lets us switch between standalone oseen and reduced oseen in  thete scheme easily
-			const bool use_reduced_solver = do_oseen_discretization_ && Parameters().getParam( "reduced_oseen_solver", false );
+			const bool use_reduced_solver = (do_oseen_discretization_ && Parameters().getParam( "reduced_oseen_solver", false ))
+					|| Parameters().getParam( "parabolic", false );
 			typedef SolverCaller< ThisType >
 				SolverCallerType;
 
@@ -442,9 +443,9 @@ class StokesPass
 			else
 				solver_ID = SolverCallerType::Reduced_Solver_ID;
 
-			info_ = SolverCallerType::solve( dest, rhs_datacontainer, solver_ID, arg, Xmatrix, MInversMatrix,
-											Ymatrix, Omatrix, Ematrix, Rmatrix,
-											Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs, beta_ );
+			info_ = SolverCallerType::solve(dest, rhs_datacontainer, solver_ID, do_oseen_discretization_,
+											arg, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix,
+											Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs, beta_ );
 
 		#ifndef NDEBUG
 			if ( Parameters().getParam( "save_matrices", false ) ) {
