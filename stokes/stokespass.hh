@@ -128,6 +128,12 @@ class StokesPass
 				velocity_gradient	*= factor;
 				convection			*= factor;
 			}
+			void clear() {
+				velocity_laplace.clear();
+				pressure_gradient.clear();
+				velocity_gradient.clear();
+				convection.clear();
+			}
 		};
 
         /**
