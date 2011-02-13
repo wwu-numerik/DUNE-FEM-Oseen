@@ -435,23 +435,30 @@ class StokesPass
 			//this lets us switch between standalone oseen and reduced oseen in  thete scheme easily
 			const bool use_reduced_solver = (do_oseen_discretization_ && Parameters().getParam( "reduced_oseen_solver", false ))
 					|| Parameters().getParam( "parabolic", false );
-			typedef SolverCaller< ThisType >
+			typedef Stokes::SolverCaller< ThisType>
 				SolverCallerType;
+			typedef Stokes::SolverCaller< ThisType, SmartReconstruction >
+				SmartSolverCallerType;
 
 			//Select which solver we want to use
-			typename SolverCallerType::SolverID solver_ID = SolverCallerType::SaddlePoint_Solver_ID;
+			typename Stokes::Solver::SolverID solver_ID = Stokes::Solver::SaddlePoint_Solver_ID;
 			if( !use_reduced_solver ) {
 				if ( Parameters().getParam( "use_nested_cg_solver", false ) )
-					solver_ID = SolverCallerType::NestedCG_Solver_ID;
+					solver_ID = Stokes::Solver::NestedCG_Solver_ID;
 				else if ( Parameters().getParam( "use_full_solver", false ) )
-					solver_ID = SolverCallerType::FullSystem_Solver_ID;
+					solver_ID = Stokes::Solver::FullSystem_Solver_ID;
 			}
 			else
-				solver_ID = SolverCallerType::Reduced_Solver_ID;
+				solver_ID = Stokes::Solver::Reduced_Solver_ID;
 
-			info_ = SolverCallerType::solve(dest, rhs_datacontainer, solver_ID, do_oseen_discretization_,
-											arg, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix,
-											Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs, beta_ );
+			if ( Parameters().getParam( "smart_reconstruction", false ) )
+				info_ = SmartSolverCallerType::solve(dest, rhs_datacontainer, solver_ID, do_oseen_discretization_,
+												arg, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix,
+												Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs, beta_ );
+			else
+				info_ = SolverCallerType::solve(dest, rhs_datacontainer, solver_ID, do_oseen_discretization_,
+												arg, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix,
+												Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs, beta_ );
 
 		#ifndef NDEBUG
 			if ( Parameters().getParam( "save_matrices", false ) ) {

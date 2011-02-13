@@ -10,6 +10,17 @@
 
 namespace Dune {
 
+namespace Stokes {
+
+	namespace Solver {
+		enum SolverID {
+			NestedCG_Solver_ID		= 0,
+			SaddlePoint_Solver_ID	= 1,
+			Reduced_Solver_ID		= 2,
+			FullSystem_Solver_ID	= 3
+		};
+	}
+
 template<class StokesPassType, template <class T,class S> class ReconstructionPolicyType = BruteForceReconstruction >
 struct SolverCaller {
 	//! alternative solver implementation
@@ -23,13 +34,6 @@ struct SolverCaller {
 		ReducedSolverType;
 	typedef DirectKrylovSolver< StokesPassType >
 		FullsytemSolverType;
-
-	enum SolverID {
-		NestedCG_Solver_ID		= 0,
-		SaddlePoint_Solver_ID	= 1,
-		Reduced_Solver_ID		= 2,
-		FullSystem_Solver_ID	= 3
-	};
 
 	template <  class DomainType,
 				class RangeType,
@@ -47,7 +51,7 @@ struct SolverCaller {
 				class DataContainerType >
 	static SaddlepointInverseOperatorInfo solve( RangeType& dest,
 				DataContainerType* rhs_datacontainer,
-				const SolverID solverID,
+				const Solver::SolverID solverID,
 				const bool with_oseen_discretization,
 				const DomainType& arg,
 				const XmatrixObjectType& Xmatrix,
@@ -75,22 +79,22 @@ struct SolverCaller {
 
 		SaddlepointInverseOperatorInfo result;
 		switch ( solverID ) {
-			case NestedCG_Solver_ID:		result = NestedCgSolverType().solve(	arg, dest,
+			case Solver::NestedCG_Solver_ID:		result = NestedCgSolverType().solve(	arg, dest,
 															 X, M_invers, Y,
 															 O, E, R, Z, W,
 															 H1rhs, H2rhs, H3rhs );
 											break;
-			case Reduced_Solver_ID:			result = ReducedSolverType().solve(	arg, dest,
+			case Solver::Reduced_Solver_ID:			result = ReducedSolverType().solve(	arg, dest,
 															 X, M_invers, Y,
 															 O, E, R, Z, W,
 															 H1rhs, H2rhs, H3rhs );
 											break;
-			case SaddlePoint_Solver_ID:		result = SaddlepointSolverType().solve(	arg, dest,
+			case Solver::SaddlePoint_Solver_ID:		result = SaddlepointSolverType().solve(	arg, dest,
 															 X, M_invers, Y,
 															 O, E, R, Z, W,
 															 H1rhs, H2rhs, H3rhs );
 											break;
-			case FullSystem_Solver_ID:		result = FullsytemSolverType().solve(	arg, dest,
+			case Solver::FullSystem_Solver_ID:		result = FullsytemSolverType().solve(	arg, dest,
 															 X, M_invers, Y,
 															 O, E, R, Z, W,
 															 H1rhs, H2rhs, H3rhs );
@@ -106,13 +110,14 @@ struct SolverCaller {
 									H1rhs, H2rhs, H3rhs );
 			if (!with_oseen_discretization)
 				rhs_datacontainer->convection.clear();
-			if (solverID == Reduced_Solver_ID)
+			if (solverID == Solver::Reduced_Solver_ID)
 				rhs_datacontainer->pressure_gradient.clear();
 		}
 		return result;
 	}
 };
 
+} //namespace Stokes
 } //namespace Dune
 
 #endif // DUNE_STOKES_SOLVERCALLER_HH
