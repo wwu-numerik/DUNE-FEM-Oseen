@@ -254,7 +254,7 @@ struct SmartReconstruction {
 				const DiscreteVelocityFunctionType& H2rhs,
 				const DiscretePressureFunctionType& H3rhs )
 	{
-		CompileTimeChecker<false> dysfunctionalCode;
+//		CompileTimeChecker<false> dysfunctionalCode;
 						Zmatrix.apply( solution.discretePressure(), rhs_datacontainer.pressure_gradient );
 //						rhs_datacontainer.pressure_gradient *= Parameters().getParam("pressure_gradient_scale", 1);
 //						getPressureGradient( Zmatrix,  solution.discretePressure(),  rhs_datacontainer.pressure_gradient);
