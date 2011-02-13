@@ -98,6 +98,7 @@ struct SolverCaller {
 			default: throw std::runtime_error("invalid Solver ID selected");
 		}
 		if ( rhs_datacontainer ) {
+			rhs_datacontainer->clear();
 			ReconstructionPolicyType<DataContainerType,typename StokesPassType::DiscreteModelType>
 					::reconstruct(	*rhs_datacontainer, dest, beta,
 									X, M_invers, Y,
