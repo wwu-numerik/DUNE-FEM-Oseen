@@ -145,36 +145,7 @@ namespace Dune {
   #else
 		  innerCGSolverWrapper.apply( f_func, tmp_f );
   #endif
-  #if defined(ADAPTIVE_SOLVER) && defined(USE_BFG_CG_SCHEME)
-		  if ( isnan(a_ret.second) ) {
-			  logInfo << "\n\t\t NaNs detected, lowering error tolerance" << std::endl;
-			  int max_adaptions = Parameters().getParam( "max_adaptions", 8 );
-			  int adapt_step = 1;
-			  double a_relLimit = relLimit;
-			  double a_absLimit = absLimit;
-			  while ( true ) {
-				  if ( adapt_step > max_adaptions ) {
-					  logInfo << "\n\t\t max adaption depth reached, aborting" << std::endl;
-					  break;
-				  }
-				  a_relLimit /= 10.0;
-				  a_absLimit /= 10.0;
-				  logInfo << "\n\t\t\t trying with relLimit " << a_relLimit
-						  << " and absLimit " << a_absLimit << std::endl;
 
-				  InnerCGSolverWrapperType innerCGSolverWrapper_adapt( w_mat, m_inv_mat, x_mat,
-																	   y_mat, o_mat, rhs1.space(),f_func.space(),
-																	   relLimit, absLimit, solverVerbosity );
-				  innerCGSolverWrapper_adapt.apply( f_func, tmp_f, a_ret );
-
-				  if ( !isnan(a_ret.second) ) {
-					  logInfo << "\n\t\t adaption produced NaN-free solution" << std::endl;
-					  break;
-				  }
-				  adapt_step++;
-			  }
-		  }
-  #endif //defined(ADAPTIVE_SOLVER) && defined(USE_BFG_CG_SCHEME)
 		  b_t_mat.apply( tmp_f, new_f );
 		  new_f -= g_func;
 
@@ -213,41 +184,6 @@ namespace Dune {
 		  sk_solver.apply( new_f, pressure );
   #endif
 
-  #if defined(ADAPTIVE_SOLVER) && defined(USE_BFG_CG_SCHEME)
-		  if ( isnan(ret.second) ) {
-			  logInfo << "\n\t\t NaNs detected, lowering error tolerance" << std::endl;
-			  int max_adaptions = Parameters().getParam( "max_adaptions", 8 );
-			  int adapt_step = 1;
-			  double a_relLimit = relLimit;
-			  double a_absLimit = absLimit;
-			  while ( true ) {
-				  if ( adapt_step > max_adaptions ) {
-					  logError << "\n\t\t max adaption depth reached, aborting" << std::endl;
-					  break;
-				  }
-				  a_relLimit /= 10.0;
-				  a_absLimit /= 10.0;
-				  logInfo << "\n\t\t\t trying with relLimit " << a_relLimit
-						  << " and absLimit " << a_absLimit << std::endl;
-
-				  InnerCGSolverWrapperType innerCGSolverWrapper_adapt( w_mat, m_inv_mat, x_mat,
-																	  y_mat, o_mat, rhs1.space(),f_func.space(),
-																	  relLimit, absLimit, solverVerbosity );
-				  Sk_Operator sk_op_adapt(  innerCGSolverWrapper_adapt, b_t_mat, c_mat, b_mat, m_inv_mat,
-							  velocity.space(), pressure.space() );
-				  Sk_Solver sk_solver_adapt( sk_op_adapt, a_relLimit, a_absLimit, 2000, solverVerbosity );
-				  pressure.clear();
-				  sk_solver_adapt.apply( new_f, pressure, ret );
-				  long total_inner = sk_op_adapt.getTotalInnerIterations();
-				  logInfo << "\n\t\t\t #avg inner iter | #outer iter: " << total_inner / (double)ret.first << " | " << ret.first << std::endl;
-				  if ( !isnan(ret.second) ) {
-					  logInfo << "\n\t\t adaption produced NaN-free solution" << std::endl;
-					  break;
-				  }
-				  adapt_step++;
-			  }
-		  }
-  #endif //defined(ADAPTIVE_SOLVER) && defined(USE_BFG_CG_SCHEME)
 		  //
 		  logInfo << "\n\tend  S*p=new_f" << std::endl;
 
