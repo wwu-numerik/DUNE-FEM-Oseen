@@ -74,7 +74,6 @@ namespace Dune {
 								  DiscreteSigmaFunctionType,
 								  DiscreteVelocityFunctionType >
 			  InnerCGSolverWrapperType;
-		  #define innerCGSolverWrapper InnerCGSolverWrapperType(w_mat,m_inv_mat,x_mat,y_mat,o_mat,rhs1.space(),f_func.space(),relLimit,absLimit,solverVerbosity)
 
 	#ifdef USE_BFG_CG_SCHEME
 		  typedef typename InnerCGSolverWrapperType::ReturnValueType
@@ -109,62 +108,68 @@ namespace Dune {
 		  const double absLimit = Parameters().getParam( "absLimit", 1e-3 );
 		  const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
 
-		  logInfo << "Begin NestedCgSaddlepointInverseOperator\n "
-				  << " \n\tbegin calc new_f,f_func " << std::endl;
-		  logDebug.Resume();
-
-		  DiscreteSigmaFunctionType m_tmp ( "m_tom", rhs1.space() );
+		  DiscretePressureFunctionType schur_f ( "schur_f", rhs3.space() );
 		  DiscreteVelocityFunctionType f_func( "f_func", velocity.space() );
+		  {
+			  logInfo << "Begin NestedCgSaddlepointInverseOperator\n "
+					  << " \n\tbegin calc schur_f,f_func " << std::endl;
+			  logDebug.Resume();
 
-		  // f_func = ( ( -1 * ( X * ( M_inv * rhs1 ) ) ) + rhs2 )
-		  m_inv_mat.apply( rhs1, m_tmp );
-		  x_mat.apply( m_tmp, f_func );
-		  f_func -= rhs2;
+			  DiscreteSigmaFunctionType m_tmp ( "m_tom", rhs1.space() );
+			  DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
+			  // f_func =  ( -X *  M_inv * rhs1 + rhs2 )
+			  m_inv_mat.apply( rhs1, m_tmp );
+			  x_mat.apply( m_tmp, tmp_f );
+			  f_func -= tmp_f;
+			  f_func += rhs2;
 
-		  DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
-		  DiscretePressureFunctionType new_f ( "new_f", rhs3.space() );
 
-		  // new_f := ( Z * A^-1 * f_func ) + g_func
-  #ifdef USE_BFG_CG_SCHEME
-		  InnerCGSolverWrapperReturnType a_ret;
-		  innerCGSolverWrapper.apply( f_func, tmp_f, a_ret );
-  #else
-		  innerCGSolverWrapper.apply( f_func, tmp_f );
-  #endif
-		  e_mat.apply( tmp_f, new_f );
-		  new_f -= rhs3;
 
-		  logInfo << " \n\tend calc new_f,f_func\n "
-				  << " \n\tbegin S*p=new_f " << std::endl;
+			  // schur_f := -1 * ( ( E * A^-1 * f_func ) - rhs3 )
+			  InnerCGSolverWrapperType innerCGSolverWrapper(w_mat,m_inv_mat,x_mat,y_mat,o_mat,rhs1.space(),f_func.space(),relLimit,absLimit,solverVerbosity);
+			  assert( !Stuff::FunctionContainsNanOrInf( f_func ) );
+	  #ifdef USE_BFG_CG_SCHEME
+			  InnerCGSolverWrapperReturnType a_ret;
+			  innerCGSolverWrapper.apply( f_func, tmp_f, a_ret );
+	  #else
+			  innerCGSolverWrapper.apply( f_func, tmp_f );
+	  #endif
+			  e_mat.apply( tmp_f, schur_f );
+			  schur_f -= rhs3;
+			  schur_f *= -1;
 
-		  InnerCGSolverWrapperType innerCGSolverWrapper__ (w_mat,m_inv_mat,x_mat,y_mat,o_mat,rhs1.space(),f_func.space(),relLimit,absLimit,solverVerbosity);
+			  logInfo << " \n\tend calc schur_f,f_func\n "
+					  << " \n\tbegin S*p=schur_f " << std::endl;
+		  }
+
+		  InnerCGSolverWrapperType innerCGSolverWrapper__ (w_mat,m_inv_mat,x_mat,y_mat,o_mat,rhs1.space(),velocity.space(),relLimit,absLimit,solverVerbosity);
 		  Sk_Operator sk_op(  innerCGSolverWrapper__, e_mat, r_mat, z_mat, m_inv_mat,
 							  velocity.space(), pressure.space() );
 		  Sk_Solver sk_solver( sk_op, relLimit, absLimit, 2000, solverVerbosity );
 
-		  // p = S^-1 * new_f = ( E * A^-1 * Z + rhs3 )^-1 * new_f
+		  // p = S^-1 * schur_f = ( E * A^-1 * Z + rhs3 )^-1 * schur_f
   #ifdef USE_BFG_CG_SCHEME
 		  SolverReturnType ret;
-		  sk_solver.apply( new_f, pressure, ret );
+		  sk_solver.apply( schur_f, pressure, ret );
 		  long total_inner = sk_op.getTotalInnerIterations();
 		  logInfo << "\n\t\t #avg inner iter | #outer iter: " << total_inner / (double)ret.first << " | " << ret.first << std::endl;
   #else
-		  sk_solver.apply( new_f, pressure );
+		  sk_solver.apply( schur_f, pressure );
   #endif
 
-		  logInfo << "\n\tend  S*p=new_f" << std::endl;
+		  logInfo << "\n\tend  S*p=schur_f" << std::endl;
 
 		  DiscreteVelocityFunctionType Zp_temp ( "Zp_temp", velocity.space() );
 		  // velocity = A^-1 * ( ( -1 * ( Z * pressure ) ) + f_func )
 		  z_mat.apply( pressure, Zp_temp );
-  //		Zp_temp *= -1;
+		  Zp_temp *= -1.0;
 		  Zp_temp += f_func;
+		  InnerCGSolverWrapperType innerCGSolverWrapper(w_mat,m_inv_mat,x_mat,y_mat,o_mat,rhs1.space(),velocity.space(),relLimit,absLimit,solverVerbosity);
 		  innerCGSolverWrapper.apply ( Zp_temp, velocity );
 
 		  logInfo << "\nEnd NestedCgSaddlePointInverseOperator " << std::endl;
 
 		  return SaddlepointInverseOperatorInfo();
-	  #undef innerCGSolverWrapper
 	  }
 
 	};
