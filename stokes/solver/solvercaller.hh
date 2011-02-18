@@ -82,6 +82,13 @@ struct SolverCaller {
 		MatrixWrapper<RmatrixObjectType> R(Rmatrix, "R");
 
 		SaddlepointInverseOperatorInfo result;
+
+		if ( Parameters().getParam( "disableSolver", false ) ) {
+			Logger().Err().Resume();
+			Logger().Err() << "solving disabled via parameter file" << std::endl;
+			return result;
+		}
+
 		switch ( solverID ) {
 			case Solver::BiCg_Saddlepoint_Solver_ID:result = BiCgSaddlepointSolverType().solve(	arg, dest,
 															 X, M_invers, Y,
