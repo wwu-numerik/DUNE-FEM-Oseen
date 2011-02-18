@@ -10,26 +10,26 @@ namespace Dune {
 			matrix \f$ S :=  B_t * A^-1 * B + rhs3 \f$
 			**/
 template <  class A_SolverType,
-            class B_t_matrixType,
-            class CmatrixType,
-            class BmatrixType,
-            class MmatrixType,
-            class DiscreteVelocityFunctionType ,
+			class E_MatrixType,
+			class R_MatrixType,
+			class Z_MatrixType,
+			class M_invers_MatrixType,
+			class DiscreteVelocityFunctionType ,
             class DiscretePressureFunctionType>
-class SchurkomplementOperator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterface
+class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::PreconditionInterface
 {
     public:
 		typedef SchurkomplementOperator <   A_SolverType,
-											B_t_matrixType,
-											CmatrixType,
-											BmatrixType,
-											MmatrixType,
+											E_MatrixType,
+											R_MatrixType,
+											Z_MatrixType,
+											M_invers_MatrixType,
 											DiscreteVelocityFunctionType,
 											DiscretePressureFunctionType>
 				ThisType;
-			typedef typename A_SolverType::A_OperatorType::PreconditionMatrix
-				A_PreconditionMatrix;
-		typedef IdentityMatrixObject<typename CmatrixType::WrappedMatrixObjectType>
+		typedef typename A_SolverType::A_OperatorType::PreconditionMatrix
+			A_PreconditionMatrix;
+		typedef IdentityMatrixObject<typename R_MatrixType::WrappedMatrixObjectType>
 			PreconditionMatrixBaseType;
 		friend class Conversion<ThisType,OEMSolver::PreconditionInterface>;
 
@@ -38,13 +38,13 @@ class SchurkomplementOperator : public SOLVER_INTERFACE_NAMESPACE::PreconditionI
 			const A_PreconditionMatrix& a_precond_;
 			mutable DiscreteVelocityFunctionType velo_tmp;
 			mutable DiscreteVelocityFunctionType velo_tmp2;
-			const typename BmatrixType::WrappedMatrixObjectType::RangeSpaceType& pressure_space_;
+			const typename Z_MatrixType::WrappedMatrixObjectType::RangeSpaceType& pressure_space_;
 
 			public:
 				PreconditionOperator( const A_SolverType& a_solver,
 								   const ThisType& sk_op,
-								   const typename B_t_matrixType::WrappedMatrixObjectType::RangeSpaceType& velocity_space,
-								   const typename BmatrixType::WrappedMatrixObjectType::RangeSpaceType& pressure_space)
+								   const typename E_MatrixType::WrappedMatrixObjectType::RangeSpaceType& velocity_space,
+								   const typename Z_MatrixType::WrappedMatrixObjectType::RangeSpaceType& pressure_space)
 					: sk_op_( sk_op),
 					a_precond_( a_solver.getOperator().preconditionMatrix() ),
 					velo_tmp( "sdeio", velocity_space ),
@@ -62,10 +62,10 @@ class SchurkomplementOperator : public SOLVER_INTERFACE_NAMESPACE::PreconditionI
 				template <class VECtype>
 				void multOEM(const VECtype *x, VECtype * ret) const
 				{
-					sk_op_.b_mat_.matrix().multOEM( x,velo_tmp.leakPointer());
+					sk_op_.z_mat_.matrix().multOEM( x,velo_tmp.leakPointer());
 					a_precond_.apply( velo_tmp, velo_tmp2);
-					sk_op_.b_t_mat_.matrix().multOEM( velo_tmp2.leakPointer(),ret);
-					sk_op_.c_mat_.matrix().multOEMAdd( x, ret);
+					sk_op_.e_mat_.matrix().multOEM( velo_tmp2.leakPointer(),ret);
+					sk_op_.r_mat_.matrix().multOEMAdd( x, ret);
 				}
 
 				PreconditionOperator& systemMatrix () { return *this; }
@@ -89,17 +89,17 @@ class SchurkomplementOperator : public SOLVER_INTERFACE_NAMESPACE::PreconditionI
 #endif
 
         SchurkomplementOperator( A_SolverType& a_solver,
-                                const B_t_matrixType& b_t_mat,
-                                const CmatrixType& c_mat,
-                                const BmatrixType& b_mat,
-                                const MmatrixType& m_mat,
+								const E_MatrixType& e_mat,
+								const R_MatrixType& r_mat,
+								const Z_MatrixType& z_mat,
+								const M_invers_MatrixType& m_inv_mat,
                                 const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& velocity_space,
                                 const typename DiscretePressureFunctionType::DiscreteFunctionSpaceType& pressure_space )
             : a_solver_(a_solver),
-            b_t_mat_(b_t_mat),
-            c_mat_(c_mat),
-            b_mat_(b_mat),
-            m_mat_(m_mat),
+			e_mat_(e_mat),
+			r_mat_(r_mat),
+			z_mat_(z_mat),
+			m_inv_mat_(m_inv_mat),
             tmp1 ( "tmp1", velocity_space ),
             tmp2 ( "tmp2", velocity_space ),
             do_bfg( Parameters().getParam( "do-bfg", true ) ),
@@ -119,15 +119,12 @@ class SchurkomplementOperator : public SOLVER_INTERFACE_NAMESPACE::PreconditionI
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret) const
         {
-            Logging::LogStream& info = Logger().Info();
-			const bool solverVerbosity = true;// Parameters().getParam( "solverVerbosity", 0 );
-            tmp1.clear();
-
-			// ret = ( ( B_t * ( A^-1 * ( B * x ) ) ) + ( C * x ) )
-
-            b_mat_.multOEM( x, tmp1.leakPointer() );
+			// ret = ( ( E * ( A^-1 * ( Z * x ) ) ) + ( R * x ) )
+			z_mat_.multOEM( x, tmp1.leakPointer() );
 
 #ifdef USE_BFG_CG_SCHEME
+			Logging::LogStream& info = Logger().Info();
+			const int solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
             ReturnValueType cg_info;
             a_solver_.apply( tmp1, tmp2, cg_info );
             if ( solverVerbosity > 1 )
@@ -137,8 +134,8 @@ class SchurkomplementOperator : public SOLVER_INTERFACE_NAMESPACE::PreconditionI
 #else
 			a_solver_.apply( tmp1, tmp2 );
 #endif
-            b_t_mat_.multOEM( tmp2.leakPointer(), ret );
-            c_mat_.multOEMAdd( x, ret );
+			e_mat_.multOEM( tmp2.leakPointer(), ret );
+			r_mat_.multOEMAdd( x, ret );
         }
 
 #ifdef USE_BFG_CG_SCHEME
@@ -189,10 +186,10 @@ class SchurkomplementOperator : public SOLVER_INTERFACE_NAMESPACE::PreconditionI
 
     private:
 		A_SolverType& a_solver_;
-        const B_t_matrixType& b_t_mat_;
-        const CmatrixType& c_mat_;
-        const BmatrixType& b_mat_;
-        const MmatrixType& m_mat_;
+		const E_MatrixType& e_mat_;
+		const R_MatrixType& r_mat_;
+		const Z_MatrixType& z_mat_;
+		const M_invers_MatrixType& m_inv_mat_;
         mutable DiscreteVelocityFunctionType tmp1;
         mutable DiscreteVelocityFunctionType tmp2;
         bool do_bfg;

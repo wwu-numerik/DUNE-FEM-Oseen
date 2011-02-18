@@ -56,14 +56,14 @@ namespace Dune {
 				  class DiscretePressureFunctionType  >
 	  SaddlepointInverseOperatorInfo solve( const DomainType& /*arg*/,
 				  RangeType& dest,
-				  X_MatrixType& Xmatrix,
-				  M_invers_MatrixType& Mmatrix,
-				  Y_MatrixType& Ymatrix,
-				  O_MatrixType& Omatrix,
-				  E_MatrixType& Ematrix,
-				  R_MatrixType& Rmatrix,
-				  Z_MatrixType& Zmatrix,
-				  W_MatrixType& Wmatrix,
+				  X_MatrixType& x_mat,
+				  M_invers_MatrixType& m_inv_mat,
+				  Y_MatrixType& y_mat,
+				  O_MatrixType& o_mat,
+				  E_MatrixType& e_mat,
+				  R_MatrixType& r_mat,
+				  Z_MatrixType& z_mat,
+				  W_MatrixType& w_mat,
 				  const DiscreteSigmaFunctionType& rhs1,
 				  const DiscreteVelocityFunctionType& rhs2,
 				  const DiscretePressureFunctionType& rhs3 ) const
@@ -92,19 +92,10 @@ namespace Dune {
 		  PressureDiscreteFunctionType& pressure = dest.discretePressure();
 		  VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
 
-		  X_MatrixType& x_mat      = Xmatrix;
-		  M_invers_MatrixType& m_inv_mat  = Mmatrix;
-		  Y_MatrixType& y_mat      = Ymatrix;
-		  O_MatrixType& o_mat      = Omatrix;
-		  E_MatrixType& b_t_mat = Ematrix; //! renamed
-		  R_MatrixType& c_mat      = Rmatrix; //! renamed
-		  Z_MatrixType& b_mat      = Zmatrix; //! renamed
-		  W_MatrixType& w_mat      = Wmatrix;
-
-		  b_t_mat.scale( -1 ); //since B_t = -E
+//		  e_mat.scale( -1 ); //since B_t = -E
 
 		  DiscretePressureFunctionType g_func = rhs3;
-		  g_func *= ( -1 ); //since G = -H_3
+//		  g_func *= ( -1 ); //since G = -H_3
 
 		  logInfo << " \n\tbegin calc new_f,f_func " << std::endl;
 		  //Stuff::DiagonalMult( m_inv_mat, rhs1 ); //calc m_inv * H_1 "in-place"
@@ -138,7 +129,7 @@ namespace Dune {
 		  tmp_f.clear();
 		  new_f.clear();
 
-		  // new_f := ( B * A^-1 * f_func ) + g_func
+		  // new_f := ( Z * A^-1 * f_func ) + g_func
   #ifdef USE_BFG_CG_SCHEME
 		  InnerCGSolverWrapperReturnType a_ret;
 		  innerCGSolverWrapper.apply( f_func, tmp_f, a_ret );
@@ -146,7 +137,7 @@ namespace Dune {
 		  innerCGSolverWrapper.apply( f_func, tmp_f );
   #endif
 
-		  b_t_mat.apply( tmp_f, new_f );
+		  e_mat.apply( tmp_f, new_f );
 		  new_f -= g_func;
 
 		  logInfo << " \n\tend calc new_f,f_func " << std::endl;
@@ -169,12 +160,12 @@ namespace Dune {
 
 		  logInfo << " \n\tbegin S*p=new_f " << std::endl;
 		  InnerCGSolverWrapperType innerCGSolverWrapper__ (w_mat,m_inv_mat,x_mat,y_mat,o_mat,rhs1.space(),f_func.space(),relLimit,absLimit,solverVerbosity);
-		  Sk_Operator sk_op(  innerCGSolverWrapper__, b_t_mat, c_mat, b_mat, m_inv_mat,
+		  Sk_Operator sk_op(  innerCGSolverWrapper__, e_mat, r_mat, z_mat, m_inv_mat,
 							  velocity.space(), pressure.space() );
 		  Sk_Solver sk_solver( sk_op, relLimit, absLimit, 2000, solverVerbosity );
 		  pressure.clear();
 
-		  // p = S^-1 * new_f = ( B_t * A^-1 * B + rhs3 )^-1 * new_f
+		  // p = S^-1 * new_f = ( E * A^-1 * Z + rhs3 )^-1 * new_f
   #ifdef USE_BFG_CG_SCHEME
 		  SolverReturnType ret;
 		  sk_solver.apply( new_f, pressure, ret );
@@ -187,15 +178,15 @@ namespace Dune {
 		  //
 		  logInfo << "\n\tend  S*p=new_f" << std::endl;
 
-		  pressure *= -1;//magic
-		  DiscreteVelocityFunctionType Bp_temp ( "Bp_temp", velocity.space() );
-		  Bp_temp.clear();
-		  // velocity = A^-1 * ( ( -1 * ( B * pressure ) ) + f_func )
-		  b_mat.apply( pressure, Bp_temp );
-  //		Bp_temp *= -1;
-		  Bp_temp += f_func;
-		  innerCGSolverWrapper.apply ( Bp_temp, velocity );
-		  velocity *= -1;//even more magic
+//		  pressure *= -1;//magic
+		  DiscreteVelocityFunctionType Zp_temp ( "Zp_temp", velocity.space() );
+		  Zp_temp.clear();
+		  // velocity = A^-1 * ( ( -1 * ( Z * pressure ) ) + f_func )
+		  z_mat.apply( pressure, Zp_temp );
+  //		Zp_temp *= -1;
+		  Zp_temp += f_func;
+		  innerCGSolverWrapper.apply ( Zp_temp, velocity );
+//		  velocity *= -1;//even more magic
 
 		  logInfo << "\nEnd NestedCgSaddlePointInverseOperator " << std::endl;
 
