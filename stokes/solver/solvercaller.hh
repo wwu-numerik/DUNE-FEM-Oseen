@@ -5,6 +5,7 @@
 #include <dune/stokes/solver/reduced.hh>
 #include <dune/stokes/solver/fullsystem.hh>
 #include <dune/stokes/solver/saddle_point.hh>
+#include <dune/stokes/solver/bicg_saddle_point.hh>
 #include <dune/stokes/solver/reconstruction.hh>
 #include <dune/stuff/profiler.hh>
 
@@ -14,10 +15,11 @@ namespace Stokes {
 
 	namespace Solver {
 		enum SolverID {
-			NestedCG_Solver_ID		= 0,
-			SaddlePoint_Solver_ID	= 1,
-			Reduced_Solver_ID		= 2,
-			FullSystem_Solver_ID	= 3
+			NestedCG_Solver_ID			= 0,
+			SaddlePoint_Solver_ID		= 1,
+			Reduced_Solver_ID			= 2,
+			FullSystem_Solver_ID		= 3,
+			BiCg_Saddlepoint_Solver_ID	= 4
 		};
 	}
 
@@ -29,6 +31,8 @@ struct SolverCaller {
 	//! type of the used solver
 	typedef SaddlepointInverseOperator< StokesPassType >
 		SaddlepointSolverType;
+	typedef BiCgStabSaddlepointInverseOperator< StokesPassType >
+		BiCgSaddlepointSolverType;
 	//! this is used for reduced (no pressure, incompress. condition) oseen pass
 	typedef ReducedInverseOperator< StokesPassType >
 		ReducedSolverType;
@@ -79,6 +83,11 @@ struct SolverCaller {
 
 		SaddlepointInverseOperatorInfo result;
 		switch ( solverID ) {
+			case Solver::BiCg_Saddlepoint_Solver_ID:result = BiCgSaddlepointSolverType().solve(	arg, dest,
+															 X, M_invers, Y,
+															 O, E, R, Z, W,
+															 H1rhs, H2rhs, H3rhs );
+											break;
 			case Solver::NestedCG_Solver_ID:		result = NestedCgSolverType().solve(	arg, dest,
 															 X, M_invers, Y,
 															 O, E, R, Z, W,
