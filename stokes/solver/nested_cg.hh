@@ -32,7 +32,6 @@ namespace Dune {
 	  typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
 		  VelocityDiscreteFunctionType;
 
-
 	public:
 	  /** \todo Please doc me!
 	   * \brief Constructor:
@@ -68,48 +67,6 @@ namespace Dune {
 				  const DiscreteVelocityFunctionType& rhs2,
 				  const DiscretePressureFunctionType& rhs3 ) const
 	  {
-
-		  Logging::LogStream& logDebug = Logger().Dbg();
-		  Logging::LogStream& logError = Logger().Err();
-		  Logging::LogStream& logInfo = Logger().Info();
-
-		  if ( Parameters().getParam( "disableSolver", false ) ) {
-			  logError.Resume();
-			  logError << "solving disabled via parameter file" << std::endl;
-			  return SaddlepointInverseOperatorInfo();
-		  }
-
-		  // relative min. error at which cg-solvers will abort
-		  const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
-		  // aboslute min. error at which cg-solvers will abort
-		  const double absLimit = Parameters().getParam( "absLimit", 1e-3 );
-		  const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
-
-		  logInfo << "Begin NestedCgSaddlepointInverseOperator " << std::endl;
-
-		  logDebug.Resume();
-		  //get some refs for more readability
-		  PressureDiscreteFunctionType& pressure = dest.discretePressure();
-		  VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
-
-//		  e_mat.scale( -1 ); //since B_t = -E
-
-		  DiscretePressureFunctionType g_func = rhs3;
-//		  g_func *= ( -1 ); //since G = -H_3
-
-		  logInfo << " \n\tbegin calc new_f,f_func " << std::endl;
-		  //Stuff::DiagonalMult( m_inv_mat, rhs1 ); //calc m_inv * H_1 "in-place"
-		  DiscreteSigmaFunctionType m_tmp ( "m_tom", rhs1.space() );
-		  DiscreteVelocityFunctionType f_func( "f_func", velocity.space() );
-		  f_func.clear();
-		  m_tmp.clear();
-
-		  // f_func = ( ( -1 * ( X * ( M_inv * rhs1 ) ) ) + rhs2 )
-		  m_inv_mat.apply( rhs1, m_tmp );
-		  x_mat.apply( m_tmp, f_func );
-		  f_func -= rhs2;
-
-
 		  typedef InnerCGSolverWrapper< W_MatrixType,
 								  M_invers_MatrixType,
 								  X_MatrixType,
@@ -117,30 +74,12 @@ namespace Dune {
 								  DiscreteSigmaFunctionType,
 								  DiscreteVelocityFunctionType >
 			  InnerCGSolverWrapperType;
-  #ifdef USE_BFG_CG_SCHEME
-		  typedef typename InnerCGSolverWrapperType::ReturnValueType
-				  InnerCGSolverWrapperReturnType;
-  #endif
 		  #define innerCGSolverWrapper InnerCGSolverWrapperType(w_mat,m_inv_mat,x_mat,y_mat,o_mat,rhs1.space(),f_func.space(),relLimit,absLimit,solverVerbosity)
 
-
-		  DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
-		  DiscretePressureFunctionType new_f ( "new_f", g_func.space() );
-		  tmp_f.clear();
-		  new_f.clear();
-
-		  // new_f := ( Z * A^-1 * f_func ) + g_func
-  #ifdef USE_BFG_CG_SCHEME
-		  InnerCGSolverWrapperReturnType a_ret;
-		  innerCGSolverWrapper.apply( f_func, tmp_f, a_ret );
-  #else
-		  innerCGSolverWrapper.apply( f_func, tmp_f );
-  #endif
-
-		  e_mat.apply( tmp_f, new_f );
-		  new_f -= g_func;
-
-		  logInfo << " \n\tend calc new_f,f_func " << std::endl;
+	#ifdef USE_BFG_CG_SCHEME
+		  typedef typename InnerCGSolverWrapperType::ReturnValueType
+				  InnerCGSolverWrapperReturnType;
+	#endif
 
 		  typedef SchurkomplementOperator<    InnerCGSolverWrapperType,
 											  E_MatrixType,
@@ -153,17 +92,55 @@ namespace Dune {
 
 		  typedef SOLVER_NAMESPACE::OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
 				  Sk_Solver;
-  #ifdef USE_BFG_CG_SCHEME
+	#ifdef USE_BFG_CG_SCHEME
 		  typedef typename Sk_Solver::ReturnValueType
 				  SolverReturnType;
-  #endif
+	#endif
+		  //get some refs for more readability
+		  PressureDiscreteFunctionType& pressure = dest.discretePressure();
+		  VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
+		  Logging::LogStream& logDebug = Logger().Dbg();
+		  Logging::LogStream& logError = Logger().Err();
+		  Logging::LogStream& logInfo = Logger().Info();
 
-		  logInfo << " \n\tbegin S*p=new_f " << std::endl;
+		  // relative min. error at which cg-solvers will abort
+		  const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
+		  // aboslute min. error at which cg-solvers will abort
+		  const double absLimit = Parameters().getParam( "absLimit", 1e-3 );
+		  const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
+
+		  logInfo << "Begin NestedCgSaddlepointInverseOperator\n "
+				  << " \n\tbegin calc new_f,f_func " << std::endl;
+		  logDebug.Resume();
+
+		  DiscreteSigmaFunctionType m_tmp ( "m_tom", rhs1.space() );
+		  DiscreteVelocityFunctionType f_func( "f_func", velocity.space() );
+
+		  // f_func = ( ( -1 * ( X * ( M_inv * rhs1 ) ) ) + rhs2 )
+		  m_inv_mat.apply( rhs1, m_tmp );
+		  x_mat.apply( m_tmp, f_func );
+		  f_func -= rhs2;
+
+		  DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
+		  DiscretePressureFunctionType new_f ( "new_f", rhs3.space() );
+
+		  // new_f := ( Z * A^-1 * f_func ) + g_func
+  #ifdef USE_BFG_CG_SCHEME
+		  InnerCGSolverWrapperReturnType a_ret;
+		  innerCGSolverWrapper.apply( f_func, tmp_f, a_ret );
+  #else
+		  innerCGSolverWrapper.apply( f_func, tmp_f );
+  #endif
+		  e_mat.apply( tmp_f, new_f );
+		  new_f -= rhs3;
+
+		  logInfo << " \n\tend calc new_f,f_func\n "
+				  << " \n\tbegin S*p=new_f " << std::endl;
+
 		  InnerCGSolverWrapperType innerCGSolverWrapper__ (w_mat,m_inv_mat,x_mat,y_mat,o_mat,rhs1.space(),f_func.space(),relLimit,absLimit,solverVerbosity);
 		  Sk_Operator sk_op(  innerCGSolverWrapper__, e_mat, r_mat, z_mat, m_inv_mat,
 							  velocity.space(), pressure.space() );
 		  Sk_Solver sk_solver( sk_op, relLimit, absLimit, 2000, solverVerbosity );
-		  pressure.clear();
 
 		  // p = S^-1 * new_f = ( E * A^-1 * Z + rhs3 )^-1 * new_f
   #ifdef USE_BFG_CG_SCHEME
@@ -175,18 +152,14 @@ namespace Dune {
 		  sk_solver.apply( new_f, pressure );
   #endif
 
-		  //
 		  logInfo << "\n\tend  S*p=new_f" << std::endl;
 
-//		  pressure *= -1;//magic
 		  DiscreteVelocityFunctionType Zp_temp ( "Zp_temp", velocity.space() );
-		  Zp_temp.clear();
 		  // velocity = A^-1 * ( ( -1 * ( Z * pressure ) ) + f_func )
 		  z_mat.apply( pressure, Zp_temp );
   //		Zp_temp *= -1;
 		  Zp_temp += f_func;
 		  innerCGSolverWrapper.apply ( Zp_temp, velocity );
-//		  velocity *= -1;//even more magic
 
 		  logInfo << "\nEnd NestedCgSaddlePointInverseOperator " << std::endl;
 
