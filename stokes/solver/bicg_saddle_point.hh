@@ -126,7 +126,7 @@ namespace Dune {
 
 	/*****************************************************************************************/
 
-			int iteration = 0;
+			int iteration = 1;
 		#ifdef USE_BFG_CG_SCHEME
 			int total_inner_iterations = 0;
 			int min_inner_iterations = std::numeric_limits<int>::max();
@@ -153,7 +153,7 @@ namespace Dune {
 			PressureDiscreteFunctionType residuum( "residuum", pressure.space() );
 			PressureDiscreteFunctionType start_residuum( "residuum", pressure.space() );
 			PressureDiscreteFunctionType s( "s", pressure.space() );
-			PressureDiscreteFunctionType w( "s", pressure.space() );
+			PressureDiscreteFunctionType t( "s", pressure.space() );
 			PressureDiscreteFunctionType v( "s", pressure.space() );
 			PressureDiscreteFunctionType schur_f( "s", pressure.space() );
 
@@ -175,61 +175,75 @@ namespace Dune {
 			schur_f += tmp2;
 			schur_f *= -1;
 
-			// r^0 = S * p^0 - schur_f
+			// r^0 = - S * p^0 + schur_f
 			sk_op.apply( pressure, residuum );
 			residuum -= schur_f;
+			residuum *= -1.;
 
 			// r_^0 = r^0
 			start_residuum.assign( residuum );
 			search_direction.assign( residuum );
 
-			// rho = (r_, r )
 			double rho;
-			rho = residuum.scalarProductDofs( start_residuum );
 			double delta; //norm of residuum
-			delta = residuum.scalarProductDofs( residuum );
-			const double start_delta = residuum.scalarProductDofs( residuum );
 
-			double alpha,omega,theta;
+			double alpha,omega,last_rho;
 			Stuff::printFunctionMinMax( logDebug, pressure );
 
-			while( iteration++ < maxIter ) {
+			while( iteration < maxIter ) {
+				PressureDiscreteFunctionType residuum_T( "s", pressure.space() );
+				residuum_T.assign( start_residuum );//??
 
-				sk_op.apply( search_direction, s );
-				theta = s.scalarProductDofs( start_residuum );
-				if ( std::fabs( theta ) < outer_absLimit ) {
+				rho = residuum_T.scalarProductDofs( residuum );
+				if ( std::fabs( rho ) < outer_absLimit ) {
 					if ( solverVerbosity > 3 )
-						logDebug << boost::format( "%s: abort, theta = ") % cg_name % theta << std::endl;
+						logDebug << boost::format( "%s: abort, theta = ") % cg_name % rho << std::endl;
 					break;
 				}
-				alpha = rho/theta;
-				w.assign( residuum );
-				w.addScaled( s, -alpha );
-				sk_op.apply( w, v );
-				omega = v.scalarProductDofs( w )/v.scalarProductDofs( v );
-				pressure.addScaled( search_direction, -alpha );
-				pressure.addScaled( w, -omega );
 
-				residuum.addScaled( s, -alpha );
-				residuum.addScaled( v, -omega );
+				if ( iteration == 1 ) {
+					search_direction.assign( start_residuum );
+				}
+				else {
+					const double beta = (rho/last_rho)/ (alpha/omega);
+					search_direction *= beta;
+					search_direction.addScaled( v, -beta*omega);
+					search_direction += residuum;
+				}
 
-				const double next_rho = residuum.scalarProductDofs( start_residuum );
-				delta = residuum.scalarProductDofs( residuum );
+				sk_op.apply( search_direction, v );//v=S*p
+				alpha = rho/ residuum_T.scalarProductDofs( v );
+				s.assign( residuum );
+				s.addScaled( v, -alpha );
+				const double s_norm = std::sqrt( s.scalarProductDofs( s ) );
+				if ( s_norm < outer_absLimit ) {
+					pressure.addScaled( search_direction, alpha );
+					logDebug << boost::format( "%s: iter %i\taborted: s: %e") % cg_name % iteration % s_norm << std::endl;
+					break;
+				}
+				sk_op.apply( s, t );
+				omega = t.scalarProductDofs( s ) / t.scalarProductDofs( t );
 
+				pressure.addScaled( search_direction, alpha );
+				pressure.addScaled( s, omega );
+
+				residuum.assign( s );
+				residuum.addScaled( t, - omega );
+
+				delta = std::sqrt( residuum.scalarProductDofs( residuum ) );
 				if ( delta < outer_absLimit ) {
-					if ( solverVerbosity > 3 )
-						logDebug << boost::format( "%s: abort, delta = %e < %e") % cg_name % delta % outer_absLimit << std::endl;
+					logDebug << boost::format( "%s: aborted, iter %i\tres %e") % cg_name % iteration % delta << std::endl;
 					break;
 				}
-				const double beta = ( next_rho/rho ) * (alpha/omega);
-				rho = next_rho;
-				search_direction *= beta;
-				search_direction.addScaled( s, -(omega*beta) );
-				search_direction += residuum;
+
 				if ( solverVerbosity > 3 ) {
 					logDebug << boost::format( "%s: iter %i\tres %e") % cg_name % iteration % delta << std::endl;
 					Stuff::printFunctionMinMax( logDebug, pressure );
 				}
+				assert( omega != 0.0 );
+
+				last_rho = rho;
+				iteration++;
 			} //end while
 
 			{
