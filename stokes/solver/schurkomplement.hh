@@ -139,6 +139,11 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 			r_mat_.multOEMAdd( x, ret );
         }
 
+		void apply( const DiscretePressureFunctionType& arg, DiscretePressureFunctionType& ret ) const
+		{
+			multOEM( arg.leakPointer(), ret.leakPointer() );
+		}
+
 #ifdef USE_BFG_CG_SCHEME
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& info ) const
