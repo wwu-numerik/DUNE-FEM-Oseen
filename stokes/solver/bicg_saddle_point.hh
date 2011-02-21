@@ -68,6 +68,7 @@ namespace Dune {
 					const DiscretePressureFunctionType& rhs3 ) const
 		{
 
+			const std::string cg_name( "OuterCG");
 			Logging::LogStream& logDebug = Logger().Dbg();
 			Logging::LogStream& logInfo = Logger().Info();
 
@@ -94,7 +95,7 @@ namespace Dune {
 			const bool do_bfg = Parameters().getParam( "do-bfg", true );
 	#endif
 			logInfo.Resume();
-			logInfo << "Begin SaddlePointInverseOperator " << std::endl;
+			logInfo << cg_name << ": Begin BICG SaddlePointInverseOperator " << std::endl;
 
 			logDebug.Resume();
 			//get some refs for more readability
@@ -121,7 +122,7 @@ namespace Dune {
 	#endif
 			InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
 														   o_mat, rhs1_orig.space(),rhs2_orig.space(), relLimit,
-														   current_inner_accuracy, solverVerbosity > 3 );
+														   current_inner_accuracy, solverVerbosity > 5 );
 
 	/*****************************************************************************************/
 
@@ -133,9 +134,6 @@ namespace Dune {
 		#endif
 			const int max_adaptions = Parameters().getParam( "max_adaptions", 2 ) ;
 			int current_adaption = 0;
-			double delta; //norm of residuum
-			double gamma=0;
-			double rho;
 
 			// F = rhs2 - X M^{-1} * rhs1
 			const double m_scale = m_inv_mat(0,0);
@@ -149,14 +147,15 @@ namespace Dune {
 
 			VelocityDiscreteFunctionType tmp1( "tmp1", velocity.space() );
 			tmp1.clear();
-			VelocityDiscreteFunctionType xi( "xi", velocity.space() );
-			xi.clear();
-			PressureDiscreteFunctionType tmp2( "tmp2", pressure.space() );
-			VelocityDiscreteFunctionType residuum( "residuum", velocity.space() );
-			VelocityDiscreteFunctionType residuum_squigly( "residuum", velocity.space() );
+			PressureDiscreteFunctionType search_direction( "xi", pressure.space() );
 
-			PressureDiscreteFunctionType d( "d", pressure.space() );
-			PressureDiscreteFunctionType h( "h", pressure.space() );
+			PressureDiscreteFunctionType tmp2( "tmp2", pressure.space() );
+			PressureDiscreteFunctionType residuum( "residuum", pressure.space() );
+			PressureDiscreteFunctionType start_residuum( "residuum", pressure.space() );
+			PressureDiscreteFunctionType s( "s", pressure.space() );
+			PressureDiscreteFunctionType w( "s", pressure.space() );
+			PressureDiscreteFunctionType v( "s", pressure.space() );
+			PressureDiscreteFunctionType schur_f( "s", pressure.space() );
 
 			typedef SchurkomplementOperator<    InnerCGSolverWrapperType,
 												E_MatrixType,
@@ -169,105 +168,79 @@ namespace Dune {
 			Sk_Operator sk_op(  innerCGSolverWrapper, e_mat, r_mat, z_mat, m_inv_mat,
 								velocity.space(), pressure.space() );
 
-			// r^0 = S * p^0 - f
-			residuum.assign( F );
-			sk_op.apply( pressure, tmp2 );
-			residuum -= tmp2;
+			//schur_f = - E A^{-1} F - G = -1 ( E A^{-1} F + G )
+			schur_f.assign( rhs3 );
+			innerCGSolverWrapper.apply( F, v_tmp );
+			e_mat.apply( v_tmp, tmp2 );
+			schur_f += tmp2;
+			schur_f *= -1;
+
+			// r^0 = S * p^0 - schur_f
+			sk_op.apply( pressure, residuum );
+			residuum -= schur_f;
+
 			// r_^0 = r^0
-			residuum_squigly.assign( residuum );
+			start_residuum.assign( residuum );
+			search_direction.assign( residuum );
 
 			// rho = (r_, r )
-			rho = residuum.scalarProductDofs( residuum_squigly );
-		#if 0
-			while( (delta > outer_absLimit ) && (iteration++ < maxIter ) ) {
-				if ( iteration > 1 ) {
-					// gamma_{m+1} = delta_{m+1} / delta_m
-					gamma = delta / gamma;
-					// d_{m+1} = r_{m+1} + gamma_m * d_m
-					d *= gamma;
-					d += residuum;
+			double rho;
+			rho = residuum.scalarProductDofs( start_residuum );
+			double delta; //norm of residuum
+			delta = residuum.scalarProductDofs( residuum );
+			const double start_delta = residuum.scalarProductDofs( residuum );
+
+			double alpha,omega,theta;
+			Stuff::printFunctionMinMax( logDebug, pressure );
+
+			while( iteration++ < maxIter ) {
+
+				sk_op.apply( search_direction, s );
+				theta = s.scalarProductDofs( start_residuum );
+				if ( std::fabs( theta ) < outer_absLimit ) {
+					if ( solverVerbosity > 3 )
+						logDebug << boost::format( "%s: abort, theta = ") % cg_name % theta << std::endl;
+					break;
 				}
-				if ( iteration >=  maxIter && current_adaption < max_adaptions ) {
-					current_adaption++;
-					iteration = 2;//do not execute first step in next iter again
-					outer_absLimit /= 0.01;
-	#ifdef USE_BFG_CG_SCHEME
-					current_inner_accuracy /= 0.01;
-					innerCGSolverWrapper.setAbsoluteLimit( current_inner_accuracy );
-	#endif
-					logInfo << "\n\t\t Outer CG solver reset, tolerance lowered" << std::endl;
+				alpha = rho/theta;
+				w.assign( residuum );
+				w.addScaled( s, -alpha );
+				sk_op.apply( w, v );
+				omega = v.scalarProductDofs( w )/v.scalarProductDofs( v );
+				pressure.addScaled( search_direction, -alpha );
+				pressure.addScaled( w, -omega );
 
-				}
+				residuum.addScaled( s, -alpha );
+				residuum.addScaled( v, -omega );
 
-	#ifdef USE_BFG_CG_SCHEME
-					if ( do_bfg ) {
-						//the form from the precond. paper (does not work properly)
-	//                    current_inner_accuracy = tau * std::min( 1. , absLimit / std::min ( std::pow( delta, int(iteration) ), 1.0 ) );
-						//my form, works
-						current_inner_accuracy = tau * std::min( 1. , outer_absLimit / std::min ( delta , 1.0 ) );
-						innerCGSolverWrapper.setAbsoluteLimit( current_inner_accuracy );
-						max_inner_accuracy = std::max( max_inner_accuracy, current_inner_accuracy );
-						if( solverVerbosity > 1 )
-							logInfo << "\t\t\t set inner limit to: " << current_inner_accuracy << "\n";
-					}
-	#endif
-				// xi = A^{-1} ( B * d )
-				tmp1.clear();
-				b_mat.apply( d, tmp1 );
-
-	#ifdef USE_BFG_CG_SCHEME
-				innerCGSolverWrapper.apply( tmp1, xi, a_solver_info );
-	#else
-				innerCGSolverWrapper.apply( tmp1, xi );
-	#endif
-
-	#ifdef USE_BFG_CG_SCHEME
-				if( solverVerbosity > 1 )
-					logInfo << "\t\t inner iterations: " << a_solver_info.first << std::endl;
-				total_inner_iterations += a_solver_info.first;
-				min_inner_iterations = std::min( min_inner_iterations, a_solver_info.first );
-				max_inner_iterations = std::max( max_inner_iterations, a_solver_info.first );
-	#endif
-
-				// h = B_t * xi  + C * d
-				b_t_mat.apply( xi, h );
-				tmp2.clear();
-				c_mat.apply( d, tmp2 );
-				h += tmp2;
-
-				rho = delta / d.scalarProductDofs( h );
-
-				// p_{m+1} = p_m - ( rho_m * d_m )
-				pressure.addScaled( d, -rho );
-				if ( !use_velocity_reconstruct ) {
-					// u_{m+1} = u_m + ( rho_m * xi_m )
-					velocity.addScaled( xi, +rho );
-				}
-				// r_{m+1} = r_m - rho_m * h_m
-				residuum.addScaled( h, -rho );
-
-				//save old delta for new gamma calc in next iter
-				gamma = delta;
-
-				// d_{m+1} = < r_{m+1} ,r_{m+1} >
+				const double next_rho = residuum.scalarProductDofs( start_residuum );
 				delta = residuum.scalarProductDofs( residuum );
 
-				if( solverVerbosity > 2 )
-					logInfo << "\t" << iteration << " SPcg-Iterationen  " << iteration << " Residuum:" << delta << std::endl;
-				if ( save_interval > 0 && iteration % save_interval == 0 )
-					dest.writeVTK( path, iteration );
-			}
+				if ( delta < outer_absLimit ) {
+					if ( solverVerbosity > 3 )
+						logDebug << boost::format( "%s: abort, delta = %e < %e") % cg_name % delta % outer_absLimit << std::endl;
+					break;
+				}
+				const double beta = ( next_rho/rho ) * (alpha/omega);
+				rho = next_rho;
+				search_direction *= beta;
+				search_direction.addScaled( s, -(omega*beta) );
+				search_direction += residuum;
+				if ( solverVerbosity > 3 ) {
+					logDebug << boost::format( "%s: iter %i\tres %e") % cg_name % iteration % delta << std::endl;
+					Stuff::printFunctionMinMax( logDebug, pressure );
+				}
+			} //end while
 
-			if ( use_velocity_reconstruct ) {
+			{
 				// u^0 = A^{-1} ( F - B * p^0 )
-				schur_F.assign(rhs2);
-				tmp1.clear();
-				b_mat.apply( pressure, tmp1 );
-				schur_F-=tmp1; // F ^= rhs2 - B * p
-				innerCGSolverWrapper.apply(schur_F,velocity);
+				v_tmp.assign(F);
+				z_mat.apply( pressure, tmp1 );
+				v_tmp-=tmp1; // F ^= rhs2 - B * p
+				innerCGSolverWrapper.apply(v_tmp,velocity);
 			}
 
-			logInfo << "End SaddlePointInverseOperator " << std::endl;
+			logInfo << cg_name << ": End BICG SaddlePointInverseOperator " << std::endl;
 
 			SaddlepointInverseOperatorInfo info; //left blank in case of no bfg
 	#ifdef USE_BFG_CG_SCHEME
@@ -284,7 +257,7 @@ namespace Dune {
 	#endif
 			// ***************************
 			return info;
-#endif
+
 		} //end BiCgStabSaddlepointInverseOperator::solve
 
 	  };//end class BiCgStabBiCgStabSaddlepointInverseOperator
