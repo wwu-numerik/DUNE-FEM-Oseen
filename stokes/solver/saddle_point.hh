@@ -111,12 +111,14 @@ namespace Dune {
 			W_MatrixType& w_mat      = Wmatrix;
 
 	/*** making our matrices kuhnibert compatible ****/
+			//rhs1 = M^{-1} * rhs1
+			//B_t = -B_t
 			const double m_scale = m_inv_mat(0,0);
 			b_t_mat.scale( -1 ); //since B_t = -E
 			DiscreteSigmaFunctionType rhs1 = rhs1_orig;
 			rhs1 *=  m_scale;
 
-			//transformation from StokesPass::buildMatrix
+			//rhs2 = rhs2 - X * M^{-1} * rhs1
 			VelocityDiscreteFunctionType v_tmp ( "v_tmp", velocity.space() );
 			x_mat.apply( rhs1, v_tmp );
 			DiscreteVelocityFunctionType rhs2 = rhs2_orig;
@@ -158,7 +160,7 @@ namespace Dune {
 			double rho;
 
 			VelocityDiscreteFunctionType F( "f", velocity.space() );
-			F.assign(rhs2);
+			F.assign(rhs2);//should be rhs2_orig ?!?
 			VelocityDiscreteFunctionType tmp1( "tmp1", velocity.space() );
 			tmp1.clear();
 			VelocityDiscreteFunctionType xi( "xi", velocity.space() );
@@ -170,9 +172,9 @@ namespace Dune {
 			PressureDiscreteFunctionType d( "d", pressure.space() );
 			PressureDiscreteFunctionType h( "h", pressure.space() );
 
-			// u^0 = A^{-1} ( F - B * p^0 )
+			// u^0 = A^{-1} ( F - B * p^0 ) (3.95a)
 			b_mat.apply( pressure, tmp1 );
-			F-=tmp1; // F ^= rhs2 - B * p
+			F-=tmp1; // F = rhs2 - X * M^{-1} * rhs1 - B * p
 			innerCGSolverWrapper.apply(F,velocity);
 
 			// r^0 = G - B_t * u^0 + C * p^0
