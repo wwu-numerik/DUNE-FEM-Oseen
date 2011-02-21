@@ -2,7 +2,7 @@
 #define DUNE_STOKES_SOLVERS_BICG_SADDLE_POINT_HH
 
 #include <dune/stokes/solver/solver_interface.hh>
-
+#include <dune/stokes/solver/schurkomplement.hh>
 namespace Dune {
 
 	/**
@@ -55,14 +55,14 @@ namespace Dune {
 					class DiscretePressureFunctionType  >
 		SaddlepointInverseOperatorInfo solve( const DomainType& /*arg*/,
 					RangeType& dest,
-					X_MatrixType& Xmatrix,
-					M_invers_matrixType& Mmatrix,
-					Y_MatrixType& Ymatrix,
-					O_MatrixType& Omatrix,
-					E_MatrixType& Ematrix,
-					R_MatrixType& Rmatrix,
-					Z_MatrixType& Zmatrix,
-					W_MatrixType& Wmatrix,
+					X_MatrixType& x_mat,
+					M_invers_matrixType& m_inv_mat,
+					Y_MatrixType& y_mat,
+					O_MatrixType& o_mat,
+					E_MatrixType& e_mat,
+					R_MatrixType& r_mat,
+					Z_MatrixType& z_mat,
+					W_MatrixType& w_mat,
 					const DiscreteSigmaFunctionType& rhs1_orig,
 					const DiscreteVelocityFunctionType& rhs2_orig,
 					const DiscretePressureFunctionType& rhs3 ) const
@@ -101,28 +101,6 @@ namespace Dune {
 			PressureDiscreteFunctionType& pressure = dest.discretePressure();
 			VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
 
-			X_MatrixType& x_mat      = Xmatrix;
-			M_invers_matrixType& m_inv_mat  = Mmatrix;
-			Y_MatrixType& y_mat      = Ymatrix;
-			Y_MatrixType& o_mat      = Omatrix;
-			E_MatrixType& b_t_mat = Ematrix; //! renamed
-			R_MatrixType& c_mat      = Rmatrix; //! renamed
-			Z_MatrixType& b_mat      = Zmatrix; //! renamed
-			W_MatrixType& w_mat      = Wmatrix;
-
-	/*** making our matrices kuhnibert compatible ****/
-			const double m_scale = m_inv_mat(0,0);
-			b_t_mat.scale( -1 ); //since B_t = -E
-			DiscreteSigmaFunctionType rhs1 = rhs1_orig;
-			rhs1 *=  m_scale;
-
-			//transformation from StokesPass::buildMatrix
-			VelocityDiscreteFunctionType v_tmp ( "v_tmp", velocity.space() );
-			x_mat.apply( rhs1, v_tmp );
-			DiscreteVelocityFunctionType rhs2 = rhs2_orig;
-			rhs2 -= v_tmp;
-	/***********/
-
 			typedef InnerCGSolverWrapper< W_MatrixType,
 									M_invers_matrixType,
 									X_MatrixType,
@@ -142,50 +120,65 @@ namespace Dune {
 			double current_inner_accuracy = inner_absLimit;
 	#endif
 			InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
-														   o_mat, rhs1.space(),rhs2.space(), relLimit,
+														   o_mat, rhs1_orig.space(),rhs2_orig.space(), relLimit,
 														   current_inner_accuracy, solverVerbosity > 3 );
 
 	/*****************************************************************************************/
 
 			int iteration = 0;
+		#ifdef USE_BFG_CG_SCHEME
 			int total_inner_iterations = 0;
 			int min_inner_iterations = std::numeric_limits<int>::max();
 			int max_inner_iterations = 0;
+		#endif
 			const int max_adaptions = Parameters().getParam( "max_adaptions", 2 ) ;
 			int current_adaption = 0;
 			double delta; //norm of residuum
 			double gamma=0;
 			double rho;
 
+			// F = rhs2 - X M^{-1} * rhs1
+			const double m_scale = m_inv_mat(0,0);
+			DiscreteSigmaFunctionType rhs1 = rhs1_orig;
+			VelocityDiscreteFunctionType v_tmp ( "v_tmp", velocity.space() );
+			x_mat.apply( rhs1, v_tmp );
+			v_tmp *=  m_scale;
 			VelocityDiscreteFunctionType F( "f", velocity.space() );
-			F.assign(rhs2);
+			F.assign(rhs2_orig);
+			F -= v_tmp;
+
 			VelocityDiscreteFunctionType tmp1( "tmp1", velocity.space() );
 			tmp1.clear();
 			VelocityDiscreteFunctionType xi( "xi", velocity.space() );
 			xi.clear();
 			PressureDiscreteFunctionType tmp2( "tmp2", pressure.space() );
-			PressureDiscreteFunctionType residuum( "residuum", pressure.space() );
-			residuum.assign(rhs3);
+			VelocityDiscreteFunctionType residuum( "residuum", velocity.space() );
+			VelocityDiscreteFunctionType residuum_squigly( "residuum", velocity.space() );
 
 			PressureDiscreteFunctionType d( "d", pressure.space() );
 			PressureDiscreteFunctionType h( "h", pressure.space() );
 
-			// u^0 = A^{-1} ( F - B * p^0 )
-			b_mat.apply( pressure, tmp1 );
-			F-=tmp1; // F ^= rhs2 - B * p
-			innerCGSolverWrapper.apply(F,velocity);
+			typedef SchurkomplementOperator<    InnerCGSolverWrapperType,
+												E_MatrixType,
+												R_MatrixType,
+												Z_MatrixType,
+												M_invers_matrixType,
+												DiscreteVelocityFunctionType,
+												DiscretePressureFunctionType >
+					Sk_Operator;
+			Sk_Operator sk_op(  innerCGSolverWrapper, e_mat, r_mat, z_mat, m_inv_mat,
+								velocity.space(), pressure.space() );
 
-			// r^0 = G - B_t * u^0 + C * p^0
-			b_t_mat.apply( velocity, tmp2 );
+			// r^0 = S * p^0 - f
+			residuum.assign( F );
+			sk_op.apply( pressure, tmp2 );
 			residuum -= tmp2;
-			tmp2.clear();
-			c_mat.apply( pressure, tmp2 );
-			residuum += tmp2;
+			// r_^0 = r^0
+			residuum_squigly.assign( residuum );
 
-			// d^0 = r^0
-			d.assign( residuum );
-
-			delta = residuum.scalarProductDofs( residuum );
+			// rho = (r_, r )
+			rho = residuum.scalarProductDofs( residuum_squigly );
+		#if 0
 			while( (delta > outer_absLimit ) && (iteration++ < maxIter ) ) {
 				if ( iteration > 1 ) {
 					// gamma_{m+1} = delta_{m+1} / delta_m
@@ -267,11 +260,11 @@ namespace Dune {
 
 			if ( use_velocity_reconstruct ) {
 				// u^0 = A^{-1} ( F - B * p^0 )
-				F.assign(rhs2);
+				schur_F.assign(rhs2);
 				tmp1.clear();
 				b_mat.apply( pressure, tmp1 );
-				F-=tmp1; // F ^= rhs2 - B * p
-				innerCGSolverWrapper.apply(F,velocity);
+				schur_F-=tmp1; // F ^= rhs2 - B * p
+				innerCGSolverWrapper.apply(schur_F,velocity);
 			}
 
 			logInfo << "End SaddlePointInverseOperator " << std::endl;
@@ -291,6 +284,7 @@ namespace Dune {
 	#endif
 			// ***************************
 			return info;
+#endif
 		} //end BiCgStabSaddlepointInverseOperator::solve
 
 	  };//end class BiCgStabBiCgStabSaddlepointInverseOperator
