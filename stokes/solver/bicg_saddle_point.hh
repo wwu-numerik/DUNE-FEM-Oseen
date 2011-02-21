@@ -147,7 +147,7 @@ namespace Dune {
 
 			VelocityDiscreteFunctionType tmp1( "tmp1", velocity.space() );
 			tmp1.clear();
-			PressureDiscreteFunctionType search_direction( "xi", pressure.space() );
+			PressureDiscreteFunctionType search_direction( "search", pressure.space() );
 
 			PressureDiscreteFunctionType tmp2( "tmp2", pressure.space() );
 			PressureDiscreteFunctionType residuum( "residuum", pressure.space() );
@@ -189,10 +189,11 @@ namespace Dune {
 
 			double alpha,omega,last_rho;
 			Stuff::printFunctionMinMax( logDebug, pressure );
+			PressureDiscreteFunctionType residuum_T( "s", pressure.space() );
+			residuum_T.assign( start_residuum );//??
 
 			while( iteration < maxIter ) {
-				PressureDiscreteFunctionType residuum_T( "s", pressure.space() );
-				residuum_T.assign( start_residuum );//??
+
 
 				rho = residuum_T.scalarProductDofs( residuum );
 				if ( std::fabs( rho ) < outer_absLimit ) {
@@ -205,7 +206,7 @@ namespace Dune {
 					search_direction.assign( start_residuum );
 				}
 				else {
-					const double beta = (rho/last_rho)/ (alpha/omega);
+					const double beta = (rho/last_rho) * (alpha/omega);
 					search_direction *= beta;
 					search_direction.addScaled( v, -beta*omega);
 					search_direction += residuum;
@@ -224,7 +225,9 @@ namespace Dune {
 				sk_op.apply( s, t );
 				omega = t.scalarProductDofs( s ) / t.scalarProductDofs( t );
 
+				Stuff::printFunctionMinMax( logDebug, search_direction );
 				pressure.addScaled( search_direction, alpha );
+				Stuff::printFunctionMinMax( logDebug, pressure );
 				pressure.addScaled( s, omega );
 
 				residuum.assign( s );
@@ -237,7 +240,8 @@ namespace Dune {
 				}
 
 				if ( solverVerbosity > 3 ) {
-					logDebug << boost::format( "%s: iter %i\tres %e") % cg_name % iteration % delta << std::endl;
+					logDebug << boost::format( "%s: iter %i\tres %e alpha %e \trho %e") % cg_name % iteration
+								% delta % alpha %  rho << std::endl;
 					Stuff::printFunctionMinMax( logDebug, pressure );
 				}
 				assert( omega != 0.0 );

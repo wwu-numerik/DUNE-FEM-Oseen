@@ -119,11 +119,14 @@ namespace Dune {
 			  DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
 			  // f_func =  ( -X *  M_inv * rhs1 + rhs2 )
 			  m_inv_mat.apply( rhs1, m_tmp );
+			  m_tmp.assign(rhs1); m_tmp *= m_inv_mat(0,0);
 			  x_mat.apply( m_tmp, tmp_f );
 			  f_func -= tmp_f;
 			  f_func += rhs2;
 
 
+//			  z_mat.apply( pressure, tmp_f );
+//			  f_func -= tmp_f;//magic
 
 			  // schur_f := -1 * ( ( E * A^-1 * f_func ) - rhs3 )
 			  InnerCGSolverWrapperType innerCGSolverWrapper(w_mat,m_inv_mat,x_mat,y_mat,o_mat,rhs1.space(),f_func.space(),relLimit,absLimit,solverVerbosity);

@@ -441,9 +441,10 @@ class StokesPass
 				SmartSolverCallerType;
 
 			//Select which solver we want to use
-			typename Stokes::Solver::SolverID solver_ID = do_oseen_discretization_
-					? Stokes::Solver::BiCg_Saddlepoint_Solver_ID
-					: Stokes::Solver::SaddlePoint_Solver_ID;
+//			typename Stokes::Solver::SolverID solver_ID = do_oseen_discretization_
+//					? Stokes::Solver::BiCg_Saddlepoint_Solver_ID
+//					: Stokes::Solver::SaddlePoint_Solver_ID;
+			typename Stokes::Solver::SolverID solver_ID = Stokes::Solver::BiCg_Saddlepoint_Solver_ID;
 
 			if( !use_reduced_solver ) {
 				if ( Parameters().getParam( "use_nested_cg_solver", false ) )
