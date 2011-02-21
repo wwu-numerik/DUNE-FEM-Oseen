@@ -119,7 +119,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
         template <class VECtype>
         void multOEM(const VECtype *x, VECtype * ret) const
         {
-			// ret = ( ( E * ( A^-1 * ( Z * x ) ) ) + ( R * x ) )
+			// ret = ( ( -E * ( A^-1 * ( Z * x ) ) ) + ( R * x ) )
 			z_mat_.multOEM( x, tmp1.leakPointer() );
 
 #ifdef USE_BFG_CG_SCHEME
@@ -134,6 +134,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 #else
 			a_solver_.apply( tmp1, tmp2 );
 #endif
+			tmp2 *= -1;
 			e_mat_.multOEM( tmp2.leakPointer(), ret );
 			r_mat_.multOEMAdd( x, ret );
         }
