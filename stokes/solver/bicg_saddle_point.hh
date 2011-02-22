@@ -126,21 +126,21 @@ namespace Dune {
 			VelocityDiscreteFunctionType v_tmp ( "v_tmp", velocity.space() );
 			x_mat.apply( rhs1, v_tmp );
 			v_tmp *=  m_scale;
-			VelocityDiscreteFunctionType F( "f", velocity.space() );
+			VelocityDiscreteFunctionType F( "F", velocity.space() );
 			F.assign(rhs2_orig);
 			F -= v_tmp;
 
 			VelocityDiscreteFunctionType tmp1( "tmp1", velocity.space() );
 			tmp1.clear();
-			PressureDiscreteFunctionType search_direction( "search", pressure.space() );
+			PressureDiscreteFunctionType search_direction( "search_direction", pressure.space() );
 
 			PressureDiscreteFunctionType tmp2( "tmp2", pressure.space() );
 			PressureDiscreteFunctionType residuum( "residuum", pressure.space() );
-			PressureDiscreteFunctionType start_residuum( "residuum", pressure.space() );
+			PressureDiscreteFunctionType start_residuum( "start_residuum", pressure.space() );
 			PressureDiscreteFunctionType s( "s", pressure.space() );
-			PressureDiscreteFunctionType t( "s", pressure.space() );
-			PressureDiscreteFunctionType v( "s", pressure.space() );
-			PressureDiscreteFunctionType schur_f( "s", pressure.space() );
+			PressureDiscreteFunctionType t( "t", pressure.space() );
+			PressureDiscreteFunctionType v( "v", pressure.space() );
+			PressureDiscreteFunctionType schur_f( "schur_f", pressure.space() );
 
 			typedef SchurkomplementOperator<    InnerCGSolverWrapperType,
 												E_MatrixType,
