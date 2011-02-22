@@ -8,10 +8,8 @@ namespace Dune {
 	/**
 		\brief Saddlepoint Solver
 		The inner CG iteration is implemented by passing a custom Matrix operator to a given\n
-		Dune solver. The outer iteration is a implementation of the CG algorithm as described in\n
-		Kuhnibert
-		Optionally the BFG scheme as described in YADDA is uesd to control the inner solver tolerance.
-		/todo get references in doxygen right
+		Dune solver. The outer iteration is a implementation of the BICGStab algorithm as described in\n
+		van der Vorst: "Iterative Methods for Large Linear Systems" (2000)
 	**/
 	template < class StokesPassImp >
 	class BiCgStabSaddlepointInverseOperator
@@ -67,19 +65,9 @@ namespace Dune {
 					const DiscreteVelocityFunctionType& rhs2_orig,
 					const DiscretePressureFunctionType& rhs3 ) const
 		{
-
 			const std::string cg_name( "OuterCG");
 			Logging::LogStream& logDebug = Logger().Dbg();
 			Logging::LogStream& logInfo = Logger().Info();
-
-			if ( Parameters().getParam( "disableSolver", false ) ) {
-				logInfo.Resume();
-				logInfo << "solving disabled via parameter file" << std::endl;
-				return SaddlepointInverseOperatorInfo();
-			}
-			static const int save_interval = Parameters().getParam( "save_interval", -1 );
-			static const std::string path = Parameters().getParam("fem.io.datadir", std::string("data") ) + std::string("/intermediate/");
-			Stuff::testCreateDirectory( path );
 
 			// relative min. error at which cg-solvers will abort
 			const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
@@ -88,7 +76,6 @@ namespace Dune {
 			const double inner_absLimit = Parameters().getParam( "inner_absLimit", 1e-8 );
 			const int solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
 			const int maxIter = Parameters().getParam( "maxIter", 500 );
-			const bool use_velocity_reconstruct = Parameters().getParam( "use_velocity_reconstruct", true );
 
 	#ifdef USE_BFG_CG_SCHEME
 			const double tau = Parameters().getParam( "bfg-tau", 0.1 );
@@ -132,8 +119,6 @@ namespace Dune {
 			int min_inner_iterations = std::numeric_limits<int>::max();
 			int max_inner_iterations = 0;
 		#endif
-			const int max_adaptions = Parameters().getParam( "max_adaptions", 2 ) ;
-			int current_adaption = 0;
 
 			// F = rhs2 - X M^{-1} * rhs1
 			const double m_scale = m_inv_mat(0,0);
@@ -188,15 +173,14 @@ namespace Dune {
 			double delta; //norm of residuum
 
 			double alpha,omega,last_rho;
-			Stuff::printFunctionMinMax( logDebug, pressure );
+			if ( solverVerbosity > 3 )
+				Stuff::printFunctionMinMax( logDebug, pressure );
 			PressureDiscreteFunctionType residuum_T( "s", pressure.space() );
 			residuum_T.assign( start_residuum );//??
 
 			while( iteration < maxIter ) {
-
-
 				rho = residuum_T.scalarProductDofs( residuum );
-				if ( std::fabs( rho ) < outer_absLimit ) {
+				if ( rho == 0.0 ) {
 					if ( solverVerbosity > 3 )
 						logDebug << boost::format( "%s: abort, theta = %e") % cg_name % rho << std::endl;
 					break;
@@ -225,9 +209,11 @@ namespace Dune {
 				sk_op.apply( s, t );
 				omega = t.scalarProductDofs( s ) / t.scalarProductDofs( t );
 
-				Stuff::printFunctionMinMax( logDebug, search_direction );
+				if ( solverVerbosity > 3 )
+					Stuff::printFunctionMinMax( logDebug, search_direction );
 				pressure.addScaled( search_direction, alpha );
-				Stuff::printFunctionMinMax( logDebug, pressure );
+				if ( solverVerbosity > 3 )
+					Stuff::printFunctionMinMax( logDebug, pressure );
 				pressure.addScaled( s, omega );
 
 				residuum.assign( s );
@@ -249,15 +235,11 @@ namespace Dune {
 				last_rho = rho;
 				iteration++;
 			} //end while
-
-			{
-				// u^0 = A^{-1} ( F - B * p^0 )
-				v_tmp.assign(F);
-				z_mat.apply( pressure, tmp1 );
-				v_tmp-=tmp1; // F ^= rhs2 - B * p
-				innerCGSolverWrapper.apply(v_tmp,velocity);
-			}
-
+			// u = A^{-1} ( F - B * p^0 )
+			v_tmp.assign(F);
+			z_mat.apply( pressure, tmp1 );
+			v_tmp-=tmp1; // F ^= rhs2 - B * p
+			innerCGSolverWrapper.apply(v_tmp,velocity);
 			logInfo << cg_name << ": End BICG SaddlePointInverseOperator " << std::endl;
 
 			SaddlepointInverseOperatorInfo info; //left blank in case of no bfg
