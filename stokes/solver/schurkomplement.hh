@@ -132,6 +132,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 
             total_inner_iterations += cg_info.first;
 #else
+			tmp2.clear();
 			a_solver_.apply( tmp1, tmp2 );
 #endif
 			tmp2 *= -1;
