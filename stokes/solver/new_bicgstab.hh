@@ -8,6 +8,8 @@
 	namespace Stuff {
 #endif
 
+#include <limits>
+
 template < class PressureDiscreteFunctionType, class OperatorType >
 class NewBicgStab {
 
@@ -26,7 +28,7 @@ public:
 
 	void apply(const PressureDiscreteFunctionType& rhs, PressureDiscreteFunctionType& dest ) const
 	{
-		int iteration = 1;
+		unsigned int iteration = 1;
 		const std::string cg_name( "OuterCG");
 		Logging::LogStream& logDebug = Logger().Dbg();
 
@@ -49,12 +51,12 @@ public:
 		start_residuum.assign( residuum );
 		search_direction.assign( residuum );
 
-		double rho;
-		double delta; //norm of residuum
+		double rho(0);
+		double delta(0); //norm of residuum
 
 		double alpha,omega,last_rho;
-		if ( solverVerbosity_ > 3 )
-			Stuff::printFunctionMinMax( logDebug, dest );
+		alpha = omega = last_rho  = std::numeric_limits<double>::max();
+
 		PressureDiscreteFunctionType residuum_T( "s", dest.space() );
 		residuum_T.assign( start_residuum );//??
 
@@ -80,8 +82,8 @@ public:
 
 			operator_.apply( search_direction, v );//v=S*p
 			alpha = rho/ residuum_T.scalarProductDofs( v );
-//				assert( !std::isnan(alpha) );
-//				assert( std::isfinite(alpha) );
+			assert( !std::isnan(alpha) );
+			assert( std::isfinite(alpha) );
 
 			s.assign( residuum );
 			s.addScaled( v, -alpha );
