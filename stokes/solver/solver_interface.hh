@@ -10,7 +10,6 @@
 	#define OUTER_CG_SOLVERTYPE OEMCGOp
 #endif
 
-
 #if defined(USE_BFG_CG_SCHEME) || defined(FORCE_CUSTOM_SOLVER)
 	#include <utility>
 	//< iteration no , < absLimit, residuum > >
@@ -24,6 +23,7 @@
 	#define SOLVER_NAMESPACE Dune
 	#define SOLVER_INTERFACE_NAMESPACE OEMSolver
 #endif
+#include <dune/stokes/solver/new_bicgstab.hh>
 
 #include <dune/fem/function/common/discretefunction.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>

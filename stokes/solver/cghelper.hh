@@ -132,6 +132,11 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 	        return V.scalarProductDofs( W );
 		}
 
+		void apply( const DiscreteVelocityFunctionType& rhs, DiscreteVelocityFunctionType& dest ) const
+		{
+			multOEM( rhs.leakPointer(), dest.leakPointer() )	;
+		}
+
 
         ThisType& systemMatrix ()
         {

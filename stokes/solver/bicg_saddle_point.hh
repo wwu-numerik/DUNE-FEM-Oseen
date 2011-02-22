@@ -3,6 +3,7 @@
 
 #include <dune/stokes/solver/solver_interface.hh>
 #include <dune/stokes/solver/schurkomplement.hh>
+
 namespace Dune {
 
 	/**
@@ -113,7 +114,6 @@ namespace Dune {
 
 	/*****************************************************************************************/
 
-			int iteration = 1;
 		#ifdef USE_BFG_CG_SCHEME
 			int total_inner_iterations = 0;
 			int min_inner_iterations = std::numeric_limits<int>::max();
@@ -131,15 +131,8 @@ namespace Dune {
 			F -= v_tmp;
 
 			VelocityDiscreteFunctionType tmp1( "tmp1", velocity.space() );
-			tmp1.clear();
-			PressureDiscreteFunctionType search_direction( "search_direction", pressure.space() );
-
 			PressureDiscreteFunctionType tmp2( "tmp2", pressure.space() );
-			PressureDiscreteFunctionType residuum( "residuum", pressure.space() );
-			PressureDiscreteFunctionType start_residuum( "start_residuum", pressure.space() );
-			PressureDiscreteFunctionType s( "s", pressure.space() );
-			PressureDiscreteFunctionType t( "t", pressure.space() );
-			PressureDiscreteFunctionType v( "v", pressure.space() );
+
 			PressureDiscreteFunctionType schur_f( "schur_f", pressure.space() );
 
 			typedef SchurkomplementOperator<    InnerCGSolverWrapperType,
@@ -159,87 +152,12 @@ namespace Dune {
 			e_mat.apply( v_tmp, tmp2 );
 			schur_f += tmp2;
 			schur_f *= -1;
-
-			// r^0 = - S * p^0 + schur_f
-			sk_op.apply( pressure, residuum );
-			residuum -= schur_f;
-			residuum *= -1.;
-
-			// r_^0 = r^0
-			start_residuum.assign( residuum );
-			search_direction.assign( residuum );
-
-			double rho;
-			double delta; //norm of residuum
-
-			double alpha,omega,last_rho;
 			if ( solverVerbosity > 3 )
-				Stuff::printFunctionMinMax( logDebug, pressure );
-			PressureDiscreteFunctionType residuum_T( "s", pressure.space() );
-			residuum_T.assign( start_residuum );//??
+				Stuff::printFunctionMinMax( logDebug, schur_f );
 
-			while( iteration < maxIter ) {
-				rho = residuum_T.scalarProductDofs( residuum );
-				if ( rho == 0.0 ) {
-					if ( solverVerbosity > 3 )
-						logDebug << boost::format( "%s: abort, theta = %e") % cg_name % rho << std::endl;
-					break;
-				}
-				assert( !std::isnan(rho) );
-				assert( std::isfinite(rho) );
-
-				if ( iteration == 1 ) {
-					search_direction.assign( start_residuum );
-				}
-				else {
-					const double beta = (rho/last_rho) * (alpha/omega);
-					search_direction *= beta;
-					search_direction.addScaled( v, -beta*omega);
-					search_direction += residuum;
-				}
-
-				sk_op.apply( search_direction, v );//v=S*p
-				alpha = rho/ residuum_T.scalarProductDofs( v );
-				assert( !std::isnan(alpha) );
-				assert( std::isfinite(alpha) );
-
-				s.assign( residuum );
-				s.addScaled( v, -alpha );
-				const double s_norm = std::sqrt( s.scalarProductDofs( s ) );
-				if ( s_norm < outer_absLimit ) {
-					pressure.addScaled( search_direction, alpha );
-					logDebug << boost::format( "%s: iter %i\taborted: s: %e") % cg_name % iteration % s_norm << std::endl;
-					break;
-				}
-				sk_op.apply( s, t );
-				omega = t.scalarProductDofs( s ) / t.scalarProductDofs( t );
-
-				if ( solverVerbosity > 3 )
-					Stuff::printFunctionMinMax( logDebug, search_direction );
-				pressure.addScaled( search_direction, alpha );
-				if ( solverVerbosity > 3 )
-					Stuff::printFunctionMinMax( logDebug, pressure );
-				pressure.addScaled( s, omega );
-
-				residuum.assign( s );
-				residuum.addScaled( t, - omega );
-
-				delta = std::sqrt( residuum.scalarProductDofs( residuum ) );
-				if ( delta < outer_absLimit ) {
-					logDebug << boost::format( "%s: aborted, iter %i\tres %e") % cg_name % iteration % delta << std::endl;
-					break;
-				}
-
-				if ( solverVerbosity > 3 ) {
-					logDebug << boost::format( "%s: iter %i\tres %e alpha %e \trho %e") % cg_name % iteration
-								% delta % alpha %  rho << std::endl;
-					Stuff::printFunctionMinMax( logDebug, pressure );
-				}
-				assert( omega != 0.0 );
-
-				last_rho = rho;
-				iteration++;
-			} //end while
+			SOLVER_NAMESPACE::NewBicgStab< PressureDiscreteFunctionType,Sk_Operator >
+					bicg( sk_op, relLimit, outer_absLimit, maxIter, solverVerbosity );
+			bicg.apply( schur_f, pressure );
 			// u = A^{-1} ( F - B * p^0 )
 			v_tmp.assign(F);
 			z_mat.apply( pressure, tmp1 );
@@ -248,7 +166,7 @@ namespace Dune {
 			logInfo << cg_name << ": End BICG SaddlePointInverseOperator " << std::endl;
 
 			SaddlepointInverseOperatorInfo info; //left blank in case of no bfg
-	#ifdef USE_BFG_CG_SCHEME
+	#if 0 //def USE_BFG_CG_SCHEME
 			const double avg_inner_iterations = total_inner_iterations / (double)iteration;
 			if( solverVerbosity > 0 )
 				logInfo << "\n #avg inner iter | #outer iter: "
