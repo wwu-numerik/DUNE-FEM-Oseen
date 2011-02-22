@@ -198,7 +198,7 @@ namespace Dune {
 				rho = residuum_T.scalarProductDofs( residuum );
 				if ( std::fabs( rho ) < outer_absLimit ) {
 					if ( solverVerbosity > 3 )
-						logDebug << boost::format( "%s: abort, theta = ") % cg_name % rho << std::endl;
+						logDebug << boost::format( "%s: abort, theta = %e") % cg_name % rho << std::endl;
 					break;
 				}
 
