@@ -185,6 +185,8 @@ namespace Dune {
 						logDebug << boost::format( "%s: abort, theta = %e") % cg_name % rho << std::endl;
 					break;
 				}
+				assert( !std::isnan(rho) );
+				assert( std::isfinite(rho) );
 
 				if ( iteration == 1 ) {
 					search_direction.assign( start_residuum );
@@ -198,6 +200,9 @@ namespace Dune {
 
 				sk_op.apply( search_direction, v );//v=S*p
 				alpha = rho/ residuum_T.scalarProductDofs( v );
+				assert( !std::isnan(alpha) );
+				assert( std::isfinite(alpha) );
+
 				s.assign( residuum );
 				s.addScaled( v, -alpha );
 				const double s_norm = std::sqrt( s.scalarProductDofs( s ) );
