@@ -126,10 +126,8 @@ bicgstab_algo2( const CommunicatorType & comm,
     daxpy(N,-1.,rhs,1,r,1);
     bb = ddot(N,rhs,1,rhs,1);
   }
-	assert( err > 0.0 );
-  err *= comm.sum( bb );
 
-  assert( err > 0.0 );
+  err *= comm.sum( bb );
 
   dcopy(N,r,1,d,1);
   dcopy(N,d,1,s,1);
@@ -139,8 +137,8 @@ bicgstab_algo2( const CommunicatorType & comm,
   //IMPORTANT
   //assert( ddot(N,rT,1,rT,1)> bicgeps );
   const double rt_prod = ddot(N,rT,1,rT,1);
-  assert( rt_prod < bicgeps );
-//	  return std::pair<int,double> (its,sqrt(rTr));
+  if ( rt_prod < bicgeps )
+	  return std::pair<int,double> (its,sqrt(rTr));
 
 
   rTr = ddot(N,r,1,r,1);
