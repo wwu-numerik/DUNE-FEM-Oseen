@@ -23,7 +23,7 @@
 	#define SOLVER_NAMESPACE Dune
 	#define SOLVER_INTERFACE_NAMESPACE OEMSolver
 #endif
-#include <dune/stokes/solver/new_bicgstab.hh>
+
 
 #include <dune/fem/function/common/discretefunction.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>

@@ -6,6 +6,7 @@
 #ifndef DUNE_STOKES_SOLVER_CGHELPER_HH
 #define DUNE_STOKES_SOLVER_CGHELPER_HH
 
+#include <dune/stokes/solver/new_bicgstab.hh>
 #include <dune/stuff/printing.hh>
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/matrix.hh>
