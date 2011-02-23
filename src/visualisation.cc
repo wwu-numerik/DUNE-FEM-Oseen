@@ -182,9 +182,10 @@ int main( int argc, char **argv )
 		}
 
 		const bool useLogger = false;
-		Logger().Create( Parameters().getParam( "loglevel",         62,                         useLogger ),
-						 Parameters().getParam( "logfile",          std::string( "dune_stokes" ), useLogger ),
-						 Parameters().getParam( "fem.io.logdir",    std::string(),              useLogger )
+		Logger().Create( Parameters().getParam( "loglevel",         62,								useLogger ),
+						 Parameters().getParam( "logfile",          std::string( "dune_stokes" ),	useLogger ),
+						 Parameters().getParam( "fem.io.datadir",   std::string("data"),			useLogger ),
+						 Parameters().getParam( "fem.io.logdir",    std::string(),					useLogger )
 					   );
 
 		Dune::GridPtr<GridType> gridptr ( Parameters().DgfFilename( GridType::dimensionworld ) );

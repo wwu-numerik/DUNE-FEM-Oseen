@@ -148,7 +148,7 @@ LINK_DIRECTORIES( "/usr/lib" "${GRAPE_PATH}" ${CCGNU_LIBRARY_DIRS} )
 FILE( GLOB header "src/*.hh" )
 FILE( GLOB_RECURSE stokes "stokes/*.hh" )
 
-set( COMMON_LIBS "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS} ${CCGNU_LIBRARIES} )
+set( COMMON_LIBS "common" "fem" "grid" ${BLAS_LIB} "alugrid" ${UGLIBS}  "GL" ${ParaLIBS} ${CCGNU_LIBRARIES} "boost_filesystem")
 set( COMMON_HEADER ${header} ${stokes} ${stuff} ${DUNE_HEADERS} )
 set_source_files_properties( ${COMMON_HEADER} PROPERTIES HEADER_FILE_ONLY 1 )
 
