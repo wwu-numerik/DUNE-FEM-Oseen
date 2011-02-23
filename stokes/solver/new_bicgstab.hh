@@ -2,13 +2,15 @@
 #define DUNE_STOKES_NEW_BICGSTAB_HH
 
 
+#include <limits>
+
 #ifdef SOLVER_NAMESPACE
 	namespace SOLVER_NAMESPACE {
 #else
 	namespace Stuff {
 #endif
 
-#include <limits>
+
 
 template < class PressureDiscreteFunctionType, class OperatorType >
 class NewBicgStab {
