@@ -162,7 +162,7 @@ class Pressure : public Dune::Function < FunctionSpaceImp , Pressure < FunctionS
 
 		inline void evaluate( const DomainType& arg, RangeType& ret ) const
 		{
-			ret = disc_time * arg[0] + arg[1] - ( ( disc_time - 1) / 2.0 );
+			ret = disc_time * arg[0] + arg[1] - ( ( disc_time + 1) / 2.0 );
 		}
 
 		RangeType operator () ( const DomainType& arg)
