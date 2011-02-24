@@ -15,6 +15,10 @@ namespace StokesProblems {
 	namespace Cockburn {
 		#include "problems/cockburn.hh"
 	}
+	//! cockburn, see ref
+	namespace Generalized {
+		#include "problems/generalized.hh"
+	}
 	//! docme
 	namespace Constant {
 		#include "problems/constant.hh"
