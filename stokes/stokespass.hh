@@ -511,8 +511,8 @@ class StokesPass
 #ifndef NLOG
 			Logging::LogStream& infoStream = Logger().Info();
 			infoStream << boost::format( "pressure_gradient/convection scaling: %e | %e\npass viscosity: %e\n")
-								% discreteModel_.convection_scaling()
 								% discreteModel_.pressure_gradient_scaling()
+								% discreteModel_.convection_scaling()
 								% discreteModel_.viscosity();
 			int numberOfEntities = 0;
 			int numberOfIntersections = 0;
