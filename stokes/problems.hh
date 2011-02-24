@@ -6,6 +6,7 @@
 
 //! collection of data functions
 namespace StokesProblems {
+
 	//! a simple problem, d'oh
 	namespace Simple {
 		#include "problems/simple.hh"
@@ -26,17 +27,19 @@ namespace StokesProblems {
 	namespace Aorta {
 		#include "problems/aorta.hh"
 	}
+	namespace TimeDisc {
+		#include "problems/timedisc.hh"
+	}
 
 	/**
-	 *  \brief  a collection of some analytical functions solving a stokes problem
+	 *  \brief  a collection of some analytical functions describing a stokes problem
 	 *
 	 *  namely velocity, pressure, force term and dirichlet boundary data
 	 *
 	 *  \tparam gridDim
 	 *          dimension of the grid
 	 *
-	 *  \todo   extensive docu with latex
-		\note super useless
+		\note only ever used in \file postprocessor.hh
 	 **/
 	template < int griddim, class DiscreteFunctionWrapperImp  >
 	class Container
@@ -131,23 +134,6 @@ namespace StokesProblems {
 		const DirichletDataType& dirichletData() const
 		{
 			return dirichletData_;
-		}
-
-		/**
-		 *  \brief  a simple test of all class' functionalities
-		 **/
-		void testMe()
-		{
-			// some logstreams
-			Logging::LogStream& infoStream = Logger().Info();
-			infoStream << "testing class Problem..." << std::endl;
-			//tests
-			velocity_.testMe();
-			pressure_.testMe();
-	//        force_.testMe();
-	//        dirichletData_.testMe();
-			// happy
-			infoStream << "...test passed!" << std::endl;
 		}
 
 		private:

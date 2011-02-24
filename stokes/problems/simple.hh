@@ -1,5 +1,5 @@
-#ifndef SIMPLE_HH
-#define SIMPLE_HH
+#ifndef STOKES_PROBLEMS_SIMPLE_HH
+#define STOKES_PROBLEMS_SIMPLE_HH
 
 #include <dune/fem/function/common/function.hh>
 #include <dune/stuff/misc.hh>
@@ -158,4 +158,4 @@ class Pressure : public Dune::Function < FunctionSpaceImp , Pressure < FunctionS
 		static const int dim_ = FunctionSpaceImp::dimDomain;
 };
 
-#endif // SIMPLE_HH
+#endif // STOKES_PROBLEMS_SIMPLE_HH
