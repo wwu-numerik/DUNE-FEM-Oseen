@@ -65,6 +65,7 @@
 #include <dune/stuff/femeoc.hh>
 #include <dune/fem/misc/gridwidth.hh>
 
+#include <dune/stokes/problems.hh>
 #include <dune/stokes/discretestokesfunctionspacewrapper.hh>
 #include <dune/stokes/discretestokesmodelinterface.hh>
 #include <dune/stokes/stokespass.hh>
@@ -79,11 +80,9 @@
 #include <dune/stuff/signals.hh>
 #include <dune/stuff/tex.hh>
 
-#ifndef PROBLEM_NAMESPACE
-	#define PROBLEM_NAMESPACE StokesProblems::Simple
-#endif
-#include <dune/stokes/problems.hh>
-
+#include "analyticaldata.hh"
+#include "velocity.hh"
+#include "pressure.hh"
 #include "estimator.hh"
 
 #ifndef COMMIT
@@ -191,8 +190,7 @@ int main( int argc, char** argv )
     const bool useLogger = false;
     Logger().Create( Parameters().getParam( "loglevel",         62,                         useLogger ),
                      Parameters().getParam( "logfile",          std::string("dune_stokes"), useLogger ),
-					 Parameters().getParam( "fem.io.datadir",	std::string("data"),		useLogger ),
-					 Parameters().getParam( "fem.io.logdir",    std::string(),              useLogger )
+                     Parameters().getParam( "fem.io.logdir",    std::string(),              useLogger )
                     );
 
     int err = 0;
@@ -551,7 +549,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     typedef Dune::DiscreteStokesModelDefaultTraits<
                     GridPartType,
 					PROBLEM_NAMESPACE::Force,
-					DefaultDirichletDataTraits<StokesProblems::Simple::DirichletData>,
+					DefaultDirichletDataTraits<PROBLEM_NAMESPACE::DirichletData>,
                     gridDim,
                     polOrder,
                     VELOCITY_POLORDER,
@@ -616,9 +614,10 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     StokesModelImpType stokesModel( stabil_coeff,
                                     analyticalForce,
                                     analyticalDirichletData,
-									viscosity ,
-									alpha,
-									1 );
+									viscosity, /*viscosity*/
+									alpha, /*alpha*/
+									0.0,/*convection_scale_factor*/
+									1.0 /*pressure_gradient_scale_factor*/ );
 
     /* ********************************************************************** *
      * initialize passes                                                      *
@@ -651,8 +650,8 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     infoStream << "\n- postprocesing" << std::endl;
     profiler().StartTiming( "Problem/Postprocessing" );
 
-	typedef StokesProblems::Container< gridDim, DiscreteStokesFunctionWrapperType >
-        ProblemType;
+	typedef StokesProblems::Container< gridDim, DiscreteStokesFunctionWrapperType>
+		ProblemType;
 	ProblemType problem( viscosity , computedSolutions, analyticalDirichletData );
 
     typedef PostProcessor< StokesPassType, ProblemType >

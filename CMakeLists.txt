@@ -74,10 +74,6 @@ SET( PROBLEM_NAMESPACE
 	"StokesProblems::Cockburn" CACHE STRING
 	"PROBLEM_NAMESPACE" )
 
-SET( DIRICHLET_DATA 
-	"DirichletData" CACHE STRING
-	"DIRICHLET_DATA implementation for default dirichlet traits" )
-
 SET( ALUGRID_BASE_PATH
 	"/share/dune/Modules/modules_x86_64/ALUGrid-1.22" CACHE STRING
 	"ALUGRID_BASE_PATH" )
