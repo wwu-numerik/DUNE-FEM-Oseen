@@ -7,10 +7,6 @@
 #ifndef DUNE_DISCRESTOKESTEMODELINTERFACE_HH
 #define DUNE_DISCRESTOKESTEMODELINTERFACE_HH
 
-
-
-
-
 #include <dune/common/fvector.hh>
 
 #include <dune/stokes/discretestokesfunctionspacewrapper.hh>
