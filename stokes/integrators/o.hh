@@ -41,7 +41,7 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				applyVolume_alt1( info );
+				applyVolume_alt2( info );
 			}
 
 			template < class InfoContainerVolumeType >
@@ -155,6 +155,10 @@ namespace Integrators {
 				LocalMatrixProxyType localOmatrixNeighbour( matrix_object_, info.neighbour, info.entity, info.eps );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType&
 						beta_lf = beta_.localFunction( info.entity );
+				const unsigned int inside_entity_id = beta_.space().gridPart().indexSet().index( info.entity );
+				const unsigned int outside_entity_id = beta_.space().gridPart().indexSet().index( info.neighbour );
+				if ( inside_entity_id > outside_entity_id )
+					return;
 				//                                                                                                         // we call this one
 				// (O)_{i,j} += \int_{ // O's element surface integral
 				//           += \int_{ // O's neighbour surface integral
@@ -170,48 +174,44 @@ namespace Integrators {
 					const double integrationWeight = info.faceQuadratureElement.weight( quad );
 					VelocityRangeType beta_eval;
 					beta_lf.evaluate( xInside, beta_eval );
+					const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
+					const double beta_times_normal = beta_eval * outerNormal;
+					if ( beta_times_normal > 0  )
 					{
-						const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
-						const double beta_times_normal = beta_eval * outerNormal;
-						//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
-						const double c_s = beta_times_normal * 0.5;
+
 						for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
 							VelocityRangeType v_i( 0.0 );
 							info.velocity_basefunction_set_element.evaluate( i, xInside, v_i );
 							VelocityRangeType u_h = v_i;
-							VelocityJacobianRangeType mean_value
-									= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( u_h, beta_eval );
-							mean_value *= 0.5;
-							VelocityJacobianRangeType u_jump
-									= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( v_i, outerNormal );
-							u_jump *= c_s;
-							VelocityJacobianRangeType flux_value = mean_value;
-							flux_value += u_jump;
+//								VelocityJacobianRangeType mean_value
+//										= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( u_h, beta_eval );
+//								mean_value *= 0.5;
+//								VelocityJacobianRangeType u_jump
+//										= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( v_i, outerNormal );
+//								u_jump *= c_s;
+//								VelocityJacobianRangeType flux_value = mean_value;
+//								flux_value += u_jump;
 
 							for ( int j = 0; (j < info.numVelocityBaseFunctionsElement ); ++j ) {
 								// compute O's element surface integral
 								VelocityRangeType v_j( 0.0 );
 								info.velocity_basefunction_set_element.evaluate( j, xInside, v_j );
-								// \int_{dK} flux_value : ( v_j \ctimes n ) ds
-								VelocityJacobianRangeType v_i_tensor_n
-										= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( v_j, outerNormal );
+								// \int_{dK} \beta * n * u_h * v ds
 
-								const double ret  = Stuff::colonProduct( flux_value, v_i_tensor_n );
+								const double ret  = u_h * v_j;
 								const double O_i_j = elementVolume
 										* integrationWeight
 										* info.convection_scaling
-										* ret;
+										* ret
+										* beta_times_normal * 0.5;
 								localOmatrixElement.add( i, j, O_i_j );
 							} // done sum over all quadrature points
 						} // done computing Y's element surface integral
 					}
-						// compute O's neighbour surface integral
-					{
-						const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
-						const double beta_times_normal =  ( beta_eval * outerNormal );
 
-						//calc u^c_h \tensor beta * v \tensor n (self part), the flux value
-						const double c_s = beta_times_normal * 0.5;
+						// compute O's neighbour surface integral
+					else
+					{
 						// \int_{dK} flux_value : ( v_j \ctimes n ) ds
 						for ( int i = 0; i < info.numVelocityBaseFunctionsNeighbour; ++i )
 						{
@@ -220,30 +220,28 @@ namespace Integrators {
 							info.velocity_basefunction_set_neighbour.evaluate( i, xOutside, v_i );
 
 							VelocityRangeType u_h = v_i;
-							VelocityJacobianRangeType mean_value
-									= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( u_h, beta_eval );
-							mean_value *= 0.5;
-							VelocityJacobianRangeType u_jump
-									= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( v_i, outerNormal );
-							u_jump *= c_s;
-							VelocityJacobianRangeType flux_value = mean_value;
-							flux_value += u_jump;
+//								VelocityJacobianRangeType mean_value
+//										= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( u_h, beta_eval );
+//								mean_value *= 0.5;
+//								VelocityJacobianRangeType u_jump
+//										= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( v_i, outerNormal );
+//								u_jump *= c_s;
+//								VelocityJacobianRangeType flux_value = mean_value;
+//								flux_value += u_jump;
 
 							for ( int j = 0; (j < info.numVelocityBaseFunctionsElement ); ++j )
 							{
 								// compute O's element surface integral
 								VelocityRangeType v_j( 0.0 );
 								info.velocity_basefunction_set_element.evaluate( j, xInside, v_j );
-								// \int_{dK} flux_value : ( v_j \ctimes n ) ds
-								VelocityJacobianRangeType v_i_tensor_n
-										= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( v_j, outerNormal );
-
-								const double ret = Stuff::colonProduct( flux_value, v_i_tensor_n );
+								// \int_{dK} \beta * n * u_h * v ds
+								const double ret = u_h * v_j;
 
 								const double O_i_j = elementVolume
 										* integrationWeight
 										* info.convection_scaling
-										* ret;
+										* ret
+										* beta_times_normal * 0.5;
 								localOmatrixNeighbour.add( i, j, O_i_j );
 							} // done sum over all quadrature points
 						}
