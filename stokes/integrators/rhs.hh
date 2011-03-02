@@ -278,6 +278,7 @@ class H2_O
 		template < class InfoContainerFaceType >
 		void applyBoundaryFace( const InfoContainerFaceType& info )
 		{
+//			return;
 			typename DiscreteFunctionType::LocalFunctionType
 					localH2_O_rhs = discrete_function_.localFunction( info.entity );
 			// (H2_O)_{j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\left(  \beta n_{T} g_D v_j ds        \right) // H2_O's boundary integral
@@ -306,31 +307,14 @@ class H2_O
 					beta_.localFunction(info.entity).evaluate( x, beta_eval );
 					const double beta_times_normal = beta_eval * outerNormal;
 
-					// u^c = 0.5 gD \otimes beta + Cs -gD \otimes n
-					VelocityJacobianRangeType gD_tensor_beta
-							= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( gD, beta_eval );
-					gD_tensor_beta *= 0.5;
-					double c_s;
 					if ( beta_times_normal < 0 ) {
-						c_s = beta_times_normal * 0.5;
+						const double ret = gD * v_j;
+						H2_O_j -= elementVolume
+								* info.convection_scaling
+								* integrationWeight
+								* ret
+								* beta_times_normal;
 					}
-					else {
-						c_s = - beta_times_normal * 0.5;
-					}
-					VelocityJacobianRangeType jump
-							= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( gD, outerNormal );
-					jump *= c_s;
-
-					VelocityJacobianRangeType flux_value = gD_tensor_beta;
-					flux_value += jump;
-
-					VelocityJacobianRangeType v_j_tensor_n
-							= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( v_j,  outerNormal );
-					const double ret = Stuff::colonProduct( flux_value, v_j_tensor_n );
-					H2_O_j += elementVolume
-							* info.convection_scaling
-							* integrationWeight
-							* ret;
 				}
 				if ( fabs( H2_O_j ) < info.eps ) {
 						 H2_O_j = 0.0;
