@@ -407,13 +407,12 @@ class DiscreteStokesModelInterface
 
         //! discrete function space type for the velocity
         typedef typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType
-            DiscreteVelocityFunctionSpaceType;
-
-        //! function space type for the velocity
-        typedef typename DiscreteVelocityFunctionSpaceType::FunctionSpaceType
-            VelocityFunctionSpaceType;
+            DiscreteVelocityFunctionSpaceType;   
 
     public:
+		//! function space type for the velocity
+		typedef typename DiscreteVelocityFunctionSpaceType::FunctionSpaceType
+			VelocityFunctionSpaceType;
 
         //! discrete function type for sigma
         typedef typename Traits::DiscreteSigmaFunctionType
@@ -1761,7 +1760,9 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         //! \copydoc Dune::DiscreteStokesModelInterface::pressureSpaceOrder
         static const int pressureSpaceOrder
             = BaseType::pressureSpaceOrder;
-
+		//! type of analytical force (usually Dune::Function)
+		typedef typename BaseType::AnalyticalForceType
+			AnalyticalForceType;
     private:
 
         //! codim 0 entity pointer type
@@ -1788,9 +1789,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         typedef typename BaseType::PressureRangeType
             PressureRangeType;
 
-        //! type of analytical force (usually Dune::Function)
-        typedef typename BaseType::AnalyticalForceType
-            AnalyticalForceType;
+
 
         //! type of analytical dirichlet data (usually Dune::Function)
         typedef typename BaseType::AnalyticalDirichletDataType

@@ -14,10 +14,50 @@
 #include <dune/stokes/integrators/all.hh>
 
 #include <dune/common/stdstreams.hh>
+#include <dune/stuff/customprojection.hh>
 #include <dune/stuff/matrix.hh>
 #include <dune/stuff/tuple.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/stuff/progressbar.hh>
+
+template < class FunctionSpaceImp, class TimeProviderImp >
+class VelocityConvection : public Dune::TimeFunction < FunctionSpaceImp , VelocityConvection< FunctionSpaceImp,TimeProviderImp >, TimeProviderImp >
+{
+	public:
+		typedef VelocityConvection< FunctionSpaceImp, TimeProviderImp >
+			ThisType;
+		typedef Dune::TimeFunction< FunctionSpaceImp, ThisType, TimeProviderImp >
+			BaseType;
+		typedef typename BaseType::DomainType
+			DomainType;
+		typedef typename BaseType::RangeType
+			RangeType;
+
+		VelocityConvection(	const TimeProviderImp& timeprovider,
+					const FunctionSpaceImp& space,
+					const double parameter_a = M_PI /2.0 ,
+					const double parameter_d = M_PI /4.0)
+			: BaseType( timeprovider, space ),
+			parameter_a_( parameter_a ),
+			parameter_d_( parameter_d )
+		{}
+
+		~VelocityConvection()
+		{}
+
+		void evaluateTime( const double time, const DomainType& arg, RangeType& ret ) const
+		{
+			const double x			= arg[0];
+			const double y			= arg[1];
+			ret[0] = std::pow(time,5.0)*2*x*y;
+			ret[1] = std::pow(time,5.0)*y*y;;
+		}
+
+	private:
+		static const int dim_ = FunctionSpaceImp::dimDomain ;
+		const double parameter_a_;
+		const double parameter_d_;
+};
 
 template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
 struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
@@ -353,6 +393,13 @@ class StokesPass
 										h1_integrator, h2_integrator,h3_integrator );
 				coordinator.apply( tuple );
 			}
+			typedef VelocityConvection< typename DiscreteModelType::VelocityFunctionSpaceType, typename DiscreteModelType::AnalyticalForceType:: TimeProviderType >
+				ConvectionType;
+			ConvectionType ch( discreteModel_.forceF().timeProvider(), discreteModel_.forceF().space() ) ;
+			Dune::BetterL2Projection
+				::project(discreteModel_.forceF().timeProvider(),ch, H2_O_rhs);
+			H2rhs += H2_O_rhs;
+
 
 
 		#ifndef NDEBUG
