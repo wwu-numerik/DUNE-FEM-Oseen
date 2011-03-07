@@ -4,7 +4,6 @@
 #AC_PREREQ(2.50)
 DUNE_AC_INIT # gets module version from dune.module file
 AM_INIT_AUTOMAKE
-AC_CONFIG_SRCDIR([src/dune_stokes.cc])
 AM_CONFIG_HEADER([config.h])
 
 
@@ -19,9 +18,6 @@ AC_SUBST(AM_LDFLAGS, $DUNE_LDFLAGS)
 LIBS="$DUNE_LIBS"
 
 AC_CONFIG_FILES([Makefile
-    src/Makefile
-    darcy/Makefile
-    elliptic/Makefile
     doc/Makefile
     doc/doxygen/Makefile])
 AC_OUTPUT
