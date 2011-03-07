@@ -393,14 +393,6 @@ class StokesPass
 										h1_integrator, h2_integrator,h3_integrator );
 				coordinator.apply( tuple );
 			}
-			typedef VelocityConvection< typename DiscreteModelType::VelocityFunctionSpaceType, typename DiscreteModelType::AnalyticalForceType:: TimeProviderType >
-				ConvectionType;
-			ConvectionType ch( discreteModel_.forceF().timeProvider(), discreteModel_.forceF().space() ) ;
-			Dune::BetterL2Projection
-				::project(discreteModel_.forceF().timeProvider(),ch, H2_O_rhs);
-			H2rhs += H2_O_rhs;
-
-
 
 		#ifndef NDEBUG
 			{
