@@ -7,7 +7,7 @@ namespace Dune {
 
 
 	/** the goal is to solve
-		\$ ( Y + O - X M^{-1} W )u = H_2 + X M^{-1} H_1 \$
+		\$ ( Y + O - X M^{-1} W )u = H_2 - X M^{-1} H_1 \$
 		for u
 	  **/
 	template < class StokesPassImp >
@@ -111,11 +111,10 @@ namespace Dune {
 			InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
 														   o_mat, rhs1.space(), rhs2.space(), relLimit,
 														  inner_absLimit, solverVerbosity  );
-			SaddlepointInverseOperatorInfo info;
 			innerCGSolverWrapper.apply(F,velocity);
 			logInfo << "End ReducedInverseOperator " << std::endl;
 
-			return info;
+			return SaddlepointInverseOperatorInfo();
 		} //end ReducedInverseOperator::solve
 
 

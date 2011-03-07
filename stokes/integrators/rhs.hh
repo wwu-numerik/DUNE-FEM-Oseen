@@ -307,7 +307,8 @@ class H2_O
 					beta_.localFunction(info.entity).evaluate( x, beta_eval );
 					const double beta_times_normal = beta_eval * outerNormal;
 
-					if ( beta_times_normal < 0 ) {
+					if ( beta_times_normal < 0 )
+					{
 						const double ret = gD * v_j;
 						H2_O_j -= elementVolume
 								* info.convection_scaling
