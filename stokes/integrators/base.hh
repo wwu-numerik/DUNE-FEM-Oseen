@@ -105,9 +105,11 @@ namespace Integrators {
 			const double pressure_gradient_scaling;
 			//! generalized stokes alpha
 			const double alpha;
+			const typename Traits::GridPartType& grid_part;
 			InfoContainerVolume(const CoordinatorType& interface,
 								const typename Traits::EntityType& ent,
-								const typename Traits::DiscreteModelType& discrete_modelIn )
+								const typename Traits::DiscreteModelType& discrete_modelIn,
+								const typename Traits::GridPartType& grid_partIn)
 				: entity( ent ),
 				  geometry( entity.geometry() ),
 				  sigma_basefunction_set_element( interface.sigma_space_.baseFunctionSet( entity ) ),
@@ -122,7 +124,8 @@ namespace Integrators {
 				  viscosity( discrete_modelIn.viscosity() ),
 				  convection_scaling( discrete_modelIn.convection_scaling() ),
 				  pressure_gradient_scaling( discrete_modelIn.pressure_gradient_scaling() ),
-				  alpha( discrete_modelIn.alpha() )
+				  alpha( discrete_modelIn.alpha() ),
+				  grid_part( grid_partIn )
 			{}
 		};
 		struct InfoContainerFace : public InfoContainerVolume {
@@ -138,8 +141,9 @@ namespace Integrators {
 			InfoContainerFace (const CoordinatorType& interface,
 								const typename Traits::EntityType& ent,
 							   const typename Traits::IntersectionIteratorType::Intersection& inter,
-								const typename Traits::DiscreteModelType& discrete_modelIn )
-				:InfoContainerVolume( interface, ent, discrete_modelIn ),
+								const typename Traits::DiscreteModelType& discrete_modelIn,
+							   const typename Traits::GridPartType& grid_partIn )
+				:InfoContainerVolume( interface, ent, discrete_modelIn, grid_partIn ),
 				  intersection( inter ),
 				  intersectionGeometry( intersection.intersectionGlobal() ),
 				  faceQuadratureElement( interface.sigma_space_.gridPart(),
@@ -174,8 +178,9 @@ namespace Integrators {
 								const typename Traits::EntityType& ent,
 							   const typename Traits::EntityType& nei,
 							   const typename Traits::IntersectionIteratorType::Intersection& inter,
-								const typename Traits::DiscreteModelType& discrete_modelIn )
-				:InfoContainerFace( interface, ent, inter, discrete_modelIn ),
+								const typename Traits::DiscreteModelType& discrete_modelIn,
+								const typename Traits::GridPartType& grid_partIn )
+				:InfoContainerFace( interface, ent, inter, discrete_modelIn, grid_partIn ),
 				  neighbour( nei ),
 				  sigma_basefunction_set_neighbour( interface.sigma_space_.baseFunctionSet( neighbour ) ),
 				  velocity_basefunction_set_neighbour( interface.velocity_space_.baseFunctionSet( neighbour ) ),
@@ -267,7 +272,7 @@ namespace Integrators {
 				 ++entityIt)
 			{
 				const typename Traits::EntityType& entity = *entityIt;
-				InfoContainerVolume info( *this, entity, discrete_model_ );
+				InfoContainerVolume info( *this, entity, discrete_model_,grid_part_ );
 				ForEachIntegrator<ApplyVolume,InfoContainerVolume>( integrator_tuple, info );
 
 				// walk the intersections
@@ -283,12 +288,12 @@ namespace Integrators {
 					{
 						//! DO NOT TRY TO DEREF outside() DIRECTLY
 						const typename Traits::IntersectionIteratorType::EntityPointer neighbourPtr = intersection.outside();
-						InfoContainerInteriorFace info( *this, entity, *neighbourPtr, intersection, discrete_model_ );
+						InfoContainerInteriorFace info( *this, entity, *neighbourPtr, intersection, discrete_model_,grid_part_ );
 						ForEachIntegrator<ApplyInteriorFace,InfoContainerInteriorFace>( integrator_tuple, info );
 					}
 					else if ( !intersection.neighbor() && intersection.boundary() )
 					{
-						InfoContainerFace info( *this, entity, intersection, discrete_model_ );
+						InfoContainerFace info( *this, entity, intersection, discrete_model_, grid_part_ );
 						ForEachIntegrator<ApplyBoundaryFace,InfoContainerFace>( integrator_tuple, info );
 					}
 				}
