@@ -10,9 +10,7 @@ EXTRA_DIST=dune.module
 # do everything in the subdirs
 DIST_SUBDIRS = doc src
 if BUILD_DOCS
-SUBDIRS = doc src
-else
-SUBDIRS = src
+SUBDIRS = doc 
 endif
 
 # don't follow the full GNU-standard
