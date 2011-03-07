@@ -110,11 +110,11 @@ struct SolverCaller {
 															 O, E, R, Z, W,
 															 H1rhs, H2rhs, H3rhs );
 											break;
-			case Solver::FullSystem_Solver_ID:		result = FullsytemSolverType().solve(	arg, dest,
-															 X, M_invers, Y,
-															 O, E, R, Z, W,
-															 H1rhs, H2rhs, H3rhs );
-											break;
+//			case Solver::FullSystem_Solver_ID:		result = FullsytemSolverType().solve(	arg, dest,
+//															 X, M_invers, Y,
+//															 O, E, R, Z, W,
+//															 H1rhs, H2rhs, H3rhs );
+//											break;
 			default: throw std::runtime_error("invalid Solver ID selected");
 		}
 		if ( rhs_datacontainer ) {
