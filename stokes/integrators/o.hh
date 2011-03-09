@@ -41,7 +41,7 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				applyVolume_alt2( info );
+				applyVolume_alt1( info );
 			}
 
 			template < class InfoContainerVolumeType >
@@ -154,6 +154,7 @@ namespace Integrators {
 			template < class InfoContainerInteriorFaceType >
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
+//				return;
 				LocalMatrixProxyType localOmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				LocalMatrixProxyType localOmatrixNeighbour( matrix_object_, info.neighbour, info.entity, info.eps );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType&
@@ -194,7 +195,7 @@ namespace Integrators {
 								// \int_{dK} \beta * n * u_h * v ds
 
 								const double ret  = u_h * v_j;
-								const double O_i_j = elementVolume
+								const double O_i_j = -elementVolume
 										* integrationWeight
 										* info.convection_scaling
 										* ret
@@ -228,7 +229,7 @@ namespace Integrators {
 								// \int_{dK} \beta * n * u_h * v ds
 								const double ret = u_h * v_j;
 
-								const double O_i_j = elementVolume
+								const double O_i_j = -elementVolume
 										* integrationWeight
 										* info.convection_scaling
 										* ret
@@ -243,7 +244,6 @@ namespace Integrators {
 			template < class InfoContainerFaceType >
 			void applyBoundaryFace( const InfoContainerFaceType& info )
 			{
-//				return;
 				LocalMatrixProxyType localOmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType&
 						beta_lf = beta_.localFunction( info.entity );
@@ -277,7 +277,7 @@ namespace Integrators {
 
 							const double ret  = v_i * v_j;
 							//inner edge (self)
-							const double O_i_j = elementVolume
+							const double O_i_j = -elementVolume
 								* integrationWeight
 								* info.convection_scaling
 								* ret
