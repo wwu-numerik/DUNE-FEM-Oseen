@@ -278,52 +278,52 @@ class H2_O
 		template < class InfoContainerFaceType >
 		void applyBoundaryFace( const InfoContainerFaceType& info )
 		{
-			return;
-//			typename DiscreteFunctionType::LocalFunctionType
-//					localH2_O_rhs = discrete_function_.localFunction( info.entity );
-//			// (H2_O)_{j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\left(  \beta n_{T} g_D v_j ds        \right) // H2_O's boundary integral
-//			for ( int j = 0; j < info.numVelocityBaseFunctionsElement; ++j ) {
-//				double H2_O_j = 0.0;
-//				// sum over all quadrature points
-//				for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
-//					// get x codim<0> and codim<1> coordinates
-//					const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
-//					const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
-//									// get the integration factor
-//					const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
-//					// get the quadrature weight
-//					const double integrationWeight = info.faceQuadratureElement.weight( quad );
-//					// prepare
-//					const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
-//					VelocityRangeType v_j( 0.0 );
-//					info.velocity_basefunction_set_element.evaluate( j, x, v_j );
-//					// compute \mu v_{j}\cdot\hat{\sigma}^{RHS}()\cdot n_{T}
-//					const VelocityRangeType xIntersectionGlobal = info.intersection.intersectionSelfLocal().global( xLocal );
-//					const VelocityRangeType xWorld = info.geometry.global( xIntersectionGlobal );
-//					VelocityRangeType gD( 0.0 );
-//					info.discrete_model.dirichletData( info.intersection, 0.0, xWorld, gD );
+//			return;
+			typename DiscreteFunctionType::LocalFunctionType
+					localH2_O_rhs = discrete_function_.localFunction( info.entity );
+			// (H2_O)_{j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\left(  \beta n_{T} g_D v_j ds        \right) // H2_O's boundary integral
+			for ( int j = 0; j < info.numVelocityBaseFunctionsElement; ++j ) {
+				double H2_O_j = 0.0;
+				// sum over all quadrature points
+				for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
+					// get x codim<0> and codim<1> coordinates
+					const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
+					const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
+									// get the integration factor
+					const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+					// get the quadrature weight
+					const double integrationWeight = info.faceQuadratureElement.weight( quad );
+					// prepare
+					const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
+					VelocityRangeType v_j( 0.0 );
+					info.velocity_basefunction_set_element.evaluate( j, x, v_j );
+					// compute \mu v_{j}\cdot\hat{\sigma}^{RHS}()\cdot n_{T}
+					const VelocityRangeType xIntersectionGlobal = info.intersection.intersectionSelfLocal().global( xLocal );
+					const VelocityRangeType xWorld = info.geometry.global( xIntersectionGlobal );
+					VelocityRangeType gD( 0.0 );
+					info.discrete_model.dirichletData( info.intersection, 0.0, xWorld, gD );
 
-//					VelocityRangeType beta_eval;
-//					beta_.localFunction(info.entity).evaluate( x, beta_eval );
-//					const double beta_times_normal = beta_eval * outerNormal;
+					VelocityRangeType beta_eval;
+					beta_.localFunction(info.entity).evaluate( x, beta_eval );
+					const double beta_times_normal = beta_eval * outerNormal;
 
-//					if ( beta_times_normal < 0 )
-//					{
-//						const double ret = gD * v_j;
-//						H2_O_j -= elementVolume
-//								* info.convection_scaling
-//								* integrationWeight
-//								* ret
-//								* beta_times_normal;
-//					}
-//				}
-//				if ( fabs( H2_O_j ) < info.eps ) {
-//						 H2_O_j = 0.0;
-//				}
-//				else {
-//					localH2_O_rhs[ j ] += H2_O_j;
-//				}
-//			}
+					if ( beta_times_normal < 0 )
+					{
+						const double ret = gD * v_j;
+						H2_O_j -= elementVolume
+								* info.convection_scaling
+								* integrationWeight
+								* ret
+								* beta_times_normal;
+					}
+				}
+				if ( fabs( H2_O_j ) < info.eps ) {
+						 H2_O_j = 0.0;
+				}
+				else {
+					localH2_O_rhs[ j ] += H2_O_j;
+				}
+			}
 		}
 		static const std::string name;
 };

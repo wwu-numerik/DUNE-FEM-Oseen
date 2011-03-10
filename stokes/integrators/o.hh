@@ -172,13 +172,18 @@ namespace Integrators {
 					const ElementCoordinateType xInside = info.faceQuadratureElement.point( quad );
 					const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
 					const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
+					const LocalIntersectionCoordinateType xLocal_neigh = info.faceQuadratureNeighbour.localPoint( quad );
 					// get the integration factor
 
 					VelocityRangeType beta_eval;
 					beta_lf.evaluate( xInside, beta_eval );
+					VelocityRangeType beta_eval_neigh;
+					beta_lf.evaluate( xOutside, beta_eval_neigh );
 					const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
+					const VelocityRangeType outerNormal_neigh = info.intersection.unitOuterNormal( xLocal_neigh );
 					const double beta_times_normal = beta_eval * outerNormal;
-					if ( beta_times_normal > 0  )
+					const double c_star = std::abs(beta_times_normal) * 0.5;
+//					if ( beta_times_normal > 0  )
 					{
 						const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 						// get the quadrature weight
@@ -192,14 +197,18 @@ namespace Integrators {
 							for ( int j = 0; (j < info.numVelocityBaseFunctionsElement ); ++j ) {
 								VelocityRangeType v_j( 0.0 );
 								info.velocity_basefunction_set_element.evaluate( j, xInside, v_j );
+								VelocityRangeType v_j_neigh( 0.0 );
+								info.velocity_basefunction_set_neighbour.evaluate( j, xOutside, v_j_neigh );
 								// \int_{dK} \beta * n * u_h * v ds
 
-								const double ret  = u_h * v_j;
-								const double O_i_j = -elementVolume
+								const double v_j_jump = ( (v_j * outerNormal) + (v_j_neigh * outerNormal_neigh) );
+								double ret  = (beta_eval * u_h) * v_j_jump * 0.5;
+//								ret += (u_h * outerNormal) * v_j_jump * c_star;
+
+								const double O_i_j = elementVolume
 										* integrationWeight
 										* info.convection_scaling
-										* ret
-										* beta_times_normal;
+										* ret;
 								localOmatrixElement.add( i, j, O_i_j );
 							} // done sum over all quadrature points
 						} // done computing Y's element surface integral
@@ -207,9 +216,9 @@ namespace Integrators {
 //					continue;
 
 						// compute O's neighbour surface integral
-					else
+//					else
 					{
-						const LocalIntersectionCoordinateType xLocal_neigh = info.faceQuadratureNeighbour.localPoint( quad );
+
 						const double elementVolume = info.intersectionGeometry.integrationElement( xLocal_neigh );
 						// get the quadrature weight
 						const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
@@ -226,14 +235,17 @@ namespace Integrators {
 								// compute O's element surface integral
 								VelocityRangeType v_j( 0.0 );
 								info.velocity_basefunction_set_element.evaluate( j, xInside, v_j );
+								VelocityRangeType v_j_neigh( 0.0 );
+								info.velocity_basefunction_set_neighbour.evaluate( j, xOutside, v_j_neigh );
 								// \int_{dK} \beta * n * u_h * v ds
-								const double ret = u_h * v_j;
+								const double v_j_jump = ( (v_j * outerNormal) + (v_j_neigh * outerNormal_neigh) );
+								double ret = (beta_eval_neigh * u_h) * v_j_jump *0.5;
+//								ret += (u_h * outerNormal_neigh) * v_j_jump * c_star;
 
-								const double O_i_j = -elementVolume
+								const double O_i_j = elementVolume
 										* integrationWeight
 										* info.convection_scaling
-										* ret
-										* beta_times_normal;
+										* ret;
 								localOmatrixNeighbour.add( i, j, O_i_j );
 							} // done sum over all quadrature points
 						}
@@ -244,6 +256,7 @@ namespace Integrators {
 			template < class InfoContainerFaceType >
 			void applyBoundaryFace( const InfoContainerFaceType& info )
 			{
+//				return;
 				LocalMatrixProxyType localOmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType&
 						beta_lf = beta_.localFunction( info.entity );
@@ -275,13 +288,12 @@ namespace Integrators {
 							VelocityRangeType v_j( 0.0 );
 							info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 
-							const double ret  = v_i * v_j;
+							const double ret  = (beta_eval * v_i) * (v_j * outerNormal);
 							//inner edge (self)
-							const double O_i_j = -elementVolume
+							const double O_i_j = elementVolume
 								* integrationWeight
 								* info.convection_scaling
-								* ret
-								* beta_times_normal;
+								* ret;
 							localOmatrixElement.add( i, j, O_i_j );
 						} // done sum over all quadrature points
 					}
