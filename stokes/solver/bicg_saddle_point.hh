@@ -148,6 +148,7 @@ namespace Dune {
 
 			//schur_f = - E A^{-1} F - G = -1 ( E A^{-1} F + G )
 			schur_f.assign( rhs3 );
+			v_tmp.clear();
 			innerCGSolverWrapper.apply( F, v_tmp );
 			e_mat.apply( v_tmp, tmp2 );
 			schur_f += tmp2;
@@ -157,6 +158,7 @@ namespace Dune {
 
 			SOLVER_NAMESPACE::NewBicgStab< PressureDiscreteFunctionType,Sk_Operator >
 					bicg( sk_op, relLimit, outer_absLimit, maxIter, solverVerbosity );
+			pressure.clear();
 			bicg.apply( schur_f, pressure );
 			// u = A^{-1} ( F - B * p^0 )
 			v_tmp.assign(F);
