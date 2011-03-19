@@ -3,6 +3,7 @@
 
 #include <dune/stokes/solver/solver_interface.hh>
 #include <dune/stokes/solver/schurkomplement.hh>
+#include <dune/stuff/customprojection.hh>
 
 namespace Dune {
 
@@ -158,6 +159,17 @@ namespace Dune {
 			SOLVER_NAMESPACE::NewBicgStab< PressureDiscreteFunctionType,Sk_Operator >
 					bicg( sk_op, relLimit, outer_absLimit, maxIter, solverVerbosity );
 			bicg.apply( schur_f, pressure );
+			//pressure mw correction
+			double meanPressure_discrete = Stuff::meanValue( pressure, pressure.space() );
+			typedef typename StokesPassType::Traits::DiscreteModelType::Traits::PressureFunctionSpaceType
+					PressureFunctionSpaceType;
+			PressureFunctionSpaceType pressureFunctionSpace;
+			Stuff::ConstantFunction<PressureFunctionSpaceType> vol(pressureFunctionSpace, meanPressure_discrete );
+			Dune::BetterL2Projection
+				::project( 0.0, vol, tmp2 );
+			pressure -= tmp2;
+
+
 			// u = A^{-1} ( F - B * p^0 )
 			v_tmp.assign(F);
 			z_mat.apply( pressure, tmp1 );
