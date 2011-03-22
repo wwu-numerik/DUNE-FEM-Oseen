@@ -138,6 +138,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 			tmp2 *= -1;
 			e_mat_.multOEM( tmp2.leakPointer(), ret );
 			r_mat_.multOEMAdd( x, ret );
+			ret[0] = x[0];
         }
 
 		void apply( const DiscretePressureFunctionType& arg, DiscretePressureFunctionType& ret ) const
