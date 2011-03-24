@@ -275,7 +275,7 @@ namespace Integrators {
 					beta_lf.evaluate( x, beta_eval );
 					const double beta_times_normal = beta_eval * outerNormal;
 
-					if ( beta_times_normal < 0 )
+					if ( beta_times_normal <= 0 )
 						continue;
 
 					for ( int i = 0; (i < info.numVelocityBaseFunctionsElement ); ++i )
