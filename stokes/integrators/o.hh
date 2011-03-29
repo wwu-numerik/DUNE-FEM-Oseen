@@ -123,14 +123,13 @@ namespace Integrators {
 
 							VelocityRangeType divergence_of_v_j_tensor_beta;
 
-							divergence_of_v_j_tensor_beta[0] = beta_eval[0] * v_j_jacobian[0][0]
-								   + v_j[0] * beta_jacobian[0][0]
-								   + beta_eval[0] * v_j_jacobian[1][1]
-								   + v_j[1] * beta_jacobian[0][1];
-							divergence_of_v_j_tensor_beta[1] = beta_eval[1] * v_j_jacobian[0][0]
-								   + v_j[0] * beta_jacobian[1][0]
-								   + beta_eval[1] * v_j_jacobian[1][1]
-								   + v_j[1] * beta_jacobian[1][1];
+							divergence_of_v_j_tensor_beta[0] =
+								beta_eval[0] * v_j_jacobian[0][0] + v_j[0] * beta_jacobian[0][0]
+								   + beta_eval[0] * v_j_jacobian[1][1] + v_j[1] * beta_jacobian[0][1];
+
+							divergence_of_v_j_tensor_beta[1] =
+								beta_eval[1] * v_j_jacobian[0][0] + v_j[0] * beta_jacobian[1][0]
+								   + beta_eval[1] * v_j_jacobian[1][1] + v_j[1] * beta_jacobian[1][1];
 
 
 							const double u_h_times_divergence_of_beta_v_i_tensor_beta =
