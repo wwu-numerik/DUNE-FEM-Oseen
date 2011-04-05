@@ -110,6 +110,11 @@ class MatrixWrapper : boost::noncopyable {
 		{
 			matrix_object_.matrix().multOEM( x, ret );
 		}
+		template <class VECtype>
+		void multOEM_t(const VECtype *x, VECtype * ret) const
+		{
+			matrix_object_.matrix().multOEM_t( x, ret );
+		}
 
 		//! calculates ret += A * x
 		template <class VECtype>
