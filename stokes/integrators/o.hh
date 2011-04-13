@@ -41,7 +41,7 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				applyVolume_alt1( info );
+				applyVolume_alt2( info );
 			}
 
 			template < class InfoContainerVolumeType >
@@ -133,7 +133,7 @@ namespace Integrators {
 
 
 							const double u_h_times_divergence_of_beta_v_i_tensor_beta =
-									v_i * divergence_of_v_j_tensor_beta;
+									v_j * divergence_of_v_j_tensor_beta;
 
 							O_i_j -= elementVolume
 									* integrationWeight
@@ -182,7 +182,7 @@ namespace Integrators {
 					const VelocityRangeType outerNormal_neigh = info.intersection.unitOuterNormal( xLocal_neigh );
 					const double beta_times_normal = beta_eval * outerNormal;
 					const double c_star = std::abs(beta_times_normal) * 0.5;
-//					if ( beta_times_normal > 0  )
+					if ( beta_times_normal > 0  )
 					{
 						const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 						// get the quadrature weight
@@ -200,8 +200,9 @@ namespace Integrators {
 								info.velocity_basefunction_set_neighbour.evaluate( j, xOutside, v_j_neigh );
 								// \int_{dK} \beta * n * u_h * v ds
 
-								const double v_j_jump = ( (v_j * outerNormal) + (v_j_neigh * outerNormal_neigh) );
-								double ret  = (beta_eval * u_h) * v_j_jump * 0.5;
+								const double v_i_jump = ( (v_i * outerNormal) );// + (v_j_neigh * outerNormal_neigh) );
+//								double ret  = (beta_eval * u_h) * v_j_jump ;
+								double ret = (beta_times_normal ) * ( (v_i * v_j)*0.5 + v_i_jump );
 //								ret += (u_h * outerNormal) * v_j_jump * c_star;
 
 								const double O_i_j = elementVolume
@@ -215,7 +216,7 @@ namespace Integrators {
 //					continue;
 
 						// compute O's neighbour surface integral
-//					else
+					else
 					{
 
 						const double elementVolume = info.intersectionGeometry.integrationElement( xLocal_neigh );
@@ -235,10 +236,11 @@ namespace Integrators {
 								VelocityRangeType v_j( 0.0 );
 								info.velocity_basefunction_set_element.evaluate( j, xInside, v_j );
 								VelocityRangeType v_j_neigh( 0.0 );
-								info.velocity_basefunction_set_neighbour.evaluate( j, xOutside, v_j_neigh );
+								info.velocity_basefunction_set_neighbour.evaluate( i, xOutside, v_j_neigh );
 								// \int_{dK} \beta * n * u_h * v ds
-								const double v_j_jump = ( (v_j * outerNormal) + (v_j_neigh * outerNormal_neigh) );
-								double ret = (beta_eval_neigh * u_h) * v_j_jump *0.5;
+								const double v_i_jump = ( (v_i * outerNormal_neigh));// + (v_j_neigh * outerNormal_neigh) );
+//								double ret = (beta_eval_neigh * u_h) * v_j_jump;
+								double ret = (beta_eval*outerNormal ) * ( (v_i * v_j)*0.5 - v_i_jump );
 //								ret += (u_h * outerNormal_neigh) * v_j_jump * c_star;
 
 								const double O_i_j = elementVolume
@@ -274,7 +276,7 @@ namespace Integrators {
 					beta_lf.evaluate( x, beta_eval );
 					const double beta_times_normal = beta_eval * outerNormal;
 
-					if ( beta_times_normal <= 0 )
+					if ( beta_times_normal < 0 )
 						continue;
 
 					for ( int i = 0; (i < info.numVelocityBaseFunctionsElement ); ++i )
@@ -287,7 +289,7 @@ namespace Integrators {
 							VelocityRangeType v_j( 0.0 );
 							info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 
-							const double ret  = (beta_eval * v_i) * (v_j * outerNormal);
+							const double ret  = (beta_times_normal) * (v_i * v_j);
 							//inner edge (self)
 							const double O_i_j = elementVolume
 								* integrationWeight
