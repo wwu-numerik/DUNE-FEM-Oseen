@@ -38,6 +38,7 @@ CHECK_INCLUDE_FILE_CXX("tr1/array" HAVE_TR1_ARRAY)
 SET( BLAS_LIB
 	"blas" CACHE STRING
 	"" )
+	
 SET( CUSTOM_FLAGS
 	"-Wall -O3 -DDNDEBUG -funroll-loops -g -ggdb -DENABLE_ADAPTIVE=1 -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME -fno-strict-aliasing -std=c++0x " CACHE LIST  
 	"CUSTOM FLAGS" )
