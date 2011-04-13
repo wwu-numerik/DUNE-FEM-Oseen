@@ -161,6 +161,7 @@ namespace Dune {
 					bicg( sk_op, relLimit, outer_absLimit, maxIter, solverVerbosity );
 			pressure.clear();
 			bicg.apply( schur_f, pressure );
+//			pressure *=-1;
 			//pressure mw correction
 			double meanPressure_discrete = Stuff::meanValue( pressure, pressure.space() );
 			typedef typename StokesPassType::Traits::DiscreteModelType::Traits::PressureFunctionSpaceType
