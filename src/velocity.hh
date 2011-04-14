@@ -117,7 +117,7 @@ class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType ,
             else if ( dim_ == 2 ) {
                 double x1 = arg[0];
                 double x2 = arg[1];
-#ifdef defined(CONSTANT_PROBLEM)
+#if defined(CONSTANT_PROBLEM)
                 ret[0] = 0;
                 ret[1] = 0;
 #elif defined(GENERALIZED_STOKES_PROBLEM)

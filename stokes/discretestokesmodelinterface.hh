@@ -2740,7 +2740,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *          value of \f$f\f$ in \f$x\f$
          **/
         template < class DomainType >
-        void force( const double time,
+		void force( const double /*time*/,
                     const DomainType& x,
                     VelocityRangeType& forceReturn ) const
         {
@@ -2749,12 +2749,12 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
 
         template < class IntersectionIteratorType, class DomainType >
         void dirichletData( const IntersectionIteratorType intIt,
-                            const double time,
+							const double /*time*/,
                             const DomainType& x,
                             VelocityRangeType& dirichletDataReturn ) const
         {
             assert( ( !intIt.neighbor() && intIt.boundary() ) || !"this intersection does not lie on the boundary" );
-            dirichletData_.evaluate( x, dirichletDataReturn, intIt );
+			dirichletData_.evaluate( x, dirichletDataReturn, intIt );
         }
 
         /**

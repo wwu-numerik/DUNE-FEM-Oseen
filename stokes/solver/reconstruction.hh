@@ -241,18 +241,18 @@ struct SmartReconstruction {
 				class DiscretePressureFunctionType  >
 	static void reconstruct( DataContainerType& rhs_datacontainer,
 				const FunctionWrapperType& solution,
-				const DiscreteVelocityFunctionType& beta,
+				const DiscreteVelocityFunctionType& /*beta*/,
 				const XmatrixObjectType& Xmatrix,
 				const MInversMatrixObjectType& MInversMatrix,
 				const YmatrixObjectType& Ymatrix,
 				const OmatrixObjectType& Omatrix,
-				const EmatrixObjectType& Ematrix,
-				const RmatrixObjectType& Rmatrix,
+				const EmatrixObjectType& /*Ematrix*/,
+				const RmatrixObjectType& /*Rmatrix*/,
 				const ZmatrixObjectType& Zmatrix,
 				const WmatrixObjectType& Wmatrix,
 				const DiscreteSigmaFunctionType& H1rhs,
 				const DiscreteVelocityFunctionType& H2rhs,
-				const DiscretePressureFunctionType& H3rhs )
+				const DiscretePressureFunctionType& /*H3rhs*/ )
 	{
 //		CompileTimeChecker<false> dysfunctionalCode;
 						Zmatrix.apply( solution.discretePressure(), rhs_datacontainer.pressure_gradient );

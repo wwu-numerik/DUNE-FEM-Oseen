@@ -150,9 +150,9 @@ namespace Dune {
 	/*****************************************************************************************/
 
 			int iteration = 0;
-			int total_inner_iterations = 0;
-			int min_inner_iterations = std::numeric_limits<int>::max();
-			int max_inner_iterations = 0;
+//			int total_inner_iterations = 0;
+//			int min_inner_iterations = std::numeric_limits<int>::max();
+//			int max_inner_iterations = 0;
 			const int max_adaptions = Parameters().getParam( "max_adaptions", 2 ) ;
 			int current_adaption = 0;
 			double delta; //norm of residuum

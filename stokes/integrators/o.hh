@@ -158,8 +158,8 @@ namespace Integrators {
 				LocalMatrixProxyType localOmatrixNeighbour( matrix_object_, info.neighbour, info.entity, info.eps );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType&
 						beta_lf = beta_.localFunction( info.entity );
-				const unsigned int inside_entity_id = beta_.space().gridPart().indexSet().index( info.entity );
-				const unsigned int outside_entity_id = beta_.space().gridPart().indexSet().index( info.neighbour );
+//				const unsigned int inside_entity_id = beta_.space().gridPart().indexSet().index( info.entity );
+//				const unsigned int outside_entity_id = beta_.space().gridPart().indexSet().index( info.neighbour );
 //				if ( inside_entity_id > outside_entity_id )
 //					return;
 				//                                                                                                         // we call this one
@@ -181,7 +181,7 @@ namespace Integrators {
 					const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 					const VelocityRangeType outerNormal_neigh = info.intersection.unitOuterNormal( xLocal_neigh );
 					const double beta_times_normal = beta_eval * outerNormal;
-					const double c_star = std::abs(beta_times_normal) * 0.5;
+//					const double c_star = std::abs(beta_times_normal) * 0.5;
 					if ( beta_times_normal > 0  )
 					{
 						const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );

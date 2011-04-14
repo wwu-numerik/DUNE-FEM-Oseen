@@ -488,7 +488,7 @@ void BfgRun( CollectiveCommunication& mpicomm )
     profiler().Output( mpicomm, run_infos );
 }
 
-RunInfo singleRun(  CollectiveCommunication& mpicomm,
+RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
                     int refine_level_factor,
 					Dune::StabilizationCoefficients& stabil_coeff )
 {

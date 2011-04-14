@@ -100,26 +100,29 @@ SET ( METIS_DIR
 CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/cmake_config.h )
 
 #needs to come first to include correct config.h
-INCLUDE_DIR( ${dune-stokes_BINARY_DIR} ${dune-stokes_SOURCE_DIR} )
+INCLUDE_DIR( ${dune-stokes_BINARY_DIR} )
+INCLUDE_DIR( ${dune-stokes_SOURCE_DIR} )
+INCLUDE_DIR( ${dune-stokes_SOURCE_DIR}/.. )
 ADD_CXX_FLAGS( ${CUSTOM_FLAGS} )
 
 IF( ${GRIDTYPE} STREQUAL "UGGRID" )
-	ADD_CXX_FLAGS( -I${UGGRID_BASE_PATH}/include -DENABLE_UG )
+	ADD_CXX_FLAGS( -DENABLE_UG )
+	INCLUDE_SYS_DIR( ${UGGRID_BASE_PATH}/include )
 	LINK_DIRECTORIES( ${UGGRID_BASE_PATH}/lib/ )
 	SET( UGLIBS "ugS3" "ugS2" "devS")
 ENDIF( ${GRIDTYPE} STREQUAL "UGGRID" )
 
 SET( ENABLE_ALUGRID OFF )
 IF( ${GRIDTYPE} MATCHES "ALUGRID" )
-	INCLUDE_DIR( ${GRAPE_PATH}
-		${ALUGRID_BASE_PATH}/include
-		${ALUGRID_BASE_PATH}/include/serial
-		${ALUGRID_BASE_PATH}/include/duneinterface )
+	INCLUDE_SYS_DIR( ${GRAPE_PATH} )
+	INCLUDE_SYS_DIR( ${ALUGRID_BASE_PATH}/include )
+	INCLUDE_SYS_DIR( ${ALUGRID_BASE_PATH}/include/serial )
+	INCLUDE_SYS_DIR( ${ALUGRID_BASE_PATH}/include/duneinterface )
 	LINK_DIRECTORIES( "${ALUGRID_BASE_PATH}/lib"  )
 	SET( ALULIBS "alugrid" )
 	SET( ENABLE_ALUGRID ON )
 	IF ( ENABLE_PARALELL )
-		ADD_CXX_FLAGS( -I${ALUGRID_BASE_PATH}/include/parallel )
+		INCLUDE_SYS_DIR( ${ALUGRID_BASE_PATH}/include/parallel )
 	ENDIF ( ENABLE_PARALELL )
 	ADD_CXX_FLAGS( "-DENABLE_ALUGRID" )
 ENDIF( ${GRIDTYPE} MATCHES "ALUGRID" )
@@ -138,7 +141,8 @@ ELSEIF( ENABLE_OMP )
 	ADD_CXX_FLAGS( -DUSE_OMP=0)
 ENDIF( ENABLE_OMP )
 
-ADD_DUNE_MODULES( common istl grid stuff fem )
+ADD_DUNE_MODULES( common istl grid fem )
+ADD_MY_MODULES( stuff )
 
 LINK_DIRECTORIES( "/usr/lib" "${GRAPE_PATH}" ${CCGNU_LIBRARY_DIRS} )
 
@@ -164,3 +168,4 @@ ADD_EXECUTABLE(visualisation src/visualisation.cc ${COMMON_HEADER} )
 TARGET_LINK_LIBRARIES(visualisation ${COMMON_LIBS} )
 
 HEADERCHECK( ${header} ${stokes} )
+ADD_DEFINITIONS( ${MY_CXX_FLAGS} )

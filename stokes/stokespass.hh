@@ -219,7 +219,7 @@ class StokesPass
          *  \attention  think about quadrature orders
          **/
 		template < class RhsDatacontainerType, class ExactSigmaType >
-		void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer, const ExactSigmaType* sigma_exact ) const
+		void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer, const ExactSigmaType* /*sigma_exact*/ ) const
         {
             // profiler information
 			profiler().StartTiming("Pass_init");

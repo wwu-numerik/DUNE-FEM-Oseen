@@ -36,7 +36,7 @@ namespace Integrators {
 			{}
 
 			template < class InfoContainerVolumeType >
-			void applyVolume( const InfoContainerVolumeType& info )
+			void applyVolume( const InfoContainerVolumeType& /*info*/ )
 			{}
 
 			template < class InfoContainerInteriorFaceType >
