@@ -41,15 +41,15 @@ namespace Dune
             typedef std::map< std::string, ValueType >
                 CoefficientMap;
 
-            static const PowerType invalid_power   = -9;
-            static const FactorType invalid_factor  = -9.0;
+			static const PowerType invalid_power;
+			static const FactorType invalid_factor;
 
         protected:
             CoefficientMap map_;
 
         public:
 			StabilizationCoefficients(  const PowerType pow,
-                                        const FactorType fac )
+										const FactorType fac )
             {
                 *this = StabilizationCoefficients( pow,pow,pow,pow,fac,fac,fac,fac );
             }
@@ -61,7 +61,7 @@ namespace Dune
                                         const FactorType C11_fac,
                                         const FactorType C12_fac,
                                         const FactorType D11_fac,
-                                        const FactorType D12_fac )
+										const FactorType D12_fac )
             {
                 map_["C11"] = ValueType( C11_pow, C11_fac );
                 map_["C12"] = ValueType( C12_pow, C12_fac );
@@ -174,6 +174,8 @@ namespace Dune
 				}
 			};
     };
+	const StabilizationCoefficients::PowerType StabilizationCoefficients::invalid_power = -9;
+	const StabilizationCoefficients::FactorType StabilizationCoefficients::invalid_factor = -9.0;
 
 /**
  *  \brief  Interface class for stokes problem definition in the LDG context.
@@ -2854,6 +2856,6 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
 
 };
 
-}; // end of namespace Dune
+} // end of namespace Dune
 
 #endif // end of discretestokesmodelinterface.hh

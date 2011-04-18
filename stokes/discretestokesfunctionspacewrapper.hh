@@ -939,6 +939,6 @@ private:
 
 };
 
-}; // end of namespace Dune
+} // end of namespace Dune
 
 #endif // end of discretestokesfunctionspacewrapper.hh
