@@ -7,11 +7,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_CURRENT_SOURCE_D
 include(DuneUtils)
 include(UseDoxygen)
 
-FIND_PACKAGE(Boost 1.35.0 REQUIRED)
-INCLUDE_DIR(${Boost_INCLUDE_DIR})
-FIND_PACKAGE( PkgConfig )
-pkg_check_modules( CCGNU REQUIRED libccgnu2 )
-ADD_CXX_FLAGS( "${CCGNU_CFLAGS}" )
 SET (CMAKE_VERBOSE_MAKEFILE "on" )
 #----------------------------------------------------------------------------------------------------
 # General Settings
@@ -29,7 +24,6 @@ EXECUTE_PROCESS(
 
 INCLUDE (CheckIncludeFileCXX)
 CHECK_INCLUDE_FILE_CXX("malloc.h" HAVE_MALLOC_H)
-CHECK_INCLUDE_FILE_CXX("valgrind/memcheck.h" HAVE_VALGRIND)
 CHECK_INCLUDE_FILE_CXX("tr1/array" HAVE_TR1_ARRAY)
 
 #----------------------------------------------------------------------------------------------------
@@ -38,11 +32,7 @@ CHECK_INCLUDE_FILE_CXX("tr1/array" HAVE_TR1_ARRAY)
 SET( BLAS_LIB
 	"blas" CACHE STRING
 	"" )
-	
-SET( CUSTOM_FLAGS
-	"-Wall -Wextra -pedantic -O3 -DDNDEBUG -funroll-loops -g -ggdb -DENABLE_ADAPTIVE=1 -DADAPTIVE_SOLVER -DUSE_BFG_CG_SCHEME -fno-strict-aliasing -std=c++0x " CACHE LIST  
-	"CUSTOM FLAGS" )
-	
+		
 SET( GRIDTYPE
 	"ALUGRID_SIMPLEX" CACHE STRING
 	"GRIDTYPE" )
@@ -76,7 +66,7 @@ SET( PROBLEM_NAMESPACE
 	"PROBLEM_NAMESPACE" )
 
 SET( ALUGRID_BASE_PATH
-	"/share/dune/Modules/modules_x86_64/ALUGrid-1.22" CACHE STRING
+	"/opt/dune/modules/alugrid/alugrid-1.22" CACHE STRING
 	"ALUGRID_BASE_PATH" )
 
 SET( UGGRID_BASE_PATH
@@ -90,9 +80,11 @@ SET( GRAPE_PATH
 SET( ENABLE_PARALELL
 	0 CACHE BOOL
 	"Enable parallel features" )
+	
 SET( ENABLE_OMP
 	0 CACHE BOOL
 	"Enable openmp features" )
+	
 SET ( METIS_DIR
 	"/share/dune/Modules/modules_x86_64/ParMetis-3.1.1" CACHE STRING
 	"metis toplevel directory" )
@@ -100,9 +92,7 @@ SET ( METIS_DIR
 CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/cmake_config.h )
 
 #needs to come first to include correct config.h
-INCLUDE_DIR( ${dune-stokes_BINARY_DIR} )
-INCLUDE_DIR( ${dune-stokes_SOURCE_DIR} )
-INCLUDE_DIR( ${dune-stokes_SOURCE_DIR}/.. )
+INCLUDE_DIR( ${dune-stokes_BINARY_DIR}  ${dune-stokes_SOURCE_DIR} )
 ADD_CXX_FLAGS( ${CUSTOM_FLAGS} )
 
 IF( ${GRIDTYPE} STREQUAL "UGGRID" )
@@ -114,10 +104,10 @@ ENDIF( ${GRIDTYPE} STREQUAL "UGGRID" )
 
 SET( ENABLE_ALUGRID OFF )
 IF( ${GRIDTYPE} MATCHES "ALUGRID" )
-	INCLUDE_SYS_DIR( ${GRAPE_PATH} )
-	INCLUDE_SYS_DIR( ${ALUGRID_BASE_PATH}/include )
-	INCLUDE_SYS_DIR( ${ALUGRID_BASE_PATH}/include/serial )
-	INCLUDE_SYS_DIR( ${ALUGRID_BASE_PATH}/include/duneinterface )
+	INCLUDE_SYS_DIR( 	${GRAPE_PATH} 
+						${ALUGRID_BASE_PATH}/include 
+						${ALUGRID_BASE_PATH}/include/serial 
+						${ALUGRID_BASE_PATH}/include/duneinterface )
 	LINK_DIRECTORIES( "${ALUGRID_BASE_PATH}/lib"  )
 	SET( ALULIBS "alugrid" )
 	SET( ENABLE_ALUGRID ON )
