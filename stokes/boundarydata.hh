@@ -4,6 +4,7 @@
 #include <dune/stokes/boundaryinfo.hh>
 #include <dune/stuff/parametercontainer.hh>
 #include <dune/stuff/misc.hh>
+#include <dune/stuff/grid.hh>
 
 template < template < class > class DiricheltDataImp >
 struct DefaultDirichletDataTraits {

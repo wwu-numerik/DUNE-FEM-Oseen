@@ -1,8 +1,12 @@
 #ifndef DUNE_STOKES_NEW_BICGSTAB_HH
 #define DUNE_STOKES_NEW_BICGSTAB_HH
 
+#include <dune/stuff/printing.hh>
+#include <dune/stuff/logging.hh>
 
 #include <limits>
+#include <cmath>
+#include <boost/format.hpp>
 
 #ifdef SOLVER_NAMESPACE
 	namespace SOLVER_NAMESPACE {

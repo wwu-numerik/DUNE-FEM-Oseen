@@ -2,6 +2,7 @@
 #define DUNE_STOKES_INTEGRATORS_W_HH
 
 #include <dune/stokes/integrators/base.hh>
+#include <dune/stuff/matrix.hh>
 
 namespace Dune {
 namespace Stokes {

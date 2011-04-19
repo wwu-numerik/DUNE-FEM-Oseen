@@ -35,6 +35,10 @@ namespace StokesProblems {
 		#include "problems/timedisc.hh"
 	}
 
+#ifndef PROBLEM_NAMESPACE
+	#define PROBLEM_NAMESPACE StokesProblems::Cockburn
+#endif
+
 	/**
 	 *  \brief  a collection of some analytical functions describing a stokes problem
 	 *

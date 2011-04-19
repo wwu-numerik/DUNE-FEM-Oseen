@@ -4,6 +4,7 @@
 #include <dune/stuff/grid.hh>
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/profiler.hh>
+#include <dune/stokes/stab_coeff.hh>
 
 namespace Dune {
 namespace Stokes {
@@ -258,7 +259,7 @@ namespace Integrators {
 		void apply ( IntegratorTuple& integrator_tuple ) const
 		{
 			Profiler::ScopedTiming assembler_time("assembler");
-			typedef typename GridType::LeafGridView
+			typedef typename Traits::GridPartType::GridType::LeafGridView
 				GridView;
 			typedef typename GridView::template Codim<0>::
 					template Partition<Dune::All_Partition>::Iterator

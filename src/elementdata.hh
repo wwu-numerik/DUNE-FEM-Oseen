@@ -1,3 +1,8 @@
+#ifndef DUNE_STOKES_ELEMENTDATA_HH
+#define DUNE_STOKES_ELEMENTDATA_HH
+
+#include <dune/stuff/filesystem.hh>
+
 #include<dune/grid/common/referenceelements.hh>
 #include<dune/grid/common/mcmgmapper.hh>
 #include<dune/grid/io/file/vtk/vtkwriter.hh>
@@ -79,3 +84,5 @@ void elementdata (const G& grid, const F& f)
   }
 #endif                                                 /*@\label{edh:grape1}@*/
 }
+
+#endif //DUNE_STOKES_ELEMENTDATA_HH

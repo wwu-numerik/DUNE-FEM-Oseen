@@ -1,6 +1,8 @@
 #ifndef DUNE_STOKES_DEFAULTTRAITS_HH
 #define DUNE_STOKES_DEFAULTTRAITS_HH
 
+#include <dune/stokes/stab_coeff.hh>
+
 namespace Dune
 {
 

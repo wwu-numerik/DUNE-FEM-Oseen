@@ -1,8 +1,12 @@
 #ifndef DUNE_STOKES_SOLVER_SCHURKOMPLEMENT_HH
 #define DUNE_STOKES_SOLVER_SCHURKOMPLEMENT_HH
 
+#include "solver_defines.hh"
+
 #include <dune/stuff/matrix.hh>
 #include <dune/stuff/preconditioning.hh>
+#include <dune/stuff/logging.hh>
+#include <dune/stuff/parametercontainer.hh>
 
 namespace Dune {
 
@@ -31,7 +35,8 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 			A_PreconditionMatrix;
 		typedef IdentityMatrixObject<typename R_MatrixType::WrappedMatrixObjectType>
 			PreconditionMatrixBaseType;
-		friend class Conversion<ThisType,OEMSolver::PreconditionInterface>;
+		//if shit goes south wrt precond working check if this doesn't need to be OEmSolver instead of SOLVER_INTERFACE_NAMESPACE
+		friend class Conversion<ThisType,SOLVER_INTERFACE_NAMESPACE::PreconditionInterface>;
 
 		class PreconditionOperator {
 			const ThisType& sk_op_;
