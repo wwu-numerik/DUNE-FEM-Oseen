@@ -93,6 +93,7 @@ CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_config.h.in ${CMAKE_CURR
 
 #needs to come first to include correct config.h
 INCLUDE_DIR( ${dune-stokes_BINARY_DIR}  ${dune-stokes_SOURCE_DIR} )
+INCLUDE_SYS_DIR( ${dune-stokes_SOURCE_DIR}/stokes/oemsolver/ )
 ADD_CXX_FLAGS( ${CUSTOM_FLAGS} )
 
 IF( ${GRIDTYPE} STREQUAL "UGGRID" )

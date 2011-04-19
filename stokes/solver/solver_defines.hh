@@ -1,6 +1,10 @@
 #ifndef DUNE_STOKES_SOLVER_DEFINES_HH
 #define DUNE_STOKES_SOLVER_DEFINES_HH
 
+#ifdef HAVE_CMAKE_CONFIG
+	#include "cmake_config.h"
+#endif
+
 // OEMBICGSQOp will NOT compile
 #ifndef INNER_CG_SOLVERTYPE
 	#define INNER_CG_SOLVERTYPE OEMCGOp
