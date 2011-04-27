@@ -10,7 +10,7 @@
 #include <cmath>
 
 #include <dune/common/fvector.hh>
-
+#include <dune/fem/function/common/function.hh>
 #include <dune/stuff/logging.hh>
 
 /**

@@ -6,6 +6,8 @@
 #ifndef DUNE_STOKES_SOLVER_CGHELPER_HH
 #define DUNE_STOKES_SOLVER_CGHELPER_HH
 
+#include "solver_defines.hh"
+
 #include <dune/stokes/solver/new_bicgstab.hh>
 #include <dune/stuff/printing.hh>
 #include <dune/stuff/misc.hh>
@@ -39,7 +41,8 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 					DiscreteVelocityFunctionType>
 				ThisType;
 
-	friend class Conversion<ThisType,OEMSolver::PreconditionInterface>;
+	// if shit goes south wrt precond working check if this doesn't need to be OEmSolver instead of SOLVER_INTERFACE_NAMESPACE
+	friend class Conversion<ThisType,SOLVER_INTERFACE_NAMESPACE::PreconditionInterface>;
 	typedef IdentityMatrixObject<typename YMatType::WrappedMatrixObjectType>
 		PreconditionMatrixBaseType;
 
@@ -120,7 +123,7 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 
 #ifdef USE_BFG_CG_SCHEME
         template <class VECtype>
-        void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& info ) const
+		void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& /*info*/ ) const
         {
             multOEM(x,ret);
         }

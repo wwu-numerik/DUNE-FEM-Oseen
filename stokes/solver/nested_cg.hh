@@ -99,7 +99,7 @@ namespace Dune {
 		  PressureDiscreteFunctionType& pressure = dest.discretePressure();
 		  VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
 		  Logging::LogStream& logDebug = Logger().Dbg();
-		  Logging::LogStream& logError = Logger().Err();
+//		  Logging::LogStream& logError = Logger().Err();
 		  Logging::LogStream& logInfo = Logger().Info();
 
 		  // relative min. error at which cg-solvers will abort

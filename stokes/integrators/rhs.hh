@@ -309,12 +309,11 @@ class H2_O
 
 					if ( beta_times_normal < 0 )
 					{
-						const double ret = gD * v_j;
+						const double ret = beta_times_normal * (gD * v_j) ;
 						H2_O_j -= elementVolume
 								* info.convection_scaling
 								* integrationWeight
-								* ret
-								* beta_times_normal;
+								* ret;
 					}
 				}
 				if ( fabs( H2_O_j ) < info.eps ) {

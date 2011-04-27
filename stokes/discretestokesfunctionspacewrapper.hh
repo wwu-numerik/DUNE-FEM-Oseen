@@ -783,7 +783,7 @@ class CombinedDiscreteFunctionSpace
 			return function_wrapper_.grid();
 		}
 
-		const size_t size() const
+		size_t size() const
 		{
 			return function_wrapper_.discreteVelocity().space().size()
 				   + function_wrapper_.discretePressure().space().size();
@@ -939,6 +939,6 @@ private:
 
 };
 
-}; // end of namespace Dune
+} // end of namespace Dune
 
 #endif // end of discretestokesfunctionspacewrapper.hh

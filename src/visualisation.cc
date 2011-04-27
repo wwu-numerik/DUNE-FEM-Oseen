@@ -43,7 +43,7 @@ class ProcessIdFunctor : public FunctorBase {
 		{}
 
 		template <class Entity>
-		double operator() ( const Entity& ent ) const
+		double operator() ( const Entity& /*ent*/ ) const
 		{
 			return mpiHelper_.rank();
 		}

@@ -133,17 +133,14 @@ bicgstab_algo2( const CommunicatorType & comm,
   dcopy(N,d,1,s,1);
   dcopy(N,s,1,rT,1);
 
+  rTr = ddot(N,r,1,r,1);
+  rTh = ddot(N,rT,1,s,1);
   //rene: das stellt sicher, dass das erste residuum NICHT ZU KLEIN ist?!? WTF
   //IMPORTANT
   //assert( ddot(N,rT,1,rT,1)> bicgeps );
   const double rt_prod = ddot(N,rT,1,rT,1);
   if ( rt_prod < bicgeps )
 	  return std::pair<int,double> (its,sqrt(rTr));
-
-
-  rTr = ddot(N,r,1,r,1);
-  rTh = ddot(N,rT,1,s,1);
-
   // communicate rTr and rTh
   comm.sum( rtBuff, 2 );
 

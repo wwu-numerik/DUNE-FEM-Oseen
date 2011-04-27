@@ -2,6 +2,7 @@
 #define DUNE_STOKES_DIRECT_SOLVER_HH
 
 #include <dune/stokes/solver/solver_interface.hh>
+#include <dune/stokes/discretestokesfunctionspacewrapper.hh>
 
 namespace Dune {
 

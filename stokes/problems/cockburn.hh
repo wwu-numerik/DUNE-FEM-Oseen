@@ -81,7 +81,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 			ret[1] = exp_of_x1 * x2 * sin_of_x2;
 		}
 
-		inline void evaluate( const DomainType& arg, RangeType& ret ) const {assert(false);}
+		inline void evaluate( const DomainType& /*arg*/, RangeType& /*ret*/ ) const {assert(false);}
 
 	private:
 		static const int dim_ = FunctionSpaceImp::dimDomain ;

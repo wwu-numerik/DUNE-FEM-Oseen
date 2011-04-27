@@ -219,7 +219,7 @@ class StokesPass
          *  \attention  think about quadrature orders
          **/
 		template < class RhsDatacontainerType, class ExactSigmaType >
-		void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer, const ExactSigmaType* sigma_exact ) const
+		void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer, const ExactSigmaType* /*sigma_exact*/ ) const
         {
             // profiler information
 			profiler().StartTiming("Pass_init");
@@ -382,6 +382,7 @@ class StokesPass
 										o_integrator, z_integrator, e_integrator, r_integrator,
 										h1_integrator, h2_integrator,h2_o_integrator, h3_integrator );
 				coordinator.apply( tuple );
+				Logger().Dbg() << "Oseen disc\n" ;
 			}
 			else
 			{
@@ -392,6 +393,7 @@ class StokesPass
 										z_integrator, e_integrator, r_integrator,
 										h1_integrator, h2_integrator,h3_integrator );
 				coordinator.apply( tuple );
+				Logger().Dbg() << "Stokes disc\n" ;
 			}
 
 		#ifndef NDEBUG

@@ -105,7 +105,6 @@ namespace Dune {
 
 			//the bfg scheme uses the outer acc. as a base
 			double current_inner_accuracy = do_bfg ? tau * outer_absLimit : inner_absLimit;
-			double max_inner_accuracy = current_inner_accuracy;
 	#else
 			double current_inner_accuracy = inner_absLimit;
 	#endif
@@ -114,12 +113,6 @@ namespace Dune {
 														   current_inner_accuracy, solverVerbosity > 5 );
 
 	/*****************************************************************************************/
-
-		#ifdef USE_BFG_CG_SCHEME
-			int total_inner_iterations = 0;
-			int min_inner_iterations = std::numeric_limits<int>::max();
-			int max_inner_iterations = 0;
-		#endif
 
 			// F = rhs2 - X M^{-1} * rhs1
 			const double m_scale = m_inv_mat(0,0);
@@ -149,6 +142,7 @@ namespace Dune {
 
 			//schur_f = - E A^{-1} F - G = -1 ( E A^{-1} F + G )
 			schur_f.assign( rhs3 );
+			v_tmp.clear();
 			innerCGSolverWrapper.apply( F, v_tmp );
 			e_mat.apply( v_tmp, tmp2 );
 			schur_f += tmp2;
@@ -158,6 +152,7 @@ namespace Dune {
 
 			SOLVER_NAMESPACE::NewBicgStab< PressureDiscreteFunctionType,Sk_Operator >
 					bicg( sk_op, relLimit, outer_absLimit, maxIter, solverVerbosity );
+			pressure.clear();
 			bicg.apply( schur_f, pressure );
 			//pressure mw correction
 			double meanPressure_discrete = Stuff::meanValue( pressure, pressure.space() );
@@ -178,18 +173,6 @@ namespace Dune {
 			logInfo << cg_name << ": End BICG SaddlePointInverseOperator " << std::endl;
 
 			SaddlepointInverseOperatorInfo info; //left blank in case of no bfg
-	#if 0 //def USE_BFG_CG_SCHEME
-			const double avg_inner_iterations = total_inner_iterations / (double)iteration;
-			if( solverVerbosity > 0 )
-				logInfo << "\n #avg inner iter | #outer iter: "
-						<<  avg_inner_iterations << " | " << iteration << std::endl;
-
-			info.iterations_inner_avg = avg_inner_iterations;
-			info.iterations_inner_min = min_inner_iterations;
-			info.iterations_inner_max = max_inner_iterations;
-			info.iterations_outer_total = iteration;
-			info.max_inner_accuracy = max_inner_accuracy;
-	#endif
 			// ***************************
 			return info;
 
