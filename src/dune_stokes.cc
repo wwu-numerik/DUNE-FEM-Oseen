@@ -694,9 +694,6 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 
     firstRun = false;
 
-	info.tableHeader( std::cout );
-	info.tableLine( std::cout );
-
     return info;
 }
 
