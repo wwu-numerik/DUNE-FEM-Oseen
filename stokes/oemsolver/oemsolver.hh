@@ -503,12 +503,12 @@ public:
       \param[in] maxIter maximal number of iterations performed
       \param[in] verbose verbosity
   */
-  OEMCGOp( OperatorType & op , double  redEps , double absLimit , int maxIter , bool verbose ) :
+  OEMCGOp( OperatorType & op , double  /*redEps*/ , double absLimit , int maxIter , bool verbose ) :
         op_(op), epsilon_ ( absLimit ) ,
         maxIter_ (maxIter ) , verbose_ ( verbose ) {
   }
 
-  void prepare (const DiscreteFunctionType& Arg, DiscreteFunctionType& Dest) const
+  void prepare (const DiscreteFunctionType& /*Arg*/, DiscreteFunctionType& /*Dest*/) const
   {
   }
 

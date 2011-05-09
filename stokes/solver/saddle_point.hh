@@ -212,9 +212,7 @@ namespace Dune {
 
 	#ifdef USE_BFG_CG_SCHEME
 					if ( do_bfg ) {
-						//the form from the precond. paper (does not work properly)
-	//                    current_inner_accuracy = tau * std::min( 1. , absLimit / std::min ( std::pow( delta, int(iteration) ), 1.0 ) );
-						//my form, works
+						//the form from the precond. paper
 						current_inner_accuracy = tau * std::min( 1. , outer_absLimit / std::min ( delta , 1.0 ) );
 						innerCGSolverWrapper.setAbsoluteLimit( current_inner_accuracy );
 						max_inner_accuracy = std::max( max_inner_accuracy, current_inner_accuracy );
