@@ -510,8 +510,8 @@ RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
     static Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename( gridDim ) );
     static bool firstRun = true;
     int refine_level = ( refine_level_factor  ) * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
+	static int last_refine_level = refine_level;
     if ( firstRun && refine_level_factor > 0 ) { //since we have a couple of local statics, only do this once, further refinement done in estimator
-        refine_level = ( refine_level_factor ) * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
         gridPtr->globalRefine( refine_level );
     }
 
@@ -585,9 +585,9 @@ RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
     if ( !firstRun ) {
         Dune::Estimator<DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType>
             estimator ( computedSolutions.discretePressure() );
-        for ( int i = 0; i < Dune::DGFGridInfo< GridType >::refineStepsForHalf(); ++i ) {
-            estimator.mark( 0.0 /*dummy*/ ); //simpler would be to use real weights in mark(), but alas, that doesn't work as advertised
-            computedSolutions.adapt();
+		for ( int i = refine_level - last_refine_level; i > 0; --i ) {
+			estimator.mark( 0.0 /*dummy*/ ); //simpler would be to use real weights in mark(), but alas, that doesn't work as advertised
+			computedSolutions.adapt();
         }
 
         if ( Parameters().getParam( "clear_u" , true ) )
@@ -596,6 +596,7 @@ RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
             computedSolutions.discretePressure().clear();
     }
 #endif
+	last_refine_level = refine_level;
 
 	info.codim0 = gridPtr->size( 0 );
 	const double grid_width = Dune::GridWidth::calcGridWidth( gridPart );
