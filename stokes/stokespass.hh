@@ -525,7 +525,7 @@ class StokesPass
         {}
 
 #ifdef HAS_RUN_INFO
-        void getRuninfo( RunInfo& info )
+		void getRuninfo( Stuff::RunInfo& info )
         {
 			info.iterations_inner_avg = int( info_.iterations_inner_avg );
             info.iterations_inner_min = info_.iterations_inner_min;

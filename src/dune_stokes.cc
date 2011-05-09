@@ -117,7 +117,7 @@ typedef std::vector<std::string>
             the set of coefficients to be used in the run. Default is used in all run types but StabRun().
 
 **/
-RunInfo singleRun(  CollectiveCommunication& mpicomm,
+Stuff::RunInfo singleRun(  CollectiveCommunication& mpicomm,
                     int refine_level_factor,
 					Dune::StabilizationCoefficients& stabil_coeff );
 
@@ -143,8 +143,7 @@ CoeffVector getC_Permutations();
 CoeffVector getC_power_Permutations();
 
 //! output alert for neg. EOC
-typedef std::vector<RunInfo> RunInfoVector;
-void eocCheck( const RunInfoVector& runInfos );
+void eocCheck( const Stuff::RunInfoVector& runInfos );
 
 /**
  *  \brief  main function
@@ -220,7 +219,7 @@ int main( int argc, char** argv )
         }
         case 5: {
             profiler().Reset( 1 );
-            RunInfoVector rf;
+			Stuff::RunInfoVector rf;
 			Dune::StabilizationCoefficients st = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
 			st.FactorFromParams( "C11" );
 			st.FactorFromParams( "C12" );
@@ -264,7 +263,7 @@ void RefineRun( CollectiveCommunication& mpicomm )
     const std::string errheaders[] = { "h", "el't","Laufzeit (s)","Geschwindigkeit", "Druck" };
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
-    RunInfoVector run_infos;
+	Stuff::RunInfoVector run_infos;
 	Stuff::FemEoc& eoc_output = Stuff::FemEoc::instance( );
 	eoc_output.initialize( Parameters().getParam("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
@@ -286,7 +285,7 @@ void RefineRun( CollectiveCommunication& mpicomm )
         if ( per_run_log_target )
             Logger().SetPrefix( "dune_stokes_ref_"+Stuff::toString(ref) );
 
-		RunInfo info = singleRun( mpicomm, ref, stab_coeff );
+		Stuff::RunInfo info = singleRun( mpicomm, ref, stab_coeff );
         run_infos.push_back( info );
         eoc_output.setErrors( idx,info.L2Errors );
         eoc_texwriter.setInfo( info );
@@ -296,6 +295,7 @@ void RefineRun( CollectiveCommunication& mpicomm )
 	profiler().Output( mpicomm, run_infos );
 
 	eocCheck( run_infos );
+	Stuff::dumpRunInfoVectorToFile( run_infos );
 }
 
 void AccuracyRun( CollectiveCommunication& mpicomm )
@@ -305,7 +305,7 @@ void AccuracyRun( CollectiveCommunication& mpicomm )
     const std::string errheaders[] = { "h", "el't","Laufzeit (s)","\\o{} Iter. (innen)","Genauigkeit (innen)","\\# Iter. (aussen)","Genauigkeit (aussen)","Geschwindigkeit", "Druck" };
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
-    RunInfoVector run_infos;
+	Stuff::RunInfoVector run_infos;
 	Stuff::FemEoc& eoc_output = Stuff::FemEoc::instance( );
 	eoc_output.initialize( Parameters().getParam("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
@@ -337,7 +337,7 @@ void AccuracyRun( CollectiveCommunication& mpicomm )
             Parameters().setParam( "absLimit", outer_acc );
             Parameters().setParam( "inner_absLimit", inner_acc );
 			Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
-			RunInfo info = singleRun( mpicomm, ref, stab_coeff );
+			Stuff::RunInfo info = singleRun( mpicomm, ref, stab_coeff );
             run_infos.push_back( info );
             eoc_output.setErrors( idx,info.L2Errors );
             eoc_texwriter.setInfo( info );
@@ -349,6 +349,7 @@ void AccuracyRun( CollectiveCommunication& mpicomm )
         }
     }
     profiler().Output( mpicomm, run_infos );
+	Stuff::dumpRunInfoVectorToFile( run_infos );
 }
 
 void AccuracyRunOuter( CollectiveCommunication& mpicomm )
@@ -358,7 +359,7 @@ void AccuracyRunOuter( CollectiveCommunication& mpicomm )
     const std::string errheaders[] = { "h", "el't","Laufzeit (s)","\\o{} Iter. (innen)","\\# Iter. (aussen)","Genauigkeit (aussen)","Geschwindigkeit", "Druck" };
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
-    RunInfoVector run_infos;
+	Stuff::RunInfoVector run_infos;
 	Stuff::FemEoc& eoc_output = Stuff::FemEoc::instance( );
 	eoc_output.initialize( Parameters().getParam("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
@@ -388,7 +389,7 @@ void AccuracyRunOuter( CollectiveCommunication& mpicomm )
         Parameters().setParam( "absLimit", outer_acc );
         Parameters().setParam( "inner_absLimit", inner_acc );
 		Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
-		RunInfo info = singleRun( mpicomm, ref, stab_coeff );
+		Stuff::RunInfo info = singleRun( mpicomm, ref, stab_coeff );
         run_infos.push_back( info );
         eoc_output.setErrors( idx,info.L2Errors );
         eoc_texwriter.setInfo( info );
@@ -399,6 +400,7 @@ void AccuracyRunOuter( CollectiveCommunication& mpicomm )
         Logger().Info() << numruns << " runs remaining" << std::endl;
     }
     profiler().Output( mpicomm, run_infos );
+	Stuff::dumpRunInfoVectorToFile( run_infos );
 }
 
 void StabRun( CollectiveCommunication& mpicomm )
@@ -408,7 +410,7 @@ void StabRun( CollectiveCommunication& mpicomm )
     const std::string errheaders[] = { "h", "el't","Laufzeit (s)","C11","C12","D11","D12","Geschwindigkeit", "Druck" };
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
-    RunInfoVector run_infos;
+	Stuff::RunInfoVector run_infos;
 	Stuff::FemEoc& eoc_output = Stuff::FemEoc::instance( );
 	eoc_output.initialize( Parameters().getParam("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
@@ -426,7 +428,7 @@ void StabRun( CollectiveCommunication& mpicomm )
     profiler().Reset( coeff_vector.size() );
 	CoeffVector::iterator it = coeff_vector.begin();
 	for ( unsigned i = 0; it != coeff_vector.end(); ++it,++i ) {
-        RunInfo info = singleRun( mpicomm, ref, *it );
+		Stuff::RunInfo info = singleRun( mpicomm, ref, *it );
         run_infos.push_back( info );
 
         //push errors to eoc-outputter class
@@ -444,6 +446,7 @@ void StabRun( CollectiveCommunication& mpicomm )
     Logger().Info() << "completed " << coeff_vector.size() << " runs" << std::endl ;
 
     profiler().Output( mpicomm, run_infos );
+	Stuff::dumpRunInfoVectorToFile( run_infos );
 }
 
 void BfgRun( CollectiveCommunication& mpicomm )
@@ -452,9 +455,9 @@ void BfgRun( CollectiveCommunication& mpicomm )
     const int refine_level_factor = Parameters().getParam( "minref", 0 );
     Parameters().setParam( "do-bfg", false );
 	Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
-	RunInfo nobfg_info = singleRun( mpicomm, refine_level_factor, stab_coeff );
+	Stuff::RunInfo nobfg_info = singleRun( mpicomm, refine_level_factor, stab_coeff );
 
-    RunInfoVector run_infos;
+	Stuff::RunInfoVector run_infos;
     const std::string bfgheaders[] = { "h", "el't","Laufzeit (s)","$\\tau$","\\o{} Iter. (i)","min \\# Iter. (i)","max \\# Iter. (i)","\\# Iter. (a)","min. Genau. (i)","Geschwindigkeit", "Druck" };
     const unsigned int num_bfgheaders = sizeof ( bfgheaders ) / sizeof ( bfgheaders[0] );
     ColumnHeaders bfgColumnHeaders ( bfgheaders, bfgheaders + num_bfgheaders ) ;
@@ -478,7 +481,7 @@ void BfgRun( CollectiveCommunication& mpicomm )
     for ( double tau = start_tau; tau < stop_tau; tau += tau_inc ) {
         Parameters().setParam( "bfg-tau", tau );
 		Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
-		RunInfo info = singleRun( mpicomm, refine_level_factor, stab_coeff );
+		Stuff::RunInfo info = singleRun( mpicomm, refine_level_factor, stab_coeff );
         run_infos.push_back( info );
         bfg_output.setErrors( idx,info.L2Errors );
         bfg_texwriter.setInfo( info );
@@ -486,9 +489,10 @@ void BfgRun( CollectiveCommunication& mpicomm )
         profiler().NextRun(); //finish this run
     }
     profiler().Output( mpicomm, run_infos );
+	Stuff::dumpRunInfoVectorToFile( run_infos );
 }
 
-RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
+Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
                     int refine_level_factor,
 					Dune::StabilizationCoefficients& stabil_coeff )
 {
@@ -496,7 +500,7 @@ RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
     Logging::LogStream& infoStream = Logger().Info();
     Logging::LogStream& debugStream = Logger().Dbg();
 	stabil_coeff.Add( "E12", 0.0 );
-    RunInfo info;
+	Stuff::RunInfo info;
 
     debugStream << "\nsingleRun( ";
     stabil_coeff.print( debugStream );
@@ -690,14 +694,17 @@ RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 
     firstRun = false;
 
+	info.tableHeader( std::cout );
+	info.tableLine( std::cout );
+
     return info;
 }
 
-void eocCheck( const RunInfoVector& runInfos )
+void eocCheck( const Stuff::RunInfoVector& runInfos )
 {
 	bool ups = false;
-	RunInfoVector::const_iterator it = runInfos.begin();
-	RunInfo last = *it;
+	Stuff::RunInfoVector::const_iterator it = runInfos.begin();
+	Stuff::RunInfo last = *it;
 	++it;
 	for ( ; it != runInfos.end(); ++it ) {
 		ups = ( last.L2Errors[0] < it->L2Errors[0]
