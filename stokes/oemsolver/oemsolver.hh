@@ -12,6 +12,7 @@
 //- Dune includes
 #include <dune/common/typetraits.hh>
 #include <dune/fem/operator/common/operator.hh>
+#include <dune/stuff/debug.hh>
 
 //- local includes
 #include "preconditioning.hh"
@@ -279,8 +280,8 @@ struct Mult<Matrix,Matrix,false>
                       double * tmp);
 #endif
 
-  static bool first_mult(const Matrix &A, const Matrix & C,
-              const double *arg, double *dest , double * tmp)
+  static bool first_mult(const Matrix &A, const Matrix & UNUSED_UNLESS_DEBUG(C),
+			  const double *arg, double *dest , double * UNUSED_UNLESS_DEBUG(tmp) )
   {
     // tmp has to be 0
     assert( tmp == 0 );
@@ -306,8 +307,8 @@ struct Mult<Matrix,Matrix,false>
   }
 
 #ifdef USE_BFG_CG_SCHEME
-  static void mult_pc(const Matrix &A, const Matrix & C, const double *arg ,
-                      double *dest , double * tmp, const IterationInfo& info )
+  static void mult_pc(const Matrix &A, const Matrix & UNUSED_UNLESS_DEBUG(C), const double *arg ,
+					  double *dest , double * UNUSED_UNLESS_DEBUG(tmp), const IterationInfo& info )
   {
     // tmp has to be 0
     assert( tmp == 0 );
