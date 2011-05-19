@@ -292,10 +292,12 @@ void RefineRun( CollectiveCommunication& mpicomm )
         eoc_output.write( eoc_texwriter, ( ref >= maxref ) );
         profiler().NextRun(); //finish this run
     }
+	run_infos[0].cumulative_run_time = run_infos[0].run_time;
+	for ( size_t i = 1; i < run_infos.size(); ++i )
+			run_infos[i].cumulative_run_time = run_infos[i-1].cumulative_run_time + run_infos[i].run_time;
 	profiler().Output( mpicomm, run_infos );
-
-	eocCheck( run_infos );
 	Stuff::dumpRunInfoVectorToFile( run_infos );
+	eocCheck( run_infos );
 }
 
 void AccuracyRun( CollectiveCommunication& mpicomm )
@@ -456,6 +458,7 @@ void BfgRun( CollectiveCommunication& mpicomm )
     Parameters().setParam( "do-bfg", false );
 	Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
 	Stuff::RunInfo nobfg_info = singleRun( mpicomm, refine_level_factor, stab_coeff );
+	nobfg_info.bfg_tau =  std::numeric_limits<double>::quiet_NaN();
 
 	Stuff::RunInfoVector run_infos;
     const std::string bfgheaders[] = { "h", "el't","Laufzeit (s)","$\\tau$","\\o{} Iter. (i)","min \\# Iter. (i)","max \\# Iter. (i)","\\# Iter. (a)","min. Genau. (i)","Geschwindigkeit", "Druck" };
@@ -509,7 +512,7 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
     /* ********************************************************************** *
      * initialize the grid                                                    *
      * ********************************************************************** */
-    infoStream << "\n- initialising grid" << std::endl;
+	infoStream << boost::format("\n- initialising grid (level %d)") % refine_level_factor << std::endl;
     const int gridDim = GridType::dimensionworld;
     static Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename( gridDim ) );
     static bool firstRun = true;
@@ -655,26 +658,29 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
     infoStream << "\n- postprocesing" << std::endl;
     profiler().StartTiming( "Problem/Postprocessing" );
 
-	typedef StokesProblems::Container< gridDim, DiscreteStokesFunctionWrapperType>
-		ProblemType;
-	ProblemType problem( viscosity , computedSolutions, analyticalDirichletData );
+	if ( !Parameters().getParam( "disableSolver", false ) )
+	{
+		typedef StokesProblems::Container< gridDim, DiscreteStokesFunctionWrapperType>
+			ProblemType;
+		ProblemType problem( viscosity , computedSolutions, analyticalDirichletData );
 
-    typedef PostProcessor< StokesPassType, ProblemType >
-        PostProcessorType;
+		typedef PostProcessor< StokesPassType, ProblemType >
+			PostProcessorType;
 
-    PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );
+		PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );
 
-	if ( Parameters().getParam( "save_solutions", true ) )
-		postProcessor.save( *gridPtr, computedSolutions, refine_level );
-	else
-		postProcessor.calcError( computedSolutions );
-    info.L2Errors = postProcessor.getError();
-    typedef Dune::StabilizationCoefficients::ValueType
-        Pair;
-    info.c11 = Pair( stabil_coeff.Power( "C11" ), stabil_coeff.Factor( "C11" ) );
-    info.c12 = Pair( stabil_coeff.Power( "C12" ), stabil_coeff.Factor( "C12" ) );
-    info.d11 = Pair( stabil_coeff.Power( "D11" ), stabil_coeff.Factor( "D11" ) );
-    info.d12 = Pair( stabil_coeff.Power( "D12" ), stabil_coeff.Factor( "D12" ) );
+		if ( Parameters().getParam( "save_solutions", true ) )
+			postProcessor.save( *gridPtr, computedSolutions, refine_level );
+		else
+			postProcessor.calcError( computedSolutions );
+		info.L2Errors = postProcessor.getError();
+	}
+	typedef Dune::StabilizationCoefficients::ValueType
+		Pair;
+	info.c11 = Pair( stabil_coeff.Power( "C11" ), stabil_coeff.Factor( "C11" ) );
+	info.c12 = Pair( stabil_coeff.Power( "C12" ), stabil_coeff.Factor( "C12" ) );
+	info.d11 = Pair( stabil_coeff.Power( "D11" ), stabil_coeff.Factor( "D11" ) );
+	info.d12 = Pair( stabil_coeff.Power( "D12" ), stabil_coeff.Factor( "D12" ) );
     info.bfg = Parameters().getParam( "do-bfg", true );
     info.gridname = gridPart.grid().name();
     info.refine_level = refine_level;
