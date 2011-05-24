@@ -227,6 +227,7 @@ int main( int argc, char** argv )
 			st.FactorFromParams( "D12" );
 			rf.push_back(singleRun( mpicomm, Parameters().getParam( "minref", 0 ), st ) );
             profiler().Output( mpicomm, rf );
+			Stuff::dumpRunInfoVectorToFile( rf );
             break;
         }
     } // end case
