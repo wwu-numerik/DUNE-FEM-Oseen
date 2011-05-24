@@ -65,6 +65,17 @@ SET( PROBLEM_NAMESPACE
 	"StokesProblems::Cockburn" CACHE STRING
 	"PROBLEM_NAMESPACE" )
 
+#sadly this produces a drop down list only in the qt gui
+SET_PROPERTY(CACHE PROBLEM_NAMESPACE PROPERTY STRINGS 
+			"StokesProblems::Simple"
+			"StokesProblems::Cockburn"
+			"StokesProblems::Generalized"
+			"StokesProblems::Constant"
+			"StokesProblems::Rotate"
+			"StokesProblems::Aorta"
+			"StokesProblems::TimeDisc"
+	)
+
 SET( ALUGRID_BASE_PATH
 	"/opt/dune/modules/alugrid/alugrid-1.22" CACHE STRING
 	"ALUGRID_BASE_PATH" )
