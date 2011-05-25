@@ -10,6 +10,7 @@
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/logging.hh>
 #include <dune/stuff/parametercontainer.hh>
+#include <dune/stuff/tex.hh>
 
 #include"elementdata.hh"
 
@@ -85,7 +86,6 @@ class BoundaryFunctor : public FunctorBase {
 class AreaMarker : public FunctorBase {
 
 	public:
-
 		AreaMarker( const std::string filename )
 			: FunctorBase( filename ) {}
 
@@ -125,7 +125,7 @@ class GeometryFunctor : public FunctorBase {
 
 		template <class Entity>
 		double operator() ( const Entity& ent ) const
-		{
+		{			
 			const typename Entity::Geometry& geo = ent.geometry();
 			double vol = geo.volume();
 			if ( vol < 0 ) {
@@ -144,23 +144,39 @@ class GeometryFunctor : public FunctorBase {
 template<class Grid>
 void dowork ( Grid& grid, int refSteps, Dune::MPIHelper& mpiHelper )
 {
-	std::string outputDir = Parameters().getParam( "visualisationOutputDir",
-					Parameters().getParam("fem.io.datadir", std::string("data") ) + std::string("/visualisation") );
+//	std::string outputDir = Parameters().getParam( "visualisationOutputDir",
+//					Parameters().getParam("fem.io.datadir", std::string("data") ) + std::string("/visualisation") );
 	// make function objects
-	BoundaryFunctor boundaryFunctor( outputDir + std::string("/boundaryFunctor") );
-	AreaMarker areaMarker( outputDir + std::string("/areaMarker") );
-	GeometryFunctor geometryFunctor( outputDir + std::string("/geometryFunctor") );
-	VolumeFunctor volumeFunctor( outputDir + std::string("/volumeFunctor") );
-	ProcessIdFunctor processIdFunctor( outputDir + std::string("/ProcessIdFunctor"), mpiHelper );
+//	BoundaryFunctor boundaryFunctor( outputDir + std::string("/boundaryFunctor") );
+//	AreaMarker areaMarker( outputDir + std::string("/areaMarker") );
+//	GeometryFunctor geometryFunctor( outputDir + std::string("/geometryFunctor") );
+//	VolumeFunctor volumeFunctor( outputDir + std::string("/volumeFunctor") );
+//	ProcessIdFunctor processIdFunctor( outputDir + std::string("/ProcessIdFunctor"), mpiHelper );
 	// refine the grid
-	grid.globalRefine( refSteps );
 
 	// call the visualization functions
-	elementdata( grid, areaMarker );
-	elementdata( grid, boundaryFunctor );
-	elementdata( grid, volumeFunctor );
-	elementdata( grid, geometryFunctor );
-	elementdata( grid, processIdFunctor );
+//	elementdata( grid, areaMarker );
+//	elementdata( grid, boundaryFunctor );
+//	elementdata( grid, volumeFunctor );
+//	elementdata( grid, geometryFunctor );
+//	elementdata( grid, processIdFunctor );
+//	std::ofstream file( Stuff::getFileinDatadir( "grids.tex" ).c_str() );
+//	file << "\\documentclass{article}\n"
+//			"\\usepackage{tikz}\n"
+//			"\\usetikzlibrary{calc,intersections}\n"
+//			"\\pagestyle{empty}\n"
+//			"\\begin{document}\n";
+
+//	for ( int i = 0; i < Parameters().getParam( "maxref", 0 ); ++i )
+//	{
+//		grid.globalRefine( 1 );
+//		Stuff::PgfGrid<Grid> pgfGrid( grid );
+//		pgfGrid.output( (boost::format("grid_level%d.tex") % i).str() );
+//		file << boost::format("\\begin{tikzpicture}\n\\input{grid_level%d}\n\\end{tikzpicture}\n") % i ;
+//	}
+//	file << "\\end{document}\n";
+	Stuff::MultiPgfGrid<Grid> pgfGrid( grid );
+	pgfGrid.output( "stacked.tex", Parameters().getParam( "maxref", 3 ) );
 }
 
 #if ENABLE_MPI
