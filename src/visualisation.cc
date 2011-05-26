@@ -11,6 +11,7 @@
 #include <dune/stuff/logging.hh>
 #include <dune/stuff/parametercontainer.hh>
 #include <dune/stuff/tex.hh>
+#include <dune/stuff/tikzgrid.hh>
 
 #include"elementdata.hh"
 
@@ -175,7 +176,7 @@ void dowork ( Grid& grid, int refSteps, Dune::MPIHelper& mpiHelper )
 //		file << boost::format("\\begin{tikzpicture}\n\\input{grid_level%d}\n\\end{tikzpicture}\n") % i ;
 //	}
 //	file << "\\end{document}\n";
-	Stuff::MultiPgfGrid<Grid> pgfGrid( grid );
+	Stuff::Tex::StackedPgfGrid<Grid> pgfGrid( grid );
 	pgfGrid.output( "stacked.tex", Parameters().getParam( "maxref", 3 ) );
 }
 

@@ -265,10 +265,10 @@ void RefineRun( CollectiveCommunication& mpicomm )
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
 	Stuff::RunInfoVector run_infos;
-	Stuff::FemEoc& eoc_output = Stuff::FemEoc::instance( );
+	Stuff::Tex::FemEoc& eoc_output = Stuff::Tex::FemEoc::instance( );
 	eoc_output.initialize( Parameters().getParam("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
-    Stuff::RefineOutput eoc_texwriter( errorColumnHeaders );
+	Stuff::Tex::RefineOutput eoc_texwriter( errorColumnHeaders );
 
     int minref = Parameters().getParam( "minref", 0 );
 	// ensures maxref>=minref
@@ -309,10 +309,10 @@ void AccuracyRun( CollectiveCommunication& mpicomm )
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
 	Stuff::RunInfoVector run_infos;
-	Stuff::FemEoc& eoc_output = Stuff::FemEoc::instance( );
+	Stuff::Tex::FemEoc& eoc_output = Stuff::Tex::FemEoc::instance( );
 	eoc_output.initialize( Parameters().getParam("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
-    Stuff::AccurracyOutput  eoc_texwriter( errorColumnHeaders );
+	Stuff::Tex::AccurracyOutput  eoc_texwriter( errorColumnHeaders );
 
     double  accurracy_start  = Parameters().getParam( "accurracy_start", 10e-3 );
     int     accurracy_steps  = Parameters().getParam( "accurracy_steps", 5 );
@@ -363,10 +363,10 @@ void AccuracyRunOuter( CollectiveCommunication& mpicomm )
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
 	Stuff::RunInfoVector run_infos;
-	Stuff::FemEoc& eoc_output = Stuff::FemEoc::instance( );
+	Stuff::Tex::FemEoc& eoc_output = Stuff::Tex::FemEoc::instance( );
 	eoc_output.initialize( Parameters().getParam("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
-    Stuff::AccurracyOutputOuter  eoc_texwriter( errorColumnHeaders );
+	Stuff::Tex::AccurracyOutputOuter  eoc_texwriter( errorColumnHeaders );
 
     double  accurracy_start  = Parameters().getParam( "accurracy_start", 10e-3 );
     int     accurracy_steps  = Parameters().getParam( "accurracy_steps", 5 );
@@ -414,10 +414,10 @@ void StabRun( CollectiveCommunication& mpicomm )
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
 	Stuff::RunInfoVector run_infos;
-	Stuff::FemEoc& eoc_output = Stuff::FemEoc::instance( );
+	Stuff::Tex::FemEoc& eoc_output = Stuff::Tex::FemEoc::instance( );
 	eoc_output.initialize( Parameters().getParam("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
-    Stuff::EocOutput eoc_texwriter( errorColumnHeaders );
+	Stuff::Tex::EocOutput eoc_texwriter( errorColumnHeaders );
 
     int ref = Parameters().getParam( "minref", 0 );
 
@@ -467,10 +467,10 @@ void BfgRun( CollectiveCommunication& mpicomm )
     ColumnHeaders bfgColumnHeaders ( bfgheaders, bfgheaders + num_bfgheaders ) ;
     run_infos.push_back( nobfg_info );
 
-	Stuff::FemEoc& bfg_output = Stuff::FemEoc::instance( );
+	Stuff::Tex::FemEoc& bfg_output = Stuff::Tex::FemEoc::instance( );
 	bfg_output.initialize( Parameters().getParam("fem.io.datadir", std::string("data") ),"eoc-file", "bfg-desc", "eoc-template.tex" );
     size_t idx = bfg_output.addEntry( bfgColumnHeaders );
-    Stuff::BfgOutput bfg_texwriter( bfgColumnHeaders, nobfg_info );
+	Stuff::Tex::BfgOutput bfg_texwriter( bfgColumnHeaders, nobfg_info );
     bfg_output.setErrors( idx,nobfg_info.L2Errors );
     bfg_texwriter.setInfo( nobfg_info );
     bfg_output.write( bfg_texwriter, false );
