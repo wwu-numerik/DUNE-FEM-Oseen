@@ -176,8 +176,11 @@ void dowork ( Grid& grid, int refSteps, Dune::MPIHelper& mpiHelper )
 //		file << boost::format("\\begin{tikzpicture}\n\\input{grid_level%d}\n\\end{tikzpicture}\n") % i ;
 //	}
 //	file << "\\end{document}\n";
-	Stuff::Tex::StackedPgfGrid<Grid> pgfGrid( grid );
-	pgfGrid.output( "stacked.tex", Parameters().getParam( "maxref", 3 ) );
+	Stuff::Tex::RefineSeriesPgfGrid<Grid> pgfGrid( grid );
+	pgfGrid.output( "series.tex", Parameters().getParam( "maxref", 3 ) );
+	Stuff::Tex::StackedPgfGrid<Grid> pgfGrid2( grid );
+	pgfGrid2.output( "stacked.tex", Parameters().getParam( "maxref", 3 ) );
+	std::cout << Stuff::GridDimensions<Grid>( grid );
 }
 
 #if ENABLE_MPI
