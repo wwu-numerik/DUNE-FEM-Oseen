@@ -68,8 +68,8 @@ namespace Dune {
 					const DiscretePressureFunctionType& rhs3 ) const
 		{
 
-			Logging::LogStream& logDebug = Logger().Dbg();
-			Logging::LogStream& logInfo = Logger().Info();
+			Stuff::Logging::LogStream& logDebug = Logger().Dbg();
+			Stuff::Logging::LogStream& logInfo = Logger().Info();
 
 			if ( Parameters().getParam( "disableSolver", false ) ) {
 				logInfo.Resume();

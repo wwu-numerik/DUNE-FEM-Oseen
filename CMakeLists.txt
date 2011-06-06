@@ -22,10 +22,6 @@ EXECUTE_PROCESS(
 	OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-INCLUDE (CheckIncludeFileCXX)
-CHECK_INCLUDE_FILE_CXX("malloc.h" HAVE_MALLOC_H)
-CHECK_INCLUDE_FILE_CXX("tr1/array" HAVE_TR1_ARRAY)
-
 #----------------------------------------------------------------------------------------------------
 # Options, that can be changed be the User in order to customise dune-stokes
 #----------------------------------------------------------------------------------------------------

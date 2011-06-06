@@ -72,9 +72,9 @@ void getPressureGradient( MatrixObjectType& matrix_object, const DiscretePressur
 	const SpaceType& space_ = pressure.space();
 	const GridPart& gridPart_ = space_.gridPart();
 	Logger().Err().Resume( 9001 );
-	Stuff::LocalMatrixPrintFunctor< MatrixObjectType, Logging::LogStream > local_print( matrix_object, Logger().Err(), std::string("LOCAL Z" ) );
-	Stuff::LocalFunctionVerbatimPrintFunctor< PressureGradientDiscreteFunctionType, Logging::LogStream > local_print_pressure_grad( pressure_gradient, Logger().Err() );
-	Stuff::LocalFunctionVerbatimPrintFunctor< DiscretePressureFunctionType, Logging::LogStream > local_print_pressure( pressure, Logger().Err() );
+	Stuff::LocalMatrixPrintFunctor< MatrixObjectType, Stuff::Logging::LogStream > local_print( matrix_object, Logger().Err(), std::string("LOCAL Z" ) );
+	Stuff::LocalFunctionVerbatimPrintFunctor< PressureGradientDiscreteFunctionType, Stuff::Logging::LogStream > local_print_pressure_grad( pressure_gradient, Logger().Err() );
+	Stuff::LocalFunctionVerbatimPrintFunctor< DiscretePressureFunctionType, Stuff::Logging::LogStream > local_print_pressure( pressure, Logger().Err() );
 	EntityIteratorType entityItEndLog = space_.end();
 	for (   EntityIteratorType it = space_.begin();
 			it != entityItEndLog;

@@ -400,7 +400,7 @@ class StokesPass
 			{
 //            // do the matlab logging stuff
 			if ( Parameters().getParam( "save_matrices", false ) ) {
-				Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+				Stuff::Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
 				Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
 				Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
 				Stuff::printSparseRowMatrixMatlabStyle( Omatrix.matrix(), "O", matlabLogStream );
@@ -506,7 +506,7 @@ class StokesPass
 
 		#ifndef NDEBUG
 			if ( Parameters().getParam( "save_matrices", false ) ) {
-				Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+				Stuff::Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
 				Stuff::printDiscreteFunctionMatlabStyle( dest.discreteVelocity(), "u_computed", matlabLogStream );
 				Stuff::printDiscreteFunctionMatlabStyle( dest.discretePressure(), "p_computed", matlabLogStream );
 			}
@@ -550,7 +550,7 @@ class StokesPass
 		void printInfo() const
 		{
 #ifndef NLOG
-			Logging::LogStream& infoStream = Logger().Info();
+			Stuff::Logging::LogStream& infoStream = Logger().Info();
 			infoStream << boost::format( "pressure_gradient/convection scaling: %e | %e\npass viscosity: %e\n")
 								% discreteModel_.pressure_gradient_scaling()
 								% discreteModel_.convection_scaling()

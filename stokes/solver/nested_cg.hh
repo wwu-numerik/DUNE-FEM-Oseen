@@ -98,9 +98,9 @@ namespace Dune {
 		  //get some refs for more readability
 		  PressureDiscreteFunctionType& pressure = dest.discretePressure();
 		  VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
-		  Logging::LogStream& logDebug = Logger().Dbg();
+		  Stuff::Logging::LogStream& logDebug = Logger().Dbg();
 //		  Logging::LogStream& logError = Logger().Err();
-		  Logging::LogStream& logInfo = Logger().Info();
+		  Stuff::Logging::LogStream& logInfo = Logger().Info();
 
 		  // relative min. error at which cg-solvers will abort
 		  const double relLimit = Parameters().getParam( "relLimit", 1e-4 );

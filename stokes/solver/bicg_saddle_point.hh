@@ -68,8 +68,8 @@ namespace Dune {
 					const DiscretePressureFunctionType& rhs3 ) const
 		{
 			const std::string cg_name( "OuterCG");
-			Logging::LogStream& logDebug = Logger().Dbg();
-			Logging::LogStream& logInfo = Logger().Info();
+			Stuff::Logging::LogStream& logDebug = Logger().Dbg();
+			Stuff::Logging::LogStream& logInfo = Logger().Info();
 
 			// relative min. error at which cg-solvers will abort
 			const double relLimit = Parameters().getParam( "relLimit", 1e-4 );

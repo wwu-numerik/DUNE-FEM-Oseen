@@ -501,8 +501,8 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 					Dune::StabilizationCoefficients& stabil_coeff )
 {
     profiler().StartTiming( "SingleRun" );
-    Logging::LogStream& infoStream = Logger().Info();
-    Logging::LogStream& debugStream = Logger().Dbg();
+	Stuff::Logging::LogStream& infoStream = Logger().Info();
+	Stuff::Logging::LogStream& debugStream = Logger().Dbg();
 	stabil_coeff.Add( "E12", 0.0 );
 	Stuff::RunInfo info;
 

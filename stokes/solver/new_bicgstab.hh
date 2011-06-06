@@ -36,7 +36,7 @@ public:
 	{
 		unsigned int iteration = 1;
 		const std::string cg_name( "OuterCG");
-		Logging::LogStream& logDebug = Logger().Dbg();
+		Stuff::Logging::LogStream& logDebug = Logger().Dbg();
 
 		PressureDiscreteFunctionType residuum( "residuum", dest.space() );
 		PressureDiscreteFunctionType start_residuum( "start_residuum", dest.space() );

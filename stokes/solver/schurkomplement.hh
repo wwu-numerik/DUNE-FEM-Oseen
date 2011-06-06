@@ -128,7 +128,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 			z_mat_.multOEM( x, tmp1.leakPointer() );
 
 #ifdef USE_BFG_CG_SCHEME
-			Logging::LogStream& info = Logger().Info();
+			Stuff::Logging::LogStream& info = Logger().Info();
 			const int solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
             ReturnValueType cg_info;
             a_solver_.apply( tmp1, tmp2, cg_info );

@@ -110,7 +110,7 @@ class BoundaryInfo
                 const CoordType& center = m.begin()->second;
                 int center_idx_in_globallist = Stuff::getIdx( globalPointList_, GlobalListElementType( center, current_boundary_id ) );
                 assert( center_idx_in_globallist != -1 );
-                Logging::LogStream& ss = Logger().Info();
+				Stuff::Logging::LogStream& ss = Logger().Info();
                 Stuff::printFieldVector( center,   std::string("center for id: ") + Stuff::toString( current_boundary_id ), ss, "BID --- " );
                 const DistancesMapType& distances_from_center = c_dists[center_idx_in_globallist];
                 if( distances_from_center.size() > 1 ) {
