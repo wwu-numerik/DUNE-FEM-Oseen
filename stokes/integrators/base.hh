@@ -203,7 +203,7 @@ namespace Integrators {
 			template < class IntegratorType >
 			static void apply( IntegratorType& integrator, const InfoContainerVolume& info )
 			{
-				Profiler::ScopedTiming s(integrator.name);
+				Stuff::Profiler::ScopedTiming s(integrator.name);
 				integrator.applyVolume( info );
 			}
 		};
@@ -212,7 +212,7 @@ namespace Integrators {
 			template < class IntegratorType >
 			static void apply( IntegratorType& integrator, const InfoContainerInteriorFace& info )
 			{
-				Profiler::ScopedTiming s(integrator.name);
+				Stuff::Profiler::ScopedTiming s(integrator.name);
 				integrator.applyInteriorFace( info );
 			}
 		};
@@ -221,7 +221,7 @@ namespace Integrators {
 			template < class IntegratorType >
 			static void apply( IntegratorType& integrator, const InfoContainerFace& info )
 			{
-				Profiler::ScopedTiming s(integrator.name);
+				Stuff::Profiler::ScopedTiming s(integrator.name);
 				integrator.applyBoundaryFace( info );
 			}
 		};
@@ -258,7 +258,7 @@ namespace Integrators {
 
 		void apply ( IntegratorTuple& integrator_tuple ) const
 		{
-			Profiler::ScopedTiming assembler_time("assembler");
+			Stuff::Profiler::ScopedTiming assembler_time("assembler");
 			typedef typename Traits::GridPartType::GridType::LeafGridView
 				GridView;
 			typedef typename GridView::template Codim<0>::

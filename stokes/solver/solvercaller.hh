@@ -71,7 +71,7 @@ struct SolverCaller {
 				const DiscretePressureFunctionType& H3rhs,
 				const DiscreteVelocityFunctionType& beta )
 	{
-		Profiler::ScopedTiming solver_time("solver");
+		Stuff::Profiler::ScopedTiming solver_time("solver");
 		MatrixWrapper<MInversMatrixObjectType> M_invers(MInversMatrix, "M");
 		MatrixWrapper<WmatrixObjectType> W(Wmatrix, "W");
 		MatrixWrapper<XmatrixObjectType> X(Xmatrix, "X");
