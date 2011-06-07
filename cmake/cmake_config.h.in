@@ -24,4 +24,9 @@
 	#define DNDEBUG
 #endif
 
+//compiler quirks workarounds
+#ifdef __clang__
+	class type_info;
+#endif
+
 #endif	/* DUNE_STOKES_CONFIG_H */

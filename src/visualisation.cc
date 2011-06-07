@@ -145,20 +145,19 @@ class GeometryFunctor : public FunctorBase {
 template<class Grid>
 void dowork ( Grid& grid, int refSteps, Dune::MPIHelper& mpiHelper )
 {
-//	std::string outputDir = Parameters().getParam( "visualisationOutputDir",
-//					Parameters().getParam("fem.io.datadir", std::string("data") ) + std::string("/visualisation") );
+	std::string outputDir = Parameters().getParam( "visualisationOutputDir",
+					Parameters().getParam("fem.io.datadir", std::string("data") ) + std::string("/visualisation") );
 	// make function objects
 //	BoundaryFunctor boundaryFunctor( outputDir + std::string("/boundaryFunctor") );
 //	AreaMarker areaMarker( outputDir + std::string("/areaMarker") );
 //	GeometryFunctor geometryFunctor( outputDir + std::string("/geometryFunctor") );
-//	VolumeFunctor volumeFunctor( outputDir + std::string("/volumeFunctor") );
 //	ProcessIdFunctor processIdFunctor( outputDir + std::string("/ProcessIdFunctor"), mpiHelper );
 	// refine the grid
 
 	// call the visualization functions
 //	elementdata( grid, areaMarker );
 //	elementdata( grid, boundaryFunctor );
-//	elementdata( grid, volumeFunctor );
+
 //	elementdata( grid, geometryFunctor );
 //	elementdata( grid, processIdFunctor );
 //	std::ofstream file( Stuff::getFileinDatadir( "grids.tex" ).c_str() );
@@ -176,11 +175,22 @@ void dowork ( Grid& grid, int refSteps, Dune::MPIHelper& mpiHelper )
 //		file << boost::format("\\begin{tikzpicture}\n\\input{grid_level%d}\n\\end{tikzpicture}\n") % i ;
 //	}
 //	file << "\\end{document}\n";
-	Stuff::Tex::RefineSeriesPgfGrid<Grid> pgfGrid( grid );
-	pgfGrid.output( "series.tex", Parameters().getParam( "maxref", 3 ), !Parameters().getParam( "standalone_tex", true ) );
+//	Stuff::Tex::RefineSeriesPgfGrid<Grid> pgfGrid( grid );
+//	pgfGrid.output( "series.tex", Parameters().getParam( "maxref", 3 ), !Parameters().getParam( "standalone_tex", true ) );
 //	Stuff::Tex::StackedPgfGrid<Grid> pgfGrid2( grid );
 //	pgfGrid2.output( "stacked.tex", Parameters().getParam( "maxref", 3 ) );
+	{
+	VolumeFunctor volumeFunctor( outputDir + std::string("/volumeFunctor") );
 	std::cout << Stuff::GridDimensions<Grid>( grid );
+	elementdata( grid, volumeFunctor );
+	}
+	Stuff::EnforceMaximumEntityVolume( grid, 1.2 );
+	{
+	VolumeFunctor volumeFunctor( outputDir + std::string("/volumeFunctorNew") );
+	std::cout << Stuff::GridDimensions<Grid>( grid );
+	elementdata( grid, volumeFunctor );
+	}
+
 }
 
 #if ENABLE_MPI
