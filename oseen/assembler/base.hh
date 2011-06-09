@@ -247,14 +247,69 @@ namespace Assembler {
 																  Traits::FaceQuadratureType::INSIDE ),
 				  lengthOfIntersection( Stuff::getLenghtOfIntersection( intersection ) ),
 				  stabil_coeff( discrete_modelIn.getStabilizationCoefficients() ),
-				  C_11( stabil_coeff.Factor("C11") * std::pow( lengthOfIntersection, stabil_coeff.Power("C11") ) ),
-				  D_11( stabil_coeff.Factor("D11") * std::pow( lengthOfIntersection, stabil_coeff.Power("D11") ) ),
-                  D_12( 1 )//actual value from factor
+				  C_11( penalty<-1>(ent,intersection, stabil_coeff, lengthOfIntersection ) ),
+				  D_11( penalty<1>(ent,intersection, stabil_coeff, lengthOfIntersection ) ),
+				  D_12( 1 )//vector!
 			{
 				D_12 /= D_12.two_norm();
 				D_12 *= stabil_coeff.Factor("D12");
 			}
 		};
+
+		static double charactisticSize(const typename Traits::EntityType& entity,
+									   const typename Traits::IntersectionIteratorType::Intersection& intersection)
+		{
+			return entity.geometry().volume() / intersection.intersectionGlobal().volume();
+		}
+
+		template <int power>
+		static double penalty(const typename Traits::EntityType& entity,
+							  const typename Traits::EntityType& neighbour,
+							  const typename Traits::IntersectionIteratorType::Intersection& intersection,
+							  const Dune::StabilizationCoefficients& stabil_coeff,
+							  const double lengthOfIntersection )
+		{
+			const int blubb = Parameters().getParam( "blubb", 1 );
+			switch (blubb) {
+				case 1:
+				{
+					const double entity_measure = std::pow( charactisticSize( entity, intersection), double(power) );
+					const double neighbour_measure = std::pow( charactisticSize( neighbour, intersection), double(power) );
+					return (entity_measure+neighbour_measure)/2.0;
+				}
+				case 2:
+				{
+					const double entity_diameter = std::pow( Stuff::geometryDiameter( entity ), double(power) );
+					const double neighbour_diameter = std::pow( Stuff::geometryDiameter( neighbour ), double(power) );
+					return std::max(entity_diameter, neighbour_diameter);
+				}
+				case 3:
+				{
+					const double entity_diameter = std::pow( Stuff::geometryDiameter( entity ), double(power) );
+					const double neighbour_diameter = std::pow( Stuff::geometryDiameter( neighbour ), double(power) );
+					return std::max(entity_diameter, neighbour_diameter) * ( power > 0 ? stabil_coeff.Factor("C11") : stabil_coeff.Factor("D11") );
+				}
+				default:
+				case 4:
+				{
+//					return std::pow( intersection.intersectionGlobal().volume(), double(power) );
+					if (power==-1)
+						return stabil_coeff.Factor("C11") * std::pow( lengthOfIntersection, stabil_coeff.Power("C11") );
+					else
+						return stabil_coeff.Factor("D11") * std::pow( lengthOfIntersection, stabil_coeff.Power("D11") );
+				}
+			}
+
+
+		}
+		template <int power>
+		static double penalty(const typename Traits::EntityType& entity,
+							  const typename Traits::IntersectionIteratorType::Intersection& intersection,
+							  const Dune::StabilizationCoefficients& stabil_coeff,
+							  const double lengthOfIntersection)
+		{
+			return penalty<power>( entity, entity, intersection, stabil_coeff, lengthOfIntersection );
+		}
 
 		struct InfoContainerInteriorFace : public InfoContainerFace {
             const typename Traits::EntityType& neighbour;
@@ -268,6 +323,8 @@ namespace Assembler {
 			const int numVelocityBaseFunctionsNeighbour;
 			const int numPressureBaseFunctionsNeighbour;
 			const typename Traits::FaceQuadratureType faceQuadratureNeighbour;
+			const double C_11;//yupp, we're hiding the base class members here
+			const double D_11;
 
 			InfoContainerInteriorFace (const CoordinatorType& interface,
 								const typename Traits::EntityType& ent,
@@ -286,7 +343,9 @@ namespace Assembler {
 				  faceQuadratureNeighbour( interface.sigma_space_.gridPart(),
 																  inter,
                                                                   PolOrder<Traits>::value,
-																  Traits::FaceQuadratureType::OUTSIDE )
+																  Traits::FaceQuadratureType::OUTSIDE ),
+				  C_11( penalty<-1>( ent, nei, inter, InfoContainerFace::stabil_coeff, InfoContainerFace::lengthOfIntersection ) ),
+				  D_11( penalty<1>( ent, nei, inter, InfoContainerFace::stabil_coeff, InfoContainerFace::lengthOfIntersection ) )
 			{
 				//some integration logic depends on this
 				assert( InfoContainerFace::faceQuadratureElement.nop() == faceQuadratureNeighbour.nop() );
