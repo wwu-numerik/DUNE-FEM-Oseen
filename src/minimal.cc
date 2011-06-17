@@ -25,11 +25,11 @@ int main( int argc, char** argv ) {
 	std::vector<double> dummies = Parameters().getList( "list", 0.9 );
 	Stuff::MinMaxAvg<double> nums ( dummies );
 	nums.output( std::cout );
-	nums.push( 	4.0 );
+	nums( 	4.0 );
 	nums.output( std::cout );
-	nums.push( 12.0 );
+	nums( 12.0 );
 	nums.output( std::cout );
-	nums.push( 	4.0 );
+	nums( 	4.0 );
 	nums.output( std::cout );
 
 	unsigned k = 10;
