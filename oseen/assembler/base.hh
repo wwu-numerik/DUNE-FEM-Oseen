@@ -269,8 +269,8 @@ namespace Assembler {
 							  const Dune::StabilizationCoefficients& stabil_coeff,
 							  const double lengthOfIntersection )
 		{
-			const int blubb = Parameters().getParam( "blubb", 1 );
-			switch (blubb) {
+			const int penalty_form = Parameters().getParam( "penalty_form", 1 );
+			switch (penalty_form) {
 				case 1:
 				{
 					const double entity_measure = std::pow( charactisticSize( entity, intersection), double(power) );
