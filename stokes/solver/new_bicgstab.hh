@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <cmath>
+#include <utility>
 #include <boost/format.hpp>
 
 #ifdef SOLVER_NAMESPACE
@@ -20,6 +21,9 @@ template < class PressureDiscreteFunctionType, class OperatorType >
 class NewBicgStab {
 
 public:
+	typedef std::pair < int , double >
+		ReturnValueType;
+
 	NewBicgStab(	const OperatorType& op,
 				const double relLimit,
 				const double absLimit,
@@ -32,7 +36,16 @@ public:
 		  solverVerbosity_(solverVerbosity_)
 	{}
 
+	//! for bfg interface compliance
+	void setAbsoluteLimit( const double  ){}
+
 	void apply(const PressureDiscreteFunctionType& rhs, PressureDiscreteFunctionType& dest ) const
+	{
+		ReturnValueType info;
+		apply( rhs, dest, info );
+	}
+
+	void apply(const PressureDiscreteFunctionType& rhs, PressureDiscreteFunctionType& dest, ReturnValueType& info ) const
 	{
 		unsigned int iteration = 1;
 		const std::string cg_name( "OuterCG");
@@ -52,7 +65,6 @@ public:
 		residuum -= rhs;
 		residuum *= -1.;
 
-
 		// r_^0 = r^0
 		start_residuum.assign( residuum );
 		search_direction.assign( residuum );
@@ -65,6 +77,9 @@ public:
 
 		PressureDiscreteFunctionType residuum_T( "s", dest.space() );
 		residuum_T.assign( start_residuum );//??
+
+		if ( solverVerbosity_ > 2 )
+			Logger().Info() << " -- \n";
 
 		while( iteration < max_iter_) {
 			rho = residuum_T.scalarProductDofs( residuum );
@@ -128,6 +143,8 @@ public:
 			last_rho = rho;
 			iteration++;
 		} //end while
+
+		info = ReturnValueType( iteration, rho );
 	}
 
 	const OperatorType& operator_;
