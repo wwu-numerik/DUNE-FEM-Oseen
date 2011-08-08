@@ -6,6 +6,7 @@
 #include <dune/stuff/matrix.hh>
 #include <dune/stuff/preconditioning.hh>
 #include <dune/stuff/logging.hh>
+#include <dune/stuff/functions.hh>
 #include <dune/stuff/parametercontainer.hh>
 
 namespace Dune {
@@ -118,7 +119,11 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 		{
 			DiscretePressureFunctionType V( "ddot_V2", pressure_space_, v );
 			DiscretePressureFunctionType W( "ddot_W1", pressure_space_, w );
-	        return V.scalarProductDofs( W );
+			assert( !Stuff::FunctionContainsNanOrInf( V ) );
+			assert( !Stuff::FunctionContainsNanOrInf( W ) );
+			const double ret = V.scalarProductDofs( W );
+			assert( std::isfinite( ret ) );
+			return ret;
 		}
 
         template <class VECtype>
@@ -127,6 +132,8 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 			// ret = ( ( -E * ( A^-1 * ( Z * x ) ) ) + ( R * x ) )
 			z_mat_.multOEM( x, tmp1.leakPointer() );
 
+			tmp2.clear();//don't remove w/o result testing
+			assert( !Stuff::FunctionContainsNanOrInf( tmp1 ) );
 #ifdef USE_BFG_CG_SCHEME
 			Stuff::Logging::LogStream& info = Logger().Info();
 			const int solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
@@ -137,18 +144,22 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 
             total_inner_iterations += cg_info.first;
 #else
-			tmp2.clear();
 			a_solver_.apply( tmp1, tmp2 );
 #endif
+			assert( !Stuff::FunctionContainsNanOrInf( tmp2 ) );
 			tmp2 *= -1;
 			e_mat_.multOEM( tmp2.leakPointer(), ret );
+			assert( !Stuff::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
 			r_mat_.multOEMAdd( x, ret );
+			assert( !Stuff::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
 //			ret[0] = x[0];
         }
 
 		void apply( const DiscretePressureFunctionType& arg, DiscretePressureFunctionType& ret ) const
 		{
+			assert( !Stuff::FunctionContainsNanOrInf( arg ) );
 			multOEM( arg.leakPointer(), ret.leakPointer() );
+			assert( !Stuff::FunctionContainsNanOrInf( ret ) );
 		}
 
 #ifdef USE_BFG_CG_SCHEME
