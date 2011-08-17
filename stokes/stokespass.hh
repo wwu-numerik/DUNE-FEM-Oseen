@@ -148,7 +148,7 @@ class StokesPass
          *  \}
          **/
 
-		//! when requested we store \f$ \vardelta u, \nabla p (u \cdot \nabla ) u\f$ in this struct after the solver
+		//! when requested we store \f$ \varDelta u, \nabla p (u \cdot \nabla ) u\f$ in this struct after the solver
 		struct RhsDatacontainer {
 			typename Traits::DiscreteVelocityFunctionType velocity_laplace;
 			typename Traits::DiscreteVelocityFunctionType pressure_gradient;

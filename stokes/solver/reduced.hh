@@ -8,6 +8,7 @@ namespace Dune {
 
 	/** the goal is to solve
 		\$ ( Y + O - X M^{-1} W )u = H_2 - X M^{-1} H_1 \$
+		eh, copy pasta doc fail?
 		for u
 	  **/
 	template < class StokesPassImp >
