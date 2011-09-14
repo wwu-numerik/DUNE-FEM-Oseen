@@ -177,4 +177,5 @@ ADD_EXECUTABLE(visualisation src/visualisation.cc ${COMMON_HEADER} )
 TARGET_LINK_LIBRARIES(visualisation ${COMMON_LIBS} )
 
 HEADERCHECK( ${header} ${stokes} )
+ADD_CPPCHECK( src/dune_stokes.cc ${COMMON_HEADER} )
 ADD_DEFINITIONS( ${MY_CXX_FLAGS} )
