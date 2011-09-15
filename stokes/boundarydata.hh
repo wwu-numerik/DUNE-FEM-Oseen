@@ -22,17 +22,59 @@ struct DefaultDirichletDataTraits {
 };
 
 //! \todo RENE needs to doc me and move me to stuff
-template < class FunctionSpaceImp >
-class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFluxDirichletData < FunctionSpaceImp > >
-{
-	public:
-		enum BoundaryType {
-			zeroBoundary	= 0,
-			influxBoundary	= 1,
-			outfluxBoundary	= 2
-		};
+namespace Stuff {
+class BoundaryIdMapping {
+    public:
+	enum BoundaryType {
+		zeroBoundary	= 0,
+		influxBoundary	= 1,
+		outfluxBoundary	= 2
+	};
+	typedef std::map< int, BoundaryType >
+		BoundaryIdTypeMapType;
+	typedef typename BoundaryIdTypeMapType::const_iterator
+		BoundaryIdTypeMapTypeConstIterator;
 
-		typedef InOutFluxDirichletData< FunctionSpaceImp >
+	BoundaryIdMapping()
+	{
+	    zeroBoundaryIds_ 	= Parameters().getList( "zeroBoundaryIds" , 1 );
+	    influxBoundaryIds_	= Parameters().getList( "influxBoundaryIds" , 2 );
+	    outfluxBoundaryIds_	= Parameters().getList( "outfluxBoundaryIds" , 3 );
+	    setupBoundaryIdTypeMap_();
+	}
+    protected:
+	void setupBoundaryIdTypeMap_() {
+		Logger().Info() << "\t- Using ids ";
+		for( std::vector< int >::const_iterator it = zeroBoundaryIds_.begin(); it != zeroBoundaryIds_.end(); ++it ) {
+			boundaryIdTypeMap_[*it] = zeroBoundary;
+			Logger().Info() << *it << " ";
+		}
+		Logger().Info() << " \t\tfor g_d = 0 \n\t        ids ";
+		for( std::vector< int >::const_iterator it = influxBoundaryIds_.begin(); it != influxBoundaryIds_.end(); ++it ) {
+			boundaryIdTypeMap_[*it] = influxBoundary;
+			Logger().Info() << *it << " ";
+		}
+		Logger().Info() << " \tfor g_d = - n \n\t        ids ";
+		for( std::vector< int >::const_iterator it = outfluxBoundaryIds_.begin(); it != outfluxBoundaryIds_.end(); ++it ) {
+			boundaryIdTypeMap_[*it] = outfluxBoundary;
+			Logger().Info() << *it << " ";
+		}
+		Logger().Info() << " \tfor g_d = n " << std::endl;
+	}
+
+	std::vector< int > zeroBoundaryIds_;
+	std::vector< int > influxBoundaryIds_;
+	std::vector< int > outfluxBoundaryIds_;
+	BoundaryIdTypeMapType boundaryIdTypeMap_;
+};
+
+template < class FunctionSpaceImp >
+class BoundaryFluxFunction : public Dune::Function < FunctionSpaceImp, BoundaryFluxFunction < FunctionSpaceImp > >,
+	public BoundaryIdMapping
+{
+    public:
+
+		typedef BoundaryFluxFunction< FunctionSpaceImp >
 			ThisType;
 		typedef Dune::Function< FunctionSpaceImp, ThisType >
 			BaseType;
@@ -40,32 +82,13 @@ class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFl
 			DomainType;
 		typedef typename BaseType::RangeType
 			RangeType;
-		typedef std::map< int, BoundaryType >
-			BoundaryIdTypeMapType;
-		typedef typename BoundaryIdTypeMapType::const_iterator
-			BoundaryIdTypeMapTypeConstIterator;
 
-		/**
-			*  \brief  constructor
-			*
-			*
-			**/
-		InOutFluxDirichletData( const FunctionSpaceImp& space )
+		BoundaryFluxFunction( const FunctionSpaceImp& space )
 			: BaseType( space ),
 				dim_( FunctionSpaceImp::dimDomain )
-		{
-			zeroBoundaryIds_ 	= Parameters().getList( "zeroBoundaryIds" , 1 );
-			influxBoundaryIds_	= Parameters().getList( "influxBoundaryIds" , 2 );
-			outfluxBoundaryIds_	= Parameters().getList( "outfluxBoundaryIds" , 3 );
-			setupBoundaryIdTypeMap_();
-		}
+		{}
 
-		/**
-			*  \brief  destructor
-			*
-			*  doing nothing
-			**/
-		~InOutFluxDirichletData()
+		~BoundaryFluxFunction()
 		{}
 
 		template < class IntersectionIteratorType >
@@ -103,32 +126,74 @@ class InOutFluxDirichletData : public Dune::Function < FunctionSpaceImp, InOutFl
 		inline void evaluate( const DomainType& arg, RangeType& ret ) const { assert(false); }
 
 	protected:
-		void setupBoundaryIdTypeMap_() {
-			Logger().Info() << "\t- Using ids ";
-			for( std::vector< int >::const_iterator it = zeroBoundaryIds_.begin(); it != zeroBoundaryIds_.end(); ++it ) {
-				boundaryIdTypeMap_[*it] = zeroBoundary;
-				Logger().Info() << *it << " ";
-			}
-			Logger().Info() << " \t\tfor g_d = 0 \n\t        ids ";
-			for( std::vector< int >::const_iterator it = influxBoundaryIds_.begin(); it != influxBoundaryIds_.end(); ++it ) {
-				boundaryIdTypeMap_[*it] = influxBoundary;
-				Logger().Info() << *it << " ";
-			}
-			Logger().Info() << " \tfor g_d = - n \n\t        ids ";
-			for( std::vector< int >::const_iterator it = outfluxBoundaryIds_.begin(); it != outfluxBoundaryIds_.end(); ++it ) {
-				boundaryIdTypeMap_[*it] = outfluxBoundary;
-				Logger().Info() << *it << " ";
-			}
-			Logger().Info() << " \tfor g_d = n " << std::endl;
-		}
-
-		std::vector< int > zeroBoundaryIds_;
-		std::vector< int > influxBoundaryIds_;
-		std::vector< int > outfluxBoundaryIds_;
-		BoundaryIdTypeMapType boundaryIdTypeMap_;
-
 		const int dim_;
 };
+
+template < class FunctionSpaceImp, class TimeProviderImp >
+class InstationaryBoundaryFluxFunction :
+	public Dune::IntersectionTimeFunction < FunctionSpaceImp ,
+			InstationaryBoundaryFluxFunction< FunctionSpaceImp,TimeProviderImp >,
+			TimeProviderImp > ,
+	public BoundaryIdMapping
+{
+    public:
+	typedef InstationaryBoundaryFluxFunction< FunctionSpaceImp, TimeProviderImp >
+		ThisType;
+	typedef Dune::IntersectionTimeFunction< FunctionSpaceImp, ThisType, TimeProviderImp >
+		BaseType;
+	typedef typename BaseType::DomainType
+		DomainType;
+	typedef typename BaseType::RangeType
+		RangeType;
+
+	InstationaryBoundaryFluxFunction( const TimeProviderImp& timeprovider,
+				   const FunctionSpaceImp& space,
+				   const double /*constant*/ = 0.0 )
+		: BaseType ( timeprovider, space )
+	{}
+
+	~InstationaryBoundaryFluxFunction()
+	{}
+
+	void evaluateTime( const double /*time*/, const DomainType& /*arg*/, RangeType& ret ) const
+	{
+	    ret = RangeType( 0 );
+	}
+
+	template < class IntersectionType >
+	void evaluateTime( const double time, const DomainType& /*arg*/, RangeType& ret, const IntersectionType& intersection ) const
+	{
+	    const int id = intersection.boundaryId();
+
+	    typedef Dune::FieldVector< typename IntersectionType::ctype, IntersectionType::dimension - 1 >
+		    LocalVectorType;
+
+	    LocalVectorType center = Stuff::getBarycenterLocal( intersection.intersectionSelfLocal() );
+	    RangeType normal = intersection.unitOuterNormal( center );
+	    const double gd_factor = time * Parameters().getParam( "gd_factor", 1.0 );
+	    ret = normal;
+	    BoundaryIdTypeMapTypeConstIterator id_it = boundaryIdTypeMap_.find( id );
+	    assert ( id_it != boundaryIdTypeMap_.end() );
+
+	    switch ( id_it->second ) {
+		    case zeroBoundary: {
+			    ret *= 0;
+			    return;
+		    }
+		    case influxBoundary:
+			    ret *= -1;
+		    case outfluxBoundary: {
+			    ret *= gd_factor;
+			    return;
+		    }
+		    default:
+			    assert( false );
+			    return;
+	    }
+	}
+};
+
+}// namespace Stuff
 
 //! \todo RENE needs to doc me and move me to stuff
 template < class FunctionSpaceImp, class GridPartType >
