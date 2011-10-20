@@ -65,7 +65,7 @@ void elementdata (const G& grid, const F& f)
   Dune::VTKWriter<typename G::LeafGridView> vtkwriter(gridView); /*@\label{edh:vtk0}@*/
   vtkwriter.addCellData(c,"data");
   Stuff::testCreateDirectory( f.filename() );
-  vtkwriter.write( f.filename().c_str(),Dune::VTKOptions::binaryappended ); /*@\label{edh:vtk1}@*/
+  vtkwriter.write( f.filename().c_str(), Parameters().getParam( "binary_vtk", true ) ? Dune::VTKOptions::binaryappended : Dune::VTKOptions::ascii );
 
   // online visualization with Grape
 #if HAVE_GRAPE                                         /*@\label{edh:grape0}@*/

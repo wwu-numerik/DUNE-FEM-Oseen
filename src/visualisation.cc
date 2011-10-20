@@ -148,15 +148,17 @@ void dowork ( Grid& grid, int refSteps, Dune::MPIHelper& mpiHelper )
 	std::string outputDir = Parameters().getParam( "visualisationOutputDir",
 					Parameters().getParam("fem.io.datadir", std::string("data") ) + std::string("/visualisation") );
 	// make function objects
-//	BoundaryFunctor boundaryFunctor( outputDir + std::string("/boundaryFunctor") );
-//	AreaMarker areaMarker( outputDir + std::string("/areaMarker") );
-//	GeometryFunctor geometryFunctor( outputDir + std::string("/geometryFunctor") );
-//	ProcessIdFunctor processIdFunctor( outputDir + std::string("/ProcessIdFunctor"), mpiHelper );
-	// refine the grid
+	BoundaryFunctor boundaryFunctor( outputDir + std::string("/boundaryFunctor") );
+	AreaMarker areaMarker( outputDir + std::string("/areaMarker") );
+	GeometryFunctor geometryFunctor( outputDir + std::string("/geometryFunctor") );
+	ProcessIdFunctor processIdFunctor( outputDir + std::string("/ProcessIdFunctor"), mpiHelper );
+//	 refine the grid
 
-	// call the visualization functions
+//	 call the visualization functions
 //	elementdata( grid, areaMarker );
-//	elementdata( grid, boundaryFunctor );
+	for ( int i = 0; i < Parameters().getParam( "minref", 0 ); ++i )
+	    grid.globalRefine( 1 );
+	elementdata( grid, boundaryFunctor );
 
 //	elementdata( grid, geometryFunctor );
 //	elementdata( grid, processIdFunctor );
@@ -170,7 +172,7 @@ void dowork ( Grid& grid, int refSteps, Dune::MPIHelper& mpiHelper )
 //	for ( int i = 0; i < Parameters().getParam( "maxref", 0 ); ++i )
 //	{
 //		grid.globalRefine( 1 );
-//		Stuff::PgfGrid<Grid> pgfGrid( grid );
+//		Stuff::Tex::PgfGrid<Grid> pgfGrid( grid );
 //		pgfGrid.output( (boost::format("grid_level%d.tex") % i).str() );
 //		file << boost::format("\\begin{tikzpicture}\n\\input{grid_level%d}\n\\end{tikzpicture}\n") % i ;
 //	}
@@ -179,17 +181,17 @@ void dowork ( Grid& grid, int refSteps, Dune::MPIHelper& mpiHelper )
 //	pgfGrid.output( "series.tex", Parameters().getParam( "maxref", 3 ), !Parameters().getParam( "standalone_tex", true ) );
 //	Stuff::Tex::StackedPgfGrid<Grid> pgfGrid2( grid );
 //	pgfGrid2.output( "stacked.tex", Parameters().getParam( "maxref", 3 ) );
-	{
-	VolumeFunctor volumeFunctor( outputDir + std::string("/volumeFunctor") );
-	std::cout << Stuff::GridDimensions<Grid>( grid );
-	elementdata( grid, volumeFunctor );
-	}
-	Stuff::EnforceMaximumEntityVolume( grid, 1.2 );
-	{
-	VolumeFunctor volumeFunctor( outputDir + std::string("/volumeFunctorNew") );
-	std::cout << Stuff::GridDimensions<Grid>( grid );
-	elementdata( grid, volumeFunctor );
-	}
+//	{
+//	VolumeFunctor volumeFunctor( outputDir + std::string("/volumeFunctor") );
+//	std::cout << Stuff::GridDimensions<Grid>( grid );
+//	elementdata( grid, volumeFunctor );
+//	}
+//	Stuff::EnforceMaximumEntityVolume( grid, 1.2 );
+//	{
+//	VolumeFunctor volumeFunctor( outputDir + std::string("/volumeFunctorNew") );
+//	std::cout << Stuff::GridDimensions<Grid>( grid );
+//	elementdata( grid, volumeFunctor );
+//	}
 
 }
 
