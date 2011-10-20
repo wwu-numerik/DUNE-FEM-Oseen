@@ -129,10 +129,6 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
                 assert( !"GENERALIZED_STOKES_PROBLEM not implemented in 3D!" );
 #elif defined(DARCY_PROBLEM)
                 assert( !"DARCY_PROBLEM not implemented in 3D!" );
-#elif defined(AORTA_PROBLEM)
-                ret[0] = 0.0;//arg[1];
-                ret[1] = 0.0;//-1.0;//arg[0];
-                ret[2] = 0.0;
 #else
 				LOGIC_ERROR
 #endif
@@ -328,34 +324,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                 assert( !"GENERALIZED_STOKES_PROBLEM not implemented in 3D!" );
 #elif defined(DARCY_PROBLEM)
                 assert( !"DARCY_PROBLEM not implemented in 3D!" );
-#elif defined(AORTA_PROBLEM)
 
-                switch ( id ) {
-                    case 1: {
-                        ret[0] = 0.0;//arg[1];
-                        ret[1] = 0.0;//-1.0;//arg[0];
-                        ret[2] = 0.0;
-                        return;
-                    }
-                    case 2: {
-                        ret[0] = 1000.0;//arg[1];
-                        ret[1] = 1000.0;//-1.0;//arg[0];
-                        ret[2] = 1000.0;
-                        return;
-                    }
-                    case 6:
-                    case 5:
-                    case 4:
-                    case 3: {
-                        ret[0] = 1000.0;//arg[1];
-                        ret[1] = 1000.0;//-1.0;//arg[0];
-                        ret[2] = 1000.0;
-                        return;
-                    }
-                    default:
-                        assert( false );
-                        return;
-                }
 #else
 				LOGIC_ERROR
 #endif
