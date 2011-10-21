@@ -3,6 +3,7 @@
 
 #include <dune/fem/function/common/function.hh>
 #include <dune/stuff/misc.hh>
+#include <dune/stuff/grid.hh>
 
 static const std::string identifier = "Simple";
 static const bool hasExactSolution	= true;
@@ -66,33 +67,34 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 		template < class IntersectionType >
 		void evaluate( const DomainType& arg, RangeType& ret, const IntersectionType& intersection ) const
 		{
-			const int id = intersection.boundaryId();
-			switch ( id ) {
-			    case 1: {
-				ret[0] = 0.0;//arg[1];
-				ret[1] = 0.0;//-1.0;//arg[0];
-				ret[2] = 0.0;
-				return;
-			    }
-			    case 2: {
-				ret[0] = 1000.0;//arg[1];
-				ret[1] = 1000.0;//-1.0;//arg[0];
-				ret[2] = 1000.0;
-				return;
-			    }
-			    case 6:
-			    case 5:
-			    case 4:
-			    case 3: {
-				ret[0] = 1000.0;//arg[1];
-				ret[1] = 1000.0;//-1.0;//arg[0];
-				ret[2] = 1000.0;
-				return;
-			    }
-			    default:
-				assert( false );
-				return;
-			}
+				const int id = intersection.boundaryId();
+				typedef Dune::FieldVector< typename IntersectionType::ctype, IntersectionType::dimension - 1 >
+					LocalVectorType;
+
+				LocalVectorType center = Stuff::getBarycenterLocal( intersection.intersectionSelfLocal() );
+				RangeType normal = intersection.unitOuterNormal( center );
+				ret = normal;
+				double factor = Parameters().getParam( "gd_factor", 1.0 );
+					switch ( id ) {
+						case 1: {
+							factor = 0;
+							break;
+						}
+						case 2: {
+							factor *= -1;
+							break;
+						}
+						case 6:
+						case 5:
+						case 4:
+						case 3: {
+							factor *= 1;
+							break;
+						}
+						default:
+						assert( false );
+					}
+				ret *= factor;
 		}
 
 		inline void evaluate( const DomainType& arg, RangeType& ret ) const { assert( false ); }
@@ -124,7 +126,7 @@ class Velocity : public Dune::Function < FunctionSpaceImp , Velocity < FunctionS
 		inline void evaluate( const DomainType& arg, RangeType& ret ) const
 		{
 			dune_static_assert( dim_ == 3, "Velocity_Unsuitable_WorldDim");
-			ret = arg;
+			ret = RangeType(0);
 		}
 
 		RangeType operator () ( const DomainType& arg)
@@ -171,7 +173,7 @@ class Pressure : public Dune::Function < FunctionSpaceImp , Pressure < FunctionS
 		inline void evaluate( const DomainType& arg, RangeType& ret ) const
 		{
 			dune_static_assert( dim_ == 3, "Pressure_Unsuitable_WorldDim");
-			ret = arg.two_norm();
+			ret = RangeType(0);
 		}
 
 		RangeType operator () ( const DomainType& arg)
