@@ -1339,7 +1339,7 @@ class DiscreteStokesModelDefaultTraits
  *          B. Cockburn, G. Kanschat, D. Schötzau, C. Schwab: <EM>Local
  *          Discontinuous Galerkin Methodsfor the Stokes System</EM> (2000).\n\n
  *          To use this model, a user has to implement the analytical force
- *          \f$f\f$ and the dirichlet data \f$g_{D}\f$ as a Dune::Function
+ *          \f$f\f$ and the dirichlet data \f$g_{D}\f$ as a Dune::Fem::Function
  *          (only the method evaluate( arg, ret ) is needed) and specify the
  *          types of this functions as template arguments for the traits class
  *          DiscreteStokesModelDefaultTraits.\n
@@ -1615,22 +1615,22 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         //! \copydoc Dune::DiscreteStokesModelInterface::pressureSpaceOrder
         static const int pressureSpaceOrder
             = BaseType::pressureSpaceOrder;
-		//! type of analytical force (usually Dune::Function)
+		//! type of analytical force (usually Dune::Fem::Function)
 		typedef typename BaseType::AnalyticalForceType
 			AnalyticalForceType;
     private:
 
         //! codim 0 entity pointer type
-        typedef typename IntersectionIteratorType::EntityPointer
-            EntityPointer;
+//        typedef typename IntersectionIteratorType::EntityPointer
+//            EntityPointer;
 
-        //! codim 0 entity type
-        typedef typename IntersectionIteratorType::Entity
-            EntityType;
+//        //! codim 0 entity type
+//        typedef typename IntersectionIteratorType::Entity
+//            EntityType;
 
-        //! geometry type of codim 0 entity
-        typedef typename EntityType::Geometry
-            EntityGeometryType;
+//        //! geometry type of codim 0 entity
+//        typedef typename EntityType::Geometry
+//            EntityGeometryType;
 
         //! Vector type of the velocity's discrete function space's range
         typedef typename BaseType::VelocityRangeType
@@ -1646,7 +1646,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
 
 
 
-        //! type of analytical dirichlet data (usually Dune::Function)
+        //! type of analytical dirichlet data (usually Dune::Fem::Function)
         typedef typename BaseType::AnalyticalDirichletDataType
             AnalyticalDirichletDataType;
 
@@ -2702,7 +2702,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             if ( power == StabilizationCoefficients::invalid_power ) {
                 return 0.0;
             }
-//                return std::pow( it.intersectionGlobal().integrationElement( x ), param );
+//                return std::pow( it.geometry().integrationElement( x ), param );
 			return factor * std::pow( getLenghtOfIntersection( *it ), power );
         }
 

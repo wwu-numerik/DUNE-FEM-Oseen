@@ -49,23 +49,21 @@
 
 #include <iostream>
 #include <cmath>
-#include <dune/fem/misc/mpimanager.hh> // An initializer of MPI
-#include <dune/common/exceptions.hh> // We use exceptions
-#include <dune/grid/common/capabilities.hh>
-#include <dune/grid/common/referenceelements.hh>
+#include <dune/fem/gridpart/gridpart.hh>
+#include <dune/fem/misc/mpimanager.hh>
 
-//!ATTENTION: undef's GRIDDIM
-#include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
+
+#include <dune/grid/utility/gridtype.hh>
+typedef Dune::GridSelector::GridType
+    GridType;
 
 #include <dune/fem/solver/oemsolver/oemsolver.hh>
 #include <dune/fem/space/dgspace.hh>
-#include <dune/fem/space/dgspace/dgadaptiveleafgridpart.hh>
+#include <dune/fem/gridpart/adaptiveleafgridpart.hh>
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
-#include <dune/stuff/femeoc.hh>
 #include <dune/fem/misc/gridwidth.hh>
 
-#include <dune/stokes/problems.hh>
 #include <dune/stokes/discretestokesfunctionspacewrapper.hh>
 #include <dune/stokes/discretestokesmodelinterface.hh>
 #include <dune/stokes/stokespass.hh>
@@ -79,6 +77,9 @@
 #include <dune/stuff/profiler.hh>
 #include <dune/stuff/signals.hh>
 #include <dune/stuff/tex.hh>
+
+#include <dune/stokes/problems.hh>
+#include <dune/stuff/femeoc.hh>
 
 #include "analyticaldata.hh"
 #include "velocity.hh"
@@ -162,7 +163,7 @@ int main( int argc, char** argv )
 
 	Dune::MPIManager::initialize(argc, argv);
 	//assert( Dune::Capabilities::isParallel< GridType >::v );
-	CollectiveCommunication mpicomm( Dune::MPIManager::helper().getCommunicator() );
+    CollectiveCommunication mpicomm;//Dune::MPIManager::helper().getCommunicator() );
 
     /* ********************************************************************** *
      * initialize all the stuff we need                                       *
@@ -683,7 +684,7 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 	info.d11 = Pair( stabil_coeff.Power( "D11" ), stabil_coeff.Factor( "D11" ) );
 	info.d12 = Pair( stabil_coeff.Power( "D12" ), stabil_coeff.Factor( "D12" ) );
     info.bfg = Parameters().getParam( "do-bfg", true );
-    info.gridname = gridPart.grid().name();
+//    info.gridname = gridPart.grid().name();
     info.refine_level = refine_level;
 
     info.polorder_pressure = StokesModelTraitsImp::pressureSpaceOrder;

@@ -65,7 +65,7 @@ class VelocityTraits
  *  \todo   extensive docu with latex
  **/
 template < class TraitsImp  >
-class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType , Velocity < TraitsImp > >
+class Velocity : public Dune::Fem::Function < typename TraitsImp::FunctionSpaceType , Velocity < TraitsImp > >
 {
     public:
         typedef TraitsImp
@@ -80,7 +80,7 @@ class Velocity : public Dune::Function < typename TraitsImp::FunctionSpaceType ,
             DivergenceRangeType;
         typedef typename Traits::FunctionSpaceType
             FunctionSpaceType;
-        typedef Dune::Function < typename TraitsImp::FunctionSpaceType , Velocity < TraitsImp > >
+        typedef Dune::Fem::Function < typename TraitsImp::FunctionSpaceType , Velocity < TraitsImp > >
             BaseType;
 
         /**

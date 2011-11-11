@@ -146,7 +146,7 @@ namespace Integrators {
 							   const typename Traits::GridPartType& grid_partIn )
 				:InfoContainerVolume( interface, ent, discrete_modelIn, grid_partIn ),
 				  intersection( inter ),
-				  intersectionGeometry( intersection.intersectionGlobal() ),
+				  intersectionGeometry( intersection.geometry() ),
 				  faceQuadratureElement( interface.sigma_space_.gridPart(),
 																  intersection,
 																  ( 2 * Traits::pressureSpaceOrder ) + 1,

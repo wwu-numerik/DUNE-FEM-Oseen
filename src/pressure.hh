@@ -47,7 +47,7 @@ class PressureTraits
  *  \todo   extensive docu with latex
  **/
 template < class PressureTraitsImp >
-class Pressure : public Dune::Function < typename PressureTraitsImp::FunctionSpaceType, Pressure < PressureTraitsImp > >
+class Pressure : public Dune::Fem::Function < typename PressureTraitsImp::FunctionSpaceType, Pressure < PressureTraitsImp > >
 {
     public:
         typedef PressureTraitsImp
@@ -60,7 +60,7 @@ class Pressure : public Dune::Function < typename PressureTraitsImp::FunctionSpa
             GradientRangeType;
         typedef typename Traits::FunctionSpaceType
             PressureFunctionSpaceType;
-        typedef Dune::Function < typename PressureTraitsImp::FunctionSpaceType , Pressure < PressureTraitsImp > >
+        typedef Dune::Fem::Function < typename PressureTraitsImp::FunctionSpaceType , Pressure < PressureTraitsImp > >
             BaseType;
         /**
          *  \brief  constructor

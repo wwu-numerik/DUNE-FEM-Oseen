@@ -1,9 +1,6 @@
 #ifndef ERROR_ESTIMATOR_HH 
 #define ERROR_ESTIMATOR_HH 
 
-//- Dune includes
-#include <dune/grid/common/referenceelements.hh>
-
 //- Dune-fem includes 
 #include <dune/fem/quadrature/caching/twistutility.hh>
 #include <dune/fem/quadrature/cachingquadrature.hh>

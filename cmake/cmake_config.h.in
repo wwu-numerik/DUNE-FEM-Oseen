@@ -6,19 +6,19 @@
 /* the git tag / commit we build from */
 #define COMMIT "@COMMIT@"
 
-
-#include "config.h"
-#undef HAVE_ALUGRID
-#define HAVE_ALUGRID 1
 #define @GRIDTYPE@
 #define GRIDDIM @GRIDDIM@
+#define HAVE_ALUGRID 1
+#cmakedefine @ENABLE_ALUGRID@ 
+
+#include "config.h"
+
 #define PROBLEM_NAMESPACE @PROBLEM_NAMESPACE@
 #define POLORDER @POLORDER@
 #define PRESSURE_POLORDER @PRESSUREPOLORDER@
 #define VELOCITY_POLORDER @VELOCITYPOLORDER@
 #define INNER_CG_SOLVERTYPE @INNER_CG_SOLVERTYPE@
 #define OUTER_CG_SOLVERTYPE @OUTER_CG_SOLVERTYPE@
-#cmakedefine @ENABLE_ALUGRID@ 
 
 #ifdef NDEBUG
 	#define DNDEBUG

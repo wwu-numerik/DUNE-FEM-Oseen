@@ -69,14 +69,14 @@ class BoundaryIdMapping {
 };
 
 template < class FunctionSpaceImp >
-class BoundaryFluxFunction : public Dune::Function < FunctionSpaceImp, BoundaryFluxFunction < FunctionSpaceImp > >,
+class BoundaryFluxFunction : public Dune::Fem::Function < FunctionSpaceImp, BoundaryFluxFunction < FunctionSpaceImp > >,
 	public BoundaryIdMapping
 {
     public:
 
 		typedef BoundaryFluxFunction< FunctionSpaceImp >
 			ThisType;
-		typedef Dune::Function< FunctionSpaceImp, ThisType >
+		typedef Dune::Fem::Function< FunctionSpaceImp, ThisType >
 			BaseType;
 		typedef typename BaseType::DomainType
 			DomainType;
@@ -260,7 +260,7 @@ class SecondOrderBoundaryShapeFunction : public Dune::BoundaryShapeFunctionBase<
 
 //! \todo RENE needs to doc me and move me to stuff
 template < class FunctionSpaceImp, class GridPartType, template <class ,class> class BoundaryFunctionImp =  FirstOrderBoundaryShapeFunction >
-class VariableDirichletData : public Dune::Function < FunctionSpaceImp, VariableDirichletData < FunctionSpaceImp, GridPartType > >
+class VariableDirichletData : public Dune::Fem::Function < FunctionSpaceImp, VariableDirichletData < FunctionSpaceImp, GridPartType > >
 {
 	public:
 		enum BoundaryType {
@@ -271,7 +271,7 @@ class VariableDirichletData : public Dune::Function < FunctionSpaceImp, Variable
 
 		typedef VariableDirichletData< FunctionSpaceImp, GridPartType >
 			ThisType;
-		typedef Dune::Function< FunctionSpaceImp, ThisType >
+		typedef Dune::Fem::Function< FunctionSpaceImp, ThisType >
 			BaseType;
 		typedef typename BaseType::DomainType
 			DomainType;
