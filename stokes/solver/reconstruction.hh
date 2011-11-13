@@ -114,7 +114,7 @@ struct BruteForceReconstruction {
 	template < class DiscreteVelocityFunctionType, class GradientFunctionType >
 	static void getConvection( const DiscreteVelocityFunctionType& beta, const GradientFunctionType& sigma, DiscreteVelocityFunctionType& convection)
 	{
-		typedef typename DiscreteVelocityFunctionType::FunctionSpaceType
+        typedef typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType
 			DiscreteVelocityFunctionSpaceType;
 		typedef typename DiscreteVelocityFunctionSpaceType::GridPartType
             GridPart;
