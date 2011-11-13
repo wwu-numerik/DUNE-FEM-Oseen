@@ -39,6 +39,67 @@ namespace Integrators {
 		return ret;
 	}
 
+    template < class WrappedBasefuntionsetImp >
+    class BasefunctionsetWrapper : public WrappedBasefuntionsetImp {
+            typedef typename WrappedBasefuntionsetImp::RangeFieldType
+                RangeFieldType;
+            typedef typename WrappedBasefuntionsetImp::RangeType
+                RangeType;
+            typedef typename WrappedBasefuntionsetImp::JacobianRangeType
+                JacobianRangeType;
+            typedef typename WrappedBasefuntionsetImp::DomainType
+                DomainType;
+            typedef typename WrappedBasefuntionsetImp::FunctionSpaceType
+                FunctionSpaceType;
+        public:
+            typedef WrappedBasefuntionsetImp
+                WrappedBasefuntionsetType;
+        BasefunctionsetWrapper( const WrappedBasefuntionsetType& wrapped )
+            : WrappedBasefuntionsetType( wrapped )
+        {}
+
+        /** \copydoc Dune::BaseFunctionSetInterface::evaluateSingle(const int baseFunction,const PointType &x,const RangeType &psi) const */
+        template< class PointType >
+        inline RangeFieldType evaluateSingle ( const int baseFunction,
+                                               const PointType &x,
+                                               const RangeType &psi ) const
+        {
+          RangeType phi;
+          WrappedBasefuntionsetType::evaluate( baseFunction, x, phi );
+          return phi * psi;
+        }
+
+        /** \copydoc Dune::BaseFunctionSetInterface::evaluateGradientSingle(const int baseFunction,const EntityType &entity,const PointType &x,const JacobianRangeType &psi) const */
+        template< class EntityType, class PointType >
+        inline RangeFieldType evaluateGradientSingle( const int baseFunction,
+                                                      const EntityType &entity,
+                                                      const PointType &x,
+                                                      const JacobianRangeType &psi ) const
+        {
+          typedef typename EntityType :: Geometry GeometryType;
+          typedef FieldMatrix< typename GeometryType :: ctype,
+                               GeometryType :: mydimension,
+                               GeometryType :: mydimension >
+            GeometryJacobianType;
+
+          const GeometryType &geometry = entity.geometry();
+          const GeometryJacobianType &jacobianInverseTransposed
+            = geometry.jacobianInverseTransposed( coordinate( x ) );
+
+          JacobianRangeType gradPhi;
+          WrappedBasefuntionsetType::jacobian( baseFunction, x, gradPhi );
+
+          RangeFieldType result = 0;
+          for( int i = 0; i < FunctionSpaceType :: dimRange; ++i )
+          {
+            DomainType gradScaled( 0 );
+            jacobianInverseTransposed.umv( gradPhi[ i ], gradScaled );
+            result += gradScaled * psi[ i ];
+          }
+          return result;
+        }
+    };
+
 	template < class Traits, class IntegratorTuple >
 	class Coordinator
 	{
@@ -65,11 +126,11 @@ namespace Integrators {
 			VelocityJacobianRangeType;
 		typedef typename Traits::PressureJacobianRangeType
 			PressureJacobianRangeType;
-		typedef typename Traits::DiscreteSigmaFunctionSpaceType::BaseFunctionSetType
+        typedef BasefunctionsetWrapper< typename Traits::DiscreteSigmaFunctionSpaceType::BaseFunctionSetType >
 				SigmaBaseFunctionSetType;
-		typedef typename Traits::DiscreteVelocityFunctionSpaceType::BaseFunctionSetType
+        typedef BasefunctionsetWrapper< typename Traits::DiscreteVelocityFunctionSpaceType::BaseFunctionSetType >
 			VelocityBaseFunctionSetType;
-		typedef typename Traits::DiscretePressureFunctionSpaceType::BaseFunctionSetType
+        typedef BasefunctionsetWrapper< typename Traits::DiscretePressureFunctionSpaceType::BaseFunctionSetType >
 			PressureBaseFunctionSetType;
 
 		Coordinator(const typename Traits::DiscreteModelType&					discrete_model,
@@ -131,7 +192,7 @@ namespace Integrators {
 		};
 		struct InfoContainerFace : public InfoContainerVolume {
 			const typename Traits::IntersectionIteratorType::Intersection& intersection;
-			const typename Traits::IntersectionIteratorType::Geometry& intersectionGeometry;
+            const typename Traits::IntersectionIteratorType::Intersection::Geometry& intersectionGeometry;
 			const typename Traits::FaceQuadratureType faceQuadratureElement;
 			const double lengthOfIntersection;
 			const StabilizationCoefficients& stabil_coeff;
@@ -288,7 +349,7 @@ namespace Integrators {
 					if ( intersection.neighbor() && !intersection.boundary() )
 					{
 						//! DO NOT TRY TO DEREF outside() DIRECTLY
-						const typename Traits::IntersectionIteratorType::EntityPointer neighbourPtr = intersection.outside();
+                        const typename Traits::IntersectionIteratorType::Intersection::EntityPointer neighbourPtr = intersection.outside();
 						InfoContainerInteriorFace info( *this, entity, *neighbourPtr, intersection, discrete_model_,grid_part_ );
 						ForEachIntegrator<ApplyInteriorFace,InfoContainerInteriorFace>( integrator_tuple, info );
 					}
