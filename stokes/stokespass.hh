@@ -5,6 +5,8 @@
 #ifndef STOKESPASS_HH
 #define STOKESPASS_HH
 
+#include <cmake_config.h>
+
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/fem/space/dgspace.hh>
@@ -62,9 +64,10 @@ class VelocityConvection : public Dune::TimeFunction < FunctionSpaceImp , Veloci
 template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
 struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
 	struct StencilType {
-		static int nonZerosEstimate( const ColSpaceImp& rangeSpace ) {
-			return rangeSpace.maxNumLocalDofs() * 1.5f;
-		}
+        template < typename T >
+        static int nonZerosEstimate( const T& rangeSpace ) {
+            return rangeSpace.maxNumLocalDofs() * 1.5f;
+        }
 	};
 };
 
@@ -336,7 +339,7 @@ class StokesPass
 			profiler().StopTiming("Pass_init");
 
 			//because of the 9-element limit in dune tuples i have to split the assembly in two...
-			typedef Tuple<	MInversMatrixIntegratorType,
+            typedef tuple<	MInversMatrixIntegratorType,
 							WmatrixTypeIntegratorType,
 							XmatrixTypeIntegratorType,
 							YmatrixTypeIntegratorType,
@@ -349,7 +352,7 @@ class StokesPass
 							H2_O_IntegratorType,
 							H3_IntegratorType >
 				OseenIntegratorTuple;
-			typedef Tuple<	MInversMatrixIntegratorType,
+            typedef tuple<	MInversMatrixIntegratorType,
 							WmatrixTypeIntegratorType,
 							XmatrixTypeIntegratorType,
 							YmatrixTypeIntegratorType,

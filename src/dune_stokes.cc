@@ -684,6 +684,7 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 	info.d11 = Pair( stabil_coeff.Power( "D11" ), stabil_coeff.Factor( "D11" ) );
 	info.d12 = Pair( stabil_coeff.Power( "D12" ), stabil_coeff.Factor( "D12" ) );
     info.bfg = Parameters().getParam( "do-bfg", true );
+    //TODO GRIDNAME
 //    info.gridname = gridPart.grid().name();
     info.refine_level = refine_level;
 
@@ -857,7 +858,7 @@ typedef Dune::AdaptiveLeafGridPart< GridType >
 	#endif
 
 
-typedef Dune::Tuple< StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType*, StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType* >
+typedef Dune::tuple< StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType*, StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType* >
 				IOTupleType;
 
 typedef IOTupleType GR_InputType;

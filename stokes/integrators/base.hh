@@ -10,6 +10,24 @@ namespace Dune {
 namespace Stokes {
 namespace Integrators {
 
+    namespace {
+        template<int i,typename IntegratorTuple,typename InfoType,typename FunctorType>
+        struct ApplySingle
+        {
+            static inline void visit(IntegratorTuple& tuple, const InfoType& info)
+            {
+                FunctorType::apply(get<tuple_size<IntegratorTuple>::value-i>(tuple), info);
+                ApplySingle<i-1,IntegratorTuple,InfoType,FunctorType>::visit(tuple,info);
+            }
+        };
+
+        template<typename IntegratorTuple,typename InfoType,typename FunctorType>
+        struct ApplySingle<0>
+        {
+            static inline void visit(IntegratorTuple&, const InfoType&)
+            {}
+        };
+    }
 	template < class SigmaJacobianRangeType, class VelocityRangeType >
 	static SigmaJacobianRangeType
 			prepareVelocityRangeTypeForSigmaDivergence( const VelocityRangeType& arg )
@@ -287,34 +305,18 @@ namespace Integrators {
 			}
 		};
 
-		//! A slightly modified version of fem/misc/utility:ForEachValue
+        //! A gloryfied For loop in 28 lines
 		template < class FunctorType, class InfoType >
-		class ForEachIntegrator {
-		public:
+        class ForEachIntegrator {
+        public:
 			//! \brief Constructor
 			//! \param tuple The tuple which we want to process.
 			ForEachIntegrator(IntegratorTuple& tuple, const InfoType& info)
-				: tuple_(tuple),
-				  info_(info)
+                : tuple_(tuple),
+                  info_(info)
 			{
-				apply( tuple_ );
-			}
-		private:
-			//! Specialisation for the last element
-			template <class Head>
-			void apply(Pair<Head, Nil>& last) {
-				FunctorType::apply( last.first(), info_ );
-			}
-
-			//! Specialisation for a standard tuple element
-			template <class Head, class Tail>
-			void apply(Pair<Head, Tail>& pair) {
-				FunctorType::apply( pair.first(), info_ );
-				apply(pair.second());
-			}
-		private:
-			IntegratorTuple& tuple_;
-			const InfoType& info_;
+                ApplySingle<tuple_size<IntegratorTuple>::value,IntegratorTuple,InfoType,FunctorType>::visit(tuple, info);
+			}            
 		};
 
 		void apply ( IntegratorTuple& integrator_tuple ) const
