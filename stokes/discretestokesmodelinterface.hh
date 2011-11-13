@@ -1136,8 +1136,8 @@ class DiscreteStokesModelInterface
                                 forceReturn ) );
         }
 
-        template < class IntersectionIteratorType, class DomainType >
-        void dirichletData( const IntersectionIteratorType intIt,
+        template < class IntersectionType, class DomainType >
+        void dirichletData( const IntersectionType& intIt,
                             const double time,
                             const DomainType& x,
                             VelocityRangeType& dirichletDataReturn ) const
@@ -2602,8 +2602,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             force_.evaluate( x, forceReturn );
         }
 
-        template < class IntersectionIteratorType, class DomainType >
-        void dirichletData( const IntersectionIteratorType intIt,
+        template < class IntersectionType, class DomainType >
+        void dirichletData( const IntersectionType& intIt,
 							const double /*time*/,
                             const DomainType& x,
                             VelocityRangeType& dirichletDataReturn ) const
