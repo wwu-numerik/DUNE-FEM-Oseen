@@ -71,7 +71,7 @@ class DirichletData : public Dune::Fem::Function < FunctionSpaceImp, DirichletDa
 				typedef Dune::FieldVector< typename IntersectionType::ctype, IntersectionType::dimension - 1 >
 					LocalVectorType;
 
-				LocalVectorType center = Stuff::getBarycenterLocal( intersection.geometryInInside() );
+				LocalVectorType center = intersection.geometryInInside().local( intersection.geometryInInside().center() );
 				RangeType normal = intersection.unitOuterNormal( center );
 				ret = normal;
 				double factor = Parameters().getParam( "gd_factor", 1.0 );
