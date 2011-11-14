@@ -247,13 +247,13 @@ namespace Dune {
 				rho = delta / d.scalarProductDofs( h );
 
 				// p_{m+1} = p_m - ( rho_m * d_m )
-				pressure.addScaled( d, -rho );
+				pressure.axpy( -rho, d );
 				if ( !use_velocity_reconstruct ) {
 					// u_{m+1} = u_m + ( rho_m * xi_m )
-					velocity.addScaled( xi, +rho );
+					velocity.axpy( +rho, xi );
 				}
 				// r_{m+1} = r_m - rho_m * h_m
-				residuum.addScaled( h, -rho );
+				residuum.axpy( -rho, h );
 
 				//save old delta for new gamma calc in next iter
 				gamma = delta;
