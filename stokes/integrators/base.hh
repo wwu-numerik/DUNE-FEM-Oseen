@@ -22,7 +22,7 @@ namespace Integrators {
         };
 
         template<typename IntegratorTuple,typename InfoType,typename FunctorType>
-        struct ApplySingle<0>
+	struct ApplySingle<0, IntegratorTuple,InfoType,FunctorType>
         {
             static inline void visit(IntegratorTuple&, const InfoType&)
             {}
@@ -307,16 +307,14 @@ namespace Integrators {
 
         //! A gloryfied For loop in 28 lines
 		template < class FunctorType, class InfoType >
-        class ForEachIntegrator {
-        public:
+		class ForEachIntegrator {
+		    public:
 			//! \brief Constructor
 			//! \param tuple The tuple which we want to process.
 			ForEachIntegrator(IntegratorTuple& tuple, const InfoType& info)
-                : tuple_(tuple),
-                  info_(info)
 			{
-                ApplySingle<tuple_size<IntegratorTuple>::value,IntegratorTuple,InfoType,FunctorType>::visit(tuple, info);
-			}            
+			    ApplySingle<tuple_size<IntegratorTuple>::value,IntegratorTuple,InfoType,FunctorType>::visit(tuple, info);
+			}
 		};
 
 		void apply ( IntegratorTuple& integrator_tuple ) const
