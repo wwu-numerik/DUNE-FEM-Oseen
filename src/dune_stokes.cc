@@ -621,6 +621,25 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 	AnalyticalDirichletDataType analyticalDirichletData =
 			StokesModelTraitsImp::AnalyticalDirichletDataTraitsImplementation::getInstance( discreteStokesFunctionSpaceWrapper );
 
+	typedef Dune::StartPass< DiscreteStokesFunctionWrapperType, -1 >
+	    StartPassType;
+	StartPassType startPass;
+
+	    typedef Dune::StokesPass< StokesModelImpType, StartPassType, 0 >
+	    StokesPassType;
+
+
+	{
+		typedef StokesProblems::Container< gridDim, DiscreteStokesFunctionWrapperType>
+			ProblemType;
+		ProblemType problem( viscosity , computedSolutions, analyticalDirichletData );
+
+		typedef PostProcessor< StokesPassType, ProblemType >
+			PostProcessorType;
+
+		PostProcessorType ( discreteStokesFunctionSpaceWrapper, problem ).save( *gridPtr, computedSolutions, refine_level );
+	}
+
     StokesModelImpType stokesModel( stabil_coeff,
                                     analyticalForce,
                                     analyticalDirichletData,
@@ -634,12 +653,7 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
      * ********************************************************************** */
     infoStream << "\n- starting pass" << std::endl;
 
-    typedef Dune::StartPass< DiscreteStokesFunctionWrapperType, -1 >
-        StartPassType;
-    StartPassType startPass;
 
-	typedef Dune::StokesPass< StokesModelImpType, StartPassType, 0 >
-        StokesPassType;
     StokesPassType stokesPass(  startPass,
                                 stokesModel,
                                 gridPart,
