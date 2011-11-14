@@ -4,6 +4,8 @@
 #include <dune/stuff/grid.hh>
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/profiler.hh>
+#include <dune/stuff/progressbar.hh>
+
 #include <dune/stokes/stab_coeff.hh>
 
 namespace Dune {
@@ -329,9 +331,10 @@ namespace Integrators {
 			const GridView gridView = grid_part_.grid().leafView();
 
 			const LeafIterator endit = gridView.template end<0,Dune::All_Partition>();
+			Stuff::SimpleProgressBar<> pbar(grid_part_.grid().size(0));
 			for ( LeafIterator entityIt = gridView.template begin<0,Dune::All_Partition>();
 				 entityIt!=endit;
-				 ++entityIt)
+				 ++entityIt,++pbar)
 			{
 				const typename Traits::EntityType& entity = *entityIt;
 				InfoContainerVolume info( *this, entity, discrete_model_,grid_part_ );
@@ -360,6 +363,7 @@ namespace Integrators {
 					}
 				}
 			}
+			++pbar;
 		}
 	};
 
