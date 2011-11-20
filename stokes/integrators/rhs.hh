@@ -184,7 +184,7 @@ class H2
 						// get x codim<0> and codim<1> coordinates
 						const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
 						const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
-						const VelocityRangeType globalX = info.geometry.global( x );
+//						const VelocityRangeType globalX = info.geometry.global( x );
 						// get the integration factor
 						const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 						// get the quadrature weight

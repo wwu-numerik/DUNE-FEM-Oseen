@@ -100,7 +100,7 @@ namespace Integrators {
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{U{+}}(v{j})\cdot n_{t}
-								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
+//								const VelocityRangeType /*outerNormal*/ = info.intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_j( 0.0 );
 								info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 								VelocityRangeType v_i( 0.0 );
@@ -127,7 +127,7 @@ namespace Integrators {
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}
-								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
+//								const VelocityRangeType /*outerNormal*/ = info.intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_i( 0.0 );
 								info.velocity_basefunction_set_neighbour.evaluate( i, xOutside, v_i );
 								VelocityRangeType v_j( 0.0 );
@@ -166,7 +166,7 @@ namespace Integrators {
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{U^{+}}(v_{j})\cdot n_{t}
-								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
+//                                const VelocityRangeType /*outerNormal*/ = info.intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_j( 0.0 );
 								info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 								VelocityRangeType v_i( 0.0 );

@@ -63,7 +63,7 @@ namespace Integrators {
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute \hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}
-								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
+//								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 								PressureRangeType q_i( 0.0 );
 								info.pressure_basefunction_set_element.evaluate( i, x, q_i );
 								PressureRangeType q_j( 0.0 );
@@ -90,7 +90,7 @@ namespace Integrators {
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
 								// compute \hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}
-								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
+//								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 								PressureRangeType q_j( 0.0 );
 								info.pressure_basefunction_set_neighbour.evaluate( j, xOutside, q_j );
 								PressureRangeType q_i( 0.0 );

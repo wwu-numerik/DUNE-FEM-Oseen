@@ -191,7 +191,7 @@ namespace Integrators {
 						for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
 							VelocityRangeType v_i( 0.0 );
 							info.velocity_basefunction_set_element.evaluate( i, xInside, v_i );
-							VelocityRangeType u_h = v_i;
+//							VelocityRangeType u_h = v_i;
 
 							for ( int j = 0; (j < info.numVelocityBaseFunctionsElement ); ++j ) {
 								VelocityRangeType v_j( 0.0 );
@@ -229,7 +229,7 @@ namespace Integrators {
 							VelocityRangeType v_i( 0.0 );
 							info.velocity_basefunction_set_neighbour.evaluate( i, xOutside, v_i );
 
-							VelocityRangeType u_h = v_i;
+//							VelocityRangeType u_h = v_i;
 							for ( int j = 0; (j < info.numVelocityBaseFunctionsElement ); ++j )
 							{
 								// compute O's element surface integral
