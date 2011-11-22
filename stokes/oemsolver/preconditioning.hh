@@ -18,6 +18,8 @@ public:
   //! returns true, if preconditioning should be used 
   //! default is false 
   bool hasPreconditionMatrix() const { return false; }
+
+  virtual ~PreconditionInterface() {}
 };
 
 } // end namespace OEMSolver 
