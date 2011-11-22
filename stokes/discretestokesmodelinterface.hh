@@ -369,7 +369,7 @@ class DiscreteStokesModelInterface
          *
          *  does nothing
          **/
-        ~DiscreteStokesModelInterface()
+	virtual ~DiscreteStokesModelInterface()
         {}
 
         /**
@@ -1703,7 +1703,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *  does nothing
          **/
-        ~DiscreteStokesModelDefault()
+	virtual ~DiscreteStokesModelDefault()
         {}
 
         const StabilizationCoefficients& getStabilizationCoefficients() const {
