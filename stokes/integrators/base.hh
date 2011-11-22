@@ -209,6 +209,7 @@ namespace Integrators {
 				  alpha( discrete_modelIn.alpha() ),
 				  grid_part( grid_partIn )
 			{}
+			virtual ~InfoContainerVolume() {}
 		};
 		struct InfoContainerFace : public InfoContainerVolume {
 			const typename Traits::IntersectionIteratorType::Intersection& intersection;
