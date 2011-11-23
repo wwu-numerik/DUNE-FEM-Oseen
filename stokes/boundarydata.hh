@@ -312,7 +312,9 @@ class VariableDirichletData : public Dune::Function < FunctionSpaceImp, Variable
 			*  doing nothing
 			**/
 		~VariableDirichletData()
-		{}
+		{
+		//TODO leak galore >_>
+		}
 
 		template < class IntersectionIteratorType >
 		void evaluate( const DomainType& arg, RangeType& ret, const IntersectionIteratorType& faceIter ) const
