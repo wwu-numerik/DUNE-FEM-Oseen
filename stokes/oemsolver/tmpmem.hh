@@ -2,9 +2,9 @@
 #define DUNE_STOKES___OEM_TMPMEM_HH__
 
 #include <cassert>
-
+#include <boost/noncopyable.hpp>
 // temporay mem 
-class OEMTmpMem
+class OEMTmpMem : public boost::noncopyable
 {
   double * mem_;
   int memSize_;
