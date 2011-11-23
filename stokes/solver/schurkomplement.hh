@@ -44,13 +44,13 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 			const A_PreconditionMatrix& a_precond_;
 			mutable DiscreteVelocityFunctionType velo_tmp;
 			mutable DiscreteVelocityFunctionType velo_tmp2;
-			const typename Z_MatrixType::WrappedMatrixObjectType::RangeSpaceType& pressure_space_;
+			const typename Z_MatrixType::WrappedMatrixObjectType::DomainSpaceType& pressure_space_;
 
 			public:
 				PreconditionOperator( const A_SolverType& a_solver,
 								   const ThisType& sk_op,
-								   const typename E_MatrixType::WrappedMatrixObjectType::RangeSpaceType& velocity_space,
-								   const typename Z_MatrixType::WrappedMatrixObjectType::RangeSpaceType& pressure_space)
+								   const typename E_MatrixType::WrappedMatrixObjectType::DomainSpaceType& velocity_space,
+								   const typename Z_MatrixType::WrappedMatrixObjectType::DomainSpaceType& pressure_space)
 					: sk_op_( sk_op),
 					a_precond_( a_solver.getOperator().preconditionMatrix() ),
 					velo_tmp( "sdeio", velocity_space ),

@@ -197,7 +197,8 @@ class StokesPass
             pressureSpace_( spaceWrapper.discretePressureSpace() ),
 			sigmaSpace_( gridPart ),
 			beta_( beta ),
-			do_oseen_discretization_( do_oseen_discretization )
+			do_oseen_discretization_( do_oseen_discretization ),
+	      info_( SaddlepointInverseOperatorInfo() )
         {}
 
         //! used in Postprocessing to get refs to gridparts, spaces
@@ -225,8 +226,9 @@ class StokesPass
 		void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer, const ExactSigmaType* /*sigma_exact*/ ) const
         {
             // profiler information
-			profiler().StartTiming("Pass_init");
+	    profiler().StartTiming("Pass_init");
 
+	    const bool verbose_reserve = true;
             // matrices
             // M\in R^{M\times M}
 			typedef typename Traits::DiscreteSigmaFunctionSpaceType
@@ -238,30 +240,30 @@ class StokesPass
 			typedef Stokes::Integrators::M< MInversMatrixType, Traits >
 				MInversMatrixIntegratorType;
             MInversMatrixType MInversMatrix( sigmaSpace_, sigmaSpace_ );
-            MInversMatrix.reserve();
+	    MInversMatrix.reserve( verbose_reserve );
 //			Stuff::Matrix::printMemUsageObject( MInversMatrix, Logger().Dbg(), "M" );
             assert( MInversMatrix.matrix().rows() == MInversMatrix.matrix().cols() );
             // W\in R^{M\times L}
 			typedef typename Traits::DiscreteVelocityFunctionSpaceType
 				DiscreteVelocityFunctionSpaceType;
-            typedef SparseRowMatrixObject<  DiscreteSigmaFunctionSpaceType,
-											DiscreteVelocityFunctionSpaceType,
-											MatrixTraits<DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType> >
+	    typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
+											DiscreteSigmaFunctionSpaceType,
+											MatrixTraits<DiscreteVelocityFunctionSpaceType, DiscreteSigmaFunctionSpaceType> >
                 WmatrixType;
 			typedef Stokes::Integrators::W< WmatrixType, Traits >
 				WmatrixTypeIntegratorType;
-            WmatrixType Wmatrix( sigmaSpace_, velocitySpace_ );
-            Wmatrix.reserve();
+	    WmatrixType Wmatrix( velocitySpace_, sigmaSpace_ );
+	    Wmatrix.reserve( verbose_reserve );
 //			Stuff::Matrix::printMemUsageObject( Wmatrix, Logger().Dbg(), "W" );
             // X\in R^{L\times M}
-            typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
-											DiscreteSigmaFunctionSpaceType,
-											MatrixTraits<DiscreteVelocityFunctionSpaceType, DiscreteSigmaFunctionSpaceType> >
+	    typedef SparseRowMatrixObject<  DiscreteSigmaFunctionSpaceType,
+											DiscreteVelocityFunctionSpaceType,
+											MatrixTraits<DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType> >
                 XmatrixType;
 			typedef Stokes::Integrators::X< XmatrixType, Traits >
 				XmatrixTypeIntegratorType;
-            XmatrixType Xmatrix( velocitySpace_, sigmaSpace_ );
-            Xmatrix.reserve();
+	    XmatrixType Xmatrix( sigmaSpace_ , velocitySpace_ );
+	    Xmatrix.reserve( verbose_reserve );
 //			Stuff::Matrix::printMemUsageObject( Xmatrix, Logger().Dbg(), "X" );
             // Y\in R^{L\times L}
             typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
@@ -271,7 +273,7 @@ class StokesPass
 			typedef Stokes::Integrators::Y< YmatrixType, Traits >
 				YmatrixTypeIntegratorType;
             YmatrixType Ymatrix( velocitySpace_, velocitySpace_ );
-            Ymatrix.reserve();
+	    Ymatrix.reserve( verbose_reserve );
 //			Stuff::Matrix::printMemUsageObject( Ymatrix, Logger().Dbg(), "Y" );
             typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
 											DiscreteVelocityFunctionSpaceType,
@@ -280,29 +282,29 @@ class StokesPass
 			typedef Stokes::Integrators::O< OmatrixType, Traits, typename Traits::DiscreteVelocityFunctionType >
 				OmatrixTypeIntegratorType;
 			OmatrixType Omatrix( velocitySpace_, velocitySpace_ );
-			Omatrix.reserve();
+			Omatrix.reserve( verbose_reserve );
 //			Stuff::Matrix::printMemUsageObject( Omatrix, Logger().Dbg(), "O" );
             // Z\in R^{L\times K}
 			typedef typename Traits::DiscretePressureFunctionSpaceType
 				DiscretePressureFunctionSpaceType;
-            typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
-											DiscretePressureFunctionSpaceType,
-											MatrixTraits<DiscreteVelocityFunctionSpaceType,DiscretePressureFunctionSpaceType> >
+	    typedef SparseRowMatrixObject<  DiscretePressureFunctionSpaceType,
+											DiscreteVelocityFunctionSpaceType,
+											MatrixTraits<DiscretePressureFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
                 ZmatrixType;
 			typedef Stokes::Integrators::Z< ZmatrixType, Traits >
 				ZmatrixTypeIntegratorType;
-            ZmatrixType Zmatrix( velocitySpace_, pressureSpace_ );
-            Zmatrix.reserve();
+	    ZmatrixType Zmatrix( pressureSpace_, velocitySpace_ );
+	    Zmatrix.reserve( verbose_reserve );
 //			Stuff::Matrix::printMemUsageObject( Zmatrix, Logger().Dbg(), "Z" );
             // E\in R^{K\times L}
-            typedef SparseRowMatrixObject<  DiscretePressureFunctionSpaceType,
-											DiscreteVelocityFunctionSpaceType,
-											MatrixTraits<DiscretePressureFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
+	    typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
+											DiscretePressureFunctionSpaceType,
+											MatrixTraits<DiscreteVelocityFunctionSpaceType,DiscretePressureFunctionSpaceType> >
                 EmatrixType;
 			typedef Stokes::Integrators::E< EmatrixType, Traits >
 				EmatrixTypeIntegratorType;
-            EmatrixType Ematrix( pressureSpace_, velocitySpace_ );
-            Ematrix.reserve();
+	    EmatrixType Ematrix( velocitySpace_, pressureSpace_ );
+	    Ematrix.reserve( verbose_reserve );
 //			Stuff::Matrix::printMemUsageObject( Ematrix, Logger().Dbg(), "E" );
             // R\in R^{K\times K}
             typedef SparseRowMatrixObject<  DiscretePressureFunctionSpaceType,
@@ -312,7 +314,7 @@ class StokesPass
 			typedef Stokes::Integrators::R< RmatrixType, Traits >
 				RmatrixTypeIntegratorType;
             RmatrixType Rmatrix( pressureSpace_, pressureSpace_ );
-            Rmatrix.reserve();
+	    Rmatrix.reserve( verbose_reserve );
 //			Stuff::Matrix::printMemUsageObject( Rmatrix, Logger().Dbg(), "R" );
 
             // right hand sides
