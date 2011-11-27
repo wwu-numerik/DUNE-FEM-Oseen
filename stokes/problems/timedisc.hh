@@ -20,8 +20,8 @@ class Force : public Dune::Fem::Function < FunctionSpaceImp , Force < FunctionSp
 		typedef typename BaseType::RangeType
 			RangeType;
 
-		Force( const double viscosity, const FunctionSpaceImp& space, const double alpha = 0.0, const double scaling_factor = 1.0 )
-			: BaseType ( space ),
+        Force( const double viscosity, const FunctionSpaceImp& /*space*/, const double alpha = 0.0, const double scaling_factor = 1.0 )
+            : BaseType (  ),
 			  viscosity_( viscosity ),
 			  alpha_( alpha ),
 			  scaling_factor_( scaling_factor )
@@ -72,8 +72,8 @@ class DirichletData : public Dune::Fem::Function < FunctionSpaceImp, DirichletDa
 		typedef typename BaseType::RangeType
 			RangeType;
 
-		DirichletData( const FunctionSpaceImp& space )
-			: BaseType( space )
+        DirichletData( const FunctionSpaceImp& /*space*/ )
+            : BaseType(  )
 		{}
 
 		 ~DirichletData()
@@ -105,8 +105,8 @@ class Velocity : public Dune::Fem::Function < FunctionSpaceImp , Velocity < Func
 		typedef typename BaseType::RangeType
 			RangeType;
 
-		Velocity( const FunctionSpaceImp& f_space )
-			: BaseType( f_space )
+        Velocity( const FunctionSpaceImp& /*f_space*/ )
+            : BaseType(  )
 		{}
 
 		~Velocity()
@@ -148,8 +148,8 @@ class Pressure : public Dune::Fem::Function < FunctionSpaceImp , Pressure < Func
 		 *
 		 *  doing nothing besides Base init
 		 **/
-		Pressure( const FunctionSpaceImp& f_space )
-			: BaseType( f_space )
+        Pressure( const FunctionSpaceImp& /*f_space*/ )
+            : BaseType(  )
 		{}
 
 		/**
