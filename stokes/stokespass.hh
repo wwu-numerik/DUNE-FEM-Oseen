@@ -19,7 +19,13 @@
 #include <dune/stuff/customprojection.hh>
 #include <dune/stuff/matrix.hh>
 #include <dune/stuff/tuple.hh>
-#include <dune/fem/operator/matrix/spmatrix.hh>
+
+#ifdef STOKES_USE_ISTL
+#   include <dune/fem/operator/matrix/istlmatrix.hh>
+#else
+#   include <dune/fem/operator/matrix/spmatrix.hh>
+#endif
+
 #include <dune/stuff/progressbar.hh>
 
 template < class FunctionSpaceImp, class TimeProviderImp >
@@ -61,24 +67,37 @@ class VelocityConvection : public Dune::TimeFunction < FunctionSpaceImp , Veloci
 		const double parameter_d_;
 };
 
-template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
-struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
-	struct StencilType {
-        template < typename T >
-        static int nonZerosEstimate( const T& rangeSpace ) {
-            return rangeSpace.maxNumLocalDofs() * 1.5f;
-        }
-	};
-};
+#ifdef STOKES_USE_ISTL
+#   include <dune/fem/operator/2order/dgmatrixtraits.hh>
+#   define STOKES_MATRIX_OBJECT_TRAITS Dune::Fem::DGMatrixTraits
+#else
+    template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
+    struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
+        struct StencilType {
+            template < typename T >
+            static int nonZerosEstimate( const T& rangeSpace ) {
+                return rangeSpace.maxNumLocalDofs() * 1.5f;
+            }
+        };
+    };
+#define STOKES_MATRIX_OBJECT_TRAITS MatrixTraits
+#endif
 
+#if 0
 template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
-struct DiagonalMatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
+struct DiagonalMatrixTraits :
+#ifdef STOKES_USE_ISTL
+        public Dune::ISTLMatrixTraits<RowSpaceImp,ColSpaceImp> {
+#else
+        public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
+#endif
 	struct StencilType {
 		static int nonZerosEstimate( const ColSpaceImp& ) {
 			return 1;
 		}
 	};
 };
+#endif
 
 #ifndef NLOG // if we want logging, should be removed in the end
     #include <dune/stuff/printing.hh>
@@ -226,16 +245,22 @@ class StokesPass
 		void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer, const ExactSigmaType* /*sigma_exact*/ ) const
         {
             // profiler information
-	    profiler().StartTiming("Pass_init");
+            profiler().StartTiming("Pass_init");
 
-	    const bool verbose_reserve = true;
+            const bool verbose_reserve = true;
             // matrices
+        #ifdef STOKES_USE_ISTL
+        #   define STOKES_MATRIX_OBJECT ISTLMatrixObject
+        #else
+        #   define STOKES_MATRIX_OBJECT SparseRowMatrixObject
+        #endif
+
             // M\in R^{M\times M}
 			typedef typename Traits::DiscreteSigmaFunctionSpaceType
 				DiscreteSigmaFunctionSpaceType;
-			typedef SparseRowMatrixObject<  DiscreteSigmaFunctionSpaceType,
+            typedef STOKES_MATRIX_OBJECT<  DiscreteSigmaFunctionSpaceType,
 											DiscreteSigmaFunctionSpaceType,
-											DiagonalMatrixTraits<DiscreteSigmaFunctionSpaceType,DiscreteSigmaFunctionSpaceType> >
+                                            STOKES_MATRIX_OBJECT_TRAITS<DiscreteSigmaFunctionSpaceType,DiscreteSigmaFunctionSpaceType> >
                 MInversMatrixType;
 			typedef Stokes::Integrators::M< MInversMatrixType, Traits >
 				MInversMatrixIntegratorType;
@@ -246,9 +271,9 @@ class StokesPass
             // W\in R^{M\times L}
 			typedef typename Traits::DiscreteVelocityFunctionSpaceType
 				DiscreteVelocityFunctionSpaceType;
-	    typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
+        typedef STOKES_MATRIX_OBJECT<  DiscreteVelocityFunctionSpaceType,
 											DiscreteSigmaFunctionSpaceType,
-											MatrixTraits<DiscreteVelocityFunctionSpaceType, DiscreteSigmaFunctionSpaceType> >
+                                            STOKES_MATRIX_OBJECT_TRAITS<DiscreteVelocityFunctionSpaceType, DiscreteSigmaFunctionSpaceType> >
                 WmatrixType;
 			typedef Stokes::Integrators::W< WmatrixType, Traits >
 				WmatrixTypeIntegratorType;
@@ -256,9 +281,9 @@ class StokesPass
 	    Wmatrix.reserve( verbose_reserve );
 //			Stuff::Matrix::printMemUsageObject( Wmatrix, Logger().Dbg(), "W" );
             // X\in R^{L\times M}
-	    typedef SparseRowMatrixObject<  DiscreteSigmaFunctionSpaceType,
+        typedef STOKES_MATRIX_OBJECT<  DiscreteSigmaFunctionSpaceType,
 											DiscreteVelocityFunctionSpaceType,
-											MatrixTraits<DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType> >
+                                            STOKES_MATRIX_OBJECT_TRAITS<DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType> >
                 XmatrixType;
 			typedef Stokes::Integrators::X< XmatrixType, Traits >
 				XmatrixTypeIntegratorType;
@@ -266,18 +291,18 @@ class StokesPass
 	    Xmatrix.reserve( verbose_reserve );
 //			Stuff::Matrix::printMemUsageObject( Xmatrix, Logger().Dbg(), "X" );
             // Y\in R^{L\times L}
-            typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
+            typedef STOKES_MATRIX_OBJECT<  DiscreteVelocityFunctionSpaceType,
 											DiscreteVelocityFunctionSpaceType,
-											MatrixTraits<DiscreteVelocityFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
+                                            STOKES_MATRIX_OBJECT_TRAITS<DiscreteVelocityFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
                 YmatrixType;
 			typedef Stokes::Integrators::Y< YmatrixType, Traits >
 				YmatrixTypeIntegratorType;
             YmatrixType Ymatrix( velocitySpace_, velocitySpace_ );
 	    Ymatrix.reserve( verbose_reserve );
 //			Stuff::Matrix::printMemUsageObject( Ymatrix, Logger().Dbg(), "Y" );
-            typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
+            typedef STOKES_MATRIX_OBJECT<  DiscreteVelocityFunctionSpaceType,
 											DiscreteVelocityFunctionSpaceType,
-											MatrixTraits<DiscreteVelocityFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
+                                            STOKES_MATRIX_OBJECT_TRAITS<DiscreteVelocityFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
                 OmatrixType;
 			typedef Stokes::Integrators::O< OmatrixType, Traits, typename Traits::DiscreteVelocityFunctionType >
 				OmatrixTypeIntegratorType;
@@ -287,9 +312,9 @@ class StokesPass
             // Z\in R^{L\times K}
 			typedef typename Traits::DiscretePressureFunctionSpaceType
 				DiscretePressureFunctionSpaceType;
-	    typedef SparseRowMatrixObject<  DiscretePressureFunctionSpaceType,
+        typedef STOKES_MATRIX_OBJECT<  DiscretePressureFunctionSpaceType,
 											DiscreteVelocityFunctionSpaceType,
-											MatrixTraits<DiscretePressureFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
+                                            STOKES_MATRIX_OBJECT_TRAITS<DiscretePressureFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
                 ZmatrixType;
 			typedef Stokes::Integrators::Z< ZmatrixType, Traits >
 				ZmatrixTypeIntegratorType;
@@ -297,9 +322,9 @@ class StokesPass
 	    Zmatrix.reserve( verbose_reserve );
 //			Stuff::Matrix::printMemUsageObject( Zmatrix, Logger().Dbg(), "Z" );
             // E\in R^{K\times L}
-	    typedef SparseRowMatrixObject<  DiscreteVelocityFunctionSpaceType,
+        typedef STOKES_MATRIX_OBJECT<  DiscreteVelocityFunctionSpaceType,
 											DiscretePressureFunctionSpaceType,
-											MatrixTraits<DiscreteVelocityFunctionSpaceType,DiscretePressureFunctionSpaceType> >
+                                            STOKES_MATRIX_OBJECT_TRAITS<DiscreteVelocityFunctionSpaceType,DiscretePressureFunctionSpaceType> >
                 EmatrixType;
 			typedef Stokes::Integrators::E< EmatrixType, Traits >
 				EmatrixTypeIntegratorType;
@@ -307,9 +332,9 @@ class StokesPass
 	    Ematrix.reserve( verbose_reserve );
 //			Stuff::Matrix::printMemUsageObject( Ematrix, Logger().Dbg(), "E" );
             // R\in R^{K\times K}
-            typedef SparseRowMatrixObject<  DiscretePressureFunctionSpaceType,
+            typedef STOKES_MATRIX_OBJECT<  DiscretePressureFunctionSpaceType,
 											DiscretePressureFunctionSpaceType,
-											MatrixTraits<DiscretePressureFunctionSpaceType,DiscretePressureFunctionSpaceType> >
+                                            STOKES_MATRIX_OBJECT_TRAITS<DiscretePressureFunctionSpaceType,DiscretePressureFunctionSpaceType> >
                 RmatrixType;
 			typedef Stokes::Integrators::R< RmatrixType, Traits >
 				RmatrixTypeIntegratorType;
@@ -317,6 +342,7 @@ class StokesPass
 	    Rmatrix.reserve( verbose_reserve );
 //			Stuff::Matrix::printMemUsageObject( Rmatrix, Logger().Dbg(), "R" );
 
+            #undef STOKES_MATRIX_OBJECT
             // right hand sides
             // H_{1}\in R^{M}
 			typename Traits::DiscreteSigmaFunctionType H1rhs( "H1", sigmaSpace_ );

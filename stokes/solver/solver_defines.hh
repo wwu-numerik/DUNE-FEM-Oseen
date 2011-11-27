@@ -5,6 +5,8 @@
 	#include "cmake_config.h"
 #endif
 
+#ifndef STOKES_USE_ISTL
+
 // OEMBICGSQOp will NOT compile
 #ifndef INNER_CG_SOLVERTYPE
 	#define INNER_CG_SOLVERTYPE OEMCGOp
@@ -28,5 +30,26 @@
 	#define SOLVER_INTERFACE_NAMESPACE OEMSolver
 #endif
 
+#else //ifndef STOKES_USE_ISTL
+
+#include <dune/fem/solver/istlsolver.hh>
+
+#ifdef USE_BFG_CG_SCHEME
+#   warning "undefining bfg for istl solver backends"
+#   undef USE_BFG_CG_SCHEME
+#endif
+
+#ifndef INNER_CG_SOLVERTYPE
+#   define INNER_CG_SOLVERTYPE ISTLCGOp
+#endif
+
+#ifndef OUTER_CG_SOLVERTYPE
+#   define OUTER_CG_SOLVERTYPE ISTLCGOp
+#endif
+
+#define SOLVER_NAMESPACE Dune
+#define SOLVER_INTERFACE_NAMESPACE OEMSolver
+
+#endif
 
 #endif // DUNE_STOKES_SOLVER_DEFINES_HH

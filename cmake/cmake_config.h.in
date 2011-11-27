@@ -11,6 +11,9 @@
 #define HAVE_ALUGRID 1
 #cmakedefine @ENABLE_ALUGRID@ 
 
+//
+#define STOKES_USE_ISTL 1
+
 #include "config.h"
 
 #define PROBLEM_NAMESPACE @PROBLEM_NAMESPACE@
