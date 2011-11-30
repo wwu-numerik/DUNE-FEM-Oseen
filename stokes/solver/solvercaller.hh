@@ -81,6 +81,78 @@ struct SolverCaller {
 		MatrixWrapper<EmatrixObjectType> E(Ematrix, "E");
 		MatrixWrapper<RmatrixObjectType> R(Rmatrix, "R");
 
+		#if 0 //#ifndef NDEBUG
+		{
+		    // do the matlab logging stuff
+		    if ( Parameters().getParam( "save_matrices", false ) ) {
+			    Stuff::Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+			    Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
+			    Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
+			    Stuff::printSparseRowMatrixMatlabStyle( Omatrix.matrix(), "O", matlabLogStream );
+			    Stuff::printSparseRowMatrixMatlabStyle( Xmatrix.matrix(), "X", matlabLogStream );
+			    Stuff::printSparseRowMatrixMatlabStyle( Ymatrix.matrix(), "Y", matlabLogStream );
+			    Stuff::printSparseRowMatrixMatlabStyle( Zmatrix.matrix(), "Z", matlabLogStream );
+			    Stuff::printSparseRowMatrixMatlabStyle( Ematrix.matrix(), "E", matlabLogStream );
+			    Stuff::printSparseRowMatrixMatlabStyle( Rmatrix.matrix(), "R", matlabLogStream );
+			    Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
+			    Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
+			    Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
+			    Stuff::printDiscreteFunctionMatlabStyle( H2_O_rhs, "H_O", matlabLogStream );
+			    matlabLogStream.Flush();
+		    }
+
+		//            // log local matrices
+		//            Stuff::GridWalk<GridPartType> gw( gridPart_ );
+		//            typedef Logging::MatlabLogStream
+		//                FunctorStream;
+		//            FunctorStream& functorStream = matlabLogStream;
+		//            Stuff::GridWalk<DiscreteVelocityFunctionSpaceType> gw( velocitySpace_ );
+		//            Stuff::LocalMatrixPrintFunctor< EmatrixType,FunctorStream> f_E ( Ematrix, functorStream, "E" );
+		//            Stuff::LocalMatrixPrintFunctor< WmatrixType,FunctorStream> f_W ( Wmatrix, functorStream, "W" );
+		//            Stuff::LocalMatrixPrintFunctor< XmatrixType,FunctorStream> f_X ( Xmatrix, functorStream, "X" );
+		//            Stuff::LocalMatrixPrintFunctor< YmatrixType,FunctorStream> f_Y ( Ymatrix, functorStream, "Y" );
+		//            Stuff::LocalMatrixPrintFunctor< ZmatrixType,FunctorStream> f_Z ( Zmatrix, functorStream, "Z" );
+		//            Stuff::LocalMatrixPrintFunctor< RmatrixType,FunctorStream> f_R ( Rmatrix, functorStream, "R" );
+		//                gw( f_W );
+		//                gw( f_X );
+		//                gw( f_Y );
+		//                gw( f_Z );
+		//                gw( f_E );
+		//                gw( f_R );
+		// do profiling
+
+
+		    if ( Parameters().getParam( "outputMatrixPlots", false ) ) {
+			Stuff::matrixToGnuplotFile( Ematrix.matrix(),       std::string( "mat_E.gnuplot")       );
+			Stuff::matrixToGnuplotFile( Wmatrix.matrix(),       std::string( "mat_W.gnuplot")       );
+			Stuff::matrixToGnuplotFile( Xmatrix.matrix(),       std::string( "mat_X.gnuplot")       );
+			Stuff::matrixToGnuplotFile( Ymatrix.matrix(),       std::string( "mat_Y.gnuplot")       );
+			Stuff::matrixToGnuplotFile( Zmatrix.matrix(),       std::string( "mat_Z.gnuplot")       );
+			Stuff::matrixToGnuplotFile( Rmatrix.matrix(),       std::string( "mat_R.gnuplot")       );
+			Stuff::matrixToGnuplotFile( MInversMatrix.matrix(), std::string( "mat_M.gnuplot")   );
+		    }
+
+		    if ( Parameters().getParam( "paranoid_checks", false ) )
+		    {//paranoid checks
+			    assert( !Stuff::MatrixContainsNanOrInf( Omatrix.matrix() ) );
+			    assert( !Stuff::MatrixContainsNanOrInf( Ematrix.matrix() ) );
+			    assert( !Stuff::MatrixContainsNanOrInf( Wmatrix.matrix() ) );
+			    assert( !Stuff::MatrixContainsNanOrInf( Xmatrix.matrix() ) );
+			    assert( !Stuff::MatrixContainsNanOrInf( Ymatrix.matrix() ) );
+			    assert( !Stuff::MatrixContainsNanOrInf( Zmatrix.matrix() ) );
+			    assert( !Stuff::MatrixContainsNanOrInf( Rmatrix.matrix() ) );
+			    assert( !Stuff::MatrixContainsNanOrInf( MInversMatrix.matrix() ) );
+			    assert( !Stuff::FunctionContainsNanOrInf( H1rhs ) );
+			    assert( !Stuff::FunctionContainsNanOrInf( H2rhs ) );
+			    assert( !Stuff::FunctionContainsNanOrInf( H3rhs ) );
+			    assert( !Stuff::FunctionContainsNanOrInf( H2_O_rhs ) );
+	    //				Zmatrix.matrix().scale( -1 );
+	    //				assert( areTransposed( Zmatrix.matrix(), Ematrix.matrix() ));
+	    //				Zmatrix.matrix().scale( -1 );
+		    }
+		}
+		#endif
+
 		SaddlepointInverseOperatorInfo result;
 
 		if ( Parameters().getParam( "disableSolver", false ) ) {
