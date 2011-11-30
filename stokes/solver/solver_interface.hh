@@ -48,7 +48,9 @@ class MatrixWrapper : boost::noncopyable {
 			:matrix_object_( matrix_object ),
 			cumulative_scale_factor_( 1.0 )
 		{
-//			Stuff::Matrix::printMemUsage( matrix_object_.matrix(), Logger().Dbg(), name );
+		    #ifndef STOKES_USE_ISTL
+			Stuff::Matrix::printMemUsage( matrix_object_.matrix(), Logger().Dbg(), name );
+		    #endif
 		}
 
 		~MatrixWrapper()
@@ -60,60 +62,125 @@ class MatrixWrapper : boost::noncopyable {
 		template <class DiscFType, class DiscFuncType>
 		void apply(const DiscFType &f, DiscFuncType &ret) const
 		{
-			matrix_object_.apply( f, ret );
+//            matrix_object_.multOEM( f, ret );
+            matrix_object_.apply( f, ret );
 		}
+		template <class ArgBlockVectorType, class DestBlockVectorType, class ArgDofImp, class DestDofImp>
+		void apply(const Dune::StraightenBlockVector<ArgBlockVectorType,ArgDofImp> &f,
+				 Dune::StraightenBlockVector<DestBlockVectorType,DestDofImp> &ret) const
+		{
+		    matrix_object_.multOEM( f, ret );
+		}
+		template <class ArgBlockType, class DestBlockType, class ArgAllocatorType, class DestAllocatorType>
+		void applyBlock(const Dune::BlockVector<ArgBlockType,ArgAllocatorType> &f,
+				 Dune::BlockVector<DestBlockType,DestAllocatorType> &ret) const
+		{
+		    matrix_object_.multOEM( f, ret );
+		}
+        template <class ArgBlockType, class DestBlockType, class ArgAllocatorType, class DestAllocatorType>
+        void apply(const Dune::BlockVector<ArgBlockType,ArgAllocatorType> &f,
+                 Dune::BlockVector<DestBlockType,DestAllocatorType> &ret) const
+        {
+            matrix_object_.multOEM( f, ret );
+        }
 		//! return diagonal of (this * A * B)
 		template <class DiscrecteFunctionType, class OtherMatrixType_A, class OtherMatrixType_B>
 		void getDiag(const OtherMatrixType_A& A, const OtherMatrixType_B& B, DiscrecteFunctionType& rhs) const
 		{
+		    #ifdef STOKES_USE_ISTL
+			assert( false );
+		    #else
 			matrix_object_.matrix().getDiag( A.matrix(), B.matrix(), rhs );
+		    #endif
 		}
 
 		//! return diagonal of (this * A)
 		template <class DiscrecteFunctionType, class OtherMatrixType_A>
 		void getDiag(const OtherMatrixType_A& A, DiscrecteFunctionType& rhs) const
 		{
+		    #ifdef STOKES_USE_ISTL
+			assert( false );
+		    #else
 			matrix_object_.matrix().getDiag( A, rhs );
+		    #endif
 		}
 
 		template <class DiscrecteFunctionType>
 		void addDiag(DiscrecteFunctionType& rhs) const
 		{
+		    #ifdef STOKES_USE_ISTL
+			assert( false );
+		    #else
 			matrix_object_.matrix().addDiag( rhs );
+		    #endif
+		}
+
+//		template < class T >
+//		void applyAdd( const T& x, T& ret ) const
+        template <class ArgBlockType, class DestBlockType, class ArgDType, class DestDType>
+        void applyAdd(const Dune::BlockVector<ArgBlockType, ArgDType>& x,
+                 Dune::BlockVector<DestBlockType, DestDType>& ret ) const
+		{
+            matrix_object_.applyAdd( x, ret );
 		}
 
 		//! same as apply A * x = ret, used by OEM-Solvers
-		template <class VECtype>
-		void multOEM(const VECtype *x, VECtype * ret) const
+		template <class VECtype, class VECtypeR >
+		void multOEM(const VECtype* x, VECtypeR* ret) const
 		{
+		    #ifdef STOKES_USE_ISTL
+			//matrix wrapped by ISTLMatrixObject isn't interface compatible with Sp matrix
+			matrix_object_.multOEM( x, ret );
+		    #else
 			matrix_object_.matrix().multOEM( x, ret );
+		    #endif
 		}
-		template <class VECtype>
-		void multOEM_t(const VECtype *x, VECtype * ret) const
+		template <class VECtype, class VECtypeR>
+		void multOEM_t(const VECtype* x, VECtypeR* ret) const
 		{
+		    #ifdef STOKES_USE_ISTL
+			matrix_object_.multOEM_t( x, ret );
+		    #else
 			matrix_object_.matrix().multOEM_t( x, ret );
+		    #endif
 		}
 
 		//! calculates ret += A * x
-		template <class VECtype>
-		void multOEMAdd(const VECtype *x, VECtype * ret) const
+		template <class VECtype, class VECtypeR>
+		void multOEMAdd(const VECtype* x, VECtypeR* ret) const
 		{
+		    #ifdef STOKES_USE_ISTL
+			//VecType == StraightenBlockVector<>*
+			matrix_object_.multOEMAdd( x, ret );
+		    #else
 			matrix_object_.matrix().multOEMAdd( x, ret );
+		    #endif
 		}
+
+        template <class ArgDofStorageType, class DestDofStorageType, class ArgRangeFieldType, class DestRangeFieldType>
+        void multOEMAdd(const Dune::StraightenBlockVector<ArgDofStorageType,ArgRangeFieldType> &x,
+                 Dune::StraightenBlockVector<DestDofStorageType,DestRangeFieldType> &ret) const
+        {
+            matrix_object_.multOEMAdd( x, ret );
+        }
 
 		double operator ()(const size_t i, const size_t j ) const
 		{
+		    #ifdef STOKES_USE_ISTL
 			return matrix_object_.matrix()(i,j);
+		    #else
+			return matrix_object_.matrix()(i,j);
+		    #endif
 		}
 
 		size_t rows() const
 		{
-			return matrix_object_.matrix().rows();
+		    return matrix_object_.matrix().rows();
 		}
 
 		size_t cols() const
 		{
-			return matrix_object_.matrix().cols();
+		    return matrix_object_.matrix().cols();
 		}
 
 		void scale( const double factor )

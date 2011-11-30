@@ -9,6 +9,12 @@
 #include <dune/stuff/functions.hh>
 #include <dune/stuff/parametercontainer.hh>
 
+#if HAVE_DUNE_ISTL
+#   include <dune/istl/operators.hh>
+#   include <dune/fem/operator/matrix/istlmatrix.hh>
+#   include <dune/fem/operator/matrix/preconditionerwrapper.hh>
+#endif
+
 namespace Dune {
 
 /** \brief Operator wrapping Matrix vector multiplication for
@@ -32,10 +38,12 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 											DiscreteVelocityFunctionType,
 											DiscretePressureFunctionType>
 				ThisType;
+		typedef SchurkomplementOperatorAdapter< ThisType >
+		    MatrixAdapterType;
 		typedef typename A_SolverType::A_OperatorType::PreconditionMatrix
-			A_PreconditionMatrix;
+		    A_PreconditionMatrix;
 		typedef IdentityMatrixObject<typename R_MatrixType::WrappedMatrixObjectType>
-			PreconditionMatrixBaseType;
+		    PreconditionMatrixBaseType;
 		//if shit goes south wrt precond working check if this doesn't need to be OEmSolver instead of SOLVER_INTERFACE_NAMESPACE
 		friend class Conversion<ThisType,SOLVER_INTERFACE_NAMESPACE::PreconditionInterface>;
 
@@ -88,6 +96,8 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 													SOLVER_NAMESPACE::OUTER_CG_SOLVERTYPE,
 													DiscretePressureFunctionType>
 			PreconditionMatrix;
+		typedef DiscretePressureFunctionType RowDiscreteFunctionType;
+		typedef DiscretePressureFunctionType ColDiscreteFunctionType;
 
 #ifdef USE_BFG_CG_SCHEME
         typedef typename A_SolverType::ReturnValueType
@@ -112,22 +122,29 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
             total_inner_iterations( 0 ),
 			pressure_space_(pressure_space),
 			precond_operator_( a_solver, *this, velocity_space, pressure_space),
-			precond_( precond_operator_, pressure_space_ )
-		{}
+	    precond_( precond_operator_, pressure_space_ ),
+	      adapter_( *this, pressure_space, pressure_space )
+	{}
 
         double ddotOEM(const double*v, const double* w) const
-		{
-			DiscretePressureFunctionType V( "ddot_V2", pressure_space_, v );
-			DiscretePressureFunctionType W( "ddot_W1", pressure_space_, w );
-			assert( !Stuff::FunctionContainsNanOrInf( V ) );
-			assert( !Stuff::FunctionContainsNanOrInf( W ) );
-			const double ret = V.scalarProductDofs( W );
-			assert( std::isfinite( ret ) );
-			return ret;
-		}
+	{
+	    DiscretePressureFunctionType V( "ddot_V2", pressure_space_, v );
+	    DiscretePressureFunctionType W( "ddot_W1", pressure_space_, w );
+	    assert( !Stuff::FunctionContainsNanOrInf( V ) );
+	    assert( !Stuff::FunctionContainsNanOrInf( W ) );
+	    const double ret = V.scalarProductDofs( W );
+	    assert( std::isfinite( ret ) );
+	    return ret;
+	}
 
-        template <class VECtype>
-        void multOEM(const VECtype *x, VECtype * ret) const
+//	template <class VECtype>
+//	void multOEM(const VECtype& x, VECtype& ret) const
+//	{
+//	    multOEM(&x,&ret);
+//	}
+
+//	template <class VECtype>
+	void multOEM(const double *x, double * ret) const
         {
 			// ret = ( ( -E * ( A^-1 * ( Z * x ) ) ) + ( R * x ) )
 			z_mat_.multOEM( x, tmp1.leakPointer() );
@@ -155,12 +172,39 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 //			ret[0] = x[0];
         }
 
-		void apply( const DiscretePressureFunctionType& arg, DiscretePressureFunctionType& ret ) const
-		{
-			assert( !Stuff::FunctionContainsNanOrInf( arg ) );
-			multOEM( arg.leakPointer(), ret.leakPointer() );
-			assert( !Stuff::FunctionContainsNanOrInf( ret ) );
-		}
+	template <class ArgDofStorageType, class DestDofStorageType, class ArgRangeFieldType, class DestRangeFieldType>
+	void multOEM(const Dune::StraightenBlockVector<ArgDofStorageType,ArgRangeFieldType> &x,
+             Dune::StraightenBlockVector<DestDofStorageType,DestRangeFieldType> &ret) const
+	{
+			// ret = ( ( -E * ( A^-1 * ( Z * x ) ) ) + ( R * x ) )
+            z_mat_.apply( x, tmp1.leakPointer() );
+
+			tmp2.clear();//don't remove w/o result testing
+			assert( !Stuff::FunctionContainsNanOrInf( tmp1 ) );
+
+			a_solver_.apply( tmp1, tmp2 );
+
+			assert( !Stuff::FunctionContainsNanOrInf( tmp2 ) );
+			tmp2 *= -1;
+			e_mat_.apply( tmp2.leakPointer(), ret );
+			assert( !Stuff::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
+//            double g = x;
+//            double j = r_mat_;
+            r_mat_.multOEMAdd
+//                    <ArgDofStorageType, DestDofStorageType, ArgRangeFieldType, DestRangeFieldType>
+                    ( x, ret );
+			assert( !Stuff::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
+//			ret[0] = x[0];
+	}
+
+	void apply( const DiscretePressureFunctionType& arg, DiscretePressureFunctionType& ret ) const
+	{
+	    assert( !Stuff::FunctionContainsNanOrInf( arg ) );
+	    typedef typename DiscretePressureFunctionType::DofStorageType D;
+	    typedef typename DiscretePressureFunctionType::RangeFieldType R;
+        multOEM< D,D,R,R >( arg.leakPointer(), ret.leakPointer() );
+	    assert( !Stuff::FunctionContainsNanOrInf( ret ) );
+	}
 
 #ifdef USE_BFG_CG_SCHEME
         template <class VECtype>
@@ -183,19 +227,23 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
         }
 #endif
 
-        ThisType& systemMatrix ()
-        {
-            return *this;
-        }
 
-		const PreconditionMatrix& preconditionMatrix() const
+	const MatrixAdapterType& matrixAdapter() const
+	{
+	    return adapter_;
+	}
+
+    ThisType& systemMatrix () { return *this; }
+    const ThisType& systemMatrix () const { return *this; }
+
+	const PreconditionMatrix& preconditionMatrix() const
         {
             return precond_;
         }
 
         bool hasPreconditionMatrix () const
         {
-			return Parameters().getParam( "outerPrecond", false );
+	    return Parameters().getParam( "outerPrecond", false );
         }
 
         bool rightPrecondition() const
@@ -203,7 +251,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
             return false;
         }
 
-		long getTotalInnerIterations() const
+	long getTotalInnerIterations() const
         {
             return total_inner_iterations;
         }
@@ -221,6 +269,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 		const typename DiscretePressureFunctionType::DiscreteFunctionSpaceType& pressure_space_;
 		PreconditionOperator precond_operator_;
 		PreconditionMatrix precond_;
+		MatrixAdapterType adapter_;
 };
 
 } //end namespace Dune

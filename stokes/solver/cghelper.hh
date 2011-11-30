@@ -46,6 +46,13 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 	typedef IdentityMatrixObject<typename YMatType::WrappedMatrixObjectType>
 		PreconditionMatrixBaseType;
 
+	typedef SchurkomplementOperatorAdapter< ThisType/*,
+						typename DiscretePressureFunctionType::DiscreteFunctionSpaceType,
+						typename DiscretePressureFunctionType::DiscreteFunctionSpaceType*/ >
+	    MatrixAdapterType;
+	typedef DiscreteVelocityFunctionType RowDiscreteFunctionType;
+	typedef DiscreteVelocityFunctionType ColDiscreteFunctionType;
+
 	class PreconditionMatrix : public PreconditionMatrixBaseType {
 		const ThisType& a_operator_;
 
@@ -102,15 +109,16 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
             sig_tmp1( "sig_tmp1", sig_space ),
             sig_tmp2( "sig_tmp2", sig_space ),
             space_(space),
-			precondition_matrix_( *this )
+			precondition_matrix_( *this ),
+	      adapter_( *this, space, space )
 		{}
 
         ~MatrixA_Operator()
         {}
 
-		//! ret = ( ( X * ( -1* ( M_inv * ( W * x ) ) ) ) + ( Y + O ) * x ) )
-        template <class VECtype>
-        void multOEM(const VECtype *x, VECtype * ret) const
+	  //! ret = ( ( X * ( -1* ( M_inv * ( W * x ) ) ) ) + ( Y + O ) * x ) )
+	template <class VECtype>//FEM
+	void multOEM(const VECtype* x, VECtype*  ret) const
         {
             w_mat_.multOEM( x, sig_tmp1.leakPointer() );
             m_mat_.apply( sig_tmp1, sig_tmp2 );//Stuff:DiagmUlt
@@ -118,65 +126,94 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
             sig_tmp2 *= ( -1 );
             x_mat_.multOEM( sig_tmp2.leakPointer(), ret );
             y_mat_.multOEMAdd( x, ret );
-			o_mat_.multOEMAdd( x, ret );
+	    o_mat_.multOEMAdd( x, ret );
         }
+
+	//! ret = ( ( X * ( -1* ( M_inv * ( W * x ) ) ) ) + ( Y + O ) * x ) )
+	template <class VECtype>//ISTL
+	void multOEM(const VECtype& x, VECtype&  ret) const
+	{
+	    w_mat_.apply( x, sig_tmp1.blockVector() );
+	    m_mat_.apply( sig_tmp1, sig_tmp2 );//Stuff:DiagmUlt
+
+	    sig_tmp2 *= ( -1 );
+	    x_mat_.apply( sig_tmp2.blockVector(), ret );
+	    y_mat_.applyAdd( x, ret );
+	    o_mat_.applyAdd( x, ret );
+	}
 
 #ifdef USE_BFG_CG_SCHEME
         template <class VECtype>
-		void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& /*info*/ ) const
+	void multOEM(const VECtype* x, VECtype*  ret, const IterationInfo& /*info*/ ) const
         {
             multOEM(x,ret);
         }
 #endif
+	//! called my matrix adater in ISTL case
+	template <class NonPointerLeakPointerType>
+	void mv( const NonPointerLeakPointerType& x, NonPointerLeakPointerType& ret )
+	{
+//	    const double* a = x;
+	    multOEM( x, ret );
+	}
+	template <class NonPointerLeakPointerType>
+	void usmv( const typename MatrixAdapterType::field_type alpha, const NonPointerLeakPointerType& x, NonPointerLeakPointerType& ret )
+	{
+	    assert( false );//alpha not used
+//	    multOEM( &(x.leakPointer()), &(ret.leakPointer()) );
+	    multOEM( x,ret );
+	}
 
-        double ddotOEM(const double*v, const double* w) const
-		{
-	        DiscreteVelocityFunctionType V( "ddot V", space_, v );
-	        DiscreteVelocityFunctionType W( "ddot W", space_, w );
-	        return V.scalarProductDofs( W );
-		}
+    void applyAdd ( const typename MatrixAdapterType::field_type alpha, const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest )
+    {
+        DiscreteVelocityFunctionType tmp( dest );
+        apply(arg,tmp);
+        dest += tmp;
+    }
 
-		void apply( const DiscreteVelocityFunctionType& rhs, DiscreteVelocityFunctionType& dest ) const
-		{
-			multOEM( rhs.leakPointer(), dest.leakPointer() )	;
-		}
+    double ddotOEM(const double*v, const double* w) const
+	{
+	    DiscreteVelocityFunctionType V( "ddot V", space_, v );
+	    DiscreteVelocityFunctionType W( "ddot W", space_, w );
+	    return V.scalarProductDofs( W );
+	}
 
+	void apply( const DiscreteVelocityFunctionType& rhs, DiscreteVelocityFunctionType& dest ) const
+	{
+	    multOEM( rhs.leakPointer(), dest.leakPointer() )	;
+	}
 
-        ThisType& systemMatrix ()
-        {
-            return *this;
-        }
-
-		const PreconditionMatrix& preconditionMatrix() const
-        {
-			return precondition_matrix_;
-        }
+    ThisType& systemMatrix () { return *this; }
+    const ThisType& systemMatrix () const { return *this; }
+    const MatrixAdapterType& matrixAdapter() const { return adapter_; }
+    const PreconditionMatrix& preconditionMatrix() const { return precondition_matrix_; }
 
         bool hasPreconditionMatrix () const
         {
-			return Parameters().getParam( "innerPrecond", false );
+	    return Parameters().getParam( "innerPrecond", false );
         }
 
-		//! return diagonal entries of this matrix
-		template <class DiscFuncType>
-		void getDiag(DiscFuncType &precondition_diagonal_) const
-		{
-			x_mat_.getDiag( m_mat_, w_mat_, precondition_diagonal_);
-			precondition_diagonal_ *= -1;
-			y_mat_.addDiag( precondition_diagonal_ );
-			o_mat_.addDiag( precondition_diagonal_ );
-		}
+	//! return diagonal entries of this matrix
+	template <class DiscFuncType>
+	void getDiag(DiscFuncType &precondition_diagonal_) const
+	{
+		x_mat_.getDiag( m_mat_, w_mat_, precondition_diagonal_);
+		precondition_diagonal_ *= -1;
+		y_mat_.addDiag( precondition_diagonal_ );
+		o_mat_.addDiag( precondition_diagonal_ );
+	}
 
 	protected:
         const WMatType& w_mat_;
         const MMatType& m_mat_;
         const XMatType& x_mat_;
         const YMatType& y_mat_;
-		const YMatType& o_mat_;
+	const YMatType& o_mat_;
         mutable DiscreteSigmaFunctionType sig_tmp1;
         mutable DiscreteSigmaFunctionType sig_tmp2;
-		const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& space_;
-		PreconditionMatrix precondition_matrix_;
+	const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& space_;
+	PreconditionMatrix precondition_matrix_;
+	MatrixAdapterType adapter_;
 
 };
 
@@ -247,6 +284,8 @@ class InnerCGSolverWrapper {
         {
             cg_solver.apply(arg,dest);
         }
+        //! the standard function call
+
 
 #ifdef USE_BFG_CG_SCHEME
 		/** - needed when using the BFG scheme
