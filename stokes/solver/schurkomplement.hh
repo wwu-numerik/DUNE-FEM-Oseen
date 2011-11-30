@@ -17,23 +17,90 @@
 
 namespace Dune {
 
+template < class SchurkomplementOperatorType >
+class PreconditionOperatorDefault {
+    typedef PreconditionOperatorDefault< SchurkomplementOperatorType >
+        ThisType;
+    public:
+        typedef SchurkomplementOperatorAdapter<ThisType>
+            MatrixAdapterType;
+        typedef typename SchurkomplementOperatorType::DiscretePressureFunctionType RowDiscreteFunctionType;
+        typedef typename SchurkomplementOperatorType::DiscretePressureFunctionType ColDiscreteFunctionType;
+    private:
+        const SchurkomplementOperatorType& sk_op_;
+        const typename SchurkomplementOperatorType::A_PreconditionMatrix& a_precond_;
+        mutable typename SchurkomplementOperatorType::DiscreteVelocityFunctionType velo_tmp;
+        mutable typename SchurkomplementOperatorType::DiscreteVelocityFunctionType velo_tmp2;
+        const typename SchurkomplementOperatorType::Z_MatrixType::WrappedMatrixObjectType::DomainSpaceType& pressure_space_;
+        MatrixAdapterType matrix_adapter_;
+
+    public:
+
+        PreconditionOperatorDefault( const typename SchurkomplementOperatorType::A_SolverType& a_solver,
+                           const SchurkomplementOperatorType& sk_op,
+                           const typename SchurkomplementOperatorType::E_MatrixType::WrappedMatrixObjectType::DomainSpaceType& velocity_space,
+                           const typename SchurkomplementOperatorType::Z_MatrixType::WrappedMatrixObjectType::DomainSpaceType& pressure_space)
+            : sk_op_( sk_op),
+            a_precond_( a_solver.getOperator().preconditionMatrix() ),
+            velo_tmp( "sdeio", velocity_space ),
+            velo_tmp2( "2sdeio", velocity_space ),
+            pressure_space_(pressure_space),
+            matrix_adapter_( *this, pressure_space, pressure_space )
+        {}
+
+#ifdef USE_BFG_CG_SCHEME
+        template <class VECtype>
+        void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& ) const
+        {
+            multOEM(x,ret);
+        }
+#endif
+        template <class VECtype>
+        void multOEM(const VECtype *x, VECtype * ret) const
+        {
+            sk_op_.z_mat_.matrix().multOEM( x,velo_tmp.leakPointer());
+            a_precond_.apply( velo_tmp, velo_tmp2);
+            sk_op_.e_mat_.matrix().multOEM( velo_tmp2.leakPointer(),ret);
+            sk_op_.r_mat_.matrix().multOEMAdd( x, ret);
+        }
+
+        ThisType& systemMatrix () { return *this; }
+        const ThisType& systemMatrix () const { return *this; }
+        MatrixAdapterType& matrixAdapter() { return matrix_adapter_; }
+        const MatrixAdapterType& matrixAdapter() const { return matrix_adapter_; }
+
+        double ddotOEM(const double*v, const double* w) const
+        {
+            typename SchurkomplementOperatorType::DiscretePressureFunctionType V( "ddot_V2", pressure_space_, v );
+            typename SchurkomplementOperatorType::DiscretePressureFunctionType W( "ddot_W1", pressure_space_, w );
+            return V.scalarProductDofs( W );
+        }
+
+
+};
+
 /** \brief Operator wrapping Matrix vector multiplication for
 			matrix \f$ S :=  B_t * A^-1 * B + rhs3 \f$
 			**/
-template <  class A_SolverType,
-			class E_MatrixType,
+template <  class A_SolverImp,
+            class E_MatrixImp,
 			class R_MatrixType,
-			class Z_MatrixType,
+            class Z_MatrixImp,
 			class M_invers_MatrixType,
-			class DiscreteVelocityFunctionType ,
-            class DiscretePressureFunctionType>
+            class DiscreteVelocityFunctionImp ,
+            class DiscretePressureFunctionImp>
 class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::PreconditionInterface
 {
     public:
+        typedef DiscreteVelocityFunctionImp DiscreteVelocityFunctionType;
+        typedef DiscretePressureFunctionImp DiscretePressureFunctionType;
+        typedef A_SolverImp A_SolverType;
+        typedef Z_MatrixImp Z_MatrixType;
+        typedef E_MatrixImp E_MatrixType;
 		typedef SchurkomplementOperator <   A_SolverType,
-											E_MatrixType,
+                                            E_MatrixType,
 											R_MatrixType,
-											Z_MatrixType,
+                                            Z_MatrixType,
 											M_invers_MatrixType,
 											DiscreteVelocityFunctionType,
 											DiscretePressureFunctionType>
@@ -44,53 +111,11 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 		    A_PreconditionMatrix;
 		typedef IdentityMatrixObject<typename R_MatrixType::WrappedMatrixObjectType>
 		    PreconditionMatrixBaseType;
+        typedef PreconditionOperatorDefault< ThisType >
+            PreconditionOperator;
 		//if shit goes south wrt precond working check if this doesn't need to be OEmSolver instead of SOLVER_INTERFACE_NAMESPACE
 		friend class Conversion<ThisType,SOLVER_INTERFACE_NAMESPACE::PreconditionInterface>;
 
-		class PreconditionOperator {
-			const ThisType& sk_op_;
-			const A_PreconditionMatrix& a_precond_;
-			mutable DiscreteVelocityFunctionType velo_tmp;
-			mutable DiscreteVelocityFunctionType velo_tmp2;
-			const typename Z_MatrixType::WrappedMatrixObjectType::DomainSpaceType& pressure_space_;
-
-			public:
-				PreconditionOperator( const A_SolverType& a_solver,
-								   const ThisType& sk_op,
-								   const typename E_MatrixType::WrappedMatrixObjectType::DomainSpaceType& velocity_space,
-								   const typename Z_MatrixType::WrappedMatrixObjectType::DomainSpaceType& pressure_space)
-					: sk_op_( sk_op),
-					a_precond_( a_solver.getOperator().preconditionMatrix() ),
-					velo_tmp( "sdeio", velocity_space ),
-					velo_tmp2( "2sdeio", velocity_space ),
-					pressure_space_(pressure_space)
-				{}
-
-#ifdef USE_BFG_CG_SCHEME
-				template <class VECtype>
-				void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& ) const
-				{
-					multOEM(x,ret);
-				}
-#endif
-				template <class VECtype>
-				void multOEM(const VECtype *x, VECtype * ret) const
-				{
-					sk_op_.z_mat_.matrix().multOEM( x,velo_tmp.leakPointer());
-					a_precond_.apply( velo_tmp, velo_tmp2);
-					sk_op_.e_mat_.matrix().multOEM( velo_tmp2.leakPointer(),ret);
-					sk_op_.r_mat_.matrix().multOEMAdd( x, ret);
-				}
-
-				PreconditionOperator& systemMatrix () { return *this; }
-
-				double ddotOEM(const double*v, const double* w) const
-				{
-					DiscretePressureFunctionType V( "ddot_V2", pressure_space_, v );
-					DiscretePressureFunctionType W( "ddot_W1", pressure_space_, w );
-					return V.scalarProductDofs( W );
-				}
-		};
 
 		typedef Stuff::OperatorBasedPreconditioner< PreconditionOperator,
 													SOLVER_NAMESPACE::OUTER_CG_SOLVERTYPE,
@@ -126,7 +151,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 	      adapter_( *this, pressure_space, pressure_space )
 	{}
 
-        double ddotOEM(const double*v, const double* w) const
+    double ddotOEM(const double*v, const double* w) const
 	{
 	    DiscretePressureFunctionType V( "ddot_V2", pressure_space_, v );
 	    DiscretePressureFunctionType W( "ddot_W1", pressure_space_, w );
@@ -137,13 +162,6 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 	    return ret;
 	}
 
-//	template <class VECtype>
-//	void multOEM(const VECtype& x, VECtype& ret) const
-//	{
-//	    multOEM(&x,&ret);
-//	}
-
-//	template <class VECtype>
 	void multOEM(const double *x, double * ret) const
         {
 			// ret = ( ( -E * ( A^-1 * ( Z * x ) ) ) + ( R * x ) )
@@ -172,30 +190,33 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 //			ret[0] = x[0];
         }
 
+    template <class ArgDofStorageType, class DestDofStorageType>
+    void multOEM(const Dune::BlockVector<ArgDofStorageType> &x,
+             Dune::BlockVector<DestDofStorageType> &ret) const
+    {
+        // ret = ( ( -E * ( A^-1 * ( Z * x ) ) ) + ( R * x ) )
+        z_mat_.apply( x, tmp1.blockVector() );
+
+        tmp2.clear();//don't remove w/o result testing
+        assert( !Stuff::FunctionContainsNanOrInf( tmp1 ) );
+
+        a_solver_.apply( tmp1, tmp2 );
+
+        assert( !Stuff::FunctionContainsNanOrInf( tmp2 ) );
+        tmp2 *= -1;
+        e_mat_.apply( tmp2.blockVector(), ret );
+        assert( !Stuff::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
+        r_mat_.multOEMAdd( x, ret );
+        assert( !Stuff::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
+//			ret[0] = x[0];
+    }
 	template <class ArgDofStorageType, class DestDofStorageType, class ArgRangeFieldType, class DestRangeFieldType>
 	void multOEM(const Dune::StraightenBlockVector<ArgDofStorageType,ArgRangeFieldType> &x,
              Dune::StraightenBlockVector<DestDofStorageType,DestRangeFieldType> &ret) const
 	{
-			// ret = ( ( -E * ( A^-1 * ( Z * x ) ) ) + ( R * x ) )
-            z_mat_.apply( x, tmp1.leakPointer() );
-
-			tmp2.clear();//don't remove w/o result testing
-			assert( !Stuff::FunctionContainsNanOrInf( tmp1 ) );
-
-			a_solver_.apply( tmp1, tmp2 );
-
-			assert( !Stuff::FunctionContainsNanOrInf( tmp2 ) );
-			tmp2 *= -1;
-			e_mat_.apply( tmp2.leakPointer(), ret );
-			assert( !Stuff::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
-//            double g = x;
-//            double j = r_mat_;
-            r_mat_.multOEMAdd
-//                    <ArgDofStorageType, DestDofStorageType, ArgRangeFieldType, DestRangeFieldType>
-                    ( x, ret );
-			assert( !Stuff::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
-//			ret[0] = x[0];
+        multOEM( x.blockVector(), ret.blockVector() );
 	}
+
 
 	void apply( const DiscretePressureFunctionType& arg, DiscretePressureFunctionType& ret ) const
 	{
@@ -205,6 +226,16 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
         multOEM< D,D,R,R >( arg.leakPointer(), ret.leakPointer() );
 	    assert( !Stuff::FunctionContainsNanOrInf( ret ) );
 	}
+
+    //! apply operator to x, scale and add:  \f$ y = y + \alpha A(x) \f$
+    template < class field_type, class Arg, class Dest >
+    void usmv( const field_type alpha, const Arg& arg, Dest& dest ) const
+    {
+        Dest tmp( dest );
+        multOEM( arg, tmp );
+        tmp *= alpha;
+        dest += tmp;
+    }
 
 #ifdef USE_BFG_CG_SCHEME
         template <class VECtype>
@@ -227,34 +258,18 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
         }
 #endif
 
-
-	const MatrixAdapterType& matrixAdapter() const
-	{
-	    return adapter_;
-	}
-
+    const MatrixAdapterType& matrixAdapter() const { return adapter_; }
     ThisType& systemMatrix () { return *this; }
     const ThisType& systemMatrix () const { return *this; }
+    const PreconditionMatrix& preconditionMatrix() const { return precond_; }
 
-	const PreconditionMatrix& preconditionMatrix() const
-        {
-            return precond_;
-        }
+    bool hasPreconditionMatrix () const
+    {
+        return Parameters().getParam( "outerPrecond", false );
+    }
 
-        bool hasPreconditionMatrix () const
-        {
-	    return Parameters().getParam( "outerPrecond", false );
-        }
-
-        bool rightPrecondition() const
-        {
-            return false;
-        }
-
-	long getTotalInnerIterations() const
-        {
-            return total_inner_iterations;
-        }
+    bool rightPrecondition() const { return false; }
+    long getTotalInnerIterations() const { return total_inner_iterations; }
 
     private:
 		A_SolverType& a_solver_;

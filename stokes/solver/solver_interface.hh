@@ -163,6 +163,12 @@ class MatrixWrapper : boost::noncopyable {
         {
             matrix_object_.multOEMAdd( x, ret );
         }
+        template <class ArgDofStorageType, class DestDofStorageType>
+        void multOEMAdd(const Dune::BlockVector<ArgDofStorageType> &x,
+                 Dune::BlockVector<DestDofStorageType> &ret) const
+        {
+            matrix_object_.multOEMAdd( x, ret );
+        }
 
 		double operator ()(const size_t i, const size_t j ) const
 		{
