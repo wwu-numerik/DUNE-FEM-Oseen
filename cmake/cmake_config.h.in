@@ -3,6 +3,9 @@
 
 #undef COMMIT
 
+//#define HAVE_BOOST_SHARED_PTR_HPP 0
+#undef SHARED_PTR_NAMESPACE
+
 /* the git tag / commit we build from */
 #define COMMIT "@COMMIT@"
 
@@ -30,6 +33,7 @@
 //compiler quirks workarounds
 #ifdef __clang__
 	class type_info;
+	#define BOOST_HAS_RVALUE_REFS 1
 #endif
 
 #endif	/* DUNE_STOKES_CONFIG_H */

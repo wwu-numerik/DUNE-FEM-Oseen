@@ -62,7 +62,6 @@ class MatrixWrapper : boost::noncopyable {
 		template <class DiscFType, class DiscFuncType>
 		void apply(const DiscFType &f, DiscFuncType &ret) const
 		{
-//            matrix_object_.multOEM( f, ret );
             matrix_object_.apply( f, ret );
 		}
 		template <class ArgBlockVectorType, class DestBlockVectorType, class ArgDofImp, class DestDofImp>
@@ -163,11 +162,19 @@ class MatrixWrapper : boost::noncopyable {
         {
             matrix_object_.multOEMAdd( x, ret );
         }
+
         template <class ArgDofStorageType, class DestDofStorageType>
         void multOEMAdd(const Dune::BlockVector<ArgDofStorageType> &x,
                  Dune::BlockVector<DestDofStorageType> &ret) const
         {
             matrix_object_.multOEMAdd( x, ret );
+        }
+
+        template <class ArgDofStorageType, class DestDofStorageType>
+        void multOEM(const Dune::BlockVector<ArgDofStorageType> &x,
+                 Dune::BlockVector<DestDofStorageType> &ret) const
+        {
+            matrix_object_.multOEM( x, ret );
         }
 
 		double operator ()(const size_t i, const size_t j ) const

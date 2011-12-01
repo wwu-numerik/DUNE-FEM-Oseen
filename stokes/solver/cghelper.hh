@@ -188,10 +188,10 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
     const MatrixAdapterType& matrixAdapter() const { return adapter_; }
     const PreconditionMatrix& preconditionMatrix() const { return precondition_matrix_; }
 
-        bool hasPreconditionMatrix () const
-        {
-	    return Parameters().getParam( "innerPrecond", false );
-        }
+    bool hasPreconditionMatrix () const
+    {
+        return Parameters().getParam( "innerPrecond", false );
+    }
 
 	//! return diagonal entries of this matrix
 	template <class DiscFuncType>

@@ -50,13 +50,28 @@ class PreconditionOperatorDefault {
 
 #ifdef USE_BFG_CG_SCHEME
         template <class VECtype>
-        void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& ) const
+        void multOEM(const VECtype* x, VECtype* ret, const IterationInfo& ) const
         {
             multOEM(x,ret);
         }
 #endif
+        template <class ArgDofStorageType, class DestDofStorageType, class ArgRangeFieldType, class DestRangeFieldType>
+        void multOEM(const Dune::StraightenBlockVector<ArgDofStorageType,ArgRangeFieldType> &x,
+                 Dune::StraightenBlockVector<DestDofStorageType,DestRangeFieldType> &ret) const
+        {
+            multOEM( x.blockVector(), ret.blockVector() );
+        }
+        template <class ArgDofStorageType, class DestDofStorageType>
+        void multOEM(const Dune::BlockVector<ArgDofStorageType> &x,
+                 Dune::BlockVector<DestDofStorageType> &ret) const
+        {
+            sk_op_.z_mat_.multOEM( x,velo_tmp.blockVector());
+            a_precond_.apply( velo_tmp, velo_tmp2);
+            sk_op_.e_mat_.multOEM( velo_tmp2.blockVector(),ret);
+            sk_op_.r_mat_.multOEMAdd( x, ret);
+        }
         template <class VECtype>
-        void multOEM(const VECtype *x, VECtype * ret) const
+        void multOEM(const VECtype* x, VECtype* ret) const
         {
             sk_op_.z_mat_.matrix().multOEM( x,velo_tmp.leakPointer());
             a_precond_.apply( velo_tmp, velo_tmp2);
@@ -76,6 +91,15 @@ class PreconditionOperatorDefault {
             return V.scalarProductDofs( W );
         }
 
+        //! apply operator to x, scale and add:  \f$ y = y + \alpha A(x) \f$
+        template < class field_type, class Arg, class Dest >
+        void usmv( const field_type alpha, const Arg& arg, Dest& dest ) const
+        {
+            Dest tmp( dest );
+            multOEM( arg, tmp );
+            tmp *= alpha;
+            dest += tmp;
+        }
 
 };
 
@@ -115,6 +139,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
             PreconditionOperator;
 		//if shit goes south wrt precond working check if this doesn't need to be OEmSolver instead of SOLVER_INTERFACE_NAMESPACE
 		friend class Conversion<ThisType,SOLVER_INTERFACE_NAMESPACE::PreconditionInterface>;
+        friend class PreconditionOperatorDefault< ThisType >;
 
 
 		typedef Stuff::OperatorBasedPreconditioner< PreconditionOperator,
