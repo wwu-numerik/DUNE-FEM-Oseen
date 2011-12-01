@@ -150,7 +150,7 @@ ELSEIF( ENABLE_OMP )
 	ADD_CXX_FLAGS( -DUSE_OMP=0)
 ENDIF( ENABLE_OMP )
 
-ADD_DUNE_MODULES( common istl grid fem )
+ADD_DUNE_MODULES( common istl grid fem geometry )
 ADD_MY_MODULES( stuff )
 
 LINK_DIRECTORIES( "/usr/lib" "${GRAPE_PATH}" ${CCGNU_LIBRARY_DIRS} )
