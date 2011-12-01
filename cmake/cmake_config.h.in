@@ -3,7 +3,6 @@
 
 #undef COMMIT
 
-//#define HAVE_BOOST_SHARED_PTR_HPP 0
 #undef SHARED_PTR_NAMESPACE
 
 /* the git tag / commit we build from */
@@ -29,6 +28,8 @@
 #ifdef NDEBUG
 	#define DNDEBUG
 #endif
+
+#define DISABLE_ISTL_PRECONDITIONING
 
 //compiler quirks workarounds
 #ifdef __clang__
