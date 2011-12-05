@@ -67,37 +67,6 @@ class VelocityConvection : public Dune::TimeFunction < FunctionSpaceImp , Veloci
 		const double parameter_d_;
 };
 
-#ifdef STOKES_USE_ISTL
-#   include <dune/fem/operator/2order/dgmatrixtraits.hh>
-#   define STOKES_MATRIX_OBJECT_TRAITS Dune::Fem::DGMatrixTraits
-#else
-    template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
-    struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
-        struct StencilType {
-            template < typename T >
-            static int nonZerosEstimate( const T& rangeSpace ) {
-                return rangeSpace.maxNumLocalDofs() * 1.5f;
-            }
-        };
-    };
-#define STOKES_MATRIX_OBJECT_TRAITS MatrixTraits
-#endif
-
-#if 0
-template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
-struct DiagonalMatrixTraits :
-#ifdef STOKES_USE_ISTL
-        public Dune::ISTLMatrixTraits<RowSpaceImp,ColSpaceImp> {
-#else
-        public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
-#endif
-	struct StencilType {
-		static int nonZerosEstimate( const ColSpaceImp& ) {
-			return 1;
-		}
-	};
-};
-#endif
 
 #ifndef NLOG // if we want logging, should be removed in the end
     #include <dune/stuff/printing.hh>
@@ -249,100 +218,54 @@ class StokesPass
 
             const bool verbose_reserve = true;
             // matrices
-        #ifdef STOKES_USE_ISTL
-        #   define STOKES_MATRIX_OBJECT ISTLMatrixObject
-        #else
-        #   define STOKES_MATRIX_OBJECT SparseRowMatrixObject
-        #endif
-
-            // M\in R^{M\times M}
 			typedef typename Traits::DiscreteSigmaFunctionSpaceType
 				DiscreteSigmaFunctionSpaceType;
-            typedef STOKES_MATRIX_OBJECT<  DiscreteSigmaFunctionSpaceType,
-											DiscreteSigmaFunctionSpaceType,
-                                            STOKES_MATRIX_OBJECT_TRAITS<DiscreteSigmaFunctionSpaceType,DiscreteSigmaFunctionSpaceType> >
-                MInversMatrixType;
-			typedef Stokes::Integrators::M< MInversMatrixType, Traits >
-				MInversMatrixIntegratorType;
-            MInversMatrixType MInversMatrix( sigmaSpace_, sigmaSpace_ );
-	    MInversMatrix.reserve( verbose_reserve );
-//			Stuff::Matrix::printMemUsageObject( MInversMatrix, Logger().Dbg(), "M" );
-            assert( MInversMatrix.matrix().rows() == MInversMatrix.matrix().cols() );
-            // W\in R^{M\times L}
-			typedef typename Traits::DiscreteVelocityFunctionSpaceType
-				DiscreteVelocityFunctionSpaceType;
-        typedef STOKES_MATRIX_OBJECT<  DiscreteVelocityFunctionSpaceType,
-											DiscreteSigmaFunctionSpaceType,
-                                            STOKES_MATRIX_OBJECT_TRAITS<DiscreteVelocityFunctionSpaceType, DiscreteSigmaFunctionSpaceType> >
-                WmatrixType;
-			typedef Stokes::Integrators::W< WmatrixType, Traits >
-				WmatrixTypeIntegratorType;
-	    WmatrixType Wmatrix( velocitySpace_, sigmaSpace_ );
-	    Wmatrix.reserve( verbose_reserve );
-//			Stuff::Matrix::printMemUsageObject( Wmatrix, Logger().Dbg(), "W" );
-            // X\in R^{L\times M}
-        typedef STOKES_MATRIX_OBJECT<  DiscreteSigmaFunctionSpaceType,
-											DiscreteVelocityFunctionSpaceType,
-                                            STOKES_MATRIX_OBJECT_TRAITS<DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType> >
-                XmatrixType;
-			typedef Stokes::Integrators::X< XmatrixType, Traits >
-				XmatrixTypeIntegratorType;
-	    XmatrixType Xmatrix( sigmaSpace_ , velocitySpace_ );
-	    Xmatrix.reserve( verbose_reserve );
-//			Stuff::Matrix::printMemUsageObject( Xmatrix, Logger().Dbg(), "X" );
-            // Y\in R^{L\times L}
-            typedef STOKES_MATRIX_OBJECT<  DiscreteVelocityFunctionSpaceType,
-											DiscreteVelocityFunctionSpaceType,
-                                            STOKES_MATRIX_OBJECT_TRAITS<DiscreteVelocityFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
-                YmatrixType;
-			typedef Stokes::Integrators::Y< YmatrixType, Traits >
-				YmatrixTypeIntegratorType;
-            YmatrixType Ymatrix( velocitySpace_, velocitySpace_ );
-	    Ymatrix.reserve( verbose_reserve );
-//			Stuff::Matrix::printMemUsageObject( Ymatrix, Logger().Dbg(), "Y" );
-            typedef STOKES_MATRIX_OBJECT<  DiscreteVelocityFunctionSpaceType,
-											DiscreteVelocityFunctionSpaceType,
-                                            STOKES_MATRIX_OBJECT_TRAITS<DiscreteVelocityFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
-                OmatrixType;
-			typedef Stokes::Integrators::O< OmatrixType, Traits, typename Traits::DiscreteVelocityFunctionType >
-				OmatrixTypeIntegratorType;
-			OmatrixType Omatrix( velocitySpace_, velocitySpace_ );
-			Omatrix.reserve( verbose_reserve );
-//			Stuff::Matrix::printMemUsageObject( Omatrix, Logger().Dbg(), "O" );
-            // Z\in R^{L\times K}
-			typedef typename Traits::DiscretePressureFunctionSpaceType
-				DiscretePressureFunctionSpaceType;
-        typedef STOKES_MATRIX_OBJECT<  DiscretePressureFunctionSpaceType,
-											DiscreteVelocityFunctionSpaceType,
-                                            STOKES_MATRIX_OBJECT_TRAITS<DiscretePressureFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
-                ZmatrixType;
-			typedef Stokes::Integrators::Z< ZmatrixType, Traits >
-				ZmatrixTypeIntegratorType;
-	    ZmatrixType Zmatrix( pressureSpace_, velocitySpace_ );
-	    Zmatrix.reserve( verbose_reserve );
-//			Stuff::Matrix::printMemUsageObject( Zmatrix, Logger().Dbg(), "Z" );
-            // E\in R^{K\times L}
-        typedef STOKES_MATRIX_OBJECT<  DiscreteVelocityFunctionSpaceType,
-											DiscretePressureFunctionSpaceType,
-                                            STOKES_MATRIX_OBJECT_TRAITS<DiscreteVelocityFunctionSpaceType,DiscretePressureFunctionSpaceType> >
-                EmatrixType;
-			typedef Stokes::Integrators::E< EmatrixType, Traits >
-				EmatrixTypeIntegratorType;
-	    EmatrixType Ematrix( velocitySpace_, pressureSpace_ );
-	    Ematrix.reserve( verbose_reserve );
-//			Stuff::Matrix::printMemUsageObject( Ematrix, Logger().Dbg(), "E" );
-            // R\in R^{K\times K}
-            typedef STOKES_MATRIX_OBJECT<  DiscretePressureFunctionSpaceType,
-											DiscretePressureFunctionSpaceType,
-                                            STOKES_MATRIX_OBJECT_TRAITS<DiscretePressureFunctionSpaceType,DiscretePressureFunctionSpaceType> >
-                RmatrixType;
-			typedef Stokes::Integrators::R< RmatrixType, Traits >
-				RmatrixTypeIntegratorType;
-            RmatrixType Rmatrix( pressureSpace_, pressureSpace_ );
-	    Rmatrix.reserve( verbose_reserve );
-//			Stuff::Matrix::printMemUsageObject( Rmatrix, Logger().Dbg(), "R" );
+            typedef typename Traits::DiscreteVelocityFunctionSpaceType
+                DiscreteVelocityFunctionSpaceType;
+            typedef typename Traits::DiscretePressureFunctionSpaceType
+                DiscretePressureFunctionSpaceType;
+            typedef Stokes::Integrators::Factory< Traits >
+                Factory;
 
-            #undef STOKES_MATRIX_OBJECT
+            // M\in R^{M\times M}
+            typedef typename Factory::MInversMatrixIntegratorType
+                MInversMatrixIntegratorType;
+            auto MInversMatrix = Factory::matrix( sigmaSpace_, sigmaSpace_ );
+            assert( MInversMatrix->matrix().rows() == MInversMatrix->matrix().cols() );
+            // W\in R^{M\times L}
+            auto Wmatrix = Factory::matrix( velocitySpace_, sigmaSpace_ );
+
+            // X\in R^{L\times M}
+
+            typedef typename Factory::XmatrixTypeIntegratorType
+				XmatrixTypeIntegratorType;
+            auto Xmatrix = Factory::matrix( sigmaSpace_ , velocitySpace_ );
+
+            // Y\in R^{L\times L}
+            typedef typename Factory::YmatrixTypeIntegratorType
+				YmatrixTypeIntegratorType;
+            auto Ymatrix = Factory::matrix( velocitySpace_, velocitySpace_ );
+
+            typedef typename Factory::YmatrixTypeIntegratorType
+				OmatrixTypeIntegratorType;
+            auto Omatrix = Factory::matrix( velocitySpace_, velocitySpace_ );
+
+            // Z\in R^{L\times K}
+            typedef typename Factory::ZmatrixTypeIntegratorType
+				ZmatrixTypeIntegratorType;
+            auto Zmatrix = Factory::matrix( pressureSpace_, velocitySpace_ );
+
+            // E\in R^{K\times L}
+            typedef typename Factory::EmatrixTypeIntegratorType
+				EmatrixTypeIntegratorType;
+            auto Ematrix = Factory::matrix( velocitySpace_, pressureSpace_ );
+
+            // R\in R^{K\times K}
+            typedef typename Factory::RmatrixTypeIntegratorType
+				RmatrixTypeIntegratorType;
+            auto Rmatrix = Factory::matrix( pressureSpace_, pressureSpace_ );
+
+
             // right hand sides
             // H_{1}\in R^{M}
 			typename Traits::DiscreteSigmaFunctionType H1rhs( "H1", sigmaSpace_ );
@@ -367,39 +290,39 @@ class StokesPass
 			profiler().StopTiming("Pass_init");
 
 			//because of the 9-element limit in dune tuples i have to split the assembly in two...
-            typedef tuple<	MInversMatrixIntegratorType,
-							WmatrixTypeIntegratorType,
-							XmatrixTypeIntegratorType,
-							YmatrixTypeIntegratorType,
-							OmatrixTypeIntegratorType,
-							ZmatrixTypeIntegratorType,
-							EmatrixTypeIntegratorType,
-							RmatrixTypeIntegratorType,
-							H1_IntegratorType,
+            typedef tuple<	typename Factory::MInversMatrixIntegratorType,
+                            typename Factory::WmatrixTypeIntegratorType,
+                            typename Factory::XmatrixTypeIntegratorType,
+                            typename Factory::YmatrixTypeIntegratorType,
+                            typename Factory::OmatrixTypeIntegratorType,
+                            typename Factory::ZmatrixTypeIntegratorType,
+                            typename Factory::EmatrixTypeIntegratorType,
+                            typename Factory::RmatrixTypeIntegratorType,
+                            H1_IntegratorType,
 							H2_IntegratorType,
 							H2_O_IntegratorType,
 							H3_IntegratorType >
 				OseenIntegratorTuple;
-            typedef tuple<	MInversMatrixIntegratorType,
-							WmatrixTypeIntegratorType,
-							XmatrixTypeIntegratorType,
-							YmatrixTypeIntegratorType,
-							ZmatrixTypeIntegratorType,
-							EmatrixTypeIntegratorType,
-							RmatrixTypeIntegratorType,
+            typedef tuple<	typename Factory::MInversMatrixIntegratorType,
+                            typename Factory::WmatrixTypeIntegratorType,
+                            typename Factory::XmatrixTypeIntegratorType,
+                            typename Factory::YmatrixTypeIntegratorType,
+                            typename Factory::ZmatrixTypeIntegratorType,
+                            typename Factory::EmatrixTypeIntegratorType,
+                            typename Factory::RmatrixTypeIntegratorType,
 							H1_IntegratorType,
 							H2_IntegratorType,
 							H3_IntegratorType >
 				StokesIntegratorTuple;
 
-			MInversMatrixIntegratorType m_integrator( MInversMatrix );
-			WmatrixTypeIntegratorType	w_integrator( Wmatrix );
-			XmatrixTypeIntegratorType	x_integrator( Xmatrix );
-			YmatrixTypeIntegratorType	y_integrator( Ymatrix );
-			OmatrixTypeIntegratorType	o_integrator( Omatrix, beta_ );
-			ZmatrixTypeIntegratorType	z_integrator( Zmatrix );
-			EmatrixTypeIntegratorType	e_integrator( Ematrix );
-			RmatrixTypeIntegratorType	r_integrator( Rmatrix );
+            auto m_integrator = Factory::integrator( MInversMatrix );
+            auto w_integrator = Factory::integrator( Wmatrix );
+            auto x_integrator = Factory::integrator( Xmatrix );
+            auto y_integrator = Factory::integrator( Ymatrix );
+            auto o_integrator = Factory::integratorO( Omatrix, beta_ );
+            auto z_integrator = Factory::integrator( Zmatrix );
+            auto e_integrator = Factory::integrator( Ematrix );
+            auto r_integrator = Factory::integrator( Rmatrix );
 			H1_IntegratorType			h1_integrator( H1rhs );
 			H2_IntegratorType			h2_integrator( H2rhs );
 			H2_O_IntegratorType			h2_o_integrator( H2rhs, beta_ );
