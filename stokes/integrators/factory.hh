@@ -5,14 +5,10 @@
 
 #ifdef STOKES_USE_ISTL
 #   define STOKES_MATRIX_OBJECT ISTLMatrixObject
-#else
-#   define STOKES_MATRIX_OBJECT SparseRowMatrixObject
-#endif
-
-#ifdef STOKES_USE_ISTL
 #   include <dune/fem/operator/2order/dgmatrixtraits.hh>
 #   define STOKES_MATRIX_OBJECT_TRAITS Dune::Fem::DGMatrixTraits
 #else
+#   define STOKES_MATRIX_OBJECT SparseRowMatrixObject
     template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
     struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
         struct StencilType {
@@ -22,7 +18,7 @@
             }
         };
     };
-#define STOKES_MATRIX_OBJECT_TRAITS MatrixTraits
+#   define STOKES_MATRIX_OBJECT_TRAITS MatrixTraits
 #endif
 
 #if 0

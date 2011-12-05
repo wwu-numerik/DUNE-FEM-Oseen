@@ -44,7 +44,7 @@ class MatrixWrapper : boost::noncopyable {
         typedef typename MatrixPointerType::element_type
             WrappedMatrixObjectType;
 
-		MatrixWrapper( const MatrixPointerType& matrix_object, std::string /*name*/ )
+        MatrixWrapper( const MatrixPointerType& matrix_object, std::string name )
 			:matrix_pointer_( matrix_object ),
 			cumulative_scale_factor_( 1.0 )
 		{
