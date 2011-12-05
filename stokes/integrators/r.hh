@@ -8,7 +8,7 @@ namespace Dune {
 namespace Stokes {
 namespace Integrators {
 
-	template < class MatrixObjectType, class Traits >
+	template < class MatrixPointerType, class Traits >
 	class R
 	{
 		typedef typename Traits::ElementCoordinateType
@@ -27,13 +27,13 @@ namespace Integrators {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-		typedef Stuff::Matrix::LocalMatrixProxy<MatrixObjectType>
+		typedef Stuff::Matrix::LocalMatrixProxy<MatrixPointerType>
 			LocalMatrixProxyType;
 
-		MatrixObjectType& matrix_object_;
+		MatrixPointerType& matrix_pointer_;
 		public:
-			R( MatrixObjectType& matrix_object	)
-				:matrix_object_(matrix_object)
+			R( MatrixPointerType& matrix_object	)
+				:matrix_pointer_(matrix_object)
 			{}
 
 			template < class InfoContainerVolumeType >
@@ -43,8 +43,8 @@ namespace Integrators {
 			template < class InfoContainerInteriorFaceType >
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
-				LocalMatrixProxyType localRmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
-				LocalMatrixProxyType localRmatrixNeighbour( matrix_object_, info.entity, info.neighbour, info.eps );
+				LocalMatrixProxyType localRmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localRmatrixNeighbour( matrix_pointer_, info.entity, info.neighbour, info.eps );
 				// (R)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}ds // R's element surface integral
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}ds // R's neighbour surface integral
 				//                                                                                                // see also "R's boundary integral" below

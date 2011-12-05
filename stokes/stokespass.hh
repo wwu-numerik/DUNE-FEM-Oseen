@@ -215,105 +215,32 @@ class StokesPass
         {
             // profiler information
             profiler().StartTiming("Pass_init");
-
-            const bool verbose_reserve = true;
-            // matrices
-			typedef typename Traits::DiscreteSigmaFunctionSpaceType
-				DiscreteSigmaFunctionSpaceType;
-            typedef typename Traits::DiscreteVelocityFunctionSpaceType
-                DiscreteVelocityFunctionSpaceType;
-            typedef typename Traits::DiscretePressureFunctionSpaceType
-                DiscretePressureFunctionSpaceType;
             typedef Stokes::Integrators::Factory< Traits >
                 Factory;
-
             // M\in R^{M\times M}
-            typedef typename Factory::MInversMatrixIntegratorType
-                MInversMatrixIntegratorType;
             auto MInversMatrix = Factory::matrix( sigmaSpace_, sigmaSpace_ );
             assert( MInversMatrix->matrix().rows() == MInversMatrix->matrix().cols() );
             // W\in R^{M\times L}
             auto Wmatrix = Factory::matrix( velocitySpace_, sigmaSpace_ );
-
             // X\in R^{L\times M}
-
-            typedef typename Factory::XmatrixTypeIntegratorType
-				XmatrixTypeIntegratorType;
             auto Xmatrix = Factory::matrix( sigmaSpace_ , velocitySpace_ );
-
-            // Y\in R^{L\times L}
-            typedef typename Factory::YmatrixTypeIntegratorType
-				YmatrixTypeIntegratorType;
+            // O,Y\in R^{L\times L}
             auto Ymatrix = Factory::matrix( velocitySpace_, velocitySpace_ );
-
-            typedef typename Factory::YmatrixTypeIntegratorType
-				OmatrixTypeIntegratorType;
             auto Omatrix = Factory::matrix( velocitySpace_, velocitySpace_ );
-
             // Z\in R^{L\times K}
-            typedef typename Factory::ZmatrixTypeIntegratorType
-				ZmatrixTypeIntegratorType;
             auto Zmatrix = Factory::matrix( pressureSpace_, velocitySpace_ );
-
             // E\in R^{K\times L}
-            typedef typename Factory::EmatrixTypeIntegratorType
-				EmatrixTypeIntegratorType;
             auto Ematrix = Factory::matrix( velocitySpace_, pressureSpace_ );
-
             // R\in R^{K\times K}
-            typedef typename Factory::RmatrixTypeIntegratorType
-				RmatrixTypeIntegratorType;
             auto Rmatrix = Factory::matrix( pressureSpace_, pressureSpace_ );
-
-
-            // right hand sides
             // H_{1}\in R^{M}
-			typename Traits::DiscreteSigmaFunctionType H1rhs( "H1", sigmaSpace_ );
-			typedef Stokes::Integrators::H1< typename Traits::DiscreteSigmaFunctionType, Traits >
-				H1_IntegratorType;
-            H1rhs.clear();
+            auto H1rhs = Factory::rhs( std::string("H1"), sigmaSpace_ );
             // H_{2}\in R^{L}
-			typename Traits::DiscreteVelocityFunctionType H2rhs( "H2", velocitySpace_ );
-			typedef Stokes::Integrators::H2< typename Traits::DiscreteVelocityFunctionType , Traits >
-				H2_IntegratorType;
-            H2rhs.clear();
-			typename Traits::DiscreteVelocityFunctionType H2_O_rhs( "H2_O", velocitySpace_ );
-			typedef Stokes::Integrators::H2_O< typename Traits::DiscreteVelocityFunctionType , Traits, typename Traits::DiscreteVelocityFunctionType >
-				H2_O_IntegratorType;
-			H2_O_rhs.clear();
+            auto H2rhs = Factory::rhs( "H2", velocitySpace_ );
+            auto H2_O_rhs = Factory::rhs( "H2_O", velocitySpace_ );
             // H_{3}\in R^{K}
-			typename Traits::DiscretePressureFunctionType H3rhs( "H3", pressureSpace_ );
-			typedef Stokes::Integrators::H3< typename Traits::DiscretePressureFunctionType, Traits >
-				H3_IntegratorType;
-            H3rhs.clear();
-
+            auto H3rhs = Factory::rhs( "H3", pressureSpace_ );
 			profiler().StopTiming("Pass_init");
-
-			//because of the 9-element limit in dune tuples i have to split the assembly in two...
-            typedef tuple<	typename Factory::MInversMatrixIntegratorType,
-                            typename Factory::WmatrixTypeIntegratorType,
-                            typename Factory::XmatrixTypeIntegratorType,
-                            typename Factory::YmatrixTypeIntegratorType,
-                            typename Factory::OmatrixTypeIntegratorType,
-                            typename Factory::ZmatrixTypeIntegratorType,
-                            typename Factory::EmatrixTypeIntegratorType,
-                            typename Factory::RmatrixTypeIntegratorType,
-                            H1_IntegratorType,
-							H2_IntegratorType,
-							H2_O_IntegratorType,
-							H3_IntegratorType >
-				OseenIntegratorTuple;
-            typedef tuple<	typename Factory::MInversMatrixIntegratorType,
-                            typename Factory::WmatrixTypeIntegratorType,
-                            typename Factory::XmatrixTypeIntegratorType,
-                            typename Factory::YmatrixTypeIntegratorType,
-                            typename Factory::ZmatrixTypeIntegratorType,
-                            typename Factory::EmatrixTypeIntegratorType,
-                            typename Factory::RmatrixTypeIntegratorType,
-							H1_IntegratorType,
-							H2_IntegratorType,
-							H3_IntegratorType >
-				StokesIntegratorTuple;
 
             auto m_integrator = Factory::integrator( MInversMatrix );
             auto w_integrator = Factory::integrator( Wmatrix );
@@ -323,16 +250,17 @@ class StokesPass
             auto z_integrator = Factory::integrator( Zmatrix );
             auto e_integrator = Factory::integrator( Ematrix );
             auto r_integrator = Factory::integrator( Rmatrix );
-			H1_IntegratorType			h1_integrator( H1rhs );
-			H2_IntegratorType			h2_integrator( H2rhs );
-			H2_O_IntegratorType			h2_o_integrator( H2rhs, beta_ );
-			H3_IntegratorType			h3_integrator( H3rhs );
+            auto h1_integrator = Factory::integrator( H1rhs );
+            auto h2_integrator = Factory::integrator( H2rhs );
+            auto h2_o_integrator = Factory::integratorO( H2rhs, beta_ );
+            auto h3_integrator = Factory::integrator( H3rhs );
+
 			if ( do_oseen_discretization_ )
 			{
-				Stokes::Integrators::Coordinator< Traits, OseenIntegratorTuple >
+                Stokes::Integrators::Coordinator< Traits, typename Factory::OseenIntegratorTuple >
 						coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
 
-				OseenIntegratorTuple tuple(	m_integrator, w_integrator, x_integrator, y_integrator,
+                typename Factory::OseenIntegratorTuple tuple(	m_integrator, w_integrator, x_integrator, y_integrator,
 										o_integrator, z_integrator, e_integrator, r_integrator,
 										h1_integrator, h2_integrator,h2_o_integrator, h3_integrator );
 				coordinator.apply( tuple );
@@ -340,10 +268,10 @@ class StokesPass
 			}
 			else
 			{
-				Stokes::Integrators::Coordinator< Traits, StokesIntegratorTuple >
+                Stokes::Integrators::Coordinator< Traits, typename Factory::StokesIntegratorTuple >
 						coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
 
-				StokesIntegratorTuple tuple(	m_integrator, w_integrator, x_integrator, y_integrator,
+                typename Factory::StokesIntegratorTuple tuple(	m_integrator, w_integrator, x_integrator, y_integrator,
 										z_integrator, e_integrator, r_integrator,
 										h1_integrator, h2_integrator,h3_integrator );
 				coordinator.apply( tuple );
@@ -385,19 +313,6 @@ class StokesPass
 				info_ = SolverCallerType::solve(dest, rhs_datacontainer, solver_ID, do_oseen_discretization_,
 												arg, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix,
 												Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs, beta_ );
-
-		#ifndef NDEBUG
-			if ( Parameters().getParam( "save_matrices", false ) ) {
-				Stuff::Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-				Stuff::printDiscreteFunctionMatlabStyle( dest.discreteVelocity(), "u_computed", matlabLogStream );
-				Stuff::printDiscreteFunctionMatlabStyle( dest.discretePressure(), "p_computed", matlabLogStream );
-			}
-			if ( Parameters().getParam( "paranoid_checks", false ) )
-			{//paranoid checks
-				assert( !Stuff::FunctionContainsNanOrInf( dest.discretePressure() ) );
-				assert( !Stuff::FunctionContainsNanOrInf( dest.discreteVelocity() ) );
-			}
-		#endif
         } // end of apply
 
         virtual void compute( const TotalArgumentType& /*arg*/, DestinationType& /*dest*/ ) const

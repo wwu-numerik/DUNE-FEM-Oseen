@@ -43,7 +43,7 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 
 	// if shit goes south wrt precond working check if this doesn't need to be OEmSolver instead of SOLVER_INTERFACE_NAMESPACE
 	friend class Conversion<ThisType,SOLVER_INTERFACE_NAMESPACE::PreconditionInterface>;
-	typedef IdentityMatrixObject<typename YMatType::WrappedMatrixObjectType>
+    typedef IdentityMatrixObject<typename YMatType::WrappedMatrixObjectType>
 		PreconditionMatrixBaseType;
 
 	typedef SchurkomplementOperatorAdapter< ThisType/*,

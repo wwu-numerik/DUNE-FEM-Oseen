@@ -8,9 +8,11 @@ namespace Dune {
 namespace Stokes {
 namespace Integrators {
 
-	template < class MatrixObjectType, class Traits >
+    template < class MatrixPointerType, class Traits >
 	class M
 	{
+        typedef typename MatrixPointerType::element_type
+            MatrixObjectType;
 		typedef typename Traits::ElementCoordinateType
 			ElementCoordinateType;
 		typedef typename Traits::SigmaRangeType
@@ -27,21 +29,21 @@ namespace Integrators {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-		typedef Stuff::Matrix::LocalMatrixProxy<MatrixObjectType>
+		typedef Stuff::Matrix::LocalMatrixProxy<MatrixPointerType>
 			LocalMatrixProxyType;
 
-		MatrixObjectType& matrix_object_;
+        MatrixPointerType& matrix_pointer_;
 		public:
-			M( MatrixObjectType& matrix_object	)
-				:matrix_object_(matrix_object)
+            M( MatrixPointerType& matrix_object	)
+				:matrix_pointer_(matrix_object)
 			{}
 
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
 				//using the proxy here would be potentially fatal because of the inversion
-				typename MatrixObjectType::LocalMatrixType
-						localMInversMatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+				typename MatrixPointerType::element_type::LocalMatrixType
+                        localMInversMatrixElement = matrix_pointer_->localMatrix( info.entity, info.entity );
 
 				// (M^{-1})_{i,j} = (\int_{T}\tau_{j}:\tau_{i}dx)^{-1} // Minvs' volume integral
 				for ( int i = 0; i < info.numSigmaBaseFunctionsElement; ++i ) {

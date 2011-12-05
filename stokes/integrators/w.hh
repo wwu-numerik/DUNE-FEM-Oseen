@@ -8,7 +8,7 @@ namespace Dune {
 namespace Stokes {
 namespace Integrators {
 
-	template < class MatrixObjectType, class Traits >
+	template < class MatrixPointerType, class Traits >
 	class Dummy
 	{
 		typedef typename Traits::ElementCoordinateType
@@ -29,10 +29,10 @@ namespace Integrators {
 			LocalIntersectionCoordinateType;
 
 
-		MatrixObjectType& matrix_object_;
+		MatrixPointerType& matrix_pointer_;
 		public:
-			Dummy( MatrixObjectType& matrix_object	)
-				:matrix_object_(matrix_object)
+			Dummy( MatrixPointerType& matrix_object	)
+				:matrix_pointer_(matrix_object)
 			{}
 
 			template < class InfoContainerVolumeType >
@@ -42,21 +42,21 @@ namespace Integrators {
 			template < class InfoContainerInteriorFaceType >
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localWmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
-				typename MatrixObjectType::LocalMatrixType
-						localWmatrixNeighbour = matrix_object_.localMatrix( info.neighbour, info.entity );
+				typename MatrixPointerType::element_type::LocalMatrixType
+						localWmatrixElement = matrix_pointer_->localMatrix( info.entity, info.entity );
+				typename MatrixPointerType::element_type::LocalMatrixType
+						localWmatrixNeighbour = matrix_pointer_->localMatrix( info.neighbour, info.entity );
 			}
 
 			template < class InfoContainerFaceType >
 			void applyBoundaryFace( const InfoContainerFaceType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localWmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+				typename MatrixPointerType::element_type::LocalMatrixType
+						localWmatrixElement = matrix_pointer_->localMatrix( info.entity, info.entity );
 			}
 	};
 
-	template < class MatrixObjectType, class Traits >
+	template < class MatrixPointerType, class Traits >
 	class W
 	{
 		typedef typename Traits::ElementCoordinateType
@@ -75,19 +75,19 @@ namespace Integrators {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-		typedef Stuff::Matrix::LocalMatrixProxy<MatrixObjectType>
+		typedef Stuff::Matrix::LocalMatrixProxy<MatrixPointerType>
 			LocalMatrixProxyType;
 
-		MatrixObjectType& matrix_object_;
+		MatrixPointerType& matrix_pointer_;
 		public:
-			W( MatrixObjectType& matrix_object	)
-				:matrix_object_(matrix_object)
+			W( MatrixPointerType& matrix_object	)
+				:matrix_pointer_(matrix_object)
 			{}
 
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				LocalMatrixProxyType local_matrix( matrix_object_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType local_matrix( matrix_pointer_, info.entity, info.entity, info.eps );
 				const double viscosity = info.discrete_model.viscosity();
 				//                                                        // we will call this one
 				// (W)_{i,j} += \mu\int_{T}v_{j}\cdot(\nabla\cdot\tau_{i})dx // W's volume integral
@@ -128,8 +128,8 @@ namespace Integrators {
 			template < class InfoContainerFaceType >
 			void applyInteriorFace( const InfoContainerFaceType& info )
 			{
-				LocalMatrixProxyType localWmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
-				LocalMatrixProxyType localWmatrixNeighbour( matrix_object_, info.neighbour, info.entity, info.eps );
+				LocalMatrixProxyType localWmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localWmatrixNeighbour( matrix_pointer_, info.neighbour, info.entity, info.eps );
 
 				//                                                                                                               // we will call this one
 				// (W)_{i,j} += \int_{\varepsilon\in \Epsilon_{I}^{T}}-\hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // W's element surface integral

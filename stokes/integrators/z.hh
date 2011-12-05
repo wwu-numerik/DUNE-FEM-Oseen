@@ -8,7 +8,7 @@ namespace Dune {
 namespace Stokes {
 namespace Integrators {
 
-	template < class MatrixObjectType, class Traits >
+	template < class MatrixPointerType, class Traits >
 	class Z
 	{
 		typedef typename Traits::ElementCoordinateType
@@ -27,20 +27,20 @@ namespace Integrators {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-		typedef Stuff::Matrix::LocalMatrixProxy<MatrixObjectType>
+		typedef Stuff::Matrix::LocalMatrixProxy<MatrixPointerType>
 			LocalMatrixProxyType;
 
-		MatrixObjectType& matrix_object_;
+		MatrixPointerType& matrix_pointer_;
 		public:
-			Z( MatrixObjectType& matrix_object	)
-				:matrix_object_(matrix_object)
+			Z( MatrixPointerType& matrix_object	)
+				:matrix_pointer_(matrix_object)
 			{}
 
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localZmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+				typename MatrixPointerType::element_type::LocalMatrixType
+						localZmatrixElement = matrix_pointer_->localMatrix( info.entity, info.entity );
 				// (Z)_{i,j} += -\int_{T}q_{j}(\nabla\cdot v_{i})dx // Z's volume integral
 				//                                                  // see also "Z's entitity surface integral", "Z's neighbour surface integral" and "Z's boundary integral" below
 				for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++ quad ) {
@@ -71,8 +71,8 @@ namespace Integrators {
 			template < class InfoContainerInteriorFaceType >
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
-				LocalMatrixProxyType localZmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
-				LocalMatrixProxyType localZmatrixNeighbour( matrix_object_, info.entity, info.neighbour, info.eps );
+				LocalMatrixProxyType localZmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localZmatrixNeighbour( matrix_pointer_, info.entity, info.neighbour, info.eps );
 				// (Z)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's element surface integral
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{p}^{P^{-}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's neighbour surface integral
 				//                                                                                                  // see also "Z's boundary integral" below
@@ -149,7 +149,7 @@ namespace Integrators {
 			template < class InfoContainerFaceType >
 			void applyBoundaryFace( const InfoContainerFaceType& info )
 			{
-				LocalMatrixProxyType localZmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localZmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
 				// (Z)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}\hat{p}^{P^{+}}(q_{j})\cdot v_{i}\cdot n_{T}ds // Z's boundary integral
 				//                                                                                                  // see also "Z's volume integral", "Z's element surface integral" and "Z's neighbour surface integral" above
 //                        if ( info.discrete_model.hasPressureFlux() ) {
