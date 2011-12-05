@@ -8,20 +8,21 @@
 #include <dune/stokes/solver/bicg_saddle_point.hh>
 #include <dune/stokes/solver/reconstruction.hh>
 #include <dune/stuff/profiler.hh>
+#include <dune/stuff/logging.hh>
 
 namespace Dune {
 
 namespace Stokes {
 
-	namespace Solver {
-		enum SolverID {
-			NestedCG_Solver_ID			= 0,
-			SaddlePoint_Solver_ID		= 1,
-			Reduced_Solver_ID			= 2,
-			FullSystem_Solver_ID		= 3,
-			BiCg_Saddlepoint_Solver_ID	= 4
-		};
-	}
+namespace Solver {
+    enum SolverID {
+        NestedCG_Solver_ID			= 0,
+        SaddlePoint_Solver_ID		= 1,
+        Reduced_Solver_ID			= 2,
+        FullSystem_Solver_ID		= 3,
+        BiCg_Saddlepoint_Solver_ID	= 4
+    };
+}
 
 template<class StokesPassType, template <class T,class S> class ReconstructionPolicyType = BruteForceReconstruction >
 struct SolverCaller {
@@ -53,10 +54,11 @@ struct SolverCaller {
 				class DiscreteVelocityFunctionType,
 				class DiscretePressureFunctionType,
 				class DataContainerType >
-	static SaddlepointInverseOperatorInfo solve( RangeType& dest,
-				DataContainerType* rhs_datacontainer,
-				const Solver::SolverID solverID,
-				const bool with_oseen_discretization,
+    static SaddlepointInverseOperatorInfo solve(
+                const Solver::SolverID solverID,
+                const bool with_oseen_discretization,
+                DataContainerType* rhs_datacontainer,
+                RangeType& dest,
 				const DomainType& arg,
 				const XmatrixObjectType& Xmatrix,
 				const MInversMatrixObjectType& MInversMatrix,
@@ -182,12 +184,18 @@ struct SolverCaller {
 															 O, E, R, Z, W,
 															 H1rhs, H2rhs, H3rhs );
 											break;
-//			case Solver::FullSystem_Solver_ID:		result = FullsytemSolverType().solve(	arg, dest,
-//															 X, M_invers, Y,
-//															 O, E, R, Z, W,
-//															 H1rhs, H2rhs, H3rhs );
-//											break;
-			default: throw std::runtime_error("invalid Solver ID selected");
+#ifndef STOKES_USE_ISTL
+            case Solver::FullSystem_Solver_ID:		result = FullsytemSolverType().solve(	arg, dest,
+                                                             X, M_invers, Y,
+                                                             O, E, R, Z, W,
+                                                             H1rhs, H2rhs, H3rhs );
+                                            break;
+#else
+            case Solver::FullSystem_Solver_ID:
+                throw std::runtime_error("Fullsystem solver incompatible with ISTL usage");
+#endif
+            default:
+                throw std::runtime_error("invalid Solver ID selected");
 		}
 		if ( rhs_datacontainer ) {
 			rhs_datacontainer->clear();
@@ -204,6 +212,52 @@ struct SolverCaller {
 		return result;
 	}
 };
+
+template<class StokesPassType >
+struct SolverCallerProxy {
+    template < class RangeType, class ContainerType, class... Args >
+    static SaddlepointInverseOperatorInfo call( const bool do_oseen_discretization,
+                                                ContainerType* container,
+                                                RangeType& dest,
+                                                const Args&... args )
+    {
+        //this lets us switch between standalone oseen and reduced oseen in  thete scheme easily
+        const bool use_reduced_solver = (do_oseen_discretization && Parameters().getParam( "reduced_oseen_solver", false ))
+                || Parameters().getParam( "parabolic", false );
+        typedef Stokes::SolverCaller< StokesPassType>
+            SolverCallerType;
+        typedef Stokes::SolverCaller< StokesPassType, SmartReconstruction >
+            SmartSolverCallerType;
+
+        //Select which solver we want to use
+        typename Stokes::Solver::SolverID solver_ID = do_oseen_discretization
+                ? Stokes::Solver::BiCg_Saddlepoint_Solver_ID
+                : Stokes::Solver::SaddlePoint_Solver_ID;
+
+        if( !use_reduced_solver ) {
+            if ( Parameters().getParam( "use_nested_cg_solver", false ) )
+                solver_ID = Stokes::Solver::NestedCG_Solver_ID;
+            else if ( Parameters().getParam( "use_full_solver", false ) )
+                solver_ID = Stokes::Solver::FullSystem_Solver_ID;
+        }
+        else
+            solver_ID = Stokes::Solver::Reduced_Solver_ID;
+
+        if ( Parameters().getParam( "smart_reconstruction", false ) )
+            return SmartSolverCallerType::solve(solver_ID,
+                                                do_oseen_discretization,
+                                                container,
+                                                dest,
+                                                args...);
+        else
+            return SolverCallerType::solve(solver_ID,
+                                           do_oseen_discretization,
+                                           container,
+                                           dest,
+                                           args...);
+    }
+};
+
 
 } //namespace Stokes
 } //namespace Dune

@@ -277,42 +277,11 @@ class StokesPass
 				coordinator.apply( tuple );
 				Logger().Dbg() << "Stokes disc\n" ;
 			}
-
-			Logger().Info().Resume();
-			Logger().Info() << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
-
-			// do solving
-
-			//this lets us switch between standalone oseen and reduced oseen in  thete scheme easily
-			const bool use_reduced_solver = (do_oseen_discretization_ && Parameters().getParam( "reduced_oseen_solver", false ))
-					|| Parameters().getParam( "parabolic", false );
-			typedef Stokes::SolverCaller< ThisType>
-				SolverCallerType;
-			typedef Stokes::SolverCaller< ThisType, SmartReconstruction >
-				SmartSolverCallerType;
-
-			//Select which solver we want to use
-			typename Stokes::Solver::SolverID solver_ID = do_oseen_discretization_
-					? Stokes::Solver::BiCg_Saddlepoint_Solver_ID
-					: Stokes::Solver::SaddlePoint_Solver_ID;
-
-			if( !use_reduced_solver ) {
-				if ( Parameters().getParam( "use_nested_cg_solver", false ) )
-					solver_ID = Stokes::Solver::NestedCG_Solver_ID;
-				else if ( Parameters().getParam( "use_full_solver", false ) )
-					solver_ID = Stokes::Solver::FullSystem_Solver_ID;
-			}
-			else
-				solver_ID = Stokes::Solver::Reduced_Solver_ID;
-
-			if ( Parameters().getParam( "smart_reconstruction", false ) )
-				info_ = SmartSolverCallerType::solve(dest, rhs_datacontainer, solver_ID, do_oseen_discretization_,
-												arg, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix,
-												Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs, beta_ );
-			else
-				info_ = SolverCallerType::solve(dest, rhs_datacontainer, solver_ID, do_oseen_discretization_,
-												arg, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix,
-												Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs, beta_ );
+            // do the actual lgs solving
+            Logger().Info() << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
+            info_ = Stokes::SolverCallerProxy< ThisType >::call( do_oseen_discretization_, rhs_datacontainer, dest,
+                                            arg, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix,
+                                            Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs, beta_ );
         } // end of apply
 
         virtual void compute( const TotalArgumentType& /*arg*/, DestinationType& /*dest*/ ) const
