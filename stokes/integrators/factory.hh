@@ -115,46 +115,37 @@ public:
     typedef typename StokesTraitsType::DiscretePressureFunctionType
         DiscretePressureFunctionType;
 
-    typedef STOKES_MATRIX_OBJECT<  DiscreteSigmaFunctionSpaceType,
-                                    DiscreteSigmaFunctionSpaceType,
-                                    STOKES_MATRIX_OBJECT_TRAITS<DiscreteSigmaFunctionSpaceType,DiscreteSigmaFunctionSpaceType> >
+    template < class T, class R >
+    struct MatrixObject {
+        typedef STOKES_MATRIX_OBJECT_TRAITS<T,R> Traits;
+        typedef STOKES_MATRIX_OBJECT<  T, R, Traits >Type;
+    };
+
+    typedef typename MatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteSigmaFunctionSpaceType >::Type
         MInversMatrixInternalType;
     typedef Dune::shared_ptr< MInversMatrixInternalType >
         MInversMatrixType;
-
-    typedef STOKES_MATRIX_OBJECT<  DiscreteVelocityFunctionSpaceType,
-                                        DiscreteSigmaFunctionSpaceType,
-                                        STOKES_MATRIX_OBJECT_TRAITS<DiscreteVelocityFunctionSpaceType, DiscreteSigmaFunctionSpaceType> >
-            WmatrixInternalType;
+    typedef typename MatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteSigmaFunctionSpaceType >::Type
+        WmatrixInternalType;
     typedef Dune::shared_ptr< WmatrixInternalType >
         WmatrixType;
-    typedef STOKES_MATRIX_OBJECT<  DiscreteSigmaFunctionSpaceType,
-                                        DiscreteVelocityFunctionSpaceType,
-                                        STOKES_MATRIX_OBJECT_TRAITS<DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType> >
-            XmatrixInternalType;
+    typedef typename MatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType >::Type
+        XmatrixInternalType;
     typedef Dune::shared_ptr< XmatrixInternalType >
         XmatrixType;
-    typedef STOKES_MATRIX_OBJECT<  DiscreteVelocityFunctionSpaceType,
-                                    DiscreteVelocityFunctionSpaceType,
-                                    STOKES_MATRIX_OBJECT_TRAITS<DiscreteVelocityFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
+    typedef typename MatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteVelocityFunctionSpaceType >::Type
         YmatrixInternalType;
     typedef Dune::shared_ptr< YmatrixInternalType >
         YmatrixType;
-    typedef STOKES_MATRIX_OBJECT<  DiscretePressureFunctionSpaceType,
-                                        DiscreteVelocityFunctionSpaceType,
-                                        STOKES_MATRIX_OBJECT_TRAITS<DiscretePressureFunctionSpaceType,DiscreteVelocityFunctionSpaceType> >
-            ZmatrixInternalType;
+    typedef typename MatrixObject< DiscretePressureFunctionSpaceType, DiscreteVelocityFunctionSpaceType >::Type
+        ZmatrixInternalType;
     typedef Dune::shared_ptr< ZmatrixInternalType >
         ZmatrixType;
-    typedef STOKES_MATRIX_OBJECT<  DiscreteVelocityFunctionSpaceType,
-                                        DiscretePressureFunctionSpaceType,
-                                        STOKES_MATRIX_OBJECT_TRAITS<DiscreteVelocityFunctionSpaceType,DiscretePressureFunctionSpaceType> >
-            EmatrixInternalType;
+    typedef typename MatrixObject< DiscreteVelocityFunctionSpaceType, DiscretePressureFunctionSpaceType >::Type
+        EmatrixInternalType;
     typedef Dune::shared_ptr< EmatrixInternalType >
         EmatrixType;
-    typedef STOKES_MATRIX_OBJECT<  DiscretePressureFunctionSpaceType,
-                                    DiscretePressureFunctionSpaceType,
-                                    STOKES_MATRIX_OBJECT_TRAITS<DiscretePressureFunctionSpaceType,DiscretePressureFunctionSpaceType> >
+    typedef typename MatrixObject< DiscretePressureFunctionSpaceType, DiscretePressureFunctionSpaceType >::Type
         RmatrixInternalType;
     typedef Dune::shared_ptr< RmatrixInternalType >
         RmatrixType;
@@ -211,12 +202,9 @@ public:
         StokesIntegratorTuple;
 
     template < class F, class G >
-    static Dune::shared_ptr< STOKES_MATRIX_OBJECT<  F, G,
-                                    STOKES_MATRIX_OBJECT_TRAITS<F,G> >
-                           > matrix( const F& f, const G& g )
+    static Dune::shared_ptr< typename MatrixObject< F, G >::Type > matrix( const F& f, const G& g )
     {
-        typedef STOKES_MATRIX_OBJECT<  F, G,
-                    STOKES_MATRIX_OBJECT_TRAITS<F,G> >
+        typedef typename MatrixObject< F, G >::Type
             InternalMatrixType;
         Dune::shared_ptr< InternalMatrixType > m( new InternalMatrixType(f,g) );
         m->reserve( verbose_ );
