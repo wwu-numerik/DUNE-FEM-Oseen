@@ -15,68 +15,16 @@
 #include <dune/stokes/solver/solvercaller.hh>
 #include <dune/stokes/integrators/all.hh>
 
-#include <dune/common/stdstreams.hh>
 #include <dune/stuff/customprojection.hh>
 #include <dune/stuff/matrix.hh>
 #include <dune/stuff/tuple.hh>
-
-#ifdef STOKES_USE_ISTL
-#   include <dune/fem/operator/matrix/istlmatrix.hh>
-#else
-#   include <dune/fem/operator/matrix/spmatrix.hh>
+#ifndef NLOG
+#   include <dune/stuff/printing.hh>
+#   include <dune/stuff/misc.hh>
+#   include <dune/stuff/logging.hh>
 #endif
-
-#include <dune/stuff/progressbar.hh>
-
-template < class FunctionSpaceImp, class TimeProviderImp >
-class VelocityConvection : public Dune::TimeFunction < FunctionSpaceImp , VelocityConvection< FunctionSpaceImp,TimeProviderImp >, TimeProviderImp >
-{
-	public:
-		typedef VelocityConvection< FunctionSpaceImp, TimeProviderImp >
-			ThisType;
-		typedef Dune::TimeFunction< FunctionSpaceImp, ThisType, TimeProviderImp >
-			BaseType;
-		typedef typename BaseType::DomainType
-			DomainType;
-		typedef typename BaseType::RangeType
-			RangeType;
-
-		VelocityConvection(	const TimeProviderImp& timeprovider,
-					const FunctionSpaceImp& space,
-					const double parameter_a = M_PI /2.0 ,
-					const double parameter_d = M_PI /4.0)
-			: BaseType( timeprovider, space ),
-			parameter_a_( parameter_a ),
-			parameter_d_( parameter_d )
-		{}
-
-		~VelocityConvection()
-		{}
-
-		void evaluateTime( const double time, const DomainType& arg, RangeType& ret ) const
-		{
-			const double x			= arg[0];
-			const double y			= arg[1];
-			ret[0] = std::pow(time,5.0)*2*x*y;
-			ret[1] = std::pow(time,5.0)*y*y;;
-		}
-
-	private:
-		static const int dim_ = FunctionSpaceImp::dimDomain ;
-		const double parameter_a_;
-		const double parameter_d_;
-};
-
-
-#ifndef NLOG // if we want logging, should be removed in the end
-    #include <dune/stuff/printing.hh>
-    #include <dune/stuff/misc.hh>
-    #include <dune/stuff/logging.hh>
-#endif
-
 #include <dune/stuff/grid.hh>
 #include <dune/stuff/functions.hh>
-
 #include <dune/stuff/profiler.hh>
 
 namespace Dune
@@ -88,97 +36,28 @@ namespace Dune
  *  \todo   doc
  **/
 template <  class DiscreteModelImp,
-            class PreviousPassImp,
-			int PassID = 0,
 		  template <class> class TraitsImp = StokesTraits >
 class StokesPass
-    : public Pass < DiscreteModelImp, PreviousPassImp, PassID >
 {
-		/**
-		 *  \brief  empty constructor
-		 **/
-		StokesPass()
-		{}
-
     public:
-        //! own type
-        typedef StokesPass< DiscreteModelImp, PreviousPassImp, PassID >
+        typedef StokesPass< DiscreteModelImp, TraitsImp >
             ThisType;
-
-        //! base type
-        typedef Pass < DiscreteModelImp, PreviousPassImp, PassID >
-            BaseType;
-
-        //! previous pass type
-        typedef PreviousPassImp
-            PreviousPassType;
-
-        //! discrete model type
         typedef DiscreteModelImp
             DiscreteModelType;
-
-		typedef TraitsImp< DiscreteModelType >
-			Traits;
-
-        /**
-         *  \name typedefs needed for interface compliance
-         *  \{
-         **/
-        typedef typename BaseType::DestinationType
-            DestinationType;
-
-        typedef typename BaseType::DomainType
+        typedef TraitsImp< DiscreteModelType >
+            Traits;
+        typedef typename Traits::DiscreteStokesFunctionWrapperType
             DomainType;
-
-        typedef typename BaseType::RangeType
+        typedef typename Traits::DiscreteStokesFunctionWrapperType
             RangeType;
 
-        typedef typename BaseType::TotalArgumentType
-            TotalArgumentType;
-        /**
-         *  \}
-         **/
-
-		//! when requested we store \f$ \varDelta u, \nabla p (u \cdot \nabla ) u\f$ in this struct after the solver
-		struct RhsDatacontainer {
-			typename Traits::DiscreteVelocityFunctionType velocity_laplace;
-			typename Traits::DiscreteVelocityFunctionType pressure_gradient;
-			typename Traits::DiscreteSigmaFunctionType velocity_gradient;
-			typename Traits::DiscreteVelocityFunctionType convection;
-
-			RhsDatacontainer( const typename Traits::DiscreteVelocityFunctionSpaceType& space,
-							  const typename Traits::DiscreteSigmaFunctionSpaceType& sigma_space)
-				: velocity_laplace( "velocity_laplace", space ),
-				pressure_gradient( "pressure_gradient", space ),
-				velocity_gradient( "velocity_gradient", sigma_space ),
-				convection( "convection", space )
-			{}
-			void scale( double factor ) {
-				velocity_laplace	*= factor;
-				pressure_gradient	*= factor;
-				velocity_gradient	*= factor;
-				convection			*= factor;
-			}
-			void clear() {
-				velocity_laplace.clear();
-				pressure_gradient.clear();
-				velocity_gradient.clear();
-				convection.clear();
-			}
-		};
-
-        /**
-         *  \brief  constructor
-         *  \todo   doc
-         **/
-        StokesPass( PreviousPassType& prevPass,
-                    DiscreteModelType& discreteModel,
+        //!
+        StokesPass( DiscreteModelType& discreteModel,
 					typename Traits::GridPartType& gridPart,
 					const typename Traits::DiscreteStokesFunctionSpaceWrapperType& spaceWrapper,
 					const typename Traits::DiscreteVelocityFunctionType& beta,
 					const bool do_oseen_discretization )//! \todo move to model
-            : BaseType( prevPass ),
-            discreteModel_( discreteModel ),
+            : discreteModel_( discreteModel ),
             gridPart_( gridPart ),
             spaceWrapper_( spaceWrapper ),
             velocitySpace_( spaceWrapper.discreteVelocitySpace() ),
@@ -190,28 +69,27 @@ class StokesPass
         {}
 
         //! used in Postprocessing to get refs to gridparts, spaces
-		const typename Traits::DiscreteStokesFunctionSpaceWrapperType& GetFunctionSpaceWrapper() const
+        const typename Traits::DiscreteStokesFunctionSpaceWrapperType& GetFunctionSpaceWrapper()
         {
             return spaceWrapper_;
         }
 
-
-		void apply( const DomainType &arg, RangeType &dest ) const
+        void apply( const DomainType &arg, RangeType &dest )
 		{
-			apply<RhsDatacontainer,typename Traits::DiscreteSigmaFunctionType>( arg, dest, 0,0 );
+            apply<RhsDatacontainer,typename Traits::DiscreteSigmaFunctionType>( arg, dest, nullptr,nullptr );
 		}
 
 		template < class RhsDatacontainerType >
-		void apply( const DomainType &arg, RangeType &dest,RhsDatacontainerType* rhs_datacontainer ) const
+        void apply( const DomainType &arg, RangeType &dest,RhsDatacontainerType* rhs_datacontainer )
 		{
-			apply<RhsDatacontainerType,typename Traits::DiscreteSigmaFunctionType>( arg, dest, rhs_datacontainer,0 );
+            apply<RhsDatacontainerType,typename Traits::DiscreteSigmaFunctionType>( arg, dest, rhs_datacontainer,nullptr );
 		}
         /**
          *  \todo doc
          *  \attention  think about quadrature orders
          **/
 		template < class RhsDatacontainerType, class ExactSigmaType >
-		void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer, const ExactSigmaType* /*sigma_exact*/ ) const
+        void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer, const ExactSigmaType* /*sigma_exact*/ )
         {
             // profiler information
             profiler().StartTiming("Pass_init");
@@ -284,12 +162,6 @@ class StokesPass
                                             Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs, beta_ );
         } // end of apply
 
-        virtual void compute( const TotalArgumentType& /*arg*/, DestinationType& /*dest*/ ) const
-        {}
-
-        virtual void allocateLocalMemory()
-        {}
-
 #ifdef HAS_RUN_INFO
 		void getRuninfo( Stuff::RunInfo& info )
         {
@@ -310,7 +182,7 @@ class StokesPass
 		typename Traits::DiscreteSigmaFunctionSpaceType sigmaSpace_;
 		const typename Traits::DiscreteVelocityFunctionType& beta_;
 		const bool do_oseen_discretization_;
-        mutable SaddlepointInverseOperatorInfo info_;
+        SaddlepointInverseOperatorInfo info_;
 
 	public:
 		void printInfo() const
@@ -374,6 +246,34 @@ class StokesPass
 			infoStream.Suspend();
 #endif
 		}
+
+        //! when requested we store \f$ \varDelta u, \nabla p (u \cdot \nabla ) u\f$ in this struct after the solver
+        struct RhsDatacontainer {
+            typename Traits::DiscreteVelocityFunctionType velocity_laplace;
+            typename Traits::DiscreteVelocityFunctionType pressure_gradient;
+            typename Traits::DiscreteSigmaFunctionType velocity_gradient;
+            typename Traits::DiscreteVelocityFunctionType convection;
+
+            RhsDatacontainer( const typename Traits::DiscreteVelocityFunctionSpaceType& space,
+                              const typename Traits::DiscreteSigmaFunctionSpaceType& sigma_space)
+                : velocity_laplace( "velocity_laplace", space ),
+                pressure_gradient( "pressure_gradient", space ),
+                velocity_gradient( "velocity_gradient", sigma_space ),
+                convection( "convection", space )
+            {}
+            void scale( double factor ) {
+                velocity_laplace	*= factor;
+                pressure_gradient	*= factor;
+                velocity_gradient	*= factor;
+                convection			*= factor;
+            }
+            void clear() {
+                velocity_laplace.clear();
+                pressure_gradient.clear();
+                velocity_gradient.clear();
+                convection.clear();
+            }
+        };
 };
 
 }

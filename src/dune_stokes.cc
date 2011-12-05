@@ -621,13 +621,8 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 	AnalyticalDirichletDataType analyticalDirichletData =
 			StokesModelTraitsImp::AnalyticalDirichletDataTraitsImplementation::getInstance( discreteStokesFunctionSpaceWrapper );
 
-	typedef Dune::StartPass< DiscreteStokesFunctionWrapperType, -1 >
-	    StartPassType;
-	StartPassType startPass;
-
-	    typedef Dune::StokesPass< StokesModelImpType, StartPassType, 0 >
+    typedef Dune::StokesPass< StokesModelImpType >
 	    StokesPassType;
-
 
 	{
 		typedef StokesProblems::Container< gridDim, DiscreteStokesFunctionWrapperType>
@@ -654,8 +649,7 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
     infoStream << "\n- starting pass" << std::endl;
 
 
-    StokesPassType stokesPass(  startPass,
-                                stokesModel,
+    StokesPassType stokesPass(  stokesModel,
                                 gridPart,
 								discreteStokesFunctionSpaceWrapper,
 								dummyFunctions.discreteVelocity(),
@@ -663,7 +657,8 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 
     profiler().StartTiming( "Pass -- APPLY" );
 	stokesPass.printInfo();
-	stokesPass.apply( computedSolutions, computedSolutions);
+    auto last_wrapper ( computedSolutions );
+    stokesPass.apply( last_wrapper, computedSolutions);
     profiler().StopTiming( "Pass -- APPLY" );
     info.run_time = profiler().GetTiming( "Pass -- APPLY" );
     stokesPass.getRuninfo( info );
