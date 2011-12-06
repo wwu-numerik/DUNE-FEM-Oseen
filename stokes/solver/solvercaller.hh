@@ -83,24 +83,31 @@ struct SolverCaller {
 		MatrixWrapper<EmatrixObjectType> E(Ematrix, "E");
 		MatrixWrapper<RmatrixObjectType> R(Rmatrix, "R");
 
-		#if 0 //#ifndef NDEBUG
+        #ifndef NDEBUG
 		{
 		    // do the matlab logging stuff
 		    if ( Parameters().getParam( "save_matrices", false ) ) {
-			    Stuff::Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-			    Stuff::printSparseRowMatrixMatlabStyle( MInversMatrix.matrix(), "M_invers", matlabLogStream );
-			    Stuff::printSparseRowMatrixMatlabStyle( Wmatrix.matrix(), "W", matlabLogStream );
-			    Stuff::printSparseRowMatrixMatlabStyle( Omatrix.matrix(), "O", matlabLogStream );
-			    Stuff::printSparseRowMatrixMatlabStyle( Xmatrix.matrix(), "X", matlabLogStream );
-			    Stuff::printSparseRowMatrixMatlabStyle( Ymatrix.matrix(), "Y", matlabLogStream );
-			    Stuff::printSparseRowMatrixMatlabStyle( Zmatrix.matrix(), "Z", matlabLogStream );
-			    Stuff::printSparseRowMatrixMatlabStyle( Ematrix.matrix(), "E", matlabLogStream );
-			    Stuff::printSparseRowMatrixMatlabStyle( Rmatrix.matrix(), "R", matlabLogStream );
-			    Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
-			    Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
-			    Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
-			    Stuff::printDiscreteFunctionMatlabStyle( H2_O_rhs, "H_O", matlabLogStream );
-			    matlabLogStream.Flush();
+                Stuff::Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+                #ifdef STOKES_USE_ISTL
+                #   define MPRINTER printISTLMatrixMatlabStyle
+                #else
+                #   define MPRINTER printSparseRowMatrixMatlabStyle
+                #endif
+                Stuff::MPRINTER( MInversMatrix->matrix(), "M_invers", matlabLogStream );
+                Stuff::MPRINTER( Wmatrix->matrix(), "W", matlabLogStream );
+                Stuff::MPRINTER( Omatrix->matrix(), "O", matlabLogStream );
+                Stuff::MPRINTER( Xmatrix->matrix(), "X", matlabLogStream );
+                Stuff::MPRINTER( Ymatrix->matrix(), "Y", matlabLogStream );
+                Stuff::MPRINTER( Zmatrix->matrix(), "Z", matlabLogStream );
+                Stuff::MPRINTER( Ematrix->matrix(), "E", matlabLogStream );
+                Stuff::MPRINTER( Rmatrix->matrix(), "R", matlabLogStream );
+                Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
+                Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
+                Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
+//			    Stuff::printDiscreteFunctionMatlabStyle( H2_O_rhs, "H_O", matlabLogStream );
+                matlabLogStream.Flush();
+                #undef MPRINTER
+
 		    }
 
 		//            // log local matrices
@@ -125,35 +132,35 @@ struct SolverCaller {
 
 
 		    if ( Parameters().getParam( "outputMatrixPlots", false ) ) {
-			Stuff::matrixToGnuplotFile( Ematrix.matrix(),       std::string( "mat_E.gnuplot")       );
-			Stuff::matrixToGnuplotFile( Wmatrix.matrix(),       std::string( "mat_W.gnuplot")       );
-			Stuff::matrixToGnuplotFile( Xmatrix.matrix(),       std::string( "mat_X.gnuplot")       );
-			Stuff::matrixToGnuplotFile( Ymatrix.matrix(),       std::string( "mat_Y.gnuplot")       );
-			Stuff::matrixToGnuplotFile( Zmatrix.matrix(),       std::string( "mat_Z.gnuplot")       );
-			Stuff::matrixToGnuplotFile( Rmatrix.matrix(),       std::string( "mat_R.gnuplot")       );
-			Stuff::matrixToGnuplotFile( MInversMatrix.matrix(), std::string( "mat_M.gnuplot")   );
+                Stuff::matrixToGnuplotFile( Ematrix->matrix(),       std::string( "mat_E.gnuplot")       );
+                Stuff::matrixToGnuplotFile( Wmatrix->matrix(),       std::string( "mat_W.gnuplot")       );
+                Stuff::matrixToGnuplotFile( Xmatrix->matrix(),       std::string( "mat_X.gnuplot")       );
+                Stuff::matrixToGnuplotFile( Ymatrix->matrix(),       std::string( "mat_Y.gnuplot")       );
+                Stuff::matrixToGnuplotFile( Zmatrix->matrix(),       std::string( "mat_Z.gnuplot")       );
+                Stuff::matrixToGnuplotFile( Rmatrix->matrix(),       std::string( "mat_R.gnuplot")       );
+                Stuff::matrixToGnuplotFile( MInversMatrix->matrix(), std::string( "mat_M.gnuplot")   );
 		    }
 
 		    if ( Parameters().getParam( "paranoid_checks", false ) )
 		    {//paranoid checks
-			    assert( !Stuff::MatrixContainsNanOrInf( Omatrix.matrix() ) );
-			    assert( !Stuff::MatrixContainsNanOrInf( Ematrix.matrix() ) );
-			    assert( !Stuff::MatrixContainsNanOrInf( Wmatrix.matrix() ) );
-			    assert( !Stuff::MatrixContainsNanOrInf( Xmatrix.matrix() ) );
-			    assert( !Stuff::MatrixContainsNanOrInf( Ymatrix.matrix() ) );
-			    assert( !Stuff::MatrixContainsNanOrInf( Zmatrix.matrix() ) );
-			    assert( !Stuff::MatrixContainsNanOrInf( Rmatrix.matrix() ) );
-			    assert( !Stuff::MatrixContainsNanOrInf( MInversMatrix.matrix() ) );
+                assert( !Stuff::MatrixContainsNanOrInf( Omatrix->matrix() ) );
+                assert( !Stuff::MatrixContainsNanOrInf( Ematrix->matrix() ) );
+                assert( !Stuff::MatrixContainsNanOrInf( Wmatrix->matrix() ) );
+                assert( !Stuff::MatrixContainsNanOrInf( Xmatrix->matrix() ) );
+                assert( !Stuff::MatrixContainsNanOrInf( Ymatrix->matrix() ) );
+                assert( !Stuff::MatrixContainsNanOrInf( Zmatrix->matrix() ) );
+                assert( !Stuff::MatrixContainsNanOrInf( Rmatrix->matrix() ) );
+                assert( !Stuff::MatrixContainsNanOrInf( MInversMatrix->matrix() ) );
 			    assert( !Stuff::FunctionContainsNanOrInf( H1rhs ) );
 			    assert( !Stuff::FunctionContainsNanOrInf( H2rhs ) );
 			    assert( !Stuff::FunctionContainsNanOrInf( H3rhs ) );
-			    assert( !Stuff::FunctionContainsNanOrInf( H2_O_rhs ) );
+//			    assert( !Stuff::FunctionContainsNanOrInf( H2_O_rhs ) );
 	    //				Zmatrix.matrix().scale( -1 );
 	    //				assert( areTransposed( Zmatrix.matrix(), Ematrix.matrix() ));
 	    //				Zmatrix.matrix().scale( -1 );
 		    }
 		}
-		#endif
+        #endif
 
 		SaddlepointInverseOperatorInfo result;
 
