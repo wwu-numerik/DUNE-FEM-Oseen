@@ -4,9 +4,11 @@
 #include <dune/common/shared_ptr.hh>
 
 #ifdef STOKES_USE_ISTL
-#   define STOKES_MATRIX_OBJECT ISTLMatrixObject
+#   include <dune/stokes/integrators/mod_istlmatrix.hh>
+#   define STOKES_MATRIX_OBJECT ModifiedISTLMatrixObject
 #   include <dune/fem/operator/2order/dgmatrixtraits.hh>
-#   define STOKES_MATRIX_OBJECT_TRAITS Dune::Fem::DGMatrixTraits
+#   include <dune/stokes/integrators/bcrstraits.hh>
+#   define STOKES_MATRIX_OBJECT_TRAITS Dune::Stokes::Integrators::ModifiedDGMatrixTraits
 #else
 #   define STOKES_MATRIX_OBJECT SparseRowMatrixObject
     template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>

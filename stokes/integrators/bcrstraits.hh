@@ -1,6 +1,9 @@
 #ifndef BCRSTRAITS_HH
 #define BCRSTRAITS_HH
 
+#include <dune/fem/operator/2order/dgmatrixsetup.hh>
+#include <dune/stokes/integrators/mod_istlmatrix.hh>
+
 namespace Dune {
 namespace Stokes {
 namespace Integrators {
@@ -154,12 +157,7 @@ class DefaultSparsityPattern
       insert( i, i );
   }
 
-
-
-template< class ContainerImp >
-class Factory
-{
-};
+}; //end of class DefaultSparsityPattern
 
 /**
   \brief      Static factory class for matrix classes of type Dune::BCRSMatrix.
@@ -170,34 +168,19 @@ class Factory
   \attention  The sparsity pattern is always created for codim 1 contributions as well! This should be optimized
   \todo       See \attention
  */
-template< class BlockType >
-class Factory< Dune::BCRSMatrix< BlockType > >
+//template< class BlockType >
+class BCRSFactory
+//        < Dune::BCRSMatrix< BlockType > >
 {
 public:
 
   //! Wrapped container type.
-  typedef Dune::BCRSMatrix< BlockType >
-    ContainerType;
+//  typedef Dune::BCRSMatrix< BlockType >
+//    ContainerType;
 
-  //! Return type for create() method.
-  typedef std::auto_ptr< ContainerType >
-    AutoPtrType;
-
-  /** @brief Creates a new BCRSMatrix object and returns an auto_ptr pointing
-   * to the allocated object.
-   *
-   * Matrices have size @f$ H \times H @f$ where @f$H@f$ is the number
-   * of degrees of freedom in the discrete function space @f$ { \cal X }_H @f$.
-   * The matrices' sparsity pattern is determined by the discrete function
-   * space's basefunction overlap.
-   *
-   * @param dfs The discrete function space @f$ { \cal X }_H @f$.
-   */
-  template< class AnsatzSpaceType, class TestSpaceType >
-  static AutoPtrType create( AnsatzSpaceType& ansatzSpace, TestSpaceType& testSpace )
-  {
-    return AutoPtrType( createPtr( ansatzSpace, testSpace ) );
-  }
+//  //! Return type for create() method.
+//  typedef std::auto_ptr< ContainerType >
+//    AutoPtrType;
 
   /** @brief Creates a new BCRSMatrix object and returns a pointer to the
    * allocated object.
@@ -209,20 +192,20 @@ public:
    *
    * @param dfs The discrete function space @f$ { \cal X }_H @f$.
    */
-  template< class AnsatzSpaceType, class TestSpaceType >
-  static ContainerType* createPtr( AnsatzSpaceType& ansatzSpace, TestSpaceType& testSpace )
+  template< class AnsatzSpaceType, class TestSpaceType, class MatrixType >
+  static void create( AnsatzSpaceType& ansatzSpace, TestSpaceType& testSpace, MatrixType* matrix )
   {
     // some types
-    typedef typename AnsatzSpaceType::GridViewType
-      GridViewType;
+    typedef typename AnsatzSpaceType::GridPartType
+      GridPartType;
 
-    typedef typename GridViewType::template Codim< 0 >::Iterator
+    typedef typename GridPartType::template Codim< 0 >::IteratorType
       ElementIteratorType;
 
-    typedef typename ElementIteratorType::Entity
+    typedef typename GridPartType::GridType::template Codim< 0 >::Entity
       ElementType;
 
-    typedef typename GridViewType::IntersectionIterator
+    typedef typename GridPartType::IntersectionIteratorType
       IntersectionIteratorType;
 
     typedef typename IntersectionIteratorType::Intersection
@@ -231,39 +214,35 @@ public:
     typedef typename IntersectionType::EntityPointer
       ElementPointerType;
 
-    const unsigned int ansatzSize = ansatzSpace.map().size();
-    const unsigned int testSize = testSpace.map().size();
+    const unsigned int ansatzSize = ansatzSpace.size();
+    const unsigned int testSize = testSpace.size();
 
-    typedef Dune::DetailedDiscretizations::Container::SparsityPattern
+    typedef SparsityPattern
       PatternType;
 
     PatternType sPattern( ansatzSize );
 
-    ContainerType* matrix = new ContainerType( ansatzSize,
-                                               testSize,
-                                               ContainerType::random );
-
     // compute sparsity pattern
     // \todo precompile this in linear subspace
     // \todo use constraints for sparsity pattern
-    const ElementIteratorType lastElement = ansatzSpace.gridElementEnd();
-    for(  ElementIteratorType elementIterator = ansatzSpace.gridElementBegin();
+    const ElementIteratorType lastElement = ansatzSpace.end();
+    for(  ElementIteratorType elementIterator = ansatzSpace.begin();
           elementIterator != lastElement;
           ++elementIterator )
     {
       const ElementType& element = *elementIterator;
-      for( unsigned int i = 0; i < ansatzSpace.baseFunctionSet().local( element ).size(); ++i )
+      for( unsigned int i = 0; i < ansatzSpace.baseFunctionSet( element ).size(); ++i )
       {
-        unsigned int ii = ansatzSpace.map().toGlobal( element, i );
-        for( unsigned int j = 0; j < testSpace.baseFunctionSet().local( element ).size(); ++j )
+        unsigned int ii = ansatzSpace.mapToGlobal( element, i );
+        for( unsigned int j = 0; j < testSpace.baseFunctionSet( element ).size(); ++j )
         {
-          unsigned int jj = testSpace.map().toGlobal( element, j );
+          unsigned int jj = testSpace.mapToGlobal( element, j );
           sPattern.insert( ii, jj );
         }
       }
       // do loop over all intersections
-      const IntersectionIteratorType lastIntersection = ansatzSpace.gridView().iend( element );
-      for( IntersectionIteratorType intIt = ansatzSpace.gridView().ibegin( element ); intIt != lastIntersection; ++intIt )
+      const IntersectionIteratorType lastIntersection = ansatzSpace.gridPart().iend( element );
+      for( IntersectionIteratorType intIt = ansatzSpace.gridPart().ibegin( element ); intIt != lastIntersection; ++intIt )
       {
         const IntersectionType& intersection = *intIt;
         // if inner intersection
@@ -272,12 +251,12 @@ public:
           // get neighbouring entity
           const ElementPointerType neighbourPtr = intersection.outside();
           const ElementType& neighbour = *neighbourPtr;
-          for( unsigned int i = 0; i < ansatzSpace.baseFunctionSet().local( element ).size(); ++i )
+          for( unsigned int i = 0; i < ansatzSpace.baseFunctionSet( element ).size(); ++i )
           {
-            unsigned int ii = ansatzSpace.map().toGlobal( element, i );
-            for( unsigned int j = 0; j < testSpace.baseFunctionSet().local( neighbour ).size(); ++j )
+            unsigned int ii = ansatzSpace.mapToGlobal( element, i );
+            for( unsigned int j = 0; j < testSpace.baseFunctionSet( neighbour ).size(); ++j )
             {
-              unsigned int jj = testSpace.map().toGlobal( neighbour, j );
+              unsigned int jj = testSpace.mapToGlobal( neighbour, j );
               sPattern.insert( ii, jj );
             }
           }
@@ -302,24 +281,43 @@ public:
       }
     }
     matrix->endindices();
-
-    return matrix;
   } // end method createPtr
 
 }; // end class MatrixFactory<BCRSMatrix<T> >
 
-template< class FieldType, int n, int m = n >
-class Defaults
+//template< class FieldType, int n, int m = n >
+//class Defaults
+//{
+//public:
+
+//  typedef BCRSFactory< Dune::Stokes::Integrators::ModifiedISTLMatrixObject<
+//                                                            Dune::FieldMatrix< FieldType, n, n >
+//                                                                            >
+//                    >
+//    BCRSMatrix;
+
+//}; // end class Defaults
+
+template< class RowSpace, class ColumnSpace = RowSpace >
+struct ModifiedDGMatrixTraits
 {
-public:
+  typedef RowSpace RowSpaceType;
+  typedef ColumnSpace ColumnSpaceType;
+  typedef BCRSFactory StencilType;
+  typedef Dune::ParallelScalarProduct< ColumnSpaceType > ParallelScalarProductType;
 
-  typedef Factory< Dune::BCRSMatrix< Dune::FieldMatrix< FieldType, n, n > > >
-    BCRSMatrix;
+  template< class M >
+  struct Adapter
+  {
+    typedef Dune::DGParallelMatrixAdapter< M > MatrixAdapterType;
+  };
 
-}; // end class Defaults
+};
 
 
 } //namespace Dune
 } //namespace Stokes
 } //namespace Integrators
+
+
 #endif // BCRSTRAITS_HH
