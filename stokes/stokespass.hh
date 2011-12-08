@@ -97,7 +97,7 @@ class StokesPass
                 Factory;
             // M\in R^{M\times M}
             auto MInversMatrix = Factory::matrix( sigmaSpace_, sigmaSpace_ );
-            assert( MInversMatrix->matrix().rows() == MInversMatrix->matrix().cols() );
+            ASSERT_EQ( MInversMatrix->matrix().rows(), MInversMatrix->matrix().cols() );
             // W\in R^{M\times L}
             auto Wmatrix = Factory::matrix( velocitySpace_, sigmaSpace_ );
             // X\in R^{L\times M}
