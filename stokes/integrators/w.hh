@@ -89,6 +89,8 @@ namespace Integrators {
 			{
 				LocalMatrixProxyType local_matrix( matrix_pointer_, info.entity, info.entity, info.eps );
 				const double viscosity = info.discrete_model.viscosity();
+                ASSERT_EQ( local_matrix.rows(), info.numSigmaBaseFunctionsElement );
+                ASSERT_EQ( local_matrix.cols(), info.numVelocityBaseFunctionsElement );
 				//                                                        // we will call this one
 				// (W)_{i,j} += \mu\int_{T}v_{j}\cdot(\nabla\cdot\tau_{i})dx // W's volume integral
 				//                                                        // see also "W's entitity surface integral", "W's neighbour surface integral" and "W's boundary integral" below
@@ -116,7 +118,7 @@ namespace Integrators {
 									* viscosity
 									* divergence_of_tau_i_times_v_j;
 						} // done sum over quadrature points
-						local_matrix.add( i, j, W_i_j );
+                        local_matrix.add( i, j, W_i_j );
 					}
 				} // done computing W's volume integral
 			}

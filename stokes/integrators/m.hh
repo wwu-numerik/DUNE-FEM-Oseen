@@ -42,8 +42,9 @@ namespace Integrators {
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
 				//using the proxy here would be potentially fatal because of the inversion
-				typename MatrixPointerType::element_type::LocalMatrixType
-                        localMInversMatrixElement = matrix_pointer_->localMatrix( info.entity, info.entity );
+                LocalMatrixProxyType local_matrix ( matrix_pointer_, info.entity, info.entity, info.eps );
+                ASSERT_EQ( local_matrix.rows(), info.numSigmaBaseFunctionsElement );
+                ASSERT_EQ( local_matrix.cols(), info.numSigmaBaseFunctionsElement );
 
 				// (M^{-1})_{i,j} = (\int_{T}\tau_{j}:\tau_{i}dx)^{-1} // Minvs' volume integral
 				for ( int i = 0; i < info.numSigmaBaseFunctionsElement; ++i ) {
@@ -75,7 +76,7 @@ namespace Integrators {
 						else {
 							M_i_j = 1.0 / M_i_j;
 							// add to matrix
-							localMInversMatrixElement.add( i, j, M_i_j );
+                            local_matrix.add( i, j, M_i_j );
 						}
 					}
 				} // done computing Minvs' volume integral
