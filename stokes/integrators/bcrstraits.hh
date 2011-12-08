@@ -55,7 +55,8 @@ public:
    */
   void insert( unsigned int row, unsigned int col )
   {
-    sparsityPattern_[row].insert( col );
+      ASSERT_LT( row, sparsityPattern_.size() );
+      sparsityPattern_[row].insert( col );
   }
 
   /**
@@ -66,6 +67,7 @@ public:
    */
   void erase( unsigned int row, unsigned int col )
   {
+      ASSERT_LT( row, sparsityPattern_.size() );
     sparsityPattern_[row].erase( col );
   }
 
@@ -77,6 +79,7 @@ public:
    */
   bool isZero( unsigned int row, unsigned int col )
   {
+      ASSERT_LT( row, sparsityPattern_.size() );
     return ( sparsityPattern_[row].count( col ) == 0 );
   }
 
@@ -87,13 +90,14 @@ public:
    */
   unsigned int countNonZeros( unsigned int row )
   {
+      ASSERT_LT( row, sparsityPattern_.size() );
     return sparsityPattern_[row].size();
   }
 
   /**
    * @brief Returns the number of rows (counted in blocks).
    */
-  unsigned int size()
+  unsigned int size() const
   {
     return sizeN_;
   }
@@ -101,7 +105,7 @@ public:
   /**
    * @brief Returns the number of rows (counted in blocks).
    */
-  unsigned int N()
+  unsigned int N() const
   {
     return sizeN_;
   }
@@ -113,6 +117,7 @@ public:
    */
   NonZeroColIterator begin( unsigned int row )
   {
+      assert( row < sparsityPattern_.size() );
     return sparsityPattern_[row].begin();
   }
 
@@ -123,6 +128,7 @@ public:
    */
   NonZeroColIterator end( unsigned int row )
   {
+      assert( row < sparsityPattern_.size() );
     return sparsityPattern_[row].end();
   }
 
@@ -168,20 +174,10 @@ class DefaultSparsityPattern
   \attention  The sparsity pattern is always created for codim 1 contributions as well! This should be optimized
   \todo       See \attention
  */
-//template< class BlockType >
+template < class AnsatzSpaceType, class TestSpaceType >
 class BCRSFactory
-//        < Dune::BCRSMatrix< BlockType > >
 {
 public:
-
-  //! Wrapped container type.
-//  typedef Dune::BCRSMatrix< BlockType >
-//    ContainerType;
-
-//  //! Return type for create() method.
-//  typedef std::auto_ptr< ContainerType >
-//    AutoPtrType;
-
   /** @brief Creates a new BCRSMatrix object and returns a pointer to the
    * allocated object.
    *
@@ -192,8 +188,8 @@ public:
    *
    * @param dfs The discrete function space @f$ { \cal X }_H @f$.
    */
-  template< class AnsatzSpaceType, class TestSpaceType, class MatrixType >
-  static void create( AnsatzSpaceType& ansatzSpace, TestSpaceType& testSpace, MatrixType* matrix )
+  template< class MatrixType >
+  static void create( const AnsatzSpaceType& ansatzSpace, const TestSpaceType& testSpace, MatrixType* matrix )
   {
     // some types
     typedef typename AnsatzSpaceType::GridPartType
@@ -220,26 +216,21 @@ public:
     typedef SparsityPattern
       PatternType;
 
-    PatternType sPattern( ansatzSize );
+    PatternType sPattern( ansatzSize/MatrixType::KK::rows );
 
     // compute sparsity pattern
     // \todo precompile this in linear subspace
     // \todo use constraints for sparsity pattern
     const ElementIteratorType lastElement = ansatzSpace.end();
+    size_t elNo;
     for(  ElementIteratorType elementIterator = ansatzSpace.begin();
           elementIterator != lastElement;
           ++elementIterator )
     {
       const ElementType& element = *elementIterator;
-      for( unsigned int i = 0; i < ansatzSpace.baseFunctionSet( element ).size(); ++i )
-      {
-        unsigned int ii = ansatzSpace.mapToGlobal( element, i );
-        for( unsigned int j = 0; j < testSpace.baseFunctionSet( element ).size(); ++j )
-        {
-          unsigned int jj = testSpace.mapToGlobal( element, j );
-          sPattern.insert( ii, jj );
-        }
-      }
+
+      const int elRowIndex = ansatzSpace.blockMapper().mapToGlobal( element, 0 );
+      sPattern.insert( elRowIndex, elRowIndex );
       // do loop over all intersections
       const IntersectionIteratorType lastIntersection = ansatzSpace.gridPart().iend( element );
       for( IntersectionIteratorType intIt = ansatzSpace.gridPart().ibegin( element ); intIt != lastIntersection; ++intIt )
@@ -251,15 +242,13 @@ public:
           // get neighbouring entity
           const ElementPointerType neighbourPtr = intersection.outside();
           const ElementType& neighbour = *neighbourPtr;
-          for( unsigned int i = 0; i < ansatzSpace.baseFunctionSet( element ).size(); ++i )
-          {
-            unsigned int ii = ansatzSpace.mapToGlobal( element, i );
-            for( unsigned int j = 0; j < testSpace.baseFunctionSet( neighbour ).size(); ++j )
-            {
-              unsigned int jj = testSpace.mapToGlobal( neighbour, j );
-              sPattern.insert( ii, jj );
-            }
-          }
+
+          const int nbColIndex = testSpace.blockMapper().mapToGlobal( neighbour , 0 );
+          const int nbRowIndex = ansatzSpace.blockMapper().mapToGlobal( neighbour , 0 );
+          sPattern.insert( elRowIndex, nbColIndex );
+          sPattern.insert( nbRowIndex, nbColIndex );
+          const int elColIndex = testSpace.blockMapper().mapToGlobal( element , 0 );
+          sPattern.insert( nbColIndex, elColIndex );
         } // end if inner intersection
       } // done loop over all intersections
     }
@@ -275,7 +264,8 @@ public:
       typedef SparsityPattern::NonZeroColIterator
         ColIterator;
       ColIterator sit = sPattern.begin( i );
-      for( ; sit!=sPattern.end( i ); sit++ )
+      const ColIterator e = sPattern.end( i );
+      for( ; sit!=e; ++sit )
       {
         matrix->addindex( i, *sit );
       }
@@ -285,25 +275,12 @@ public:
 
 }; // end class MatrixFactory<BCRSMatrix<T> >
 
-//template< class FieldType, int n, int m = n >
-//class Defaults
-//{
-//public:
-
-//  typedef BCRSFactory< Dune::Stokes::Integrators::ModifiedISTLMatrixObject<
-//                                                            Dune::FieldMatrix< FieldType, n, n >
-//                                                                            >
-//                    >
-//    BCRSMatrix;
-
-//}; // end class Defaults
-
-template< class RowSpace, class ColumnSpace = RowSpace >
+template< class RowSpace, class ColumnSpace >
 struct ModifiedDGMatrixTraits
 {
   typedef RowSpace RowSpaceType;
   typedef ColumnSpace ColumnSpaceType;
-  typedef BCRSFactory StencilType;
+  typedef BCRSFactory<RowSpaceType,ColumnSpaceType> StencilType;
   typedef Dune::ParallelScalarProduct< ColumnSpaceType > ParallelScalarProductType;
 
   template< class M >

@@ -1,6 +1,8 @@
 #ifndef MOD_ISTLMATRIX_HH
 #define MOD_ISTLMATRIX_HH
 
+#include <dune/istl/bcrsmatrix.hh>
+
 namespace Dune {
 namespace Stokes {
 namespace Integrators {
@@ -8,13 +10,14 @@ namespace Integrators {
 template <class LittleBlockType,
           class RowDiscreteFunctionImp,
           class ColDiscreteFunctionImp >
-class ModifiedImprovedBCRSMatrix : public BCRSMatrix<LittleBlockType>
+class ModifiedImprovedBCRSMatrix : public Dune::BCRSMatrix<LittleBlockType>
 {
   public:
+    typedef LittleBlockType KK;
     typedef RowDiscreteFunctionImp RowDiscreteFunctionType;
     typedef ColDiscreteFunctionImp ColDiscreteFunctionType;
 
-    typedef BCRSMatrix<LittleBlockType> BaseType;
+    typedef Dune::BCRSMatrix<LittleBlockType> BaseType;
     typedef typename BaseType :: RowIterator RowIteratorType ;
     typedef typename BaseType :: ColIterator ColIteratorType ;
 
@@ -80,16 +83,20 @@ class ModifiedImprovedBCRSMatrix : public BCRSMatrix<LittleBlockType>
   public:
     //! constructor used by ISTLMatrixObject
     ModifiedImprovedBCRSMatrix(size_type rows, size_type cols)
-      : BaseType (rows,cols, BaseType :: row_wise)
+      : BaseType (rows,cols, BaseType :: random)
       , nz_(0)
     {
+        std::cerr << boost::format( "mistl Matrix %d - %d --> %d x %d blocks, nz %d\n")
+                        % rows % cols % LittleBlockType::rows %  LittleBlockType::cols  % nz_;
     }
 
     //! constuctor used by ILU preconditioner
     ModifiedImprovedBCRSMatrix(size_type rows, size_type cols, size_type nz)
-      : BaseType (rows,cols, BaseType :: row_wise)
+      : BaseType (rows,cols, BaseType :: random)
       , nz_(nz)
     {
+        std::cerr << boost::format( "mistl Matrix %d - %d --> %d x %d blocks, nz %d\n")
+                        % rows % cols % LittleBlockType::rows %  LittleBlockType::cols  % nz_;
     }
 
     //! copy constructor, needed by ISTL preconditioners
@@ -108,8 +115,8 @@ class ModifiedImprovedBCRSMatrix : public BCRSMatrix<LittleBlockType>
 
     //! setup matrix entires
     template < class StencilCreatorImp >
-    void setup(const ColSpaceType& colSpace,
-               const RowSpaceType & rowSpace,
+    void setup(const RowSpaceType & rowSpace,
+               const ColSpaceType& colSpace,
                const StencilCreatorImp& stencil,
                bool verbose = false)
     {
@@ -136,184 +143,7 @@ class ModifiedImprovedBCRSMatrix : public BCRSMatrix<LittleBlockType>
         }
       }
     }
-#if 0
-    //! setup like the old matrix but remove rows with hanging nodes
-    template <class HangingNodesType>
-    void setup(ThisType& oldMatrix,
-               const HangingNodesType& hangingNodes)
-    {
-      // necessary because element traversal not necessaryly is in
-      // ascending order
-      typedef std::set< std::pair<int, block_type> > LocalEntryType;
-      typedef std::map< int , LocalEntryType > EntriesType;
-      EntriesType entries;
 
-      {
-        // map of indices
-        std::map< int , std::set<int> > indices;
-        // not insert map of indices into matrix
-        RowIteratorType rowend  = oldMatrix.end();
-        for(RowIteratorType it  = oldMatrix.begin(); it != rowend; ++it)
-        {
-          const int row = it.index();
-          std::set< int >& localIndices = indices[ row ];
-
-          if( hangingNodes.isHangingNode( row ) )
-          {
-            // insert columns into other columns
-            typedef typename HangingNodesType :: ColumnVectorType ColumnVectorType;
-            const ColumnVectorType& cols = hangingNodes.associatedDofs( row );
-            const size_t colSize = cols.size();
-            for(size_t i=0; i<colSize; ++i)
-            {
-              assert( ! hangingNodes.isHangingNode( cols[i].first ) );
-
-              // get local indices of col
-              std::set< int >& localColIndices = indices[ cols[i].first ];
-              LocalEntryType& localEntry = entries[  cols[i].first ];
-
-              // copy from old matrix
-              ColIteratorType endj = (*it).end();
-              for (ColIteratorType j= (*it).begin(); j!=endj; ++j)
-              {
-                localColIndices.insert( j.index () );
-                localEntry.insert( std::make_pair( j.index(), (cols[i].second * (*j)) ));
-              }
-            }
-
-            // insert diagonal and hanging columns
-            localIndices.insert( row );
-            for(size_t i=0; i<colSize; ++i)
-            {
-              localIndices.insert( cols[i].first );
-            }
-          }
-          else
-          {
-            // copy from old matrix
-            ColIteratorType endj = (*it).end();
-            for (ColIteratorType j= (*it).begin(); j!=endj; ++j)
-            {
-              localIndices.insert( j.index () );
-            }
-          }
-        }
-
-        // create matrix from entry map
-        createEntries( indices );
-
-      } // end create, matrix is on delete of create iterator
-
-      {
-        // not insert map of indices into matrix
-        RowIteratorType rowit  = oldMatrix.begin();
-
-        RowIteratorType endcreate = this->end();
-        for(RowIteratorType create = this->begin();
-            create != endcreate; ++create, ++rowit )
-        {
-          assert( rowit != oldMatrix.end() );
-
-          const int row = create.index();
-          if( hangingNodes.isHangingNode( row ) )
-          {
-            typedef typename HangingNodesType :: ColumnVectorType ColumnVectorType;
-            const ColumnVectorType& cols = hangingNodes.associatedDofs( row );
-
-            std::map< const int , block_type > colMap;
-            // only working for block size 1 ath the moment
-            assert( block_type :: rows == 1 );
-            // insert columns into map
-            const size_t colSize = cols.size();
-            for( size_t i=0; i<colSize; ++i)
-            {
-              colMap[ cols[i].first ] = -cols[i].second;
-            }
-            // insert diagonal into map
-            colMap[ row ] = 1;
-
-            ColIteratorType endj = (*create).end();
-            for (ColIteratorType j= (*create).begin(); j!=endj; ++j)
-            {
-              assert( colMap.find( j.index() ) != colMap.end() );
-              (*j) = colMap[ j.index() ];
-            }
-          }
-          // if entries are equal, just copy
-          else if ( entries.find( row ) == entries.end() )
-          {
-            ColIteratorType colit = (*rowit).begin();
-            ColIteratorType endj = (*create).end();
-            for (ColIteratorType j= (*create).begin(); j!=endj; ++j, ++colit )
-            {
-              assert( colit != (*rowit).end() );
-              (*j) = (*colit);
-            }
-          }
-          else
-          {
-            typedef std::map< int , block_type > ColMapType;
-            ColMapType oldCols;
-
-            {
-              ColIteratorType colend = (*rowit).end();
-              for(ColIteratorType colit = (*rowit).begin(); colit !=
-                  colend; ++colit)
-              {
-                oldCols[ colit.index() ] = 0;
-              }
-            }
-
-            typedef typename EntriesType :: iterator Entryiterator ;
-            Entryiterator entry = entries.find( row );
-            assert( entry  != entries.end ());
-
-            {
-              typedef typename LocalEntryType :: iterator iterator;
-              iterator endcol = (*entry).second.end();
-              for( iterator co = (*entry).second.begin(); co != endcol; ++co)
-              {
-                oldCols[ (*co).first ] = 0;
-              }
-            }
-
-            {
-              ColIteratorType colend = (*rowit).end();
-              for(ColIteratorType colit = (*rowit).begin(); colit !=
-                  colend; ++colit)
-              {
-                oldCols[ colit.index() ] += (*colit);
-              }
-            }
-
-            {
-              typedef typename LocalEntryType :: iterator iterator;
-              iterator endcol = (*entry).second.end();
-              for( iterator co = (*entry).second.begin(); co != endcol; ++co)
-              {
-                oldCols[ (*co).first ] += (*co).second;
-              }
-            }
-
-            ColIteratorType endj = (*create).end();
-            for (ColIteratorType j= (*create).begin(); j!=endj; ++j )
-            {
-              typedef typename ColMapType :: iterator iterator;
-              iterator colEntry = oldCols.find( j.index() );
-              if( colEntry != oldCols.end() )
-              {
-                (*j) = (*colEntry).second;
-              }
-              else
-              {
-                abort();
-              }
-            }
-          }
-        }
-      } // end create
-    }
-#endif
     //! print matrix
     void print(std::ostream & s) const
     {
@@ -351,9 +181,6 @@ class ModifiedImprovedBCRSMatrix : public BCRSMatrix<LittleBlockType>
     bool find (size_type row, size_type col) const { return BaseType::exists(row, col); }
     void scale( const field_type scalar ) { *this *= scalar; }
 };
-
-
-
 
 template <class RowSpaceImp, class ColSpaceImp, class TraitsImp>
 class ModifiedISTLMatrixObject;
@@ -405,6 +232,8 @@ protected:
 
   enum { littleRows = RowSpaceType :: localBlockSize };
   enum { littleCols = ColumnSpaceType :: localBlockSize };
+//  enum { littleRows = 1 };
+//  enum { littleCols = 1 };
 
   typedef typename RowSpaceType :: RangeFieldType RangeFieldType;
 
@@ -558,11 +387,10 @@ public:
       const size_t col = (int) localCol / littleCols;
       const int lRow = localRow%littleRows;
       const int lCol = localCol%littleCols;
-      const int durf = matrices_.size();
-      assert( row < durf ) ;
-      assert( col < matrices_[row].size() );
-      assert( lRow < littleRows );
-      assert( lCol < littleCols );
+      ASSERT_LT( row , matrices_.size() ) ;
+      ASSERT_LT( col , matrices_[row].size() );
+      ASSERT_LT( lRow , littleRows );
+      ASSERT_LT( lCol , littleCols );
     }
 
     DofType& getValue(const int localRow, const int localCol)
@@ -952,27 +780,11 @@ public:
       removeObj();
 
       StencilType stencil;
-      matrix_ = new MatrixType(rowMapper_.size(),colMapper_.size(),MatrixType::random);
-      matrix().setup(colSpace_,rowSpace_,stencil,verbose);
+      matrix_ = new MatrixType(rowSpace_.size()/LittleBlockType::rows,colSpace_.size()/LittleBlockType::cols);
+      matrix().setup(rowSpace_,colSpace_,stencil,verbose);
 
       sequence_ = rowSpace_.sequence();
     }
-  }
-
-  //! setup new matrix with hanging nodes taken into account
-  template <class HangingNodesType>
-  void changeHangingNodes(const HangingNodesType& hangingNodes)
-  {
-    // create new matrix
-    MatrixType* newMatrix = new MatrixType(rowMapper_.size(), colMapper_.size());
-
-    // setup with hanging rows
-    newMatrix->setup( *matrix_ , hangingNodes );
-
-    // remove old matrix
-    removeObj();
-    // store new matrix
-    matrix_ = newMatrix;
   }
 
   //! we only have right precondition
