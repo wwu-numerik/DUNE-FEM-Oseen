@@ -44,33 +44,43 @@ namespace Dune { namespace Stokes { namespace Integrators {
 //! A Static map of Matrix-/DiscreteFunctionType onto IntegratorType
 template < class FactoryType, class MatrixType >
 struct IntegratorSelector {};
+
 template < class FactoryType >
 struct IntegratorSelector< FactoryType, typename FactoryType::MInversMatrixType>
 { typedef typename FactoryType::MInversMatrixIntegratorType Type; };
+
 template < class FactoryType >
 struct IntegratorSelector< FactoryType, typename FactoryType::WmatrixType>
 { typedef typename FactoryType::WmatrixTypeIntegratorType Type; };
+
 template < class FactoryType >
 struct IntegratorSelector< FactoryType, typename FactoryType::XmatrixType>
 { typedef typename FactoryType::XmatrixTypeIntegratorType Type; };
+
 template < class FactoryType >
 struct IntegratorSelector< FactoryType, typename FactoryType::YmatrixType>
 { typedef typename FactoryType::YmatrixTypeIntegratorType Type; };
+
 //template < class FactoryType > //O mapping doesn't work because of the extra  arg
 //struct IntegratorSelector< FactoryType, typename FactoryType::OmatrixType>
 //{ typedef typename FactoryType::OmatrixTypeIntegratorType Type; };
+
 template < class FactoryType >
 struct IntegratorSelector< FactoryType, typename FactoryType::ZmatrixType>
 { typedef typename FactoryType::ZmatrixTypeIntegratorType Type; };
+
 template < class FactoryType >
 struct IntegratorSelector< FactoryType, typename FactoryType::EmatrixType>
 { typedef typename FactoryType::EmatrixTypeIntegratorType Type; };
+
 template < class FactoryType >
 struct IntegratorSelector< FactoryType, typename FactoryType::RmatrixType>
 { typedef typename FactoryType::RmatrixTypeIntegratorType Type; };
+
 template < class FactoryType >
 struct IntegratorSelector< FactoryType, typename FactoryType::DiscreteSigmaFunctionType>
 { typedef typename FactoryType::H1_IntegratorType Type; };
+
 template < class FactoryType >
 struct IntegratorSelector< FactoryType, typename FactoryType::DiscreteVelocityFunctionType>
 { typedef typename FactoryType::H2_IntegratorType Type; };
