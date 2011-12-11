@@ -661,6 +661,9 @@ public:
     return *matrixAdap_;
   }
 
+  const RowSpaceType& rowSpace() const { return rowSpace_; }
+  const ColumnSpaceType& colSpace() const { return colSpace_; }
+
 protected:
   MatrixAdapterType matrixAdapterObject() const
   {
