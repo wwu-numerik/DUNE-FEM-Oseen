@@ -39,43 +39,36 @@ struct DiagonalMatrixTraits :
 };
 #endif
 
+
+#define MK_SPACENAME(name) Discrete ## name ## FunctionSpaceType
+#define TYPEDEF_MATRIX( Name, Col, Row ) \
+    typedef typename MatrixObject< MK_SPACENAME(Row), MK_SPACENAME(Col) >::Type \
+        Name##matrixInternalType; \
+    typedef Dune::shared_ptr< Name##matrixInternalType > \
+        Name##matrixType
+#define IntegratorSelectorSpec(name) \
+    template < class FactoryType > \
+    struct IntegratorSelector< FactoryType, typename FactoryType:: name ##matrixType> \
+{ typedef typename FactoryType:: name##matrixTypeIntegratorType Type; }
+
+
 namespace Dune { namespace Stokes { namespace Integrators {
 
 //! A Static map of Matrix-/DiscreteFunctionType onto IntegratorType
 template < class FactoryType, class MatrixType >
 struct IntegratorSelector {};
 
-template < class FactoryType >
-struct IntegratorSelector< FactoryType, typename FactoryType::MInversMatrixType>
-{ typedef typename FactoryType::MInversMatrixIntegratorType Type; };
-
-template < class FactoryType >
-struct IntegratorSelector< FactoryType, typename FactoryType::WmatrixType>
-{ typedef typename FactoryType::WmatrixTypeIntegratorType Type; };
-
-template < class FactoryType >
-struct IntegratorSelector< FactoryType, typename FactoryType::XmatrixType>
-{ typedef typename FactoryType::XmatrixTypeIntegratorType Type; };
-
-template < class FactoryType >
-struct IntegratorSelector< FactoryType, typename FactoryType::YmatrixType>
-{ typedef typename FactoryType::YmatrixTypeIntegratorType Type; };
+IntegratorSelectorSpec(M);
+IntegratorSelectorSpec(W);
+IntegratorSelectorSpec(X);
+IntegratorSelectorSpec(Y);
+IntegratorSelectorSpec(Z);
+IntegratorSelectorSpec(E);
+IntegratorSelectorSpec(R);
 
 //template < class FactoryType > //O mapping doesn't work because of the extra  arg
 //struct IntegratorSelector< FactoryType, typename FactoryType::OmatrixType>
 //{ typedef typename FactoryType::OmatrixTypeIntegratorType Type; };
-
-template < class FactoryType >
-struct IntegratorSelector< FactoryType, typename FactoryType::ZmatrixType>
-{ typedef typename FactoryType::ZmatrixTypeIntegratorType Type; };
-
-template < class FactoryType >
-struct IntegratorSelector< FactoryType, typename FactoryType::EmatrixType>
-{ typedef typename FactoryType::EmatrixTypeIntegratorType Type; };
-
-template < class FactoryType >
-struct IntegratorSelector< FactoryType, typename FactoryType::RmatrixType>
-{ typedef typename FactoryType::RmatrixTypeIntegratorType Type; };
 
 template < class FactoryType >
 struct IntegratorSelector< FactoryType, typename FactoryType::DiscreteSigmaFunctionType>
@@ -129,39 +122,18 @@ public:
         typedef STOKES_MATRIX_OBJECT<  T, R, Traits >Type;
     };
 
-    typedef typename MatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteSigmaFunctionSpaceType >::Type
-        MInversMatrixInternalType;
-    typedef Dune::shared_ptr< MInversMatrixInternalType >
-        MInversMatrixType;
-    typedef typename MatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteSigmaFunctionSpaceType >::Type
-        WmatrixInternalType;
-    typedef Dune::shared_ptr< WmatrixInternalType >
-        WmatrixType;
-    typedef typename MatrixObject< DiscreteSigmaFunctionSpaceType, DiscreteVelocityFunctionSpaceType >::Type
-        XmatrixInternalType;
-    typedef Dune::shared_ptr< XmatrixInternalType >
-        XmatrixType;
-    typedef typename MatrixObject< DiscreteVelocityFunctionSpaceType, DiscreteVelocityFunctionSpaceType >::Type
-        YmatrixInternalType;
-    typedef Dune::shared_ptr< YmatrixInternalType >
-        YmatrixType;
-    typedef typename MatrixObject< DiscretePressureFunctionSpaceType, DiscreteVelocityFunctionSpaceType >::Type
-        ZmatrixInternalType;
-    typedef Dune::shared_ptr< ZmatrixInternalType >
-        ZmatrixType;
-    typedef typename MatrixObject< DiscreteVelocityFunctionSpaceType, DiscretePressureFunctionSpaceType >::Type
-        EmatrixInternalType;
-    typedef Dune::shared_ptr< EmatrixInternalType >
-        EmatrixType;
-    typedef typename MatrixObject< DiscretePressureFunctionSpaceType, DiscretePressureFunctionSpaceType >::Type
-        RmatrixInternalType;
-    typedef Dune::shared_ptr< RmatrixInternalType >
-        RmatrixType;
+    TYPEDEF_MATRIX( M, Sigma, Sigma );
+    TYPEDEF_MATRIX( W, Velocity, Sigma );
+    TYPEDEF_MATRIX( X, Sigma, Velocity );
+    TYPEDEF_MATRIX( Y, Velocity, Velocity );
+    TYPEDEF_MATRIX( Z, Pressure, Velocity );
+    TYPEDEF_MATRIX( E, Velocity, Pressure );
+    TYPEDEF_MATRIX( R, Pressure, Pressure );
 
     static const bool verbose_ = true;
 
-    typedef Stokes::Integrators::M< MInversMatrixType, StokesTraitsType >
-        MInversMatrixIntegratorType;
+    typedef Stokes::Integrators::M< MmatrixType, StokesTraitsType >
+        MmatrixTypeIntegratorType;
     typedef Stokes::Integrators::W< WmatrixType, StokesTraitsType >
         WmatrixTypeIntegratorType;
     typedef Stokes::Integrators::X< XmatrixType, StokesTraitsType >
@@ -184,7 +156,7 @@ public:
         H2_O_IntegratorType;
     typedef Stokes::Integrators::H3< DiscretePressureFunctionType, StokesTraitsType >
         H3_IntegratorType;
-    typedef tuple<	MInversMatrixIntegratorType,
+    typedef tuple<	MmatrixTypeIntegratorType,
                     WmatrixTypeIntegratorType,
                     XmatrixTypeIntegratorType,
                     YmatrixTypeIntegratorType,
@@ -197,7 +169,7 @@ public:
                     H2_O_IntegratorType,
                     H3_IntegratorType >
         OseenIntegratorTuple;
-    typedef tuple<	MInversMatrixIntegratorType,
+    typedef tuple<	MmatrixTypeIntegratorType,
                     WmatrixTypeIntegratorType,
                     XmatrixTypeIntegratorType,
                     YmatrixTypeIntegratorType,
