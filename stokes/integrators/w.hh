@@ -7,55 +7,6 @@
 namespace Dune {
 namespace Stokes {
 namespace Integrators {
-
-	template < class MatrixPointerType, class Traits >
-	class Dummy
-	{
-		typedef typename Traits::ElementCoordinateType
-			ElementCoordinateType;
-		typedef typename Traits::SigmaRangeType
-			SigmaRangeType;
-		typedef typename Traits::VelocityRangeType
-			VelocityRangeType;
-		typedef typename Traits::PressureRangeType
-			PressureRangeType;
-		typedef typename Traits::VelocityJacobianRangeType
-			VelocityJacobianRangeType;
-		typedef typename Traits::PressureJacobianRangeType
-			PressureJacobianRangeType;
-		typedef typename Traits::SigmaJacobianRangeType
-			SigmaJacobianRangeType;
-		typedef typename Traits::LocalIntersectionCoordinateType
-			LocalIntersectionCoordinateType;
-
-
-		MatrixPointerType& matrix_pointer_;
-		public:
-			Dummy( MatrixPointerType& matrix_object	)
-				:matrix_pointer_(matrix_object)
-			{}
-
-			template < class InfoContainerVolumeType >
-			void applyVolume( const InfoContainerVolumeType& info )
-			{}
-
-			template < class InfoContainerInteriorFaceType >
-			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
-			{
-				typename MatrixPointerType::element_type::LocalMatrixType
-						localWmatrixElement = matrix_pointer_->localMatrix( info.entity, info.entity );
-				typename MatrixPointerType::element_type::LocalMatrixType
-						localWmatrixNeighbour = matrix_pointer_->localMatrix( info.neighbour, info.entity );
-			}
-
-			template < class InfoContainerFaceType >
-			void applyBoundaryFace( const InfoContainerFaceType& info )
-			{
-				typename MatrixPointerType::element_type::LocalMatrixType
-						localWmatrixElement = matrix_pointer_->localMatrix( info.entity, info.entity );
-			}
-	};
-
 	template < class MatrixPointerType, class Traits >
 	class W
 	{
@@ -195,6 +146,55 @@ namespace Integrators {
 	};
 
 	template < class T, class R > const std::string W<T,R>::name = "W";
+
+
+    template < class MatrixPointerType, class Traits >
+    class Dummy
+    {
+        typedef typename Traits::ElementCoordinateType
+            ElementCoordinateType;
+        typedef typename Traits::SigmaRangeType
+            SigmaRangeType;
+        typedef typename Traits::VelocityRangeType
+            VelocityRangeType;
+        typedef typename Traits::PressureRangeType
+            PressureRangeType;
+        typedef typename Traits::VelocityJacobianRangeType
+            VelocityJacobianRangeType;
+        typedef typename Traits::PressureJacobianRangeType
+            PressureJacobianRangeType;
+        typedef typename Traits::SigmaJacobianRangeType
+            SigmaJacobianRangeType;
+        typedef typename Traits::LocalIntersectionCoordinateType
+            LocalIntersectionCoordinateType;
+
+
+        MatrixPointerType& matrix_pointer_;
+        public:
+            Dummy( MatrixPointerType& matrix_object	)
+                :matrix_pointer_(matrix_object)
+            {}
+
+            template < class InfoContainerVolumeType >
+            void applyVolume( const InfoContainerVolumeType& info )
+            {}
+
+            template < class InfoContainerInteriorFaceType >
+            void applyInteriorFace( const InfoContainerInteriorFaceType& info )
+            {
+                typename MatrixPointerType::element_type::LocalMatrixType
+                        localWmatrixElement = matrix_pointer_->localMatrix( info.entity, info.entity );
+                typename MatrixPointerType::element_type::LocalMatrixType
+                        localWmatrixNeighbour = matrix_pointer_->localMatrix( info.neighbour, info.entity );
+            }
+
+            template < class InfoContainerFaceType >
+            void applyBoundaryFace( const InfoContainerFaceType& info )
+            {
+                typename MatrixPointerType::element_type::LocalMatrixType
+                        localWmatrixElement = matrix_pointer_->localMatrix( info.entity, info.entity );
+            }
+    };
 
 } // end namespace Integrators
 } // end namespace Stokes
