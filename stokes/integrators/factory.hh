@@ -2,6 +2,7 @@
 #define DUNE_STOKES_INTEGRATORS_FACTORY_HH
 
 #include <dune/common/shared_ptr.hh>
+#include <dune/common/static_assert.hh>
 
 #ifdef STOKES_USE_ISTL
 #   include <dune/stokes/integrators/mod_istlmatrix.hh>
@@ -41,15 +42,20 @@ struct DiagonalMatrixTraits :
 
 
 #define MK_SPACENAME(name) Discrete ## name ## FunctionSpaceType
-#define TYPEDEF_MATRIX( Name, Col, Row ) \
+#define TYPEDEF_MATRIX_AND_INTEGRATOR( Name, Row, Col ) \
     typedef typename MatrixObject< MK_SPACENAME(Row), MK_SPACENAME(Col) >::Type \
-        Name##matrixInternalType; \
-    typedef Dune::shared_ptr< Name##matrixInternalType > \
-        Name##matrixType
-#define IntegratorSelectorSpec(name) \
+        Name ## matrixInternalType; \
+    typedef Dune::shared_ptr< Name ## matrixInternalType > \
+        Name ## matrixType ; \
+    typedef Stokes::Integrators:: Name < Name ## matrixType, StokesTraitsType > \
+        Name ## matrixIntegratorType
+
+#define SPECIALIZE_IntegratorSelector(Name) \
     template < class FactoryType > \
-    struct IntegratorSelector< FactoryType, typename FactoryType:: name ##matrixType> \
-{ typedef typename FactoryType:: name##matrixTypeIntegratorType Type; }
+    struct IntegratorSelector< FactoryType, typename FactoryType:: Name ## matrixType> \
+    { typedef typename FactoryType:: Name ## matrixIntegratorType Type; }
+
+
 
 
 namespace Dune { namespace Stokes { namespace Integrators {
@@ -57,14 +63,13 @@ namespace Dune { namespace Stokes { namespace Integrators {
 //! A Static map of Matrix-/DiscreteFunctionType onto IntegratorType
 template < class FactoryType, class MatrixType >
 struct IntegratorSelector {};
-
-IntegratorSelectorSpec(M);
-IntegratorSelectorSpec(W);
-IntegratorSelectorSpec(X);
-IntegratorSelectorSpec(Y);
-IntegratorSelectorSpec(Z);
-IntegratorSelectorSpec(E);
-IntegratorSelectorSpec(R);
+SPECIALIZE_IntegratorSelector(M);
+SPECIALIZE_IntegratorSelector(W);
+SPECIALIZE_IntegratorSelector(X);
+SPECIALIZE_IntegratorSelector(Y);
+SPECIALIZE_IntegratorSelector(Z);
+SPECIALIZE_IntegratorSelector(E);
+SPECIALIZE_IntegratorSelector(R);
 
 //template < class FactoryType > //O mapping doesn't work because of the extra  arg
 //struct IntegratorSelector< FactoryType, typename FactoryType::OmatrixType>
@@ -122,32 +127,18 @@ public:
         typedef STOKES_MATRIX_OBJECT<  T, R, Traits >Type;
     };
 
-    TYPEDEF_MATRIX( M, Sigma, Sigma );
-    TYPEDEF_MATRIX( W, Velocity, Sigma );
-    TYPEDEF_MATRIX( X, Sigma, Velocity );
-    TYPEDEF_MATRIX( Y, Velocity, Velocity );
-    TYPEDEF_MATRIX( Z, Pressure, Velocity );
-    TYPEDEF_MATRIX( E, Velocity, Pressure );
-    TYPEDEF_MATRIX( R, Pressure, Pressure );
+    TYPEDEF_MATRIX_AND_INTEGRATOR( M, Sigma, Sigma );
+    TYPEDEF_MATRIX_AND_INTEGRATOR( W, Velocity, Sigma );
+    TYPEDEF_MATRIX_AND_INTEGRATOR( X, Sigma, Velocity );
+    TYPEDEF_MATRIX_AND_INTEGRATOR( Y, Velocity, Velocity );
+    TYPEDEF_MATRIX_AND_INTEGRATOR( Z, Pressure, Velocity );
+    TYPEDEF_MATRIX_AND_INTEGRATOR( E, Velocity, Pressure );
+    TYPEDEF_MATRIX_AND_INTEGRATOR( R, Pressure, Pressure );
 
     static const bool verbose_ = true;
 
-    typedef Stokes::Integrators::M< MmatrixType, StokesTraitsType >
-        MmatrixTypeIntegratorType;
-    typedef Stokes::Integrators::W< WmatrixType, StokesTraitsType >
-        WmatrixTypeIntegratorType;
-    typedef Stokes::Integrators::X< XmatrixType, StokesTraitsType >
-        XmatrixTypeIntegratorType;
-    typedef Stokes::Integrators::Y< YmatrixType, StokesTraitsType >
-        YmatrixTypeIntegratorType;
     typedef Stokes::Integrators::O< YmatrixType, StokesTraitsType, DiscreteVelocityFunctionType >
-        OmatrixTypeIntegratorType;
-    typedef Stokes::Integrators::Z< ZmatrixType, StokesTraitsType >
-        ZmatrixTypeIntegratorType;
-    typedef Stokes::Integrators::E< EmatrixType, StokesTraitsType >
-        EmatrixTypeIntegratorType;
-    typedef Stokes::Integrators::R< RmatrixType, StokesTraitsType >
-        RmatrixTypeIntegratorType;
+        OmatrixIntegratorType;
     typedef Stokes::Integrators::H1< DiscreteSigmaFunctionType, StokesTraitsType >
         H1_IntegratorType;
     typedef Stokes::Integrators::H2< DiscreteVelocityFunctionType , StokesTraitsType >
@@ -156,26 +147,26 @@ public:
         H2_O_IntegratorType;
     typedef Stokes::Integrators::H3< DiscretePressureFunctionType, StokesTraitsType >
         H3_IntegratorType;
-    typedef tuple<	MmatrixTypeIntegratorType,
-                    WmatrixTypeIntegratorType,
-                    XmatrixTypeIntegratorType,
-                    YmatrixTypeIntegratorType,
-                    OmatrixTypeIntegratorType,
-                    ZmatrixTypeIntegratorType,
-                    EmatrixTypeIntegratorType,
-                    RmatrixTypeIntegratorType,
+    typedef tuple<	MmatrixIntegratorType,
+                    WmatrixIntegratorType,
+                    XmatrixIntegratorType,
+                    YmatrixIntegratorType,
+                    OmatrixIntegratorType,
+                    ZmatrixIntegratorType,
+                    EmatrixIntegratorType,
+                    RmatrixIntegratorType,
                     H1_IntegratorType,
                     H2_IntegratorType,
                     H2_O_IntegratorType,
                     H3_IntegratorType >
         OseenIntegratorTuple;
-    typedef tuple<	MmatrixTypeIntegratorType,
-                    WmatrixTypeIntegratorType,
-                    XmatrixTypeIntegratorType,
-                    YmatrixTypeIntegratorType,
-                    ZmatrixTypeIntegratorType,
-                    EmatrixTypeIntegratorType,
-                    RmatrixTypeIntegratorType,
+    typedef tuple<	MmatrixIntegratorType,
+                    WmatrixIntegratorType,
+                    XmatrixIntegratorType,
+                    YmatrixIntegratorType,
+                    ZmatrixIntegratorType,
+                    EmatrixIntegratorType,
+                    RmatrixIntegratorType,
                     H1_IntegratorType,
                     H2_IntegratorType,
                     H3_IntegratorType >
@@ -205,10 +196,10 @@ public:
         return typename IntegratorSelector< ThisType, F >::Type( f );
     }
     //more magic so I don't need two func names please
-    static OmatrixTypeIntegratorType integratorO( YmatrixType& g,
+    static OmatrixIntegratorType integratorO( YmatrixType& g,
                                                           const DiscreteVelocityFunctionType& f )
     {
-        return OmatrixTypeIntegratorType( g, f );
+        return OmatrixIntegratorType( g, f );
     }
     static H2_O_IntegratorType integratorO( DiscreteVelocityFunctionType& g,
                                                           const DiscreteVelocityFunctionType& f )
