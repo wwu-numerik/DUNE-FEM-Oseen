@@ -6,7 +6,7 @@
 #ifndef ANALYTICALDATA_HH
 #define ANALYTICALDATA_HH
 
-#include <dune/stuff/static_assert.hh>
+#include <dune/common/static_assert.hh>
 #include <dune/stuff/debug.hh>
 
 #include <dune/fem/function/common/function.hh>
