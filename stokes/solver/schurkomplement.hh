@@ -33,6 +33,7 @@ class PreconditionOperatorDefault {
         const typename SchurkomplementOperatorType::A_PreconditionMatrix& a_precond_;
         mutable typename SchurkomplementOperatorType::DiscreteVelocityFunctionType velo_tmp;
         mutable typename SchurkomplementOperatorType::DiscreteVelocityFunctionType velo_tmp2;
+        spaces are exactly opposite with spmat
         const typename SchurkomplementOperatorType::Z_MatrixType::WrappedMatrixObjectType::DomainSpaceType& pressure_space_;
         const typename SchurkomplementOperatorType::E_MatrixType::WrappedMatrixObjectType::DomainSpaceType& velocity_space_;
     #if STOKES_USE_ISTL
