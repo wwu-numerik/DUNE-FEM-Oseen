@@ -34,6 +34,7 @@ class PreconditionOperatorDefault {
         mutable typename SchurkomplementOperatorType::DiscreteVelocityFunctionType velo_tmp;
         mutable typename SchurkomplementOperatorType::DiscreteVelocityFunctionType velo_tmp2;
         const typename SchurkomplementOperatorType::Z_MatrixType::WrappedMatrixObjectType::DomainSpaceType& pressure_space_;
+        const typename SchurkomplementOperatorType::E_MatrixType::WrappedMatrixObjectType::DomainSpaceType& velocity_space_;
     #if STOKES_USE_ISTL
         MatrixAdapterType matrix_adapter_;
     #endif // STOKES_USE_ISTL
@@ -46,9 +47,10 @@ class PreconditionOperatorDefault {
                            const typename SchurkomplementOperatorType::Z_MatrixType::WrappedMatrixObjectType::DomainSpaceType& pressure_space)
             : sk_op_( sk_op),
             a_precond_( a_solver.getOperator().preconditionMatrix() ),
-            velo_tmp( "sdeio", velocity_space ),
-            velo_tmp2( "2sdeio", velocity_space ),
-            pressure_space_(pressure_space)
+            velo_tmp( "sdeio", pressure_space ),
+            velo_tmp2( "2sdeio", pressure_space ),
+            pressure_space_(pressure_space),
+            velocity_space_(velocity_space)
         #if STOKES_USE_ISTL
             ,matrix_adapter_( *this, pressure_space, pressure_space )
         #endif // STOKES_USE_ISTL
@@ -106,8 +108,8 @@ class PreconditionOperatorDefault {
 
         double ddotOEM(const double*v, const double* w) const
         {
-            typename SchurkomplementOperatorType::DiscretePressureFunctionType V( "ddot_V2", pressure_space_, v );
-            typename SchurkomplementOperatorType::DiscretePressureFunctionType W( "ddot_W1", pressure_space_, w );
+            typename SchurkomplementOperatorType::DiscretePressureFunctionType V( "ddot_V2", velocity_space_, v );
+            typename SchurkomplementOperatorType::DiscretePressureFunctionType W( "ddot_W1", velocity_space_, w );
             return V.scalarProductDofs( W );
         }
 };
@@ -180,8 +182,8 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
             do_bfg( Parameters().getParam( "do-bfg", true ) ),
             total_inner_iterations( 0 ),
 			pressure_space_(pressure_space),
-			precond_operator_( a_solver, *this, velocity_space, pressure_space),
-            precond_( precond_operator_, pressure_space_ )
+            precond_operator_( a_solver, *this, pressure_space, velocity_space),
+            precond_( precond_operator_, pressure_space )
         #if STOKES_USE_ISTL
             , adapter_( *this, pressure_space, pressure_space )
         #endif // STOKES_USE_ISTL

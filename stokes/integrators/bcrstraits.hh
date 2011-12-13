@@ -222,7 +222,7 @@ public:
     // \todo precompile this in linear subspace
     // \todo use constraints for sparsity pattern
     const ElementIteratorType lastElement = ansatzSpace.end();
-    size_t elNo;
+
     for(  ElementIteratorType elementIterator = ansatzSpace.begin();
           elementIterator != lastElement;
           ++elementIterator )
