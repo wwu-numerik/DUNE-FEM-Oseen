@@ -30,7 +30,7 @@ class Force : public Dune::Fem::Function < FunctionSpaceImp , Force < FunctionSp
 		~Force()
 		{}
 
-		inline void evaluate( const DomainType& arg, RangeType& ret ) const
+        inline void evaluate( const DomainType& /*arg*/, RangeType& ret ) const
 		{
 			ret = RangeType( 0 );
 		}
@@ -63,13 +63,13 @@ class DirichletData : public Dune::Fem::Function < FunctionSpaceImp, DirichletDa
 		 {}
 
 		template < class IntersectionType >
-		void evaluate( const DomainType& arg, RangeType& ret, const IntersectionType& intersection ) const
+        void evaluate( const DomainType& /*arg*/, RangeType& ret, const IntersectionType& /*intersection*/ ) const
 		{
 			ret = RangeType(0);
 			ret[0] = 1;
 		}
 
-		inline void evaluate( const DomainType& arg, RangeType& ret ) const { assert( false ); }
+        inline void evaluate( const DomainType& /*arg*/, RangeType& /*ret*/ ) const { assert( false ); }
 
 	private:
 		static const int dim_ = FunctionSpaceImp::dimDomain;
@@ -95,7 +95,7 @@ class Velocity : public Dune::Fem::Function < FunctionSpaceImp , Velocity < Func
 		~Velocity()
 		{}
 
-		inline void evaluate( const DomainType& arg, RangeType& ret ) const
+        inline void evaluate( const DomainType& /*arg*/, RangeType& ret ) const
 		{
 			ret = RangeType(0);
 			ret[0] = 1;

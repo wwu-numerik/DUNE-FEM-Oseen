@@ -72,7 +72,7 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 
 	#ifdef USE_BFG_CG_SCHEME
 			template <class VECtype>
-			void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& info ) const
+            void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& /*info*/ ) const
 			{
 				multOEM(x,ret);
 			}

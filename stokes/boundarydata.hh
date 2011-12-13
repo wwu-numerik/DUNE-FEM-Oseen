@@ -92,7 +92,7 @@ class BoundaryFluxFunction : public Dune::Fem::Function < FunctionSpaceImp, Boun
 		{}
 
 		template < class IntersectionIteratorType >
-		void evaluate( const DomainType& arg, RangeType& ret, const IntersectionIteratorType& faceIter ) const
+        void evaluate( const DomainType& /*arg*/, RangeType& ret, const IntersectionIteratorType& faceIter ) const
 		{
 			const int id = faceIter.boundaryId();
 
@@ -123,7 +123,7 @@ class BoundaryFluxFunction : public Dune::Fem::Function < FunctionSpaceImp, Boun
 			}
 		}
 
-		inline void evaluate( const DomainType& arg, RangeType& ret ) const { assert(false); }
+        inline void evaluate( const DomainType& /*arg*/, RangeType& /*ret*/ ) const { assert(false); }
 
 	protected:
 		const int dim_;
@@ -326,7 +326,7 @@ class VariableDirichletData : public Dune::Fem::Function < FunctionSpaceImp, Var
 //				ret *=0;
 		}
 
-		inline void evaluate( const DomainType& arg, RangeType& ret ) const { assert(false); }
+        inline void evaluate( const DomainType& /*arg*/, RangeType& /*ret*/ ) const { assert(false); }
 
 	protected:
 		void setupBoundaryIdTypeMap_() {

@@ -31,7 +31,7 @@ class Force : public Dune::Fem::Function < FunctionSpaceImp , Force < FunctionSp
 		~Force()
 		{}
 
-		inline void evaluate( const DomainType& arg, RangeType& ret ) const
+        inline void evaluate( const DomainType& /*arg*/, RangeType& ret ) const
 		{
 			dune_static_assert( dim_ == 3, "Force_Unsuitable_WorldDim");
 			ret = RangeType( 0 );
@@ -65,7 +65,7 @@ class DirichletData : public Dune::Fem::Function < FunctionSpaceImp, DirichletDa
 		 {}
 
 		template < class IntersectionType >
-		void evaluate( const DomainType& arg, RangeType& ret, const IntersectionType& intersection ) const
+        void evaluate( const DomainType& /*arg*/, RangeType& ret, const IntersectionType& intersection ) const
 		{
 				const int id = intersection.boundaryId();
 				typedef Dune::FieldVector< typename IntersectionType::ctype, IntersectionType::dimension - 1 >
@@ -97,7 +97,7 @@ class DirichletData : public Dune::Fem::Function < FunctionSpaceImp, DirichletDa
 				ret *= factor;
 		}
 
-		inline void evaluate( const DomainType& arg, RangeType& ret ) const { assert( false ); }
+        inline void evaluate( const DomainType& /*arg*/, RangeType& /*ret*/ ) const { assert( false ); }
 
 	private:
 		static const int dim_ = FunctionSpaceImp::dimDomain;
@@ -123,7 +123,7 @@ class Velocity : public Dune::Fem::Function < FunctionSpaceImp , Velocity < Func
 		~Velocity()
 		{}
 
-		inline void evaluate( const DomainType& arg, RangeType& ret ) const
+        inline void evaluate( const DomainType& /*arg*/, RangeType& ret ) const
 		{
 			dune_static_assert( dim_ == 3, "Velocity_Unsuitable_WorldDim");
 			ret = RangeType(0);
@@ -170,7 +170,7 @@ class Pressure : public Dune::Fem::Function < FunctionSpaceImp , Pressure < Func
 		~Pressure()
 		{}
 
-		inline void evaluate( const DomainType& arg, RangeType& ret ) const
+        inline void evaluate( const DomainType& /*arg*/, RangeType& ret ) const
 		{
 			dune_static_assert( dim_ == 3, "Pressure_Unsuitable_WorldDim");
 			ret = RangeType(0);

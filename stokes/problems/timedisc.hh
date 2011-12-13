@@ -30,11 +30,11 @@ class Force : public Dune::Fem::Function < FunctionSpaceImp , Force < FunctionSp
 		~Force()
 		{}
 
-		inline void evaluate( const DomainType& arg, RangeType& ret ) const
+        inline void evaluate( const DomainType& /*arg*/, RangeType& ret ) const
 		{
 			dune_static_assert( dim_ == 2  , "__CLASS__ Wrong world dim");
-			const double x			= arg[0];
-			const double y			= arg[1];
+//			const double x			= arg[0];
+//			const double y			= arg[1];
 			const double v			= viscosity_;
 			//laplce
 			ret[0] = -2*std::pow(disc_time,3.0)*v;
@@ -86,7 +86,7 @@ class DirichletData : public Dune::Fem::Function < FunctionSpaceImp, DirichletDa
 			ret[1] = std::pow(disc_time,2.0)* arg[0];
 		}
 
-		inline void evaluate( const DomainType& arg, RangeType& ret ) const { assert( false ); }
+        inline void evaluate( const DomainType& /*arg*/, RangeType& /*ret*/ ) const { assert( false ); }
 
 	private:
 		static const int dim_ = FunctionSpaceImp::dimDomain;

@@ -2705,7 +2705,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
 
         //! avoid code duplication by doing calculations for C_1X and D_1X here
         template < class LocalPoint >
-        double getStabScalar( const LocalPoint& x , const IntersectionIteratorType& it, const std::string coeffName ) const
+        double getStabScalar( const LocalPoint& /*x*/ , const IntersectionIteratorType& it, const std::string coeffName ) const
         {
             const StabilizationCoefficients::PowerType  power   = stabil_coeff_.Power   ( coeffName );
             const StabilizationCoefficients::FactorType factor  = stabil_coeff_.Factor  ( coeffName );

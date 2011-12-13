@@ -80,7 +80,7 @@ class DirichletData : public Dune::Fem::Function < FunctionSpaceImp, DirichletDa
 			ret[1] = -1.0 * tmp;
 		}
 
-		inline void evaluate( const DomainType& arg, RangeType& ret ) const { assert( false ); }
+        inline void evaluate( const DomainType& /*arg*/, RangeType& /*ret*/ ) const { assert( false ); }
 
 	private:
 		static const int dim_ = FunctionSpaceImp::dimDomain;

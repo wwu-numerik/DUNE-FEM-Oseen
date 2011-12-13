@@ -45,7 +45,7 @@ public:
 
   void setSize( int size ) { size_ = size; }
 
-  void operator () (const double *arg, double * dest, int i = 0 )
+  void operator () (const double *arg, double * dest, int /*i*/ = 0 )
   {
     op_.multOEM(arg,dest);
   }
@@ -87,7 +87,7 @@ public:
 
   void setSize( int size ) { size_ = size; }
 
-  void operator () (const double *arg, double * dest, int i = 0 )
+  void operator () (const double *arg, double * dest, int /*i*/ = 0 )
   {
     pre_.precondition(arg,dest);
   }
@@ -757,12 +757,12 @@ public:
       \param[in] maxIter maximal number of iterations performed
       \param[in] verbose verbosity
   */
-  OEMBICGSQOp( OperatorType & op , double  redEps , double absLimit , int maxIter , bool verbose ) :
+  OEMBICGSQOp( OperatorType & op , double  /*redEps*/ , double absLimit , int maxIter , bool verbose ) :
         op_(op), epsilon_ ( absLimit ) ,
         maxIter_ (maxIter ) , verbose_ ( verbose ) {
   }
 
-  void prepare (const DiscreteFunctionType& Arg, DiscreteFunctionType& Dest) const
+  void prepare (const DiscreteFunctionType& /*Arg*/, DiscreteFunctionType& /*Dest*/) const
   {
   }
 
@@ -893,12 +893,12 @@ public:
       \param[in] maxIter maximal number of iterations performed
       \param[in] verbose verbosity
   */
-  OEMGMRESOp( OperatorType & op , double  redEps , double absLimit , int maxIter , bool verbose ) :
+  OEMGMRESOp( OperatorType & op , double  /*redEps*/ , double absLimit , int maxIter , bool verbose ) :
         op_(op), epsilon_ ( absLimit ) ,
         maxIter_ (maxIter ) , verbose_ ( verbose ) {
   }
 
-  void prepare (const DiscreteFunctionType& Arg, DiscreteFunctionType& Dest) const
+  void prepare (const DiscreteFunctionType& /*Arg*/, DiscreteFunctionType& /*Dest*/) const
   {
   }
 

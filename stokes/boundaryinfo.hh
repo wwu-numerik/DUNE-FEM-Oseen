@@ -198,7 +198,7 @@ class BoundaryShapeFunctionBase : public Dune::Fem::Function < FunctionSpaceImp,
 		{
 		}
 
-		virtual void evaluate( const DomainType& arg, RangeType& ret ) const
+        virtual void evaluate( const DomainType& /*arg*/, RangeType& ret ) const
 		{
 			ret = direction_;
 		}
