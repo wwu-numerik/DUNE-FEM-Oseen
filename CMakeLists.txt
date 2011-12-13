@@ -158,7 +158,7 @@ LINK_DIRECTORIES( "/usr/lib" "${GRAPE_PATH}" ${CCGNU_LIBRARY_DIRS} )
 FILE( GLOB header "src/*.hh" )
 FILE( GLOB_RECURSE stokes "stokes/*.hh" )
 
-set( COMMON_LIBS "dunecommon" "dunegrid" "dunefem" ${BLAS_LIB} ${ALULIBS} ${UGLIBS}  ${ParaLIBS} ${CCGNU_LIBRARIES} "boost_filesystem" "boost_system"  )
+set( COMMON_LIBS "dunecommon" "dunegeometry"  "dunefem" "dunegrid" ${BLAS_LIB} ${ALULIBS} ${UGLIBS}  ${ParaLIBS} ${CCGNU_LIBRARIES} "boost_filesystem" "boost_system")
 set( COMMON_HEADER ${header} ${stokes} ${stuff} ${DUNE_HEADERS} )
 set_source_files_properties( ${COMMON_HEADER} PROPERTIES HEADER_FILE_ONLY 1 )
 

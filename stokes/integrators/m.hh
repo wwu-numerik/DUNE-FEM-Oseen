@@ -43,8 +43,8 @@ namespace Integrators {
 			{
 				//using the proxy here would be potentially fatal because of the inversion
                 LocalMatrixProxyType local_matrix ( matrix_pointer_, info.entity, info.entity, info.eps );
-                ASSERT_EQ( local_matrix.rows(), info.numSigmaBaseFunctionsElement );
-                ASSERT_EQ( local_matrix.cols(), info.numSigmaBaseFunctionsElement );
+                ASSERT_EQ( int(local_matrix.rows()), info.numSigmaBaseFunctionsElement );
+                ASSERT_EQ( int(local_matrix.cols()), info.numSigmaBaseFunctionsElement );
 
 				// (M^{-1})_{i,j} = (\int_{T}\tau_{j}:\tau_{i}dx)^{-1} // Minvs' volume integral
 				for ( int i = 0; i < info.numSigmaBaseFunctionsElement; ++i ) {

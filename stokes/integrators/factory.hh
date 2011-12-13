@@ -17,7 +17,7 @@
         struct StencilType {
             template < typename T >
             static int nonZerosEstimate( const T& rangeSpace ) {
-                return rangeSpace.maxNumLocalDofs() * 1.5f;
+                return rangeSpace.mapper().maxNumDofs() * 1.5f;
             }
         };
     };
