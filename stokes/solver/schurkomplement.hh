@@ -22,7 +22,7 @@ class PreconditionOperatorDefault {
     typedef PreconditionOperatorDefault< SchurkomplementOperatorType >
         ThisType;
     public:
-    #ifdef STOKES_USE_ISTL
+    #if STOKES_USE_ISTL
         typedef SchurkomplementOperatorAdapter<ThisType>
             MatrixAdapterType;
     #endif // STOKES_USE_ISTL
@@ -34,7 +34,7 @@ class PreconditionOperatorDefault {
         mutable typename SchurkomplementOperatorType::DiscreteVelocityFunctionType velo_tmp;
         mutable typename SchurkomplementOperatorType::DiscreteVelocityFunctionType velo_tmp2;
         const typename SchurkomplementOperatorType::Z_MatrixType::WrappedMatrixObjectType::DomainSpaceType& pressure_space_;
-    #ifdef STOKES_USE_ISTL
+    #if STOKES_USE_ISTL
         MatrixAdapterType matrix_adapter_;
     #endif // STOKES_USE_ISTL
 
@@ -49,7 +49,7 @@ class PreconditionOperatorDefault {
             velo_tmp( "sdeio", velocity_space ),
             velo_tmp2( "2sdeio", velocity_space ),
             pressure_space_(pressure_space)
-        #ifdef STOKES_USE_ISTL
+        #if STOKES_USE_ISTL
             ,matrix_adapter_( *this, pressure_space, pressure_space )
         #endif // STOKES_USE_ISTL
         {}
@@ -73,7 +73,7 @@ class PreconditionOperatorDefault {
         ThisType& systemMatrix () { return *this; }
         const ThisType& systemMatrix () const { return *this; }
 
-    #ifdef STOKES_USE_ISTL
+    #if STOKES_USE_ISTL
         MatrixAdapterType& matrixAdapter() { return matrix_adapter_; }
         const MatrixAdapterType& matrixAdapter() const { return matrix_adapter_; }
 
@@ -182,7 +182,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 			pressure_space_(pressure_space),
 			precond_operator_( a_solver, *this, velocity_space, pressure_space),
             precond_( precond_operator_, pressure_space_ )
-        #ifdef STOKES_USE_ISTL
+        #if STOKES_USE_ISTL
             , adapter_( *this, pressure_space, pressure_space )
         #endif // STOKES_USE_ISTL
 	{}
@@ -225,7 +225,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 			assert( !Stuff::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
 //			ret[0] = x[0];
         }
-#ifdef STOKES_USE_ISTL
+#if STOKES_USE_ISTL
     template <class ArgDofStorageType, class DestDofStorageType>
     void multOEM(const Dune::BlockVector<ArgDofStorageType> &x,
              Dune::BlockVector<DestDofStorageType> &ret) const
@@ -294,7 +294,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
         }
 #endif
 
-#ifdef STOKES_USE_ISTL
+#if STOKES_USE_ISTL
     const MatrixAdapterType& matrixAdapter() const { return adapter_; }
 #endif // STOKES_USE_ISTL
     ThisType& systemMatrix () { return *this; }
@@ -322,7 +322,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 		const typename DiscretePressureFunctionType::DiscreteFunctionSpaceType& pressure_space_;
 		PreconditionOperator precond_operator_;
 		PreconditionMatrix precond_;
-    #ifdef STOKES_USE_ISTL
+    #if STOKES_USE_ISTL
 		MatrixAdapterType adapter_;
     #endif // STOKES_USE_ISTL
 };

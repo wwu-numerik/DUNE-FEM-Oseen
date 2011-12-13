@@ -46,7 +46,7 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
     typedef IdentityMatrixObject<typename YMatType::WrappedMatrixObjectType>
 		PreconditionMatrixBaseType;
 
-#ifdef STOKES_USE_ISTL
+#if STOKES_USE_ISTL
 	typedef SchurkomplementOperatorAdapter< ThisType/*,
 						typename DiscretePressureFunctionType::DiscreteFunctionSpaceType,
 						typename DiscretePressureFunctionType::DiscreteFunctionSpaceType*/ >
@@ -113,7 +113,7 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
             sig_tmp2( "sig_tmp2", sig_space ),
             space_(space),
             precondition_matrix_( *this )
-        #ifdef STOKES_USE_ISTL
+        #if STOKES_USE_ISTL
             , adapter_( *this, space, space )
         #endif // STOKES_USE_ISTL
 		{}
@@ -155,7 +155,7 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
         }
 #endif
 
-#ifdef STOKES_USE_ISTL
+#if STOKES_USE_ISTL
 	//! called my matrix adater in ISTL case
 	template <class NonPointerLeakPointerType>
 	void mv( const NonPointerLeakPointerType& x, NonPointerLeakPointerType& ret )
@@ -193,7 +193,7 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 
     ThisType& systemMatrix () { return *this; }
     const ThisType& systemMatrix () const { return *this; }
-#ifdef STOKES_USE_ISTL
+#if STOKES_USE_ISTL
     const MatrixAdapterType& matrixAdapter() const { return adapter_; }
 #endif // STOKES_USE_ISTL
     const PreconditionMatrix& preconditionMatrix() const { return precondition_matrix_; }
@@ -223,7 +223,7 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
         mutable DiscreteSigmaFunctionType sig_tmp2;
 	const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& space_;
 	PreconditionMatrix precondition_matrix_;
-#ifdef STOKES_USE_ISTL
+#if STOKES_USE_ISTL
 	MatrixAdapterType adapter_;
 #endif // STOKES_USE_ISTL
 

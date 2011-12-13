@@ -1277,7 +1277,7 @@ class DiscreteStokesModelDefaultTraits
                                                     sigmaSpaceOrder >
             DiscreteSigmaFunctionSpaceType;
 
-#ifdef STOKES_USE_ISTL
+#if STOKES_USE_ISTL
         //! discrete function type for the velocity
         typedef Dune::BlockVectorDiscreteFunction< typename DiscreteStokesFunctionSpaceWrapperType::DiscreteVelocityFunctionSpaceType >
             DiscreteVelocityFunctionType;

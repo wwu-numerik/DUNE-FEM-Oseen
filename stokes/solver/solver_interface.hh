@@ -48,7 +48,7 @@ class MatrixWrapper : boost::noncopyable {
 			:matrix_pointer_( matrix_object ),
 			cumulative_scale_factor_( 1.0 )
 		{
-		    #ifndef STOKES_USE_ISTL
+            #if ! STOKES_USE_ISTL
 			Stuff::Matrix::printMemUsage( matrix_pointer_->matrix(), Logger().Dbg(), name );
 		    #endif
 		}
@@ -86,7 +86,7 @@ class MatrixWrapper : boost::noncopyable {
 		template <class DiscrecteFunctionType, class OtherMatrixType_A, class OtherMatrixType_B>
 		void getDiag(const OtherMatrixType_A& A, const OtherMatrixType_B& B, DiscrecteFunctionType& rhs) const
 		{
-		    #ifdef STOKES_USE_ISTL
+            #if STOKES_USE_ISTL
 			assert( false );
 		    #else
 			matrix_pointer_->matrix().getDiag( A.matrix(), B.matrix(), rhs );
@@ -97,7 +97,7 @@ class MatrixWrapper : boost::noncopyable {
 		template <class DiscrecteFunctionType, class OtherMatrixType_A>
 		void getDiag(const OtherMatrixType_A& A, DiscrecteFunctionType& rhs) const
 		{
-		    #ifdef STOKES_USE_ISTL
+            #if STOKES_USE_ISTL
 			assert( false );
 		    #else
 			matrix_pointer_->matrix().getDiag( A, rhs );
@@ -107,7 +107,7 @@ class MatrixWrapper : boost::noncopyable {
 		template <class DiscrecteFunctionType>
 		void addDiag(DiscrecteFunctionType& rhs) const
 		{
-		    #ifdef STOKES_USE_ISTL
+            #if STOKES_USE_ISTL
 			assert( false );
 		    #else
 			matrix_pointer_->matrix().addDiag( rhs );
@@ -127,7 +127,7 @@ class MatrixWrapper : boost::noncopyable {
 		template <class VECtype, class VECtypeR >
 		void multOEM(const VECtype* x, VECtypeR* ret) const
 		{
-		    #ifdef STOKES_USE_ISTL
+            #if STOKES_USE_ISTL
 			//matrix wrapped by ISTLMatrixObject isn't interface compatible with Sp matrix
 			matrix_pointer_->multOEM( x, ret );
 		    #else
@@ -137,7 +137,7 @@ class MatrixWrapper : boost::noncopyable {
 		template <class VECtype, class VECtypeR>
 		void multOEM_t(const VECtype* x, VECtypeR* ret) const
 		{
-		    #ifdef STOKES_USE_ISTL
+            #if STOKES_USE_ISTL
 			matrix_pointer_->multOEM_t( x, ret );
 		    #else
 			matrix_pointer_->matrix().multOEM_t( x, ret );
@@ -148,7 +148,7 @@ class MatrixWrapper : boost::noncopyable {
 		template <class VECtype, class VECtypeR>
 		void multOEMAdd(const VECtype* x, VECtypeR* ret) const
 		{
-		    #ifdef STOKES_USE_ISTL
+            #if STOKES_USE_ISTL
 			//VecType == StraightenBlockVector<>*
 			matrix_pointer_->multOEMAdd( x, ret );
 		    #else
@@ -179,7 +179,7 @@ class MatrixWrapper : boost::noncopyable {
 
 		double operator ()(const size_t i, const size_t j ) const
 		{
-		    #ifdef STOKES_USE_ISTL
+            #if STOKES_USE_ISTL
 			return matrix_pointer_->matrix()(i,j);
 		    #else
 			return matrix_pointer_->matrix()(i,j);

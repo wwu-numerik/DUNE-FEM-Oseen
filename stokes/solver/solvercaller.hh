@@ -88,7 +88,7 @@ struct SolverCaller {
 		    // do the matlab logging stuff
 		    if ( Parameters().getParam( "save_matrices", false ) ) {
                 Stuff::Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-                #ifdef STOKES_USE_ISTL
+                #if STOKES_USE_ISTL
                 #   define MPRINTER printISTLMatrixMatlabStyle
                 #else
                 #   define MPRINTER printSparseRowMatrixMatlabStyle
@@ -191,7 +191,7 @@ struct SolverCaller {
 															 O, E, R, Z, W,
 															 H1rhs, H2rhs, H3rhs );
 											break;
-#ifndef STOKES_USE_ISTL
+#if ! STOKES_USE_ISTL
             case Solver::FullSystem_Solver_ID:		result = FullsytemSolverType().solve(	arg, dest,
                                                              X, M_invers, Y,
                                                              O, E, R, Z, W,

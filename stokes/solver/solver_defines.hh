@@ -5,7 +5,7 @@
 	#include "cmake_config.h"
 #endif
 
-#ifndef STOKES_USE_ISTL
+#if ! STOKES_USE_ISTL
 
 // OEMBICGSQOp will NOT compile
 #ifndef INNER_CG_SOLVERTYPE

@@ -4,7 +4,7 @@
 #include <dune/common/shared_ptr.hh>
 #include <dune/common/static_assert.hh>
 
-#ifdef STOKES_USE_ISTL
+#if STOKES_USE_ISTL
 #   include <dune/stokes/integrators/mod_istlmatrix.hh>
 #   define STOKES_MATRIX_OBJECT ModifiedISTLMatrixObject
 #   include <dune/fem/operator/2order/dgmatrixtraits.hh>
@@ -27,7 +27,7 @@
 #if 0
 template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
 struct DiagonalMatrixTraits :
-#ifdef STOKES_USE_ISTL
+#if STOKES_USE_ISTL
         public Dune::ISTLMatrixTraits<RowSpaceImp,ColSpaceImp> {
 #else
         public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
@@ -126,7 +126,7 @@ public:
         typedef STOKES_MATRIX_OBJECT_TRAITS<T,R> Traits;
         typedef STOKES_MATRIX_OBJECT<  T, R, Traits >Type;
     };
-
+#if STOKES_USE_ISTL
     TYPEDEF_MATRIX_AND_INTEGRATOR( M, Sigma, Sigma );
     TYPEDEF_MATRIX_AND_INTEGRATOR( W, Velocity, Sigma );
     TYPEDEF_MATRIX_AND_INTEGRATOR( X, Sigma, Velocity );
@@ -134,7 +134,15 @@ public:
     TYPEDEF_MATRIX_AND_INTEGRATOR( Z, Pressure, Velocity );
     TYPEDEF_MATRIX_AND_INTEGRATOR( E, Velocity, Pressure );
     TYPEDEF_MATRIX_AND_INTEGRATOR( R, Pressure, Pressure );
-
+#else
+    TYPEDEF_MATRIX_AND_INTEGRATOR( M, Sigma, Sigma );
+    TYPEDEF_MATRIX_AND_INTEGRATOR( W, Sigma, Velocity );
+    TYPEDEF_MATRIX_AND_INTEGRATOR( X, Velocity, Sigma );
+    TYPEDEF_MATRIX_AND_INTEGRATOR( Y, Velocity, Velocity );
+    TYPEDEF_MATRIX_AND_INTEGRATOR( Z, Velocity, Pressure );
+    TYPEDEF_MATRIX_AND_INTEGRATOR( E, Pressure, Velocity );
+    TYPEDEF_MATRIX_AND_INTEGRATOR( R, Pressure, Pressure );
+#endif
     static const bool verbose_ = true;
 
     typedef Stokes::Integrators::O< YmatrixType, StokesTraitsType, DiscreteVelocityFunctionType >
