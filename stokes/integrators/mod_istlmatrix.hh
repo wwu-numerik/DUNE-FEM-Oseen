@@ -182,12 +182,17 @@ class ModifiedImprovedBCRSMatrix : public Dune::BCRSMatrix<LittleBlockType>
     void scale( const field_type scalar ) { *this *= scalar; }
 };
 
-template <class RowSpaceImp, class ColSpaceImp, class TraitsImp>
+
+template <class RowFunctionImp, class ColFunctionImp, class TraitsImp>
 class ModifiedISTLMatrixObject;
 
-template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
+template <class RowFunctionImp, class ColFunctionImp >
 struct ModifiedISTLMatrixTraits
 {
+    typedef typename ColFunctionImp::DiscreteFunctionSpaceType
+        ColSpaceImp;
+    typedef typename RowFunctionImp::DiscreteFunctionSpaceType
+        RowSpaceImp;
   typedef RowSpaceImp RowSpaceType;
   typedef ColSpaceImp ColumnSpaceType;
   typedef ModifiedISTLMatrixTraits<RowSpaceType,ColumnSpaceType> ThisType;
@@ -200,9 +205,13 @@ struct ModifiedISTLMatrixTraits
 };
 
 //! MatrixObject handling an istl matrix
-template <class RowSpaceImp, class ColSpaceImp, class TraitsImp>
+template <class RowFunctionImp, class ColFunctionImp, class TraitsImp>
 class ModifiedISTLMatrixObject
 {
+    typedef typename ColFunctionImp::DiscreteFunctionSpaceType
+        ColSpaceImp;
+    typedef typename RowFunctionImp::DiscreteFunctionSpaceType
+        RowSpaceImp;
 public:
   //! type of traits
   typedef TraitsImp Traits;
@@ -221,7 +230,7 @@ public:
     typedef typename RowSpaceType :: RangeFieldType Ttype;
 
   //! type of this pointer
-  typedef ModifiedISTLMatrixObject<RowSpaceType,ColumnSpaceType,Traits> ThisType;
+  typedef ModifiedISTLMatrixObject<RowFunctionImp,ColFunctionImp,Traits> ThisType;
 
 
 protected:
@@ -239,9 +248,9 @@ protected:
 
   typedef FieldMatrix<RangeFieldType, littleRows, littleCols> LittleBlockType;
 
-  typedef BlockVectorDiscreteFunction< RowSpaceType >     RowDiscreteFunctionType;
+  typedef RowFunctionImp RowDiscreteFunctionType;
   typedef typename RowDiscreteFunctionType :: LeakPointerType  RowLeakPointerType;
-  typedef BlockVectorDiscreteFunction< ColumnSpaceType >  ColumnDiscreteFunctionType;
+  typedef ColFunctionImp ColumnDiscreteFunctionType;
   typedef typename ColumnDiscreteFunctionType :: LeakPointerType  ColumnLeakPointerType;
 
   typedef typename RowDiscreteFunctionType :: DofStorageType    RowBlockVectorType;

@@ -275,11 +275,15 @@ public:
 
 }; // end class MatrixFactory<BCRSMatrix<T> >
 
-template< class RowSpace, class ColumnSpace >
+template <class RowFunctionImp, class ColFunctionImp >
 struct ModifiedDGMatrixTraits
 {
-  typedef RowSpace RowSpaceType;
-  typedef ColumnSpace ColumnSpaceType;
+    typedef typename ColFunctionImp::DiscreteFunctionSpaceType
+        ColSpaceImp;
+    typedef typename RowFunctionImp::DiscreteFunctionSpaceType
+        RowSpaceImp;
+  typedef RowSpaceImp RowSpaceType;
+  typedef ColSpaceImp ColumnSpaceType;
   typedef BCRSFactory<RowSpaceType,ColumnSpaceType> StencilType;
   typedef Dune::ParallelScalarProduct< ColumnSpaceType > ParallelScalarProductType;
 

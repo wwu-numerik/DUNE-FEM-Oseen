@@ -40,8 +40,12 @@ struct DiagonalMatrixTraits :
 };
 #endif
 
+#if STOKES_USE_ISTL
+#   define MK_SPACENAME(name) Discrete ## name ## FunctionType
+#else
+#   define MK_SPACENAME(name) Discrete ## name ## FunctionSpaceType
+#endif
 
-#define MK_SPACENAME(name) Discrete ## name ## FunctionSpaceType
 #define TYPEDEF_MATRIX_AND_INTEGRATOR( Name, Row, Col ) \
     typedef typename MatrixObject< MK_SPACENAME(Row), MK_SPACENAME(Col) >::Type \
         Name ## matrixInternalType; \
@@ -126,15 +130,6 @@ public:
         typedef STOKES_MATRIX_OBJECT_TRAITS<T,R> Traits;
         typedef STOKES_MATRIX_OBJECT<  T, R, Traits >Type;
     };
-#if STOKES_USE_ISTL
-    TYPEDEF_MATRIX_AND_INTEGRATOR( M, Sigma, Sigma );
-    TYPEDEF_MATRIX_AND_INTEGRATOR( W, Velocity, Sigma );
-    TYPEDEF_MATRIX_AND_INTEGRATOR( X, Sigma, Velocity );
-    TYPEDEF_MATRIX_AND_INTEGRATOR( Y, Velocity, Velocity );
-    TYPEDEF_MATRIX_AND_INTEGRATOR( Z, Pressure, Velocity );
-    TYPEDEF_MATRIX_AND_INTEGRATOR( E, Velocity, Pressure );
-    TYPEDEF_MATRIX_AND_INTEGRATOR( R, Pressure, Pressure );
-#else
     TYPEDEF_MATRIX_AND_INTEGRATOR( M, Sigma, Sigma );
     TYPEDEF_MATRIX_AND_INTEGRATOR( W, Sigma, Velocity );
     TYPEDEF_MATRIX_AND_INTEGRATOR( X, Velocity, Sigma );
@@ -142,7 +137,6 @@ public:
     TYPEDEF_MATRIX_AND_INTEGRATOR( Z, Velocity, Pressure );
     TYPEDEF_MATRIX_AND_INTEGRATOR( E, Pressure, Velocity );
     TYPEDEF_MATRIX_AND_INTEGRATOR( R, Pressure, Pressure );
-#endif
     static const bool verbose_ = true;
 
     typedef Stokes::Integrators::O< YmatrixType, StokesTraitsType, DiscreteVelocityFunctionType >
@@ -181,11 +175,22 @@ public:
         StokesIntegratorTuple;
 
     template < class F, class G >
-    static Dune::shared_ptr< typename MatrixObject< F, G >::Type > matrix( const F& f, const G& g )
-    {
-        typedef typename MatrixObject< F, G >::Type
+    struct magic {
+        typedef typename DiscreteFunctionSelector< ThisType, F >::Type
+            FFunctionType;
+        typedef typename DiscreteFunctionSelector< ThisType, G >::Type
+            GFunctionType;
+        typedef typename MatrixObject< FFunctionType, GFunctionType >::Type
             InternalMatrixType;
-        Dune::shared_ptr< InternalMatrixType > m( new InternalMatrixType(f,g) );
+        typedef Dune::shared_ptr<InternalMatrixType>
+            PointerType;
+    };
+    template < class F, class G >
+    static auto matrix( const F& f, const G& g ) -> typename magic<F,G>::PointerType
+    {
+        typedef typename magic<F,G>::InternalMatrixType
+            InternalMatrixType;
+        typename magic<F,G>::PointerType m( new InternalMatrixType(f,g) );
         m->reserve( verbose_ );
         return m;
     }
