@@ -70,12 +70,7 @@ class MatrixWrapper : boost::noncopyable {
 		{
 		    matrix_pointer_->multOEM( f, ret );
 		}
-		template <class ArgBlockType, class DestBlockType, class ArgAllocatorType, class DestAllocatorType>
-		void applyBlock(const Dune::BlockVector<ArgBlockType,ArgAllocatorType> &f,
-				 Dune::BlockVector<DestBlockType,DestAllocatorType> &ret) const
-		{
-		    matrix_pointer_->multOEM( f, ret );
-		}
+
         template <class ArgBlockType, class DestBlockType, class ArgAllocatorType, class DestAllocatorType>
         void apply(const Dune::BlockVector<ArgBlockType,ArgAllocatorType> &f,
                  Dune::BlockVector<DestBlockType,DestAllocatorType> &ret) const

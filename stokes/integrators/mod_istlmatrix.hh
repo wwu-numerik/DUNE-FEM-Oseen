@@ -241,8 +241,6 @@ protected:
 
   enum { littleRows = RowSpaceType :: localBlockSize };
   enum { littleCols = ColumnSpaceType :: localBlockSize };
-//  enum { littleRows = 1 };
-//  enum { littleCols = 1 };
 
   typedef typename RowSpaceType :: RangeFieldType RangeFieldType;
 
@@ -869,6 +867,43 @@ public:
     matrixAdap_->apply( arg, dest );
   }
 
+//  template <class ArgBlockType, class DestBlockType, class ArgDType, class DestDType>
+//  void apply(const Dune::BlockVector<ArgBlockType, ArgDType>& arg,
+//           Dune::BlockVector<DestBlockType, DestDType>& dest) const
+  void apply(const RowBlockVectorType& arg, ColumnBlockVectorType& dest) const
+  {
+    multOEM( arg, dest );
+  }
+
+  //! apply with arbitrary discrete functions calls multOEM
+//  template <class RowDFType, class ColDFType>
+//  void apply(const RowDFType& arg, ColDFType& dest) const
+//  {
+//    multOEM( arg.leakPointer(), dest.leakPointer ());
+//  }
+
+  //! mult method of matrix object used by oem solver
+  void multOEM(const RowLeakPointerType& arg, ColumnLeakPointerType& dest) const
+  {
+    createMatrixAdapter();
+    assert( matrixAdap_ );
+    matrixAdap_->apply( arg.blockVector(), dest.blockVector() );
+  }
+  void multOEM(const RowBlockVectorType& arg, ColumnBlockVectorType& dest) const
+  {
+    createMatrixAdapter();
+    assert( matrixAdap_ );
+    matrixAdap_->apply( arg, dest );
+  }
+  template <class ArgBlockType, class DestBlockType, class ArgDType, class DestDType>
+  void multOEM(const Dune::BlockVector<ArgBlockType, ArgDType>& arg,
+           Dune::BlockVector<DestBlockType, DestDType>& dest) const
+  {
+      createMatrixAdapter();
+      assert( matrixAdap_ );
+      matrixAdap_->apply( arg, dest );
+  }
+
   //! apply with discrete functions
   void applyAdd(const RowDiscreteFunctionType& arg,
          ColumnDiscreteFunctionType& dest) const
@@ -890,33 +925,6 @@ public:
     Dune::BlockVector<DestBlockType, DestDType > tmp( dest );
     matrixAdap_->apply( arg, tmp );
     dest += tmp;
-  }
-
-  //! apply with arbitrary discrete functions calls multOEM
-  template <class RowDFType, class ColDFType>
-  void apply(const RowDFType& arg, ColDFType& dest) const
-  {
-    multOEM( arg.leakPointer(), dest.leakPointer ());
-  }
-  template <class ArgBlockType, class DestBlockType>
-  void apply(const Dune::BlockVector<ArgBlockType, std::allocator<ArgBlockType> >& arg,
-           Dune::BlockVector<DestBlockType, std::allocator<DestBlockType> >& dest) const
-  {
-    multOEM( arg, dest );
-  }
-
-  //! mult method of matrix object used by oem solver
-  void multOEM(const RowLeakPointerType& arg, ColumnLeakPointerType& dest) const
-  {
-    createMatrixAdapter();
-    assert( matrixAdap_ );
-    matrixAdap_->apply( arg.blockVector(), dest.blockVector() );
-  }
-  void multOEM(const RowBlockVectorType& arg, ColumnBlockVectorType& dest) const
-  {
-    createMatrixAdapter();
-    assert( matrixAdap_ );
-    matrixAdap_->apply( arg, dest );
   }
 
   //! mult method of matrix object used by oem solver

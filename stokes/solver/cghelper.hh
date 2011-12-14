@@ -135,8 +135,8 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
         }
 
 	//! ret = ( ( X * ( -1* ( M_inv * ( W * x ) ) ) ) + ( Y + O ) * x ) )
-	template <class VECtype>//ISTL
-	void multOEM(const VECtype& x, VECtype&  ret) const
+//    template <class BlockType,class A>//ISTL
+    void multOEM(const typename RowDiscreteFunctionType:: DofStorageType& x, typename RowDiscreteFunctionType:: DofStorageType&  ret) const
 	{
 	    w_mat_.apply( x, sig_tmp1.blockVector() );
 	    m_mat_.apply( sig_tmp1, sig_tmp2 );//Stuff:DiagmUlt
@@ -156,7 +156,7 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 #endif
 
 #if STOKES_USE_ISTL
-	//! called my matrix adater in ISTL case
+    //! called by matrix adater in ISTL case
 	template <class NonPointerLeakPointerType>
 	void mv( const NonPointerLeakPointerType& x, NonPointerLeakPointerType& ret )
 	{

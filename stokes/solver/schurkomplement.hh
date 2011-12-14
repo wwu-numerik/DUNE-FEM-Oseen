@@ -26,14 +26,20 @@ class PreconditionOperatorDefault {
         typedef SchurkomplementOperatorAdapter<ThisType>
             MatrixAdapterType;
     #endif // STOKES_USE_ISTL
-        typedef typename SchurkomplementOperatorType::DiscretePressureFunctionType RowDiscreteFunctionType;
-        typedef typename SchurkomplementOperatorType::DiscretePressureFunctionType ColDiscreteFunctionType;
+        typedef typename SchurkomplementOperatorType::DiscretePressureFunctionType
+            RowDiscreteFunctionType;
+        typedef typename RowDiscreteFunctionType::DiscreteFunctionSpaceType
+            DomainSpaceType;
+        typedef typename SchurkomplementOperatorType::DiscretePressureFunctionType
+            ColDiscreteFunctionType;
+        typedef typename ColDiscreteFunctionType::DiscreteFunctionSpaceType
+            RangeSpaceType;
     private:
         const SchurkomplementOperatorType& sk_op_;
         const typename SchurkomplementOperatorType::A_PreconditionMatrix& a_precond_;
         mutable typename SchurkomplementOperatorType::DiscreteVelocityFunctionType velo_tmp;
         mutable typename SchurkomplementOperatorType::DiscreteVelocityFunctionType velo_tmp2;
-        spaces are exactly opposite with spmat
+
         const typename SchurkomplementOperatorType::Z_MatrixType::WrappedMatrixObjectType::DomainSpaceType& pressure_space_;
         const typename SchurkomplementOperatorType::E_MatrixType::WrappedMatrixObjectType::DomainSpaceType& velocity_space_;
     #if STOKES_USE_ISTL
@@ -53,7 +59,7 @@ class PreconditionOperatorDefault {
             pressure_space_(pressure_space),
             velocity_space_(velocity_space)
         #if STOKES_USE_ISTL
-            ,matrix_adapter_( *this, pressure_space, pressure_space )
+            ,matrix_adapter_( *this, velocity_space, velocity_space )
         #endif // STOKES_USE_ISTL
         {}
 
@@ -86,9 +92,9 @@ class PreconditionOperatorDefault {
         {
             multOEM( x.blockVector(), ret.blockVector() );
         }
-        template <class ArgDofStorageType, class DestDofStorageType>
-        void multOEM(const Dune::BlockVector<ArgDofStorageType> &x,
-                 Dune::BlockVector<DestDofStorageType> &ret) const
+        template <class ArgDofStorageType, class DestDofStorageType, class ArgRangeFieldType, class DestRangeFieldType>
+        void multOEM(const Dune::BlockVector<ArgDofStorageType,ArgRangeFieldType> &x,
+                 Dune::BlockVector<DestDofStorageType,DestRangeFieldType> &ret) const
         {
             sk_op_.z_mat_.multOEM( x,velo_tmp.blockVector());
             a_precond_.apply( velo_tmp, velo_tmp2);
