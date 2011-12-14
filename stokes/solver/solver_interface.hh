@@ -59,8 +59,9 @@ class MatrixWrapper : boost::noncopyable {
 			matrix_pointer_->matrix().scale( 1.0/cumulative_scale_factor_ );
 		}
 
-		template <class DiscFType, class DiscFuncType>
-		void apply(const DiscFType &f, DiscFuncType &ret) const
+//		template <class DiscFType, class DiscFuncType>
+        void apply(const typename WrappedMatrixObjectType::RowDiscreteFunctionType &f,
+                   typename WrappedMatrixObjectType::ColumnDiscreteFunctionType &ret) const
 		{
             matrix_pointer_->apply( f, ret );
 		}
