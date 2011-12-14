@@ -40,14 +40,9 @@ struct DiagonalMatrixTraits :
 };
 #endif
 
-#if STOKES_USE_ISTL
-#   define MK_SPACENAME(name) Discrete ## name ## FunctionType
-#else
-#   define MK_SPACENAME(name) Discrete ## name ## FunctionSpaceType
-#endif
-
+#define MK_FUNC_NAME(name) Discrete ## name ## FunctionType
 #define TYPEDEF_MATRIX_AND_INTEGRATOR( Name, Row, Col ) \
-    typedef typename MatrixObject< MK_SPACENAME(Row), MK_SPACENAME(Col) >::Type \
+    typedef typename MatrixObject< MK_FUNC_NAME(Row), MK_FUNC_NAME(Col) >::Type \
         Name ## matrixInternalType; \
     typedef Dune::shared_ptr< Name ## matrixInternalType > \
         Name ## matrixType ; \
@@ -176,18 +171,10 @@ public:
 
     template < class RowSpace, class ColSpace >
     struct magic {
-        //istl matrices get a function, spmatrix a space
-        #if STOKES_USE_ISTL
             typedef typename DiscreteFunctionSelector< ThisType, RowSpace >::Type
                 RowType;
             typedef typename DiscreteFunctionSelector< ThisType, ColSpace >::Type
                 ColType;
-        #else
-            typedef F
-                RowType;
-            typedef G
-                ColType;
-        #endif
         typedef typename MatrixObject< RowType, ColType >::Type
             InternalMatrixType;
         typedef Dune::shared_ptr<InternalMatrixType>
