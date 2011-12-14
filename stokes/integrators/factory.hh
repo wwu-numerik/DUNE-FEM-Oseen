@@ -174,23 +174,32 @@ public:
                     H3_IntegratorType >
         StokesIntegratorTuple;
 
-    template < class F, class G >
+    template < class RowSpace, class ColSpace >
     struct magic {
-        typedef typename DiscreteFunctionSelector< ThisType, F >::Type
-            FFunctionType;
-        typedef typename DiscreteFunctionSelector< ThisType, G >::Type
-            GFunctionType;
-        typedef typename MatrixObject< FFunctionType, GFunctionType >::Type
+        //istl matrices get a function, spmatrix a space
+        #if STOKES_USE_ISTL
+            typedef typename DiscreteFunctionSelector< ThisType, RowSpace >::Type
+                RowType;
+            typedef typename DiscreteFunctionSelector< ThisType, ColSpace >::Type
+                ColType;
+        #else
+            typedef F
+                RowType;
+            typedef G
+                ColType;
+        #endif
+        typedef typename MatrixObject< RowType, ColType >::Type
             InternalMatrixType;
         typedef Dune::shared_ptr<InternalMatrixType>
             PointerType;
     };
-    template < class F, class G >
-    static auto matrix( const F& f, const G& g ) -> typename magic<F,G>::PointerType
+    //! yes, i'm using the new function def method just for the fuck of it
+    template < class RowSpace, class ColSpace >
+    static auto matrix( const RowSpace& f, const ColSpace& g ) -> typename magic<RowSpace,ColSpace>::PointerType
     {
-        typedef typename magic<F,G>::InternalMatrixType
+        typedef typename magic<RowSpace,ColSpace>::InternalMatrixType
             InternalMatrixType;
-        typename magic<F,G>::PointerType m( new InternalMatrixType(f,g) );
+        typename magic<RowSpace,ColSpace>::PointerType m( new InternalMatrixType(f,g) );
         m->reserve( verbose_ );
         return m;
     }
