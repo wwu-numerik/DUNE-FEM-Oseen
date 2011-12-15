@@ -65,7 +65,10 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 				a_operator_( a_operator )
 			{
 				DiscreteVelocityFunctionType precondition_diagonal( "diag1", a_operator_.space_ );
+#if ! STOKES_USE_ISTL
+                //!TODO
 				a_operator_.getDiag( precondition_diagonal );
+#endif
 				Stuff::invertFunctionDofs( precondition_diagonal );
 				setMatrixDiag( PreconditionMatrixBaseType::matrix(), precondition_diagonal );
 			}
@@ -160,22 +163,24 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 	template <class NonPointerLeakPointerType>
 	void mv( const NonPointerLeakPointerType& x, NonPointerLeakPointerType& ret )
 	{
-//	    const double* a = x;
 	    multOEM( x, ret );
 	}
-	template <class NonPointerLeakPointerType>
-	void usmv( const typename MatrixAdapterType::field_type alpha, const NonPointerLeakPointerType& x, NonPointerLeakPointerType& ret )
+    template <class BlockType>
+    void usmv( const typename MatrixAdapterType::field_type alpha,
+               const Dune::BlockVector<BlockType>& x,
+               Dune::BlockVector<BlockType>& ret ) const
 	{
-	    assert( false );//alpha not used
-//	    multOEM( &(x.leakPointer()), &(ret.leakPointer()) );
-	    multOEM( x,ret );
+        Dune::BlockVector<BlockType> tmp( ret );
+        multOEM(x,tmp);
+        tmp *= alpha;
+        ret += tmp;
 	}
 
-    void applyAdd ( const typename MatrixAdapterType::field_type alpha, const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest )
+    void applyAdd ( const typename MatrixAdapterType::field_type alpha,
+                    const DiscreteVelocityFunctionType& x,
+                    DiscreteVelocityFunctionType& ret ) const
     {
-        DiscreteVelocityFunctionType tmp( dest );
-        apply(arg,tmp);
-        dest += tmp;
+        applyAdd( alpha, x.blockVector(), ret.blockVector() );
     }
 #endif // STOKES_USE_ISTL
 

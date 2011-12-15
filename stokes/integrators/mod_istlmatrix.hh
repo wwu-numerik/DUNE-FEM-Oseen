@@ -2,6 +2,7 @@
 #define MOD_ISTLMATRIX_HH
 
 #include <dune/istl/bcrsmatrix.hh>
+#include <dune/stuff/debug.hh>
 
 namespace Dune {
 namespace Stokes {
@@ -13,7 +14,6 @@ template <class LittleBlockType,
 class ModifiedImprovedBCRSMatrix : public Dune::BCRSMatrix<LittleBlockType>
 {
   public:
-    typedef LittleBlockType KK;
     typedef RowDiscreteFunctionImp RowDiscreteFunctionType;
     typedef ColDiscreteFunctionImp ColDiscreteFunctionType;
 
@@ -75,8 +75,8 @@ class ModifiedImprovedBCRSMatrix : public Dune::BCRSMatrix<LittleBlockType>
   protected:
     size_type nz_;
 
-    int localRows_;
-    int localCols_;
+    const int localRows_;
+    const int localCols_;
 
     typedef typename BaseType :: BuildMode BuildMode ;
 
@@ -85,7 +85,11 @@ class ModifiedImprovedBCRSMatrix : public Dune::BCRSMatrix<LittleBlockType>
     ModifiedImprovedBCRSMatrix(size_type rows, size_type cols)
       : BaseType (rows,cols, BaseType :: random)
       , nz_(0)
+      , localRows_( LittleBlockType::rows )
+      , localCols_( LittleBlockType::cols )
     {
+        ASSERT_LT( 0, rows);
+        ASSERT_LT( 0, cols);
         std::cerr << boost::format( "mistl Matrix %d - %d --> %d x %d blocks, nz %d\n")
                         % rows % cols % LittleBlockType::rows %  LittleBlockType::cols  % nz_;
     }
@@ -94,7 +98,11 @@ class ModifiedImprovedBCRSMatrix : public Dune::BCRSMatrix<LittleBlockType>
     ModifiedImprovedBCRSMatrix(size_type rows, size_type cols, size_type nz)
       : BaseType (rows,cols, BaseType :: random)
       , nz_(nz)
+      , localRows_( LittleBlockType::rows )
+      , localCols_( LittleBlockType::cols )
     {
+        ASSERT_LT( 0, rows);
+        ASSERT_LT( 0, cols);
         std::cerr << boost::format( "mistl Matrix %d - %d --> %d x %d blocks, nz %d\n")
                         % rows % cols % LittleBlockType::rows %  LittleBlockType::cols  % nz_;
     }
@@ -103,7 +111,10 @@ class ModifiedImprovedBCRSMatrix : public Dune::BCRSMatrix<LittleBlockType>
     ModifiedImprovedBCRSMatrix( )
       : BaseType ()
       , nz_(0)
-    {}
+    {
+        ASSERT_LT( 0, rows);
+        ASSERT_LT( 0, cols);
+    }
 
     //! copy constructor, needed by ISTL preconditioners
     ModifiedImprovedBCRSMatrix(const ModifiedImprovedBCRSMatrix& org)
@@ -167,16 +178,18 @@ class ModifiedImprovedBCRSMatrix : public Dune::BCRSMatrix<LittleBlockType>
 
     size_type rows() const { return BaseType::N()*localRows_ ; }
     size_type cols() const { return BaseType::M()*localCols_ ; }
-    field_type operator() ( const unsigned int row, const unsigned int col ) const
+
+    void set( const unsigned int globalRow, const unsigned int globalCol, field_type value )
     {
-    assert( false );
-//          if ( BaseType::exists( row, col ) )
-//              return *(BaseType::r[row].find(col));
-      return 0.0;
-    }
-    void set( const unsigned int row, const unsigned int col, field_type value )
-    {
-    assert( false );
+        const int row = (int) globalRow / localRows_;
+        const int col = (int) globalCol / localCols_;
+        const int lRow = globalRow%localRows_;
+        const int lCol = globalCol%localCols_;
+        if ( BaseType::exists( row, col ) ) {
+          LittleBlockType& block = ((*this)[row])[col];
+          block[lRow][lCol] = value ;
+        }
+        else DUNE_THROW( InvalidStateException, "matrix diagonal entries are not reservered." );
     }
     bool find (size_type row, size_type col) const { return BaseType::exists(row, col); }
     void scale( const field_type scalar ) { *this *= scalar; }
@@ -342,6 +355,7 @@ public:
       {
         // initialize base functions sets
         BaseType :: init ( rowEntity , colEntity );
+
 
         geomType_ = rowEntity.type();
         numRows_  = rowMapper_.numDofs(rowEntity);
@@ -572,6 +586,8 @@ public:
     , Arg_(0)
     , Dest_(0)
   {
+      dune_static_assert( littleRows > 0, "blocks cannot be one dimensional" );
+      dune_static_assert( littleCols > 0, "blocks cannot be one dimensional" );
     int preCon = 0;
     if(paramfile != "")
     {
@@ -774,6 +790,29 @@ public:
   //! return reference to preconditioner object (used by OEM methods)
   const PreconditionMatrixType& preconditionMatrix() const { return *this; }
 
+  typename MatrixType::field_type operator() ( const unsigned int globalRow, const unsigned int globalCol ) const
+  {
+      const int row = (int) globalRow / littleRows;
+      const int col = (int) globalCol / littleCols;
+      const int lRow = globalRow%littleRows;
+      const int lCol = globalCol%littleCols;
+      if ( matrix_-> exists( row, col ) ) {
+        const LittleBlockType& block = (matrix()[row])[col];
+        return block[lRow][lCol] ;
+      }
+      return 0.0;
+  }
+  void add ( const unsigned int globalRow, const unsigned int globalCol, double value ) const
+  {
+      const int row = (int) globalRow / littleRows;
+      const int col = (int) globalCol / littleCols;
+      const int lRow = globalRow%littleRows;
+      const int lCol = globalCol%littleCols;
+      assert( matrix_-> exists( row, col ) );
+      LittleBlockType& block = (matrix()[row])[col];
+      block[lRow][lCol] += value;
+  }
+
   //! set all matrix entries to zero
   void clear()
   {
@@ -789,7 +828,10 @@ public:
       removeObj();
 
       StencilType stencil;
-      matrix_ = new MatrixType(rowSpace_.size()/LittleBlockType::rows,colSpace_.size()/LittleBlockType::cols);
+      int x_size = rowSpace_.size()/int(LittleBlockType::rows);
+      int y_size = colSpace_.size()/int(LittleBlockType::cols);
+      std::cerr << boost::format( "little rows %d ; cols %d\n" ) % LittleBlockType::rows % LittleBlockType::cols;
+      matrix_ = new MatrixType(x_size, y_size);
       matrix().setup(rowSpace_,colSpace_,stencil,verbose);
 
       sequence_ = rowSpace_.sequence();
@@ -1113,5 +1155,16 @@ public:
 } //namespace Dune
 } //namespace Stokes
 } //namespace Integrators
+
+namespace Stuff {
+
+//! specializations needed to avoid () op
+template < class RowType,class ColType, class BlockType, class Stream>
+void matrixToGnuplotStream( const Dune::Stokes::Integrators::ModifiedImprovedBCRSMatrix<RowType,ColType,BlockType>& matrix,
+                            Stream& /*stream*/ ) {
+    assert(false);
+    double d = matrix(9,9);
+}
+} // namespace Stuff {
 
 #endif // MOD_ISTLMATRIX_HH
