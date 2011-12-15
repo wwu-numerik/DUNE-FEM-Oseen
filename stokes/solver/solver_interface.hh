@@ -59,13 +59,13 @@ class MatrixWrapper : boost::noncopyable {
 			matrix_pointer_->matrix().scale( 1.0/cumulative_scale_factor_ );
 		}
 
-//		template <class DiscFType, class DiscFuncType>
-        void apply(const typename WrappedMatrixObjectType::RowDiscreteFunctionType &f,
-                   typename WrappedMatrixObjectType::ColumnDiscreteFunctionType &ret) const
+        void apply(const typename WrappedMatrixObjectType::ColumnDiscreteFunctionType &f,
+                   typename WrappedMatrixObjectType::RowDiscreteFunctionType &ret) const
 		{
             matrix_pointer_->apply( f, ret );
 		}
-		template <class ArgBlockVectorType, class DestBlockVectorType, class ArgDofImp, class DestDofImp>
+
+        template <class ArgBlockVectorType, class DestBlockVectorType, class ArgDofImp, class DestDofImp>
 		void apply(const Dune::StraightenBlockVector<ArgBlockVectorType,ArgDofImp> &f,
 				 Dune::StraightenBlockVector<DestBlockVectorType,DestDofImp> &ret) const
 		{
@@ -110,8 +110,6 @@ class MatrixWrapper : boost::noncopyable {
 		    #endif
 		}
 
-//		template < class T >
-//		void applyAdd( const T& x, T& ret ) const
         template <class ArgBlockType, class DestBlockType, class ArgDType, class DestDType>
         void applyAdd(const Dune::BlockVector<ArgBlockType, ArgDType>& x,
                  Dune::BlockVector<DestBlockType, DestDType>& ret ) const
@@ -125,9 +123,9 @@ class MatrixWrapper : boost::noncopyable {
 		{
             #if STOKES_USE_ISTL
 			//matrix wrapped by ISTLMatrixObject isn't interface compatible with Sp matrix
-			matrix_pointer_->multOEM( x, ret );
+            matrix_pointer_->multOEM( x, ret );
 		    #else
-			matrix_pointer_->matrix().multOEM( x, ret );
+            matrix_pointer_->matrix().multOEM( x, ret );
 		    #endif
 		}
 		template <class VECtype, class VECtypeR>
@@ -175,11 +173,7 @@ class MatrixWrapper : boost::noncopyable {
 
 		double operator ()(const size_t i, const size_t j ) const
 		{
-            #if STOKES_USE_ISTL
-			return matrix_pointer_->matrix()(i,j);
-		    #else
-			return matrix_pointer_->matrix()(i,j);
-		    #endif
+            return matrix_pointer_->matrix()(i,j);
 		}
 
 		size_t rows() const

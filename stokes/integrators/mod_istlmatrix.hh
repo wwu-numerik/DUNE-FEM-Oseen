@@ -849,8 +849,8 @@ public:
   }
 
   //! apply with discrete functions
-  void apply(const RowDiscreteFunctionType& arg,
-             ColumnDiscreteFunctionType& dest) const
+  void apply(const ColumnDiscreteFunctionType& arg,
+             RowDiscreteFunctionType& dest) const
   {
     createMatrixAdapter();
     assert( matrixAdap_ );
@@ -858,37 +858,28 @@ public:
   }
 
   //! apply with discrete functions
-  void apply(const typename RowDiscreteFunctionType::LeakPointerType& arg,
-         typename ColumnDiscreteFunctionType::LeakPointerType& dest) const
+  void apply(const typename ColumnDiscreteFunctionType::LeakPointerType& arg,
+         typename RowDiscreteFunctionType::LeakPointerType& dest) const
   {
     createMatrixAdapter();
     assert( matrixAdap_ );
     matrixAdap_->apply( arg, dest );
   }
 
-//  template <class ArgBlockType, class DestBlockType, class ArgDType, class DestDType>
-//  void apply(const Dune::BlockVector<ArgBlockType, ArgDType>& arg,
-//           Dune::BlockVector<DestBlockType, DestDType>& dest) const
-  void apply(const RowBlockVectorType& arg, ColumnBlockVectorType& dest) const
+  void apply(const ColumnBlockVectorType& arg, RowBlockVectorType& dest) const
   {
     multOEM( arg, dest );
   }
 
-  //! apply with arbitrary discrete functions calls multOEM
-//  template <class RowDFType, class ColDFType>
-//  void apply(const RowDFType& arg, ColDFType& dest) const
-//  {
-//    multOEM( arg.leakPointer(), dest.leakPointer ());
-//  }
-
   //! mult method of matrix object used by oem solver
-  void multOEM(const RowLeakPointerType& arg, ColumnLeakPointerType& dest) const
+  //! LeakPointerTypes are StraightenBlockVector
+  void multOEM(const ColumnLeakPointerType& arg, RowLeakPointerType& dest) const
   {
     createMatrixAdapter();
     assert( matrixAdap_ );
     matrixAdap_->apply( arg.blockVector(), dest.blockVector() );
   }
-  void multOEM(const RowBlockVectorType& arg, ColumnBlockVectorType& dest) const
+  void multOEM(const ColumnBlockVectorType& arg, RowBlockVectorType& dest) const
   {
     createMatrixAdapter();
     assert( matrixAdap_ );
@@ -904,14 +895,10 @@ public:
   }
 
   //! apply with discrete functions
-  void applyAdd(const RowDiscreteFunctionType& arg,
-         ColumnDiscreteFunctionType& dest) const
+  void applyAdd(const ColumnDiscreteFunctionType& arg,
+         RowDiscreteFunctionType& dest) const
   {
-    createMatrixAdapter();
-    assert( matrixAdap_ );
-    ColumnDiscreteFunctionType tmp( dest );
-    matrixAdap_->apply( arg.blockVector(), tmp.blockVector() );
-    dest += tmp;
+    applyAdd( arg.blockVector(), dest.blockVector() );
   }
 
   //!
@@ -929,20 +916,11 @@ public:
   //! mult method of matrix object used by oem solver
   void multOEMAdd(const RowLeakPointerType* arg, ColumnLeakPointerType* dest) const
   {
-    createMatrixAdapter();
-    assert( matrixAdap_ );
-    ColumnLeakPointerType tmp;
-    matrixAdap_->apply( arg->blockVector(), tmp->blockVector() );
-    dest += tmp;
+    assert( arg );
+    assert( dest );
+    multOEMAdd( arg->blockVector(), dest->blockVector() );
   }
 
-  //! mult method of matrix object used by oem solver
-  template <class ArgDofStorageType, class DestDofStorageType, class ArgRangeFieldType, class DestRangeFieldType>
-  void multOEMAdd(const Dune::StraightenBlockVector<ArgDofStorageType,ArgRangeFieldType>& arg,
-           Dune::StraightenBlockVector<DestDofStorageType,DestRangeFieldType>& dest ) const
-  {
-      multOEMAdd( arg.blockVector(), dest.blockVector() );
-  }
   template <class ArgDofStorageType, class DestDofStorageType>
   void multOEMAdd(const Dune::BlockVector<ArgDofStorageType> &arg,
            Dune::BlockVector<DestDofStorageType> &dest) const
