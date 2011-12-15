@@ -9,6 +9,10 @@
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/progressbar.hh>
 //do whatever you like to this file to test out simple and small stuff
+#include<dune/common/fmatrix.hh>
+    #include<dune/istl/bcrsmatrix.hh>
+
+#include <dune/istl/io.hh>
 
 int main( int argc, char** argv ) {
 	Dune::MPIManager::initialize(argc, argv);
@@ -38,6 +42,46 @@ int main( int argc, char** argv ) {
 		 sleep( 1 );
 	  }
 	 	++pbar;
+
+
+    typedef Dune::FieldMatrix<double,2,2> M;
+    Dune::BCRSMatrix<M> B(4,4,Dune::BCRSMatrix<M>::random);
+
+    // initially set row size for each row
+    B.setrowsize(0,1);
+    B.setrowsize(3,4);
+    B.setrowsize(2,1);
+    B.setrowsize(1,1);
+    // increase row size for row 2
+    B.incrementrowsize(2);
+
+    // finalize row setup phase
+    B.endrowsizes();
+
+    // add column entries to rows
+    B.addindex(0,0);
+    B.addindex(3,1);
+    B.addindex(2,2);
+    B.addindex(1,1);
+    B.addindex(2,0);
+    B.addindex(3,2);
+    B.addindex(3,0);
+    B.addindex(3,3);
+
+    // finalize column setup phase
+    B.endindices();
+
+    // set entries using the random access operator
+    B[0][0] = 1;
+    B[1][1] = 2;
+    B[2][0] = 3;
+    B[2][2] = 4;
+    B[3][1] = 5;
+    B[3][2] = 6;
+    B[3][0] = 7;
+    B[3][3] = 8;
+
+     Dune::printSparseMatrix( std:: cout, B, "title", "row");
 
 	return 0;
 }
