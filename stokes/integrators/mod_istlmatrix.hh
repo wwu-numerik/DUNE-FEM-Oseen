@@ -13,6 +13,7 @@ template <class LittleBlockType,
           class ColDiscreteFunctionImp >
 class ModifiedImprovedBCRSMatrix : public Dune::BCRSMatrix<LittleBlockType>
 {
+    friend struct MatrixDimension<ModifiedImprovedBCRSMatrix>;
   public:
     typedef RowDiscreteFunctionImp RowDiscreteFunctionType;
     typedef ColDiscreteFunctionImp ColDiscreteFunctionType;
@@ -1011,9 +1012,9 @@ public:
   }
 
   //! print matrix
-  void print(std::ostream & s) const
+  void print(std::ostream & s = std::cout ) const
   {
-    matrix().print(std::cout);
+    matrix().print(s);
   }
 
   const RowMapperType& rowMapper() const { return rowMapper_; }
@@ -1152,9 +1153,122 @@ public:
   }
 };
 
-} //namespace Dune
-} //namespace Stokes
 } //namespace Integrators
+} //namespace Stokes
+
+template <class LittleBlockType,
+          class RowDiscreteFunctionImp,
+          class ColDiscreteFunctionImp >
+struct MatrixDimension<Stokes::Integrators
+        ::ModifiedImprovedBCRSMatrix<LittleBlockType,
+        RowDiscreteFunctionImp, ColDiscreteFunctionImp
+        > >
+{
+    typedef LittleBlockType B;
+  typedef Stokes::Integrators::ModifiedImprovedBCRSMatrix<LittleBlockType,
+    RowDiscreteFunctionImp, ColDiscreteFunctionImp > Matrix;
+  typedef typename Matrix::block_type block_type;
+  typedef typename Matrix::size_type size_type;
+
+  static size_type rowdim (const Matrix& A, size_type i)
+  {
+    const B* row = A.r[i].getptr();
+    if(row)
+      return MatrixDimension<block_type>::rowdim(*row);
+    else
+      return 0;
+  }
+
+  static size_type coldim (const Matrix& A, size_type c)
+  {
+    // find an entry in column j
+    if (A.nnz>0)
+    {
+      for (size_type k=0; k<A.nnz; k++) {
+        if (A.j[k]==c) {
+          return MatrixDimension<block_type>::coldim(A.a[k]);
+        }
+      }
+    }
+    else
+    {
+      for (size_type i=0; i<A.N(); i++)
+      {
+        size_type* j = A.r[i].getindexptr();
+        B*   a = A.r[i].getptr();
+        for (size_type k=0; k<A.r[i].getsize(); k++)
+          if (j[k]==c) {
+            return MatrixDimension<block_type>::coldim(a[k]);
+          }
+      }
+    }
+
+    // not found
+    return 0;
+  }
+
+  static size_type rowdim (const Matrix& A){
+    size_type nn=0;
+    for (size_type i=0; i<A.N(); i++)
+      nn += rowdim(A,i);
+    return nn;
+  }
+
+  static size_type coldim (const Matrix& A){
+    typedef typename Matrix::ConstRowIterator ConstRowIterator;
+    typedef typename Matrix::ConstColIterator ConstColIterator;
+
+    // The following code has a complexity of nnz, and
+    // typically a very small constant.
+    //
+    std::vector<size_type> coldims(A.M(),
+                                   std::numeric_limits<size_type>::max());
+
+    for (ConstRowIterator row=A.begin(); row!=A.end(); ++row)
+      for (ConstColIterator col=row->begin(); col!=row->end(); ++col)
+        // only compute blocksizes we don't already have
+        if (coldims[col.index()]==std::numeric_limits<size_type>::max())
+          coldims[col.index()] = MatrixDimension<block_type>::coldim(*col);
+
+    size_type sum = 0;
+    for (typename std::vector<size_type>::iterator it=coldims.begin();
+         it!=coldims.end(); ++it)
+      // skip rows for which no coldim could be determined
+      if ((*it)>=0)
+        sum += *it;
+
+    return sum;
+  }
+};
+
+
+template<typename B, int n, int m, class RowDiscreteFunctionImp,
+         class ColDiscreteFunctionImp >
+struct MatrixDimension<Stokes::Integrators::ModifiedImprovedBCRSMatrix<FieldMatrix<B,n,m> ,  RowDiscreteFunctionImp, ColDiscreteFunctionImp> >
+{
+  typedef Stokes::Integrators::ModifiedImprovedBCRSMatrix<FieldMatrix<B,n,m> , RowDiscreteFunctionImp, ColDiscreteFunctionImp> Matrix;
+  typedef typename Matrix::size_type size_type;
+
+  static size_type rowdim (const Matrix& A, size_type i)
+  {
+    return n;
+  }
+
+  static size_type coldim (const Matrix& A, size_type c)
+  {
+    return m;
+  }
+
+  static size_type rowdim (const Matrix& A) {
+    return A.N()*n;
+  }
+
+  static size_type coldim (const Matrix& A) {
+    return A.M()*m;
+  }
+};
+
+} //namespace Dune
 
 namespace Stuff {
 
