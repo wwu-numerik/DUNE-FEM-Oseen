@@ -156,6 +156,19 @@ class ModifiedImprovedBCRSMatrix : public Dune::BCRSMatrix<LittleBlockType>
       }
     }
 
+    field_type operator() ( const unsigned int globalRow, const unsigned int globalCol ) const
+    {
+        const int row = (int) globalRow / localRows_;
+        const int col = (int) globalCol / localCols_;
+        const int lRow = globalRow % localRows_;
+        const int lCol = globalCol % localCols_;
+        if ( BaseType::exists( row, col ) ) {
+          const block_type& block = ((*this)[row])[col];
+          return block[lRow][lCol] ;
+        }
+        return 0.0;
+    }
+
     //! print matrix
     void print(std::ostream & s) const
     {

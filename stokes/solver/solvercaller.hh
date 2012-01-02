@@ -151,9 +151,9 @@ struct SolverCaller {
                 assert( !Stuff::MatrixContainsNanOrInf( Zmatrix->matrix() ) );
                 assert( !Stuff::MatrixContainsNanOrInf( Rmatrix->matrix() ) );
                 assert( !Stuff::MatrixContainsNanOrInf( MInversMatrix->matrix() ) );
-			    assert( !Stuff::FunctionContainsNanOrInf( H1rhs ) );
-			    assert( !Stuff::FunctionContainsNanOrInf( H2rhs ) );
-			    assert( !Stuff::FunctionContainsNanOrInf( H3rhs ) );
+                assert( !Stuff::FunctionContainsNanOrInf( H1rhs ) );
+                assert( !Stuff::FunctionContainsNanOrInf( H2rhs ) );
+                assert( !Stuff::FunctionContainsNanOrInf( H3rhs ) );
 //			    assert( !Stuff::FunctionContainsNanOrInf( H2_O_rhs ) );
 	    //				Zmatrix.matrix().scale( -1 );
 	    //				assert( areTransposed( Zmatrix.matrix(), Ematrix.matrix() ));

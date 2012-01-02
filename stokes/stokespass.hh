@@ -29,10 +29,8 @@
 
 namespace Dune
 {
-
 /**
  *  \brief  StokesPass
- *
  *  \todo   doc
  **/
 template <  class DiscreteModelImp,
@@ -118,8 +116,6 @@ class StokesPass
             auto H2_O_rhs = Factory::rhs( "H2_O", velocitySpace_ );
             // H_{3}\in R^{K}
             auto H3rhs = Factory::rhs( "H3", pressureSpace_ );
-			profiler().StopTiming("Pass_init");
-
             auto m_integrator = Factory::integrator( MInversMatrix );
             auto w_integrator = Factory::integrator( Wmatrix );
             auto x_integrator = Factory::integrator( Xmatrix );
@@ -132,6 +128,7 @@ class StokesPass
             auto h2_integrator = Factory::integrator( H2rhs );
             auto h2_o_integrator = Factory::integratorO( H2rhs, beta_ );
             auto h3_integrator = Factory::integrator( H3rhs );
+            profiler().StopTiming("Pass_init");
 
 			if ( do_oseen_discretization_ )
 			{

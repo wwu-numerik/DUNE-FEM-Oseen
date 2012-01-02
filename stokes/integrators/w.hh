@@ -7,7 +7,7 @@
 namespace Dune {
 namespace Stokes {
 namespace Integrators {
-	template < class MatrixPointerType, class Traits >
+    template < class MatrixPointerType, class Traits >
 	class W
 	{
 		typedef typename Traits::ElementCoordinateType
@@ -29,8 +29,8 @@ namespace Integrators {
 		typedef Stuff::Matrix::LocalMatrixProxy<MatrixPointerType>
 			LocalMatrixProxyType;
 
-		MatrixPointerType& matrix_pointer_;
-		public:
+        MatrixPointerType& matrix_pointer_;
+        public:
 			W( MatrixPointerType& matrix_object	)
 				:matrix_pointer_(matrix_object)
 			{}
