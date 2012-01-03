@@ -256,8 +256,7 @@ public:
 
   //! type of this pointer
   typedef ModifiedISTLMatrixObject<RowFunctionImp,ColFunctionImp,Traits> ThisType;
-    typedef RowFunctionImp RowDiscreteFunctionType;
-    typedef ColFunctionImp ColumnDiscreteFunctionType;
+
 
 protected:
   typedef typename RowSpaceType::GridType GridType;
@@ -272,7 +271,9 @@ protected:
 
   typedef FieldMatrix<RangeFieldType, littleRows, littleCols> LittleBlockType;
 
-  typedef typename RowDiscreteFunctionType :: LeakPointerType  RowLeakPointerType; 
+  typedef RowFunctionImp RowDiscreteFunctionType;
+  typedef typename RowDiscreteFunctionType :: LeakPointerType  RowLeakPointerType;
+  typedef ColFunctionImp ColumnDiscreteFunctionType;
   typedef typename ColumnDiscreteFunctionType :: LeakPointerType  ColumnLeakPointerType;
 
   typedef typename RowDiscreteFunctionType :: DofStorageType    RowBlockVectorType;
