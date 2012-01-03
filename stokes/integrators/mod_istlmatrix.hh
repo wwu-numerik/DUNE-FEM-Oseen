@@ -113,8 +113,6 @@ class ModifiedImprovedBCRSMatrix : public Dune::BCRSMatrix<LittleBlockType>
       : BaseType ()
       , nz_(0)
     {
-        ASSERT_LT( 0, rows);
-        ASSERT_LT( 0, cols);
     }
 
     //! copy constructor, needed by ISTL preconditioners
