@@ -189,3 +189,12 @@ TARGET_LINK_LIBRARIES(visualisation ${COMMON_LIBS} )
 HEADERCHECK( ${header} ${stokes} )
 ADD_CPPCHECK( src/dune_stokes.cc ${COMMON_HEADER} )
 ADD_DEFINITIONS( ${MY_CXX_FLAGS} )
+
+SET( PROBLEMS Simple Cockburn Generalized Constant Rotate Aorta TimeDisc )
+
+FOREACH( problem ${PROBLEMS} )
+	SET( targetName so_${problem} )
+	ADD_EXECUTABLE(${targetName} src/dune_stokes.cc ${COMMON_HEADER} )
+	TARGET_LINK_LIBRARIES( ${targetName} ${COMMON_LIBS} )
+	set_target_properties(${targetName} PROPERTIES COMPILE_FLAGS -DPROBLEM_NAMESPACE=StokesProblems::${problem} )
+ENDFOREACH( problem )
