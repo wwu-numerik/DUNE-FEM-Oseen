@@ -169,7 +169,7 @@ public:
                     H3_IntegratorType >
         StokesIntegratorTuple;
 
-    template < class F, class G >
+    template < class RowSpace, class ColSpace >
     struct magic {
             typedef typename DiscreteFunctionSelector< ThisType, RowSpace >::Type
                 RowType;
