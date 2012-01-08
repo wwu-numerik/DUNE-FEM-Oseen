@@ -3,9 +3,38 @@
 
 #include <dune/fem/function/common/function.hh>
 #include <dune/stuff/misc.hh>
+#include <dune/stuff/parametercontainer.hh>
+#include "common.hh"
 
 static const std::string identifier = "Simple";
 static const bool hasExactSolution	= true;
+
+struct SetupCheck {
+    std::string err;
+    template < class GridPart , class ...Rest >
+    bool operator()( const GridPart& gridPart, const Rest&... /*rest*/ ) {
+        Stuff::GridDimensions< typename GridPart::GridType > grid_dim( gridPart.grid() );
+        bool ok =  Stuff::aboutEqual( grid_dim.coord_limits[0].min(), -1. )
+                && Stuff::aboutEqual( grid_dim.coord_limits[1].min(), -1. )
+                && Stuff::aboutEqual( grid_dim.coord_limits[0].max(), 1. )
+                && Stuff::aboutEqual( grid_dim.coord_limits[1].max(), 1. );
+        err = ( boost::format( "\n******\nSetupCheck Failed!\ngrid dimension %f,%f - %f,%f\n" )
+                % grid_dim.coord_limits[0].min()
+                % grid_dim.coord_limits[1].min()
+                % grid_dim.coord_limits[0].max()
+                % grid_dim.coord_limits[1].max() ).str();
+        if (!ok)
+            return false;
+        const double v = Parameters().getParam( "viscosity", -10.0 );
+        ok = Stuff::aboutEqual( v, 1.0 );
+        err = ( boost::format( "viscosity %f\n" ) % v ).str();
+        return ok;
+    }
+    std::string error() {
+        return err;
+    }
+};
+
 
 template < class FunctionSpaceImp >
 class Force : public Dune::Fem::Function < FunctionSpaceImp , Force < FunctionSpaceImp > >

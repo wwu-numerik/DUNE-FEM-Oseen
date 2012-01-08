@@ -655,6 +655,9 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 								dummyFunctions.discreteVelocity(),
 								false );
 
+    PROBLEM_NAMESPACE::SetupCheck check;
+    if ( !check( gridPart, stokesPass, stokesModel, computedSolutions ) )
+        DUNE_THROW( Dune::InvalidStateException, check.error() );
     profiler().StartTiming( "Pass -- APPLY" );
 	stokesPass.printInfo();
     auto last_wrapper ( computedSolutions );

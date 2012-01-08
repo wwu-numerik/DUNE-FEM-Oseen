@@ -2,7 +2,9 @@
 #define STOKES_PORBLEMS_TIMEDISC_HH
 #include <dune/fem/function/common/function.hh>
 #include <dune/stuff/misc.hh>
+#include "common.hh"
 
+ALLGOOD_SETUPCHECK;
 static const std::string identifier = "TimeDisc";
 static const bool hasExactSolution	= true;
 static const double disc_time = 1.0;

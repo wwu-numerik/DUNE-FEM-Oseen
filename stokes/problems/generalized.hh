@@ -3,7 +3,9 @@
 
 #include <dune/fem/function/common/function.hh>
 #include <dune/stuff/misc.hh>
+#include "common.hh"
 
+ALLGOOD_SETUPCHECK;
 static const std::string identifier = "Generalized";
 static const bool hasExactSolution	= true;
 

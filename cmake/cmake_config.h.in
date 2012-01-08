@@ -18,7 +18,7 @@
 
 #include "config.h"
 #define HAVE_BOOST 1
-#define HAVE_BOOST_FUSION 1
+//#define HAVE_BOOST_FUSION 1
 
 #ifndef PROBLEM_NAMESPACE
 #	define PROBLEM_NAMESPACE @PROBLEM_NAMESPACE@
