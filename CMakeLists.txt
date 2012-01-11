@@ -190,7 +190,10 @@ HEADERCHECK( ${header} ${stokes} )
 ADD_CPPCHECK( src/dune_stokes.cc ${COMMON_HEADER} )
 ADD_DEFINITIONS( ${MY_CXX_FLAGS} )
 
-SET( PROBLEMS Simple Cockburn Generalized Constant Rotate Aorta TimeDisc )
+SET( PROBLEMS Simple Cockburn Generalized  TimeDisc )
+SET( INCOMPLETEPROBLEMS Rotate Constant )
+SET( PROBLEMS3D Aorta )
+
 
 FOREACH( problem ${PROBLEMS} )
 	SET( targetName so_${problem} )

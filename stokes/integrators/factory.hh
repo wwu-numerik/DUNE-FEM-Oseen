@@ -157,6 +157,9 @@ public:
                     H2_O_IntegratorType,
                     H3_IntegratorType >
         OseenIntegratorTuple;
+    typedef tuple<	OmatrixIntegratorType,
+                    H2_O_IntegratorType>
+        ConvIntegratorTuple;
     typedef tuple<	MmatrixIntegratorType,
                     WmatrixIntegratorType,
                     XmatrixIntegratorType,

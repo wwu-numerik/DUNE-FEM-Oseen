@@ -7,10 +7,11 @@
 #include <dune/fem/misc/mpimanager.hh> // An initializer of MPI
 #include <dune/stuff/parametercontainer.hh>
 #include <dune/stuff/misc.hh>
+#include <dune/stuff/math.hh>
 #include <dune/stuff/progressbar.hh>
 //do whatever you like to this file to test out simple and small stuff
 #include<dune/common/fmatrix.hh>
-    #include<dune/istl/bcrsmatrix.hh>
+#include<dune/istl/bcrsmatrix.hh>
 
 #include <dune/istl/io.hh>
 
