@@ -8,6 +8,8 @@
 
 #include <dune/stokes/stab_coeff.hh>
 
+#include <boost/integer/static_min_max.hpp>
+
 namespace Dune {
 namespace Stokes {
 namespace Integrators {
@@ -59,6 +61,7 @@ namespace Integrators {
 		return ret;
 	}
 
+    //! bring back the super useful evaluateSingle and evaluateGradientSingle which were removed from FEM's Basefunctionset
     template < class WrappedBasefuntionsetImp >
     class BasefunctionsetWrapper : public WrappedBasefuntionsetImp {
             typedef typename WrappedBasefuntionsetImp::RangeFieldType
@@ -118,6 +121,15 @@ namespace Integrators {
           }
           return result;
         }
+    };
+
+    template < class Traits >
+    struct PolOrder {
+        static const int value = 2 * ( boost::static_signed_max<
+                                            boost::static_signed_max< Traits::pressureSpaceOrder,
+                                                                Traits::velocitySpaceOrder >::value,
+                                            Traits::sigmaSpaceOrder >::value
+                                      + 1 ) ;
     };
 
 	template < class Traits, class IntegratorTuple >
@@ -200,7 +212,7 @@ namespace Integrators {
 				  numSigmaBaseFunctionsElement( sigma_basefunction_set_element.numBaseFunctions() ),
 				  numVelocityBaseFunctionsElement( velocity_basefunction_set_element.numBaseFunctions() ),
 				  numPressureBaseFunctionsElement( pressure_basefunction_set_element.numBaseFunctions() ),
-				  volumeQuadratureElement( entity, ( 2 * Traits::pressureSpaceOrder ) + 1 ),
+                  volumeQuadratureElement( entity, PolOrder<Traits>::value ),
 				  discrete_model( discrete_modelIn ),
 				  eps( Parameters().getParam( "eps", 1.0e-14 ) ),
 				  viscosity( discrete_modelIn.viscosity() ),
@@ -231,13 +243,13 @@ namespace Integrators {
 				  intersectionGeometry( intersection.geometry() ),
 				  faceQuadratureElement( interface.sigma_space_.gridPart(),
 																  intersection,
-																  ( 2 * Traits::pressureSpaceOrder ) + 1,
+                                                                  PolOrder<Traits>::value,
 																  Traits::FaceQuadratureType::INSIDE ),
 				  lengthOfIntersection( Stuff::getLenghtOfIntersection( intersection ) ),
 				  stabil_coeff( discrete_modelIn.getStabilizationCoefficients() ),
 				  C_11( stabil_coeff.Factor("C11") * std::pow( lengthOfIntersection, stabil_coeff.Power("C11") ) ),
 				  D_11( stabil_coeff.Factor("D11") * std::pow( lengthOfIntersection, stabil_coeff.Power("D11") ) ),
-				  D_12( 1 )
+                  D_12( 1 )//actual value from factor
 			{
 				D_12 /= D_12.two_norm();
 				D_12 *= stabil_coeff.Factor("D12");
@@ -273,7 +285,7 @@ namespace Integrators {
 				  numPressureBaseFunctionsNeighbour( pressure_basefunction_set_neighbour.numBaseFunctions() ),
 				  faceQuadratureNeighbour( interface.sigma_space_.gridPart(),
 																  inter,
-																  ( 2 * Traits::pressureSpaceOrder ) + 1,
+                                                                  PolOrder<Traits>::value,
 																  Traits::FaceQuadratureType::OUTSIDE )
 			{
 				//some integration logic depends on this
