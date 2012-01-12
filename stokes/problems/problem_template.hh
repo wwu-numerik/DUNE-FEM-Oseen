@@ -3,25 +3,27 @@
 
 #include <dune/fem/function/common/function.hh>
 #include <dune/stuff/misc.hh>
+#include "common.hh"
 
+ALLGOOD_SETUPCHECK;
 static const std::string identifier = "Simple";
 static const bool hasExactSolution	= true;
 
 template < class FunctionSpaceImp >
-class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceImp > >
+class Force : public Dune::Fem::Function < FunctionSpaceImp , Force < FunctionSpaceImp > >
 {
 	public:
 		typedef Force< FunctionSpaceImp >
 			ThisType;
-		typedef Dune::Function< FunctionSpaceImp, ThisType >
+		typedef Dune::Fem::Function< FunctionSpaceImp, ThisType >
 			BaseType;
 		typedef typename BaseType::DomainType
 			DomainType;
 		typedef typename BaseType::RangeType
 			RangeType;
 
-		Force( const double viscosity, const FunctionSpaceImp& space, const double alpha = 0.0, const double scaling_factor = 1.0 )
-			: BaseType ( space ),
+        Force( const double viscosity, const FunctionSpaceImp& /*space*/, const double alpha = 0.0, const double scaling_factor = 1.0 )
+            : BaseType (  ),
 			  viscosity_( viscosity ),
 			  alpha_( alpha ),
 			  scaling_factor_( scaling_factor )
@@ -45,20 +47,20 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
 };
 
 template < class FunctionSpaceImp >
-class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < FunctionSpaceImp > >
+class DirichletData : public Dune::Fem::Function < FunctionSpaceImp, DirichletData < FunctionSpaceImp > >
 {
 	public:
 		typedef DirichletData< FunctionSpaceImp >
 			ThisType;
-		typedef Dune::Function< FunctionSpaceImp, ThisType >
+		typedef Dune::Fem::Function< FunctionSpaceImp, ThisType >
 			BaseType;
 		typedef typename BaseType::DomainType
 			DomainType;
 		typedef typename BaseType::RangeType
 			RangeType;
 
-		DirichletData( const FunctionSpaceImp& space )
-			: BaseType( space )
+        DirichletData( const FunctionSpaceImp& /*space*/ )
+            : BaseType(  )
 		{}
 
 		 ~DirichletData()
@@ -78,20 +80,20 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 };
 
 template < class FunctionSpaceImp  >
-class Velocity : public Dune::Function < FunctionSpaceImp , Velocity < FunctionSpaceImp > >
+class Velocity : public Dune::Fem::Function < FunctionSpaceImp , Velocity < FunctionSpaceImp > >
 {
 	public:
 		typedef Velocity< FunctionSpaceImp >
 			ThisType;
-		typedef Dune::Function< FunctionSpaceImp, ThisType >
+		typedef Dune::Fem::Function< FunctionSpaceImp, ThisType >
 			BaseType;
 		typedef typename BaseType::DomainType
 			DomainType;
 		typedef typename BaseType::RangeType
 			RangeType;
 
-		Velocity( const FunctionSpaceImp& f_space )
-			: BaseType( f_space )
+        Velocity( const FunctionSpaceImp& /*f_space*/ )
+            : BaseType(  )
 		{}
 
 		~Velocity()
@@ -114,12 +116,12 @@ class Velocity : public Dune::Function < FunctionSpaceImp , Velocity < FunctionS
 };
 
 template < class FunctionSpaceImp  >
-class Pressure : public Dune::Function < FunctionSpaceImp , Pressure < FunctionSpaceImp > >
+class Pressure : public Dune::Fem::Function < FunctionSpaceImp , Pressure < FunctionSpaceImp > >
 {
 	public:
 		typedef Pressure< FunctionSpaceImp >
 			ThisType;
-		typedef Dune::Function< FunctionSpaceImp, ThisType >
+		typedef Dune::Fem::Function< FunctionSpaceImp, ThisType >
 			BaseType;
 		typedef typename BaseType::DomainType
 			DomainType;
@@ -131,8 +133,8 @@ class Pressure : public Dune::Function < FunctionSpaceImp , Pressure < FunctionS
 		 *
 		 *  doing nothing besides Base init
 		 **/
-		Pressure( const FunctionSpaceImp& f_space )
-			: BaseType( f_space )
+        Pressure( const FunctionSpaceImp& /*f_space*/ )
+            : BaseType(  )
 		{}
 
 		/**

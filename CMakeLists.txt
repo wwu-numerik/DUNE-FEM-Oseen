@@ -28,6 +28,10 @@ EXECUTE_PROCESS(
 SET( BLAS_LIB
 	"blas" CACHE STRING
 	"" )
+
+SET( USE_ISTL
+	0 CACHE STRING
+	"Use fem-wrapped istl matrix" )
 		
 SET( GRIDTYPE
 	"ALUGRID_SIMPLEX" CACHE STRING
@@ -38,7 +42,7 @@ SET( GRIDDIM
 	"GRIDDIM" )
 
 SET( POLORDER
-	"2" CACHE STRING
+	"1" CACHE STRING
 	"Sigma POLORDER" )
 
 SET( PRESSUREPOLORDER
@@ -49,12 +53,12 @@ SET( VELOCITYPOLORDER
 	${POLORDER} CACHE STRING
 	"Velocity POLORDER" )
 
-SET( INNER_CG_SOLVERTYPE
-	"OEMCGOp" CACHE STRING
+SET( INNER_SOLVER
+	"CG" CACHE STRING
 	"INNER_CG_SOLVERTYPE" )
 
-SET( OUTER_CG_SOLVERTYPE
-	"OEMCGOp" CACHE STRING
+SET( OUTER_SOLVER
+	"CG" CACHE STRING
 	"OUTER_CG_SOLVERTYP" )
 
 SET( PROBLEM_NAMESPACE
@@ -73,7 +77,7 @@ SET_PROPERTY(CACHE PROBLEM_NAMESPACE PROPERTY STRINGS
 	)
 
 SET( ALUGRID_BASE_PATH
-	"/opt/dune/modules/alugrid/alugrid-1.22" CACHE STRING
+	"/opt/dune/modules/alugrid/alugrid-1.50" CACHE STRING
 	"ALUGRID_BASE_PATH" )
 
 SET( UGGRID_BASE_PATH
@@ -100,8 +104,6 @@ SET ( METIS_DIR
 	"/share/dune/Modules/modules_x86_64/ParMetis-3.1.1" CACHE STRING
 	"metis toplevel directory" )
 
-CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/cmake_config.h )
-
 #needs to come first to include correct config.h
 INCLUDE_DIR( ${dune-stokes_BINARY_DIR}  ${dune-stokes_SOURCE_DIR} )
 INCLUDE_SYS_DIR( ${dune-stokes_SOURCE_DIR}/stokes/oemsolver/ )
@@ -123,9 +125,6 @@ IF( ${GRIDTYPE} MATCHES "ALUGRID" )
 	LINK_DIRECTORIES( "${ALUGRID_BASE_PATH}/lib"  )
 	SET( ALULIBS "alugrid" )
 	SET( ENABLE_ALUGRID ON )
-	IF ( ENABLE_PARALELL )
-		INCLUDE_SYS_DIR( ${ALUGRID_BASE_PATH}/include/parallel )
-	ENDIF ( ENABLE_PARALELL )
 	ADD_CXX_FLAGS( "-DENABLE_ALUGRID" )
 ENDIF( ${GRIDTYPE} MATCHES "ALUGRID" )
 
@@ -139,6 +138,7 @@ ENDIF( ${GRIDTYPE} MATCHES "ALBERTAGRID" )
 IF ( ENABLE_PARALELL )
 	LINK_DIRECTORIES( ${METIS_DIR} )
 	Set ( ParaLIBS "-lparmetis -lmetis" )
+	INCLUDE_SYS_DIR( ${ALUGRID_BASE_PATH}/include/parallel )
 	ADD_CXX_FLAGS( -DMPIPP_H -DENABLE_MPI=1 )
 ENDIF ( ENABLE_PARALELL )
 
@@ -146,11 +146,21 @@ SET( USE_OMP "0" )
 IF( ENABLE_OMP )
 	ADD_CXX_FLAGS( -fopenmp -DUSE_OMP=1)
 	LIST( APPEND ParaLIBS "-fopenmp" )
-ELSEIF( ENABLE_OMP )
+ELSE( ENABLE_OMP )
 	ADD_CXX_FLAGS( -DUSE_OMP=0)
 ENDIF( ENABLE_OMP )
 
-ADD_DUNE_MODULES( common istl grid fem )
+IF( USE_ISTL )
+	SET( OUTER_CG_SOLVERTYPE "ISTL${OUTER_SOLVER}Op" )
+	SET( INNER_CG_SOLVERTYPE "ISTL${INNER_SOLVER}Op" )
+ELSE( USE_ISTL )
+	SET( OUTER_CG_SOLVERTYPE "OEM${OUTER_SOLVER}Op" )
+	SET( INNER_CG_SOLVERTYPE "OEM${INNER_SOLVER}Op" )
+ENDIF( USE_ISTL )
+
+CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/cmake_config.h )
+
+ADD_DUNE_MODULES( common istl grid fem geometry )
 ADD_MY_MODULES( stuff )
 
 LINK_DIRECTORIES( "/usr/lib" "${GRAPE_PATH}" ${CCGNU_LIBRARY_DIRS} )
@@ -158,7 +168,7 @@ LINK_DIRECTORIES( "/usr/lib" "${GRAPE_PATH}" ${CCGNU_LIBRARY_DIRS} )
 FILE( GLOB header "src/*.hh" )
 FILE( GLOB_RECURSE stokes "stokes/*.hh" )
 
-set( COMMON_LIBS "grid" "common" "fem" ${BLAS_LIB} ${ALULIBS} ${UGLIBS}  ${ParaLIBS} ${CCGNU_LIBRARIES} "boost_filesystem" "boost_system"  )
+set( COMMON_LIBS "dunecommon" "dunegeometry"  "dunefem" "dunegrid" ${BLAS_LIB} ${ALULIBS} ${UGLIBS}  ${ParaLIBS} ${CCGNU_LIBRARIES} "boost_filesystem" "boost_system")
 set( COMMON_HEADER ${header} ${stokes} ${stuff} ${DUNE_HEADERS} )
 set_source_files_properties( ${COMMON_HEADER} PROPERTIES HEADER_FILE_ONLY 1 )
 
@@ -179,3 +189,15 @@ TARGET_LINK_LIBRARIES(visualisation ${COMMON_LIBS} )
 HEADERCHECK( ${header} ${stokes} )
 ADD_CPPCHECK( src/dune_stokes.cc ${COMMON_HEADER} )
 ADD_DEFINITIONS( ${MY_CXX_FLAGS} )
+
+SET( PROBLEMS Simple Cockburn Generalized  TimeDisc )
+SET( INCOMPLETEPROBLEMS Rotate Constant )
+SET( PROBLEMS3D Aorta )
+
+
+FOREACH( problem ${PROBLEMS} )
+	SET( targetName so_${problem} )
+	ADD_EXECUTABLE(${targetName} src/dune_stokes.cc ${COMMON_HEADER} )
+	TARGET_LINK_LIBRARIES( ${targetName} ${COMMON_LIBS} )
+	set_target_properties(${targetName} PROPERTIES COMPILE_FLAGS -DPROBLEM_NAMESPACE=StokesProblems::${problem} )
+ENDFOREACH( problem )

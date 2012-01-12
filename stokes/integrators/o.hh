@@ -8,7 +8,7 @@ namespace Dune {
 namespace Stokes {
 namespace Integrators {
 
-	template < class MatrixObjectType, class Traits, class BetaFunctionType  >
+	template < class MatrixPointerType, class Traits, class BetaFunctionType  >
 	class O
 	{
 		typedef typename Traits::ElementCoordinateType
@@ -27,14 +27,14 @@ namespace Integrators {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-		typedef Stuff::Matrix::LocalMatrixProxy<MatrixObjectType>
+		typedef Stuff::Matrix::LocalMatrixProxy<MatrixPointerType>
 			LocalMatrixProxyType;
 
-		MatrixObjectType& matrix_object_;
+		MatrixPointerType& matrix_pointer_;
 		const BetaFunctionType& beta_;
 		public:
-			O( MatrixObjectType& matrix_object, const BetaFunctionType& beta)
-				:matrix_object_(matrix_object),
+			O( MatrixPointerType& matrix_object, const BetaFunctionType& beta)
+				:matrix_pointer_(matrix_object),
 				beta_(beta)
 			{}
 
@@ -47,7 +47,7 @@ namespace Integrators {
 			template < class InfoContainerVolumeType >
 			void applyVolume_alt1( const InfoContainerVolumeType& info )
 			{
-				LocalMatrixProxyType localOmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localOmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
 						beta_.localFunction( info.entity );
 				for ( int i = 0; (i < info.numVelocityBaseFunctionsElement ) ; ++i ) {
@@ -92,8 +92,8 @@ namespace Integrators {
 			void applyVolume_alt2( const InfoContainerVolumeType& info )
 			{
 //				return;
-				typename MatrixObjectType::LocalMatrixType
-						localOmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+				typename MatrixPointerType::element_type::LocalMatrixType
+						localOmatrixElement = matrix_pointer_->localMatrix( info.entity, info.entity );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
 						beta_.localFunction( info.entity );
 				for ( int i = 0; (i < info.numVelocityBaseFunctionsElement ) ; ++i ) {
@@ -154,8 +154,8 @@ namespace Integrators {
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
 //				return;
-				LocalMatrixProxyType localOmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
-				LocalMatrixProxyType localOmatrixNeighbour( matrix_object_, info.neighbour, info.entity, info.eps );
+				LocalMatrixProxyType localOmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localOmatrixNeighbour( matrix_pointer_, info.neighbour, info.entity, info.eps );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType&
 						beta_lf = beta_.localFunction( info.entity );
 //				const unsigned int inside_entity_id = beta_.space().gridPart().indexSet().index( info.entity );
@@ -191,7 +191,7 @@ namespace Integrators {
 						for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
 							VelocityRangeType v_i( 0.0 );
 							info.velocity_basefunction_set_element.evaluate( i, xInside, v_i );
-							VelocityRangeType u_h = v_i;
+//							VelocityRangeType u_h = v_i;
 
 							for ( int j = 0; (j < info.numVelocityBaseFunctionsElement ); ++j ) {
 								VelocityRangeType v_j( 0.0 );
@@ -229,7 +229,7 @@ namespace Integrators {
 							VelocityRangeType v_i( 0.0 );
 							info.velocity_basefunction_set_neighbour.evaluate( i, xOutside, v_i );
 
-							VelocityRangeType u_h = v_i;
+//							VelocityRangeType u_h = v_i;
 							for ( int j = 0; (j < info.numVelocityBaseFunctionsElement ); ++j )
 							{
 								// compute O's element surface integral
@@ -258,7 +258,7 @@ namespace Integrators {
 			void applyBoundaryFace( const InfoContainerFaceType& info )
 			{
 //				return;
-				LocalMatrixProxyType localOmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localOmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType&
 						beta_lf = beta_.localFunction( info.entity );
 				// (O)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}} STUFF n_{t}ds											// O's boundary integral

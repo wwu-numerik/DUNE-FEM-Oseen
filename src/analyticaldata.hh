@@ -6,7 +6,7 @@
 #ifndef ANALYTICALDATA_HH
 #define ANALYTICALDATA_HH
 
-#include <dune/stuff/static_assert.hh>
+#include <dune/common/static_assert.hh>
 #include <dune/stuff/debug.hh>
 
 #include <dune/fem/function/common/function.hh>
@@ -20,12 +20,12 @@
  *  \todo   texdoc
  **/
 template < class FunctionSpaceImp >
-class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceImp > >
+class Force : public Dune::Fem::Function < FunctionSpaceImp , Force < FunctionSpaceImp > >
 {
     public:
         typedef Force< FunctionSpaceImp >
             ThisType;
-        typedef Dune::Function< FunctionSpaceImp, ThisType >
+        typedef Dune::Fem::Function< FunctionSpaceImp, ThisType >
             BaseType;
         typedef typename BaseType::DomainType
             DomainType;
@@ -61,9 +61,7 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
         {
 			dune_static_assert( dim_ > 1 && dim_ < 4, "Force_Unsuitable_WorldDim");
 
-			if ( dim_ == 2 ) {
-                const double x1 = arg[0];
-                const double x2 = arg[1];
+            if ( dim_ == 2 ) {
 #ifdef SIMPLE_PROBLEM
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//-1.0;//arg[0];
@@ -152,12 +150,12 @@ class Force : public Dune::Function < FunctionSpaceImp , Force < FunctionSpaceIm
  *  \todo   extensive docu with latex
  **/
 template < class FunctionSpaceImp >
-class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < FunctionSpaceImp > >
+class DirichletData : public Dune::Fem::Function < FunctionSpaceImp, DirichletData < FunctionSpaceImp > >
 {
     public:
         typedef DirichletData< FunctionSpaceImp >
             ThisType;
-        typedef Dune::Function< FunctionSpaceImp, ThisType >
+        typedef Dune::Fem::Function< FunctionSpaceImp, ThisType >
             BaseType;
         typedef typename BaseType::DomainType
             DomainType;
@@ -188,8 +186,6 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
 			dune_static_assert( dim_ > 1 && dim_ < 4 , "DirichletData_Unsuitable_WorldDim");
 			if ( dim_ == 2 ) {
                 // some computations
-                const double x1 = arg[0];
-                const double x2 = arg[1];
 #ifdef SIMPLE_PROBLEM
                 ret[0] = 1.0;
                 ret[1] = 0.0;
@@ -244,6 +240,8 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                     ret[ 1 ] = 0.0;
                 }
 #elif defined(GENERALIZED_STOKES_PROBLEM)
+                const double x1 = arg[0];
+                const double x2 = arg[1];
                 const double tmp = std::cos( ( M_PI_2 ) * ( x1 + x2 ) );
                 ret[0] = tmp;
                 ret[1] = -1.0 * tmp;
@@ -293,6 +291,8 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
                     ret[ 1 ] = 0.0;
                 }
 #elif defined(COCKBURN_PROBLEM)
+                const double x1 = arg[0];
+                const double x2 = arg[1];
                 double exp_of_x1 = std::exp( x1 );
                 double sin_of_x2 = std::sin( x2 );
                 double cos_of_x2 = std::cos( x2 );
@@ -338,7 +338,7 @@ class DirichletData : public Dune::Function < FunctionSpaceImp, DirichletData < 
           * \param  ret
           *         value of dirichlet boundary data at given point
           **/
-        inline void evaluate( const DomainType& arg, RangeType& ret ) const {}
+        inline void evaluate( const DomainType& /*arg*/, RangeType& /*ret*/ ) const {}
 
     private:
 		static const int dim_ = FunctionSpaceImp::dimDomain ;

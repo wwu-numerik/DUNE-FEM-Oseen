@@ -8,7 +8,7 @@ namespace Dune {
 namespace Stokes {
 namespace Integrators {
 
-	template < class MatrixObjectType, class Traits >
+	template < class MatrixPointerType, class Traits >
 	class Y
 	{
 		typedef typename Traits::ElementCoordinateType
@@ -27,20 +27,20 @@ namespace Integrators {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-		typedef Stuff::Matrix::LocalMatrixProxy<MatrixObjectType>
+		typedef Stuff::Matrix::LocalMatrixProxy<MatrixPointerType>
 			LocalMatrixProxyType;
 
-		MatrixObjectType& matrix_object_;
+		MatrixPointerType& matrix_pointer_;
 		public:
-			Y( MatrixObjectType& matrix_object	)
-				:matrix_object_(matrix_object)
+			Y( MatrixPointerType& matrix_object	)
+				:matrix_pointer_(matrix_object)
 			{}
 
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				typename MatrixObjectType::LocalMatrixType
-						localYmatrixElement = matrix_object_.localMatrix( info.entity, info.entity );
+				typename MatrixPointerType::element_type::LocalMatrixType
+						localYmatrixElement = matrix_pointer_->localMatrix( info.entity, info.entity );
 //                if ( info.discrete_model.isGeneralized() )
 				{
 				for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
@@ -80,8 +80,8 @@ namespace Integrators {
 			template < class InfoContainerInteriorFaceType >
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
-				LocalMatrixProxyType localYmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
-				LocalMatrixProxyType localYmatrixNeighbour( matrix_object_, info.neighbour, info.entity, info.eps );
+				LocalMatrixProxyType localYmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localYmatrixNeighbour( matrix_pointer_, info.neighbour, info.entity, info.eps );
 				// (Y)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U{+}}(v{j})\cdot n_{t}ds // Y's element surface integral
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}ds // Y's neighbour surface integral
 				//                                                                                                         // see also "Y's boundary integral" below
@@ -100,7 +100,7 @@ namespace Integrators {
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{U{+}}(v{j})\cdot n_{t}
-								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
+//								const VelocityRangeType /*outerNormal*/ = info.intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_j( 0.0 );
 								info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 								VelocityRangeType v_i( 0.0 );
@@ -127,7 +127,7 @@ namespace Integrators {
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}
-								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
+//								const VelocityRangeType /*outerNormal*/ = info.intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_i( 0.0 );
 								info.velocity_basefunction_set_neighbour.evaluate( i, xOutside, v_i );
 								VelocityRangeType v_j( 0.0 );
@@ -149,7 +149,7 @@ namespace Integrators {
 			template < class InfoContainerFaceType >
 			void applyBoundaryFace( const InfoContainerFaceType& info )
 			{
-				LocalMatrixProxyType localYmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localYmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
 				// (Y)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U^{+}}(v_{j})\cdot n_{t}ds // Y's boundary integral
 				//                                                                                                           // see also "Y's element surface integral" and "Y's neighbour surface integral" above
 //                        if ( info.discrete_model.hasSigmaFlux() ) {
@@ -166,7 +166,7 @@ namespace Integrators {
 								// get the quadrature weight
 								const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{U^{+}}(v_{j})\cdot n_{t}
-								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
+//                                const VelocityRangeType /*outerNormal*/ = info.intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_j( 0.0 );
 								info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 								VelocityRangeType v_i( 0.0 );

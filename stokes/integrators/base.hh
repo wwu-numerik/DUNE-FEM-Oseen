@@ -4,12 +4,34 @@
 #include <dune/stuff/grid.hh>
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/profiler.hh>
+#include <dune/stuff/progressbar.hh>
+
 #include <dune/stokes/stab_coeff.hh>
+
+#include <boost/integer/static_min_max.hpp>
 
 namespace Dune {
 namespace Stokes {
 namespace Integrators {
 
+    namespace {
+        template<int i,typename IntegratorTuple,typename InfoType,typename FunctorType>
+        struct ApplySingle
+        {
+            static inline void visit(IntegratorTuple& tuple, const InfoType& info)
+            {
+                FunctorType::apply(get<tuple_size<IntegratorTuple>::value-i>(tuple), info);
+                ApplySingle<i-1,IntegratorTuple,InfoType,FunctorType>::visit(tuple,info);
+            }
+        };
+
+        template<typename IntegratorTuple,typename InfoType,typename FunctorType>
+	struct ApplySingle<0, IntegratorTuple,InfoType,FunctorType>
+        {
+            static inline void visit(IntegratorTuple&, const InfoType&)
+            {}
+        };
+    }
 	template < class SigmaJacobianRangeType, class VelocityRangeType >
 	static SigmaJacobianRangeType
 			prepareVelocityRangeTypeForSigmaDivergence( const VelocityRangeType& arg )
@@ -39,6 +61,77 @@ namespace Integrators {
 		return ret;
 	}
 
+    //! bring back the super useful evaluateSingle and evaluateGradientSingle which were removed from FEM's Basefunctionset
+    template < class WrappedBasefuntionsetImp >
+    class BasefunctionsetWrapper : public WrappedBasefuntionsetImp {
+            typedef typename WrappedBasefuntionsetImp::RangeFieldType
+                RangeFieldType;
+            typedef typename WrappedBasefuntionsetImp::RangeType
+                RangeType;
+            typedef typename WrappedBasefuntionsetImp::JacobianRangeType
+                JacobianRangeType;
+            typedef typename WrappedBasefuntionsetImp::DomainType
+                DomainType;
+            typedef typename WrappedBasefuntionsetImp::FunctionSpaceType
+                FunctionSpaceType;
+        public:
+            typedef WrappedBasefuntionsetImp
+                WrappedBasefuntionsetType;
+        BasefunctionsetWrapper( const WrappedBasefuntionsetType& wrapped )
+            : WrappedBasefuntionsetType( wrapped )
+        {}
+
+        /** \copydoc Dune::BaseFunctionSetInterface::evaluateSingle(const int baseFunction,const PointType &x,const RangeType &psi) const */
+        template< class PointType >
+        inline RangeFieldType evaluateSingle ( const int baseFunction,
+                                               const PointType &x,
+                                               const RangeType &psi ) const
+        {
+          RangeType phi;
+          WrappedBasefuntionsetType::evaluate( baseFunction, x, phi );
+          return phi * psi;
+        }
+
+        /** \copydoc Dune::BaseFunctionSetInterface::evaluateGradientSingle(const int baseFunction,const EntityType &entity,const PointType &x,const JacobianRangeType &psi) const */
+        template< class EntityType, class PointType >
+        inline RangeFieldType evaluateGradientSingle( const int baseFunction,
+                                                      const EntityType &entity,
+                                                      const PointType &x,
+                                                      const JacobianRangeType &psi ) const
+        {
+          typedef typename EntityType :: Geometry GeometryType;
+          typedef FieldMatrix< typename GeometryType :: ctype,
+                               GeometryType :: mydimension,
+                               GeometryType :: mydimension >
+            GeometryJacobianType;
+
+          const GeometryType &geometry = entity.geometry();
+          const GeometryJacobianType &jacobianInverseTransposed
+            = geometry.jacobianInverseTransposed( coordinate( x ) );
+
+          JacobianRangeType gradPhi;
+          WrappedBasefuntionsetType::jacobian( baseFunction, x, gradPhi );
+
+          RangeFieldType result = 0;
+          for( int i = 0; i < FunctionSpaceType :: dimRange; ++i )
+          {
+            DomainType gradScaled( 0 );
+            jacobianInverseTransposed.umv( gradPhi[ i ], gradScaled );
+            result += gradScaled * psi[ i ];
+          }
+          return result;
+        }
+    };
+
+    template < class Traits >
+    struct PolOrder {
+        static const int value = 2 * ( boost::static_signed_max<
+                                            boost::static_signed_max< Traits::pressureSpaceOrder,
+                                                                Traits::velocitySpaceOrder >::value,
+                                            Traits::sigmaSpaceOrder >::value
+                                      + 1 ) ;
+    };
+
 	template < class Traits, class IntegratorTuple >
 	class Coordinator
 	{
@@ -65,11 +158,11 @@ namespace Integrators {
 			VelocityJacobianRangeType;
 		typedef typename Traits::PressureJacobianRangeType
 			PressureJacobianRangeType;
-		typedef typename Traits::DiscreteSigmaFunctionSpaceType::BaseFunctionSetType
+        typedef BasefunctionsetWrapper< typename Traits::DiscreteSigmaFunctionSpaceType::BaseFunctionSetType >
 				SigmaBaseFunctionSetType;
-		typedef typename Traits::DiscreteVelocityFunctionSpaceType::BaseFunctionSetType
+        typedef BasefunctionsetWrapper< typename Traits::DiscreteVelocityFunctionSpaceType::BaseFunctionSetType >
 			VelocityBaseFunctionSetType;
-		typedef typename Traits::DiscretePressureFunctionSpaceType::BaseFunctionSetType
+        typedef BasefunctionsetWrapper< typename Traits::DiscretePressureFunctionSpaceType::BaseFunctionSetType >
 			PressureBaseFunctionSetType;
 
 		Coordinator(const typename Traits::DiscreteModelType&					discrete_model,
@@ -119,7 +212,7 @@ namespace Integrators {
 				  numSigmaBaseFunctionsElement( sigma_basefunction_set_element.numBaseFunctions() ),
 				  numVelocityBaseFunctionsElement( velocity_basefunction_set_element.numBaseFunctions() ),
 				  numPressureBaseFunctionsElement( pressure_basefunction_set_element.numBaseFunctions() ),
-				  volumeQuadratureElement( entity, ( 2 * Traits::pressureSpaceOrder ) + 1 ),
+                  volumeQuadratureElement( entity, PolOrder<Traits>::value ),
 				  discrete_model( discrete_modelIn ),
 				  eps( Parameters().getParam( "eps", 1.0e-14 ) ),
 				  viscosity( discrete_modelIn.viscosity() ),
@@ -128,10 +221,11 @@ namespace Integrators {
 				  alpha( discrete_modelIn.alpha() ),
 				  grid_part( grid_partIn )
 			{}
+			virtual ~InfoContainerVolume() {}
 		};
 		struct InfoContainerFace : public InfoContainerVolume {
 			const typename Traits::IntersectionIteratorType::Intersection& intersection;
-			const typename Traits::IntersectionIteratorType::Geometry& intersectionGeometry;
+            const typename Traits::IntersectionIteratorType::Intersection::Geometry& intersectionGeometry;
 			const typename Traits::FaceQuadratureType faceQuadratureElement;
 			const double lengthOfIntersection;
 			const StabilizationCoefficients& stabil_coeff;
@@ -146,16 +240,16 @@ namespace Integrators {
 							   const typename Traits::GridPartType& grid_partIn )
 				:InfoContainerVolume( interface, ent, discrete_modelIn, grid_partIn ),
 				  intersection( inter ),
-				  intersectionGeometry( intersection.intersectionGlobal() ),
+				  intersectionGeometry( intersection.geometry() ),
 				  faceQuadratureElement( interface.sigma_space_.gridPart(),
 																  intersection,
-																  ( 2 * Traits::pressureSpaceOrder ) + 1,
+                                                                  PolOrder<Traits>::value,
 																  Traits::FaceQuadratureType::INSIDE ),
 				  lengthOfIntersection( Stuff::getLenghtOfIntersection( intersection ) ),
 				  stabil_coeff( discrete_modelIn.getStabilizationCoefficients() ),
 				  C_11( stabil_coeff.Factor("C11") * std::pow( lengthOfIntersection, stabil_coeff.Power("C11") ) ),
 				  D_11( stabil_coeff.Factor("D11") * std::pow( lengthOfIntersection, stabil_coeff.Power("D11") ) ),
-				  D_12( 1 )
+                  D_12( 1 )//actual value from factor
 			{
 				D_12 /= D_12.two_norm();
 				D_12 *= stabil_coeff.Factor("D12");
@@ -163,7 +257,7 @@ namespace Integrators {
 		};
 
 		struct InfoContainerInteriorFace : public InfoContainerFace {
-			const typename Traits::EntityType& neighbour;
+            const typename Traits::EntityType& neighbour;
 			const SigmaBaseFunctionSetType
 					sigma_basefunction_set_neighbour;
 			const VelocityBaseFunctionSetType
@@ -181,7 +275,7 @@ namespace Integrators {
 							   const typename Traits::IntersectionIteratorType::Intersection& inter,
 								const typename Traits::DiscreteModelType& discrete_modelIn,
 								const typename Traits::GridPartType& grid_partIn )
-				:InfoContainerFace( interface, ent, inter, discrete_modelIn, grid_partIn ),
+                :InfoContainerFace( interface, ent, inter, discrete_modelIn, grid_partIn ),
 				  neighbour( nei ),
 				  sigma_basefunction_set_neighbour( interface.sigma_space_.baseFunctionSet( neighbour ) ),
 				  velocity_basefunction_set_neighbour( interface.velocity_space_.baseFunctionSet( neighbour ) ),
@@ -191,7 +285,7 @@ namespace Integrators {
 				  numPressureBaseFunctionsNeighbour( pressure_basefunction_set_neighbour.numBaseFunctions() ),
 				  faceQuadratureNeighbour( interface.sigma_space_.gridPart(),
 																  inter,
-																  ( 2 * Traits::pressureSpaceOrder ) + 1,
+                                                                  PolOrder<Traits>::value,
 																  Traits::FaceQuadratureType::OUTSIDE )
 			{
 				//some integration logic depends on this
@@ -226,34 +320,16 @@ namespace Integrators {
 			}
 		};
 
-		//! A slightly modified version of fem/misc/utility:ForEachValue
+        //! A gloryfied For loop in 28 lines
 		template < class FunctorType, class InfoType >
 		class ForEachIntegrator {
-		public:
+		    public:
 			//! \brief Constructor
 			//! \param tuple The tuple which we want to process.
 			ForEachIntegrator(IntegratorTuple& tuple, const InfoType& info)
-				: tuple_(tuple),
-				  info_(info)
 			{
-				apply( tuple_ );
+			    ApplySingle<tuple_size<IntegratorTuple>::value,IntegratorTuple,InfoType,FunctorType>::visit(tuple, info);
 			}
-		private:
-			//! Specialisation for the last element
-			template <class Head>
-			void apply(Pair<Head, Nil>& last) {
-				FunctorType::apply( last.first(), info_ );
-			}
-
-			//! Specialisation for a standard tuple element
-			template <class Head, class Tail>
-			void apply(Pair<Head, Tail>& pair) {
-				FunctorType::apply( pair.first(), info_ );
-				apply(pair.second());
-			}
-		private:
-			IntegratorTuple& tuple_;
-			const InfoType& info_;
 		};
 
 		void apply ( IntegratorTuple& integrator_tuple ) const
@@ -268,9 +344,10 @@ namespace Integrators {
 			const GridView gridView = grid_part_.grid().leafView();
 
 			const LeafIterator endit = gridView.template end<0,Dune::All_Partition>();
+			Stuff::SimpleProgressBar<> pbar(grid_part_.grid().size(0));
 			for ( LeafIterator entityIt = gridView.template begin<0,Dune::All_Partition>();
 				 entityIt!=endit;
-				 ++entityIt)
+				 ++entityIt,++pbar)
 			{
 				const typename Traits::EntityType& entity = *entityIt;
 				InfoContainerVolume info( *this, entity, discrete_model_,grid_part_ );
@@ -288,7 +365,7 @@ namespace Integrators {
 					if ( intersection.neighbor() && !intersection.boundary() )
 					{
 						//! DO NOT TRY TO DEREF outside() DIRECTLY
-						const typename Traits::IntersectionIteratorType::EntityPointer neighbourPtr = intersection.outside();
+                        const typename Traits::IntersectionIteratorType::Intersection::EntityPointer neighbourPtr = intersection.outside();
 						InfoContainerInteriorFace info( *this, entity, *neighbourPtr, intersection, discrete_model_,grid_part_ );
 						ForEachIntegrator<ApplyInteriorFace,InfoContainerInteriorFace>( integrator_tuple, info );
 					}
@@ -299,6 +376,7 @@ namespace Integrators {
 					}
 				}
 			}
+			++pbar;
 		}
 	};
 

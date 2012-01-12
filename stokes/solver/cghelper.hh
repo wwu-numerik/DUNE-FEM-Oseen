@@ -43,8 +43,18 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 
 	// if shit goes south wrt precond working check if this doesn't need to be OEmSolver instead of SOLVER_INTERFACE_NAMESPACE
 	friend class Conversion<ThisType,SOLVER_INTERFACE_NAMESPACE::PreconditionInterface>;
-	typedef IdentityMatrixObject<typename YMatType::WrappedMatrixObjectType>
+    typedef IdentityMatrixObject<typename YMatType::WrappedMatrixObjectType>
 		PreconditionMatrixBaseType;
+
+#if STOKES_USE_ISTL
+	typedef SchurkomplementOperatorAdapter< ThisType/*,
+						typename DiscretePressureFunctionType::DiscreteFunctionSpaceType,
+						typename DiscretePressureFunctionType::DiscreteFunctionSpaceType*/ >
+	    MatrixAdapterType;
+#endif // STOKES_USE_ISTL
+
+	typedef DiscreteVelocityFunctionType RowDiscreteFunctionType;
+	typedef DiscreteVelocityFunctionType ColDiscreteFunctionType;
 
 	class PreconditionMatrix : public PreconditionMatrixBaseType {
 		const ThisType& a_operator_;
@@ -55,14 +65,17 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 				a_operator_( a_operator )
 			{
 				DiscreteVelocityFunctionType precondition_diagonal( "diag1", a_operator_.space_ );
+#if ! STOKES_USE_ISTL
+                //!TODO
 				a_operator_.getDiag( precondition_diagonal );
+#endif
 				Stuff::invertFunctionDofs( precondition_diagonal );
 				setMatrixDiag( PreconditionMatrixBaseType::matrix(), precondition_diagonal );
 			}
 
 	#ifdef USE_BFG_CG_SCHEME
 			template <class VECtype>
-			void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& info ) const
+            void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& /*info*/ ) const
 			{
 				multOEM(x,ret);
 			}
@@ -102,15 +115,18 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
             sig_tmp1( "sig_tmp1", sig_space ),
             sig_tmp2( "sig_tmp2", sig_space ),
             space_(space),
-			precondition_matrix_( *this )
+            precondition_matrix_( *this )
+        #if STOKES_USE_ISTL
+            , adapter_( *this, space, space )
+        #endif // STOKES_USE_ISTL
 		{}
 
         ~MatrixA_Operator()
         {}
 
-		//! ret = ( ( X * ( -1* ( M_inv * ( W * x ) ) ) ) + ( Y + O ) * x ) )
-        template <class VECtype>
-        void multOEM(const VECtype *x, VECtype * ret) const
+	  //! ret = ( ( X * ( -1* ( M_inv * ( W * x ) ) ) ) + ( Y + O ) * x ) )
+	template <class VECtype>//FEM
+	void multOEM(const VECtype* x, VECtype*  ret) const
         {
             w_mat_.multOEM( x, sig_tmp1.leakPointer() );
             m_mat_.apply( sig_tmp1, sig_tmp2 );//Stuff:DiagmUlt
@@ -118,65 +134,103 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
             sig_tmp2 *= ( -1 );
             x_mat_.multOEM( sig_tmp2.leakPointer(), ret );
             y_mat_.multOEMAdd( x, ret );
-			o_mat_.multOEMAdd( x, ret );
+	    o_mat_.multOEMAdd( x, ret );
         }
+
+	//! ret = ( ( X * ( -1* ( M_inv * ( W * x ) ) ) ) + ( Y + O ) * x ) )
+//    template <class BlockType,class A>//ISTL
+    void multOEM(const typename RowDiscreteFunctionType:: DofStorageType& x, typename RowDiscreteFunctionType:: DofStorageType&  ret) const
+	{
+	    w_mat_.apply( x, sig_tmp1.blockVector() );
+	    m_mat_.apply( sig_tmp1, sig_tmp2 );//Stuff:DiagmUlt
+
+	    sig_tmp2 *= ( -1 );
+	    x_mat_.apply( sig_tmp2.blockVector(), ret );
+	    y_mat_.applyAdd( x, ret );
+	    o_mat_.applyAdd( x, ret );
+	}
 
 #ifdef USE_BFG_CG_SCHEME
         template <class VECtype>
-		void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& /*info*/ ) const
+	void multOEM(const VECtype* x, VECtype*  ret, const IterationInfo& /*info*/ ) const
         {
             multOEM(x,ret);
         }
 #endif
 
-        double ddotOEM(const double*v, const double* w) const
-		{
-	        DiscreteVelocityFunctionType V( "ddot V", space_, v );
-	        DiscreteVelocityFunctionType W( "ddot W", space_, w );
-	        return V.scalarProductDofs( W );
-		}
+#if STOKES_USE_ISTL
+    //! called by matrix adater in ISTL case
+	template <class NonPointerLeakPointerType>
+	void mv( const NonPointerLeakPointerType& x, NonPointerLeakPointerType& ret )
+	{
+	    multOEM( x, ret );
+	}
+    template <class BlockType>
+    void usmv( const typename MatrixAdapterType::field_type alpha,
+               const Dune::BlockVector<BlockType>& x,
+               Dune::BlockVector<BlockType>& ret ) const
+	{
+        Dune::BlockVector<BlockType> tmp( ret );
+        multOEM(x,tmp);
+        tmp *= alpha;
+        ret += tmp;
+	}
 
-		void apply( const DiscreteVelocityFunctionType& rhs, DiscreteVelocityFunctionType& dest ) const
-		{
-			multOEM( rhs.leakPointer(), dest.leakPointer() )	;
-		}
+    void applyAdd ( const typename MatrixAdapterType::field_type alpha,
+                    const DiscreteVelocityFunctionType& x,
+                    DiscreteVelocityFunctionType& ret ) const
+    {
+        applyAdd( alpha, x.blockVector(), ret.blockVector() );
+    }
+#endif // STOKES_USE_ISTL
 
+    double ddotOEM(const double*v, const double* w) const
+	{
+	    DiscreteVelocityFunctionType V( "ddot V", space_, v );
+	    DiscreteVelocityFunctionType W( "ddot W", space_, w );
+	    return V.scalarProductDofs( W );
+	}
 
-        ThisType& systemMatrix ()
-        {
-            return *this;
-        }
+	void apply( const DiscreteVelocityFunctionType& rhs, DiscreteVelocityFunctionType& dest ) const
+	{
+	    multOEM( rhs.leakPointer(), dest.leakPointer() )	;
+	}
 
-		const PreconditionMatrix& preconditionMatrix() const
-        {
-			return precondition_matrix_;
-        }
+    ThisType& systemMatrix () { return *this; }
+    const ThisType& systemMatrix () const { return *this; }
+#if STOKES_USE_ISTL
+    const MatrixAdapterType& matrixAdapter() const { return adapter_; }
+#endif // STOKES_USE_ISTL
+    const PreconditionMatrix& preconditionMatrix() const { return precondition_matrix_; }
 
-        bool hasPreconditionMatrix () const
-        {
-			return Parameters().getParam( "innerPrecond", false );
-        }
+    bool hasPreconditionMatrix () const
+    {
+        return Parameters().getParam( "innerPrecond", false );
+    }
 
-		//! return diagonal entries of this matrix
-		template <class DiscFuncType>
-		void getDiag(DiscFuncType &precondition_diagonal_) const
-		{
-			x_mat_.getDiag( m_mat_, w_mat_, precondition_diagonal_);
-			precondition_diagonal_ *= -1;
-			y_mat_.addDiag( precondition_diagonal_ );
-			o_mat_.addDiag( precondition_diagonal_ );
-		}
+	//! return diagonal entries of this matrix
+	template <class DiscFuncType>
+	void getDiag(DiscFuncType &precondition_diagonal_) const
+	{
+		x_mat_.getDiag( m_mat_, w_mat_, precondition_diagonal_);
+		precondition_diagonal_ *= -1;
+		y_mat_.addDiag( precondition_diagonal_ );
+		o_mat_.addDiag( precondition_diagonal_ );
+	}
 
 	protected:
         const WMatType& w_mat_;
         const MMatType& m_mat_;
         const XMatType& x_mat_;
         const YMatType& y_mat_;
-		const YMatType& o_mat_;
+	const YMatType& o_mat_;
         mutable DiscreteSigmaFunctionType sig_tmp1;
         mutable DiscreteSigmaFunctionType sig_tmp2;
-		const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& space_;
-		PreconditionMatrix precondition_matrix_;
+	const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& space_;
+	PreconditionMatrix precondition_matrix_;
+#if STOKES_USE_ISTL
+	MatrixAdapterType adapter_;
+#endif // STOKES_USE_ISTL
 
 };
 
@@ -247,6 +301,8 @@ class InnerCGSolverWrapper {
         {
             cg_solver.apply(arg,dest);
         }
+        //! the standard function call
+
 
 #ifdef USE_BFG_CG_SCHEME
 		/** - needed when using the BFG scheme

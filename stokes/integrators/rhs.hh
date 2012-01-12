@@ -184,7 +184,7 @@ class H2
 						// get x codim<0> and codim<1> coordinates
 						const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
 						const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
-						const VelocityRangeType globalX = info.geometry.global( x );
+//						const VelocityRangeType globalX = info.geometry.global( x );
 						// get the integration factor
 						const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
 						// get the quadrature weight
@@ -195,7 +195,7 @@ class H2
 						info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 						// compute \mu v_{j}\cdot\hat{\sigma}^{RHS}()\cdot n_{T}
 //                                    if ( info.discrete_model.hasSigmaFlux() ) {
-							const VelocityRangeType xIntersectionGlobal = info.intersection.intersectionSelfLocal().global( xLocal );
+                            const VelocityRangeType xIntersectionGlobal = info.intersection.geometryInInside().global( xLocal );
 							const VelocityRangeType xWorld = info.geometry.global( xIntersectionGlobal );
 							VelocityRangeType gD( 0.0 );
 							info.discrete_model.dirichletData( info.intersection, 0.0, xWorld, gD );
@@ -298,7 +298,7 @@ class H2_O
 					VelocityRangeType v_j( 0.0 );
 					info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 					// compute \mu v_{j}\cdot\hat{\sigma}^{RHS}()\cdot n_{T}
-					const VelocityRangeType xIntersectionGlobal = info.intersection.intersectionSelfLocal().global( xLocal );
+                    const VelocityRangeType xIntersectionGlobal = info.intersection.geometryInInside().global( xLocal );
 					const VelocityRangeType xWorld = info.geometry.global( xIntersectionGlobal );
 					VelocityRangeType gD( 0.0 );
 					info.discrete_model.dirichletData( info.intersection, 0.0, xWorld, gD );

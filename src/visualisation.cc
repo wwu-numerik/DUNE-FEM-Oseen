@@ -195,17 +195,22 @@ void dowork ( Grid& grid, int refSteps, Dune::MPIHelper& mpiHelper )
 
 }
 
+typedef Dune::GridSelector::GridType
+    GridType;
+
 #if ENABLE_MPI
-		typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
+    typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
+    #define DUNE_GET_MPI_COMM Dune::MPIManager::helper().getCommunicator()
 #else
-		typedef Dune::CollectiveCommunication< double > CollectiveCommunication;
+    typedef Dune::CollectiveCommunication< double > CollectiveCommunication;
+    #define DUNE_GET_MPI_COMM 0.0
 #endif
 
 int main( int argc, char **argv )
 {
 	// initialize MPI, finalize is done automatically on exit
 	Dune::MPIManager::initialize(argc, argv);
-	CollectiveCommunication mpicomm ( Dune::MPIManager::helper().getCommunicator() );
+    CollectiveCommunication mpicomm ( DUNE_GET_MPI_COMM );
 	// start try/catch block to get error messages from dune
 	try
 	{
@@ -220,7 +225,7 @@ int main( int argc, char **argv )
 						 Parameters().getParam( "fem.io.logdir",    std::string(),					useLogger )
 					   );
 
-		Dune::GridPtr<GridType> gridptr ( Parameters().DgfFilename( GridType::dimensionworld ) );
+        Dune::GridPtr<GridType> gridptr ( Parameters().DgfFilename( GridType::dimensionworld ) );
 		gridptr->loadBalance();
 		int refineLevel = Parameters().getParam( "minref", 0 );
 		dowork( *gridptr, refineLevel, Dune::MPIManager::helper() );

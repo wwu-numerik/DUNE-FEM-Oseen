@@ -444,7 +444,7 @@ class DiscreteStokesFunctionWrapperTraits
 		typedef VTKIO < typename DiscretePressureFunctionType::DiscreteFunctionSpaceType::GridPartType >
 			VtkWriterType;
 
-		typedef Dune::Tuple<const DiscreteVelocityFunctionType*,const DiscretePressureFunctionType*>
+        typedef Dune::tuple<const DiscreteVelocityFunctionType*,const DiscretePressureFunctionType*>
 			FunctionTupleType;
 
 }; // end of DiscreteStokesFunctionWrapperTraits

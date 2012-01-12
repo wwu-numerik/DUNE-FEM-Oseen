@@ -114,7 +114,7 @@ struct BruteForceReconstruction {
 	template < class DiscreteVelocityFunctionType, class GradientFunctionType >
 	static void getConvection( const DiscreteVelocityFunctionType& beta, const GradientFunctionType& sigma, DiscreteVelocityFunctionType& convection)
 	{
-		typedef typename DiscreteVelocityFunctionType::FunctionSpaceType
+        typedef typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType
 			DiscreteVelocityFunctionSpaceType;
 		typedef typename DiscreteVelocityFunctionSpaceType::GridPartType
             GridPart;
@@ -260,7 +260,7 @@ struct SmartReconstruction {
 //						getPressureGradient( Zmatrix,  solution.discretePressure(),  rhs_datacontainer.pressure_gradient);
 
 						 //\sigma = M^{-1} ( H_1 - Wu )
-						const double m_inv_scale = MInversMatrix.matrix()(0,0);
+						const double m_inv_scale = MInversMatrix(0,0);
 						rhs_datacontainer.velocity_gradient.assign( H1rhs );
 
 						DiscreteSigmaFunctionType sigma_tmp ("s_tmp", H1rhs.space() );

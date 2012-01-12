@@ -1,4 +1,4 @@
 Module: dune-stokes
-Version: 0.1
-Maintainer: felix.albrecht@math.uni-muenster.de
-Depends: dune-common dune-grid dune-istl dune-fem
+Version: 0.2
+Maintainer: rene.milk@uni-muenster.de
+Depends: dune-common (>= 2.1) dune-grid (>= 2.1) dune-istl (>= 2.1) dune-fem (>= 1.2) dune-stuff (>= 0.2)

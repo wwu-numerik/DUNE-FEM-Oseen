@@ -5,6 +5,7 @@ man
 #comment
 doxygen-tag
 *.log
+*.autosave
 *BASE*
 *LOCAL*
 *REMOTE*

@@ -70,7 +70,7 @@ class BoundaryInfo
 						++intIt ) {
 					if ( intIt.boundary() ) {
                         const int id = intIt->boundaryId();
-                        const IntersectionGeometryGlobalType& globalGeo = intIt.intersectionGlobal();
+                        const IntersectionGeometryGlobalType& globalGeo = intIt.geometry();
                         for ( int i = 0; i < globalGeo.corners(); ++i ) {
                             const CoordType& c = globalGeo[i];
                             boundaryCoordList_[id].push_back( c );
@@ -173,12 +173,12 @@ class BoundaryInfo
 
 //! \todo RENE needs to doc me and move me to stuff
 template < class FunctionSpaceImp, class GridPartType >
-class BoundaryShapeFunctionBase : public Dune::Function < FunctionSpaceImp, BoundaryShapeFunctionBase < FunctionSpaceImp, GridPartType > >
+class BoundaryShapeFunctionBase : public Dune::Fem::Function < FunctionSpaceImp, BoundaryShapeFunctionBase < FunctionSpaceImp, GridPartType > >
 {
 	public:
 		typedef BoundaryShapeFunctionBase< FunctionSpaceImp, GridPartType >
 			ThisType;
-		typedef Dune::Function< FunctionSpaceImp, ThisType >
+		typedef Dune::Fem::Function< FunctionSpaceImp, ThisType >
 			BaseType;
 		typedef typename BaseType::DomainType
 			DomainType;
@@ -198,7 +198,7 @@ class BoundaryShapeFunctionBase : public Dune::Function < FunctionSpaceImp, Boun
 		{
 		}
 
-		virtual void evaluate( const DomainType& arg, RangeType& ret ) const
+        virtual void evaluate( const DomainType& /*arg*/, RangeType& ret ) const
 		{
 			ret = direction_;
 		}

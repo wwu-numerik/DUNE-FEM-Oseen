@@ -97,7 +97,7 @@ public:
 			else {
 				const double beta = (rho/last_rho) * (alpha/omega);
 				search_direction *= beta;
-				search_direction.addScaled( v, -beta*omega);
+				search_direction.axpy( -beta*omega, v );
 				search_direction += residuum;
 			}
 
@@ -107,10 +107,10 @@ public:
 			assert( std::isfinite(alpha) );
 
 			s.assign( residuum );
-			s.addScaled( v, -alpha );
+			s.axpy( -alpha, v );
 			const double s_norm = std::sqrt( s.scalarProductDofs( s ) );
 			if ( s_norm < absLimit_ ) {
-				dest.addScaled( search_direction, alpha );
+				dest.axpy( alpha, search_direction );
 				logDebug << boost::format( "%s: iter %i\taborted: s: %e") % cg_name % iteration % s_norm << std::endl;
 				break;
 			}
@@ -119,13 +119,13 @@ public:
 
 			if ( solverVerbosity_ > 3 )
 				Stuff::printFunctionMinMax( logDebug, search_direction );
-			dest.addScaled( search_direction, alpha );
+			dest.axpy( alpha, search_direction );
 			if ( solverVerbosity_ > 3 )
 				Stuff::printFunctionMinMax( logDebug, dest );
-			dest.addScaled( s, omega );
+			dest.axpy( omega, s );
 
 			residuum.assign( s );
-			residuum.addScaled( t, - omega );
+			residuum.axpy( - omega, t );
 
 			delta = std::sqrt( residuum.scalarProductDofs( residuum ) );
 			if ( delta < absLimit_ ) {

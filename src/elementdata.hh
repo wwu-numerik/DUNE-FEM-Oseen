@@ -3,7 +3,7 @@
 
 #include <dune/stuff/filesystem.hh>
 
-#include<dune/grid/common/referenceelements.hh>
+#include<dune/grid/genericgeometry/referenceelements.hh>
 #include<dune/grid/common/mcmgmapper.hh>
 #include<dune/grid/io/file/vtk/vtkwriter.hh>
 #if HAVE_GRAPE
@@ -46,16 +46,6 @@ void elementdata (const G& grid, const F& f)
   for (ElementLeafIterator it = gridView.template begin<0>(); /*@\label{edh:loop0}@*/
 	   it!=gridView.template end<0>(); ++it)
 	{
-	  // cell geometry type
-	  Dune::GeometryType gt = it->type();
-
-	  // cell center in reference element
-	  const Dune::FieldVector<ct,dim>&
-		local = Dune::ReferenceElements<ct,dim>::general(gt).position(0,0);
-
-	  // get global coordinate of cell center
-	  Dune::FieldVector<ct,dimworld> global = it->geometry().global(local);
-
 	  // evaluate functor and store value
 	  c[mapper.map(*it)] = f(*it);	       /*@\label{edh:feval}@*/
 	}                                              /*@\label{edh:loop1}@*/
@@ -65,7 +55,7 @@ void elementdata (const G& grid, const F& f)
   Dune::VTKWriter<typename G::LeafGridView> vtkwriter(gridView); /*@\label{edh:vtk0}@*/
   vtkwriter.addCellData(c,"data");
   Stuff::testCreateDirectory( f.filename() );
-  vtkwriter.write( f.filename().c_str(), Parameters().getParam( "binary_vtk", true ) ? Dune::VTKOptions::binaryappended : Dune::VTKOptions::ascii );
+  vtkwriter.write( f.filename().c_str(), Parameters().getParam( "binary_vtk", true ) ? Dune::VTK::base64 : Dune::VTK::ascii );
 
   // online visualization with Grape
 #if HAVE_GRAPE                                         /*@\label{edh:grape0}@*/

@@ -49,23 +49,21 @@
 
 #include <iostream>
 #include <cmath>
-#include <dune/fem/misc/mpimanager.hh> // An initializer of MPI
-#include <dune/common/exceptions.hh> // We use exceptions
-#include <dune/grid/common/capabilities.hh>
-#include <dune/grid/common/referenceelements.hh>
+#include <dune/fem/gridpart/gridpart.hh>
+#include <dune/fem/misc/mpimanager.hh>
 
-//!ATTENTION: undef's GRIDDIM
-#include <dune/grid/io/file/dgfparser/dgfgridtype.hh> // for the grid
+
+#include <dune/grid/utility/gridtype.hh>
+typedef Dune::GridSelector::GridType
+    GridType;
 
 #include <dune/fem/solver/oemsolver/oemsolver.hh>
 #include <dune/fem/space/dgspace.hh>
-#include <dune/fem/space/dgspace/dgadaptiveleafgridpart.hh>
+#include <dune/fem/gridpart/adaptiveleafgridpart.hh>
 #include <dune/fem/pass/pass.hh>
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
-#include <dune/stuff/femeoc.hh>
 #include <dune/fem/misc/gridwidth.hh>
 
-#include <dune/stokes/problems.hh>
 #include <dune/stokes/discretestokesfunctionspacewrapper.hh>
 #include <dune/stokes/discretestokesmodelinterface.hh>
 #include <dune/stokes/stokespass.hh>
@@ -79,6 +77,9 @@
 #include <dune/stuff/profiler.hh>
 #include <dune/stuff/signals.hh>
 #include <dune/stuff/tex.hh>
+
+#include <dune/stokes/problems.hh>
+#include <dune/stuff/femeoc.hh>
 
 #include "analyticaldata.hh"
 #include "velocity.hh"
@@ -162,7 +163,7 @@ int main( int argc, char** argv )
 
 	Dune::MPIManager::initialize(argc, argv);
 	//assert( Dune::Capabilities::isParallel< GridType >::v );
-	CollectiveCommunication mpicomm( Dune::MPIManager::helper().getCommunicator() );
+    CollectiveCommunication mpicomm;//Dune::MPIManager::helper().getCommunicator() );
 
     /* ********************************************************************** *
      * initialize all the stuff we need                                       *
@@ -620,6 +621,20 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 	AnalyticalDirichletDataType analyticalDirichletData =
 			StokesModelTraitsImp::AnalyticalDirichletDataTraitsImplementation::getInstance( discreteStokesFunctionSpaceWrapper );
 
+    typedef Dune::StokesPass< StokesModelImpType >
+	    StokesPassType;
+
+	{
+		typedef StokesProblems::Container< gridDim, DiscreteStokesFunctionWrapperType>
+			ProblemType;
+		ProblemType problem( viscosity , computedSolutions, analyticalDirichletData );
+
+		typedef PostProcessor< StokesPassType, ProblemType >
+			PostProcessorType;
+
+		PostProcessorType ( discreteStokesFunctionSpaceWrapper, problem ).save( *gridPtr, computedSolutions, refine_level );
+	}
+
     StokesModelImpType stokesModel( stabil_coeff,
                                     analyticalForce,
                                     analyticalDirichletData,
@@ -633,22 +648,20 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
      * ********************************************************************** */
     infoStream << "\n- starting pass" << std::endl;
 
-    typedef Dune::StartPass< DiscreteStokesFunctionWrapperType, -1 >
-        StartPassType;
-    StartPassType startPass;
 
-	typedef Dune::StokesPass< StokesModelImpType, StartPassType, 0 >
-        StokesPassType;
-    StokesPassType stokesPass(  startPass,
-                                stokesModel,
+    StokesPassType stokesPass(  stokesModel,
                                 gridPart,
 								discreteStokesFunctionSpaceWrapper,
 								dummyFunctions.discreteVelocity(),
 								false );
 
+    PROBLEM_NAMESPACE::SetupCheck check;
+    if ( !check( gridPart, stokesPass, stokesModel, computedSolutions ) )
+        DUNE_THROW( Dune::InvalidStateException, check.error() );
     profiler().StartTiming( "Pass -- APPLY" );
 	stokesPass.printInfo();
-	stokesPass.apply( computedSolutions, computedSolutions);
+    auto last_wrapper ( computedSolutions );
+    stokesPass.apply( last_wrapper, computedSolutions);
     profiler().StopTiming( "Pass -- APPLY" );
     info.run_time = profiler().GetTiming( "Pass -- APPLY" );
     stokesPass.getRuninfo( info );
@@ -683,7 +696,8 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 	info.d11 = Pair( stabil_coeff.Power( "D11" ), stabil_coeff.Factor( "D11" ) );
 	info.d12 = Pair( stabil_coeff.Power( "D12" ), stabil_coeff.Factor( "D12" ) );
     info.bfg = Parameters().getParam( "do-bfg", true );
-    info.gridname = gridPart.grid().name();
+    //TODO GRIDNAME
+//    info.gridname = gridPart.grid().name();
     info.refine_level = refine_level;
 
     info.polorder_pressure = StokesModelTraitsImp::pressureSpaceOrder;
@@ -856,7 +870,7 @@ typedef Dune::AdaptiveLeafGridPart< GridType >
 	#endif
 
 
-typedef Dune::Tuple< StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType*, StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType* >
+typedef Dune::tuple< StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType*, StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType* >
 				IOTupleType;
 
 typedef IOTupleType GR_InputType;

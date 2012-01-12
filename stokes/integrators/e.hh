@@ -8,7 +8,7 @@ namespace Dune {
 namespace Stokes {
 namespace Integrators {
 
-	template < class MatrixObjectType, class Traits >
+	template < class MatrixPointerType, class Traits >
 	class E
 	{
 		typedef typename Traits::ElementCoordinateType
@@ -33,19 +33,19 @@ namespace Integrators {
 											EntityGeometryType::coorddimension,
 											EntityGeometryType::mydimension >
 			JacobianInverseTransposedType;
-		typedef Stuff::Matrix::LocalMatrixProxy<MatrixObjectType>
+		typedef Stuff::Matrix::LocalMatrixProxy<MatrixPointerType>
 			LocalMatrixProxyType;
 
-		MatrixObjectType& matrix_object_;
+		MatrixPointerType& matrix_pointer_;
 		public:
-			E( MatrixObjectType& matrix_object	)
-				:matrix_object_(matrix_object)
+			E( MatrixPointerType& matrix_object	)
+				:matrix_pointer_(matrix_object)
 			{}
 
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				LocalMatrixProxyType localEmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localEmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
 				// (E)_{i,j} += -\int_{T}v_{j}\cdot\nabla q_{i}dx // E's volume integral
 				//                                                // see also "E's entitity surface integral", "E's neighbour surface integral" and "E's boundary integral" below
 				for ( int i = 0; i < info.numPressureBaseFunctionsElement; ++i ) {
@@ -82,8 +82,8 @@ namespace Integrators {
 			template < class InfoContainerInteriorFaceType >
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
-				LocalMatrixProxyType localEmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
-				LocalMatrixProxyType localEmatrixNeighbour( matrix_object_, info.neighbour, info.entity, info.eps );
+				LocalMatrixProxyType localEmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localEmatrixNeighbour( matrix_pointer_, info.neighbour, info.entity, info.eps );
 				// (E)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{U^{+}}(v_{j})\cdot n_{T}q_{i}ds // E's element surface integral
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}\hat{u}_{p}^{U^{-}}(v_{j})\cdot n_{T}q_{i}ds // E's neighbour surface integral
 				//                                                                                                // see also "E's boundary integral" below

@@ -10,6 +10,6 @@
 #include <dune/stokes/integrators/x.hh>
 #include <dune/stokes/integrators/y.hh>
 #include <dune/stokes/integrators/z.hh>
-
+#include <dune/stokes/integrators/factory.hh>
 
 #endif // DUNE_STOKES_INTEGRATORS_ALL_HH

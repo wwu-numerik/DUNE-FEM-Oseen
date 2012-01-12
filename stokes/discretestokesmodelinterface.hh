@@ -369,7 +369,7 @@ class DiscreteStokesModelInterface
          *
          *  does nothing
          **/
-        ~DiscreteStokesModelInterface()
+	virtual ~DiscreteStokesModelInterface()
         {}
 
         /**
@@ -1136,8 +1136,8 @@ class DiscreteStokesModelInterface
                                 forceReturn ) );
         }
 
-        template < class IntersectionIteratorType, class DomainType >
-        void dirichletData( const IntersectionIteratorType intIt,
+        template < class IntersectionType, class DomainType >
+        void dirichletData( const IntersectionType& intIt,
                             const double time,
                             const DomainType& x,
                             VelocityRangeType& dirichletDataReturn ) const
@@ -1263,26 +1263,6 @@ class DiscreteStokesModelDefaultTraits
             DiscreteStokesFunctionSpaceWrapperType;
 
     private:
-
-        //! discrete function type for the velocity
-        typedef Dune::AdaptiveDiscreteFunction< typename DiscreteStokesFunctionSpaceWrapperType::DiscreteVelocityFunctionSpaceType >
-            DiscreteVelocityFunctionType;
-
-        //! discrete function type for the pressure
-        typedef Dune::AdaptiveDiscreteFunction< typename DiscreteStokesFunctionSpaceWrapperType::DiscretePressureFunctionSpaceType >
-            DiscretePressureFunctionType;
-
-    public:
-
-        //! discrete function wrapper type
-        typedef Dune::DiscreteStokesFunctionWrapper< Dune::DiscreteStokesFunctionWrapperTraits<
-                    DiscreteStokesFunctionSpaceWrapperType,
-                    DiscreteVelocityFunctionType,
-                    DiscretePressureFunctionType > >
-            DiscreteStokesFunctionWrapperType;
-
-    private:
-
         //! function space type for sigma
         typedef Dune::MatrixFunctionSpace<  double,
                                             double,
@@ -1297,11 +1277,41 @@ class DiscreteStokesModelDefaultTraits
                                                     sigmaSpaceOrder >
             DiscreteSigmaFunctionSpaceType;
 
-    public:
+#if STOKES_USE_ISTL
+        //! discrete function type for the velocity
+        typedef Dune::BlockVectorDiscreteFunction< typename DiscreteStokesFunctionSpaceWrapperType::DiscreteVelocityFunctionSpaceType >
+            DiscreteVelocityFunctionType;
 
+        //! discrete function type for the pressure
+        typedef Dune::BlockVectorDiscreteFunction< typename DiscreteStokesFunctionSpaceWrapperType::DiscretePressureFunctionSpaceType >
+            DiscretePressureFunctionType;
+
+    public:
+        //! discrete function type for sigma
+        typedef Dune::BlockVectorDiscreteFunction< DiscreteSigmaFunctionSpaceType >
+            DiscreteSigmaFunctionType;
+#else
+        //! discrete function type for the velocity
+        typedef Dune::AdaptiveDiscreteFunction< typename DiscreteStokesFunctionSpaceWrapperType::DiscreteVelocityFunctionSpaceType >
+            DiscreteVelocityFunctionType;
+
+        //! discrete function type for the pressure
+        typedef Dune::AdaptiveDiscreteFunction< typename DiscreteStokesFunctionSpaceWrapperType::DiscretePressureFunctionSpaceType >
+            DiscretePressureFunctionType;
+
+    public:
         //! discrete function type for sigma
         typedef Dune::AdaptiveDiscreteFunction< DiscreteSigmaFunctionSpaceType >
             DiscreteSigmaFunctionType;
+
+#endif
+
+        //! discrete function wrapper type
+        typedef Dune::DiscreteStokesFunctionWrapper< Dune::DiscreteStokesFunctionWrapperTraits<
+                    DiscreteStokesFunctionSpaceWrapperType,
+                    DiscreteVelocityFunctionType,
+                    DiscretePressureFunctionType > >
+            DiscreteStokesFunctionWrapperType;
 
         //! function type for the analytical force
         typedef AnalyticalForceImp<VelocityFunctionSpaceType>
@@ -1339,7 +1349,7 @@ class DiscreteStokesModelDefaultTraits
  *          B. Cockburn, G. Kanschat, D. Schötzau, C. Schwab: <EM>Local
  *          Discontinuous Galerkin Methodsfor the Stokes System</EM> (2000).\n\n
  *          To use this model, a user has to implement the analytical force
- *          \f$f\f$ and the dirichlet data \f$g_{D}\f$ as a Dune::Function
+ *          \f$f\f$ and the dirichlet data \f$g_{D}\f$ as a Dune::Fem::Function
  *          (only the method evaluate( arg, ret ) is needed) and specify the
  *          types of this functions as template arguments for the traits class
  *          DiscreteStokesModelDefaultTraits.\n
@@ -1615,22 +1625,22 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
         //! \copydoc Dune::DiscreteStokesModelInterface::pressureSpaceOrder
         static const int pressureSpaceOrder
             = BaseType::pressureSpaceOrder;
-		//! type of analytical force (usually Dune::Function)
+		//! type of analytical force (usually Dune::Fem::Function)
 		typedef typename BaseType::AnalyticalForceType
 			AnalyticalForceType;
     private:
 
         //! codim 0 entity pointer type
-        typedef typename IntersectionIteratorType::EntityPointer
-            EntityPointer;
+//        typedef typename IntersectionIteratorType::EntityPointer
+//            EntityPointer;
 
-        //! codim 0 entity type
-        typedef typename IntersectionIteratorType::Entity
-            EntityType;
+//        //! codim 0 entity type
+//        typedef typename IntersectionIteratorType::Entity
+//            EntityType;
 
-        //! geometry type of codim 0 entity
-        typedef typename EntityType::Geometry
-            EntityGeometryType;
+//        //! geometry type of codim 0 entity
+//        typedef typename EntityType::Geometry
+//            EntityGeometryType;
 
         //! Vector type of the velocity's discrete function space's range
         typedef typename BaseType::VelocityRangeType
@@ -1646,7 +1656,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
 
 
 
-        //! type of analytical dirichlet data (usually Dune::Function)
+        //! type of analytical dirichlet data (usually Dune::Fem::Function)
         typedef typename BaseType::AnalyticalDirichletDataType
             AnalyticalDirichletDataType;
 
@@ -1703,7 +1713,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *  does nothing
          **/
-        ~DiscreteStokesModelDefault()
+	virtual ~DiscreteStokesModelDefault()
         {}
 
         const StabilizationCoefficients& getStabilizationCoefficients() const {
@@ -2602,8 +2612,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
             force_.evaluate( x, forceReturn );
         }
 
-        template < class IntersectionIteratorType, class DomainType >
-        void dirichletData( const IntersectionIteratorType intIt,
+        template < class IntersectionType, class DomainType >
+        void dirichletData( const IntersectionType& intIt,
 							const double /*time*/,
                             const DomainType& x,
                             VelocityRangeType& dirichletDataReturn ) const
@@ -2695,14 +2705,14 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
 
         //! avoid code duplication by doing calculations for C_1X and D_1X here
         template < class LocalPoint >
-        double getStabScalar( const LocalPoint& x , const IntersectionIteratorType& it, const std::string coeffName ) const
+        double getStabScalar( const LocalPoint& /*x*/ , const IntersectionIteratorType& it, const std::string coeffName ) const
         {
             const StabilizationCoefficients::PowerType  power   = stabil_coeff_.Power   ( coeffName );
             const StabilizationCoefficients::FactorType factor  = stabil_coeff_.Factor  ( coeffName );
             if ( power == StabilizationCoefficients::invalid_power ) {
                 return 0.0;
             }
-//                return std::pow( it.intersectionGlobal().integrationElement( x ), param );
+//                return std::pow( it.geometry().integrationElement( x ), param );
 			return factor * std::pow( getLenghtOfIntersection( *it ), power );
         }
 

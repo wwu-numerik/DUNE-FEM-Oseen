@@ -16,7 +16,11 @@
 #include <cmath>
 #include <boost/utility.hpp>
 
-
+#if STOKES_USE_ISTL
+#   define STOKES_MATRIX_ACCESS assert(matrix_pointer_);*(matrix_pointer_)
+#else
+#   define STOKES_MATRIX_ACCESS assert(matrix_pointer_);matrix_pointer_->matrix()
+#endif
 
 namespace Dune {
 //! utility struct used to expose runtime statistics
@@ -34,101 +38,161 @@ struct SaddlepointInverseOperatorInfo {
 	{}
 };
 
-template < class MatrixObjectType >
+template < class MatrixPointerType >
 class MatrixWrapper : boost::noncopyable {
-	public:
-		typedef typename MatrixObjectType::MatrixType
+    public:
+		typedef typename MatrixPointerType::element_type::MatrixType
 			MatrixType;
-		typedef typename MatrixObjectType::MatrixType
+		typedef typename MatrixPointerType::element_type::MatrixType
 			RealMatrixType;
-		typedef MatrixObjectType
-			WrappedMatrixObjectType;
+        typedef typename MatrixPointerType::element_type
+            WrappedMatrixObjectType;
 
-		MatrixWrapper( const MatrixObjectType& matrix_object, std::string /*name*/ )
-			:matrix_object_( matrix_object ),
+        MatrixWrapper( const MatrixPointerType& matrix_object, std::string name )
+			:matrix_pointer_( matrix_object ),
 			cumulative_scale_factor_( 1.0 )
 		{
-//			Stuff::Matrix::printMemUsage( matrix_object_.matrix(), Logger().Dbg(), name );
+            #if ! STOKES_USE_ISTL
+			Stuff::Matrix::printMemUsage( matrix_pointer_->matrix(), Logger().Dbg(), name );
+		    #endif
 		}
 
 		~MatrixWrapper()
 		{
 			assert( cumulative_scale_factor_ != 0 );
-			matrix_object_.matrix().scale( 1.0/cumulative_scale_factor_ );
+			matrix_pointer_->matrix().scale( 1.0/cumulative_scale_factor_ );
 		}
 
 		template <class DiscFType, class DiscFuncType>
 		void apply(const DiscFType &f, DiscFuncType &ret) const
 		{
-			matrix_object_.apply( f, ret );
+            matrix_pointer_->apply( f, ret );
 		}
+
+        template <class ArgBlockVectorType, class DestBlockVectorType, class ArgDofImp, class DestDofImp>
+		void apply(const Dune::StraightenBlockVector<ArgBlockVectorType,ArgDofImp> &f,
+				 Dune::StraightenBlockVector<DestBlockVectorType,DestDofImp> &ret) const
+		{
+		    matrix_pointer_->multOEM( f, ret );
+		}
+
+        template <class ArgBlockType, class DestBlockType, class ArgAllocatorType, class DestAllocatorType>
+        void apply(const Dune::BlockVector<ArgBlockType,ArgAllocatorType> &f,
+                 Dune::BlockVector<DestBlockType,DestAllocatorType> &ret) const
+        {
+            matrix_pointer_->multOEM( f, ret );
+        }
 		//! return diagonal of (this * A * B)
 		template <class DiscrecteFunctionType, class OtherMatrixType_A, class OtherMatrixType_B>
 		void getDiag(const OtherMatrixType_A& A, const OtherMatrixType_B& B, DiscrecteFunctionType& rhs) const
 		{
-			matrix_object_.matrix().getDiag( A.matrix(), B.matrix(), rhs );
+            #if STOKES_USE_ISTL
+                assert( false );
+		    #else
+                matrix_pointer_->matrix().getDiag( A.matrix(), B.matrix(), rhs );
+		    #endif
 		}
 
 		//! return diagonal of (this * A)
 		template <class DiscrecteFunctionType, class OtherMatrixType_A>
 		void getDiag(const OtherMatrixType_A& A, DiscrecteFunctionType& rhs) const
 		{
-			matrix_object_.matrix().getDiag( A, rhs );
+            #if STOKES_USE_ISTL
+                assert( false );
+		    #else
+                matrix_pointer_->matrix().getDiag( A, rhs );
+		    #endif
 		}
 
 		template <class DiscrecteFunctionType>
 		void addDiag(DiscrecteFunctionType& rhs) const
 		{
-			matrix_object_.matrix().addDiag( rhs );
+            #if STOKES_USE_ISTL
+                assert( false );
+		    #else
+                matrix_pointer_->matrix().addDiag( rhs );
+		    #endif
+		}
+
+        template <class ArgBlockType, class DestBlockType, class ArgDType, class DestDType>
+        void applyAdd(const Dune::BlockVector<ArgBlockType, ArgDType>& x,
+                 Dune::BlockVector<DestBlockType, DestDType>& ret ) const
+		{
+            matrix_pointer_->applyAdd( x, ret );
 		}
 
 		//! same as apply A * x = ret, used by OEM-Solvers
-		template <class VECtype>
-		void multOEM(const VECtype *x, VECtype * ret) const
+		template <class VECtype, class VECtypeR >
+		void multOEM(const VECtype* x, VECtypeR* ret) const
 		{
-			matrix_object_.matrix().multOEM( x, ret );
+            STOKES_MATRIX_ACCESS.multOEM( x, ret );
 		}
-		template <class VECtype>
-		void multOEM_t(const VECtype *x, VECtype * ret) const
+		template <class VECtype, class VECtypeR>
+		void multOEM_t(const VECtype* x, VECtypeR* ret) const
 		{
-			matrix_object_.matrix().multOEM_t( x, ret );
+            STOKES_MATRIX_ACCESS.multOEM_t( x, ret );
 		}
 
 		//! calculates ret += A * x
-		template <class VECtype>
-		void multOEMAdd(const VECtype *x, VECtype * ret) const
+		template <class VECtype, class VECtypeR>
+		void multOEMAdd(const VECtype* x, VECtypeR* ret) const
 		{
-			matrix_object_.matrix().multOEMAdd( x, ret );
+            STOKES_MATRIX_ACCESS.multOEMAdd( x, ret );
 		}
+
+        template <class ArgDofStorageType, class DestDofStorageType, class ArgRangeFieldType, class DestRangeFieldType>
+        void multOEMAdd(const Dune::StraightenBlockVector<ArgDofStorageType,ArgRangeFieldType> &x,
+                 Dune::StraightenBlockVector<DestDofStorageType,DestRangeFieldType> &ret) const
+        {
+            matrix_pointer_->multOEMAdd( x, ret );
+        }
+
+        template <class ArgDofStorageType, class DestDofStorageType>
+        void multOEMAdd(const Dune::BlockVector<ArgDofStorageType> &x,
+                 Dune::BlockVector<DestDofStorageType> &ret) const
+        {
+            matrix_pointer_->multOEMAdd( x, ret );
+        }
+
+        template <class ArgDofStorageType, class DestDofStorageType>
+        void multOEM(const Dune::BlockVector<ArgDofStorageType> &x,
+                 Dune::BlockVector<DestDofStorageType> &ret) const
+        {
+            matrix_pointer_->multOEM( x, ret );
+        }
 
 		double operator ()(const size_t i, const size_t j ) const
 		{
-			return matrix_object_.matrix()(i,j);
+            #if STOKES_USE_ISTL
+                return matrix_pointer_->operator()(i,j);
+            #else
+                return  matrix_pointer_->matrix()(i,j);
+            #endif
 		}
 
 		size_t rows() const
 		{
-			return matrix_object_.matrix().rows();
+		    return matrix_pointer_->matrix().rows();
 		}
 
 		size_t cols() const
 		{
-			return matrix_object_.matrix().cols();
+		    return matrix_pointer_->matrix().cols();
 		}
 
 		void scale( const double factor )
 		{
 			cumulative_scale_factor_ *= factor;
-			matrix_object_.matrix().scale( factor );
+			matrix_pointer_->matrix().scale( factor );
 		}
 
 		const MatrixType& matrix() const
 		{
-			return matrix_object_.matrix();
+			return matrix_pointer_->matrix();
 		}
 
 	private:
-		const MatrixObjectType& matrix_object_;
+		const MatrixPointerType& matrix_pointer_;
 		double cumulative_scale_factor_;
 };
 
