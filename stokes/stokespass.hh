@@ -77,17 +77,12 @@ class StokesPass
             apply<RhsDatacontainer,typename Traits::DiscreteSigmaFunctionType>( arg, dest, nullptr,nullptr );
 		}
 
-		template < class RhsDatacontainerType >
-        void apply( const DomainType &arg, RangeType &dest,RhsDatacontainerType* rhs_datacontainer )
-		{
-            apply<RhsDatacontainerType,typename Traits::DiscreteSigmaFunctionType>( arg, dest, rhs_datacontainer,nullptr );
-		}
         /**
          *  \todo doc
          *  \attention  think about quadrature orders
          **/
-		template < class RhsDatacontainerType, class ExactSigmaType >
-        void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer, const ExactSigmaType* /*sigma_exact*/ )
+        template < class RhsDatacontainerType >
+        void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer )
         {
             // profiler information
             profiler().StartTiming("Pass_init");
@@ -110,7 +105,7 @@ class StokesPass
             // R\in R^{K\times K}
             auto Rmatrix = Factory::matrix( pressureSpace_, pressureSpace_ );
             // H_{1}\in R^{M}
-            auto H1rhs = Factory::rhs( std::string("H1"), sigmaSpace_ );
+            auto H1rhs = Factory::rhs( "H1", sigmaSpace_ );
             // H_{2}\in R^{L}
             auto H2rhs = Factory::rhs( "H2", velocitySpace_ );
             auto H2_O_rhs = Factory::rhs( "H2_O", velocitySpace_ );

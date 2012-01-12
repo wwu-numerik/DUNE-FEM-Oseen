@@ -104,7 +104,6 @@ struct SolverCaller {
                 Stuff::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
                 Stuff::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
                 Stuff::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
-//			    Stuff::printDiscreteFunctionMatlabStyle( H2_O_rhs, "H_O", matlabLogStream );
                 matlabLogStream.Flush();
                 #undef MPRINTER
 

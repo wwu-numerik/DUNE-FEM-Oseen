@@ -257,7 +257,7 @@ namespace Integrators {
 		};
 
 		struct InfoContainerInteriorFace : public InfoContainerFace {
-			const typename Traits::EntityType& neighbour;
+            const typename Traits::EntityType& neighbour;
 			const SigmaBaseFunctionSetType
 					sigma_basefunction_set_neighbour;
 			const VelocityBaseFunctionSetType
@@ -275,7 +275,7 @@ namespace Integrators {
 							   const typename Traits::IntersectionIteratorType::Intersection& inter,
 								const typename Traits::DiscreteModelType& discrete_modelIn,
 								const typename Traits::GridPartType& grid_partIn )
-				:InfoContainerFace( interface, ent, inter, discrete_modelIn, grid_partIn ),
+                :InfoContainerFace( interface, ent, inter, discrete_modelIn, grid_partIn ),
 				  neighbour( nei ),
 				  sigma_basefunction_set_neighbour( interface.sigma_space_.baseFunctionSet( neighbour ) ),
 				  velocity_basefunction_set_neighbour( interface.velocity_space_.baseFunctionSet( neighbour ) ),
