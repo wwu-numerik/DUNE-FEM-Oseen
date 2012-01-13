@@ -15,6 +15,8 @@
 #   include <dune/fem/operator/matrix/preconditionerwrapper.hh>
 #endif
 
+#include "schurkomplement_adapter.hh"
+
 namespace Dune {
 
 template < class SchurkomplementOperatorType >

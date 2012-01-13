@@ -4,11 +4,11 @@
 #include <dune/stuff/grid.hh>
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/profiler.hh>
-#include <dune/stuff/progressbar.hh>
-
+#include <dune/stuff/localmatrix_proxy.hh>
 #include <dune/stokes/stab_coeff.hh>
 
 #include <boost/integer/static_min_max.hpp>
+#include <boost/progress.hpp>
 
 namespace Dune {
 namespace Stokes {
@@ -344,7 +344,7 @@ namespace Integrators {
 			const GridView gridView = grid_part_.grid().leafView();
 
 			const LeafIterator endit = gridView.template end<0,Dune::All_Partition>();
-			Stuff::SimpleProgressBar<> pbar(grid_part_.grid().size(0));
+			boost::progress_display pbar(grid_part_.grid().size(0));
 			for ( LeafIterator entityIt = gridView.template begin<0,Dune::All_Partition>();
 				 entityIt!=endit;
 				 ++entityIt,++pbar)

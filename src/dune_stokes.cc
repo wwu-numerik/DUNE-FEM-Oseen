@@ -73,7 +73,7 @@ typedef Dune::GridSelector::GridType
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/logging.hh>
 #include <dune/stuff/parametercontainer.hh>
-#include <dune/stuff/postprocessing.hh>
+#include <dune/stokes/postprocessing.hh>
 #include <dune/stuff/profiler.hh>
 #include <dune/stuff/signals.hh>
 #include <dune/stuff/tex.hh>
