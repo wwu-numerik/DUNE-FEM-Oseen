@@ -10,16 +10,16 @@
 #include <dune/fem/operator/projection/l2projection.hh>
 #include <dune/fem/io/file/vtkio.hh>
 #include <dune/fem/io/file/datawriter.hh>
-
-#include "logging.hh"
-#include "misc.hh"
-#include "parametercontainer.hh"
-#include "customprojection.hh"
-#include "printing.hh"
-
 #include <dune/fem/misc/l2norm.hh>
 #include <dune/fem/misc/l2error.hh>
+
+#include <dune/stuff/logging.hh>
+#include <dune/stuff/misc.hh>
+#include <dune/stuff/parametercontainer.hh>
+#include <dune/stuff/customprojection.hh>
+#include <dune/stuff/printing.hh>
 #include <dune/stuff/functions.hh>
+
 #include <boost/format.hpp>
 #include <cmath>
 #include <sstream>

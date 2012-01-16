@@ -38,6 +38,7 @@ template <  class DiscreteModelImp,
 class StokesPass
 {
     public:
+        struct RhsDatacontainer;
         typedef StokesPass< DiscreteModelImp, TraitsImp >
             ThisType;
         typedef DiscreteModelImp
@@ -72,17 +73,10 @@ class StokesPass
             return spaceWrapper_;
         }
 
-        void apply( const DomainType &arg, RangeType &dest )
-		{
-            apply<RhsDatacontainer,typename Traits::DiscreteSigmaFunctionType>( arg, dest, nullptr,nullptr );
-		}
-
         /**
          *  \todo doc
-         *  \attention  think about quadrature orders
          **/
-        template < class RhsDatacontainerType >
-        void apply( const DomainType &arg, RangeType &dest, RhsDatacontainerType* rhs_datacontainer )
+        void apply( const DomainType &arg, RangeType &dest, RhsDatacontainer* rhs_datacontainer = nullptr )
         {
             // profiler information
             profiler().StartTiming("Pass_init");
