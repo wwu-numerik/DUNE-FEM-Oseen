@@ -2,7 +2,7 @@
 #define BCRSTRAITS_HH
 
 #include <dune/fem/operator/2order/dgmatrixsetup.hh>
-#include <dune/stokes/integrators/mod_istlmatrix.hh>
+#include <dune/oseen/assembler/mod_istlmatrix.hh>
 #include <dune/stuff/matrix_patterns.hh>
 
 namespace Dune {

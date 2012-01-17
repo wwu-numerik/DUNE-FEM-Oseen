@@ -11,9 +11,9 @@
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/fem/space/dgspace.hh>
 
-#include <dune/stokes/defaulttraits.hh>
-#include <dune/stokes/solver/solvercaller.hh>
-#include <dune/stokes/integrators/all.hh>
+#include <dune/oseen/defaulttraits.hh>
+#include <dune/oseen/solver/solvercaller.hh>
+#include <dune/oseen/assembler/all.hh>
 
 #include <dune/stuff/customprojection.hh>
 #include <dune/stuff/matrix.hh>

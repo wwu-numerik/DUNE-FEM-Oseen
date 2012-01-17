@@ -1,4 +1,4 @@
-PROJECT(dune-stokes)
+PROJECT(dune-oseen)
 
 #set minimum cmake version
 cmake_minimum_required(VERSION 2.6)
@@ -23,7 +23,7 @@ EXECUTE_PROCESS(
 )
 
 #----------------------------------------------------------------------------------------------------
-# Options, that can be changed be the User in order to customise dune-stokes
+# Options, that can be changed be the User in order to customise dune-oseen
 #----------------------------------------------------------------------------------------------------
 SET( BLAS_LIB
 	"blas" CACHE STRING
@@ -105,8 +105,8 @@ SET ( METIS_DIR
 	"metis toplevel directory" )
 
 #needs to come first to include correct config.h
-INCLUDE_DIR( ${dune-stokes_BINARY_DIR}  ${dune-stokes_SOURCE_DIR} )
-INCLUDE_SYS_DIR( ${dune-stokes_SOURCE_DIR}/stokes/oemsolver/ )
+INCLUDE_DIR( ${dune-oseen_BINARY_DIR}  ${dune-oseen_SOURCE_DIR} )
+INCLUDE_SYS_DIR( ${dune-oseen_SOURCE_DIR}/oseen/oemsolver/ )
 ADD_CXX_FLAGS( ${CUSTOM_FLAGS} )
 
 IF( ${GRIDTYPE} STREQUAL "UGGRID" )
@@ -166,14 +166,14 @@ ADD_MY_MODULES( stuff )
 LINK_DIRECTORIES( "/usr/lib" "${GRAPE_PATH}" ${CCGNU_LIBRARY_DIRS} )
 
 FILE( GLOB header "src/*.hh" )
-FILE( GLOB_RECURSE stokes "stokes/*.hh" )
+FILE( GLOB_RECURSE oseen "oseen/*.hh" )
 
 set( COMMON_LIBS "dunecommon" "dunegeometry"  "dunefem" "dunegrid" ${BLAS_LIB} ${ALULIBS} ${UGLIBS}  ${ParaLIBS} ${CCGNU_LIBRARIES} "boost_filesystem" "boost_system")
-set( COMMON_HEADER ${header} ${stokes} ${stuff} ${DUNE_HEADERS} )
+set( COMMON_HEADER ${header} ${oseen} ${stuff} ${DUNE_HEADERS} )
 set_source_files_properties( ${COMMON_HEADER} PROPERTIES HEADER_FILE_ONLY 1 )
 
-ADD_EXECUTABLE(dune_stokes src/dune_stokes.cc ${COMMON_HEADER} )
-TARGET_LINK_LIBRARIES(dune_stokes ${COMMON_LIBS} )
+ADD_EXECUTABLE(oseen src/dune_stokes.cc ${COMMON_HEADER} )
+TARGET_LINK_LIBRARIES(oseen ${COMMON_LIBS} )
 
 #legacy dbg binary
 #ADD_EXECUTABLE(scaling_test src/scaling_test.cc ${COMMON_HEADER} )

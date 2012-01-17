@@ -1,5 +1,5 @@
-#ifndef DUNE_STOKES_DUNE_StokesOEMSolver_HH
-#define DUNE_STOKES_DUNE_StokesOEMSolver_HH
+#ifndef DUNE_OSEEN_DUNE_StokesOEMSolver_HH
+#define DUNE_OSEEN_DUNE_StokesOEMSolver_HH
 
 //- system includes
 #include <utility>
@@ -1428,4 +1428,4 @@ public:
 };
 #endif
 } // end namespace Dune
-#endif //DUNE_STOKES_
+#endif //DUNE_OSEEN_

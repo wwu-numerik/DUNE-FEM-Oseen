@@ -10,9 +10,9 @@
 #include <dune/common/fvector.hh>
 #include <dune/fem/function/adaptivefunction/adaptivefunction.hh>
 
-#include <dune/stokes/discretestokesfunctionspacewrapper.hh>
-#include <dune/stokes/boundaryinfo.hh>
-#include <dune/stokes/stab_coeff.hh>
+#include <dune/oseen/discretestokesfunctionspacewrapper.hh>
+#include <dune/oseen/boundaryinfo.hh>
+#include <dune/oseen/stab_coeff.hh>
 
 #ifndef NLOG
     #include <dune/stuff/printing.hh>

@@ -1,8 +1,8 @@
-#ifndef DUNE_STOKES_SOLVERS_NESTED_CG_HH
-#define DUNE_STOKES_SOLVERS_NESTED_CG_HH
+#ifndef DUNE_OSEEN_SOLVERS_NESTED_CG_HH
+#define DUNE_OSEEN_SOLVERS_NESTED_CG_HH
 
-#include <dune/stokes/solver/solver_interface.hh>
-#include <dune/stokes/solver/schurkomplement.hh>
+#include <dune/oseen/solver/solver_interface.hh>
+#include <dune/oseen/solver/schurkomplement.hh>
 
 namespace Dune {
 
@@ -177,4 +177,4 @@ namespace Dune {
 
 } //end namespace Dune
 
-#endif // DUNE_STOKES_SOLVERS_NESTED_CG_HH
+#endif // DUNE_OSEEN_SOLVERS_NESTED_CG_HH

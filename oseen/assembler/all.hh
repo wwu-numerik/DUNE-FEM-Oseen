@@ -1,15 +1,15 @@
-#ifndef DUNE_STOKES_INTEGRATORS_ALL_HH
-#define DUNE_STOKES_INTEGRATORS_ALL_HH
+#ifndef DUNE_OSEEN_INTEGRATORS_ALL_HH
+#define DUNE_OSEEN_INTEGRATORS_ALL_HH
 
-#include <dune/stokes/integrators/rhs.hh>
-#include <dune/stokes/integrators/w.hh>
-#include <dune/stokes/integrators/e.hh>
-#include <dune/stokes/integrators/m.hh>
-#include <dune/stokes/integrators/o.hh>
-#include <dune/stokes/integrators/r.hh>
-#include <dune/stokes/integrators/x.hh>
-#include <dune/stokes/integrators/y.hh>
-#include <dune/stokes/integrators/z.hh>
-#include <dune/stokes/integrators/factory.hh>
+#include <dune/oseen/assembler/rhs.hh>
+#include <dune/oseen/assembler/w.hh>
+#include <dune/oseen/assembler/e.hh>
+#include <dune/oseen/assembler/m.hh>
+#include <dune/oseen/assembler/o.hh>
+#include <dune/oseen/assembler/r.hh>
+#include <dune/oseen/assembler/x.hh>
+#include <dune/oseen/assembler/y.hh>
+#include <dune/oseen/assembler/z.hh>
+#include <dune/oseen/assembler/factory.hh>
 
-#endif // DUNE_STOKES_INTEGRATORS_ALL_HH
+#endif // DUNE_OSEEN_INTEGRATORS_ALL_HH

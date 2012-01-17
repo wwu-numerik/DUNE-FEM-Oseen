@@ -1,12 +1,12 @@
-#ifndef DUNE_STOKES_SOLVERCALLER_HH
-#define DUNE_STOKES_SOLVERCALLER_HH
+#ifndef DUNE_OSEEN_SOLVERCALLER_HH
+#define DUNE_OSEEN_SOLVERCALLER_HH
 
-#include <dune/stokes/solver/nested_cg.hh>
-#include <dune/stokes/solver/reduced.hh>
-#include <dune/stokes/solver/fullsystem.hh>
-#include <dune/stokes/solver/saddle_point.hh>
-#include <dune/stokes/solver/bicg_saddle_point.hh>
-#include <dune/stokes/solver/reconstruction.hh>
+#include <dune/oseen/solver/nested_cg.hh>
+#include <dune/oseen/solver/reduced.hh>
+#include <dune/oseen/solver/fullsystem.hh>
+#include <dune/oseen/solver/saddle_point.hh>
+#include <dune/oseen/solver/bicg_saddle_point.hh>
+#include <dune/oseen/solver/reconstruction.hh>
 #include <dune/stuff/profiler.hh>
 #include <dune/stuff/logging.hh>
 
@@ -268,4 +268,4 @@ struct SolverCallerProxy {
 } //namespace Stokes
 } //namespace Dune
 
-#endif // DUNE_STOKES_SOLVERCALLER_HH
+#endif // DUNE_OSEEN_SOLVERCALLER_HH

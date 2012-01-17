@@ -1,11 +1,11 @@
-#ifndef DUNE_STOKES_SOLVER_INTERFACE_HH
-#define DUNE_STOKES_SOLVER_INTERFACE_HH
+#ifndef DUNE_OSEEN_SOLVER_INTERFACE_HH
+#define DUNE_OSEEN_SOLVER_INTERFACE_HH
 
 #include "solver_defines.hh"
 
 #include <dune/fem/function/common/discretefunction.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
-#include <dune/stokes/solver/cghelper.hh>
+#include <dune/oseen/solver/cghelper.hh>
 
 #include <dune/stuff/parametercontainer.hh>
 #include <dune/stuff/printing.hh>
@@ -199,4 +199,4 @@ class MatrixWrapper : boost::noncopyable {
 
 } //end namespace Dune
 
-#endif // DUNE_STOKES_SOLVER_INTERFACE_HH
+#endif // DUNE_OSEEN_SOLVER_INTERFACE_HH

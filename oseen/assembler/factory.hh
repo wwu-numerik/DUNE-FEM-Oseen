@@ -1,14 +1,14 @@
-#ifndef DUNE_STOKES_INTEGRATORS_FACTORY_HH
-#define DUNE_STOKES_INTEGRATORS_FACTORY_HH
+#ifndef DUNE_OSEEN_INTEGRATORS_FACTORY_HH
+#define DUNE_OSEEN_INTEGRATORS_FACTORY_HH
 
 #include <dune/common/shared_ptr.hh>
 #include <dune/common/static_assert.hh>
 
 #if STOKES_USE_ISTL
-#   include <dune/stokes/integrators/mod_istlmatrix.hh>
+#   include <dune/oseen/assembler/mod_istlmatrix.hh>
 #   define STOKES_MATRIX_OBJECT ModifiedISTLMatrixObject
 #   include <dune/fem/operator/2order/dgmatrixtraits.hh>
-#   include <dune/stokes/integrators/bcrstraits.hh>
+#   include <dune/oseen/assembler/bcrstraits.hh>
 #   define STOKES_MATRIX_OBJECT_TRAITS Dune::Stokes::Integrators::ModifiedDGMatrixTraits
 #else
 #   define STOKES_MATRIX_OBJECT SparseRowMatrixObject
@@ -223,4 +223,4 @@ public:
 #undef STOKES_MATRIX_OBJECT
 #undef STOKES_MATRIX_OBJECT_TRAITS
 /*namespace Dune*/ } /*namespace Stokes*/ } /*namespace Integrators*/ }
-#endif // DUNE_STOKES_INTEGRATORS_FACTORY_HH
+#endif // DUNE_OSEEN_INTEGRATORS_FACTORY_HH

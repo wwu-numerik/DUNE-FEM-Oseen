@@ -1,5 +1,5 @@
-#ifndef DUNE_STOKES_ELEMENTDATA_HH
-#define DUNE_STOKES_ELEMENTDATA_HH
+#ifndef DUNE_OSEEN_ELEMENTDATA_HH
+#define DUNE_OSEEN_ELEMENTDATA_HH
 
 #include <dune/stuff/filesystem.hh>
 
@@ -75,4 +75,4 @@ void elementdata (const G& grid, const F& f)
 #endif                                                 /*@\label{edh:grape1}@*/
 }
 
-#endif //DUNE_STOKES_ELEMENTDATA_HH
+#endif //DUNE_OSEEN_ELEMENTDATA_HH

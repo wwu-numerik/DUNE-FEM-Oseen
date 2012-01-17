@@ -1,5 +1,5 @@
-#ifndef DUNE_STOKES_RECONSTRUCTION_HH
-#define DUNE_STOKES_RECONSTRUCTION_HH
+#ifndef DUNE_OSEEN_RECONSTRUCTION_HH
+#define DUNE_OSEEN_RECONSTRUCTION_HH
 
 #include <dune/stuff/functionadapter.hh>
 
@@ -304,4 +304,4 @@ struct SmartReconstruction {
 };
 }
 
-#endif // DUNE_STOKES_RECONSTRUCTION_HH
+#endif // DUNE_OSEEN_RECONSTRUCTION_HH

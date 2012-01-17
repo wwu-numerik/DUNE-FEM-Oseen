@@ -1,5 +1,5 @@
-#ifndef DUNE_STOKES_PROBLEMS_HH
-#define DUNE_STOKES_PROBLEMS_HH
+#ifndef DUNE_OSEEN_PROBLEMS_HH
+#define DUNE_OSEEN_PROBLEMS_HH
 
 #include <dune/fem/function/common/function.hh>
 #include <dune/stuff/misc.hh>
@@ -152,4 +152,4 @@ namespace StokesProblems {
 	};
 } // namespace StokesProblems
 
-#endif // DUNE_STOKES_PROBLEMS_HH
+#endif // DUNE_OSEEN_PROBLEMS_HH

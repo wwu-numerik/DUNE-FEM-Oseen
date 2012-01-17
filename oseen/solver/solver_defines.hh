@@ -1,5 +1,5 @@
-#ifndef DUNE_STOKES_SOLVER_DEFINES_HH
-#define DUNE_STOKES_SOLVER_DEFINES_HH
+#ifndef DUNE_OSEEN_SOLVER_DEFINES_HH
+#define DUNE_OSEEN_SOLVER_DEFINES_HH
 
 #ifdef HAVE_CMAKE_CONFIG
 	#include "cmake_config.h"
@@ -21,7 +21,7 @@
 	//< iteration no , < absLimit, residuum > >
 	typedef std::pair<int,std::pair<double,double> >
 		IterationInfo;
-	#include <dune/stokes/oemsolver/oemsolver.hh>
+	#include <dune/oseen/oemsolver/oemsolver.hh>
 	#define SOLVER_NAMESPACE DuneStokes
 	#define SOLVER_INTERFACE_NAMESPACE StokesOEMSolver
 #else
@@ -52,4 +52,4 @@
 
 #endif
 
-#endif // DUNE_STOKES_SOLVER_DEFINES_HH
+#endif // DUNE_OSEEN_SOLVER_DEFINES_HH

@@ -1,7 +1,7 @@
-#ifndef DUNE_STOKES_INTEGRATORS_DUMMY_HH
-#define DUNE_STOKES_INTEGRATORS_DUMMY_HH
+#ifndef DUNE_OSEEN_INTEGRATORS_DUMMY_HH
+#define DUNE_OSEEN_INTEGRATORS_DUMMY_HH
 
-#include <dune/stokes/integrators/base.hh>
+#include <dune/oseen/assembler/base.hh>
 
 namespace Dune {
 namespace Stokes {
@@ -60,4 +60,4 @@ namespace Integrators {
 } // end namespace Dune
 
 
-#endif // DUNE_STOKES_INTEGRATORS_DUMMY_HH
+#endif // DUNE_OSEEN_INTEGRATORS_DUMMY_HH

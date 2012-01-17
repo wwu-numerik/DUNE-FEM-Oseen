@@ -1,7 +1,7 @@
-#ifndef DUNE_STOKES_SOLVERS_SADDLE_POINT_HH
-#define DUNE_STOKES_SOLVERS_SADDLE_POINT_HH
+#ifndef DUNE_OSEEN_SOLVERS_SADDLE_POINT_HH
+#define DUNE_OSEEN_SOLVERS_SADDLE_POINT_HH
 
-#include <dune/stokes/solver/solver_interface.hh>
+#include <dune/oseen/solver/solver_interface.hh>
 
 namespace Dune {
 
@@ -300,4 +300,4 @@ namespace Dune {
 
 } //end namespace Dune
 
-#endif // DUNE_STOKES_SOLVERS_SADDLE_POINT_HH
+#endif // DUNE_OSEEN_SOLVERS_SADDLE_POINT_HH

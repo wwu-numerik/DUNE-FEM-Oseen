@@ -1,5 +1,5 @@
-#ifndef DUNE_STOKES_NEW_BICGSTAB_HH
-#define DUNE_STOKES_NEW_BICGSTAB_HH
+#ifndef DUNE_OSEEN_NEW_BICGSTAB_HH
+#define DUNE_OSEEN_NEW_BICGSTAB_HH
 
 #include <dune/stuff/printing.hh>
 #include <dune/stuff/logging.hh>
@@ -156,4 +156,4 @@ public:
 } //namespace
 
 
-#endif // DUNE_STOKES_NEW_BICGSTAB_HH
+#endif // DUNE_OSEEN_NEW_BICGSTAB_HH

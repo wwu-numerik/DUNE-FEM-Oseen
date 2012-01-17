@@ -564,7 +564,7 @@ WARN_LOGFILE           =
 # with spaces.
 
 INPUT                  = "@CMAKE_CURRENT_SOURCE_DIR@/src" \
-						 "@CMAKE_CURRENT_SOURCE_DIR@/stokes" \
+						 "@CMAKE_CURRENT_SOURCE_DIR@/oseen" \
 						 "@CMAKE_CURRENT_SOURCE_DIR@/../dune-stuff/stuff" 
 
 # This tag can be used to specify the character encoding of the source files 

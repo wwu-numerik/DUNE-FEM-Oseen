@@ -1,7 +1,7 @@
 #ifndef BOUNDARYDATA_HH
 #define BOUNDARYDATA_HH
 
-#include <dune/stokes/boundaryinfo.hh>
+#include <dune/oseen/boundaryinfo.hh>
 #include <dune/stuff/parametercontainer.hh>
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/grid.hh>

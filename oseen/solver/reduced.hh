@@ -1,7 +1,7 @@
-#ifndef DUNE_STOKES_SOLVERS_REDUCED_HH
-#define DUNE_STOKES_SOLVERS_REDUCED_HH
+#ifndef DUNE_OSEEN_SOLVERS_REDUCED_HH
+#define DUNE_OSEEN_SOLVERS_REDUCED_HH
 
-#include <dune/stokes/solver/solver_interface.hh>
+#include <dune/oseen/solver/solver_interface.hh>
 
 namespace Dune {
 
@@ -123,4 +123,4 @@ namespace Dune {
 
 } //end namespace Dune
 
-#endif // DUNE_STOKES_SOLVERS_REDUCED_HH
+#endif // DUNE_OSEEN_SOLVERS_REDUCED_HH

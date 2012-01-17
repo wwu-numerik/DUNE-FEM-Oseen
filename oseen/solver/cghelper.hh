@@ -3,12 +3,12 @@
  *  \brief  contains some stuff
  **/
 
-#ifndef DUNE_STOKES_SOLVER_CGHELPER_HH
-#define DUNE_STOKES_SOLVER_CGHELPER_HH
+#ifndef DUNE_OSEEN_SOLVER_CGHELPER_HH
+#define DUNE_OSEEN_SOLVER_CGHELPER_HH
 
 #include "solver_defines.hh"
 
-#include <dune/stokes/solver/new_bicgstab.hh>
+#include <dune/oseen/solver/new_bicgstab.hh>
 #include <dune/stuff/printing.hh>
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/matrix.hh>
@@ -329,4 +329,4 @@ class InnerCGSolverWrapper {
 
 }
 
-#endif // DUNE_STOKES_SOLVER_CGHELPER_HH
+#endif // DUNE_OSEEN_SOLVER_CGHELPER_HH

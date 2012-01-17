@@ -1,5 +1,5 @@
-#ifndef DUNE_STOKES_STAB_COEFF_HH
-#define DUNE_STOKES_STAB_COEFF_HH
+#ifndef DUNE_OSEEN_STAB_COEFF_HH
+#define DUNE_OSEEN_STAB_COEFF_HH
 
 #include <dune/stuff/parametercontainer.hh>
 #include <map>
@@ -156,4 +156,4 @@ const StabilizationCoefficients::FactorType StabilizationCoefficients::invalid_f
 
 } //namespace
 
-#endif // DUNE_STOKES_STAB_COEFF_HH
+#endif // DUNE_OSEEN_STAB_COEFF_HH

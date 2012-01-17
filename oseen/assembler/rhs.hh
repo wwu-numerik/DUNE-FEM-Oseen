@@ -1,7 +1,7 @@
-#ifndef DUNE_STOKES_INTEGRATORS_RHS_HH
-#define DUNE_STOKES_INTEGRATORS_RHS_HH
+#ifndef DUNE_OSEEN_INTEGRATORS_RHS_HH
+#define DUNE_OSEEN_INTEGRATORS_RHS_HH
 
-#include <dune/stokes/integrators/base.hh>
+#include <dune/oseen/assembler/base.hh>
 
 namespace Dune {
 namespace Stokes {
@@ -416,4 +416,4 @@ template < class T, class R > const std::string H3<T,R>::name = "H3";
 } // end namespace Stokes
 } // end namespace Dune
 
-#endif // DUNE_STOKES_INTEGRATORS_RHS_HH
+#endif // DUNE_OSEEN_INTEGRATORS_RHS_HH

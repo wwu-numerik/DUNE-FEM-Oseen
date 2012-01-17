@@ -1,7 +1,7 @@
-#ifndef DUNE_STOKES_INTEGRATORS_O_HH
-#define DUNE_STOKES_INTEGRATORS_O_HH
+#ifndef DUNE_OSEEN_INTEGRATORS_O_HH
+#define DUNE_OSEEN_INTEGRATORS_O_HH
 
-#include <dune/stokes/integrators/base.hh>
+#include <dune/oseen/assembler/base.hh>
 #include <dune/stuff/matrix.hh>
 
 namespace Dune {
@@ -309,4 +309,4 @@ namespace Integrators {
 } // end namespace Stokes
 } // end namespace Dune
 
-#endif // DUNE_STOKES_INTEGRATORS_O_HH
+#endif // DUNE_OSEEN_INTEGRATORS_O_HH

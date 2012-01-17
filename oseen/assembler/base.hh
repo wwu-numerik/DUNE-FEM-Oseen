@@ -1,11 +1,11 @@
-#ifndef DUNE_STOKES_INTEGRATORS_BASE_HH
-#define DUNE_STOKES_INTEGRATORS_BASE_HH
+#ifndef DUNE_OSEEN_INTEGRATORS_BASE_HH
+#define DUNE_OSEEN_INTEGRATORS_BASE_HH
 
 #include <dune/stuff/grid.hh>
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/profiler.hh>
 #include <dune/stuff/localmatrix_proxy.hh>
-#include <dune/stokes/stab_coeff.hh>
+#include <dune/oseen/stab_coeff.hh>
 
 #include <boost/integer/static_min_max.hpp>
 #include <boost/progress.hpp>
@@ -384,4 +384,4 @@ namespace Integrators {
 } // end namespace Stokes
 } // end namespace Dune
 
-#endif // DUNE_STOKES_INTEGRATORS_BASE_HH
+#endif // DUNE_OSEEN_INTEGRATORS_BASE_HH
