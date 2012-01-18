@@ -2,7 +2,7 @@
 #define DUNE_OSEEN_DIRECT_SOLVER_HH
 
 #include <dune/oseen/solver/solver_interface.hh>
-#include <dune/oseen/discretestokesfunctionspacewrapper.hh>
+#include <dune/oseen/discreteoseenfunctionspacewrapper.hh>
 
 namespace Dune {
 
