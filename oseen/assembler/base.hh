@@ -11,8 +11,8 @@
 #include <boost/progress.hpp>
 
 namespace Dune {
-namespace Stokes {
-namespace Integrators {
+namespace Oseen {
+namespace Assembler {
 
     namespace {
         template<int i,typename IntegratorTuple,typename InfoType,typename FunctorType>
@@ -380,8 +380,8 @@ namespace Integrators {
 		}
 	};
 
-} // end namespace Integrators
-} // end namespace Stokes
+} // end namespace Assembler
+} // end namespace Oseen
 } // end namespace Dune
 
 #endif // DUNE_OSEEN_INTEGRATORS_BASE_HH

@@ -5,8 +5,8 @@
 #include <dune/stuff/matrix.hh>
 
 namespace Dune {
-namespace Stokes {
-namespace Integrators {
+namespace Oseen {
+namespace Assembler {
 
     template < class MatrixPointerType, class Traits >
 	class M
@@ -94,8 +94,8 @@ namespace Integrators {
 
 	template < class T, class R > const std::string M<T,R>::name = "M";
 
-} // end namespace Integrators
-} // end namespace Stokes
+} // end namespace Assembler
+} // end namespace Oseen
 } // end namespace Dune
 
 #endif // DUNE_OSEEN_INTEGRATORS_M_HH

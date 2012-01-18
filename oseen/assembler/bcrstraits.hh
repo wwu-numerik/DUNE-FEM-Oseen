@@ -6,8 +6,8 @@
 #include <dune/stuff/matrix_patterns.hh>
 
 namespace Dune {
-namespace Stokes {
-namespace Integrators {
+namespace Oseen {
+namespace Assembler {
 
 
 
@@ -33,8 +33,8 @@ struct ModifiedDGMatrixTraits
 
 
 } //namespace Dune
-} //namespace Stokes
-} //namespace Integrators
+} //namespace Oseen
+} //namespace Assembler
 
 
 #endif // BCRSTRAITS_HH

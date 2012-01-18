@@ -9,7 +9,7 @@
 #   define STOKES_MATRIX_OBJECT ModifiedISTLMatrixObject
 #   include <dune/fem/operator/2order/dgmatrixtraits.hh>
 #   include <dune/oseen/assembler/bcrstraits.hh>
-#   define STOKES_MATRIX_OBJECT_TRAITS Dune::Stokes::Integrators::ModifiedDGMatrixTraits
+#   define STOKES_MATRIX_OBJECT_TRAITS Dune::Stokes::Assembler::ModifiedDGMatrixTraits
 #else
 #   define STOKES_MATRIX_OBJECT SparseRowMatrixObject
     template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
@@ -46,7 +46,7 @@ struct DiagonalMatrixTraits :
         Name ## matrixInternalType; \
     typedef Dune::shared_ptr< Name ## matrixInternalType > \
         Name ## matrixType ; \
-    typedef Stokes::Integrators:: Name < Name ## matrixType, StokesTraitsType > \
+    typedef Oseen::Assembler:: Name < Name ## matrixType, StokesTraitsType > \
         Name ## matrixIntegratorType
 
 #define SPECIALIZE_IntegratorSelector(Name) \
@@ -57,7 +57,7 @@ struct DiagonalMatrixTraits :
 
 
 
-namespace Dune { namespace Stokes { namespace Integrators {
+namespace Dune { namespace Oseen { namespace Assembler {
 
 //! A Static map of Matrix-/DiscreteFunctionType onto IntegratorType
 template < class FactoryType, class MatrixType >
@@ -134,15 +134,15 @@ public:
     TYPEDEF_MATRIX_AND_INTEGRATOR( R, Pressure, Pressure );
     static const bool verbose_ = true;
 
-    typedef Stokes::Integrators::O< YmatrixType, StokesTraitsType, DiscreteVelocityFunctionType >
+    typedef Oseen::Assembler::O< YmatrixType, StokesTraitsType, DiscreteVelocityFunctionType >
         OmatrixIntegratorType;
-    typedef Stokes::Integrators::H1< DiscreteSigmaFunctionType, StokesTraitsType >
+    typedef Oseen::Assembler::H1< DiscreteSigmaFunctionType, StokesTraitsType >
         H1_IntegratorType;
-    typedef Stokes::Integrators::H2< DiscreteVelocityFunctionType , StokesTraitsType >
+    typedef Oseen::Assembler::H2< DiscreteVelocityFunctionType , StokesTraitsType >
         H2_IntegratorType;
-    typedef Stokes::Integrators::H2_O< DiscreteVelocityFunctionType , StokesTraitsType, DiscreteVelocityFunctionType >
+    typedef Oseen::Assembler::H2_O< DiscreteVelocityFunctionType , StokesTraitsType, DiscreteVelocityFunctionType >
         H2_O_IntegratorType;
-    typedef Stokes::Integrators::H3< DiscretePressureFunctionType, StokesTraitsType >
+    typedef Oseen::Assembler::H3< DiscretePressureFunctionType, StokesTraitsType >
         H3_IntegratorType;
     typedef tuple<	MmatrixIntegratorType,
                     WmatrixIntegratorType,
@@ -222,5 +222,5 @@ public:
 
 #undef STOKES_MATRIX_OBJECT
 #undef STOKES_MATRIX_OBJECT_TRAITS
-/*namespace Dune*/ } /*namespace Stokes*/ } /*namespace Integrators*/ }
+/*namespace Dune*/ } /*namespace Oseen*/ } /*namespace Assembler*/ }
 #endif // DUNE_OSEEN_INTEGRATORS_FACTORY_HH

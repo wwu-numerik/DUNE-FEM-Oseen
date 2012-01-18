@@ -5,8 +5,8 @@
 #include <dune/stuff/matrix.hh>
 
 namespace Dune {
-namespace Stokes {
-namespace Integrators {
+namespace Oseen {
+namespace Assembler {
     template < class MatrixPointerType, class Traits >
 	class W
 	{
@@ -196,8 +196,8 @@ namespace Integrators {
             }
     };
 
-} // end namespace Integrators
-} // end namespace Stokes
+} // end namespace Assembler
+} // end namespace Oseen
 } // end namespace Dune
 
 #include <dune/oseen/assembler/rhs.hh>

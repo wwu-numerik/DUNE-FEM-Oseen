@@ -4,8 +4,8 @@
 #include <dune/oseen/assembler/base.hh>
 
 namespace Dune {
-namespace Stokes {
-namespace Integrators {
+namespace Oseen {
+namespace Assembler {
 
 template < class DiscreteFunctionType, class Traits >
 class H1
@@ -412,8 +412,8 @@ class H3
 
 template < class T, class R > const std::string H3<T,R>::name = "H3";
 
-} // end namespace Integrators
-} // end namespace Stokes
+} // end namespace Assembler
+} // end namespace Oseen
 } // end namespace Dune
 
 #endif // DUNE_OSEEN_INTEGRATORS_RHS_HH

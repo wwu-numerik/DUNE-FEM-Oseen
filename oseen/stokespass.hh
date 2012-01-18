@@ -80,7 +80,7 @@ class StokesPass
         {
             // profiler information
             profiler().StartTiming("Pass_init");
-            typedef Stokes::Integrators::Factory< Traits >
+            typedef Oseen::Assembler::Factory< Traits >
                 Factory;
             // M\in R^{M\times M}
             auto MInversMatrix = Factory::matrix( sigmaSpace_, sigmaSpace_ );
@@ -119,31 +119,40 @@ class StokesPass
             auto h3_integrator = Factory::integrator( H3rhs );
             profiler().StopTiming("Pass_init");
 
-			if ( do_oseen_discretization_ )
-			{
-                Stokes::Integrators::Coordinator< Traits, typename Factory::OseenIntegratorTuple >
-						coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
+#ifndef STOKES_CONV_ONLY
+            if ( do_oseen_discretization_ )
+            {
+                Oseen::Assembler::Coordinator< Traits, typename Factory::OseenIntegratorTuple >
+                        coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
 
                 typename Factory::OseenIntegratorTuple tuple(	m_integrator, w_integrator, x_integrator, y_integrator,
-										o_integrator, z_integrator, e_integrator, r_integrator,
-										h1_integrator, h2_integrator,h2_o_integrator, h3_integrator );
-				coordinator.apply( tuple );
-				Logger().Dbg() << "Oseen disc\n" ;
-			}
-			else
-			{
-                Stokes::Integrators::Coordinator< Traits, typename Factory::StokesIntegratorTuple >
-						coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
+                                        o_integrator, z_integrator, e_integrator, r_integrator,
+                                        h1_integrator, h2_integrator,h2_o_integrator, h3_integrator );
+                coordinator.apply( tuple );
+                Logger().Dbg() << "Oseen disc\n" ;
+            }
+            else
+            {
+                Oseen::Assembler::Coordinator< Traits, typename Factory::StokesIntegratorTuple >
+                        coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
 
                 typename Factory::StokesIntegratorTuple tuple(	m_integrator, w_integrator, x_integrator, y_integrator,
-										z_integrator, e_integrator, r_integrator,
-										h1_integrator, h2_integrator,h3_integrator );
-				coordinator.apply( tuple );
-				Logger().Dbg() << "Stokes disc\n" ;
-			}
+                                        z_integrator, e_integrator, r_integrator,
+                                        h1_integrator, h2_integrator,h3_integrator );
+                coordinator.apply( tuple );
+                Logger().Dbg() << "Stokes disc\n" ;
+            }
+#else
+            Oseen::Assembler::Coordinator< Traits, typename Factory::ConvIntegratorTuple >
+                    coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
+
+            typename Factory::ConvIntegratorTuple tuple(	o_integrator, h2_integrator, h2_o_integrator );
+            coordinator.apply( tuple );
+#endif
+            Logger().Dbg() << "Stokes disc\n" ;
             // do the actual lgs solving
             Logger().Info() << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
-            info_ = Stokes::SolverCallerProxy< ThisType >::call( do_oseen_discretization_, rhs_datacontainer, dest,
+            info_ = Oseen::SolverCallerProxy< ThisType >::call( do_oseen_discretization_, rhs_datacontainer, dest,
                                             arg, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix,
                                             Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs, beta_ );
         } // end of apply

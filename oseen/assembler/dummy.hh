@@ -4,8 +4,8 @@
 #include <dune/oseen/assembler/base.hh>
 
 namespace Dune {
-namespace Stokes {
-namespace Integrators {
+namespace Oseen {
+namespace Assembler {
 
 	template < class MatrixObjectType, class Traits >
 	class Dummy
@@ -55,8 +55,8 @@ namespace Integrators {
 			}
 	};
 
-} // end namespace Integrators
-} // end namespace Stokes
+} // end namespace Assembler
+} // end namespace Oseen
 } // end namespace Dune
 
 

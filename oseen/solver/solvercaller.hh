@@ -12,7 +12,7 @@
 
 namespace Dune {
 
-namespace Stokes {
+namespace Oseen {
 
 namespace Solver {
     enum SolverID {
@@ -230,24 +230,24 @@ struct SolverCallerProxy {
         //this lets us switch between standalone oseen and reduced oseen in  thete scheme easily
         const bool use_reduced_solver = (do_oseen_discretization && Parameters().getParam( "reduced_oseen_solver", false ))
                 || Parameters().getParam( "parabolic", false );
-        typedef Stokes::SolverCaller< StokesPassType>
+        typedef Oseen::SolverCaller< StokesPassType>
             SolverCallerType;
-        typedef Stokes::SolverCaller< StokesPassType, SmartReconstruction >
+        typedef Oseen::SolverCaller< StokesPassType, SmartReconstruction >
             SmartSolverCallerType;
 
         //Select which solver we want to use
-        typename Stokes::Solver::SolverID solver_ID = do_oseen_discretization
-                ? Stokes::Solver::BiCg_Saddlepoint_Solver_ID
-                : Stokes::Solver::SaddlePoint_Solver_ID;
+        typename Oseen::Solver::SolverID solver_ID = do_oseen_discretization
+                ? Oseen::Solver::BiCg_Saddlepoint_Solver_ID
+                : Oseen::Solver::SaddlePoint_Solver_ID;
 
         if( !use_reduced_solver ) {
             if ( Parameters().getParam( "use_nested_cg_solver", false ) )
-                solver_ID = Stokes::Solver::NestedCG_Solver_ID;
+                solver_ID = Oseen::Solver::NestedCG_Solver_ID;
             else if ( Parameters().getParam( "use_full_solver", false ) )
-                solver_ID = Stokes::Solver::FullSystem_Solver_ID;
+                solver_ID = Oseen::Solver::FullSystem_Solver_ID;
         }
         else
-            solver_ID = Stokes::Solver::Reduced_Solver_ID;
+            solver_ID = Oseen::Solver::Reduced_Solver_ID;
 
         if ( Parameters().getParam( "smart_reconstruction", false ) )
             return SmartSolverCallerType::solve(solver_ID,
@@ -265,7 +265,7 @@ struct SolverCallerProxy {
 };
 
 
-} //namespace Stokes
+} //namespace Oseen
 } //namespace Dune
 
 #endif // DUNE_OSEEN_SOLVERCALLER_HH

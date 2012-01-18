@@ -5,8 +5,8 @@
 #include <dune/stuff/debug.hh>
 
 namespace Dune {
-namespace Stokes {
-namespace Integrators {
+namespace Oseen {
+namespace Assembler {
 
 template <class LittleBlockType,
           class RowDiscreteFunctionImp,
@@ -1165,19 +1165,19 @@ public:
   }
 };
 
-} //namespace Integrators
-} //namespace Stokes
+} //namespace Assembler
+} //namespace Oseen
 
 template <class LittleBlockType,
           class RowDiscreteFunctionImp,
           class ColDiscreteFunctionImp >
-struct MatrixDimension<Stokes::Integrators
+struct MatrixDimension<Stokes::Assembler
         ::ModifiedImprovedBCRSMatrix<LittleBlockType,
         RowDiscreteFunctionImp, ColDiscreteFunctionImp
         > >
 {
     typedef LittleBlockType B;
-  typedef Stokes::Integrators::ModifiedImprovedBCRSMatrix<LittleBlockType,
+  typedef Oseen::Assembler::ModifiedImprovedBCRSMatrix<LittleBlockType,
     RowDiscreteFunctionImp, ColDiscreteFunctionImp > Matrix;
   typedef typename Matrix::block_type block_type;
   typedef typename Matrix::size_type size_type;
@@ -1256,9 +1256,9 @@ struct MatrixDimension<Stokes::Integrators
 
 template<typename B, int n, int m, class RowDiscreteFunctionImp,
          class ColDiscreteFunctionImp >
-struct MatrixDimension<Stokes::Integrators::ModifiedImprovedBCRSMatrix<FieldMatrix<B,n,m> ,  RowDiscreteFunctionImp, ColDiscreteFunctionImp> >
+struct MatrixDimension<Stokes::Assembler::ModifiedImprovedBCRSMatrix<FieldMatrix<B,n,m> ,  RowDiscreteFunctionImp, ColDiscreteFunctionImp> >
 {
-  typedef Stokes::Integrators::ModifiedImprovedBCRSMatrix<FieldMatrix<B,n,m> , RowDiscreteFunctionImp, ColDiscreteFunctionImp> Matrix;
+  typedef Oseen::Assembler::ModifiedImprovedBCRSMatrix<FieldMatrix<B,n,m> , RowDiscreteFunctionImp, ColDiscreteFunctionImp> Matrix;
   typedef typename Matrix::size_type size_type;
 
   static size_type rowdim (const Matrix& A, size_type i)
@@ -1286,7 +1286,7 @@ namespace Stuff {
 
 //! specializations needed to avoid () op
 template < class RowType,class ColType, class BlockType, class Stream>
-void matrixToGnuplotStream( const Dune::Stokes::Integrators::ModifiedImprovedBCRSMatrix<RowType,ColType,BlockType>& matrix,
+void matrixToGnuplotStream( const Dune::Stokes::Assembler::ModifiedImprovedBCRSMatrix<RowType,ColType,BlockType>& matrix,
                             Stream& /*stream*/ ) {
     assert(false);
     double d = matrix(9,9);

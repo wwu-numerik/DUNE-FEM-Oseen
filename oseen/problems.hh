@@ -5,7 +5,7 @@
 #include <dune/stuff/misc.hh>
 
 //! collection of data functions
-namespace StokesProblems {
+namespace OseenProblems {
 
 	//! a simple problem, d'oh
 	namespace Simple {
@@ -150,6 +150,6 @@ namespace StokesProblems {
 			ForceType force_;
 			const DirichletDataType& dirichletData_;
 	};
-} // namespace StokesProblems
+} // namespace OseenProblems
 
 #endif // DUNE_OSEEN_PROBLEMS_HH
