@@ -16,14 +16,14 @@ namespace Dune
 {
 
 // forward
-template < class DiscreteStokesFunctionSpaceWrapperTraitsImp >
-class DiscreteStokesFunctionSpaceWrapper;
+template < class DiscreteOseenFunctionSpaceWrapperTraitsImp >
+class DiscreteOseenFunctionSpaceWrapper;
 
 /**
  *  \todo   doc
  **/
 template < class DiscreteVelocitySpaceImp, class DiscretePressureSpaceImp >
-class DiscreteStokesFunctionSpaceWrapperTraits
+class DiscreteOseenFunctionSpaceWrapperTraits
 {
     public:
 
@@ -40,8 +40,8 @@ class DiscreteStokesFunctionSpaceWrapperTraits
          *  \{
          **/
         //! own type (CRTP) (for interface compliance)
-        typedef DiscreteStokesFunctionSpaceWrapper<
-                    DiscreteStokesFunctionSpaceWrapperTraits<   DiscreteVelocityFunctionSpaceType,
+        typedef DiscreteOseenFunctionSpaceWrapper<
+                    DiscreteOseenFunctionSpaceWrapperTraits<   DiscreteVelocityFunctionSpaceType,
                                                                 DiscretePressureFunctionSpaceType > >
             DiscreteFunctionSpaceType;
 
@@ -89,22 +89,22 @@ class DiscreteStokesFunctionSpaceWrapperTraits
         /**
          *  \}
          **/
-}; // end of DiscreteStokesFunctionSpaceWrapperTraits
+}; // end of DiscreteOseenFunctionSpaceWrapperTraits
 
 /**
  *  \todo   doc
  **/
-template < class DiscreteStokesFunctionSpaceWrapperTraitsImp >
-class DiscreteStokesFunctionSpaceWrapper
-    : public DiscreteFunctionSpaceDefault< DiscreteStokesFunctionSpaceWrapperTraitsImp >
+template < class DiscreteOseenFunctionSpaceWrapperTraitsImp >
+class DiscreteOseenFunctionSpaceWrapper
+    : public DiscreteFunctionSpaceDefault< DiscreteOseenFunctionSpaceWrapperTraitsImp >
 {
     public:
 
-        typedef DiscreteStokesFunctionSpaceWrapperTraitsImp
+        typedef DiscreteOseenFunctionSpaceWrapperTraitsImp
             Traits;
 
         //! base type
-        typedef DiscreteFunctionSpaceDefault< DiscreteStokesFunctionSpaceWrapperTraitsImp >
+        typedef DiscreteFunctionSpaceDefault< DiscreteOseenFunctionSpaceWrapperTraitsImp >
             BaseType;
 
         //! type of discrete velocity function space
@@ -159,7 +159,7 @@ class DiscreteStokesFunctionSpaceWrapper
          *  \brief  constructor
          *  \todo   doc
          **/
-        DiscreteStokesFunctionSpaceWrapper( GridPartType& gridPart )
+        DiscreteOseenFunctionSpaceWrapper( GridPartType& gridPart )
             : BaseType( gridPart ),
             velocitySpace_( gridPart ),
             pressureSpace_( gridPart )
@@ -168,7 +168,7 @@ class DiscreteStokesFunctionSpaceWrapper
         /**
          *  \brief  destructor
          **/
-		virtual ~DiscreteStokesFunctionSpaceWrapper()
+		virtual ~DiscreteOseenFunctionSpaceWrapper()
         {}
 
         /**
@@ -405,32 +405,32 @@ class DiscreteStokesFunctionSpaceWrapper
         DiscretePressureFunctionSpaceType pressureSpace_;
 
 
-}; // end of DiscreteStokesFunctionSpaceWrapper
+}; // end of DiscreteOseenFunctionSpaceWrapper
 
 //! forward
-template < class DiscreteStokesFunctionWrapperTraitsImp >
-class DiscreteStokesFunctionWrapper;
+template < class DiscreteOseenFunctionWrapperTraitsImp >
+class DiscreteOseenFunctionWrapper;
 
 /**
  *  \todo   doc
  **/
-template <  class DiscreteStokesFunctionSpaceWrapperImp,
+template <  class DiscreteOseenFunctionSpaceWrapperImp,
             class DiscreteVelocityFunctionImp,
             class DiscretePressureFunctionImp >
-class DiscreteStokesFunctionWrapperTraits
+class DiscreteOseenFunctionWrapperTraits
 {
     public:
 
         //! own type (CRTP)
-        typedef DiscreteStokesFunctionWrapper<
-                    DiscreteStokesFunctionWrapperTraits<
-                        DiscreteStokesFunctionSpaceWrapperImp,
+        typedef DiscreteOseenFunctionWrapper<
+                    DiscreteOseenFunctionWrapperTraits<
+                        DiscreteOseenFunctionSpaceWrapperImp,
                         DiscreteVelocityFunctionImp,
                         DiscretePressureFunctionImp > >
             DiscreteFunctionType;
 
         //! type of associated discrete function space
-        typedef DiscreteStokesFunctionSpaceWrapperImp
+        typedef DiscreteOseenFunctionSpaceWrapperImp
             DiscreteFunctionSpaceType;
 
         //! type of discrete velocity function
@@ -447,27 +447,27 @@ class DiscreteStokesFunctionWrapperTraits
         typedef Dune::tuple<const DiscreteVelocityFunctionType*,const DiscretePressureFunctionType*>
 			FunctionTupleType;
 
-}; // end of DiscreteStokesFunctionWrapperTraits
+}; // end of DiscreteOseenFunctionWrapperTraits
 
 /**
  *  \todo   doc,
  *          should comply with the DiscreteFunctionInterface some time
  **/
-template < class DiscreteStokesFunctionWrapperTraitsImp >
-class DiscreteStokesFunctionWrapper
-//    : public DiscreteFunctionInterface< DiscreteStokesFunctionWrapperTraitsImp >
+template < class DiscreteOseenFunctionWrapperTraitsImp >
+class DiscreteOseenFunctionWrapper
+//    : public DiscreteFunctionInterface< DiscreteOseenFunctionWrapperTraitsImp >
 {
     public:
 
-        typedef DiscreteStokesFunctionWrapperTraitsImp
+        typedef DiscreteOseenFunctionWrapperTraitsImp
             Traits;
-		typedef DiscreteStokesFunctionWrapper<Traits>
+		typedef DiscreteOseenFunctionWrapper<Traits>
 			ThisType;
 
         typedef typename Traits::DiscreteFunctionType
             DiscreteFunctionType;
 
-        //! DiscreteStokesFunctionSpaceWrapper
+        //! DiscreteOseenFunctionSpaceWrapper
         typedef typename Traits::DiscreteFunctionSpaceType
             DiscreteFunctionSpaceType;
 
@@ -491,7 +491,7 @@ class DiscreteStokesFunctionWrapper
 #if ENABLE_ADAPTIVE
     protected:
 
-		typedef DiscreteStokesFunctionWrapperAdaptionManager< ThisType >
+		typedef DiscreteOseenFunctionWrapperAdaptionManager< ThisType >
             AdaptionManagerType;
 
     public:
@@ -502,7 +502,7 @@ class DiscreteStokesFunctionWrapper
          *  \brief  constructor
          *  \todo   doc
          **/
-        DiscreteStokesFunctionWrapper(  const std::string name,
+        DiscreteOseenFunctionWrapper(  const std::string name,
                                         DiscreteFunctionSpaceType& space,
 										GridPartType& gridPart )
             : space_( space ),
@@ -520,7 +520,7 @@ class DiscreteStokesFunctionWrapper
          *              wraps existing velocity and pressure
          *  \attention  by copying
          **/
-		DiscreteStokesFunctionWrapper(  DiscreteFunctionSpaceType& space,
+		DiscreteOseenFunctionWrapper(  DiscreteFunctionSpaceType& space,
                                         DiscreteVelocityFunctionType& velocity,
                                         DiscretePressureFunctionType& pressure )
             : space_( space ),
@@ -536,7 +536,7 @@ class DiscreteStokesFunctionWrapper
          *  \brief  destructor
          *  \todo   doc
          **/
-		virtual ~DiscreteStokesFunctionWrapper()
+		virtual ~DiscreteOseenFunctionWrapper()
         {}
 
         /**
@@ -764,9 +764,9 @@ class DiscreteStokesFunctionWrapper
 		typename Traits::VtkWriterType vtkWriter_;
 
 		// we can uncomment this if the adpation manager copy-problem is resolved
-		//DiscreteStokesFunctionWrapper( const DiscreteStokesFunctionWrapper& );
+		//DiscreteOseenFunctionWrapper( const DiscreteOseenFunctionWrapper& );
 
-}; // end of DiscreteStokesFunctionWrapper
+}; // end of DiscreteOseenFunctionWrapper
 
 /** \brief a minimal function wrapper making a function pair usable in OEM solver size() and grid() methods
   */

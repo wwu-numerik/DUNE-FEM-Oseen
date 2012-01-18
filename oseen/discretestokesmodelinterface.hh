@@ -1,8 +1,8 @@
 /**
  *  \file   discretestokesmodelinterface.hh
- *  \brief  contains a class DiscreteStokesModelInterface
- *          and a class DiscreteStokesModelDefault with traits class
- *          DiscreteStokesModelDefaultTraits.
+ *  \brief  contains a class DiscreteOseenModelInterface
+ *          and a class DiscreteOseenModelDefault with traits class
+ *          DiscreteOseenModelDefaultTraits.
  **/
 #ifndef DUNE_DISCRESTOKESTEMODELINTERFACE_HH
 #define DUNE_DISCRESTOKESTEMODELINTERFACE_HH
@@ -35,23 +35,23 @@ namespace Dune
  *
  *          A discretization of the stokes problem using LDG methods consist of
  *          several dependent classes.
- *          The Dune::DiscreteStokesFunctionSpaceWrapper is a wrapper class to
+ *          The Dune::DiscreteOseenFunctionSpaceWrapper is a wrapper class to
  *          combine the discrete function spaces of the velocity and the
  *          pressure into one discrete function space. The
- *          Dune::DiscreteStokesFunctionWrapper accordingly is a wrapper class
+ *          Dune::DiscreteOseenFunctionWrapper accordingly is a wrapper class
  *          to combine the velocity and the pressure itself into one discrete
  *          function.
  *          The assembling of the system matrices and right hand sides takes
- *          place in the Dune::StokesPass. This class also solves for the
+ *          place in the Dune::OseenPass. This class also solves for the
  *          velocity and the pressure (which have to be wrapped inside a
- *          Dune::DiscreteStokesFunctionWrapper).
+ *          Dune::DiscreteOseenFunctionWrapper).
  *          The problem-dependent data (force terms, boundary data, fluxes,
  *          viscosity) are implemented in a discrete model, which should be
- *          derived from the Dune::DiscreteStokesModelInterface interface class
- *          (see Dune::DiscreteStokesModelDefault for example).
+ *          derived from the Dune::DiscreteOseenModelInterface interface class
+ *          (see Dune::DiscreteOseenModelDefault for example).
  *
  *          A discrete model implementation of the user should be derived from
- *          this interface class to be compatible with the Dune::StokesPass.
+ *          this interface class to be compatible with the Dune::OseenPass.
  *          In the LDG context a weak discrete formulation of a stokes problem
  *          enforces
  *          \f$
@@ -217,17 +217,17 @@ namespace Dune
  *                ( const IntersectionIteratorType& it, const double time, const
  *                FaceDomainType& x, SigmaRangeType& <b>rhsReturn</b> )
  *
- *  \tparam DiscreteStokesModelTraits
+ *  \tparam DiscreteOseenModelTraits
  *          traits class defined by the user, should provide all types needed
  *          by this interface
  **/
-template < class DiscreteStokesModelTraits >
-class DiscreteStokesModelInterface
+template < class DiscreteOseenModelTraits >
+class DiscreteOseenModelInterface
 {
     public:
 
         //! traits class defined by the user
-        typedef DiscreteStokesModelTraits
+        typedef DiscreteOseenModelTraits
             Traits;
 
     private:
@@ -247,17 +247,17 @@ class DiscreteStokesModelInterface
             FaceQuadratureType;
 
         //! discrete function space wrapper type
-        typedef typename Traits::DiscreteStokesFunctionSpaceWrapperType
-            DiscreteStokesFunctionSpaceWrapperType;
+        typedef typename Traits::DiscreteOseenFunctionSpaceWrapperType
+            DiscreteOseenFunctionSpaceWrapperType;
 
         //! discrete function wrapper type
-        typedef typename Traits::DiscreteStokesFunctionWrapperType
-            DiscreteStokesFunctionWrapperType;
+        typedef typename Traits::DiscreteOseenFunctionWrapperType
+            DiscreteOseenFunctionWrapperType;
 
     private:
 
         //! discrete function type for the velocity
-        typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
+        typedef typename DiscreteOseenFunctionWrapperType::DiscreteVelocityFunctionType
             DiscreteVelocityFunctionType;
 
         //! discrete function space type for the velocity
@@ -284,7 +284,7 @@ class DiscreteStokesModelInterface
             SigmaFunctionSpaceType;
 
         //! discrete function type for the pressure
-        typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
+        typedef typename DiscreteOseenFunctionWrapperType::DiscretePressureFunctionType
             DiscretePressureFunctionType;
 
         //! discrete function space type for the pressure
@@ -361,7 +361,7 @@ class DiscreteStokesModelInterface
          *
          *  does nothing
          **/
-        DiscreteStokesModelInterface()
+        DiscreteOseenModelInterface()
         {}
 
         /**
@@ -369,7 +369,7 @@ class DiscreteStokesModelInterface
          *
          *  does nothing
          **/
-	virtual ~DiscreteStokesModelInterface()
+	virtual ~DiscreteOseenModelInterface()
         {}
 
         /**
@@ -459,7 +459,7 @@ class DiscreteStokesModelInterface
          *
          *          For the docomposition of
          *          \f$\hat{u}_{\sigma}(u):\Omega\rightarrow R^{d}\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -473,8 +473,8 @@ class DiscreteStokesModelInterface
          *  \param[in]  side
          *          determines the interpretation of <i>u</i> and
          *          <i>uReturn</i>\n
-         *          legal values are DiscreteStokesModelInterface::inside and
-         *          DiscreteStokesModelInterface::outside
+         *          legal values are DiscreteOseenModelInterface::inside and
+         *          DiscreteOseenModelInterface::outside
          *  \param[in]  u
          *          value of \f$u\f$ in \f$x\f$, interpreted once as seen from
          *          the inside entity (side==inside), once as seen from the
@@ -507,7 +507,7 @@ class DiscreteStokesModelInterface
          *
          *          For the docomposition of
          *          \f$\hat{u}_{\sigma}(u):\Omega\rightarrow R^{d}\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -545,7 +545,7 @@ class DiscreteStokesModelInterface
          *
          *          For the docomposition of
          *          \f$\hat{u}_{\sigma}(u):\Omega\rightarrow R^{d}\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -579,7 +579,7 @@ class DiscreteStokesModelInterface
          *
          *          For the docomposition of
          *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -593,8 +593,8 @@ class DiscreteStokesModelInterface
          *  \param[in]  side
          *          determines the interpretation of <i>u</i> and
          *          <i>uReturn</i>\n
-         *          legal values are DiscreteStokesModelInterface::inside and
-         *          DiscreteStokesModelInterface::outside
+         *          legal values are DiscreteOseenModelInterface::inside and
+         *          DiscreteOseenModelInterface::outside
          *  \param[in]  u
          *          value of \f$u\f$ in \f$x\f$, interpreted once as seen from
          *          the inside entity (side==inside), once as seen from the
@@ -627,7 +627,7 @@ class DiscreteStokesModelInterface
          *
          *          For the docomposition of
          *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -641,8 +641,8 @@ class DiscreteStokesModelInterface
          *  \param[in]  side
          *          determines the interpretation of <i>p</i> and
          *          <i>pReturn</i>\n
-         *          legal values are DiscreteStokesModelInterface::inside and
-         *          DiscreteStokesModelInterface::outside
+         *          legal values are DiscreteOseenModelInterface::inside and
+         *          DiscreteOseenModelInterface::outside
          *  \param[in]  p
          *          value of \f$u\f$ in \f$x\f$, interpreted once as seen from
          *          the inside entity (side==inside), once as seen from the
@@ -675,7 +675,7 @@ class DiscreteStokesModelInterface
          *
          *          For the docomposition of
          *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -714,7 +714,7 @@ class DiscreteStokesModelInterface
          *
          *          For the docomposition of
          *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -753,7 +753,7 @@ class DiscreteStokesModelInterface
          *
          *          For the docomposition of
          *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -788,7 +788,7 @@ class DiscreteStokesModelInterface
          *
          *          For the docomposition of
          *          \f$\hat{p}(p):\Omega\rightarrow R\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -802,8 +802,8 @@ class DiscreteStokesModelInterface
          *  \param[in]  side
          *          determines the interpretation of <i>p</i> and
          *          <i>pReturn</i>\n
-         *          legal values are DiscreteStokesModelInterface::inside and
-         *          DiscreteStokesModelInterface::outside
+         *          legal values are DiscreteOseenModelInterface::inside and
+         *          DiscreteOseenModelInterface::outside
          *  \param[in]  p
          *          value of \f$p\f$ in \f$x\f$, interpreted once as seen from
          *          the inside entity (side==inside), once as seen from the
@@ -836,7 +836,7 @@ class DiscreteStokesModelInterface
          *
          *          For the docomposition of
          *          \f$\hat{p}(p):\Omega\rightarrow R\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -874,7 +874,7 @@ class DiscreteStokesModelInterface
          *
          *          For the docomposition of
          *          \f$\hat{p}(p):\Omega\rightarrow R\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -909,7 +909,7 @@ class DiscreteStokesModelInterface
          *          For the docomposition of
          *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
          *          , see the documentation of the
-         *          Dune::DiscreteStokesModelInterface.
+         *          Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -923,8 +923,8 @@ class DiscreteStokesModelInterface
          *  \param[in]  side
          *          determines the interpretation of <i>u</i> and
          *          <i>uReturn</i>\n
-         *          legal values are DiscreteStokesModelInterface::inside and
-         *          DiscreteStokesModelInterface::outside
+         *          legal values are DiscreteOseenModelInterface::inside and
+         *          DiscreteOseenModelInterface::outside
          *  \param[in]  u
          *          value of \f$u\f$ in \f$x\f$, interpreted once as seen from
          *          the inside entity (side==inside), once as seen from the
@@ -958,7 +958,7 @@ class DiscreteStokesModelInterface
          *          For the docomposition of
          *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
          *          , see the documentation of the
-         *          Dune::DiscreteStokesModelInterface.
+         *          Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -972,8 +972,8 @@ class DiscreteStokesModelInterface
          *  \param[in]  side
          *          determines the interpretation of <i>sigma</i> and
          *          <i>sigmaReturn</i>\n
-         *          legal values are DiscreteStokesModelInterface::inside and
-         *          DiscreteStokesModelInterface::outside
+         *          legal values are DiscreteOseenModelInterface::inside and
+         *          DiscreteOseenModelInterface::outside
          *  \param[in]  sigma
          *          value of \f$\sigma\f$ in \f$x\f$, interpreted once as seen
          *          from the inside entity (side==inside), once as seen from the
@@ -1007,7 +1007,7 @@ class DiscreteStokesModelInterface
          *          For the docomposition of
          *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
          *          , see the documentation of the
-         *          Dune::DiscreteStokesModelInterface.
+         *          Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -1046,7 +1046,7 @@ class DiscreteStokesModelInterface
          *          For the docomposition of
          *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
          *          , see the documentation of the
-         *          Dune::DiscreteStokesModelInterface.
+         *          Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -1085,7 +1085,7 @@ class DiscreteStokesModelInterface
          *          For the docomposition of
          *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
          *          , see the documentation of the
-         *          Dune::DiscreteStokesModelInterface.
+         *          Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -1201,20 +1201,20 @@ class DiscreteStokesModelInterface
 };
 
 // forward declaration
-template < class DiscreteStokesModelDefaultTraitsImp >
-class DiscreteStokesModelDefault;
+template < class DiscreteOseenModelDefaultTraitsImp >
+class DiscreteOseenModelDefault;
 
 /**
- *  \brief  Traits class for DiscreteStokesModelDefault
+ *  \brief  Traits class for DiscreteOseenModelDefault
  **/
 template < class GridPartImp, template <class > class AnalyticalForceImp, class AnalyticalDirichletDataTraits,
 			int gridDim, int sigmaOrder, int velocityOrder = sigmaOrder, int pressureOrder = sigmaOrder >
-class DiscreteStokesModelDefaultTraits
+class DiscreteOseenModelDefaultTraits
 {
     public:
 
         //! for CRTP trick
-        typedef DiscreteStokesModelDefault < DiscreteStokesModelDefaultTraits >
+        typedef DiscreteOseenModelDefault < DiscreteOseenModelDefaultTraits >
             DiscreteModelType;
 
         //! we use caching quadratures for the entities
@@ -1257,10 +1257,10 @@ class DiscreteStokesModelDefaultTraits
     public:
 
         //! discrete function space wrapper type
-        typedef Dune::DiscreteStokesFunctionSpaceWrapper< Dune::DiscreteStokesFunctionSpaceWrapperTraits<
+        typedef Dune::DiscreteOseenFunctionSpaceWrapper< Dune::DiscreteOseenFunctionSpaceWrapperTraits<
                     DiscreteVelocityFunctionSpaceType,
                     DiscretePressureFunctionSpaceType > >
-            DiscreteStokesFunctionSpaceWrapperType;
+            DiscreteOseenFunctionSpaceWrapperType;
 
     private:
         //! function space type for sigma
@@ -1279,11 +1279,11 @@ class DiscreteStokesModelDefaultTraits
 
 #if STOKES_USE_ISTL
         //! discrete function type for the velocity
-        typedef Dune::BlockVectorDiscreteFunction< typename DiscreteStokesFunctionSpaceWrapperType::DiscreteVelocityFunctionSpaceType >
+        typedef Dune::BlockVectorDiscreteFunction< typename DiscreteOseenFunctionSpaceWrapperType::DiscreteVelocityFunctionSpaceType >
             DiscreteVelocityFunctionType;
 
         //! discrete function type for the pressure
-        typedef Dune::BlockVectorDiscreteFunction< typename DiscreteStokesFunctionSpaceWrapperType::DiscretePressureFunctionSpaceType >
+        typedef Dune::BlockVectorDiscreteFunction< typename DiscreteOseenFunctionSpaceWrapperType::DiscretePressureFunctionSpaceType >
             DiscretePressureFunctionType;
 
     public:
@@ -1292,11 +1292,11 @@ class DiscreteStokesModelDefaultTraits
             DiscreteSigmaFunctionType;
 #else
         //! discrete function type for the velocity
-        typedef Dune::AdaptiveDiscreteFunction< typename DiscreteStokesFunctionSpaceWrapperType::DiscreteVelocityFunctionSpaceType >
+        typedef Dune::AdaptiveDiscreteFunction< typename DiscreteOseenFunctionSpaceWrapperType::DiscreteVelocityFunctionSpaceType >
             DiscreteVelocityFunctionType;
 
         //! discrete function type for the pressure
-        typedef Dune::AdaptiveDiscreteFunction< typename DiscreteStokesFunctionSpaceWrapperType::DiscretePressureFunctionSpaceType >
+        typedef Dune::AdaptiveDiscreteFunction< typename DiscreteOseenFunctionSpaceWrapperType::DiscretePressureFunctionSpaceType >
             DiscretePressureFunctionType;
 
     public:
@@ -1307,11 +1307,11 @@ class DiscreteStokesModelDefaultTraits
 #endif
 
         //! discrete function wrapper type
-        typedef Dune::DiscreteStokesFunctionWrapper< Dune::DiscreteStokesFunctionWrapperTraits<
-                    DiscreteStokesFunctionSpaceWrapperType,
+        typedef Dune::DiscreteOseenFunctionWrapper< Dune::DiscreteOseenFunctionWrapperTraits<
+                    DiscreteOseenFunctionSpaceWrapperType,
                     DiscreteVelocityFunctionType,
                     DiscretePressureFunctionType > >
-            DiscreteStokesFunctionWrapperType;
+            DiscreteOseenFunctionWrapperType;
 
         //! function type for the analytical force
         typedef AnalyticalForceImp<VelocityFunctionSpaceType>
@@ -1330,7 +1330,7 @@ class DiscreteStokesModelDefaultTraits
          *  \{
          **/
         //! return type of the pass
-        typedef DiscreteStokesFunctionWrapperType
+        typedef DiscreteOseenFunctionWrapperType
             DestinationType;
         /**
          *  \}
@@ -1343,7 +1343,7 @@ class DiscreteStokesModelDefaultTraits
  *  \brief  A default implementation of a discrete stokes model.
  *
  *          Implements the fluxes needed for the LDG method
- *          (see Dune::DiscreteStokesModelInterface for details).\n
+ *          (see Dune::DiscreteOseenModelInterface for details).\n
  *          The fluxes \f$\hat{u}_{\sigma}\f$, \f$\hat{\sigma}\f$,
  *          \f$\hat{p}\f$ and \f$\hat{u}_{p}\f$ are implemented as proposed in
  *          B. Cockburn, G. Kanschat, D. Schötzau, C. Schwab: <EM>Local
@@ -1352,7 +1352,7 @@ class DiscreteStokesModelDefaultTraits
  *          \f$f\f$ and the dirichlet data \f$g_{D}\f$ as a Dune::Fem::Function
  *          (only the method evaluate( arg, ret ) is needed) and specify the
  *          types of this functions as template arguments for the traits class
- *          DiscreteStokesModelDefaultTraits.\n
+ *          DiscreteOseenModelDefaultTraits.\n
  *
  *          <b>Notation:</b> Given simplices \f$T_{+}\f$ and
  *          \f$T_{-}\f$ and a face \f$\varepsilon\f$ between them, the values
@@ -1442,7 +1442,7 @@ class DiscreteStokesModelDefaultTraits
  *          concerning efficiency and accuracy.\n
  *
  *          These fluxes are then decomposed into several numerical fluxes (see
- *          Dune::DiscreteStokesModelInterface for details):\n
+ *          Dune::DiscreteOseenModelInterface for details):\n
  *
  *          \f {tabular} {l||l}
  *              on $\mathcal{E}_{I}$ & on $\mathcal{E}_{I}$ \\
@@ -1581,48 +1581,48 @@ class DiscreteStokesModelDefaultTraits
  *                ( const IntersectionIteratorType& it, const double time, const
  *                FaceDomainType& x, SigmaRangeType& <b>rhsReturn</b> )
  **/
-template < class DiscreteStokesModelTraitsImp >
-class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< DiscreteStokesModelTraitsImp >
+template < class DiscreteOseenModelTraitsImp >
+class DiscreteOseenModelDefault : public DiscreteOseenModelInterface< DiscreteOseenModelTraitsImp >
 {
     private:
 
         //! interface class
-		typedef DiscreteStokesModelInterface< DiscreteStokesModelTraitsImp >
+		typedef DiscreteOseenModelInterface< DiscreteOseenModelTraitsImp >
             BaseType;
 
-        //! \copydoc Dune::DiscreteStokesModelInterface::IntersectionIteratorType
+        //! \copydoc Dune::DiscreteOseenModelInterface::IntersectionIteratorType
         typedef typename BaseType::IntersectionIteratorType
             IntersectionIteratorType;
 
     public:
 
-        //! \copydoc Dune::DiscreteStokesModelInterface::VolumeQuadratureType
+        //! \copydoc Dune::DiscreteOseenModelInterface::VolumeQuadratureType
         typedef typename BaseType::VolumeQuadratureType
             VolumeQuadratureType;
 
-        //! \copydoc Dune::DiscreteStokesModelInterface::FaceQuadratureType
+        //! \copydoc Dune::DiscreteOseenModelInterface::FaceQuadratureType
         typedef typename BaseType::FaceQuadratureType
             FaceQuadratureType;
 
-        //! \copydoc Dune::DiscreteStokesModelInterface::DiscreteStokesFunctionSpaceWrapperType
-        typedef typename BaseType::DiscreteStokesFunctionSpaceWrapperType
-            DiscreteStokesFunctionSpaceWrapperType;
+        //! \copydoc Dune::DiscreteOseenModelInterface::DiscreteOseenFunctionSpaceWrapperType
+        typedef typename BaseType::DiscreteOseenFunctionSpaceWrapperType
+            DiscreteOseenFunctionSpaceWrapperType;
 
-        //! \copydoc Dune::DiscreteStokesModelInterface::DiscreteStokesFunctionSpaceWrapperType
-        typedef typename BaseType::DiscreteStokesFunctionWrapperType
-            DiscreteStokesFunctionWrapperType;
+        //! \copydoc Dune::DiscreteOseenModelInterface::DiscreteOseenFunctionSpaceWrapperType
+        typedef typename BaseType::DiscreteOseenFunctionWrapperType
+            DiscreteOseenFunctionWrapperType;
 
-        //! \copydoc Dune::DiscreteStokesModelInterface::DiscreteSigmaFunctionType
+        //! \copydoc Dune::DiscreteOseenModelInterface::DiscreteSigmaFunctionType
         typedef typename BaseType::DiscreteSigmaFunctionType
             DiscreteSigmaFunctionType;
 
-        //! \copydoc Dune::DiscreteStokesModelInterface::sigmaSpaceOrder
+        //! \copydoc Dune::DiscreteOseenModelInterface::sigmaSpaceOrder
         static const int sigmaSpaceOrder
             = BaseType::sigmaSpaceOrder;
-        //! \copydoc Dune::DiscreteStokesModelInterface::velocitySpaceOrder
+        //! \copydoc Dune::DiscreteOseenModelInterface::velocitySpaceOrder
         static const int velocitySpaceOrder
             = BaseType::velocitySpaceOrder;
-        //! \copydoc Dune::DiscreteStokesModelInterface::pressureSpaceOrder
+        //! \copydoc Dune::DiscreteOseenModelInterface::pressureSpaceOrder
         static const int pressureSpaceOrder
             = BaseType::pressureSpaceOrder;
 		//! type of analytical force (usually Dune::Fem::Function)
@@ -1662,7 +1662,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
 
     public:
 
-        //! \copydoc Dune::DiscreteStokesModelInterface::Side
+        //! \copydoc Dune::DiscreteOseenModelInterface::Side
         typedef enum BaseType::Side
             Side;
 
@@ -1685,7 +1685,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *  \param[in]  viscosity
          *          viscosity of the fluid
          **/
-        DiscreteStokesModelDefault( const StabilizationCoefficients& stab_coeff,
+        DiscreteOseenModelDefault( const StabilizationCoefficients& stab_coeff,
                                     const AnalyticalForceType& force,
                                     const AnalyticalDirichletDataType& dirichletData,
                                     const double viscosity = 1.0,
@@ -1713,7 +1713,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *  does nothing
          **/
-	virtual ~DiscreteStokesModelDefault()
+	virtual ~DiscreteOseenModelDefault()
         {}
 
         const StabilizationCoefficients& getStabilizationCoefficients() const {
@@ -1786,7 +1786,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          For the docomposition of
          *          \f$\hat{u}_{\sigma}(u):\Omega\rightarrow R^{d}\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -1800,8 +1800,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *  \param[in]  side
          *          determines the interpretation of <i>u</i> and
          *          <i>uReturn</i>\n
-         *          legal values are DiscreteStokesModelInterface::inside and
-         *          DiscreteStokesModelInterface::outside
+         *          legal values are DiscreteOseenModelInterface::inside and
+         *          DiscreteOseenModelInterface::outside
          *  \param[in]  u
          *          value of \f$u\f$ in \f$x\f$, interpreted once as seen from
          *          the inside entity (side==inside), once as seen from the
@@ -1858,7 +1858,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          For the docomposition of
          *          \f$\hat{u}_{\sigma}(u):\Omega\rightarrow R^{d}\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -1893,7 +1893,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          For the docomposition of
          *          \f$\hat{u}_{\sigma}(u):\Omega\rightarrow R^{d}\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -1935,7 +1935,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          For the docomposition of
          *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -1949,8 +1949,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *  \param[in]  side
          *          determines the interpretation of <i>u</i> and
          *          <i>uReturn</i>\n
-         *          legal values are DiscreteStokesModelInterface::inside and
-         *          DiscreteStokesModelInterface::outside
+         *          legal values are DiscreteOseenModelInterface::inside and
+         *          DiscreteOseenModelInterface::outside
          *  \param[in]  u
          *          value of \f$u\f$ in \f$x\f$, interpreted once as seen from
          *          the inside entity (side==inside), once as seen from the
@@ -2010,7 +2010,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          For the docomposition of
          *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -2024,8 +2024,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *  \param[in]  side
          *          determines the interpretation of <i>p</i> and
          *          <i>pReturn</i>\n
-         *          legal values are DiscreteStokesModelInterface::inside and
-         *          DiscreteStokesModelInterface::outside
+         *          legal values are DiscreteOseenModelInterface::inside and
+         *          DiscreteOseenModelInterface::outside
          *  \param[in]  p
          *          value of \f$u\f$ in \f$x\f$, interpreted once as seen from
          *          the inside entity (side==inside), once as seen from the
@@ -2076,7 +2076,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          For the docomposition of
          *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -2112,7 +2112,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          For the docomposition of
          *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -2148,7 +2148,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          For the docomposition of
          *          \f$\hat{u}_{p}(u):\Omega\rightarrow R^{d}\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -2191,7 +2191,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          For the docomposition of
          *          \f$\hat{p}(p):\Omega\rightarrow R\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -2205,8 +2205,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *  \param[in]  side
          *          determines the interpretation of <i>p</i> and
          *          <i>pReturn</i>\n
-         *          legal values are DiscreteStokesModelInterface::inside and
-         *          DiscreteStokesModelInterface::outside
+         *          legal values are DiscreteOseenModelInterface::inside and
+         *          DiscreteOseenModelInterface::outside
          *  \param[in]  p
          *          value of \f$p\f$ in \f$x\f$, interpreted once as seen from
          *          the inside entity (side==inside), once as seen from the
@@ -2258,7 +2258,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          For the docomposition of
          *          \f$\hat{p}(p):\Omega\rightarrow R\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -2293,7 +2293,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *
          *          For the docomposition of
          *          \f$\hat{p}(p):\Omega\rightarrow R\f$, see the
-         *          documentation of the Dune::DiscreteStokesModelInterface.
+         *          documentation of the Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -2330,7 +2330,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *          For the docomposition of
          *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
          *          , see the documentation of the
-         *          Dune::DiscreteStokesModelInterface.
+         *          Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -2344,8 +2344,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *  \param[in]  side
          *          determines the interpretation of <i>u</i> and
          *          <i>uReturn</i>\n
-         *          legal values are DiscreteStokesModelInterface::inside and
-         *          DiscreteStokesModelInterface::outside
+         *          legal values are DiscreteOseenModelInterface::inside and
+         *          DiscreteOseenModelInterface::outside
          *  \param[in]  u
          *          value of \f$u\f$ in \f$x\f$, interpreted once as seen from
          *          the inside entity (side==inside), once as seen from the
@@ -2398,7 +2398,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *          For the docomposition of
          *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
          *          , see the documentation of the
-         *          Dune::DiscreteStokesModelInterface.
+         *          Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -2412,8 +2412,8 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *  \param[in]  side
          *          determines the interpretation of <i>sigma</i> and
          *          <i>sigmaReturn</i>\n
-         *          legal values are DiscreteStokesModelInterface::inside and
-         *          DiscreteStokesModelInterface::outside
+         *          legal values are DiscreteOseenModelInterface::inside and
+         *          DiscreteOseenModelInterface::outside
          *  \param[in]  sigma
          *          value of \f$\sigma\f$ in \f$x\f$, interpreted once as seen
          *          from the inside entity (side==inside), once as seen from the
@@ -2475,7 +2475,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *          For the docomposition of
          *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
          *          , see the documentation of the
-         *          Dune::DiscreteStokesModelInterface.
+         *          Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -2517,7 +2517,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *          For the docomposition of
          *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
          *          , see the documentation of the
-         *          Dune::DiscreteStokesModelInterface.
+         *          Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)
@@ -2553,7 +2553,7 @@ class DiscreteStokesModelDefault : public DiscreteStokesModelInterface< Discrete
          *          For the docomposition of
          *          \f$\hat{\sigma}(u,\sigma):\Omega\rightarrow R^{d\times d}\f$
          *          , see the documentation of the
-         *          Dune::DiscreteStokesModelInterface.
+         *          Dune::DiscreteOseenModelInterface.
          *
          *  \tparam FaceDomainType
          *          domain type on given face (codim 1 coordinates)

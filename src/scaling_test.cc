@@ -233,7 +233,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
 	typedef Dune::AdaptiveLeafGridPart< GridType >
         GridPartType;
-    typedef Dune::DiscreteStokesModelDefaultTraits<
+    typedef Dune::DiscreteOseenModelDefaultTraits<
                     GridPartType,
                     Force,
 					DefaultDirichletDataTraits<DIRICHLET_DATA>,
@@ -242,26 +242,26 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
                     VELOCITY_POLORDER,
                     PRESSURE_POLORDER >
         StokesModelTraitsImp;
-    typedef Dune::DiscreteStokesModelDefault< StokesModelTraitsImp >
+    typedef Dune::DiscreteOseenModelDefault< StokesModelTraitsImp >
         StokesModelImpType;
     // treat as interface
-    typedef Dune::DiscreteStokesModelInterface< StokesModelTraitsImp >
+    typedef Dune::DiscreteOseenModelInterface< StokesModelTraitsImp >
         StokesModelType;
     // function wrapper for the solutions
-    typedef StokesModelTraitsImp::DiscreteStokesFunctionSpaceWrapperType
-        DiscreteStokesFunctionSpaceWrapperType;
-    typedef StokesModelTraitsImp::DiscreteStokesFunctionWrapperType
-        DiscreteStokesFunctionWrapperType;
+    typedef StokesModelTraitsImp::DiscreteOseenFunctionSpaceWrapperType
+        DiscreteOseenFunctionSpaceWrapperType;
+    typedef StokesModelTraitsImp::DiscreteOseenFunctionWrapperType
+        DiscreteOseenFunctionWrapperType;
 
     static GridPartType gridPart( *gridPtr );
-    static DiscreteStokesFunctionSpaceWrapperType
+    static DiscreteOseenFunctionSpaceWrapperType
         discreteStokesFunctionSpaceWrapper( gridPart );
 
-    static DiscreteStokesFunctionWrapperType
+    static DiscreteOseenFunctionWrapperType
         computedSolutions(  "computed_",
                             discreteStokesFunctionSpaceWrapper,
                             gridPart );
-	DiscreteStokesFunctionWrapperType
+	DiscreteOseenFunctionWrapperType
 		dummyFunctions(  "dummy_",
 							discreteStokesFunctionSpaceWrapper,
 							gridPart );
@@ -310,13 +310,13 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
      * ********************************************************************** */
     infoStream << "\n- starting pass" << std::endl;
 
-    typedef Dune::StartPass< DiscreteStokesFunctionWrapperType, -1 >
+    typedef Dune::StartPass< DiscreteOseenFunctionWrapperType, -1 >
         StartPassType;
     StartPassType startPass;
 
-	typedef Dune::StokesPass< StokesModelImpType, StartPassType, 0 >
-        StokesPassType;
-    StokesPassType stokesPass(  startPass,
+	typedef Dune::OseenPass< StokesModelImpType, StartPassType, 0 >
+        OseenPassType;
+    OseenPassType stokesPass(  startPass,
                                 stokesModel,
                                 gridPart,
 								discreteStokesFunctionSpaceWrapper,
@@ -338,15 +338,15 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     profiler().StartTiming( "Problem/Postprocessing" );
 
 #if defined (AORTA_PROBLEM) || defined (COCKBURN_PROBLEM) || defined (GENERALIZED_STOKES_PROBLEM) //bool tpl-param toggles ana-solution output in post-proc
-	typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, true, AnalyticalDirichletDataType >
+	typedef Problem< gridDim, DiscreteOseenFunctionWrapperType, true, AnalyticalDirichletDataType >
         ProblemType;
 #else
-	typedef Problem< gridDim, DiscreteStokesFunctionWrapperType, false, AnalyticalDirichletDataType >
+	typedef Problem< gridDim, DiscreteOseenFunctionWrapperType, false, AnalyticalDirichletDataType >
         ProblemType;
 #endif
 	ProblemType problem( viscosity , computedSolutions, analyticalDirichletData );
 
-    typedef PostProcessor< StokesPassType, ProblemType >
+    typedef PostProcessor< OseenPassType, ProblemType >
         PostProcessorType;
 
     PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );

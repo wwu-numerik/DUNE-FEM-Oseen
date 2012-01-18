@@ -14,8 +14,8 @@ struct DefaultDirichletDataTraits {
 		typedef DiricheltDataImp< FunctionSpaceImp>
 			AnalyticalDirichletDataType;
 
-		template <class DiscreteStokesFunctionWrapper >
-		static AnalyticalDirichletDataType getInstance( const DiscreteStokesFunctionWrapper& wrapper ) {
+		template <class DiscreteOseenFunctionWrapper >
+		static AnalyticalDirichletDataType getInstance( const DiscreteOseenFunctionWrapper& wrapper ) {
 			return 	AnalyticalDirichletDataType( wrapper.discreteVelocitySpace() );
 		}
 	};

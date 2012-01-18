@@ -22,15 +22,15 @@ namespace Dune
 			FaceQuadratureType;
 
 		//! type of discrete function space wrapper
-		typedef typename DiscreteModelType::DiscreteStokesFunctionSpaceWrapperType
-			DiscreteStokesFunctionSpaceWrapperType;
+		typedef typename DiscreteModelType::DiscreteOseenFunctionSpaceWrapperType
+			DiscreteOseenFunctionSpaceWrapperType;
 
 		//! discrete function wrapper type
-		typedef typename DiscreteModelType::DiscreteStokesFunctionWrapperType
-			DiscreteStokesFunctionWrapperType;
+		typedef typename DiscreteModelType::DiscreteOseenFunctionWrapperType
+			DiscreteOseenFunctionWrapperType;
 
 		//! discrete function type for the velocity
-		typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
+		typedef typename DiscreteOseenFunctionWrapperType::DiscreteVelocityFunctionType
 			DiscreteVelocityFunctionType;
 
 		//! discrete function space type for the velocity
@@ -46,7 +46,7 @@ namespace Dune
 			DiscreteSigmaFunctionSpaceType;
 
 		//! discrete fucntion type for the pressure
-		typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
+		typedef typename DiscreteOseenFunctionWrapperType::DiscretePressureFunctionType
 			DiscretePressureFunctionType;
 
 		//! discrete function space type for the pressure

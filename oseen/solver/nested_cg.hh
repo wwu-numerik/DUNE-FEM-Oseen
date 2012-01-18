@@ -7,29 +7,29 @@
 namespace Dune {
 
 	/**   \brief Nested Conjugate Gradient Solver
-		  \tparam StokesPassImp discrete function types etc. get extracted from this
+		  \tparam OseenPassImp discrete function types etc. get extracted from this
 		  \note not fully functional!
 		  Iterative Dune solvers are used for both the inner and outer CG iterations
 	 */
-  template < class StokesPassImp >
+  template < class OseenPassImp >
   class NestedCgSaddlepointInverseOperator
   {
 	private:
 
-	  typedef StokesPassImp StokesPassType;
+	  typedef OseenPassImp OseenPassType;
 
-	  typedef typename StokesPassType::Traits::DiscreteStokesFunctionWrapperType
-		  DiscreteStokesFunctionWrapperType;
+	  typedef typename OseenPassType::Traits::DiscreteOseenFunctionWrapperType
+		  DiscreteOseenFunctionWrapperType;
 
-	  typedef typename StokesPassType::DomainType
+	  typedef typename OseenPassType::DomainType
 		  DomainType;
 
-	  typedef typename StokesPassType::RangeType
+	  typedef typename OseenPassType::RangeType
 		  RangeType;
 
-	  typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
+	  typedef typename DiscreteOseenFunctionWrapperType::DiscretePressureFunctionType
 		  PressureDiscreteFunctionType;
-	  typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
+	  typedef typename DiscreteOseenFunctionWrapperType::DiscreteVelocityFunctionType
 		  VelocityDiscreteFunctionType;
 
 	public:

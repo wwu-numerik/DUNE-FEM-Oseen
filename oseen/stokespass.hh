@@ -30,30 +30,30 @@
 namespace Dune
 {
 /**
- *  \brief  StokesPass
+ *  \brief  OseenPass
  *  \todo   doc
  **/
 template <  class DiscreteModelImp,
 		  template <class> class TraitsImp = StokesTraits >
-class StokesPass
+class OseenPass
 {
     public:
         struct RhsDatacontainer;
-        typedef StokesPass< DiscreteModelImp, TraitsImp >
+        typedef OseenPass< DiscreteModelImp, TraitsImp >
             ThisType;
         typedef DiscreteModelImp
             DiscreteModelType;
         typedef TraitsImp< DiscreteModelType >
             Traits;
-        typedef typename Traits::DiscreteStokesFunctionWrapperType
+        typedef typename Traits::DiscreteOseenFunctionWrapperType
             DomainType;
-        typedef typename Traits::DiscreteStokesFunctionWrapperType
+        typedef typename Traits::DiscreteOseenFunctionWrapperType
             RangeType;
 
         //!
-        StokesPass( DiscreteModelType& discreteModel,
+        OseenPass( DiscreteModelType& discreteModel,
 					typename Traits::GridPartType& gridPart,
-					const typename Traits::DiscreteStokesFunctionSpaceWrapperType& spaceWrapper,
+                    const typename Traits::DiscreteOseenFunctionSpaceWrapperType& spaceWrapper,
 					const typename Traits::DiscreteVelocityFunctionType& beta,
 					const bool do_oseen_discretization )//! \todo move to model
             : discreteModel_( discreteModel ),
@@ -68,7 +68,7 @@ class StokesPass
         {}
 
         //! used in Postprocessing to get refs to gridparts, spaces
-        const typename Traits::DiscreteStokesFunctionSpaceWrapperType& GetFunctionSpaceWrapper()
+        const typename Traits::DiscreteOseenFunctionSpaceWrapperType& GetFunctionSpaceWrapper()
         {
             return spaceWrapper_;
         }
@@ -171,7 +171,7 @@ class StokesPass
     private:
         DiscreteModelType& discreteModel_;
 		const typename Traits::GridPartType& gridPart_;
-		const typename Traits::DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
+        const typename Traits::DiscreteOseenFunctionSpaceWrapperType& spaceWrapper_;
 		const typename Traits::DiscreteVelocityFunctionSpaceType& velocitySpace_;
 		const typename Traits::DiscretePressureFunctionSpaceType& pressureSpace_;
 		typename Traits::DiscreteSigmaFunctionSpaceType sigmaSpace_;
@@ -192,7 +192,7 @@ class StokesPass
 			int numberOfIntersections = 0;
 			int numberOfBoundaryIntersections = 0;
 			int numberOfInnerIntersections = 0;
-			infoStream << "this is StokesPass::apply()" << std::endl;
+            infoStream << "this is OseenPass::apply()" << std::endl;
 
 			// do an empty grid walk to get informations
 			double maxGridWidth( 0.0 );

@@ -225,8 +225,8 @@ struct GeometryBasedBoundaryFunctionTraits {
 			AnalyticalDirichletDataType;
 		typedef typename AnalyticalDirichletDataType::BoundaryFunctionType
 			BoundaryFunctionType;
-		template <class DiscreteStokesFunctionWrapper >
-		static AnalyticalDirichletDataType getInstance( const DiscreteStokesFunctionWrapper& wrapper ) {
+		template <class DiscreteOseenFunctionWrapper >
+		static AnalyticalDirichletDataType getInstance( const DiscreteOseenFunctionWrapper& wrapper ) {
 			return 	AnalyticalDirichletDataType( wrapper.discreteVelocitySpace(), wrapper.discreteVelocitySpace().gridPart() );
 		}
 	};

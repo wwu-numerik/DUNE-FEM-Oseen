@@ -24,20 +24,20 @@ namespace Solver {
     };
 }
 
-template<class StokesPassType, template <class T,class S> class ReconstructionPolicyType = BruteForceReconstruction >
+template<class OseenPassType, template <class T,class S> class ReconstructionPolicyType = BruteForceReconstruction >
 struct SolverCaller {
 	//! alternative solver implementation
-	typedef NestedCgSaddlepointInverseOperator< StokesPassType >
+    typedef NestedCgSaddlepointInverseOperator< OseenPassType >
 		NestedCgSolverType;
 	//! type of the used solver
-	typedef SaddlepointInverseOperator< StokesPassType >
+    typedef SaddlepointInverseOperator< OseenPassType >
 		SaddlepointSolverType;
-	typedef BiCgStabSaddlepointInverseOperator< StokesPassType >
+    typedef BiCgStabSaddlepointInverseOperator< OseenPassType >
 		BiCgSaddlepointSolverType;
 	//! this is used for reduced (no pressure, incompress. condition) oseen pass
-	typedef ReducedInverseOperator< StokesPassType >
+    typedef ReducedInverseOperator< OseenPassType >
 		ReducedSolverType;
-	typedef DirectKrylovSolver< StokesPassType >
+    typedef DirectKrylovSolver< OseenPassType >
 		FullsytemSolverType;
 
 	template <  class DomainType,
@@ -205,7 +205,7 @@ struct SolverCaller {
 		}
 		if ( rhs_datacontainer ) {
 			rhs_datacontainer->clear();
-			ReconstructionPolicyType<DataContainerType,typename StokesPassType::DiscreteModelType>
+            ReconstructionPolicyType<DataContainerType,typename OseenPassType::DiscreteModelType>
 					::reconstruct(	*rhs_datacontainer, dest, beta,
 									X, M_invers, Y,
 									O, E, R, Z, W,
@@ -219,7 +219,7 @@ struct SolverCaller {
 	}
 };
 
-template<class StokesPassType >
+template<class OseenPassType >
 struct SolverCallerProxy {
     template < class RangeType, class ContainerType, class... Args >
     static SaddlepointInverseOperatorInfo call( const bool do_oseen_discretization,
@@ -230,9 +230,9 @@ struct SolverCallerProxy {
         //this lets us switch between standalone oseen and reduced oseen in  thete scheme easily
         const bool use_reduced_solver = (do_oseen_discretization && Parameters().getParam( "reduced_oseen_solver", false ))
                 || Parameters().getParam( "parabolic", false );
-        typedef Oseen::SolverCaller< StokesPassType>
+        typedef Oseen::SolverCaller< OseenPassType>
             SolverCallerType;
-        typedef Oseen::SolverCaller< StokesPassType, SmartReconstruction >
+        typedef Oseen::SolverCaller< OseenPassType, SmartReconstruction >
             SmartSolverCallerType;
 
         //Select which solver we want to use

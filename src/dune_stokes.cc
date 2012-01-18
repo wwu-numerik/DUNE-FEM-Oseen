@@ -545,7 +545,7 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 
     // model traits
 	#if 0 //defined( AORTA_PROBLEM )
-    typedef Dune::DiscreteStokesModelDefaultTraits<
+    typedef Dune::DiscreteOseenModelDefaultTraits<
                     GridPartType,
 					PROBLEM_NAMESPACE::Force,
 					Dune::GeometryBasedBoundaryFunctionTraits<VariableDirichletData,FirstOrderBoundaryShapeFunction>,
@@ -555,7 +555,7 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
                     PRESSURE_POLORDER >
         StokesModelTraitsImp;
 	#else
-    typedef Dune::DiscreteStokesModelDefaultTraits<
+    typedef Dune::DiscreteOseenModelDefaultTraits<
                     GridPartType,
 					PROBLEM_NAMESPACE::Force,
 					DefaultDirichletDataTraits<PROBLEM_NAMESPACE::DirichletData>,
@@ -565,34 +565,34 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
                     PRESSURE_POLORDER >
         StokesModelTraitsImp;
 	#endif
-    typedef Dune::DiscreteStokesModelDefault< StokesModelTraitsImp >
+    typedef Dune::DiscreteOseenModelDefault< StokesModelTraitsImp >
         StokesModelImpType;
 
     // treat as interface
-    typedef Dune::DiscreteStokesModelInterface< StokesModelTraitsImp >
+    typedef Dune::DiscreteOseenModelInterface< StokesModelTraitsImp >
         StokesModelType;
 
     // function wrapper for the solutions
-    typedef StokesModelTraitsImp::DiscreteStokesFunctionSpaceWrapperType
-        DiscreteStokesFunctionSpaceWrapperType;
+    typedef StokesModelTraitsImp::DiscreteOseenFunctionSpaceWrapperType
+        DiscreteOseenFunctionSpaceWrapperType;
 
-    static DiscreteStokesFunctionSpaceWrapperType
+    static DiscreteOseenFunctionSpaceWrapperType
         discreteStokesFunctionSpaceWrapper( gridPart );
 
-    typedef StokesModelTraitsImp::DiscreteStokesFunctionWrapperType
-        DiscreteStokesFunctionWrapperType;
+    typedef StokesModelTraitsImp::DiscreteOseenFunctionWrapperType
+        DiscreteOseenFunctionWrapperType;
 
-    static DiscreteStokesFunctionWrapperType
+    static DiscreteOseenFunctionWrapperType
         computedSolutions(  "computed_",
                             discreteStokesFunctionSpaceWrapper,
                             gridPart );
-	DiscreteStokesFunctionWrapperType
+	DiscreteOseenFunctionWrapperType
 		dummyFunctions(  "dummy_",
 							discreteStokesFunctionSpaceWrapper,
 							gridPart );
 #if ENABLE_ADAPTIVE
     if ( !firstRun ) {
-        Dune::Estimator<DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType>
+        Dune::Estimator<DiscreteOseenFunctionWrapperType::DiscretePressureFunctionType>
             estimator ( computedSolutions.discretePressure() );
 		for ( int i = refine_level - last_refine_level; i > 0; --i ) {
 			estimator.mark( 0.0 /*dummy*/ ); //simpler would be to use real weights in mark(), but alas, that doesn't work as advertised
@@ -621,15 +621,15 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 	AnalyticalDirichletDataType analyticalDirichletData =
 			StokesModelTraitsImp::AnalyticalDirichletDataTraitsImplementation::getInstance( discreteStokesFunctionSpaceWrapper );
 
-    typedef Dune::StokesPass< StokesModelImpType >
-	    StokesPassType;
+    typedef Dune::OseenPass< StokesModelImpType >
+	    OseenPassType;
 
 	{
-		typedef StokesProblems::Container< gridDim, DiscreteStokesFunctionWrapperType>
+		typedef StokesProblems::Container< gridDim, DiscreteOseenFunctionWrapperType>
 			ProblemType;
 		ProblemType problem( viscosity , computedSolutions, analyticalDirichletData );
 
-		typedef PostProcessor< StokesPassType, ProblemType >
+		typedef PostProcessor< OseenPassType, ProblemType >
 			PostProcessorType;
 
 		PostProcessorType ( discreteStokesFunctionSpaceWrapper, problem ).save( *gridPtr, computedSolutions, refine_level );
@@ -649,7 +649,7 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
     infoStream << "\n- starting pass" << std::endl;
 
 
-    StokesPassType stokesPass(  stokesModel,
+    OseenPassType stokesPass(  stokesModel,
                                 gridPart,
 								discreteStokesFunctionSpaceWrapper,
 								dummyFunctions.discreteVelocity(),
@@ -674,11 +674,11 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 
 	if ( !Parameters().getParam( "disableSolver", false ) )
 	{
-		typedef StokesProblems::Container< gridDim, DiscreteStokesFunctionWrapperType>
+		typedef StokesProblems::Container< gridDim, DiscreteOseenFunctionWrapperType>
 			ProblemType;
 		ProblemType problem( viscosity , computedSolutions, analyticalDirichletData );
 
-		typedef PostProcessor< StokesPassType, ProblemType >
+		typedef PostProcessor< OseenPassType, ProblemType >
 			PostProcessorType;
 
 		PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );
@@ -848,7 +848,7 @@ typedef Dune::AdaptiveLeafGridPart< GridType >
 
 	// model traits
 	#if defined( AORTA_PROBLEM )
-	typedef Dune::DiscreteStokesModelDefaultTraits<
+	typedef Dune::DiscreteOseenModelDefaultTraits<
 					GridPartType,
 					Force,
 					Dune::GeometryBasedBoundaryFunctionTraits<VariableDirichletData>,
@@ -858,7 +858,7 @@ typedef Dune::AdaptiveLeafGridPart< GridType >
 					PRESSURE_POLORDER >
 		StokesModelTraitsImp;
 	#else
-	typedef Dune::DiscreteStokesModelDefaultTraits<
+	typedef Dune::DiscreteOseenModelDefaultTraits<
 					GridPartType,
 					Force,
 					SimpleDirichletDataTraits,
@@ -870,7 +870,7 @@ typedef Dune::AdaptiveLeafGridPart< GridType >
 	#endif
 
 
-typedef Dune::tuple< StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType*, StokesModelTraitsImp::DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType* >
+typedef Dune::tuple< StokesModelTraitsImp::DiscreteOseenFunctionWrapperType::DiscreteVelocityFunctionType*, StokesModelTraitsImp::DiscreteOseenFunctionWrapperType::DiscretePressureFunctionType* >
 				IOTupleType;
 
 typedef IOTupleType GR_InputType;

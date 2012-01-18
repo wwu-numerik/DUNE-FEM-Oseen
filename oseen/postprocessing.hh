@@ -26,19 +26,19 @@
 #include <tuple>
 
 //! Error and vtk output wrapper class for Stokes problem/pass
-template <  class StokesPassImp, class ProblemImp >
+template <  class OseenPassImp, class ProblemImp >
 class PostProcessor
 {
     public:
         typedef ProblemImp
             ProblemType;
 
-        typedef StokesPassImp
-            StokesPassType;
-		typedef typename StokesPassType::Traits::DiscreteStokesFunctionSpaceWrapperType
-            DiscreteStokesFunctionSpaceWrapperType;
-		typedef typename StokesPassType::Traits::DiscreteStokesFunctionWrapperType
-            DiscreteStokesFunctionWrapperType;
+        typedef OseenPassImp
+            OseenPassType;
+		typedef typename OseenPassType::Traits::DiscreteOseenFunctionSpaceWrapperType
+            DiscreteOseenFunctionSpaceWrapperType;
+		typedef typename OseenPassType::Traits::DiscreteOseenFunctionWrapperType
+            DiscreteOseenFunctionWrapperType;
 
         typedef typename ProblemType::VelocityType
             ContinuousVelocityType;
@@ -49,7 +49,7 @@ class PostProcessor
         typedef typename ProblemType::DirichletDataType
             DirichletDataType;
 
-		typedef typename StokesPassType::Traits::GridPartType
+		typedef typename OseenPassType::Traits::GridPartType
             GridPartType;
         typedef typename GridPartType::GridType
             GridType;
@@ -57,18 +57,18 @@ class PostProcessor
         typedef Dune::VTKIO<GridPartType>
             VTKWriterType;
 
-		typedef typename StokesPassType::Traits::DiscreteVelocityFunctionType
+		typedef typename OseenPassType::Traits::DiscreteVelocityFunctionType
             DiscreteVelocityFunctionType;
-		typedef typename StokesPassType::Traits::DiscreteVelocityFunctionSpaceType
+		typedef typename OseenPassType::Traits::DiscreteVelocityFunctionSpaceType
             DiscreteVelocityFunctionSpaceType;
 
-		typedef typename StokesPassType::Traits::DiscretePressureFunctionType
+		typedef typename OseenPassType::Traits::DiscretePressureFunctionType
             DiscretePressureFunctionType;
-		typedef typename StokesPassType::Traits::DiscretePressureFunctionSpaceType
+		typedef typename OseenPassType::Traits::DiscretePressureFunctionSpaceType
             DiscretePressureFunctionSpaceType;
 
 
-        PostProcessor( const DiscreteStokesFunctionSpaceWrapperType& wrapper, const ProblemType& prob )
+        PostProcessor( const DiscreteOseenFunctionSpaceWrapperType& wrapper, const ProblemType& prob )
             : //pass_( pass ),
             problem_( prob ),
             spaceWrapper_( wrapper ),
@@ -143,7 +143,7 @@ class PostProcessor
         }
 
 		//! use this function if no reference (ie. coarser/finer) solution is available, or an analytical one is
-        void save( const GridType& grid, const DiscreteStokesFunctionWrapperType& wrapper, int refine_level )
+        void save( const GridType& grid, const DiscreteOseenFunctionWrapperType& wrapper, int refine_level )
         {
             if ( ProblemType:: hasMeaningfulAnalyticalSolution ) {
                 if ( !solutionAssembled_ || current_refine_level_ != refine_level ) //re-assemble solution if refine level has changed
@@ -163,7 +163,7 @@ class PostProcessor
         }
 
 		//! use this save in eoc runs with no analytical solution available
-        void save( const GridType& grid, const DiscreteStokesFunctionWrapperType& wrapper, const DiscreteStokesFunctionWrapperType& reference, int refine_level )
+        void save( const GridType& grid, const DiscreteOseenFunctionWrapperType& wrapper, const DiscreteOseenFunctionWrapperType& reference, int refine_level )
         {
             current_refine_level_ = refine_level;
             calcError( wrapper, reference );
@@ -176,7 +176,7 @@ class PostProcessor
         }
 
 		//! used by both PostProcessor::save modes, outputs solutions (in grape/vtk form), but no errors or analytical functions
-        void save_common( const GridType& grid, const DiscreteStokesFunctionWrapperType& wrapper, int refine_level )
+        void save_common( const GridType& grid, const DiscreteOseenFunctionWrapperType& wrapper, int refine_level )
         {
             current_refine_level_ = refine_level;
 
@@ -196,13 +196,13 @@ class PostProcessor
 #endif
         }
 
-		void calcError( const DiscreteStokesFunctionWrapperType& wrapper )
+		void calcError( const DiscreteOseenFunctionWrapperType& wrapper )
 		{
 			calcError( wrapper.discretePressure() , wrapper.discreteVelocity() );
 		}
 
 		//! proxy function that is to be used if no analytical solutions are availble to calculate errors against
-        void calcError( const DiscreteStokesFunctionWrapperType& computed, const DiscreteStokesFunctionWrapperType& reference )
+        void calcError( const DiscreteOseenFunctionWrapperType& computed, const DiscreteOseenFunctionWrapperType& reference )
         {
             discreteExactPressure_.assign( reference.discretePressure() );
             discreteExactVelocity_.assign( reference.discreteVelocity() );
@@ -278,7 +278,7 @@ class PostProcessor
     private:
 
         const ProblemType& problem_;
-        const DiscreteStokesFunctionSpaceWrapperType& spaceWrapper_;
+        const DiscreteOseenFunctionSpaceWrapperType& spaceWrapper_;
         const GridPartType& gridPart_;
         const DiscreteVelocityFunctionSpaceType& velocitySpace_;
         DiscreteVelocityFunctionType discreteExactVelocity_;

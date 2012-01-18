@@ -13,26 +13,26 @@ namespace Dune {
 		Dune solver. The outer iteration is a implementation of the BICGStab algorithm as described in\n
 		van der Vorst: "Iterative Methods for Large Linear Systems" (2000)
 	**/
-	template < class StokesPassImp >
+	template < class OseenPassImp >
 	class BiCgStabSaddlepointInverseOperator
 	{
 	  private:
 
-		typedef StokesPassImp
-			StokesPassType;
+		typedef OseenPassImp
+			OseenPassType;
 
-		typedef typename StokesPassType::Traits::DiscreteStokesFunctionWrapperType
-			DiscreteStokesFunctionWrapperType;
+		typedef typename OseenPassType::Traits::DiscreteOseenFunctionWrapperType
+			DiscreteOseenFunctionWrapperType;
 
-		typedef typename StokesPassType::DomainType
+		typedef typename OseenPassType::DomainType
 			DomainType;
 
-		typedef typename StokesPassType::RangeType
+		typedef typename OseenPassType::RangeType
 			RangeType;
 
-		typedef typename DiscreteStokesFunctionWrapperType::DiscretePressureFunctionType
+		typedef typename DiscreteOseenFunctionWrapperType::DiscretePressureFunctionType
 			PressureDiscreteFunctionType;
-		typedef typename DiscreteStokesFunctionWrapperType::DiscreteVelocityFunctionType
+		typedef typename DiscreteOseenFunctionWrapperType::DiscreteVelocityFunctionType
 			VelocityDiscreteFunctionType;
 
 
@@ -156,7 +156,7 @@ namespace Dune {
 			bicg.apply( schur_f, pressure );
 			//pressure mw correction
 			double meanPressure_discrete = Stuff::meanValue( pressure, pressure.space() );
-			typedef typename StokesPassType::Traits::DiscreteModelType::Traits::PressureFunctionSpaceType
+			typedef typename OseenPassType::Traits::DiscreteModelType::Traits::PressureFunctionSpaceType
 					PressureFunctionSpaceType;
 			PressureFunctionSpaceType pressureFunctionSpace;
 			Stuff::ConstantFunction<PressureFunctionSpaceType> vol(pressureFunctionSpace, meanPressure_discrete );
