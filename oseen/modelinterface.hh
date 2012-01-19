@@ -11,7 +11,7 @@
 #include <dune/fem/function/adaptivefunction/adaptivefunction.hh>
 #include <dune/fem/space/dgspace.hh>
 
-#include <dune/oseen/discreteoseenfunctionspacewrapper.hh>
+#include <dune/oseen/functionspacewrapper.hh>
 #include <dune/oseen/boundaryinfo.hh>
 #include <dune/oseen/stab_coeff.hh>
 
@@ -1209,7 +1209,8 @@ class DiscreteOseenModelDefault;
  *  \brief  Traits class for DiscreteOseenModelDefault
  **/
 template < class GridImp, template <class > class AnalyticalForceImp, class AnalyticalDirichletDataTraits,
-			int gridDim, int sigmaOrder, int velocityOrder = sigmaOrder, int pressureOrder = sigmaOrder >
+            int gridDim, int sigmaOrder, int velocityOrder = sigmaOrder, int pressureOrder = sigmaOrder,
+           template< class, class, int, template<class> class BaseFunctionStorageImp = Dune::CachingStorage > class GalerkinSpaceImp = Dune::DiscontinuousGalerkinSpace>
 class DiscreteOseenModelDefaultTraits
 {
     public:
@@ -1242,7 +1243,7 @@ class DiscreteOseenModelDefaultTraits
             VelocityFunctionSpaceType;
 
         //! discrete function space type for the velocity
-        typedef Dune::DiscontinuousGalerkinSpace<   VelocityFunctionSpaceType,
+        typedef GalerkinSpaceImp<   VelocityFunctionSpaceType,
                                                     GridPartType,
                                                     velocitySpaceOrder >
             DiscreteVelocityFunctionSpaceType;
@@ -1252,7 +1253,7 @@ class DiscreteOseenModelDefaultTraits
             PressureFunctionSpaceType;
 
         //! discrete function space type for the pressure
-        typedef Dune::DiscontinuousGalerkinSpace<   PressureFunctionSpaceType,
+        typedef GalerkinSpaceImp<   PressureFunctionSpaceType,
                                                     GridPartType,
                                                     pressureSpaceOrder >
             DiscretePressureFunctionSpaceType;
@@ -1275,7 +1276,7 @@ class DiscreteOseenModelDefaultTraits
             SigmaFunctionSpaceType;
 
         //! discrete function space type for sigma
-        typedef Dune::DiscontinuousGalerkinSpace<   SigmaFunctionSpaceType,
+        typedef GalerkinSpaceImp<   SigmaFunctionSpaceType,
                                                     GridPartType,
                                                     sigmaSpaceOrder >
             DiscreteSigmaFunctionSpaceType;

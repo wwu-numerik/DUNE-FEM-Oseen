@@ -370,42 +370,38 @@ class H3
 		{
 			typename DiscreteFunctionType::LocalFunctionType
 					localH3rhs = discrete_function_.localFunction( info.entity );
-
-			// (H3)_{j} = \int_{\varepsilon\in\Epsilon_{D}^{T}}-\hat{u}_{p}^{RHS}()\cdot n_{T}q_{j}ds // H3's boundary integral
-//                        if ( info.discrete_model.hasVelocityPressureFlux() ) {
-				for ( int j = 0; j < info.numPressureBaseFunctionsElement; ++j ) {
-					double H3_j = 0.0;
-					// sum over all quadrature points
-					for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
-						// get x codim<0> and codim<1> coordinates
-						const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
-						const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
-						const VelocityRangeType xWorld = info.geometry.global( x );
-						// get the integration factor
-						const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
-						// get the quadrature weight
-						const double integrationWeight = info.faceQuadratureElement.weight( quad );
-						// compute -\hat{u}_{p}^{RHS}()\cdot n_{T}q_{j}
-						const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
-						VelocityRangeType gD( 0.0 );
-						info.discrete_model.dirichletData( info.intersection, 0.0, xWorld, gD );
-						const double gD_times_normal = gD * outerNormal;
-						PressureRangeType q_j( 0.0 );
-						info.pressure_basefunction_set_element.evaluate( j, x, q_j );
-						const double q_j_times_gD_times_normal = q_j * gD_times_normal;
-						H3_j += elementVolume
-							* integrationWeight
-							* q_j_times_gD_times_normal;
-					} // done sum over all quadrature points
-					// if small, should be zero
-					if ( fabs( H3_j ) < info.eps ) {
-						H3_j = 0.0;
-					}
-					else
-						// add to rhs
-						localH3rhs[ j ] += H3_j;
-				} // done computing H3's boundary integral
-//                        }
+            for ( int j = 0; j < info.numPressureBaseFunctionsElement; ++j ) {
+                double H3_j = 0.0;
+                // sum over all quadrature points
+                for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
+                    // get x codim<0> and codim<1> coordinates
+                    const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
+                    const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
+                    const VelocityRangeType xWorld = info.geometry.global( x );
+                    // get the integration factor
+                    const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+                    // get the quadrature weight
+                    const double integrationWeight = info.faceQuadratureElement.weight( quad );
+                    // compute -\hat{u}_{p}^{RHS}()\cdot n_{T}q_{j}
+                    const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
+                    VelocityRangeType gD( 0.0 );
+                    info.discrete_model.dirichletData( info.intersection, 0.0, xWorld, gD );
+                    const double gD_times_normal = gD * outerNormal;
+                    PressureRangeType q_j( 0.0 );
+                    info.pressure_basefunction_set_element.evaluate( j, x, q_j );
+                    const double q_j_times_gD_times_normal = q_j * gD_times_normal;
+                    H3_j += elementVolume
+                        * integrationWeight
+                        * q_j_times_gD_times_normal;
+                } // done sum over all quadrature points
+                // if small, should be zero
+                if ( fabs( H3_j ) < info.eps ) {
+                    H3_j = 0.0;
+                }
+                else
+                    // add to rhs
+                    localH3rhs[ j ] += H3_j;
+            } // done computing H3's boundary integral
 		}
 		static const std::string name;
 };

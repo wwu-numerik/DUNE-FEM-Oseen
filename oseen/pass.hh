@@ -28,8 +28,7 @@
 #include <dune/stuff/functions.hh>
 #include <dune/stuff/profiler.hh>
 
-namespace Dune
-{
+namespace Dune {
 
 /**
  *  \brief  OseenPass
@@ -245,5 +244,5 @@ class OseenPass
 		}
 };
 
-}
+} // namespace Dune
 #endif  // end of stokespass.hh
