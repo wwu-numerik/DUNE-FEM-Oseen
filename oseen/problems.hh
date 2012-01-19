@@ -5,7 +5,7 @@
 #include <dune/stuff/misc.hh>
 
 //! collection of data functions
-namespace OseenProblems {
+namespace StokesProblems {
 
 	//! a simple problem, d'oh
 	namespace Simple {

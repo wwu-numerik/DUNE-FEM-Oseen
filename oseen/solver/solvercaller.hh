@@ -24,7 +24,7 @@ namespace Solver {
     };
 }
 
-template<class OseenPassType, template <class T,class S> class ReconstructionPolicyType = BruteForceReconstruction >
+template<class OseenPassType, template <class S> class ReconstructionPolicyType = BruteForceReconstruction >
 struct SolverCaller {
 	//! alternative solver implementation
     typedef NestedCgSaddlepointInverseOperator< OseenPassType >
@@ -205,7 +205,7 @@ struct SolverCaller {
 		}
 		if ( rhs_datacontainer ) {
 			rhs_datacontainer->clear();
-            ReconstructionPolicyType<DataContainerType,typename OseenPassType::DiscreteModelType>
+            ReconstructionPolicyType<typename OseenPassType::DiscreteModelType>
 					::reconstruct(	*rhs_datacontainer, dest, beta,
 									X, M_invers, Y,
 									O, E, R, Z, W,

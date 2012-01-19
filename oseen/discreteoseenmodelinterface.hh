@@ -9,8 +9,9 @@
 
 #include <dune/common/fvector.hh>
 #include <dune/fem/function/adaptivefunction/adaptivefunction.hh>
+#include <dune/fem/space/dgspace.hh>
 
-#include <dune/oseen/discretestokesfunctionspacewrapper.hh>
+#include <dune/oseen/discreteoseenfunctionspacewrapper.hh>
 #include <dune/oseen/boundaryinfo.hh>
 #include <dune/oseen/stab_coeff.hh>
 
@@ -1207,22 +1208,24 @@ class DiscreteOseenModelDefault;
 /**
  *  \brief  Traits class for DiscreteOseenModelDefault
  **/
-template < class GridPartImp, template <class > class AnalyticalForceImp, class AnalyticalDirichletDataTraits,
+template < class GridImp, template <class > class AnalyticalForceImp, class AnalyticalDirichletDataTraits,
 			int gridDim, int sigmaOrder, int velocityOrder = sigmaOrder, int pressureOrder = sigmaOrder >
 class DiscreteOseenModelDefaultTraits
 {
     public:
-
+        //! using DGAdaptiveLeafGridPart is mandated by DUNE-FEM, but not in any way checked...
+        typedef Dune::DGAdaptiveLeafGridPart< GridImp >
+            GridPartType;
         //! for CRTP trick
         typedef DiscreteOseenModelDefault < DiscreteOseenModelDefaultTraits >
             DiscreteModelType;
 
         //! we use caching quadratures for the entities
-        typedef Dune::CachingQuadrature< GridPartImp, 0 >
+        typedef Dune::CachingQuadrature< GridPartType, 0 >
             VolumeQuadratureType;
 
         //! we use caching quadratures for the faces
-        typedef Dune::CachingQuadrature< GridPartImp, 1 >
+        typedef Dune::CachingQuadrature< GridPartType, 1 >
             FaceQuadratureType;
 
         //! polynomial order for the discrete sigma function space
@@ -1240,7 +1243,7 @@ class DiscreteOseenModelDefaultTraits
 
         //! discrete function space type for the velocity
         typedef Dune::DiscontinuousGalerkinSpace<   VelocityFunctionSpaceType,
-                                                    GridPartImp,
+                                                    GridPartType,
                                                     velocitySpaceOrder >
             DiscreteVelocityFunctionSpaceType;
 
@@ -1250,7 +1253,7 @@ class DiscreteOseenModelDefaultTraits
 
         //! discrete function space type for the pressure
         typedef Dune::DiscontinuousGalerkinSpace<   PressureFunctionSpaceType,
-                                                    GridPartImp,
+                                                    GridPartType,
                                                     pressureSpaceOrder >
             DiscretePressureFunctionSpaceType;
 
@@ -1273,7 +1276,7 @@ class DiscreteOseenModelDefaultTraits
 
         //! discrete function space type for sigma
         typedef Dune::DiscontinuousGalerkinSpace<   SigmaFunctionSpaceType,
-                                                    GridPartImp,
+                                                    GridPartType,
                                                     sigmaSpaceOrder >
             DiscreteSigmaFunctionSpaceType;
 
@@ -1318,7 +1321,7 @@ class DiscreteOseenModelDefaultTraits
             AnalyticalForceType;
 
         //! function type for the analytical dirichlet data
-		typedef typename AnalyticalDirichletDataTraits::template Implementation<VelocityFunctionSpaceType,GridPartImp >
+        typedef typename AnalyticalDirichletDataTraits::template Implementation<VelocityFunctionSpaceType,GridPartType >
 				AnalyticalDirichletDataTraitsImplementation;
 		typedef typename AnalyticalDirichletDataTraitsImplementation::AnalyticalDirichletDataType
             AnalyticalDirichletDataType;

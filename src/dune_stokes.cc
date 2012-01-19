@@ -524,10 +524,6 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
         gridPtr->globalRefine( refine_level );
     }
 
-	typedef Dune::AdaptiveLeafGridPart< GridType >
-        GridPartType;
-    static GridPartType gridPart( *gridPtr );
-
     /* ********************************************************************** *
      * initialize problem                                                     *
      * ********************************************************************** */
@@ -546,7 +542,7 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
     // model traits
 	#if 0 //defined( AORTA_PROBLEM )
     typedef Dune::DiscreteOseenModelDefaultTraits<
-                    GridPartType,
+                    GridType,
 					PROBLEM_NAMESPACE::Force,
 					Dune::GeometryBasedBoundaryFunctionTraits<VariableDirichletData,FirstOrderBoundaryShapeFunction>,
                     gridDim,
@@ -556,7 +552,7 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
         StokesModelTraitsImp;
 	#else
     typedef Dune::DiscreteOseenModelDefaultTraits<
-                    GridPartType,
+                    GridType,
 					PROBLEM_NAMESPACE::Force,
 					DefaultDirichletDataTraits<PROBLEM_NAMESPACE::DirichletData>,
                     gridDim,
@@ -565,6 +561,8 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
                     PRESSURE_POLORDER >
         StokesModelTraitsImp;
 	#endif
+    static typename StokesModelTraitsImp::GridPartType gridPart( *gridPtr );
+
     typedef Dune::DiscreteOseenModelDefault< StokesModelTraitsImp >
         StokesModelImpType;
 

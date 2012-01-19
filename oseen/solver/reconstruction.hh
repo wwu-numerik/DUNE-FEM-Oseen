@@ -2,6 +2,7 @@
 #define DUNE_OSEEN_RECONSTRUCTION_HH
 
 #include <dune/stuff/functionadapter.hh>
+#include <dune/oseen/datacontainer.hh>
 
 namespace Dune {
 
@@ -109,7 +110,7 @@ void getPressureGradient( MatrixObjectType& matrix_object, const DiscretePressur
 }
 
 
-template < class DataContainerType, class DiscreteModelType >
+template < class DiscreteModelType >
 struct BruteForceReconstruction {
 	template < class DiscreteVelocityFunctionType, class GradientFunctionType >
 	static void getConvection( const DiscreteVelocityFunctionType& beta, const GradientFunctionType& sigma, DiscreteVelocityFunctionType& convection)
@@ -189,8 +190,9 @@ struct BruteForceReconstruction {
 				class WmatrixObjectType,
 				class DiscreteSigmaFunctionType,
 				class DiscreteVelocityFunctionType,
-				class DiscretePressureFunctionType  >
-	static void reconstruct( DataContainerType& rhs_datacontainer,
+                class DiscretePressureFunctionType,
+                class AnyTraits  >
+    static void reconstruct( Dune::Oseen::RhsDatacontainer<AnyTraits>& rhs_datacontainer,
 				const FunctionWrapperType& solution,
 				const DiscreteVelocityFunctionType& beta,
 				const XmatrixObjectType& /*Xmatrix*/,
@@ -225,7 +227,7 @@ struct BruteForceReconstruction {
 
 };
 
-template < class DataContainerType, class DiscreteModelType >
+template < class DiscreteModelType >
 struct SmartReconstruction {
 	template <  class FunctionWrapperType,
 				class XmatrixObjectType,
@@ -238,8 +240,9 @@ struct SmartReconstruction {
 				class WmatrixObjectType,
 				class DiscreteSigmaFunctionType,
 				class DiscreteVelocityFunctionType,
-				class DiscretePressureFunctionType  >
-	static void reconstruct( DataContainerType& rhs_datacontainer,
+                class DiscretePressureFunctionType,
+                class AnyTraits>
+    static void reconstruct( Dune::Oseen::RhsDatacontainer<AnyTraits>& rhs_datacontainer,
 				const FunctionWrapperType& solution,
 				const DiscreteVelocityFunctionType& /*beta*/,
 				const XmatrixObjectType& Xmatrix,

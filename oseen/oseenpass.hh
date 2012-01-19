@@ -12,6 +12,7 @@
 #include <dune/fem/space/dgspace.hh>
 
 #include <dune/oseen/defaulttraits.hh>
+#include <dune/oseen/datacontainer.hh>
 #include <dune/oseen/solver/solvercaller.hh>
 #include <dune/oseen/assembler/all.hh>
 
@@ -29,6 +30,7 @@
 
 namespace Dune
 {
+
 /**
  *  \brief  OseenPass
  *  \todo   doc
@@ -38,7 +40,6 @@ template <  class DiscreteModelImp,
 class OseenPass
 {
     public:
-        struct RhsDatacontainer;
         typedef OseenPass< DiscreteModelImp, TraitsImp >
             ThisType;
         typedef DiscreteModelImp
@@ -76,7 +77,8 @@ class OseenPass
         /**
          *  \todo doc
          **/
-        void apply( const DomainType &arg, RangeType &dest, RhsDatacontainer* rhs_datacontainer = nullptr )
+        template < class OtherTraitsImp = Traits  >
+        void apply( const DomainType &arg, RangeType &dest, Dune::Oseen::RhsDatacontainer<OtherTraitsImp>* rhs_datacontainer = nullptr )
         {
             // profiler information
             profiler().StartTiming("Pass_init");
@@ -241,34 +243,6 @@ class OseenPass
 			infoStream.Suspend();
 #endif
 		}
-
-        //! when requested we store \f$ \varDelta u, \nabla p (u \cdot \nabla ) u\f$ in this struct after the solver
-        struct RhsDatacontainer {
-            typename Traits::DiscreteVelocityFunctionType velocity_laplace;
-            typename Traits::DiscreteVelocityFunctionType pressure_gradient;
-            typename Traits::DiscreteSigmaFunctionType velocity_gradient;
-            typename Traits::DiscreteVelocityFunctionType convection;
-
-            RhsDatacontainer( const typename Traits::DiscreteVelocityFunctionSpaceType& space,
-                              const typename Traits::DiscreteSigmaFunctionSpaceType& sigma_space)
-                : velocity_laplace( "velocity_laplace", space ),
-                pressure_gradient( "pressure_gradient", space ),
-                velocity_gradient( "velocity_gradient", sigma_space ),
-                convection( "convection", space )
-            {}
-            void scale( double factor ) {
-                velocity_laplace	*= factor;
-                pressure_gradient	*= factor;
-                velocity_gradient	*= factor;
-                convection			*= factor;
-            }
-            void clear() {
-                velocity_laplace.clear();
-                pressure_gradient.clear();
-                velocity_gradient.clear();
-                convection.clear();
-            }
-        };
 };
 
 }

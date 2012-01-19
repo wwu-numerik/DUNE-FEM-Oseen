@@ -8,7 +8,7 @@
 #include <dune/stuff/parametercontainer.hh>
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/math.hh>
-#include <dune/stuff/progressbar.hh>
+
 //do whatever you like to this file to test out simple and small stuff
 #include<dune/common/fmatrix.hh>
 #include<dune/istl/bcrsmatrix.hh>
@@ -36,14 +36,6 @@ int main( int argc, char** argv ) {
 	nums.output( std::cout );
 	nums( 	4.0 );
 	nums.output( std::cout );
-
-	unsigned k = 10;
-	Stuff::SimpleProgressBar<> pbar(k);
-	 for(unsigned i=0; i<k+1; i++,++pbar) {
-		 sleep( 1 );
-	  }
-	 	++pbar;
-
 
     typedef Dune::FieldMatrix<double,2,2> M;
     Dune::BCRSMatrix<M> B(4,4,Dune::BCRSMatrix<M>::random);
