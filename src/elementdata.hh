@@ -3,7 +3,7 @@
 
 #include <dune/stuff/filesystem.hh>
 
-#include<dune/grid/genericgeometry/referenceelements.hh>
+#include<dune/geometry/genericgeometry/referenceelements.hh>
 #include<dune/grid/common/mcmgmapper.hh>
 #include<dune/grid/io/file/vtk/vtkwriter.hh>
 #if HAVE_GRAPE
@@ -26,8 +26,6 @@ template<class G, class F>
 void elementdata (const G& grid, const F& f)
 {
   // the usual stuff
-  const int dim = G::dimension;
-  const int dimworld = G::dimensionworld;
   typedef typename G::ctype ct;
   typedef typename G::LeafGridView GridView;
   typedef typename GridView::template Codim<0>::Iterator ElementLeafIterator;

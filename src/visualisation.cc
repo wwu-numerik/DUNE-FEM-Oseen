@@ -53,7 +53,7 @@ class ProcessIdFunctor : public FunctorBase {
 	protected:
 		Dune::MPIHelper& mpiHelper_;
 };
-#include <dune/grid/common/intersectioniteratorwrapper.hh>
+#include <dune/grid/alugrid/common/intersectioniteratorwrapper.hh>
 class BoundaryFunctor : public FunctorBase {
 	public:
 		BoundaryFunctor ( const std::string filename )
@@ -162,7 +162,7 @@ void dowork ( Grid& grid, int refSteps, Dune::MPIHelper& mpiHelper )
 
 //	elementdata( grid, geometryFunctor );
 //	elementdata( grid, processIdFunctor );
-//	std::ofstream file( Stuff::getFileinDatadir( "grids.tex" ).c_str() );
+	std::ofstream file( Stuff::getFileinDatadir( "grids.tex" ).c_str() );
 //	file << "\\documentclass{article}\n"
 //			"\\usepackage{tikz}\n"
 //			"\\usetikzlibrary{calc,intersections}\n"
@@ -177,10 +177,10 @@ void dowork ( Grid& grid, int refSteps, Dune::MPIHelper& mpiHelper )
 //		file << boost::format("\\begin{tikzpicture}\n\\input{grid_level%d}\n\\end{tikzpicture}\n") % i ;
 //	}
 //	file << "\\end{document}\n";
-//	Stuff::Tex::RefineSeriesPgfGrid<Grid> pgfGrid( grid );
-//	pgfGrid.output( "series.tex", Parameters().getParam( "maxref", 3 ), !Parameters().getParam( "standalone_tex", true ) );
-//	Stuff::Tex::StackedPgfGrid<Grid> pgfGrid2( grid );
-//	pgfGrid2.output( "stacked.tex", Parameters().getParam( "maxref", 3 ) );
+    Stuff::Tex::RefineSeriesPgfGrid<Grid> pgfGrid( grid );
+    pgfGrid.output( "series.tex", Parameters().getParam( "maxref", 3 ), !Parameters().getParam( "standalone_tex", true ) );
+    Stuff::Tex::StackedPgfGrid<Grid> pgfGrid2( grid );
+    pgfGrid2.output( "stacked.tex", Parameters().getParam( "maxref", 3 ), !Parameters().getParam( "standalone_tex", true ) );
 //	{
 //	VolumeFunctor volumeFunctor( outputDir + std::string("/volumeFunctor") );
 //	std::cout << Stuff::GridDimensions<Grid>( grid );
