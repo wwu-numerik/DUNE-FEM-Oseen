@@ -60,7 +60,7 @@ struct DiagonalMatrixTraits :
 namespace Dune { namespace Oseen { namespace Assembler {
 
 //! A Static map of Matrix-/DiscreteFunctionType onto IntegratorType
-template < class FactoryType, class MatrixType >
+template < class FactoryType, class MatrixType, bool = true >
 struct IntegratorSelector {};
 SPECIALIZE_IntegratorSelector(M);
 SPECIALIZE_IntegratorSelector(W);
@@ -89,7 +89,7 @@ struct IntegratorSelector< FactoryType, typename FactoryType::DiscretePressureFu
 { typedef typename FactoryType::H3_IntegratorType Type; };
 
 //! A static map of DiscreteFunctionSpace onto DiscreteFunction
-template < class FactoryType, class DiscreteFunctionSpaceType >
+template < class FactoryType, class DiscreteFunctionSpaceType, bool = true >
 struct DiscreteFunctionSelector {};
 template < class FactoryType >
 struct DiscreteFunctionSelector< FactoryType, typename FactoryType::DiscreteSigmaFunctionSpaceType >
@@ -100,7 +100,10 @@ struct DiscreteFunctionSelector< FactoryType, typename FactoryType::DiscreteVelo
 template < class FactoryType >
 struct DiscreteFunctionSelector< FactoryType, typename FactoryType::DiscretePressureFunctionSpaceType >
 { typedef typename FactoryType::DiscretePressureFunctionType Type; };
-
+template < class FactoryType, class DiscreteFunctionSpaceType >
+//! this specialization is needed incase function types are equal
+struct DiscreteFunctionSelector< FactoryType, DiscreteFunctionSpaceType, false >
+{ typedef typename FactoryType::DiscretePressureFunctionType Type; };
 //!
 template < class StokesTraitsType >
 class Factory {
@@ -175,10 +178,11 @@ public:
 
     template < class RowSpace, class ColSpace >
     struct magic {
-            typedef typename DiscreteFunctionSelector< ThisType, RowSpace >::Type
-                RowType;
-            typedef typename DiscreteFunctionSelector< ThisType, ColSpace >::Type
-                ColType;
+        //! more magic on the inside to avoid ambiguous DiscretefunctionSelector instantiation in 1D
+        typedef typename DiscreteFunctionSelector< ThisType, RowSpace, RowSpace::dimensionworld != 1 >::Type
+            RowType;
+        typedef typename DiscreteFunctionSelector< ThisType, ColSpace, RowSpace::dimensionworld != 1 >::Type
+            ColType;
         typedef typename MatrixObject< RowType, ColType >::Type
             InternalMatrixType;
         typedef Dune::shared_ptr<InternalMatrixType>
@@ -194,10 +198,13 @@ public:
         return m;
     }
     template < class DiscreteFunctionSpaceType >
-    static typename DiscreteFunctionSelector< ThisType, DiscreteFunctionSpaceType >::Type
+    static typename DiscreteFunctionSelector< ThisType, DiscreteFunctionSpaceType, DiscreteFunctionSpaceType::dimensionworld != 1 >::Type
         rhs( const std::string name, const DiscreteFunctionSpaceType& space )
     {
-        typename DiscreteFunctionSelector< ThisType, DiscreteFunctionSpaceType >::Type f( name, space );
+        typename DiscreteFunctionSelector< ThisType,
+                    DiscreteFunctionSpaceType,
+                    DiscreteFunctionSpaceType::dimensionworld != 1 >
+            ::Type f( name, space );
         f.clear();
         return f;
     }
