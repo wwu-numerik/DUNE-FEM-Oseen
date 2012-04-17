@@ -52,9 +52,6 @@ class MatrixWrapper : boost::noncopyable {
 			:matrix_pointer_( matrix_object ),
 			cumulative_scale_factor_( 1.0 )
 		{
-            #if ! STOKES_USE_ISTL
-			Stuff::Matrix::printMemUsage( matrix_pointer_->matrix(), Logger().Dbg(), name );
-		    #endif
 		}
 
 		~MatrixWrapper()
