@@ -259,7 +259,7 @@ namespace Assembler {
 		static double charactisticSize(const typename Traits::EntityType& entity,
 									   const typename Traits::IntersectionIteratorType::Intersection& intersection)
 		{
-			return entity.geometry().volume() / intersection.intersectionGlobal().volume();
+            return entity.geometry().volume() / intersection.geometry().volume();
 		}
 
 		template <int power>
