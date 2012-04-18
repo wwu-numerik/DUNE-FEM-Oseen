@@ -625,12 +625,12 @@ Stuff::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 	{
 		typedef StokesProblems::Container< gridDim, DiscreteOseenFunctionWrapperType>
 			ProblemType;
-		ProblemType problem( viscosity , computedSolutions, analyticalDirichletData );
+	//	ProblemType problem( viscosity , computedSolutions, analyticalDirichletData );
 
 		typedef PostProcessor< OseenPassType, ProblemType >
 			PostProcessorType;
 
-		PostProcessorType ( discreteStokesFunctionSpaceWrapper, problem ).save( *gridPtr, computedSolutions, refine_level );
+	//	PostProcessorType ( discreteStokesFunctionSpaceWrapper, problem ).save( *gridPtr, computedSolutions, refine_level );
 	}
 
     StokesModelImpType stokesModel( stabil_coeff,

@@ -130,7 +130,6 @@ class OseenPass
                                         o_integrator, z_integrator, e_integrator, r_integrator,
                                         h1_integrator, h2_integrator,h2_o_integrator, h3_integrator );
                 coordinator.apply( tuple );
-                Logger().Dbg() << "Oseen disc\n" ;
             }
             else
             {
@@ -141,7 +140,6 @@ class OseenPass
                                         z_integrator, e_integrator, r_integrator,
                                         h1_integrator, h2_integrator,h3_integrator );
                 coordinator.apply( tuple );
-                Logger().Dbg() << "Stokes disc\n" ;
             }
 #else
             Oseen::Assembler::Coordinator< Traits, typename Factory::ConvIntegratorTuple >
@@ -150,7 +148,6 @@ class OseenPass
             typename Factory::ConvIntegratorTuple tuple(	o_integrator, h2_integrator, h2_o_integrator );
             coordinator.apply( tuple );
 #endif
-            Logger().Dbg() << "Stokes disc\n" ;
             // do the actual lgs solving
             Logger().Info() << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
             info_ = Oseen::SolverCallerProxy< ThisType >::call( do_oseen_discretization_, rhs_datacontainer, dest,
