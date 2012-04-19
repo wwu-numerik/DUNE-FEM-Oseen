@@ -116,7 +116,8 @@ class OseenPass
             auto r_integrator = Factory::integrator( Rmatrix );
             auto h1_integrator = Factory::integrator( H1rhs );
             auto h2_integrator = Factory::integrator( H2rhs );
-            auto h2_o_integrator = Factory::integratorO( H2rhs, beta_ );
+            auto h2_o_integrator = Factory::integratorO( H2_O_rhs, beta_ );
+            H2rhs += H2_O_rhs;
             auto h3_integrator = Factory::integrator( H3rhs );
             profiler().StopTiming("Pass_init");
 
