@@ -1689,9 +1689,9 @@ class DiscreteOseenModelDefault : public DiscreteOseenModelInterface< DiscreteOs
          *  \param[in]  viscosity
          *          viscosity of the fluid
          **/
-        DiscreteOseenModelDefault( const StabilizationCoefficients& stab_coeff,
-                                    const AnalyticalForceType& force,
-                                    const AnalyticalDirichletDataType& dirichletData,
+        DiscreteOseenModelDefault( const StabilizationCoefficients stab_coeff,
+                                    const AnalyticalForceType force,
+                                    const AnalyticalDirichletDataType dirichletData,
                                     const double viscosity = 1.0,
 									const double alpha = 0.0,
 								   const double convection_scaling = 1.0,
@@ -2674,8 +2674,8 @@ class DiscreteOseenModelDefault : public DiscreteOseenModelInterface< DiscreteOs
 		const double convection_scaling_;
 		const double pressure_gradient_scaling_;
         StabilizationCoefficients stabil_coeff_;
-        const AnalyticalForceType& force_;
-        const AnalyticalDirichletDataType& dirichletData_;
+        const AnalyticalForceType force_;
+        const AnalyticalDirichletDataType dirichletData_;
 
         /**
          *  \brief  dyadic product

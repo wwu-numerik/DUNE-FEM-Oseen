@@ -51,10 +51,10 @@ class OseenPass
             RangeType;
 
         //!
-        OseenPass( DiscreteModelType& discreteModel,
+        OseenPass( DiscreteModelType discreteModel,
 					typename Traits::GridPartType& gridPart,
                     const typename Traits::DiscreteOseenFunctionSpaceWrapperType& spaceWrapper,
-					const typename Traits::DiscreteVelocityFunctionType& beta,
+                    const typename Traits::DiscreteVelocityFunctionType beta,
 					const bool do_oseen_discretization )//! \todo move to model
             : discreteModel_( discreteModel ),
             gridPart_( gridPart ),
@@ -168,13 +168,13 @@ class OseenPass
 #endif
 
     private:
-        DiscreteModelType& discreteModel_;
+        DiscreteModelType discreteModel_;
 		const typename Traits::GridPartType& gridPart_;
         const typename Traits::DiscreteOseenFunctionSpaceWrapperType& spaceWrapper_;
 		const typename Traits::DiscreteVelocityFunctionSpaceType& velocitySpace_;
 		const typename Traits::DiscretePressureFunctionSpaceType& pressureSpace_;
 		typename Traits::DiscreteSigmaFunctionSpaceType sigmaSpace_;
-		const typename Traits::DiscreteVelocityFunctionType& beta_;
+        const typename Traits::DiscreteVelocityFunctionType beta_;
 		const bool do_oseen_discretization_;
         SaddlepointInverseOperatorInfo info_;
 
