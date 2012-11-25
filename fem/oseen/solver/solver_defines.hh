@@ -21,7 +21,7 @@
 	//< iteration no , < absLimit, residuum > >
 	typedef std::pair<int,std::pair<double,double> >
 		IterationInfo;
-	#include <dune/oseen/oemsolver/oemsolver.hh>
+	#include <dune/fem/oseen/oemsolver/oemsolver.hh>
 	#define SOLVER_NAMESPACE DuneStokes
 	#define SOLVER_INTERFACE_NAMESPACE StokesOEMSolver
 #else

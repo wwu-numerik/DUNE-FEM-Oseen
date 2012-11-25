@@ -1,8 +1,8 @@
 #ifndef DUNE_OSEEN_SOLVERS_BICG_SADDLE_POINT_HH
 #define DUNE_OSEEN_SOLVERS_BICG_SADDLE_POINT_HH
 
-#include <dune/oseen/solver/solver_interface.hh>
-#include <dune/oseen/solver/schurkomplement.hh>
+#include <dune/fem/oseen/solver/solver_interface.hh>
+#include <dune/fem/oseen/solver/schurkomplement.hh>
 #include <dune/stuff/customprojection.hh>
 
 namespace Dune {

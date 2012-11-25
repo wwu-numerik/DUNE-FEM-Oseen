@@ -1,8 +1,8 @@
 #ifndef DUNE_OSEEN_DIRECT_SOLVER_HH
 #define DUNE_OSEEN_DIRECT_SOLVER_HH
 
-#include <dune/oseen/solver/solver_interface.hh>
-#include <dune/oseen/functionspacewrapper.hh>
+#include <dune/fem/oseen/solver/solver_interface.hh>
+#include <dune/fem/oseen/functionspacewrapper.hh>
 
 namespace Dune {
 

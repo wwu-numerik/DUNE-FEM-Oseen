@@ -5,7 +5,7 @@
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/profiler.hh>
 #include <dune/stuff/localmatrix_proxy.hh>
-#include <dune/oseen/stab_coeff.hh>
+#include <dune/fem/oseen/stab_coeff.hh>
 
 #include <boost/integer/static_min_max.hpp>
 #include <boost/progress.hpp>

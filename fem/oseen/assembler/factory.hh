@@ -5,10 +5,10 @@
 #include <dune/common/static_assert.hh>
 
 #if STOKES_USE_ISTL
-#   include <dune/oseen/assembler/mod_istlmatrix.hh>
+#   include <dune/fem/oseen/assembler/mod_istlmatrix.hh>
 #   define STOKES_MATRIX_OBJECT ModifiedISTLMatrixObject
 #   include <dune/fem/operator/2order/dgmatrixtraits.hh>
-#   include <dune/oseen/assembler/bcrstraits.hh>
+#   include <dune/fem/oseen/assembler/bcrstraits.hh>
 #   define STOKES_MATRIX_OBJECT_TRAITS Dune::Stokes::Assembler::ModifiedDGMatrixTraits
 #else
 #   define STOKES_MATRIX_OBJECT SparseRowMatrixObject

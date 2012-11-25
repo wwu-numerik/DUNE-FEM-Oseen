@@ -2,7 +2,7 @@
 #define DUNE_OSEEN_RECONSTRUCTION_HH
 
 #include <dune/stuff/functionadapter.hh>
-#include <dune/oseen/datacontainer.hh>
+#include <dune/fem/oseen/datacontainer.hh>
 
 namespace Dune {
 

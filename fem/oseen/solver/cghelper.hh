@@ -8,7 +8,7 @@
 
 #include "solver_defines.hh"
 
-#include <dune/oseen/solver/new_bicgstab.hh>
+#include <dune/fem/oseen/solver/new_bicgstab.hh>
 #include <dune/stuff/printing.hh>
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/matrix.hh>

@@ -11,9 +11,9 @@
 #include <dune/fem/function/adaptivefunction/adaptivefunction.hh>
 #include <dune/fem/space/dgspace.hh>
 
-#include <dune/oseen/functionspacewrapper.hh>
-#include <dune/oseen/boundaryinfo.hh>
-#include <dune/oseen/stab_coeff.hh>
+#include <dune/fem/oseen/functionspacewrapper.hh>
+#include <dune/fem/oseen/boundaryinfo.hh>
+#include <dune/fem/oseen/stab_coeff.hh>
 
 #ifndef NLOG
     #include <dune/stuff/printing.hh>

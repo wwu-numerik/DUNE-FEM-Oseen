@@ -1,7 +1,7 @@
 #ifndef DUNE_OSEEN_SOLVERS_REDUCED_HH
 #define DUNE_OSEEN_SOLVERS_REDUCED_HH
 
-#include <dune/oseen/solver/solver_interface.hh>
+#include <dune/fem/oseen/solver/solver_interface.hh>
 
 namespace Dune {
 

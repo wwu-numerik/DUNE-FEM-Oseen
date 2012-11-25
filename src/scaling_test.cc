@@ -65,10 +65,10 @@
 #include <dune/stuff/femeoc.hh>
 #include <dune/fem/misc/gridwidth.hh>
 
-#include <dune/oseen/functionspacewrapper.hh>
-#include <dune/oseen/modelinterface.hh>
-#include <dune/oseen/pass.hh>
-#include <dune/oseen/boundarydata.hh>
+#include <dune/fem/oseen/functionspacewrapper.hh>
+#include <dune/fem/oseen/modelinterface.hh>
+#include <dune/fem/oseen/pass.hh>
+#include <dune/fem/oseen/boundarydata.hh>
 
 #include <dune/stuff/printing.hh>
 #include <dune/stuff/misc.hh>

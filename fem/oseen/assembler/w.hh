@@ -1,7 +1,7 @@
 #ifndef DUNE_OSEEN_INTEGRATORS_W_HH
 #define DUNE_OSEEN_INTEGRATORS_W_HH
 
-#include <dune/oseen/assembler/base.hh>
+#include <dune/fem/oseen/assembler/base.hh>
 #include <dune/stuff/matrix.hh>
 
 namespace Dune {
@@ -200,7 +200,7 @@ namespace Assembler {
 } // end namespace Oseen
 } // end namespace Dune
 
-#include <dune/oseen/assembler/rhs.hh>
+#include <dune/fem/oseen/assembler/rhs.hh>
 
 #endif // DUNE_OSEEN_INTEGRATORS_W_HH
 

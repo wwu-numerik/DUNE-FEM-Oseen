@@ -1,7 +1,7 @@
 #ifndef DUNE_OSEEN_INTEGRATORS_RHS_HH
 #define DUNE_OSEEN_INTEGRATORS_RHS_HH
 
-#include <dune/oseen/assembler/base.hh>
+#include <dune/fem/oseen/assembler/base.hh>
 
 namespace Dune {
 namespace Oseen {

@@ -64,21 +64,21 @@ typedef Dune::GridSelector::GridType
 #include <dune/fem/function/adaptivefunction.hh> // for AdaptiveDiscreteFunction
 #include <dune/fem/misc/gridwidth.hh>
 
-#include <dune/oseen/functionspacewrapper.hh>
-#include <dune/oseen/modelinterface.hh>
-#include <dune/oseen/pass.hh>
-#include <dune/oseen/boundarydata.hh>
+#include <dune/fem/oseen/functionspacewrapper.hh>
+#include <dune/fem/oseen/modelinterface.hh>
+#include <dune/fem/oseen/pass.hh>
+#include <dune/fem/oseen/boundarydata.hh>
 
 #include <dune/stuff/printing.hh>
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/logging.hh>
 #include <dune/stuff/parametercontainer.hh>
-#include <dune/oseen/postprocessing.hh>
+#include <dune/fem/oseen/postprocessing.hh>
 #include <dune/stuff/profiler.hh>
 #include <dune/stuff/signals.hh>
 #include <dune/stuff/tex.hh>
 
-#include <dune/oseen/problems.hh>
+#include <dune/fem/oseen/problems.hh>
 #include <dune/stuff/femeoc.hh>
 
 #include "analyticaldata.hh"

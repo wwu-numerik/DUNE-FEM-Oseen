@@ -1,7 +1,7 @@
 #ifndef DUNE_OSEEN_DEFAULTTRAITS_HH
 #define DUNE_OSEEN_DEFAULTTRAITS_HH
 
-#include <dune/oseen/stab_coeff.hh>
+#include <dune/fem/oseen/stab_coeff.hh>
 
 namespace Dune
 {

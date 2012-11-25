@@ -1,12 +1,12 @@
 #ifndef DUNE_OSEEN_SOLVERCALLER_HH
 #define DUNE_OSEEN_SOLVERCALLER_HH
 
-#include <dune/oseen/solver/nested_cg.hh>
-#include <dune/oseen/solver/reduced.hh>
-#include <dune/oseen/solver/fullsystem.hh>
-#include <dune/oseen/solver/saddle_point.hh>
-#include <dune/oseen/solver/bicg_saddle_point.hh>
-#include <dune/oseen/solver/reconstruction.hh>
+#include <dune/fem/oseen/solver/nested_cg.hh>
+#include <dune/fem/oseen/solver/reduced.hh>
+#include <dune/fem/oseen/solver/fullsystem.hh>
+#include <dune/fem/oseen/solver/saddle_point.hh>
+#include <dune/fem/oseen/solver/bicg_saddle_point.hh>
+#include <dune/fem/oseen/solver/reconstruction.hh>
 #include <dune/stuff/profiler.hh>
 #include <dune/stuff/logging.hh>
 

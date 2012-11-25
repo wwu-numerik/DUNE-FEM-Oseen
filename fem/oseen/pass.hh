@@ -11,10 +11,10 @@
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/fem/space/dgspace.hh>
 
-#include <dune/oseen/defaulttraits.hh>
-#include <dune/oseen/datacontainer.hh>
-#include <dune/oseen/solver/solvercaller.hh>
-#include <dune/oseen/assembler/all.hh>
+#include <dune/fem/oseen/defaulttraits.hh>
+#include <dune/fem/oseen/datacontainer.hh>
+#include <dune/fem/oseen/solver/solvercaller.hh>
+#include <dune/fem/oseen/assembler/all.hh>
 
 #include <dune/stuff/customprojection.hh>
 #include <dune/stuff/matrix.hh>

@@ -1,4 +1,4 @@
-PROJECT(dune-oseen)
+PROJECT(dune-fem-oseen)
 
 #set minimum cmake version
 cmake_minimum_required(VERSION 2.6)
