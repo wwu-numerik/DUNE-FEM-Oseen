@@ -66,25 +66,25 @@ namespace Dune {
 					const DiscretePressureFunctionType& /*rhs3*/ ) const
 		{
 
-			Stuff::Logging::LogStream& logDebug = Logger().Dbg();
-			Stuff::Logging::LogStream& logInfo = Logger().Info();
+			auto logDebug = DSC_LOG_DEBUG;
+			auto logInfo = DSC_LOG_INFO;
 
-			if ( Parameters().getParam( "disableSolver", false ) ) {
-				logInfo.Resume();
+			if ( DSC_CONFIG_GET( "disableSolver", false ) ) {
+				logInfo.resume();
 				logInfo << "solving disabled via parameter file" << std::endl;
 				return SaddlepointInverseOperatorInfo();
 			}
 
 			// relative min. error at which cg-solvers will abort
-			const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
+			const double relLimit = DSC_CONFIG_GET( "relLimit", 1e-4 );
 			// aboslute min. error at which cg-solvers will abort
-			const double inner_absLimit = Parameters().getParam( "inner_absLimit", 1e-8 );
-			const int solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
+			const double inner_absLimit = DSC_CONFIG_GET( "inner_absLimit", 1e-8 );
+			const int solverVerbosity = DSC_CONFIG_GET( "solverVerbosity", 0 );
 
-			logInfo.Resume();
+			logInfo.resume();
 			logInfo << "Begin ReducedInverseOperator " << std::endl;
 
-			logDebug.Resume();
+			logDebug.resume();
 			//get some refs for more readability
 			VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
 

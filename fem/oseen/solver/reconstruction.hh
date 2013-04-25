@@ -1,7 +1,7 @@
 #ifndef DUNE_OSEEN_RECONSTRUCTION_HH
 #define DUNE_OSEEN_RECONSTRUCTION_HH
 
-#include <dune/stuff/functionadapter.hh>
+#include <dune/stuff/fem/functionadapter.hh>
 #include <dune/fem/oseen/datacontainer.hh>
 
 namespace Dune {
@@ -52,57 +52,27 @@ static inline void naiveMatrixMultAdd( const MatrixType& matrix, const OperandFu
 template <class MatrixObjectType, class DiscretePressureFunctionType, class PressureGradientDiscreteFunctionType>
 void getPressureGradient( MatrixObjectType& matrix_object, const DiscretePressureFunctionType& pressure, PressureGradientDiscreteFunctionType& pressure_gradient )
 {
-	typedef typename DiscretePressureFunctionType::FunctionSpaceType
-		SpaceType;
-	typedef typename SpaceType::GridPartType
-        GridPart;
-	typedef typename GridPart::GridType::template Codim< 0 >::Entity
-		EntityType;
-    typedef typename GridPart::template Codim< 0 >::IteratorType
-        EntityIteratorType;
-    typedef typename GridPart::IntersectionIteratorType
-        IntersectionIteratorType;
-    typedef typename IntersectionIteratorType::EntityPointer
-        EntityPointer;
-	typedef typename MatrixObjectType::LocalMatrixType
-		LocalMatrixType;
-	typedef typename PressureGradientDiscreteFunctionType::LocalFunctionType
-		PressureGradientLocalFunction;
-	typedef typename DiscretePressureFunctionType::LocalFunctionType
-		PressureLocalFunction;
 	const SpaceType& space_ = pressure.space();
-	const GridPart& gridPart_ = space_.gridPart();
-	Logger().Err().Resume( 9001 );
-	Stuff::LocalMatrixPrintFunctor< MatrixObjectType, Stuff::Logging::LogStream > local_print( matrix_object, Logger().Err(), std::string("LOCAL Z" ) );
-	Stuff::LocalFunctionVerbatimPrintFunctor< PressureGradientDiscreteFunctionType, Stuff::Logging::LogStream > local_print_pressure_grad( pressure_gradient, Logger().Err() );
-	Stuff::LocalFunctionVerbatimPrintFunctor< DiscretePressureFunctionType, Stuff::Logging::LogStream > local_print_pressure( pressure, Logger().Err() );
-	EntityIteratorType entityItEndLog = space_.end();
-	for (   EntityIteratorType it = space_.begin();
-			it != entityItEndLog;
-			++it )
+	DSC_LOG_ERROR.Resume( 9001 );
+
+    for (const auto& entity : space_ )
 	{
-		const EntityType& entity = *it;
-		LocalMatrixType local_matrix = matrix_object.localMatrix( *it, *it );
-		PressureGradientLocalFunction local_pressure_gradient = pressure_gradient.localFunction( * it );
-		PressureLocalFunction local_pressure = pressure.localFunction( * it );
-//				local_print(*it,*it,0,0);
-//				local_print_pressure_grad(*it,*it,0,0);
-//				local_print_pressure(*it,*it,0,0);
-//				Logger().Err() << std::endl;
-//				local_matrix.multiplyAdd( local_pressure, local_pressure_gradient );
+        auto local_matrix = matrix_object.localMatrix( *it, *it );
+        auto local_pressure_gradient = pressure_gradient.localFunction( * it );
+        auto local_pressure = pressure.localFunction( * it );
 		naiveMatrixMult( local_matrix, local_pressure, local_pressure_gradient );
 
 
-		IntersectionIteratorType intItEnd = space_.gridPart().iend( *it );
-		for (   IntersectionIteratorType intIt = space_.gridPart().ibegin( *it );
+        auto  intItEnd = space_.gridPart().iend( *it );
+        for (   auto  intIt = space_.gridPart().ibegin( *it );
 				intIt != intItEnd;
 				++intIt ) {
-			const typename IntersectionIteratorType::Intersection& intersection = *intIt;
+            const auto & intersection = *intIt;
 			if ( intersection.neighbor() && !intersection.boundary() ) {
-				const typename IntersectionIteratorType::EntityPointer neighbourPtr = intersection.outside();
-                const EntityType& neighbour = *neighbourPtr;
-				LocalMatrixType local_matrix_neighbour = matrix_object.localMatrix( entity, neighbour );
-				PressureLocalFunction local_pressure_neighbour = pressure.localFunction( neighbour );
+                const auto neighbourPtr = intersection.outside();
+                const auto & neighbour = *neighbourPtr;
+                auto  local_matrix_neighbour = matrix_object.localMatrix( entity, neighbour );
+                auto local_pressure_neighbour = pressure.localFunction( neighbour );
 				naiveMatrixMultAdd( local_matrix_neighbour, local_pressure_neighbour, local_pressure_gradient );
 			}
 		}
@@ -210,15 +180,15 @@ struct BruteForceReconstruction {
 		DiscreteVelocityFunctionType velocity_tmp1( "velocity_tmp1", solution.discreteVelocity().space() );
 		DiscreteSigmaFunctionType sigma_tmp( "sigma_dummy", H1rhs.space() );
 
-		Stuff::GradientAdapterFunction< DiscretePressureFunctionType, DiscreteVelocityFunctionType,Stuff::ProductFunctorMatrixVector >
+        DSFe::GradientAdapterFunction< DiscretePressureFunctionType, DiscreteVelocityFunctionType,DSFe::ProductFunctorMatrixVector >
 				pressure_grad ( solution.discretePressure(), velocity_tmp1 );
 		rhs_datacontainer.pressure_gradient.assign( pressure_grad );
 
-		Stuff::GradientAdapterFunction< DiscreteVelocityFunctionType, DiscreteSigmaFunctionType,Stuff::ProductFunctorMatrices >
+        DSFe::GradientAdapterFunction< DiscreteVelocityFunctionType, DiscreteSigmaFunctionType,DSFe::ProductFunctorMatrices >
 				grad ( solution.discreteVelocity(), sigma_tmp );
 		rhs_datacontainer.velocity_gradient .assign( grad );
 
-		Stuff::LaplaceAdapterFunction< DiscreteVelocityFunctionType, DiscreteSigmaFunctionType,Stuff::ProductFunctorMatrices >
+        DSFe::LaplaceAdapterFunction< DiscreteVelocityFunctionType, DiscreteSigmaFunctionType,DSFe::ProductFunctorMatrices >
 		        laplace( solution.discreteVelocity(), sigma_tmp );
 		rhs_datacontainer.velocity_laplace.assign( laplace );
 
@@ -259,7 +229,7 @@ struct SmartReconstruction {
 	{
 //		CompileTimeChecker<false> dysfunctionalCode;
 						Zmatrix.apply( solution.discretePressure(), rhs_datacontainer.pressure_gradient );
-//						rhs_datacontainer.pressure_gradient *= Parameters().getParam("pressure_gradient_scale", 1);
+//						rhs_datacontainer.pressure_gradient *= DSC_CONFIG_GET("pressure_gradient_scale", 1);
 //						getPressureGradient( Zmatrix,  solution.discretePressure(),  rhs_datacontainer.pressure_gradient);
 
 						 //\sigma = M^{-1} ( H_1 - Wu )
@@ -275,7 +245,7 @@ struct SmartReconstruction {
 		//					rhs_datacontainer.velocity_gradient /= viscosity;//since mu is assmenled into both W and H1
 						rhs_datacontainer.velocity_gradient *= m_inv_scale;
 
-//						Stuff::printFunctionMinMax( std::cout, H1rhs );
+//						DSC::printFunctionMinMax( std::cout, H1rhs );
 
 
 						Xmatrix.apply( rhs_datacontainer.velocity_gradient, velocity_tmp1 );
@@ -284,12 +254,12 @@ struct SmartReconstruction {
 						velocity_tmp1.assign( solution.discreteVelocity() );
 //						velocity_tmp1 *= alpha;
 						rhs_datacontainer.velocity_laplace -= velocity_tmp1;
-		//				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer.velocity_laplace );
-//						const double laplace_scale = Parameters().getParam("laplace_scale", -1/viscosity);
+		//				DSC::printFunctionMinMax( std::cout, rhs_datacontainer.velocity_laplace );
+//						const double laplace_scale = DSC_CONFIG_GET("laplace_scale", -1/viscosity);
 //						rhs_datacontainer.velocity_laplace *= laplace_scale;
-		//				Stuff::printFunctionMinMax( std::cout, rhs_datacontainer.velocity_laplace );
-//						Logger().Dbg().Resume();
-//						Logger().Dbg() << boost::format( "laplace_scale: %f\n") % laplace_scale;
+		//				DSC::printFunctionMinMax( std::cout, rhs_datacontainer.velocity_laplace );
+//						DSC_LOG_DEBUG.resume();
+//						DSC_LOG_DEBUG << boost::format( "laplace_scale: %f\n") % laplace_scale;
 
 						rhs_datacontainer.convection.clear();
 						Omatrix.apply( solution.discreteVelocity(), rhs_datacontainer.convection );
@@ -299,7 +269,7 @@ struct SmartReconstruction {
 //						else
 
 //						dest.discreteVelocity() += rhs_datacontainer.convection;
-//						Stuff::printFunctionMinMax( std::cout, rhs_datacontainer.convection );
+//						DSC::printFunctionMinMax( std::cout, rhs_datacontainer.convection );
 
 //						rhs_datacontainer.scale( 1 / std::sqrt(2) );
 

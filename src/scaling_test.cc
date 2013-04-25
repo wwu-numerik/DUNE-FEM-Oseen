@@ -70,7 +70,7 @@
 #include <dune/fem/oseen/pass.hh>
 #include <dune/fem/oseen/boundarydata.hh>
 
-#include <dune/stuff/printing.hh>
+#include <dune/stuff/common/printing.hh>
 #include <dune/stuff/misc.hh>
 #include <dune/stuff/logging.hh>
 #include <dune/stuff/parametercontainer.hh>
@@ -164,9 +164,9 @@ int main( int argc, char** argv )
     // LOG_NONE = 1, LOG_ERR = 2, LOG_INFO = 4,LOG_DEBUG = 8,LOG_CONSOLE = 16,LOG_FILE = 32
     //--> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_CONSOLE | LOG_FILE = 62
     const bool useLogger = false;
-    Logger().Create( Parameters().getParam( "loglevel",         62,                         useLogger ),
-                     Parameters().getParam( "logfile",          std::string("dune_stokes"), useLogger ),
-                     Parameters().getParam( "fem.io.logdir",    std::string(),              useLogger )
+    Logger().Create( DSC_CONFIG_GET( "loglevel",         62,                         useLogger ),
+                     DSC_CONFIG_GET( "logfile",          std::string("dune_stokes"), useLogger ),
+                     DSC_CONFIG_GET( "fem.io.logdir",    std::string(),              useLogger )
                     );
 
     int err = 0;
@@ -178,7 +178,7 @@ int main( int argc, char** argv )
 	st.FactorFromParams( "C12" );
 	st.FactorFromParams( "D11" );
 	st.FactorFromParams( "D12" );
-	rf.push_back(singleRun( mpicomm, Parameters().getParam( "minref", 0 ), st ) );
+	rf.push_back(singleRun( mpicomm, DSC_CONFIG_GET( "minref", 0 ), st ) );
 	profiler().Output( mpicomm, rf );
 
     Logger().Dbg() << "\nRun from: " << commit_string << std::endl;
@@ -192,8 +192,8 @@ int main( int argc, char** argv )
   }
   catch ( std::bad_alloc& b ) {
       std::cerr << "Memory allocation failed: " << b.what() ;
-      Logger().Info().Resume();
-      Stuff::meminfo( Logger().Info() );
+      DSC_LOG_INFO.Resume();
+      DSC::meminfo( DSC_LOG_INFO );
   }
   catch ( assert_exception& a ) {
       std::cerr << "Exception thrown at:\n" << a.what() << std::endl ;
@@ -208,7 +208,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 					Dune::StabilizationCoefficients& stabil_coeff )
 {
     profiler().StartTiming( "SingleRun" );
-    Logging::LogStream& infoStream = Logger().Info();
+    Logging::LogStream& infoStream = DSC_LOG_INFO;
     Logging::LogStream& debugStream = Logger().Dbg();
     RunInfo info;
 
@@ -277,12 +277,12 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
 
     debugStream << "  - polOrder: " << polOrder << std::endl;
-    const double viscosity_param = Parameters().getParam( "viscosity", 1.0 ) ;
+    const double viscosity_param = DSC_CONFIG_GET( "viscosity", 1.0 ) ;
 	const double viscosity = 1.0;
 
 	const double scale_factor = 1 / viscosity_param;
 
-	const double alpha_param = Parameters().getParam( "alpha", 1.0 );
+	const double alpha_param = DSC_CONFIG_GET( "alpha", 1.0 );
 	const double alpha = alpha_param * scale_factor;
 
     debugStream << "  - viscosity: " << viscosity << std::endl;
@@ -359,7 +359,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     info.c12 = Pair( stabil_coeff.Power( "C12" ), stabil_coeff.Factor( "C12" ) );
     info.d11 = Pair( stabil_coeff.Power( "D11" ), stabil_coeff.Factor( "D11" ) );
     info.d12 = Pair( stabil_coeff.Power( "D12" ), stabil_coeff.Factor( "D12" ) );
-    info.bfg = Parameters().getParam( "do-bfg", true );
+    info.bfg = DSC_CONFIG_GET( "do-bfg", true );
     info.gridname = gridPart.grid().name();
     info.refine_level = refine_level;
 
@@ -367,9 +367,9 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     info.polorder_sigma = StokesModelTraitsImp::sigmaSpaceOrder;
     info.polorder_velocity = StokesModelTraitsImp::velocitySpaceOrder;
 
-    info.solver_accuracy = Parameters().getParam( "absLimit", 1e-4 );
-    info.inner_solver_accuracy = Parameters().getParam( "inner_absLimit", 1e-4 );
-    info.bfg_tau = Parameters().getParam( "bfg-tau", 0.1 );
+    info.solver_accuracy = DSC_CONFIG_GET( "absLimit", 1e-4 );
+    info.inner_solver_accuracy = DSC_CONFIG_GET( "inner_absLimit", 1e-4 );
+    info.bfg_tau = DSC_CONFIG_GET( "bfg-tau", 0.1 );
 
 	info.problemIdentifier = StokesProblem::ProblemIdentifier;
 

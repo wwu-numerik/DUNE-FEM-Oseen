@@ -1,7 +1,7 @@
 #ifndef STOKES_PORBLEMS_TIMEDISC_HH
 #define STOKES_PORBLEMS_TIMEDISC_HH
 #include <dune/fem/function/common/function.hh>
-#include <dune/stuff/misc.hh>
+#include <dune/stuff/common/misc.hh>
 #include "common.hh"
 
 ALLGOOD_SETUPCHECK;

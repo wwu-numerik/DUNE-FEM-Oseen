@@ -1,13 +1,14 @@
 #ifndef DUNE_OSEEN_ELEMENTDATA_HH
 #define DUNE_OSEEN_ELEMENTDATA_HH
 
-#include <dune/stuff/filesystem.hh>
+#include <dune/stuff/common/filesystem.hh>
+#include <dune/stuff/aliases.hh>
 
 #include<dune/geometry/genericgeometry/referenceelements.hh>
 #include<dune/grid/common/mcmgmapper.hh>
 #include<dune/grid/io/file/vtk/vtkwriter.hh>
 #if HAVE_GRAPE
-#include<dune/grid/io/visual/grapedatadisplay.hh>
+#include <dune/grid/io/visual/grapedatadisplay.hh>
 #endif
 
 //! Parameter for mapper class
@@ -52,12 +53,12 @@ void elementdata (const G& grid, const F& f)
   // Dune::LeafP0Function<G,double> cc(grid,c);
   Dune::VTKWriter<typename G::LeafGridView> vtkwriter(gridView); /*@\label{edh:vtk0}@*/
   vtkwriter.addCellData(c,"data");
-  Stuff::testCreateDirectory( f.filename() );
-  vtkwriter.write( f.filename().c_str(), Parameters().getParam( "binary_vtk", true ) ? Dune::VTK::base64 : Dune::VTK::ascii );
+  DSC::testCreateDirectory( f.filename() );
+  vtkwriter.write( f.filename().c_str(), DSC_CONFIG_GET( "binary_vtk", true ) ? Dune::VTK::base64 : Dune::VTK::ascii );
 
   // online visualization with Grape
 #if HAVE_GRAPE                                         /*@\label{edh:grape0}@*/
-  if ( Parameters().getParam("use_grape",false) )
+  if ( DSC_CONFIG_GET("use_grape",false) )
   {
     const int polynomialOrder = 0; // we piecewise constant data
     const int dimRange = 1; // we have scalar data here

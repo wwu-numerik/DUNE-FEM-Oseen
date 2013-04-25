@@ -7,11 +7,11 @@
 #include <dune/fem/operator/matrix/spmatrix.hh>
 #include <dune/fem/oseen/solver/cghelper.hh>
 
-#include <dune/stuff/parametercontainer.hh>
-#include <dune/stuff/printing.hh>
-#include <dune/stuff/misc.hh>
-#include <dune/stuff/matrix.hh>
-#include <dune/stuff/logging.hh>
+#include <dune/stuff/common/parameter/configcontainer.hh>
+#include <dune/stuff/common/print.hh>
+#include <dune/stuff/common/misc.hh>
+#include <dune/stuff/common/matrix.hh>
+#include <dune/stuff/common/logging.hh>
 
 #include <cmath>
 #include <boost/utility.hpp>

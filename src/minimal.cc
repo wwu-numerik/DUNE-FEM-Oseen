@@ -21,14 +21,14 @@ int main( int argc, char** argv ) {
         return 1;
     }
 	const bool useLogger = true;
-    Logger().Create( Parameters().getParam( "loglevel",         62,                         useLogger ),
-                     Parameters().getParam( "logfile",          std::string("dune_stokes"), useLogger ),
-					 Parameters().getParam( "fem.io.datadir",   std::string("data"),        useLogger ),
-					 Parameters().getParam( "fem.io.logdir",    std::string("logs"),        useLogger )
+    Logger().Create( DSC_CONFIG_GET( "loglevel",         62,                         useLogger ),
+                     DSC_CONFIG_GET( "logfile",          std::string("dune_stokes"), useLogger ),
+					 DSC_CONFIG_GET( "fem.io.datadir",   std::string("data"),        useLogger ),
+					 DSC_CONFIG_GET( "fem.io.logdir",    std::string("logs"),        useLogger )
                     );
 
 	std::vector<double> dummies = Parameters().getList( "list", 0.9 );
-	Stuff::MinMaxAvg<double> nums ( dummies );
+	DSC::MinMaxAvg<double> nums ( dummies );
 	nums.output( std::cout );
 	nums( 	4.0 );
 	nums.output( std::cout );

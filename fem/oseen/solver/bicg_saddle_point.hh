@@ -3,7 +3,7 @@
 
 #include <dune/fem/oseen/solver/solver_interface.hh>
 #include <dune/fem/oseen/solver/schurkomplement.hh>
-#include <dune/stuff/customprojection.hh>
+#include <dune/stuff/fem/customprojection.hh>
 
 namespace Dune {
 
@@ -68,25 +68,25 @@ namespace Dune {
 					const DiscretePressureFunctionType& rhs3 ) const
 		{
 			const std::string cg_name( "OuterCG");
-			Stuff::Logging::LogStream& logDebug = Logger().Dbg();
-			Stuff::Logging::LogStream& logInfo = Logger().Info();
+			auto logDebug = DSC_LOG_DEBUG;
+			auto logInfo = DSC_LOG_INFO;
 
 			// relative min. error at which cg-solvers will abort
-			const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
+			const double relLimit = DSC_CONFIG_GET( "relLimit", 1e-4 );
 			// aboslute min. error at which cg-solvers will abort
-			double outer_absLimit = Parameters().getParam( "absLimit", 1e-8 );
-			const double inner_absLimit = Parameters().getParam( "inner_absLimit", 1e-8 );
-			const int solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
-			const int maxIter = Parameters().getParam( "maxIter", 500 );
+			double outer_absLimit = DSC_CONFIG_GET( "absLimit", 1e-8 );
+			const double inner_absLimit = DSC_CONFIG_GET( "inner_absLimit", 1e-8 );
+			const int solverVerbosity = DSC_CONFIG_GET( "solverVerbosity", 0 );
+			const int maxIter = DSC_CONFIG_GET( "maxIter", 500 );
 
 	#ifdef USE_BFG_CG_SCHEME
-			const double tau = Parameters().getParam( "bfg-tau", 0.1 );
-			const bool do_bfg = Parameters().getParam( "do-bfg", true );
+			const double tau = DSC_CONFIG_GET( "bfg-tau", 0.1 );
+			const bool do_bfg = DSC_CONFIG_GET( "do-bfg", true );
 	#endif
-			logInfo.Resume();
+			logInfo.resume();
 			logInfo << cg_name << ": Begin BICG SaddlePointInverseOperator " << std::endl;
 
-			logDebug.Resume();
+			logDebug.resume();
 			//get some refs for more readability
 			PressureDiscreteFunctionType& pressure = dest.discretePressure();
 			VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
@@ -148,18 +148,18 @@ namespace Dune {
 			schur_f += tmp2;
 			schur_f *= -1;
 			if ( solverVerbosity > 3 )
-				Stuff::printFunctionMinMax( logDebug, schur_f );
+				DSC::printFunctionMinMax( logDebug, schur_f );
 
 			SOLVER_NAMESPACE::NewBicgStab< PressureDiscreteFunctionType,Sk_Operator >
 					bicg( sk_op, relLimit, outer_absLimit, maxIter, solverVerbosity );
 			pressure.clear();
 			bicg.apply( schur_f, pressure );
 			//pressure mw correction
-			double meanPressure_discrete = Stuff::meanValue( pressure, pressure.space() );
+			double meanPressure_discrete = DSC::meanValue( pressure, pressure.space() );
 			typedef typename OseenPassType::Traits::DiscreteModelType::Traits::PressureFunctionSpaceType
 					PressureFunctionSpaceType;
 			PressureFunctionSpaceType pressureFunctionSpace;
-			Stuff::ConstantFunction<PressureFunctionSpaceType> vol(pressureFunctionSpace, meanPressure_discrete );
+			DSC::ConstantFunction<PressureFunctionSpaceType> vol(pressureFunctionSpace, meanPressure_discrete );
 			Dune::BetterL2Projection
 				::project( 0.0, vol, tmp2 );
 			pressure -= tmp2;

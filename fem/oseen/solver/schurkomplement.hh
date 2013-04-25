@@ -3,11 +3,11 @@
 
 #include "solver_defines.hh"
 
-#include <dune/stuff/matrix.hh>
-#include <dune/stuff/preconditioning.hh>
-#include <dune/stuff/logging.hh>
-#include <dune/stuff/functions.hh>
-#include <dune/stuff/parametercontainer.hh>
+#include <dune/stuff/common/matrix.hh>
+//#include <dune/stuff/common/preconditioning.hh>
+#include <dune/stuff/common/logging.hh>
+#include <dune/stuff/fem/functions/analytical.hh>
+#include <dune/stuff/common/parameter/configcontainer.hh>
 
 #if HAVE_DUNE_ISTL
 #   include <dune/istl/operators.hh>
@@ -162,7 +162,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
         friend class PreconditionOperatorDefault< ThisType >;
 
 
-		typedef Stuff::OperatorBasedPreconditioner< PreconditionOperator,
+		typedef DSC::OperatorBasedPreconditioner< PreconditionOperator,
 													SOLVER_NAMESPACE::OUTER_CG_SOLVERTYPE,
 													DiscretePressureFunctionType>
 			PreconditionMatrix;
@@ -188,7 +188,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 			m_inv_mat_(m_inv_mat),
 			tmp1 ( "schurkomplementoperator_tmp1", velocity_space ),
 			tmp2 ( "schurkomplementoperator_tmp2", velocity_space ),
-            do_bfg( Parameters().getParam( "do-bfg", true ) ),
+            do_bfg( DSC_CONFIG_GET( "do-bfg", true ) ),
             total_inner_iterations( 0 ),
 			pressure_space_(pressure_space),
             precond_operator_( a_solver, *this, pressure_space, velocity_space),
@@ -202,8 +202,8 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 	{
 	    DiscretePressureFunctionType V( "ddot_V2", pressure_space_, v );
 	    DiscretePressureFunctionType W( "ddot_W1", pressure_space_, w );
-	    assert( !Stuff::FunctionContainsNanOrInf( V ) );
-	    assert( !Stuff::FunctionContainsNanOrInf( W ) );
+	    assert( !DSFe::FunctionContainsNanOrInf( V ) );
+	    assert( !DSFe::FunctionContainsNanOrInf( W ) );
 	    const double ret = V.scalarProductDofs( W );
 	    assert( std::isfinite( ret ) );
 	    return ret;
@@ -215,10 +215,10 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 			z_mat_.multOEM( x, tmp1.leakPointer() );
 
 			tmp2.clear();//don't remove w/o result testing
-			assert( !Stuff::FunctionContainsNanOrInf( tmp1 ) );
+			assert( !DSFe::FunctionContainsNanOrInf( tmp1 ) );
 #ifdef USE_BFG_CG_SCHEME
-			Stuff::Logging::LogStream& info = Logger().Info();
-			const int solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
+			auto info = DSC_LOG_INFO;
+			const int solverVerbosity = DSC_CONFIG_GET( "solverVerbosity", 0 );
             ReturnValueType cg_info;
             a_solver_.apply( tmp1, tmp2, cg_info );
             if ( solverVerbosity > 1 )
@@ -228,12 +228,12 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 #else
 			a_solver_.apply( tmp1, tmp2 );
 #endif
-			assert( !Stuff::FunctionContainsNanOrInf( tmp2 ) );
+			assert( !DSFe::FunctionContainsNanOrInf( tmp2 ) );
 			tmp2 *= -1;
 			e_mat_.multOEM( tmp2.leakPointer(), ret );
-			assert( !Stuff::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
+			assert( !DSFe::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
 			r_mat_.multOEMAdd( x, ret );
-			assert( !Stuff::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
+			assert( !DSFe::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
 //			ret[0] = x[0];
         }
 #if STOKES_USE_ISTL
@@ -245,16 +245,16 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
         z_mat_.apply( x, tmp1.blockVector() );
 
         tmp2.clear();//don't remove w/o result testing
-        assert( !Stuff::FunctionContainsNanOrInf( tmp1 ) );
+        assert( !DSFe::FunctionContainsNanOrInf( tmp1 ) );
 
         a_solver_.apply( tmp1, tmp2 );
 
-        assert( !Stuff::FunctionContainsNanOrInf( tmp2 ) );
+        assert( !DSFe::FunctionContainsNanOrInf( tmp2 ) );
         tmp2 *= -1;
         e_mat_.apply( tmp2.blockVector(), ret );
-        assert( !Stuff::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
+        assert( !DSFe::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
         r_mat_.multOEMAdd( x, ret );
-        assert( !Stuff::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
+        assert( !DSFe::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
 //			ret[0] = x[0];
     }
 	template <class ArgDofStorageType, class DestDofStorageType, class ArgRangeFieldType, class DestRangeFieldType>
@@ -277,11 +277,11 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 
 	void apply( const DiscretePressureFunctionType& arg, DiscretePressureFunctionType& ret ) const
 	{
-	    assert( !Stuff::FunctionContainsNanOrInf( arg ) );
+	    assert( !DSFe::FunctionContainsNanOrInf( arg ) );
 	    typedef typename DiscretePressureFunctionType::DofStorageType D;
 	    typedef typename DiscretePressureFunctionType::RangeFieldType R;
         multOEM( arg.leakPointer(), ret.leakPointer() );
-	    assert( !Stuff::FunctionContainsNanOrInf( ret ) );
+	    assert( !DSFe::FunctionContainsNanOrInf( ret ) );
 	}
 
 #ifdef USE_BFG_CG_SCHEME
@@ -289,17 +289,17 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
         void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& info ) const
         {
             if ( do_bfg ) {
-                static const double tau = Parameters().getParam( "bfg-tau", 0.1 );
+                static const double tau = DSC_CONFIG_GET( "bfg-tau", 0.1 );
                 double limit = info.second.first;
                 const double residuum = fabs(info.second.second);
                 const int n = info.first;
 
                 if ( n == 0 )
-                    limit = Parameters().getParam( "absLimit", 10e-12 );
+                    limit = DSC_CONFIG_GET( "absLimit", 10e-12 );
                 limit = tau * std::min( 1. , limit / std::min ( std::pow( residuum, n ) , 1.0 ) );
 
                 a_solver_.setAbsoluteLimit( limit );
-                Logger().Info() << "\t\t\t Set inner error limit to: "<< limit << std::endl;
+                DSC_LOG_INFO << "\t\t\t Set inner error limit to: "<< limit << std::endl;
             }
             multOEM( x, ret );
         }
@@ -314,7 +314,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 
     bool hasPreconditionMatrix () const
     {
-        return Parameters().getParam( "outerPrecond", false );
+        return DSC_CONFIG_GET( "outerPrecond", false );
     }
 
     bool rightPrecondition() const { return false; }

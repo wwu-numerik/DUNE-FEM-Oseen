@@ -98,22 +98,22 @@ namespace Dune {
 		  //get some refs for more readability
 		  PressureDiscreteFunctionType& pressure = dest.discretePressure();
 		  VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
-		  Stuff::Logging::LogStream& logDebug = Logger().Dbg();
-//		  Logging::LogStream& logError = Logger().Err();
-		  Stuff::Logging::LogStream& logInfo = Logger().Info();
+		  auto logDebug = DSC_LOG_DEBUG;
+//		  Logging::LogStream& logError = DSC_LOG_ERROR;
+		  auto logInfo = DSC_LOG_INFO;
 
 		  // relative min. error at which cg-solvers will abort
-		  const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
+		  const double relLimit = DSC_CONFIG_GET( "relLimit", 1e-4 );
 		  // aboslute min. error at which cg-solvers will abort
-		  const double absLimit = Parameters().getParam( "absLimit", 1e-3 );
-		  const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
+		  const double absLimit = DSC_CONFIG_GET( "absLimit", 1e-3 );
+		  const bool solverVerbosity = DSC_CONFIG_GET( "solverVerbosity", 0 );
 
 		  DiscretePressureFunctionType schur_f ( "schur_f", rhs3.space() );
 		  DiscreteVelocityFunctionType f_func( "f_func", velocity.space() );
 		  {
 			  logInfo << "Begin NestedCgSaddlepointInverseOperator\n "
 					  << " \n\tbegin calc schur_f,f_func " << std::endl;
-			  logDebug.Resume();
+			  logDebug.resume();
 
 			  DiscreteSigmaFunctionType m_tmp ( "m_tom", rhs1.space() );
 			  DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
@@ -127,7 +127,7 @@ namespace Dune {
 
 			  // schur_f := -1 * ( ( E * A^-1 * f_func ) - rhs3 )
 			  InnerCGSolverWrapperType innerCGSolverWrapper(w_mat,m_inv_mat,x_mat,y_mat,o_mat,rhs1.space(),f_func.space(),relLimit,absLimit,solverVerbosity);
-			  assert( !Stuff::FunctionContainsNanOrInf( f_func ) );
+			  assert( !DSFe::FunctionContainsNanOrInf( f_func ) );
 	  #ifdef USE_BFG_CG_SCHEME
 			  InnerCGSolverWrapperReturnType a_ret;
 			  innerCGSolverWrapper.apply( f_func, tmp_f, a_ret );

@@ -2,7 +2,7 @@
 #define DUNE_OSEEN_INTEGRATORS_X_HH
 
 #include <dune/fem/oseen/assembler/base.hh>
-#include <dune/stuff/matrix.hh>
+#include <dune/stuff/common/matrix.hh>
 
 namespace Dune {
 namespace Oseen {
@@ -27,7 +27,7 @@ namespace Assembler {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-		typedef Stuff::Matrix::LocalMatrixProxy<MatrixPointerType>
+		typedef DSFe::LocalMatrixProxy<MatrixPointerType>
 			LocalMatrixProxyType;
 
 		MatrixPointerType& matrix_pointer_;
@@ -97,7 +97,7 @@ namespace Assembler {
 						tau_j.mv( outerNormal, tau_j_times_normal );
 
 						SigmaRangeType tau_j_times_normal_dyadic_C12
-								= Stuff::dyadicProduct<SigmaRangeType,VelocityRangeType>( tau_j_times_normal, c_12 );
+								= DSC::dyadicProduct<SigmaRangeType,VelocityRangeType>( tau_j_times_normal, c_12 );
 						SigmaRangeType flux_value = tau_j;
 						flux_value *= 0.5;
 						flux_value -= tau_j_times_normal_dyadic_C12;
@@ -117,7 +117,7 @@ namespace Assembler {
 						info.sigma_basefunction_set_element.evaluate( j, xOutside, tau_j );
 						tau_j.mv( outerNormal, tau_j_times_normal );
 						tau_j_times_normal_dyadic_C12
-							= Stuff::dyadicProduct<SigmaRangeType,VelocityRangeType>( tau_j_times_normal, c_12 );
+							= DSC::dyadicProduct<SigmaRangeType,VelocityRangeType>( tau_j_times_normal, c_12 );
 						flux_value = tau_j;
 						flux_value *= 0.5;
 						flux_value -= tau_j_times_normal_dyadic_C12;

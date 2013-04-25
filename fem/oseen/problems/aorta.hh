@@ -2,8 +2,8 @@
 #define PROBLEM_AORTA_HH
 
 #include <dune/fem/function/common/function.hh>
-#include <dune/stuff/misc.hh>
-#include <dune/stuff/grid.hh>
+#include <dune/stuff/common/misc.hh>
+#include <dune/stuff/grid/entity.hh>
 #include "common.hh"
 
 ALLGOOD_SETUPCHECK;
@@ -77,7 +77,7 @@ class DirichletData : public Dune::Fem::Function < FunctionSpaceImp, DirichletDa
 				LocalVectorType center = intersection.geometryInInside().local( intersection.geometryInInside().center() );
 				RangeType normal = intersection.unitOuterNormal( center );
 				ret = normal;
-				double factor = Parameters().getParam( "gd_factor", 1.0 );
+				double factor = DSC_CONFIG_GET( "gd_factor", 1.0 );
 					switch ( id ) {
 						case 1: {
 							factor = 0;

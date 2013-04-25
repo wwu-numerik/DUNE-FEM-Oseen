@@ -12,7 +12,6 @@
 //- Dune includes
 #include <dune/common/typetraits.hh>
 #include <dune/fem/operator/common/operator.hh>
-#include <dune/stuff/debug.hh>
 
 //- local includes
 #include "preconditioning.hh"

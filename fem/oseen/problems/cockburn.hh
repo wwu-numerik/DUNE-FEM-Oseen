@@ -2,8 +2,11 @@
 #define STOKES_PROBLEMS_COCKBURN_HH
 
 #include <dune/fem/function/common/function.hh>
-#include <dune/stuff/misc.hh>
-#include <dune/stuff/parametercontainer.hh>
+#include <dune/stuff/common/misc.hh>
+#include <dune/stuff/common/math.hh>
+#include <dune/stuff/grid/information.hh>
+#include <dune/stuff/common/parameter/configcontainer.hh>
+#include <dune/common/float_cmp.hh>
 #include "common.hh"
 
 static const std::string identifier = "Simple";
@@ -13,11 +16,11 @@ struct SetupCheck {
     std::string err;
     template < class GridPart , class ...Rest >
     bool operator()( const GridPart& gridPart, const Rest&... /*rest*/ ) {
-        Stuff::GridDimensions< typename GridPart::GridType > grid_dim( gridPart.grid() );
-        bool ok =  Stuff::aboutEqual( grid_dim.coord_limits[0].min(), -1. )
-                && Stuff::aboutEqual( grid_dim.coord_limits[1].min(), -1. )
-                && Stuff::aboutEqual( grid_dim.coord_limits[0].max(), 1. )
-                && Stuff::aboutEqual( grid_dim.coord_limits[1].max(), 1. );
+        DSG::Dimensions< typename GridPart::GridType > grid_dim( gridPart.grid() );
+        bool ok =  Dune::FloatCmp::eq( grid_dim.coord_limits[0].min(), -1. )
+                && Dune::FloatCmp::eq( grid_dim.coord_limits[1].min(), -1. )
+                && Dune::FloatCmp::eq( grid_dim.coord_limits[0].max(), 1. )
+                && Dune::FloatCmp::eq( grid_dim.coord_limits[1].max(), 1. );
         err = ( boost::format( "\n******\nSetupCheck Failed!\ngrid dimension %f,%f - %f,%f\n" )
                 % grid_dim.coord_limits[0].min()
                 % grid_dim.coord_limits[1].min()
@@ -25,8 +28,8 @@ struct SetupCheck {
                 % grid_dim.coord_limits[1].max() ).str();
         if (!ok)
             return false;
-        const double v = Parameters().getParam( "viscosity", -10.0 );
-        ok = Stuff::aboutEqual( v, 1.0 );
+        const double v = DSC_CONFIG_GET( "viscosity", -10.0 );
+        ok = DSC::aboutEqual( v, 1.0 );
         err = ( boost::format( "viscosity %f\n" ) % v ).str();
         return ok;
     }

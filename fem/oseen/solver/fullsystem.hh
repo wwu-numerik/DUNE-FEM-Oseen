@@ -39,7 +39,7 @@ namespace Dune {
 				b_mat_(b_mat),
 				tmp_velocity ( "tmp1", velocity_space ),
 				tmp_pressure ( "tmp2", pressure_space ),
-				do_bfg( Parameters().getParam( "do-bfg", true ) ),
+				do_bfg( DSC_CONFIG_GET( "do-bfg", true ) ),
 				total_inner_iterations( 0 ),
 				pressure_space_(pressure_space),
 				velocity_space_(velocity_space),
@@ -184,24 +184,24 @@ class DirectKrylovSolver
 				const DiscretePressureFunctionType& rhs3 ) const
 	{
 
-		Stuff::Logging::LogStream& logDebug = Logger().Dbg();
-		Stuff::Logging::LogStream& logInfo = Logger().Info();
+		auto logDebug = DSC_LOG_DEBUG;
+		auto logInfo = DSC_LOG_INFO;
 
-		if ( Parameters().getParam( "disableSolver", false ) ) {
-			logInfo.Resume();
+		if ( DSC_CONFIG_GET( "disableSolver", false ) ) {
+			logInfo.resume();
 			logInfo << "solving disabled via parameter file" << std::endl;
 			return SaddlepointInverseOperatorInfo();
 		}
 
 		// relative min. error at which cg-solvers will abort
-		const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
+		const double relLimit = DSC_CONFIG_GET( "relLimit", 1e-4 );
 		// aboslute min. error at which cg-solvers will abort
-		const double absLimit = Parameters().getParam( "absLimit", 1e-3 );
-		const bool solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
+		const double absLimit = DSC_CONFIG_GET( "absLimit", 1e-3 );
+		const bool solverVerbosity = DSC_CONFIG_GET( "solverVerbosity", 0 );
 
 		logInfo << "Begin DirectKrylovSolver " << std::endl;
 
-		logDebug.Resume();
+		logDebug.resume();
 		//get some refs for more readability
 		PressureDiscreteFunctionType& pressure = dest.discretePressure();
 		VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
@@ -220,7 +220,7 @@ class DirectKrylovSolver
 		DiscretePressureFunctionType g_func = rhs3;
 		g_func *= ( -1 ); //since G = -H_3
 
-		//Stuff::DiagonalMult( m_inv_mat, rhs1 ); //calc m_inv * H_1 "in-place"
+		//DSC::DiagonalMult( m_inv_mat, rhs1 ); //calc m_inv * H_1 "in-place"
 		DiscreteSigmaFunctionType m_tmp ( "m_tom", rhs1.space() );
 		DiscreteVelocityFunctionType f_func( "f_func", velocity.space() );
 		f_func.clear();

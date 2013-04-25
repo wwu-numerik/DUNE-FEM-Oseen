@@ -2,10 +2,10 @@
 #define BOUNDARYINFO_HH_INCLUDED
 
 #include <dune/common/misc.hh>
-#include <dune/stuff/printing.hh>
-#include <dune/stuff/misc.hh>
-#include <dune/stuff/logging.hh>
-#include <dune/stuff/math.hh>
+#include <dune/stuff/common/print.hh>
+#include <dune/stuff/common/misc.hh>
+#include <dune/stuff/common/logging.hh>
+#include <dune/stuff/common/math.hh>
 #include <map>
 #include <set>
 #include <utility>
@@ -80,17 +80,17 @@ class BoundaryInfo
 				}
             }
             assert( boundaryCoordList_.size() > 0 );
-            Logger().Info() << "num BIDs: " << boundaryCoordList_.size() << '\n';
+            DSC_LOG_INFO << "num BIDs: " << boundaryCoordList_.size() << '\n';
             for (   typename BoundaryCoordListType::const_iterator b_it = boundaryCoordList_.begin();
                     b_it != boundaryCoordList_.end();
                     ++b_it ) {
                 CoordDistanceMapType c_dists;
                 const typename BoundaryCoordListType::key_type current_boundary_id = b_it->first;
-                Logger().Info() << "num points for BID: " << current_boundary_id << " : " << b_it->second.size() << '\n';
+                DSC_LOG_INFO << "num points for BID: " << current_boundary_id << " : " << b_it->second.size() << '\n';
                 for (   typename CoordListType::const_iterator it = b_it->second.begin();
                         it != b_it->second.end();
                         ++it ) {
-                    int idx_in_globallist = Stuff::getIdx( globalPointList_, GlobalListElementType( *it, current_boundary_id ) );
+                    int idx_in_globallist = DSC::getIdx( globalPointList_, GlobalListElementType( *it, current_boundary_id ) );
                     c_dists[idx_in_globallist] = getDisctances( b_it->second, *it );
                 }
                 assert( c_dists.size() > 0 );
@@ -108,10 +108,10 @@ class BoundaryInfo
                 }
                 assert( m.size() > 0 );
                 const CoordType& center = m.begin()->second;
-                int center_idx_in_globallist = Stuff::getIdx( globalPointList_, GlobalListElementType( center, current_boundary_id ) );
+                int center_idx_in_globallist = DSC::getIdx( globalPointList_, GlobalListElementType( center, current_boundary_id ) );
                 assert( center_idx_in_globallist != -1 );
-				Stuff::Logging::LogStream& ss = Logger().Info();
-                Stuff::printFieldVector( center,   std::string("center for id: ") + Stuff::toString( current_boundary_id ), ss, "BID --- " );
+                auto& ss = DSC_LOG_INFO;
+                DSC::printFieldVector( center,   std::string("center for id: ") + DSC::toString( current_boundary_id ), ss, "BID --- " );
                 const DistancesMapType& distances_from_center = c_dists[center_idx_in_globallist];
                 if( distances_from_center.size() > 1 ) {
                     const CoordType& out1 = distances_from_center.begin()->second;
@@ -120,11 +120,11 @@ class BoundaryInfo
                     const CoordType& out2 = d_r_it->second;
                     centerCoordMap_[ current_boundary_id ] = center;
                     outerCoordMap_[ current_boundary_id ] = EgdeType( out1, out2 );
-                    Stuff::printFieldVector( out1,     std::string("out1   for id: ") + Stuff::toString( current_boundary_id ), ss, "BID --- " );
-                    Stuff::printFieldVector( out2,     std::string("out2   for id: ") + Stuff::toString( current_boundary_id ), ss, "BID --- " );
+                    DSC::printFieldVector( out1,     std::string("out1   for id: ") + DSC::toString( current_boundary_id ), ss, "BID --- " );
+                    DSC::printFieldVector( out2,     std::string("out2   for id: ") + DSC::toString( current_boundary_id ), ss, "BID --- " );
                 }
                 else
-                    Logger().Info() << "no dists for BID: "<< current_boundary_id << std::endl;
+                    DSC_LOG_INFO << "no dists for BID: "<< current_boundary_id << std::endl;
             }
 
         }
@@ -162,7 +162,7 @@ class BoundaryInfo
                     continue;
                 typename DistancesMapType::key_type dist = ( *it - origin ).two_norm();
                 assert( dist > 0 );
-                long sign = Stuff::sign( long(origin * *it) );
+                long sign = DSC::sign( long(origin * *it) );
                 if ( sign == 0 )
                     sign = origin.two_norm() > it->two_norm() ? 1 : -1;
                 ret[sign*dist] = *it;

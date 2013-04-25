@@ -145,8 +145,8 @@ class GeometryFunctor : public FunctorBase {
 template<class Grid>
 void dowork ( Grid& grid, int refSteps, Dune::MPIHelper& mpiHelper )
 {
-	std::string outputDir = Parameters().getParam( "visualisationOutputDir",
-					Parameters().getParam("fem.io.datadir", std::string("data") ) + std::string("/visualisation") );
+	std::string outputDir = DSC_CONFIG_GET( "visualisationOutputDir",
+					DSC_CONFIG_GET("fem.io.datadir", std::string("data") ) + std::string("/visualisation") );
 	// make function objects
 	BoundaryFunctor boundaryFunctor( outputDir + std::string("/boundaryFunctor") );
 	AreaMarker areaMarker( outputDir + std::string("/areaMarker") );
@@ -156,40 +156,40 @@ void dowork ( Grid& grid, int refSteps, Dune::MPIHelper& mpiHelper )
 
 //	 call the visualization functions
 //	elementdata( grid, areaMarker );
-	for ( int i = 0; i < Parameters().getParam( "minref", 0 ); ++i )
+	for ( int i = 0; i < DSC_CONFIG_GET( "minref", 0 ); ++i )
 	    grid.globalRefine( 1 );
 	elementdata( grid, boundaryFunctor );
 
 //	elementdata( grid, geometryFunctor );
 //	elementdata( grid, processIdFunctor );
-	std::ofstream file( Stuff::getFileinDatadir( "grids.tex" ).c_str() );
+	std::ofstream file( DSC::getFileinDatadir( "grids.tex" ).c_str() );
 //	file << "\\documentclass{article}\n"
 //			"\\usepackage{tikz}\n"
 //			"\\usetikzlibrary{calc,intersections}\n"
 //			"\\pagestyle{empty}\n"
 //			"\\begin{document}\n";
 
-//	for ( int i = 0; i < Parameters().getParam( "maxref", 0 ); ++i )
+//	for ( int i = 0; i < DSC_CONFIG_GET( "maxref", 0 ); ++i )
 //	{
 //		grid.globalRefine( 1 );
-//		Stuff::Tex::PgfGrid<Grid> pgfGrid( grid );
+//		DSC::Tex::PgfGrid<Grid> pgfGrid( grid );
 //		pgfGrid.output( (boost::format("grid_level%d.tex") % i).str() );
 //		file << boost::format("\\begin{tikzpicture}\n\\input{grid_level%d}\n\\end{tikzpicture}\n") % i ;
 //	}
 //	file << "\\end{document}\n";
-    Stuff::Tex::RefineSeriesPgfGrid<Grid> pgfGrid( grid );
-    pgfGrid.output( "series.tex", Parameters().getParam( "maxref", 3 ), !Parameters().getParam( "standalone_tex", true ) );
-    Stuff::Tex::StackedPgfGrid<Grid> pgfGrid2( grid );
-    pgfGrid2.output( "stacked.tex", Parameters().getParam( "maxref", 3 ), !Parameters().getParam( "standalone_tex", true ) );
+    DSC::Tex::RefineSeriesPgfGrid<Grid> pgfGrid( grid );
+    pgfGrid.output( "series.tex", DSC_CONFIG_GET( "maxref", 3 ), !DSC_CONFIG_GET( "standalone_tex", true ) );
+    DSC::Tex::StackedPgfGrid<Grid> pgfGrid2( grid );
+    pgfGrid2.output( "stacked.tex", DSC_CONFIG_GET( "maxref", 3 ), !DSC_CONFIG_GET( "standalone_tex", true ) );
 //	{
 //	VolumeFunctor volumeFunctor( outputDir + std::string("/volumeFunctor") );
-//	std::cout << Stuff::GridDimensions<Grid>( grid );
+//	std::cout << DSC::GridDimensions<Grid>( grid );
 //	elementdata( grid, volumeFunctor );
 //	}
-//	Stuff::EnforceMaximumEntityVolume( grid, 1.2 );
+//	DSC::EnforceMaximumEntityVolume( grid, 1.2 );
 //	{
 //	VolumeFunctor volumeFunctor( outputDir + std::string("/volumeFunctorNew") );
-//	std::cout << Stuff::GridDimensions<Grid>( grid );
+//	std::cout << DSC::GridDimensions<Grid>( grid );
 //	elementdata( grid, volumeFunctor );
 //	}
 
@@ -219,15 +219,15 @@ int main( int argc, char **argv )
 		}
 
 		const bool useLogger = false;
-		Logger().Create( Parameters().getParam( "loglevel",         62,								useLogger ),
-						 Parameters().getParam( "logfile",          std::string( "dune_stokes" ),	useLogger ),
-						 Parameters().getParam( "fem.io.datadir",   std::string("data"),			useLogger ),
-						 Parameters().getParam( "fem.io.logdir",    std::string(),					useLogger )
+		Logger().Create( DSC_CONFIG_GET( "loglevel",         62,								useLogger ),
+						 DSC_CONFIG_GET( "logfile",          std::string( "dune_stokes" ),	useLogger ),
+						 DSC_CONFIG_GET( "fem.io.datadir",   std::string("data"),			useLogger ),
+						 DSC_CONFIG_GET( "fem.io.logdir",    std::string(),					useLogger )
 					   );
 
         Dune::GridPtr<GridType> gridptr ( Parameters().DgfFilename( GridType::dimensionworld ) );
 		gridptr->loadBalance();
-		int refineLevel = Parameters().getParam( "minref", 0 );
+		int refineLevel = DSC_CONFIG_GET( "minref", 0 );
 		dowork( *gridptr, refineLevel, Dune::MPIManager::helper() );
 
 	}

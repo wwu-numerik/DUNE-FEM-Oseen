@@ -11,7 +11,7 @@
 
 #include <dune/common/fvector.hh>
 #include <dune/fem/function/common/function.hh>
-#include <dune/stuff/logging.hh>
+#include <dune/stuff/common/logging.hh>
 
 /**
  *  \brief  containing typedefs needed by Pressure
@@ -208,8 +208,8 @@ class Pressure : public Dune::Fem::Function < typename PressureTraitsImp::Functi
 //void Pressure< PressureTraitsImp >::testMe() const
 //{
 //    // some logstreams
-//    Logging::LogStream& infoStream = Logger().Info();
-//    Logging::LogStream& debugStream = Logger().Dbg();
+//    Logging::LogStream& infoStream = DSC_LOG_INFO;
+//    Logging::LogStream& debugStream = DSC_LOG_DEBUG;
 //    infoStream << "- testing class Pressure..." << std::endl;
 //    //tests
 //    DomainType x;

@@ -1,10 +1,10 @@
 #ifndef DUNE_OSEEN_INTEGRATORS_BASE_HH
 #define DUNE_OSEEN_INTEGRATORS_BASE_HH
 
-#include <dune/stuff/grid.hh>
-#include <dune/stuff/misc.hh>
-#include <dune/stuff/profiler.hh>
-#include <dune/stuff/localmatrix_proxy.hh>
+#include <dune/stuff/grid/entity.hh>
+#include <dune/stuff/common/misc.hh>
+#include <dune/stuff/common/profiler.hh>
+#include <dune/stuff/fem/localmatrix_proxy.hh>
 #include <dune/fem/oseen/stab_coeff.hh>
 
 #include <boost/integer/static_min_max.hpp>
@@ -214,7 +214,7 @@ namespace Assembler {
 				  numPressureBaseFunctionsElement( pressure_basefunction_set_element.numBaseFunctions() ),
                   volumeQuadratureElement( entity, PolOrder<Traits>::value ),
 				  discrete_model( discrete_modelIn ),
-				  eps( Parameters().getParam( "eps", 1.0e-14 ) ),
+				  eps( DSC_CONFIG_GET( "eps", 1.0e-14 ) ),
 				  viscosity( discrete_modelIn.viscosity() ),
 				  convection_scaling( discrete_modelIn.convection_scaling() ),
 				  pressure_gradient_scaling( discrete_modelIn.pressure_gradient_scaling() ),
@@ -245,7 +245,7 @@ namespace Assembler {
 																  intersection,
                                                                   PolOrder<Traits>::value,
 																  Traits::FaceQuadratureType::INSIDE ),
-				  lengthOfIntersection( Stuff::getLenghtOfIntersection( intersection ) ),
+				  lengthOfIntersection( DSC::getLenghtOfIntersection( intersection ) ),
 				  stabil_coeff( discrete_modelIn.getStabilizationCoefficients() ),
 				  C_11( penalty<-1>(ent,intersection, stabil_coeff, lengthOfIntersection ) ),
 				  D_11( penalty<1>(ent,intersection, stabil_coeff, lengthOfIntersection ) ),
@@ -269,7 +269,7 @@ namespace Assembler {
 							  const Dune::StabilizationCoefficients& stabil_coeff,
 							  const double lengthOfIntersection )
 		{
-			const int penalty_form = Parameters().getParam( "penalty_form", 1 );
+			const int penalty_form = DSC_CONFIG_GET( "penalty_form", 1 );
 			switch (penalty_form) {
 				case 1:
 				{
@@ -279,14 +279,14 @@ namespace Assembler {
 				}
 				case 2:
 				{
-					const double entity_diameter = std::pow( Stuff::geometryDiameter( entity ), double(power) );
-					const double neighbour_diameter = std::pow( Stuff::geometryDiameter( neighbour ), double(power) );
+                    const double entity_diameter = std::pow( DSG::geometryDiameter( entity ), double(power) );
+                    const double neighbour_diameter = std::pow( DSG::geometryDiameter( neighbour ), double(power) );
 					return std::max(entity_diameter, neighbour_diameter);
 				}
 				case 3:
 				{
-					const double entity_diameter = std::pow( Stuff::geometryDiameter( entity ), double(power) );
-					const double neighbour_diameter = std::pow( Stuff::geometryDiameter( neighbour ), double(power) );
+                    const double entity_diameter = std::pow( DSG::geometryDiameter( entity ), double(power) );
+                    const double neighbour_diameter = std::pow( DSG::geometryDiameter( neighbour ), double(power) );
 					return std::max(entity_diameter, neighbour_diameter) * ( power > 0 ? stabil_coeff.Factor("C11") : stabil_coeff.Factor("D11") );
 				}
 				default:
@@ -356,7 +356,7 @@ namespace Assembler {
 			template < class IntegratorType >
 			static void apply( IntegratorType& integrator, const InfoContainerVolume& info )
 			{
-				Stuff::Profiler::ScopedTiming s(integrator.name);
+				DSC::Profiler::ScopedTiming s(integrator.name);
 				integrator.applyVolume( info );
 			}
 		};
@@ -365,7 +365,7 @@ namespace Assembler {
 			template < class IntegratorType >
 			static void apply( IntegratorType& integrator, const InfoContainerInteriorFace& info )
 			{
-				Stuff::Profiler::ScopedTiming s(integrator.name);
+				DSC::Profiler::ScopedTiming s(integrator.name);
 				integrator.applyInteriorFace( info );
 			}
 		};
@@ -374,7 +374,7 @@ namespace Assembler {
 			template < class IntegratorType >
 			static void apply( IntegratorType& integrator, const InfoContainerFace& info )
 			{
-				Stuff::Profiler::ScopedTiming s(integrator.name);
+				DSC::Profiler::ScopedTiming s(integrator.name);
 				integrator.applyBoundaryFace( info );
 			}
 		};
@@ -393,7 +393,7 @@ namespace Assembler {
 
 		void apply ( IntegratorTuple& integrator_tuple ) const
 		{
-			Stuff::Profiler::ScopedTiming assembler_time("assembler");
+			DSC::Profiler::ScopedTiming assembler_time("assembler");
 			typedef typename Traits::GridPartType::GridType::LeafGridView
 				GridView;
 			typedef typename GridView::template Codim<0>::

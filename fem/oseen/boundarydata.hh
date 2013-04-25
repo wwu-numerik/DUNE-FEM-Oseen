@@ -2,9 +2,9 @@
 #define BOUNDARYDATA_HH
 
 #include <dune/fem/oseen/boundaryinfo.hh>
-#include <dune/stuff/parametercontainer.hh>
-#include <dune/stuff/misc.hh>
-#include <dune/stuff/grid.hh>
+#include <dune/stuff/common/parameter/configcontainer.hh>
+#include <dune/stuff/common/misc.hh>
+#include <dune/stuff/grid/entity.hh>
 
 template < template < class > class DiricheltDataImp >
 struct DefaultDirichletDataTraits {
@@ -44,22 +44,22 @@ class BoundaryIdMapping {
 	}
     protected:
 	void setupBoundaryIdTypeMap_() {
-		Logger().Info() << "\t- Using ids ";
+		DSC_LOG_INFO << "\t- Using ids ";
 		for( std::vector< int >::const_iterator it = zeroBoundaryIds_.begin(); it != zeroBoundaryIds_.end(); ++it ) {
 			boundaryIdTypeMap_[*it] = zeroBoundary;
-			Logger().Info() << *it << " ";
+			DSC_LOG_INFO << *it << " ";
 		}
-		Logger().Info() << " \t\tfor g_d = 0 \n\t        ids ";
+		DSC_LOG_INFO << " \t\tfor g_d = 0 \n\t        ids ";
 		for( std::vector< int >::const_iterator it = influxBoundaryIds_.begin(); it != influxBoundaryIds_.end(); ++it ) {
 			boundaryIdTypeMap_[*it] = influxBoundary;
-			Logger().Info() << *it << " ";
+			DSC_LOG_INFO << *it << " ";
 		}
-		Logger().Info() << " \tfor g_d = - n \n\t        ids ";
+		DSC_LOG_INFO << " \tfor g_d = - n \n\t        ids ";
 		for( std::vector< int >::const_iterator it = outfluxBoundaryIds_.begin(); it != outfluxBoundaryIds_.end(); ++it ) {
 			boundaryIdTypeMap_[*it] = outfluxBoundary;
-			Logger().Info() << *it << " ";
+			DSC_LOG_INFO << *it << " ";
 		}
-		Logger().Info() << " \tfor g_d = n " << std::endl;
+		DSC_LOG_INFO << " \tfor g_d = n " << std::endl;
 	}
 
 	std::vector< int > zeroBoundaryIds_;
@@ -99,9 +99,9 @@ class BoundaryFluxFunction : public Dune::Fem::Function < FunctionSpaceImp, Boun
 			typedef Dune::FieldVector< typename IntersectionIteratorType::ctype, IntersectionIteratorType::dimension - 1 >
 				LocalVectorType;
 
-			LocalVectorType center = Stuff::getBarycenterLocal( faceIter.intersectionSelfLocal() );
+			LocalVectorType center = DSC::getBarycenterLocal( faceIter.intersectionSelfLocal() );
 			RangeType normal = faceIter.unitOuterNormal( center );
-			static const double gd_factor = Parameters().getParam( "gd_factor", 1.0 );
+			static const double gd_factor = DSC_CONFIG_GET( "gd_factor", 1.0 );
 			ret = normal;
 			BoundaryIdTypeMapTypeConstIterator id_it = boundaryIdTypeMap_.find( id );
 			assert ( id_it != boundaryIdTypeMap_.end() );
@@ -168,9 +168,9 @@ class InstationaryBoundaryFluxFunction :
 	    typedef Dune::FieldVector< typename IntersectionType::ctype, IntersectionType::dimension - 1 >
 		    LocalVectorType;
 
-	    LocalVectorType center = Stuff::getBarycenterLocal( intersection.intersectionSelfLocal() );
+	    LocalVectorType center = DSC::getBarycenterLocal( intersection.intersectionSelfLocal() );
 	    RangeType normal = intersection.unitOuterNormal( center );
-	    const double gd_factor = time * Parameters().getParam( "gd_factor", 1.0 );
+	    const double gd_factor = time * DSC_CONFIG_GET( "gd_factor", 1.0 );
 	    ret = normal;
 	    BoundaryIdTypeMapTypeConstIterator id_it = boundaryIdTypeMap_.find( id );
 	    assert ( id_it != boundaryIdTypeMap_.end() );
@@ -242,7 +242,7 @@ class SecondOrderBoundaryShapeFunction : public Dune::BoundaryShapeFunctionBase<
 
 		SecondOrderBoundaryShapeFunction( const FunctionSpaceImp& space, typename ParentType::PointInfo pf, typename ParentType::RangeType direction, double scale_factor = 1.0 )
 			: ParentType ( space, pf, direction, scale_factor ),
-			parabolic_stretch_( Parameters().getParam("parabolic_stretch", 1.0) )
+			parabolic_stretch_( DSC_CONFIG_GET("parabolic_stretch", 1.0) )
 		{
 		}
 
@@ -332,27 +332,27 @@ class VariableDirichletData : public Dune::Fem::Function < FunctionSpaceImp, Var
 
 	protected:
 		void setupBoundaryIdTypeMap_() {
-			Logger().Info() << "\t- Using ids ";
+			DSC_LOG_INFO << "\t- Using ids ";
 			for( std::vector< int >::const_iterator it = zeroBoundaryIds_.begin(); it != zeroBoundaryIds_.end(); ++it ) {
 				boundaryIdTypeMap_[*it] = zeroBoundary;
-				Logger().Info() << *it << " ";
+				DSC_LOG_INFO << *it << " ";
 			}
-			Logger().Info() << " \t\tfor g_d = 0 \n\t        ids ";
+			DSC_LOG_INFO << " \t\tfor g_d = 0 \n\t        ids ";
 			for( std::vector< int >::const_iterator it = influxBoundaryIds_.begin(); it != influxBoundaryIds_.end(); ++it ) {
 				boundaryIdTypeMap_[*it] = influxBoundary;
-				Logger().Info() << *it << " ";
+				DSC_LOG_INFO << *it << " ";
 			}
-			Logger().Info() << " \tfor g_d = - n \n\t        ids ";
+			DSC_LOG_INFO << " \tfor g_d = - n \n\t        ids ";
 			for( std::vector< int >::const_iterator it = outfluxBoundaryIds_.begin(); it != outfluxBoundaryIds_.end(); ++it ) {
 				boundaryIdTypeMap_[*it] = outfluxBoundary;
-				Logger().Info() << *it << " ";
+				DSC_LOG_INFO << *it << " ";
 			}
-			Logger().Info() << " \tfor g_d = n " << std::endl;
-			const double gd_factor = Parameters().getParam( "gd_factor", 1.0 );
+			DSC_LOG_INFO << " \tfor g_d = n " << std::endl;
+			const double gd_factor = DSC_CONFIG_GET( "gd_factor", 1.0 );
 			boundaryFunctionList_.reserve( boundaryIdTypeMap_.size() + 1 ); //+1 since BIDs are not 0 indexed
 			for ( BoundaryIdTypeMapTypeConstIterator it = boundaryIdTypeMap_.begin(); it != boundaryIdTypeMap_.end(); ++it ) {
 				const int id = it->first;
-				std::string paramname = std::string( "gd_" ) + Stuff::toString( id );
+				std::string paramname = std::string( "gd_" ) + DSC::toString( id );
 				std::vector< double > components = Parameters().getList( paramname, double(id) ); //senseless def val here...
 				RangeType value;
 				assert( components.size() == value.dim() );

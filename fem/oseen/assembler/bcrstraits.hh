@@ -20,7 +20,7 @@ struct ModifiedDGMatrixTraits
         RowSpaceImp;
   typedef RowSpaceImp RowSpaceType;
   typedef ColSpaceImp ColumnSpaceType;
-  typedef Stuff::Matrix::ElementNeighborStencil<RowSpaceType,ColumnSpaceType> StencilType;
+  typedef DSFe::ElementNeighborStencil<RowSpaceType,ColumnSpaceType> StencilType;
   typedef Dune::ParallelScalarProduct< ColumnSpaceType > ParallelScalarProductType;
 
   template< class M >

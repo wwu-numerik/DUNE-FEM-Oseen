@@ -13,12 +13,13 @@
 #include <dune/fem/misc/l2norm.hh>
 #include <dune/fem/misc/l2error.hh>
 
-#include <dune/stuff/logging.hh>
-#include <dune/stuff/misc.hh>
-#include <dune/stuff/parametercontainer.hh>
-#include <dune/stuff/customprojection.hh>
-#include <dune/stuff/printing.hh>
-#include <dune/stuff/functions.hh>
+#include <dune/stuff/common/logging.hh>
+#include <dune/stuff/common/misc.hh>
+#include <dune/stuff/common/parameter/configcontainer.hh>
+#include <dune/stuff/fem/customprojection.hh>
+#include <dune/stuff/common/print.hh>
+#include <dune/stuff/fem/functions.hh>
+#include <dune/stuff/fem/functions/integrals.hh>
 
 #include <boost/format.hpp>
 #include <cmath>
@@ -85,9 +86,9 @@ class PostProcessor
             l2_error_pressure_( - std::numeric_limits<double>::max() ),
             l2_error_velocity_( - std::numeric_limits<double>::max() ),
             vtkWriter_( wrapper.gridPart() ),
-            datadir_( Parameters().getParam( "fem.io.datadir", std::string("data") ) + "/" )
+            datadir_( DSC_CONFIG_GET( "fem.io.datadir", std::string("data") ) + "/" )
         {
-            Stuff::testCreateDirectory( datadir_ );
+            DSC::testCreateDirectory( datadir_ );
         }
 
         ~PostProcessor()
@@ -95,11 +96,11 @@ class PostProcessor
         }
 
 		/** \brief analytical data is L2 projected
-			\todo only use Stuff::CustomProjection when really necessary
+			\todo only use DSC::CustomProjection when really necessary
 			**/
         void assembleExactSolution()
         {
-			Stuff::CustomProjection::project( problem_.dirichletData(), discreteExactDirichlet_ );
+			DSC::CustomProjection::project( problem_.dirichletData(), discreteExactDirichlet_ );
 
             typedef Dune::L2Projection< double, double, ContinuousVelocityType, DiscreteVelocityFunctionType > ProjectionV;
                 ProjectionV projectionV;
@@ -112,10 +113,10 @@ class PostProcessor
             typedef Dune::L2Projection< double, double, ContinuousPressureType, DiscretePressureFunctionType > ProjectionP;
                 ProjectionP projectionP;
             projectionP( problem_.pressure(), discreteExactPressure_ );
-			if ( Parameters().getParam( "save_matrices", false ) ) {
-				Stuff::Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
-				Stuff::printDiscreteFunctionMatlabStyle( discreteExactVelocity_, "u_exakt", matlabLogStream );
-				Stuff::printDiscreteFunctionMatlabStyle( discreteExactPressure_, "p_exakt", matlabLogStream );
+			if ( DSC_CONFIG_GET( "save_matrices", false ) ) {
+				DSC::Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+				DSC::printDiscreteFunctionMatlabStyle( discreteExactVelocity_, "u_exakt", matlabLogStream );
+				DSC::printDiscreteFunctionMatlabStyle( discreteExactPressure_, "p_exakt", matlabLogStream );
 			}
         }
 
@@ -132,7 +133,7 @@ class PostProcessor
 			}
 
             std::stringstream path;
-            if ( Parameters().getParam( "per-run-output", false ) )
+            if ( DSC_CONFIG_GET( "per-run-output", false ) )
                 path    << datadir_ << "/ref"
                         <<  current_refine_level_ << "_" << f.name();
             else
@@ -227,12 +228,12 @@ class PostProcessor
             l2_error_pressure_ = l2_Error.norm( errorFunc_pressure_ );
             l2_error_velocity_ = l2_Error.norm( errorFunc_velocity_ );
 
-			const double boundaryInt = Stuff::boundaryIntegral( problem_.dirichletData(), discreteExactVelocity_.space() );
-			const double pressureMean = Stuff::integralAndVolume( pressure, pressure.space() ).first;
-			const double exactPressureMean = Stuff::integralAndVolume( problem_.pressure(), discreteExactPressure_.space() ).first;
+            const double boundaryInt = DSFe::boundaryIntegral( problem_.dirichletData(), discreteExactVelocity_.space() );
+            const double pressureMean = DSFe::integralAndVolume( pressure, pressure.space() ).first;
+            const double exactPressureMean = DSFe::integralAndVolume( problem_.pressure(), discreteExactPressure_.space() ).first;
 
-            Logger().Info().Resume();
-            Logger().Info() << "L2-Error Pressure: " << std::setw(8) << l2_error_pressure_ << "\n"
+            DSC_LOG_INFO.resume();
+            DSC_LOG_INFO << "L2-Error Pressure: " << std::setw(8) << l2_error_pressure_ << "\n"
                             << "L2-Error Velocity: " << std::setw(8) << l2_error_velocity_ << "\n"
 							<< boost::format( "Pressure volume integral: %f (discrete), %f (exact)\n") % pressureMean % exactPressureMean
 							<< boost::format( "g_D boundary integral: %f\n") % boundaryInt;
@@ -326,4 +327,5 @@ class PostProcessor
  * of the authors and should not be interpreted as representing official policies, 
  * either expressed or implied, of the FreeBSD Project.
 **/
+
 

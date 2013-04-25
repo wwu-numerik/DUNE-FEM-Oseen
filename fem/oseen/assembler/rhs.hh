@@ -200,7 +200,7 @@ class H2
 							VelocityRangeType gD( 0.0 );
 							info.discrete_model.dirichletData( info.intersection, 0.0, xWorld, gD );
 							SigmaRangeType gD_times_normal( 0.0 );
-							gD_times_normal = Stuff::dyadicProduct<SigmaRangeType,VelocityRangeType>( gD, outerNormal );
+							gD_times_normal = DSC::dyadicProduct<SigmaRangeType,VelocityRangeType>( gD, outerNormal );
 							VelocityRangeType gD_times_normal_times_normal( 0.0 );
 							gD_times_normal.mv( outerNormal, gD_times_normal_times_normal );
 							const double v_j_times_gD_times_normal_times_normal= v_j * gD_times_normal_times_normal;

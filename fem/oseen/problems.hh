@@ -2,7 +2,7 @@
 #define DUNE_OSEEN_PROBLEMS_HH
 
 #include <dune/fem/function/common/function.hh>
-#include <dune/stuff/misc.hh>
+#include <dune/stuff/common/misc.hh>
 
 //! collection of data functions
 namespace StokesProblems {

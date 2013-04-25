@@ -9,11 +9,12 @@
 #include "solver_defines.hh"
 
 #include <dune/fem/oseen/solver/new_bicgstab.hh>
-#include <dune/stuff/printing.hh>
-#include <dune/stuff/misc.hh>
-#include <dune/stuff/matrix.hh>
-#include <dune/stuff/logging.hh>
-#include <dune/stuff/parametercontainer.hh>
+#include <dune/stuff/common/print.hh>
+#include <dune/stuff/common/misc.hh>
+#include <dune/stuff/common/matrix.hh>
+#include <dune/stuff/common/logging.hh>
+#include <dune/stuff/common/parameter/configcontainer.hh>
+#include <dune/stuff/fem/matrix_object.hh>
 
 namespace Dune {
 
@@ -43,7 +44,7 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 
 	// if shit goes south wrt precond working check if this doesn't need to be OEmSolver instead of SOLVER_INTERFACE_NAMESPACE
 	friend class Conversion<ThisType,SOLVER_INTERFACE_NAMESPACE::PreconditionInterface>;
-    typedef IdentityMatrixObject<typename YMatType::WrappedMatrixObjectType>
+    typedef DSC::IdentityMatrixObject<typename YMatType::WrappedMatrixObjectType>
 		PreconditionMatrixBaseType;
 
 #if STOKES_USE_ISTL
@@ -69,7 +70,7 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
                 //!TODO
 				a_operator_.getDiag( precondition_diagonal );
 #endif
-				Stuff::invertFunctionDofs( precondition_diagonal );
+                DSFe::invertFunctionDofs( precondition_diagonal );
 				setMatrixDiag( PreconditionMatrixBaseType::matrix(), precondition_diagonal );
 			}
 
@@ -205,7 +206,7 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 
     bool hasPreconditionMatrix () const
     {
-        return Parameters().getParam( "innerPrecond", false );
+        return DSC_CONFIG_GET( "innerPrecond", false );
     }
 
 	//! return diagonal entries of this matrix

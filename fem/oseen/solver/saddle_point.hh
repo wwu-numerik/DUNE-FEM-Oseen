@@ -68,35 +68,35 @@ namespace Dune {
 					const DiscretePressureFunctionType& rhs3 ) const
 		{
 
-			Stuff::Logging::LogStream& logDebug = Logger().Dbg();
-			Stuff::Logging::LogStream& logInfo = Logger().Info();
+			auto logDebug = DSC_LOG_DEBUG;
+			auto logInfo = DSC_LOG_INFO;
 
-			if ( Parameters().getParam( "disableSolver", false ) ) {
-				logInfo.Resume();
+			if ( DSC_CONFIG_GET( "disableSolver", false ) ) {
+				logInfo.resume();
 				logInfo << "solving disabled via parameter file" << std::endl;
 				return SaddlepointInverseOperatorInfo();
 			}
-			static const int save_interval = Parameters().getParam( "save_interval", -1 );
-			static const std::string path = Parameters().getParam("fem.io.datadir", std::string("data") ) + std::string("/intermediate/");
-			Stuff::testCreateDirectory( path );
+			static const int save_interval = DSC_CONFIG_GET( "save_interval", -1 );
+			static const std::string path = DSC_CONFIG_GET("fem.io.datadir", std::string("data") ) + std::string("/intermediate/");
+			DSC::testCreateDirectory( path );
 
 			// relative min. error at which cg-solvers will abort
-			const double relLimit = Parameters().getParam( "relLimit", 1e-4 );
+			const double relLimit = DSC_CONFIG_GET( "relLimit", 1e-4 );
 			// aboslute min. error at which cg-solvers will abort
-			double outer_absLimit = Parameters().getParam( "absLimit", 1e-8 );
-			const double inner_absLimit = Parameters().getParam( "inner_absLimit", 1e-8 );
-			const int solverVerbosity = Parameters().getParam( "solverVerbosity", 0 );
-			const int maxIter = Parameters().getParam( "maxIter", 500 );
-			const bool use_velocity_reconstruct = Parameters().getParam( "use_velocity_reconstruct", true );
+			double outer_absLimit = DSC_CONFIG_GET( "absLimit", 1e-8 );
+			const double inner_absLimit = DSC_CONFIG_GET( "inner_absLimit", 1e-8 );
+			const int solverVerbosity = DSC_CONFIG_GET( "solverVerbosity", 0 );
+			const int maxIter = DSC_CONFIG_GET( "maxIter", 500 );
+			const bool use_velocity_reconstruct = DSC_CONFIG_GET( "use_velocity_reconstruct", true );
 
 	#ifdef USE_BFG_CG_SCHEME
-			const double tau = Parameters().getParam( "bfg-tau", 0.1 );
-			const bool do_bfg = Parameters().getParam( "do-bfg", true );
+			const double tau = DSC_CONFIG_GET( "bfg-tau", 0.1 );
+			const bool do_bfg = DSC_CONFIG_GET( "do-bfg", true );
 	#endif
-			logInfo.Resume();
+			logInfo.resume();
 			logInfo << "Begin SaddlePointInverseOperator " << std::endl;
 
-			logDebug.Resume();
+			logDebug.resume();
 			//get some refs for more readability
 			PressureDiscreteFunctionType& pressure = dest.discretePressure();
 			VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
@@ -155,7 +155,7 @@ namespace Dune {
 			int min_inner_iterations = std::numeric_limits<int>::max();
 			int max_inner_iterations = 0;
 		#endif
-			const int max_adaptions = Parameters().getParam( "max_adaptions", 2 ) ;
+			const int max_adaptions = DSC_CONFIG_GET( "max_adaptions", 2 ) ;
 			int current_adaption = 0;
 			double delta; //norm of residuum
 			double gamma=0;

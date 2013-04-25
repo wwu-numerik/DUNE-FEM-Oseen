@@ -23,7 +23,7 @@ EXECUTE_PROCESS(
 )
 
 #----------------------------------------------------------------------------------------------------
-# Options, that can be changed be the User in order to customise dune-oseen
+# Options, that can be changed be the User in order to customise dune-fem-oseen
 #----------------------------------------------------------------------------------------------------
 SET( BLAS_LIB
 	"blas" CACHE STRING
@@ -105,12 +105,12 @@ SET ( METIS_DIR
 	"metis toplevel directory" )
 
 #needs to come first to include correct config.h
-INCLUDE_DIR( ${dune-oseen_BINARY_DIR}  ${dune-oseen_SOURCE_DIR} )
-INCLUDE_SYS_DIR( ${dune-oseen_SOURCE_DIR}/oseen/oemsolver/ )
-ADD_CXX_FLAGS( ${CUSTOM_FLAGS} )
+INCLUDE_DIR( ${dune-fem-oseen_BINARY_DIR}  ${dune-fem-oseen_SOURCE_DIR} )
+INCLUDE_SYS_DIR( ${dune-fem-oseen_SOURCE_DIR}/oseen/oemsolver/ )
+ADD_DEFINITIONS( ${CUSTOM_FLAGS} )
 
 IF( ${GRIDTYPE} STREQUAL "UGGRID" )
-	ADD_CXX_FLAGS( -DENABLE_UG )
+	ADD_DEFINITIONS( -DENABLE_UG )
 	INCLUDE_SYS_DIR( ${UGGRID_BASE_PATH}/include )
 	LINK_DIRECTORIES( ${UGGRID_BASE_PATH}/lib/ )
 	SET( UGLIBS "ugS3" "ugS2" "devS")
@@ -125,29 +125,29 @@ IF( ${GRIDTYPE} MATCHES "ALUGRID" )
 	LINK_DIRECTORIES( "${ALUGRID_BASE_PATH}/lib"  )
 	SET( ALULIBS "alugrid" )
 	SET( ENABLE_ALUGRID ON )
-	ADD_CXX_FLAGS( "-DENABLE_ALUGRID" )
+	ADD_DEFINITIONS( "-DENABLE_ALUGRID" )
 ENDIF( ${GRIDTYPE} MATCHES "ALUGRID" )
 
 IF( ${GRIDTYPE} MATCHES "ALBERTAGRID" )
 	INCLUDE_SYS_DIR( 	${ALBERTA_BASE_PATH}/include/alberta )
 	LINK_DIRECTORIES( "${ALBERTA_BASE_PATH}/lib"  )
 	SET( ALULIBS "alberta_${GRIDDIM}d" "alberta_util" )
-	ADD_CXX_FLAGS( "-DENABLE_ALBERTA" )
+	ADD_DEFINITIONS( "-DENABLE_ALBERTA" )
 ENDIF( ${GRIDTYPE} MATCHES "ALBERTAGRID" )
 
 IF ( ENABLE_PARALELL )
 	LINK_DIRECTORIES( ${METIS_DIR} )
 	Set ( ParaLIBS "-lparmetis -lmetis" )
 	INCLUDE_SYS_DIR( ${ALUGRID_BASE_PATH}/include/parallel )
-	ADD_CXX_FLAGS( -DMPIPP_H -DENABLE_MPI=1 )
+	ADD_DEFINITIONS( -DMPIPP_H -DENABLE_MPI=1 )
 ENDIF ( ENABLE_PARALELL )
 
 SET( USE_OMP "0" )
 IF( ENABLE_OMP )
-	ADD_CXX_FLAGS( -fopenmp -DUSE_OMP=1)
+	ADD_DEFINITIONS( -fopenmp -DUSE_OMP=1)
 	LIST( APPEND ParaLIBS "-fopenmp" )
 ELSE( ENABLE_OMP )
-	ADD_CXX_FLAGS( -DUSE_OMP=0)
+	ADD_DEFINITIONS( -DUSE_OMP=0)
 ENDIF( ENABLE_OMP )
 
 IF( USE_ISTL )
@@ -168,7 +168,8 @@ LINK_DIRECTORIES( "/usr/lib" "${GRAPE_PATH}" ${CCGNU_LIBRARY_DIRS} )
 FILE( GLOB header "src/*.hh" )
 FILE( GLOB_RECURSE oseen "oseen/*.hh" )
 
-set( COMMON_LIBS "dunecommon" "dunegeometry"  "dunefem" "dunegrid" ${BLAS_LIB} ${ALULIBS} ${UGLIBS}  ${ParaLIBS} ${CCGNU_LIBRARIES} "boost_filesystem" "boost_system")
+set( COMMON_LIBS "dunecommon" "dunegeometry"  "dunefem" "dunegrid" 
+    ${BLAS_LIB} ${ALULIBS} ${UGLIBS}  ${ParaLIBS} ${CCGNU_LIBRARIES}  ${BOOST_LIBS})
 set( COMMON_HEADER ${header} ${oseen} ${stuff} ${DUNE_HEADERS} )
 set_source_files_properties( ${COMMON_HEADER} PROPERTIES HEADER_FILE_ONLY 1 )
 

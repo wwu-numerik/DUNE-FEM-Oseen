@@ -2,7 +2,7 @@
 #define DUNE_OSEEN_INTEGRATORS_O_HH
 
 #include <dune/fem/oseen/assembler/base.hh>
-#include <dune/stuff/matrix.hh>
+#include <dune/stuff/common/matrix.hh>
 
 namespace Dune {
 namespace Oseen {
@@ -27,7 +27,7 @@ namespace Assembler {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-		typedef Stuff::Matrix::LocalMatrixProxy<MatrixPointerType>
+        typedef DSFe::LocalMatrixProxy<MatrixPointerType>
 			LocalMatrixProxyType;
 
 		MatrixPointerType& matrix_pointer_;
@@ -75,8 +75,8 @@ namespace Assembler {
 							info.velocity_basefunction_set_element.jacobian( j, x, v_j_jacobian );
 
 							VelocityJacobianRangeType v_i_tensor_beta
-									= Stuff::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( v_i, beta_eval );
-							const double ret = Stuff::colonProduct( v_i_tensor_beta, v_j_jacobian );
+									= DSC::dyadicProduct<VelocityJacobianRangeType,VelocityRangeType>( v_i, beta_eval );
+							const double ret = DSC::colonProduct( v_i_tensor_beta, v_j_jacobian );
 
 							O_i_j -= elementVolume
 								* integrationWeight

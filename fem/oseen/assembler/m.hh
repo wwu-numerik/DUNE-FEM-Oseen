@@ -2,7 +2,7 @@
 #define DUNE_OSEEN_INTEGRATORS_M_HH
 
 #include <dune/fem/oseen/assembler/base.hh>
-#include <dune/stuff/matrix.hh>
+#include <dune/stuff/common/matrix.hh>
 
 namespace Dune {
 namespace Oseen {
@@ -29,7 +29,7 @@ namespace Assembler {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-		typedef Stuff::Matrix::LocalMatrixProxy<MatrixPointerType>
+		typedef DSFe::LocalMatrixProxy<MatrixPointerType>
 			LocalMatrixProxyType;
 
         MatrixPointerType& matrix_pointer_;
@@ -63,7 +63,7 @@ namespace Assembler {
 							SigmaRangeType tau_j( 0.0 );
 							info.sigma_basefunction_set_element.evaluate( i, x, tau_i );
 							info.sigma_basefunction_set_element.evaluate( j, x, tau_j );
-							const double tau_i_times_tau_j = Stuff::colonProduct( tau_i, tau_j );
+							const double tau_i_times_tau_j = DSC::colonProduct( tau_i, tau_j );
 							// compute M_i_j
 							M_i_j += elementVolume
 								* integrationWeight

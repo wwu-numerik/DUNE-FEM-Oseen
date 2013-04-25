@@ -18,7 +18,7 @@ class SchurkomplementOperatorAdapter : public AssembledLinearOperator< MatrixImp
   public:
     enum { category=SolverCategory::sequential };
     typedef MatrixImp MatrixType;
-    typedef PrecondionWrapperDummy<MatrixType> PreconditionAdapterType;
+    typedef DSC::PrecondionWrapperDummy<MatrixType> PreconditionAdapterType;
 
     typedef typename MatrixType :: RowDiscreteFunctionType RowDiscreteFunctionType;
     typedef typename MatrixType :: ColDiscreteFunctionType ColumnDiscreteFunctionType;

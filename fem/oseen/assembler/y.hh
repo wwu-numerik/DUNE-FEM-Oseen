@@ -2,7 +2,7 @@
 #define DUNE_OSEEN_INTEGRATORS_Y_HH
 
 #include <dune/fem/oseen/assembler/base.hh>
-#include <dune/stuff/matrix.hh>
+#include <dune/stuff/common/matrix.hh>
 
 namespace Dune {
 namespace Oseen {
@@ -27,7 +27,7 @@ namespace Assembler {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-		typedef Stuff::Matrix::LocalMatrixProxy<MatrixPointerType>
+		typedef DSFe::LocalMatrixProxy<MatrixPointerType>
 			LocalMatrixProxyType;
 
 		MatrixPointerType& matrix_pointer_;

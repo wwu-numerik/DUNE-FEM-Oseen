@@ -1,7 +1,7 @@
 #ifndef DUNE_OSEEN_STAB_COEFF_HH
 #define DUNE_OSEEN_STAB_COEFF_HH
 
-#include <dune/stuff/parametercontainer.hh>
+#include <dune/stuff/common/parameter/configcontainer.hh>
 #include <map>
 
 namespace Dune {
@@ -54,7 +54,7 @@ class StabilizationCoefficients {
 
 		void Add( const std::string& name )
 		{
-			Add( name, Parameters().getParam( name, FactorType() ), invalid_power );
+            Add( name, DSC_CONFIG_GET( name, FactorType() ), invalid_power );
 		}
 
 
@@ -67,7 +67,7 @@ class StabilizationCoefficients {
 		}
 
 		void FactorFromParams( const std::string& name, const FactorType default_value = FactorType() ) {
-			getValue(name).second = Parameters().getParam( name, default_value );
+			getValue(name).second = DSC_CONFIG_GET( name, default_value );
 		}
 
 		PowerType Power( const std::string& name ) const {

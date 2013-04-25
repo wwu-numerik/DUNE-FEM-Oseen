@@ -1,8 +1,8 @@
 #ifndef DUNE_OSEEN_NEW_BICGSTAB_HH
 #define DUNE_OSEEN_NEW_BICGSTAB_HH
 
-#include <dune/stuff/printing.hh>
-#include <dune/stuff/logging.hh>
+#include <dune/stuff/common/print.hh>
+#include <dune/stuff/common/logging.hh>
 
 #include <limits>
 #include <cmath>
@@ -49,7 +49,7 @@ public:
 	{
 		unsigned int iteration = 1;
 		const std::string cg_name( "OuterCG");
-		Stuff::Logging::LogStream& logDebug = Logger().Dbg();
+        auto& logDebug = DSC_LOG_DEBUG;
 
 		PressureDiscreteFunctionType residuum( "residuum", dest.space() );
 		PressureDiscreteFunctionType start_residuum( "start_residuum", dest.space() );
@@ -61,7 +61,7 @@ public:
 		// r^0 = - S * p^0 + rhs
 		operator_.apply( dest, residuum );
 		if ( solverVerbosity_ > 3 )
-			Stuff::printFunctionMinMax( logDebug, residuum );
+            DSC::printFunctionMinMax( logDebug, residuum );
 		residuum -= rhs;
 		residuum *= -1.;
 
@@ -79,7 +79,7 @@ public:
 		residuum_T.assign( start_residuum );//??
 
 		if ( solverVerbosity_ > 2 )
-			Logger().Info() << " -- \n";
+			DSC_LOG_INFO << " -- \n";
 
 		while( iteration < max_iter_) {
 			rho = residuum_T.scalarProductDofs( residuum );
@@ -118,10 +118,10 @@ public:
 			omega = t.scalarProductDofs( s ) / t.scalarProductDofs( t );
 
 			if ( solverVerbosity_ > 3 )
-				Stuff::printFunctionMinMax( logDebug, search_direction );
+                DSC::printFunctionMinMax( logDebug, search_direction );
 			dest.axpy( alpha, search_direction );
 			if ( solverVerbosity_ > 3 )
-				Stuff::printFunctionMinMax( logDebug, dest );
+                DSC::printFunctionMinMax( logDebug, dest );
 			dest.axpy( omega, s );
 
 			residuum.assign( s );
@@ -136,7 +136,7 @@ public:
 			if ( solverVerbosity_ > 3 ) {
 				logDebug << boost::format( "%s: iter %i\tres %e alpha %e \trho %e") % cg_name % iteration
 							% delta % alpha %  rho << std::endl;
-				Stuff::printFunctionMinMax( logDebug, dest );
+                DSC::printFunctionMinMax( logDebug, dest );
 			}
 			assert( omega != 0.0 );
 

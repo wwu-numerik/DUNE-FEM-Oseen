@@ -10,7 +10,7 @@
 #include <dune/fem/space/common/restrictprolonginterface.hh>
 #include <dune/fem/io/file/vtkio.hh>
 #include <dune/fem/operator/projection/l2projection.hh>
-#include <dune/stuff/adaption.hh>
+#include <dune/fem/oseen/adaption.hh>
 
 namespace Dune
 {

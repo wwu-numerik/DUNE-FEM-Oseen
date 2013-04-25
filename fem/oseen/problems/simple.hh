@@ -2,7 +2,7 @@
 #define STOKES_PROBLEMS_SIMPLE_HH
 
 #include <dune/fem/function/common/function.hh>
-#include <dune/stuff/misc.hh>
+#include <dune/stuff/common/misc.hh>
 #include "common.hh"
 
 ALLGOOD_SETUPCHECK;

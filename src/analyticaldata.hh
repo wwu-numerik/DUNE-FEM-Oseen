@@ -7,7 +7,6 @@
 #define ANALYTICALDATA_HH
 
 #include <dune/common/static_assert.hh>
-#include <dune/stuff/debug.hh>
 
 #include <dune/fem/function/common/function.hh>
 #include <cmath>
@@ -89,10 +88,10 @@ class Force : public Dune::Fem::Function < FunctionSpaceImp , Force < FunctionSp
 
 #elif defined(DARCY_PROBLEM)
                 // im verhältnis zu [-1,1]^2
-                double scaleX = Parameters().getParam( "domain_scale_x", 2.0 );
-                double scaleY = Parameters().getParam( "domain_scale_y", 2.0 );
-                double shiftX = Parameters().getParam( "domain_shift_x", -1.0 );
-                double shiftY = Parameters().getParam( "domain_shift_y", -1.0 );
+                double scaleX = DSC_CONFIG_GET( "domain_scale_x", 2.0 );
+                double scaleY = DSC_CONFIG_GET( "domain_scale_y", 2.0 );
+                double shiftX = DSC_CONFIG_GET( "domain_shift_x", -1.0 );
+                double shiftY = DSC_CONFIG_GET( "domain_shift_y", -1.0 );
                 ret[0] = ( arg[1] * scaleY ) + shiftY;
                 ret[1] = -1.0 * ( ( arg[0] * scaleX ) + shiftX );
 #elif defined(MICRO_PROBLEM_X)
@@ -105,7 +104,7 @@ class Force : public Dune::Fem::Function < FunctionSpaceImp , Force < FunctionSp
                 ret[0] = 0.0;//arg[1];
                 ret[1] = 0.0;//arg[0];
 #else
-				LOGIC_ERROR
+                DUNE_THROW(Dune::Exception, "not implemented");
 #endif
             }
             else if ( dim_ == 3 ) {
@@ -128,7 +127,7 @@ class Force : public Dune::Fem::Function < FunctionSpaceImp , Force < FunctionSp
 #elif defined(DARCY_PROBLEM)
                 assert( !"DARCY_PROBLEM not implemented in 3D!" );
 #else
-				LOGIC_ERROR
+                DUNE_THROW(Dune::Exception, "not implemented");
 #endif
             }
             ret *= scaling_factor_;
@@ -302,7 +301,7 @@ class DirichletData : public Dune::Fem::Function < FunctionSpaceImp, DirichletDa
                 ret[0] *= -1.0 * exp_of_x1;
                 ret[1] = exp_of_x1 * x2 * sin_of_x2;
 #else
-				LOGIC_ERROR
+                DUNE_THROW(Dune::Exception, "not implemented");
 #endif
             }
             else if ( dim_ == 3 ) {
@@ -326,7 +325,7 @@ class DirichletData : public Dune::Fem::Function < FunctionSpaceImp, DirichletDa
                 assert( !"DARCY_PROBLEM not implemented in 3D!" );
 
 #else
-				LOGIC_ERROR
+                DUNE_THROW(Dune::Exception, "not implemented");
 #endif
             }
         }

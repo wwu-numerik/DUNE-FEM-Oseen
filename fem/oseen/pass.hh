@@ -16,17 +16,17 @@
 #include <dune/fem/oseen/solver/solvercaller.hh>
 #include <dune/fem/oseen/assembler/all.hh>
 
-#include <dune/stuff/customprojection.hh>
-#include <dune/stuff/matrix.hh>
-#include <dune/stuff/tuple.hh>
+#include <dune/stuff/fem/customprojection.hh>
+#include <dune/stuff/common/matrix.hh>
+#include <dune/stuff/common/tuple.hh>
 #ifndef NLOG
-#   include <dune/stuff/printing.hh>
-#   include <dune/stuff/misc.hh>
-#   include <dune/stuff/logging.hh>
+#   include <dune/stuff/common/print.hh>
+#   include <dune/stuff/common/misc.hh>
+#   include <dune/stuff/common/logging.hh>
 #endif
-#include <dune/stuff/grid.hh>
-#include <dune/stuff/functions.hh>
-#include <dune/stuff/profiler.hh>
+#include <dune/stuff/grid/entity.hh>
+#include <dune/stuff/fem/functions.hh>
+#include <dune/stuff/common/profiler.hh>
 
 namespace Dune {
 
@@ -150,14 +150,14 @@ class OseenPass
             coordinator.apply( tuple );
 #endif
             // do the actual lgs solving
-            Logger().Info() << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
+            DSC_LOG_INFO << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
             info_ = Oseen::SolverCallerProxy< ThisType >::call( do_oseen_discretization_, rhs_datacontainer, dest,
                                             arg, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix,
                                             Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs, beta_ );
         } // end of apply
 
 #ifdef HAS_RUN_INFO
-		void getRuninfo( Stuff::RunInfo& info )
+		void getRuninfo( DSC::RunInfo& info )
         {
 			info.iterations_inner_avg = int( info_.iterations_inner_avg );
             info.iterations_inner_min = info_.iterations_inner_min;
@@ -182,7 +182,7 @@ class OseenPass
 		void printInfo() const
 		{
 #ifndef NLOG
-			Stuff::Logging::LogStream& infoStream = Logger().Info();
+			auto infoStream = DSC_LOG_INFO;
 			infoStream << boost::format( "pressure_gradient/convection scaling: %e | %e\npass viscosity: %e\n")
 								% discreteModel_.pressure_gradient_scaling()
 								% discreteModel_.convection_scaling()
@@ -209,7 +209,7 @@ class OseenPass
 						++intIt ) {
 					// count intersections
 					++numberOfIntersections;
-					maxGridWidth = std::max( Stuff::getLenghtOfIntersection( *intIt ), maxGridWidth );
+					maxGridWidth = std::max( DSC::getLenghtOfIntersection( *intIt ), maxGridWidth );
 					// if we are inside the grid
 					if ( intIt->neighbor() && !intIt->boundary() ) {
 						// count inner intersections
@@ -237,7 +237,7 @@ class OseenPass
 				infoStream << "      maxGridWidth is " << maxGridWidth << std::endl;
 				infoStream << "- starting gridwalk" << std::endl;
 			}
-			infoStream.Suspend();
+			infoStream.suspend();
 #endif
 		}
 };

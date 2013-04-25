@@ -12,7 +12,7 @@
 #include <dune/common/fvector.hh>
 #include <dune/fem/function/common/function.hh>
 
-#include <dune/stuff/logging.hh>
+#include <dune/stuff/common/logging.hh>
 
 /**
  *  \brief  containing typedefs needed by Velocity

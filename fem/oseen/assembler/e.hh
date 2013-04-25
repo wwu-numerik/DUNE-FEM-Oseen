@@ -2,7 +2,7 @@
 #define DUNE_OSEEN_INTEGRATORS_E_HH
 
 #include <dune/fem/oseen/assembler/base.hh>
-#include <dune/stuff/matrix.hh>
+#include <dune/stuff/common/matrix.hh>
 
 namespace Dune {
 namespace Oseen {
@@ -33,7 +33,7 @@ namespace Assembler {
 											EntityGeometryType::coorddimension,
 											EntityGeometryType::mydimension >
 			JacobianInverseTransposedType;
-		typedef Stuff::Matrix::LocalMatrixProxy<MatrixPointerType>
+		typedef DSFe::LocalMatrixProxy<MatrixPointerType>
 			LocalMatrixProxyType;
 
 		MatrixPointerType& matrix_pointer_;

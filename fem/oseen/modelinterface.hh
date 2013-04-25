@@ -16,12 +16,11 @@
 #include <dune/fem/oseen/stab_coeff.hh>
 
 #ifndef NLOG
-    #include <dune/stuff/printing.hh>
-    #include <dune/stuff/logging.hh>
+    #include <dune/stuff/common/print.hh>
+    #include <dune/stuff/common/logging.hh>
 #endif
 
-#include <dune/stuff/misc.hh>
-#include <dune/stuff/debug.hh>
+#include <dune/stuff/common/misc.hh>
 
 #include <algorithm>
 
