@@ -5,6 +5,9 @@
 #include <dune/stuff/misc.hh>
 #include "common.hh"
 
+namespace StokesProblems {
+namespace TEMPLATE {
+
 ALLGOOD_SETUPCHECK;
 static const std::string identifier = "Simple";
 static const bool hasExactSolution	= true;
@@ -160,6 +163,9 @@ class Pressure : public Dune::Fem::Function < FunctionSpaceImp , Pressure < Func
 	private:
 		static const int dim_ = FunctionSpaceImp::dimDomain;
 };
+
+} // namespace TEMPLATE {
+} // namespace StokesProblems {
 
 #endif // SIMPLE_HH
 

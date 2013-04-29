@@ -15,10 +15,11 @@
 
 #include <dune/stuff/common/logging.hh>
 #include <dune/stuff/common/misc.hh>
+#include <dune/stuff/common/filesystem.hh>
 #include <dune/stuff/common/parameter/configcontainer.hh>
 #include <dune/stuff/fem/customprojection.hh>
 #include <dune/stuff/common/print.hh>
-#include <dune/stuff/fem/functions.hh>
+#include <dune/stuff/fem/functions/transform.hh>
 #include <dune/stuff/fem/functions/integrals.hh>
 
 #include <boost/format.hpp>
@@ -100,7 +101,7 @@ class PostProcessor
 			**/
         void assembleExactSolution()
         {
-			DSC::CustomProjection::project( problem_.dirichletData(), discreteExactDirichlet_ );
+            DSFe::CustomProjection::project( problem_.dirichletData(), discreteExactDirichlet_ );
 
             typedef Dune::L2Projection< double, double, ContinuousVelocityType, DiscreteVelocityFunctionType > ProjectionV;
                 ProjectionV projectionV;
@@ -114,7 +115,7 @@ class PostProcessor
                 ProjectionP projectionP;
             projectionP( problem_.pressure(), discreteExactPressure_ );
 			if ( DSC_CONFIG_GET( "save_matrices", false ) ) {
-				DSC::Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+                auto& matlabLogStream = DSC_LOG_ERROR;
 				DSC::printDiscreteFunctionMatlabStyle( discreteExactVelocity_, "u_exakt", matlabLogStream );
 				DSC::printDiscreteFunctionMatlabStyle( discreteExactPressure_, "p_exakt", matlabLogStream );
 			}

@@ -4,7 +4,7 @@
 #include "solver_defines.hh"
 
 #include <dune/stuff/common/matrix.hh>
-//#include <dune/stuff/common/preconditioning.hh>
+#include <dune/stuff/fem/preconditioning.hh>
 #include <dune/stuff/common/logging.hh>
 #include <dune/stuff/fem/functions/analytical.hh>
 #include <dune/stuff/common/parameter/configcontainer.hh>
@@ -153,7 +153,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 		    MatrixAdapterType;
 		typedef typename A_SolverType::A_OperatorType::PreconditionMatrix
 		    A_PreconditionMatrix;
-		typedef IdentityMatrixObject<typename R_MatrixType::WrappedMatrixObjectType>
+        typedef DSC::IdentityMatrixObject<typename R_MatrixType::WrappedMatrixObjectType>
 		    PreconditionMatrixBaseType;
         typedef PreconditionOperatorDefault< ThisType >
             PreconditionOperator;
@@ -162,7 +162,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
         friend class PreconditionOperatorDefault< ThisType >;
 
 
-		typedef DSC::OperatorBasedPreconditioner< PreconditionOperator,
+        typedef DSFe::OperatorBasedPreconditioner< PreconditionOperator,
 													SOLVER_NAMESPACE::OUTER_CG_SOLVERTYPE,
 													DiscretePressureFunctionType>
 			PreconditionMatrix;

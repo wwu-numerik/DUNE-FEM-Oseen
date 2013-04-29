@@ -4,6 +4,7 @@
 #include <dune/fem/oseen/boundaryinfo.hh>
 #include <dune/stuff/common/parameter/configcontainer.hh>
 #include <dune/stuff/common/misc.hh>
+#include <dune/stuff/fem/functions/timefunction.hh>
 #include <dune/stuff/grid/entity.hh>
 
 template < template < class > class DiricheltDataImp >
@@ -37,9 +38,9 @@ class BoundaryIdMapping {
 
 	BoundaryIdMapping()
 	{
-	    zeroBoundaryIds_ 	= Parameters().getList( "zeroBoundaryIds" , 1 );
-	    influxBoundaryIds_	= Parameters().getList( "influxBoundaryIds" , 2 );
-	    outfluxBoundaryIds_	= Parameters().getList( "outfluxBoundaryIds" , 3 );
+        zeroBoundaryIds_ 	= DSC_CONFIG.getList( "zeroBoundaryIds" , 1 );
+        influxBoundaryIds_	= DSC_CONFIG.getList( "influxBoundaryIds" , 2 );
+        outfluxBoundaryIds_	= DSC_CONFIG.getList( "outfluxBoundaryIds" , 3 );
 	    setupBoundaryIdTypeMap_();
 	}
     protected:
@@ -99,7 +100,8 @@ class BoundaryFluxFunction : public Dune::Fem::Function < FunctionSpaceImp, Boun
 			typedef Dune::FieldVector< typename IntersectionIteratorType::ctype, IntersectionIteratorType::dimension - 1 >
 				LocalVectorType;
 
-			LocalVectorType center = DSC::getBarycenterLocal( faceIter.intersectionSelfLocal() );
+            const auto& geometry = faceIter.intersectionSelfLocal();
+            LocalVectorType center = geometry.local(geometry.center());
 			RangeType normal = faceIter.unitOuterNormal( center );
 			static const double gd_factor = DSC_CONFIG_GET( "gd_factor", 1.0 );
 			ret = normal;
@@ -131,7 +133,7 @@ class BoundaryFluxFunction : public Dune::Fem::Function < FunctionSpaceImp, Boun
 
 template < class FunctionSpaceImp, class TimeProviderImp >
 class InstationaryBoundaryFluxFunction :
-	public Dune::IntersectionTimeFunction < FunctionSpaceImp ,
+    public DSFe::IntersectionTimeFunction < FunctionSpaceImp ,
 			InstationaryBoundaryFluxFunction< FunctionSpaceImp,TimeProviderImp >,
 			TimeProviderImp > ,
 	public BoundaryIdMapping
@@ -139,7 +141,7 @@ class InstationaryBoundaryFluxFunction :
     public:
 	typedef InstationaryBoundaryFluxFunction< FunctionSpaceImp, TimeProviderImp >
 		ThisType;
-	typedef Dune::IntersectionTimeFunction< FunctionSpaceImp, ThisType, TimeProviderImp >
+    typedef DSFe::IntersectionTimeFunction< FunctionSpaceImp, ThisType, TimeProviderImp >
 		BaseType;
 	typedef typename BaseType::DomainType
 		DomainType;
@@ -168,7 +170,8 @@ class InstationaryBoundaryFluxFunction :
 	    typedef Dune::FieldVector< typename IntersectionType::ctype, IntersectionType::dimension - 1 >
 		    LocalVectorType;
 
-	    LocalVectorType center = DSC::getBarycenterLocal( intersection.intersectionSelfLocal() );
+        const auto& geometry = intersection;
+        LocalVectorType center = geometry.local(geometry.center());
 	    RangeType normal = intersection.unitOuterNormal( center );
 	    const double gd_factor = time * DSC_CONFIG_GET( "gd_factor", 1.0 );
 	    ret = normal;
@@ -300,10 +303,10 @@ class VariableDirichletData : public Dune::Fem::Function < FunctionSpaceImp, Var
 			dim_( FunctionSpaceImp::dimDomain ),
 			boundaryInfo_( gridpart )
 		{
-			zeroBoundaryIds_ 	= Parameters().getList( "zeroBoundaryIds" , 1 );
-			influxBoundaryIds_	= Parameters().getList( "influxBoundaryIds" , 2 );
-			outfluxBoundaryIds_	= Parameters().getList( "outfluxBoundaryIds" , 3 );
-			setupBoundaryIdTypeMap_();
+            zeroBoundaryIds_ 	= DSC_CONFIG.getList( "zeroBoundaryIds" , 1 );
+            influxBoundaryIds_	= DSC_CONFIG.getList( "influxBoundaryIds" , 2 );
+            outfluxBoundaryIds_	= DSC_CONFIG.getList( "outfluxBoundaryIds" , 3 );
+            setupBoundaryIdTypeMap_();
 		}
 
 		/**
@@ -353,7 +356,7 @@ class VariableDirichletData : public Dune::Fem::Function < FunctionSpaceImp, Var
 			for ( BoundaryIdTypeMapTypeConstIterator it = boundaryIdTypeMap_.begin(); it != boundaryIdTypeMap_.end(); ++it ) {
 				const int id = it->first;
 				std::string paramname = std::string( "gd_" ) + DSC::toString( id );
-				std::vector< double > components = Parameters().getList( paramname, double(id) ); //senseless def val here...
+                std::vector< double > components = DSC_CONFIG.getList( paramname, double(id) ); //senseless def val here...
 				RangeType value;
 				assert( components.size() == value.dim() );
 				for ( int i = 0; i < value.dim(); ++i )

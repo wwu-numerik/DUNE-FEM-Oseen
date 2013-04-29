@@ -4,41 +4,18 @@
 #include <dune/fem/function/common/function.hh>
 #include <dune/stuff/common/misc.hh>
 
-//! collection of data functions
-namespace StokesProblems {
+#include "problems/simple.hh"
+#include "problems/cockburn.hh"
+#include "problems/generalized.hh"
+#include "problems/aorta.hh"
+#include "problems/timedisc.hh"
 
-	//! a simple problem, d'oh
-	namespace Simple {
-		#include "problems/simple.hh"
-	}
-	//! cockburn, see ref
-	namespace Cockburn {
-		#include "problems/cockburn.hh"
-	}
-	//! cockburn, see ref
-	namespace Generalized {
-		#include "problems/generalized.hh"
-	}
-	//! docme
-	namespace Constant {
-		#include "problems/constant.hh"
-	}
-	//! docme
-	namespace Rotate {
-		#include "problems/rotate.hh"
-	}
-	//! docme
-	namespace Aorta {
-		#include "problems/aorta.hh"
-	}
-	namespace TimeDisc {
-		#include "problems/timedisc.hh"
-	}
 
 #ifndef PROBLEM_NAMESPACE
 	#define PROBLEM_NAMESPACE StokesProblems::Cockburn
 #endif
 
+namespace StokesProblems {
 	/**
 	 *  \brief  a collection of some analytical functions describing a stokes problem
 	 *
@@ -150,7 +127,7 @@ namespace StokesProblems {
 			ForceType force_;
 			const DirichletDataType& dirichletData_;
 	};
-} // namespace OseenProblems
+} // namespace StokesProblems
 
 #endif // DUNE_OSEEN_PROBLEMS_HH
 

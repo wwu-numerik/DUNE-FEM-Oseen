@@ -66,8 +66,8 @@ namespace Dune {
 					const DiscretePressureFunctionType& /*rhs3*/ ) const
 		{
 
-			auto logDebug = DSC_LOG_DEBUG;
-			auto logInfo = DSC_LOG_INFO;
+            auto& logDebug = DSC_LOG_DEBUG;
+            auto& logInfo = DSC_LOG_INFO;
 
 			if ( DSC_CONFIG_GET( "disableSolver", false ) ) {
 				logInfo.resume();

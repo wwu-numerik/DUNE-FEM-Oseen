@@ -166,7 +166,7 @@ ADD_MY_MODULES( stuff )
 LINK_DIRECTORIES( "/usr/lib" "${GRAPE_PATH}" ${CCGNU_LIBRARY_DIRS} )
 
 FILE( GLOB header "src/*.hh" )
-FILE( GLOB_RECURSE oseen "oseen/*.hh" )
+FILE( GLOB_RECURSE oseen "fem/oseen/*.hh" )
 
 set( COMMON_LIBS "dunecommon" "dunegeometry"  "dunefem" "dunegrid" 
     ${BLAS_LIB} ${ALULIBS} ${UGLIBS}  ${ParaLIBS} ${CCGNU_LIBRARIES}  ${BOOST_LIBS})

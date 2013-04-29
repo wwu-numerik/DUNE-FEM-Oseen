@@ -6,6 +6,9 @@
 #include <dune/stuff/grid/entity.hh>
 #include "common.hh"
 
+namespace StokesProblems {
+namespace Aorta{
+
 ALLGOOD_SETUPCHECK;
 
 static const std::string identifier = "Simple";
@@ -189,6 +192,9 @@ class Pressure : public Dune::Fem::Function < FunctionSpaceImp , Pressure < Func
 	private:
 		static const int dim_ = FunctionSpaceImp::dimDomain;
 };
+
+} // namespace Aorta {
+} // namespace StokesProblems {
 
 #endif // PROBLEM_AORTA_HH
 

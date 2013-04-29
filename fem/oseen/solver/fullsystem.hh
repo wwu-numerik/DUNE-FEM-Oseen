@@ -84,7 +84,7 @@ namespace Dune {
 				return *this;
 			}
 
-			IdentityMatrix<typename CmatrixType::RealMatrixType>& preconditionMatrix()
+            DSC::IdentityMatrix<typename CmatrixType::RealMatrixType>& preconditionMatrix()
 			{
 				return precond_;
 			}
@@ -122,7 +122,7 @@ namespace Dune {
 			mutable long total_inner_iterations;
 			const typename DiscretePressureFunctionType::DiscreteFunctionSpaceType& pressure_space_;
 			const typename DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& velocity_space_;
-			IdentityMatrix<typename CmatrixType::RealMatrixType> precond_;
+            DSC::IdentityMatrix<typename CmatrixType::RealMatrixType> precond_;
 	};
 
 
@@ -183,9 +183,8 @@ class DirectKrylovSolver
 				const DiscreteVelocityFunctionType& rhs2,
 				const DiscretePressureFunctionType& rhs3 ) const
 	{
-
-		auto logDebug = DSC_LOG_DEBUG;
-		auto logInfo = DSC_LOG_INFO;
+        auto& logDebug = DSC_LOG_DEBUG;
+        auto& logInfo = DSC_LOG_INFO;
 
 		if ( DSC_CONFIG_GET( "disableSolver", false ) ) {
 			logInfo.resume();

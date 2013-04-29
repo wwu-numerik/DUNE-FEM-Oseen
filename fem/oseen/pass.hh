@@ -25,7 +25,6 @@
 #   include <dune/stuff/common/logging.hh>
 #endif
 #include <dune/stuff/grid/entity.hh>
-#include <dune/stuff/fem/functions.hh>
 #include <dune/stuff/common/profiler.hh>
 
 namespace Dune {
@@ -80,7 +79,7 @@ class OseenPass
         void apply( const DomainType &arg, RangeType &dest, Dune::Oseen::RhsDatacontainer<OtherTraitsImp>* rhs_datacontainer = nullptr )
         {
             // profiler information
-            profiler().StartTiming("Pass_init");
+            DSC_PROFILER.startTiming("Pass_init");
             typedef Oseen::Assembler::Factory< Traits >
                 Factory;
             // M\in R^{M\times M}
@@ -119,7 +118,7 @@ class OseenPass
             auto h2_o_integrator = Factory::integratorO( H2_O_rhs, beta_ );
             H2rhs += H2_O_rhs;
             auto h3_integrator = Factory::integrator( H3rhs );
-            profiler().StopTiming("Pass_init");
+            DSC_PROFILER.stopTiming("Pass_init");
 
 #ifndef STOKES_CONV_ONLY
             if ( do_oseen_discretization_ )
@@ -182,7 +181,7 @@ class OseenPass
 		void printInfo() const
 		{
 #ifndef NLOG
-			auto infoStream = DSC_LOG_INFO;
+            auto& infoStream = DSC_LOG_INFO;
 			infoStream << boost::format( "pressure_gradient/convection scaling: %e | %e\npass viscosity: %e\n")
 								% discreteModel_.pressure_gradient_scaling()
 								% discreteModel_.convection_scaling()
@@ -209,7 +208,7 @@ class OseenPass
 						++intIt ) {
 					// count intersections
 					++numberOfIntersections;
-					maxGridWidth = std::max( DSC::getLenghtOfIntersection( *intIt ), maxGridWidth );
+                    maxGridWidth = std::max(intIt->geometry().volume(), maxGridWidth );
 					// if we are inside the grid
 					if ( intIt->neighbor() && !intIt->boundary() ) {
 						// count inner intersections

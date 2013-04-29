@@ -15,6 +15,7 @@
 #include <dune/stuff/common/logging.hh>
 #include <dune/stuff/common/parameter/configcontainer.hh>
 #include <dune/stuff/fem/matrix_object.hh>
+#include <dune/stuff/fem/functions/transform.hh>
 
 namespace Dune {
 

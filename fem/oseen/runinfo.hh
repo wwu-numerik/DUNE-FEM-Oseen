@@ -8,8 +8,11 @@
 #include <string>
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
+#include <dune/stuff/common/filesystem.hh>
 
+namespace Dune {
 namespace Stuff {
+namespace Common {
 /** \brief wrap any info that might be remotely interesting about a single run
 	**/
 struct RunInfo
@@ -65,8 +68,9 @@ struct RunInfo
 	}
 
 	template < class Stream >
-	void tableLine( Stream& stream ) const
+    void tableLine( Stream& stream_ptr ) const
 	{
+        auto& stream = *stream_ptr;
 		static boost::format line("%e,%d,%e,%d,%d,%d,%d,%d,%s,%e,%e,%e,%s,%d,%d,%d,%d,%e,%s,%e,%e,%e,%e,%e,%s,%e");
 		static boost::format single(",%e");
 		stream << line %
@@ -93,17 +97,18 @@ struct RunInfo
 				  current_time%  delta_t%  viscosity%  reynolds%  alpha%
 				  algo_id%
 				  cumulative_run_time;
-		BOOST_FOREACH( double err, L2Errors ) {
+        for( double err : L2Errors ) {
 			stream << 	single % err ;
 		}
-		BOOST_FOREACH( double err, H1Errors ) {
+        for( double err : H1Errors ) {
 			stream << 	single % err ;
 		}
 		stream << std::endl;
 	}
 	template < class Stream >
-	void tableHeader( Stream& stream ) const
+    void tableHeader( Stream& stream_ptr ) const
 	{
+        auto& stream = *stream_ptr;
 		static boost::format line("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s");
 		stream << line %
 				  "grid_width"%
@@ -157,17 +162,19 @@ typedef std::map< RunInfoVectorMapKeyType, RunInfoTimeMap >
 
 void dumpRunInfoVectorToFile( const RunInfoVector& vec, const std::string fn = "runinfos.csv" )
 {
-	std::ofstream file( getFileinDatadir( fn ).c_str() );
+    std::unique_ptr<boost::filesystem::ofstream> file(DSC::make_ofstream(fn));
 	assert( vec.size() > 0 );
 	vec.front().tableHeader( file );
-	BOOST_FOREACH( RunInfo info, vec ) {
+    for(const RunInfo& info : vec) {
 		info.tableLine( file );
 	}
-	file.flush();
-	file.close();
+    file->flush();
+    file->close();
 }
 
+} //namespace Common {
 } //namespace Stuff {
+} //namespace Dune {
 
 #endif // DUNE_STUFF_RUNINFO_HH
 /** Copyright (c) 2012, Rene Milk 

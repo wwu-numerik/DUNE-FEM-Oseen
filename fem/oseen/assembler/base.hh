@@ -8,7 +8,7 @@
 #include <dune/fem/oseen/stab_coeff.hh>
 
 #include <boost/integer/static_min_max.hpp>
-#include <boost/progress.hpp>
+
 
 namespace Dune {
 namespace Oseen {
@@ -245,7 +245,7 @@ namespace Assembler {
 																  intersection,
                                                                   PolOrder<Traits>::value,
 																  Traits::FaceQuadratureType::INSIDE ),
-				  lengthOfIntersection( DSC::getLenghtOfIntersection( intersection ) ),
+                  lengthOfIntersection( intersection.geometry().volume() ),
 				  stabil_coeff( discrete_modelIn.getStabilizationCoefficients() ),
 				  C_11( penalty<-1>(ent,intersection, stabil_coeff, lengthOfIntersection ) ),
 				  D_11( penalty<1>(ent,intersection, stabil_coeff, lengthOfIntersection ) ),
@@ -403,10 +403,9 @@ namespace Assembler {
 			const GridView gridView = grid_part_.grid().leafView();
 
 			const LeafIterator endit = gridView.template end<0,Dune::All_Partition>();
-			boost::progress_display pbar(grid_part_.grid().size(0));
-			for ( LeafIterator entityIt = gridView.template begin<0,Dune::All_Partition>();
+            for ( LeafIterator entityIt = gridView.template begin<0,Dune::All_Partition>();
 				 entityIt!=endit;
-				 ++entityIt,++pbar)
+                 ++entityIt)
 			{
 				const typename Traits::EntityType& entity = *entityIt;
 				InfoContainerVolume info( *this, entity, discrete_model_,grid_part_ );
@@ -435,7 +434,6 @@ namespace Assembler {
 					}
 				}
 			}
-			++pbar;
 		}
 	};
 

@@ -52,19 +52,19 @@ static inline void naiveMatrixMultAdd( const MatrixType& matrix, const OperandFu
 template <class MatrixObjectType, class DiscretePressureFunctionType, class PressureGradientDiscreteFunctionType>
 void getPressureGradient( MatrixObjectType& matrix_object, const DiscretePressureFunctionType& pressure, PressureGradientDiscreteFunctionType& pressure_gradient )
 {
-	const SpaceType& space_ = pressure.space();
-	DSC_LOG_ERROR.Resume( 9001 );
+    const auto& space_ = pressure.space();
+    DSC_LOG_ERROR.resume( 9001 );
 
     for (const auto& entity : space_ )
 	{
-        auto local_matrix = matrix_object.localMatrix( *it, *it );
-        auto local_pressure_gradient = pressure_gradient.localFunction( * it );
-        auto local_pressure = pressure.localFunction( * it );
+        auto local_matrix = matrix_object.localMatrix(entity, entity);
+        auto local_pressure_gradient = pressure_gradient.localFunction(entity);
+        auto local_pressure = pressure.localFunction(entity);
 		naiveMatrixMult( local_matrix, local_pressure, local_pressure_gradient );
 
 
-        auto  intItEnd = space_.gridPart().iend( *it );
-        for (   auto  intIt = space_.gridPart().ibegin( *it );
+        auto  intItEnd = space_.gridPart().iend(entity);
+        for (   auto  intIt = space_.gridPart().ibegin(entity);
 				intIt != intItEnd;
 				++intIt ) {
             const auto & intersection = *intIt;

@@ -9,6 +9,9 @@
 #include <dune/common/float_cmp.hh>
 #include "common.hh"
 
+namespace StokesProblems {
+namespace Cockburn {
+
 static const std::string identifier = "Simple";
 static const bool hasExactSolution	= true;
 
@@ -29,7 +32,7 @@ struct SetupCheck {
         if (!ok)
             return false;
         const double v = DSC_CONFIG_GET( "viscosity", -10.0 );
-        ok = DSC::aboutEqual( v, 1.0 );
+        ok = Dune::FloatCmp::eq( v, 1.0 );
         err = ( boost::format( "viscosity %f\n" ) % v ).str();
         return ok;
     }
@@ -205,6 +208,9 @@ class Velocity : public Dune::Fem::Function < FunctionSpaceImp , Velocity < Func
 	private:
 		static const int dim_ = FunctionSpaceImp::dimDomain;
 };
+
+} // namespace Cockburn {
+} // namespace StokesProblems {
 
 #endif // STOKES_PROBLEMS_COCKBURN_HH
 

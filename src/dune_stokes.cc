@@ -77,7 +77,7 @@ typedef Dune::GridSelector::GridType
 #include <dune/fem/oseen/postprocessing.hh>
 #include <dune/stuff/common/profiler.hh>
 #include <dune/stuff/common/signals.hh>
-//#include <dune/stuff/tex.hh>
+#include <dune/fem/oseen/tex.hh>
 
 #include <dune/fem/oseen/problems.hh>
 #include <dune/stuff/fem/femeoc.hh>
@@ -173,7 +173,7 @@ int main( int argc, char** argv )
         std::cerr << "\nUsage: " << argv[0] << " parameterfile \n" << "\n\t --- OR --- \n";
         std::cerr << "\nUsage: " << argv[0] << " paramfile:"<<"file" << " more-opts:val ..." << std::endl;
         std::cerr << "\nUsage: " << argv[0] << " -d paramfile "<< "\n\t(for displaying solutions in grape) "<< std::endl;
-//        Parameters().PrintParameterSpecs( std::cerr );
+//        DSC_CONFIG.PrintParameterSpecs( std::cerr );
         std::cerr << std::endl;
         return 2;
     }
@@ -182,14 +182,12 @@ int main( int argc, char** argv )
         return display( argc, argv );
     }
 #endif
-    if ( !(  DSC_CONFIG.readCommandLine( argc, argv ) ) ) {
-        return 1;
-    }
+    DSC_CONFIG.readCommandLine( argc, argv );
 
     // LOG_NONE = 1, LOG_ERR = 2, LOG_INFO = 4,LOG_DEBUG = 8,LOG_CONSOLE = 16,LOG_FILE = 32
     //--> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_CONSOLE | LOG_FILE = 62
     const bool useLogger = false;
-    DSC_LOG.Create( DSC_CONFIG_GETB( "loglevel",         62,                         useLogger ),
+    DSC_LOG.create( DSC_CONFIG_GETB( "loglevel",         62,                         useLogger ),
                      DSC_CONFIG_GETB( "logfile",          std::string("dune_stokes"), useLogger ),
                      DSC_CONFIG_GETB( "fem.io.datadir",   std::string(),              useLogger )
                     );
@@ -220,7 +218,7 @@ int main( int argc, char** argv )
             break;
         }
         case 5: {
-            profiler().Reset( 1 );
+            DSC_PROFILER.reset( 1 );
 			DSC::RunInfoVector rf;
 			Dune::StabilizationCoefficients st = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
 			st.FactorFromParams( "C11" );
@@ -228,13 +226,13 @@ int main( int argc, char** argv )
 			st.FactorFromParams( "D11" );
 			st.FactorFromParams( "D12" );
 			rf.push_back(singleRun( mpicomm, DSC_CONFIG_GET( "minref", 0 ), st ) );
-            profiler().Output( mpicomm, rf );
+            DSC_PROFILER.outputTimings();
 			DSC::dumpRunInfoVectorToFile( rf );
             break;
         }
     } // end case
 
-    Logger().Dbg() << "\nRun from: " << commit_string << std::endl;
+    DSC_LOG_ERROR << "\nRun from: " << commit_string << std::endl;
     return err;
   }
 
@@ -245,7 +243,7 @@ int main( int argc, char** argv )
   }
   catch ( std::bad_alloc& b ) {
       std::cerr << "Memory allocation failed: " << b.what() ;
-      DSC_LOG_INFO.Resume();
+      DSC_LOG_INFO.resume();
       DSC::meminfo( DSC_LOG_INFO );
   }
   catch ( std::runtime_error& a ) {
@@ -267,10 +265,10 @@ void RefineRun( CollectiveCommunication& mpicomm )
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
 	DSC::RunInfoVector run_infos;
-	DSC::Tex::FemEoc& eoc_output = DSC::Tex::FemEoc::instance( );
+    auto& eoc_output = DSFe::FemEoc::instance( );
 	eoc_output.initialize( DSC_CONFIG_GET("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
-	DSC::Tex::RefineOutput eoc_texwriter( errorColumnHeaders );
+    DSC::RefineOutput eoc_texwriter( errorColumnHeaders );
 
     int minref = DSC_CONFIG_GET( "minref", 0 );
 	// ensures maxref>=minref
@@ -283,22 +281,22 @@ void RefineRun( CollectiveCommunication& mpicomm )
     // setting this to true will give each run a unique logilfe name
 	bool per_run_log_target = DSC_CONFIG_GET( "per-run-log-target", true );
 
-    profiler().Reset( maxref - minref + 1 );
+    DSC_PROFILER.reset( maxref - minref + 1 );
     for ( int ref = minref; ref <= maxref; ++ref ) {
         if ( per_run_log_target )
-            Logger().SetPrefix( "dune_stokes_ref_"+DSC::toString(ref) );
+            DSC_LOG.setPrefix( "dune_stokes_ref_"+DSC::toString(ref) );
 
 		DSC::RunInfo info = singleRun( mpicomm, ref, stab_coeff );
         run_infos.push_back( info );
         eoc_output.setErrors( idx,info.L2Errors );
         eoc_texwriter.setInfo( info );
         eoc_output.write( eoc_texwriter, ( ref >= maxref ) );
-        profiler().NextRun(); //finish this run
+        DSC_PROFILER.nextRun(); //finish this run
     }
 	run_infos[0].cumulative_run_time = run_infos[0].run_time;
 	for ( size_t i = 1; i < run_infos.size(); ++i )
 			run_infos[i].cumulative_run_time = run_infos[i-1].cumulative_run_time + run_infos[i].run_time;
-	profiler().Output( mpicomm, run_infos );
+    DSC_PROFILER.outputTimings();
 	DSC::dumpRunInfoVectorToFile( run_infos );
 	eocCheck( run_infos );
 }
@@ -311,16 +309,16 @@ void AccuracyRun( CollectiveCommunication& mpicomm )
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
 	DSC::RunInfoVector run_infos;
-	DSC::Tex::FemEoc& eoc_output = DSC::Tex::FemEoc::instance( );
+    auto& eoc_output = DSFe::FemEoc::instance( );
 	eoc_output.initialize( DSC_CONFIG_GET("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
-	DSC::Tex::AccurracyOutput  eoc_texwriter( errorColumnHeaders );
+    DSC::AccurracyOutput  eoc_texwriter( errorColumnHeaders );
 
     double  accurracy_start  = DSC_CONFIG_GET( "accurracy_start", 10e-3 );
     int     accurracy_steps  = DSC_CONFIG_GET( "accurracy_steps", 5 );
     double  accurracy_factor = DSC_CONFIG_GET( "accurracy_factor", 10e-3 );
 
-    Logger().Dbg() << " accurracy_start: " <<  accurracy_start
+    DSC_LOG_DEBUG << " accurracy_start: " <<  accurracy_start
             << " accurracy_steps: " <<  accurracy_steps
             << " accurracy_factor: " <<  accurracy_factor << std::endl;
 
@@ -330,17 +328,14 @@ void AccuracyRun( CollectiveCommunication& mpicomm )
     bool per_run_log_target = DSC_CONFIG_GET( "per-run-log-target", true );
 
 	int numruns = int( std::pow( accurracy_steps, 2.0 ) );
-    profiler().Reset( numruns );
+    DSC_PROFILER.reset( numruns );
     for ( int i = 0; i < accurracy_steps; ++i ) {
         for ( int j = 0; j < accurracy_steps; ++j ) {
 
-            if ( per_run_log_target )
-                Logger().SetPrefix( "dune_stokes_ref_"+DSC::toString(ref) );
-
             double inner_acc = accurracy_start * std::pow( accurracy_factor, double( j ) );
             double outer_acc = accurracy_start * std::pow( accurracy_factor, double( i ) );
-            Parameters().setParam( "absLimit", outer_acc );
-            Parameters().setParam( "inner_absLimit", inner_acc );
+            DSC_CONFIG.set( "absLimit", outer_acc );
+            DSC_CONFIG.set( "inner_absLimit", inner_acc );
 			Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
 			DSC::RunInfo info = singleRun( mpicomm, ref, stab_coeff );
             run_infos.push_back( info );
@@ -348,12 +343,12 @@ void AccuracyRun( CollectiveCommunication& mpicomm )
             eoc_texwriter.setInfo( info );
             numruns--;
             eoc_output.write( eoc_texwriter, !numruns );
-            profiler().NextRun(); //finish this run
+            DSC_PROFILER.nextRun(); //finish this run
 
             DSC_LOG_INFO << numruns << " runs remaining" << std::endl;
         }
     }
-    profiler().Output( mpicomm, run_infos );
+    DSC_PROFILER.outputTimings();
 	DSC::dumpRunInfoVectorToFile( run_infos );
 }
 
@@ -365,16 +360,16 @@ void AccuracyRunOuter( CollectiveCommunication& mpicomm )
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
 	DSC::RunInfoVector run_infos;
-	DSC::Tex::FemEoc& eoc_output = DSC::Tex::FemEoc::instance( );
+    auto& eoc_output = DSFe::FemEoc::instance( );
 	eoc_output.initialize( DSC_CONFIG_GET("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
-	DSC::Tex::AccurracyOutputOuter  eoc_texwriter( errorColumnHeaders );
+    DSC::AccurracyOutputOuter  eoc_texwriter( errorColumnHeaders );
 
     double  accurracy_start  = DSC_CONFIG_GET( "accurracy_start", 10e-3 );
     int     accurracy_steps  = DSC_CONFIG_GET( "accurracy_steps", 5 );
     double  accurracy_factor = DSC_CONFIG_GET( "accurracy_factor", 10e-3 );
 
-    Logger().Dbg() << " accurracy_start: " <<  accurracy_start
+    DSC_LOG_DEBUG << " accurracy_start: " <<  accurracy_start
             << " accurracy_steps: " <<  accurracy_steps
             << " accurracy_factor: " <<  accurracy_factor << std::endl;
 
@@ -384,15 +379,15 @@ void AccuracyRunOuter( CollectiveCommunication& mpicomm )
     bool per_run_log_target = DSC_CONFIG_GET( "per-run-log-target", true );
 
     int numruns = accurracy_steps;
-    profiler().Reset( numruns );
+    DSC_PROFILER.reset( numruns );
     for ( int i = 0; i < accurracy_steps; ++i ) {
         if ( per_run_log_target )
-            Logger().SetPrefix( "dune_stokes_ref_"+DSC::toString(ref) );
+            DSC_LOG.setPrefix( "dune_stokes_ref_"+DSC::toString(ref) );
 
         double outer_acc = accurracy_start * std::pow( accurracy_factor, double( i ) );
         double inner_acc = outer_acc;
-        Parameters().setParam( "absLimit", outer_acc );
-        Parameters().setParam( "inner_absLimit", inner_acc );
+        DSC_CONFIG.set( "absLimit", outer_acc );
+        DSC_CONFIG.set( "inner_absLimit", inner_acc );
 		Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
 		DSC::RunInfo info = singleRun( mpicomm, ref, stab_coeff );
         run_infos.push_back( info );
@@ -400,11 +395,11 @@ void AccuracyRunOuter( CollectiveCommunication& mpicomm )
         eoc_texwriter.setInfo( info );
         numruns--;
         eoc_output.write( eoc_texwriter, !numruns );
-        profiler().NextRun(); //finish this run
+        DSC_PROFILER.nextRun(); //finish this run
 
         DSC_LOG_INFO << numruns << " runs remaining" << std::endl;
     }
-    profiler().Output( mpicomm, run_infos );
+    DSC_PROFILER.outputTimings();
 	DSC::dumpRunInfoVectorToFile( run_infos );
 }
 
@@ -416,10 +411,10 @@ void StabRun( CollectiveCommunication& mpicomm )
     const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
     ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
 	DSC::RunInfoVector run_infos;
-	DSC::Tex::FemEoc& eoc_output = DSC::Tex::FemEoc::instance( );
+    auto& eoc_output = DSFe::FemEoc::instance( );
 	eoc_output.initialize( DSC_CONFIG_GET("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
     size_t idx = eoc_output.addEntry( errorColumnHeaders );
-	DSC::Tex::EocOutput eoc_texwriter( errorColumnHeaders );
+    DSC::EocOutput eoc_texwriter( errorColumnHeaders );
 
     int ref = DSC_CONFIG_GET( "minref", 0 );
 
@@ -428,9 +423,9 @@ void StabRun( CollectiveCommunication& mpicomm )
 
     CoeffVector coeff_vector = getC_power_Permutations();
 
-    DSC_LOG_INFO.Resume();
+    DSC_LOG_INFO.resume();
     DSC_LOG_INFO << "beginning " << coeff_vector.size() << " runs" << std::endl ;
-    profiler().Reset( coeff_vector.size() );
+    DSC_PROFILER.reset( coeff_vector.size() );
 	CoeffVector::iterator it = coeff_vector.begin();
 	for ( unsigned i = 0; it != coeff_vector.end(); ++it,++i ) {
 		DSC::RunInfo info = singleRun( mpicomm, ref, *it );
@@ -443,14 +438,14 @@ void StabRun( CollectiveCommunication& mpicomm )
         //the writer needs to know if it should close the table etc.
         eoc_output.write( eoc_texwriter, ( (it+1) == coeff_vector.end() ) );
 
-        profiler().NextRun(); //finish this run
+        DSC_PROFILER.nextRun(); //finish this run
 		if ( per_run_log_target )
-			Logger().SetPrefix( "dune_stokes_permutation_"+DSC::toString(i) );
+            DSC_LOG.setPrefix( "dune_stokes_permutation_"+DSC::toString(i) );
     }
-    DSC_LOG_INFO.Resume();
+    DSC_LOG_INFO.resume();
     DSC_LOG_INFO << "completed " << coeff_vector.size() << " runs" << std::endl ;
 
-    profiler().Output( mpicomm, run_infos );
+    DSC_PROFILER.outputTimings();
 	DSC::dumpRunInfoVectorToFile( run_infos );
 }
 
@@ -458,7 +453,7 @@ void BfgRun( CollectiveCommunication& mpicomm )
 {
     //first up a non-bfg run for reference
     const int refine_level_factor = DSC_CONFIG_GET( "minref", 0 );
-    Parameters().setParam( "do-bfg", false );
+    DSC_CONFIG.set( "do-bfg", false );
 	Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
 	DSC::RunInfo nobfg_info = singleRun( mpicomm, refine_level_factor, stab_coeff );
 	nobfg_info.bfg_tau =  std::numeric_limits<double>::quiet_NaN();
@@ -469,32 +464,32 @@ void BfgRun( CollectiveCommunication& mpicomm )
     ColumnHeaders bfgColumnHeaders ( bfgheaders, bfgheaders + num_bfgheaders ) ;
     run_infos.push_back( nobfg_info );
 
-	DSC::Tex::FemEoc& bfg_output = DSC::Tex::FemEoc::instance( );
+    auto& bfg_output = DSFe::FemEoc::instance( );
 	bfg_output.initialize( DSC_CONFIG_GET("fem.io.datadir", std::string("data") ),"eoc-file", "bfg-desc", "eoc-template.tex" );
     size_t idx = bfg_output.addEntry( bfgColumnHeaders );
-	DSC::Tex::BfgOutput bfg_texwriter( bfgColumnHeaders, nobfg_info );
+    DSC::BfgOutput bfg_texwriter( bfgColumnHeaders, nobfg_info );
     bfg_output.setErrors( idx,nobfg_info.L2Errors );
     bfg_texwriter.setInfo( nobfg_info );
     bfg_output.write( bfg_texwriter, false );
-    Parameters().setParam( "do-bfg", true );
+    DSC_CONFIG.set( "do-bfg", true );
 
     const double start_tau = DSC_CONFIG_GET( "bfg-tau-start", 0.01 ) ;
     const double stop_tau = DSC_CONFIG_GET( "bfg-tau-stop", 0.4 ) ;
     const double tau_inc = DSC_CONFIG_GET( "bfg-tau-inc", 0.025 ) ;
 
-	profiler().Reset( int( ( stop_tau - start_tau ) / tau_inc + 1 ) );
+    DSC_PROFILER.reset( int( ( stop_tau - start_tau ) / tau_inc + 1 ) );
 
     for ( double tau = start_tau; tau < stop_tau; tau += tau_inc ) {
-        Parameters().setParam( "bfg-tau", tau );
+        DSC_CONFIG.set( "bfg-tau", tau );
 		Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
 		DSC::RunInfo info = singleRun( mpicomm, refine_level_factor, stab_coeff );
         run_infos.push_back( info );
         bfg_output.setErrors( idx,info.L2Errors );
         bfg_texwriter.setInfo( info );
         bfg_output.write( bfg_texwriter, !( tau + tau_inc < stop_tau ) );
-        profiler().NextRun(); //finish this run
+        DSC_PROFILER.nextRun(); //finish this run
     }
-    profiler().Output( mpicomm, run_infos );
+    DSC_PROFILER.outputTimings();
 	DSC::dumpRunInfoVectorToFile( run_infos );
 }
 
@@ -502,9 +497,9 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
                     int refine_level_factor,
 					Dune::StabilizationCoefficients& stabil_coeff )
 {
-    profiler().StartTiming( "SingleRun" );
-    DSC::Logging::LogStream& infoStream = DSC_LOG_INFO;
-	DSC::Logging::LogStream& debugStream = Logger().Dbg();
+    DSC_PROFILER.startTiming( "SingleRun" );
+    auto& infoStream = DSC_LOG_INFO;
+    auto& debugStream = DSC_LOG_DEBUG;
 	stabil_coeff.Add( "E12", 0.0 );
 	DSC::RunInfo info;
 
@@ -517,7 +512,7 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
      * ********************************************************************** */
 	infoStream << boost::format("\n- initialising grid (level %d)") % refine_level_factor << std::endl;
     const int gridDim = GridType::dimensionworld;
-    static Dune::GridPtr< GridType > gridPtr( Parameters().DgfFilename( gridDim ) );
+    static Dune::GridPtr< GridType > gridPtr( DSC_CONFIG.get( "dgf_file", "unitsquare.dgf" ) );
     static bool firstRun = true;
     int refine_level = ( refine_level_factor  ) * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
 	static int last_refine_level = refine_level;
@@ -657,19 +652,19 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
     PROBLEM_NAMESPACE::SetupCheck check;
     if ( !check( gridPart, stokesPass, stokesModel, computedSolutions ) )
         DUNE_THROW( Dune::InvalidStateException, check.error() );
-    profiler().StartTiming( "Pass -- APPLY" );
+    DSC_PROFILER.startTiming( "Pass -- APPLY" );
 	stokesPass.printInfo();
     auto last_wrapper ( computedSolutions );
     stokesPass.apply( last_wrapper, computedSolutions);
-    profiler().StopTiming( "Pass -- APPLY" );
-    info.run_time = profiler().GetTiming( "Pass -- APPLY" );
+    DSC_PROFILER.stopTiming( "Pass -- APPLY" );
+    info.run_time = DSC_PROFILER.getTiming( "Pass -- APPLY" );
     stokesPass.getRuninfo( info );
 
     /* ********************************************************************** *
      * Problem postprocessing
      * ********************************************************************** */
     infoStream << "\n- postprocesing" << std::endl;
-    profiler().StartTiming( "Problem/Postprocessing" );
+    DSC_PROFILER.startTiming( "Problem/Postprocessing" );
 
 	if ( !DSC_CONFIG_GET( "disableSolver", false ) )
 	{
@@ -709,8 +704,8 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 
 	info.problemIdentifier = PROBLEM_NAMESPACE::identifier;
 
-    profiler().StopTiming( "Problem/Postprocessing" );
-    profiler().StopTiming( "SingleRun" );
+    DSC_PROFILER.stopTiming( "Problem/Postprocessing" );
+    DSC_PROFILER.stopTiming( "SingleRun" );
 
     firstRun = false;
 
@@ -729,7 +724,7 @@ void eocCheck( const DSC::RunInfoVector& runInfos )
 		last = *it;
 	}
 	if ( ups ) {
-		Logger().Err() 	<< 	"----------------------------------------------------------\n"
+        DSC_LOG_ERROR 	<< 	"----------------------------------------------------------\n"
 						<<	"-                                                        -\n"
 						<<	"-                  negative EOC                          -\n"
 						<<	"-                                                        -\n"

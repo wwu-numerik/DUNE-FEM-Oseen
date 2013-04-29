@@ -98,9 +98,9 @@ namespace Dune {
 		  //get some refs for more readability
 		  PressureDiscreteFunctionType& pressure = dest.discretePressure();
 		  VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
-		  auto logDebug = DSC_LOG_DEBUG;
+          auto& logDebug = DSC_LOG_DEBUG;
 //		  Logging::LogStream& logError = DSC_LOG_ERROR;
-		  auto logInfo = DSC_LOG_INFO;
+          auto& logInfo = DSC_LOG_INFO;
 
 		  // relative min. error at which cg-solvers will abort
 		  const double relLimit = DSC_CONFIG_GET( "relLimit", 1e-4 );

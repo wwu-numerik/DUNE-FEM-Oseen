@@ -4,6 +4,8 @@
 #include <dune/fem/oseen/solver/solver_interface.hh>
 #include <dune/fem/oseen/solver/schurkomplement.hh>
 #include <dune/stuff/fem/customprojection.hh>
+#include <dune/stuff/fem/functions/integrals.hh>
+#include <dune/stuff/fem/functions/analytical.hh>
 
 namespace Dune {
 
@@ -68,8 +70,8 @@ namespace Dune {
 					const DiscretePressureFunctionType& rhs3 ) const
 		{
 			const std::string cg_name( "OuterCG");
-			auto logDebug = DSC_LOG_DEBUG;
-			auto logInfo = DSC_LOG_INFO;
+            auto& logDebug = DSC_LOG_DEBUG;
+            auto& logInfo = DSC_LOG_INFO;
 
 			// relative min. error at which cg-solvers will abort
 			const double relLimit = DSC_CONFIG_GET( "relLimit", 1e-4 );
@@ -155,12 +157,12 @@ namespace Dune {
 			pressure.clear();
 			bicg.apply( schur_f, pressure );
 			//pressure mw correction
-			double meanPressure_discrete = DSC::meanValue( pressure, pressure.space() );
+            double meanPressure_discrete = DSFe::meanValue( pressure, pressure.space() );
 			typedef typename OseenPassType::Traits::DiscreteModelType::Traits::PressureFunctionSpaceType
 					PressureFunctionSpaceType;
 			PressureFunctionSpaceType pressureFunctionSpace;
-			DSC::ConstantFunction<PressureFunctionSpaceType> vol(pressureFunctionSpace, meanPressure_discrete );
-			Dune::BetterL2Projection
+            DSFe::ConstantFunction<PressureFunctionSpaceType> vol(pressureFunctionSpace, meanPressure_discrete );
+            DSFe::BetterL2Projection
 				::project( 0.0, vol, tmp2 );
 			pressure -= tmp2;
 

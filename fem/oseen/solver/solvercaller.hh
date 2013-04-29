@@ -87,7 +87,7 @@ struct SolverCaller {
 		{
 		    // do the matlab logging stuff
 		    if ( DSC_CONFIG_GET( "save_matrices", false ) ) {
-                DSC::Logging::MatlabLogStream& matlabLogStream = Logger().Matlab();
+                auto& matlabLogStream = DSC_LOG_ERROR;
                 #if STOKES_USE_ISTL
                 #   define MPRINTER printISTLMatrixMatlabStyle
                 #else
@@ -104,7 +104,7 @@ struct SolverCaller {
                 DSC::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
                 DSC::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
                 DSC::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
-                matlabLogStream.Flush();
+                matlabLogStream.flush();
                 #undef MPRINTER
 
 		    }
