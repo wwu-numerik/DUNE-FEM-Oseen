@@ -1,16 +1,15 @@
 #ifndef DUNE_OSEEN_INTEGRATORS_FACTORY_HH
 #define DUNE_OSEEN_INTEGRATORS_FACTORY_HH
 
-#include <dune/common/shared_ptr.hh>
 #include <dune/common/static_assert.hh>
 
-#if STOKES_USE_ISTL
-#   include <dune/fem/oseen/assembler/mod_istlmatrix.hh>
-#   define STOKES_MATRIX_OBJECT ModifiedISTLMatrixObject
-#   include <dune/fem/operator/2order/dgmatrixtraits.hh>
-#   include <dune/fem/oseen/assembler/bcrstraits.hh>
-#   define STOKES_MATRIX_OBJECT_TRAITS Dune::Stokes::Assembler::ModifiedDGMatrixTraits
-#else
+//#if STOKES_USE_ISTL
+//#   include <dune/fem/oseen/assembler/mod_istlmatrix.hh>
+//#   define STOKES_MATRIX_OBJECT ModifiedISTLMatrixObject
+//#   include <dune/fem/operator/2order/dgmatrixtraits.hh>
+//#   include <dune/fem/oseen/assembler/bcrstraits.hh>
+//#   define STOKES_MATRIX_OBJECT_TRAITS Dune::Stokes::Assembler::ModifiedDGMatrixTraits
+//#else
 #   define STOKES_MATRIX_OBJECT SparseRowMatrixObject
     template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
     struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
@@ -22,25 +21,10 @@
         };
     };
 #   define STOKES_MATRIX_OBJECT_TRAITS MatrixTraits
-#endif
+//#endif
 
-#if 0
-template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
-struct DiagonalMatrixTraits :
-#if STOKES_USE_ISTL
-        public Dune::ISTLMatrixTraits<RowSpaceImp,ColSpaceImp> {
-#else
-        public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
-#endif
-    struct StencilType {
-        static int nonZerosEstimate( const ColSpaceImp& ) {
-            return 1;
-        }
-    };
-};
-#endif
 
-#define MK_FUNC_NAME(name) Discrete ## name ## FunctionType
+#define MK_FUNC_NAME(name) Discrete ## name ## FunctionSpaceType
 #define TYPEDEF_MATRIX_AND_INTEGRATOR( Name, Row, Col ) \
     typedef typename MatrixObject< MK_FUNC_NAME(Row), MK_FUNC_NAME(Col) >::Type \
         Name ## matrixInternalType; \
@@ -60,8 +44,8 @@ struct DiagonalMatrixTraits :
 namespace Dune { namespace Oseen { namespace Assembler {
 
 //! A Static map of Matrix-/DiscreteFunctionType onto IntegratorType
-template < class FactoryType, class MatrixType, bool = true >
-struct IntegratorSelector {};
+template < class FactoryType, class MatrixType>
+struct IntegratorSelector {typedef double Type;};
 SPECIALIZE_IntegratorSelector(M);
 SPECIALIZE_IntegratorSelector(W);
 SPECIALIZE_IntegratorSelector(X);
@@ -91,19 +75,24 @@ struct IntegratorSelector< FactoryType, typename FactoryType::DiscretePressureFu
 //! A static map of DiscreteFunctionSpace onto DiscreteFunction
 template < class FactoryType, class DiscreteFunctionSpaceType, bool = true >
 struct DiscreteFunctionSelector {};
+
 template < class FactoryType >
 struct DiscreteFunctionSelector< FactoryType, typename FactoryType::DiscreteSigmaFunctionSpaceType >
 { typedef typename FactoryType::DiscreteSigmaFunctionType Type; };
+
 template < class FactoryType >
 struct DiscreteFunctionSelector< FactoryType, typename FactoryType::DiscreteVelocityFunctionSpaceType >
 { typedef typename FactoryType::DiscreteVelocityFunctionType Type; };
+
 template < class FactoryType >
 struct DiscreteFunctionSelector< FactoryType, typename FactoryType::DiscretePressureFunctionSpaceType >
 { typedef typename FactoryType::DiscretePressureFunctionType Type; };
+
 template < class FactoryType, class DiscreteFunctionSpaceType >
 //! this specialization is needed incase function types are equal
 struct DiscreteFunctionSelector< FactoryType, DiscreteFunctionSpaceType, false >
 { typedef typename FactoryType::DiscretePressureFunctionType Type; };
+
 //!
 template < class StokesTraitsType >
 class Factory {
@@ -179,10 +168,10 @@ public:
     template < class RowSpace, class ColSpace >
     struct magic {
         //! more magic on the inside to avoid ambiguous DiscretefunctionSelector instantiation in 1D
-        typedef typename DiscreteFunctionSelector< ThisType, RowSpace, RowSpace::dimensionworld != 1 >::Type
-            RowType;
-        typedef typename DiscreteFunctionSelector< ThisType, ColSpace, RowSpace::dimensionworld != 1 >::Type
-            ColType;
+//        typedef typename DiscreteFunctionSelector< ThisType, RowSpace, RowSpace::dimensionworld != 1 >::Type
+            typedef RowSpace RowType;
+//        typedef typename DiscreteFunctionSelector< ThisType, ColSpace, RowSpace::dimensionworld != 1 >::Type
+            typedef ColSpace ColType;
         typedef typename MatrixObject< RowType, ColType >::Type
             InternalMatrixType;
         typedef Dune::shared_ptr<InternalMatrixType>

@@ -72,7 +72,7 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 				a_operator_.getDiag( precondition_diagonal );
 #endif
                 DSFe::invertFunctionDofs( precondition_diagonal );
-				setMatrixDiag( PreconditionMatrixBaseType::matrix(), precondition_diagonal );
+                DSC::setMatrixDiag( PreconditionMatrixBaseType::matrix(), precondition_diagonal );
 			}
 
 	#ifdef USE_BFG_CG_SCHEME

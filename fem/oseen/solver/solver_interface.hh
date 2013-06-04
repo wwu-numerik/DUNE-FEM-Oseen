@@ -73,12 +73,14 @@ class MatrixWrapper : boost::noncopyable {
 		    matrix_pointer_->multOEM( f, ret );
 		}
 
+#if HAVE_DUNE_ISTL
         template <class ArgBlockType, class DestBlockType, class ArgAllocatorType, class DestAllocatorType>
         void apply(const Dune::BlockVector<ArgBlockType,ArgAllocatorType> &f,
                  Dune::BlockVector<DestBlockType,DestAllocatorType> &ret) const
         {
             matrix_pointer_->multOEM( f, ret );
         }
+#endif
 		//! return diagonal of (this * A * B)
 		template <class DiscrecteFunctionType, class OtherMatrixType_A, class OtherMatrixType_B>
 		void getDiag(const OtherMatrixType_A& A, const OtherMatrixType_B& B, DiscrecteFunctionType& rhs) const
@@ -111,12 +113,14 @@ class MatrixWrapper : boost::noncopyable {
 		    #endif
 		}
 
+#if HAVE_DUNE_ISTL
         template <class ArgBlockType, class DestBlockType, class ArgDType, class DestDType>
         void applyAdd(const Dune::BlockVector<ArgBlockType, ArgDType>& x,
                  Dune::BlockVector<DestBlockType, DestDType>& ret ) const
 		{
             matrix_pointer_->applyAdd( x, ret );
 		}
+#endif
 
 		//! same as apply A * x = ret, used by OEM-Solvers
 		template <class VECtype, class VECtypeR >
@@ -144,6 +148,7 @@ class MatrixWrapper : boost::noncopyable {
             matrix_pointer_->multOEMAdd( x, ret );
         }
 
+#if HAVE_DUNE_ISTL
         template <class ArgDofStorageType, class DestDofStorageType>
         void multOEMAdd(const Dune::BlockVector<ArgDofStorageType> &x,
                  Dune::BlockVector<DestDofStorageType> &ret) const
@@ -157,13 +162,14 @@ class MatrixWrapper : boost::noncopyable {
         {
             matrix_pointer_->multOEM( x, ret );
         }
+#endif
 
 		double operator ()(const size_t i, const size_t j ) const
 		{
             #if STOKES_USE_ISTL
                 return matrix_pointer_->operator()(i,j);
             #else
-                return  matrix_pointer_->matrix()(i,j);
+                return  matrix_pointer_->matrix()(int(i),int(j));
             #endif
 		}
 

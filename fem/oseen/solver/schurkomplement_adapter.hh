@@ -1,22 +1,25 @@
 #ifndef SCHURKOMPLEMENT_ADAPTER_HH
 #define SCHURKOMPLEMENT_ADAPTER_HH
 
+#include <dune/fem/operator/2order/dgmatrixsetup.hh>
+
 namespace Dune {
 
 template <class MatrixImp>
-class SchurkomplementOperatorAdapter : public AssembledLinearOperator< MatrixImp,
-    typename MatrixImp :: RowDiscreteFunctionType :: DofStorageType,
-    typename MatrixImp :: ColDiscreteFunctionType :: DofStorageType>
+class SchurkomplementOperatorAdapter
+//        : public AssembledLinearOperator< MatrixImp,
+//    typename MatrixImp :: RowDiscreteFunctionType :: DofStorageType,
+//    typename MatrixImp :: ColDiscreteFunctionType :: DofStorageType>
 {
     typedef SchurkomplementOperatorAdapter< MatrixImp >
         ThisType ;
-    typedef AssembledLinearOperator< MatrixImp,
-            typename MatrixImp :: RowDiscreteFunctionType :: DofStorageType,
-            typename MatrixImp :: ColDiscreteFunctionType :: DofStorageType>
-        BaseType;
+//    typedef AssembledLinearOperator< MatrixImp,
+//            typename MatrixImp :: RowDiscreteFunctionType :: DofStorageType,
+//            typename MatrixImp :: ColDiscreteFunctionType :: DofStorageType>
+//        BaseType;
 
   public:
-    enum { category=SolverCategory::sequential };
+//    enum { category=SolverCategory::sequential };
     typedef MatrixImp MatrixType;
     typedef DSC::PrecondionWrapperDummy<MatrixType> PreconditionAdapterType;
 

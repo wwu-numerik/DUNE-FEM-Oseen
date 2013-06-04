@@ -15,6 +15,7 @@
 #include <dune/fem/oseen/datacontainer.hh>
 #include <dune/fem/oseen/solver/solvercaller.hh>
 #include <dune/fem/oseen/assembler/all.hh>
+#include <dune/fem/oseen/runinfo.hh>
 
 #include <dune/stuff/fem/customprojection.hh>
 #include <dune/stuff/common/matrix.hh>
@@ -155,7 +156,6 @@ class OseenPass
                                             Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs, beta_ );
         } // end of apply
 
-#ifdef HAS_RUN_INFO
 		void getRuninfo( DSC::RunInfo& info )
         {
 			info.iterations_inner_avg = int( info_.iterations_inner_avg );
@@ -164,7 +164,6 @@ class OseenPass
             info.iterations_outer_total = info_.iterations_outer_total;
             info.max_inner_accuracy = info_.max_inner_accuracy;
         }
-#endif
 
     private:
         DiscreteModelType discreteModel_;

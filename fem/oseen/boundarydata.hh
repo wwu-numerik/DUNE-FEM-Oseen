@@ -38,7 +38,7 @@ class BoundaryIdMapping {
 
 	BoundaryIdMapping()
 	{
-        zeroBoundaryIds_ 	= DSC_CONFIG.getList( "zeroBoundaryIds" , 1 );
+        zeroBoundaryIds_ 	= DSC_CONFIG.getList( "zeroBoundaryIds" , int(1) );
         influxBoundaryIds_	= DSC_CONFIG.getList( "influxBoundaryIds" , 2 );
         outfluxBoundaryIds_	= DSC_CONFIG.getList( "outfluxBoundaryIds" , 3 );
 	    setupBoundaryIdTypeMap_();

@@ -7,12 +7,14 @@
 #include <vector>
 #include <string>
 #include <boost/format.hpp>
-#include <boost/foreach.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <dune/stuff/common/filesystem.hh>
+#include <dune/stuff/aliases.hh>
 
 namespace Dune {
 namespace Stuff {
 namespace Common {
+
 /** \brief wrap any info that might be remotely interesting about a single run
 	**/
 struct RunInfo
@@ -67,13 +69,12 @@ struct RunInfo
 		return info;
 	}
 
-	template < class Stream >
-    void tableLine( Stream& stream_ptr ) const
+    template < class StreamPtr >
+    void tableLine( StreamPtr& stream ) const
 	{
-        auto& stream = *stream_ptr;
 		static boost::format line("%e,%d,%e,%d,%d,%d,%d,%d,%s,%e,%e,%e,%s,%d,%d,%d,%d,%e,%s,%e,%e,%e,%e,%e,%s,%e");
 		static boost::format single(",%e");
-		stream << line %
+        *stream << line %
 				  grid_width%
 				  refine_level%
 				  run_time%
@@ -98,19 +99,18 @@ struct RunInfo
 				  algo_id%
 				  cumulative_run_time;
         for( double err : L2Errors ) {
-			stream << 	single % err ;
+            *stream << 	single % err ;
 		}
         for( double err : H1Errors ) {
-			stream << 	single % err ;
+            *stream << 	single % err ;
 		}
-		stream << std::endl;
+        *stream << std::endl;
 	}
-	template < class Stream >
-    void tableHeader( Stream& stream_ptr ) const
+    template < class StreamPtr >
+    void tableHeader( StreamPtr& stream ) const
 	{
-        auto& stream = *stream_ptr;
 		static boost::format line("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s");
-		stream << line %
+        *stream << line %
 				  "grid_width"%
 				  "refine_level"%
 				  "run_time"%
@@ -136,12 +136,12 @@ struct RunInfo
 				  "cumulative_run_time";
 		static boost::format err(",%s_%d");
 		for( size_t i = 0; i < L2Errors.size(); ++i ) {
-			stream << 	err % "L2" % i;
+            *stream << 	err % "L2" % i;
 		}
 		for( size_t i = 0; i < H1Errors.size(); ++i ) {
-			stream << 	err % "H1" % i;
+            *stream << 	err % "H1" % i;
 		}
-		stream << std::endl;
+        *stream << std::endl;
 	}
 };
 
@@ -165,7 +165,7 @@ void dumpRunInfoVectorToFile( const RunInfoVector& vec, const std::string fn = "
     std::unique_ptr<boost::filesystem::ofstream> file(DSC::make_ofstream(fn));
 	assert( vec.size() > 0 );
 	vec.front().tableHeader( file );
-    for(const RunInfo& info : vec) {
+    for( RunInfo info : vec ) {
 		info.tableLine( file );
 	}
     file->flush();

@@ -18,6 +18,7 @@
 
 #include "config.h"
 #define HAVE_BOOST 1
+#undef HAVE_DUNE_ISTL
 //#define HAVE_BOOST_FUSION 1
 
 #ifndef PROBLEM_NAMESPACE

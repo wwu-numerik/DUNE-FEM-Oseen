@@ -113,7 +113,7 @@ struct BruteForceReconstruction {
 	            VolumeQuadratureType;
 			const VolumeQuadratureType quad( entity, ( 2 * discrete_velocity_space.order() ) + 1 );
 			const VelocityBaseFunctionSetType velocityBaseFunctionSetElement = discrete_velocity_space.baseFunctionSet( entity );
-			const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.numBaseFunctions();
+            const int numVelocityBaseFunctionsElement = velocityBaseFunctionSetElement.size();
 			const int quadNop = quad.nop();
 
 			for(int qP = 0; qP < quadNop ; ++qP)

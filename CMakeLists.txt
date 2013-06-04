@@ -34,7 +34,7 @@ SET( USE_ISTL
 	"Use fem-wrapped istl matrix" )
 		
 SET( GRIDTYPE
-	"ALUGRID_SIMPLEX" CACHE STRING
+	"YASPGRID" CACHE STRING
 	"GRIDTYPE" )
 
 SET( GRIDDIM
@@ -160,15 +160,14 @@ ENDIF( USE_ISTL )
 
 CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/cmake_config.h )
 
-ADD_DUNE_MODULES( common istl grid fem geometry )
-ADD_MY_MODULES( stuff )
+ADD_DUNE_MODULES(common istl grid fem geometry localfunctions stuff)
 
 LINK_DIRECTORIES( "/usr/lib" "${GRAPE_PATH}" ${CCGNU_LIBRARY_DIRS} )
 
 FILE( GLOB header "src/*.hh" )
 FILE( GLOB_RECURSE oseen "fem/oseen/*.hh" )
 
-set( COMMON_LIBS "dunecommon" "dunegeometry"  "dunefem" "dunegrid" 
+set( COMMON_LIBS "dunestuff" "dunecommon" "dunegeometry"  "dunefem" "dunegrid"  
     ${BLAS_LIB} ${ALULIBS} ${UGLIBS}  ${ParaLIBS} ${CCGNU_LIBRARIES}  ${BOOST_LIBS})
 set( COMMON_HEADER ${header} ${oseen} ${stuff} ${DUNE_HEADERS} )
 set_source_files_properties( ${COMMON_HEADER} PROPERTIES HEADER_FILE_ONLY 1 )
