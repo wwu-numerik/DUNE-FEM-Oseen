@@ -1,19 +1,13 @@
 #ifndef DUNE_OSEEN_SOLVER_SCHURKOMPLEMENT_HH
 #define DUNE_OSEEN_SOLVER_SCHURKOMPLEMENT_HH
 
-#include "solver_defines.hh"
+#include <cmake_config.h>
 
 #include <dune/stuff/common/matrix.hh>
 #include <dune/stuff/fem/preconditioning.hh>
 #include <dune/stuff/common/logging.hh>
 #include <dune/stuff/fem/functions/analytical.hh>
 #include <dune/stuff/common/parameter/configcontainer.hh>
-
-#if HAVE_DUNE_ISTL
-#   include <dune/istl/operators.hh>
-#   include <dune/fem/operator/matrix/istlmatrix.hh>
-#   include <dune/fem/operator/matrix/preconditionerwrapper.hh>
-#endif
 
 #include "schurkomplement_adapter.hh"
 
@@ -24,10 +18,6 @@ class PreconditionOperatorDefault {
     typedef PreconditionOperatorDefault< SchurkomplementOperatorType >
         ThisType;
     public:
-    #if STOKES_USE_ISTL
-        typedef SchurkomplementOperatorAdapter<ThisType>
-            MatrixAdapterType;
-    #endif // STOKES_USE_ISTL
         typedef typename SchurkomplementOperatorType::DiscretePressureFunctionType
             RowDiscreteFunctionType;
         typedef typename RowDiscreteFunctionType::DiscreteFunctionSpaceType
@@ -44,9 +34,6 @@ class PreconditionOperatorDefault {
 
         const typename SchurkomplementOperatorType::Z_MatrixType::WrappedMatrixObjectType::DomainSpaceType& pressure_space_;
         const typename SchurkomplementOperatorType::E_MatrixType::WrappedMatrixObjectType::DomainSpaceType& velocity_space_;
-    #if STOKES_USE_ISTL
-        MatrixAdapterType matrix_adapter_;
-    #endif // STOKES_USE_ISTL
 
     public:
 
@@ -60,9 +47,6 @@ class PreconditionOperatorDefault {
             velo_tmp2( "2sdeio", pressure_space ),
             pressure_space_(pressure_space),
             velocity_space_(velocity_space)
-        #if STOKES_USE_ISTL
-            ,matrix_adapter_( *this, velocity_space, velocity_space )
-        #endif // STOKES_USE_ISTL
         {}
 
 #ifdef USE_BFG_CG_SCHEME
@@ -83,37 +67,6 @@ class PreconditionOperatorDefault {
 
         ThisType& systemMatrix () { return *this; }
         const ThisType& systemMatrix () const { return *this; }
-
-    #if STOKES_USE_ISTL
-        MatrixAdapterType& matrixAdapter() { return matrix_adapter_; }
-        const MatrixAdapterType& matrixAdapter() const { return matrix_adapter_; }
-
-        template <class ArgDofStorageType, class DestDofStorageType, class ArgRangeFieldType, class DestRangeFieldType>
-        void multOEM(const Dune::StraightenBlockVector<ArgDofStorageType,ArgRangeFieldType> &x,
-                 Dune::StraightenBlockVector<DestDofStorageType,DestRangeFieldType> &ret) const
-        {
-            multOEM( x.blockVector(), ret.blockVector() );
-        }
-        template <class ArgDofStorageType, class DestDofStorageType, class ArgRangeFieldType, class DestRangeFieldType>
-        void multOEM(const Dune::BlockVector<ArgDofStorageType,ArgRangeFieldType> &x,
-                 Dune::BlockVector<DestDofStorageType,DestRangeFieldType> &ret) const
-        {
-            sk_op_.z_mat_.multOEM( x,velo_tmp.blockVector());
-            a_precond_.apply( velo_tmp, velo_tmp2);
-            sk_op_.e_mat_.multOEM( velo_tmp2.blockVector(),ret);
-            sk_op_.r_mat_.multOEMAdd( x, ret);
-        }
-
-        //! apply operator to x, scale and add:  \f$ y = y + \alpha A(x) \f$
-        template < class field_type, class Arg, class Dest >
-        void usmv( const field_type alpha, const Arg& arg, Dest& dest ) const
-        {
-            Dest tmp( dest );
-            multOEM( arg, tmp );
-            tmp *= alpha;
-            dest += tmp;
-        }
-    #endif // STOKES_USE_ISTL
 
         double ddotOEM(const double*v, const double* w) const
         {
@@ -193,9 +146,6 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 			pressure_space_(pressure_space),
             precond_operator_( a_solver, *this, pressure_space, velocity_space),
             precond_( precond_operator_, pressure_space )
-        #if STOKES_USE_ISTL
-            , adapter_( *this, pressure_space, pressure_space )
-        #endif // STOKES_USE_ISTL
 	{}
 
     double ddotOEM(const double*v, const double* w) const
@@ -236,44 +186,6 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 			assert( !DSFe::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
 //			ret[0] = x[0];
         }
-#if STOKES_USE_ISTL
-    template <class ArgDofStorageType, class DestDofStorageType>
-    void multOEM(const Dune::BlockVector<ArgDofStorageType> &x,
-             Dune::BlockVector<DestDofStorageType> &ret) const
-    {
-        // ret = ( ( -E * ( A^-1 * ( Z * x ) ) ) + ( R * x ) )
-        z_mat_.apply( x, tmp1.blockVector() );
-
-        tmp2.clear();//don't remove w/o result testing
-        assert( !DSFe::FunctionContainsNanOrInf( tmp1 ) );
-
-        a_solver_.apply( tmp1, tmp2 );
-
-        assert( !DSFe::FunctionContainsNanOrInf( tmp2 ) );
-        tmp2 *= -1;
-        e_mat_.apply( tmp2.blockVector(), ret );
-        assert( !DSFe::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
-        r_mat_.multOEMAdd( x, ret );
-        assert( !DSFe::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
-//			ret[0] = x[0];
-    }
-	template <class ArgDofStorageType, class DestDofStorageType, class ArgRangeFieldType, class DestRangeFieldType>
-	void multOEM(const Dune::StraightenBlockVector<ArgDofStorageType,ArgRangeFieldType> &x,
-             Dune::StraightenBlockVector<DestDofStorageType,DestRangeFieldType> &ret) const
-	{
-        multOEM( x.blockVector(), ret.blockVector() );
-	}
-
-    //! apply operator to x, scale and add:  \f$ y = y + \alpha A(x) \f$
-    template < class field_type, class Arg, class Dest >
-    void usmv( const field_type alpha, const Arg& arg, Dest& dest ) const
-    {
-        Dest tmp( dest );
-        multOEM( arg, tmp );
-        tmp *= alpha;
-        dest += tmp;
-    }
-#endif // STOKES_USE_ISTL
 
 	void apply( const DiscretePressureFunctionType& arg, DiscretePressureFunctionType& ret ) const
 	{
@@ -305,9 +217,6 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
         }
 #endif
 
-#if STOKES_USE_ISTL
-    const MatrixAdapterType& matrixAdapter() const { return adapter_; }
-#endif // STOKES_USE_ISTL
     ThisType& systemMatrix () { return *this; }
     const ThisType& systemMatrix () const { return *this; }
     const PreconditionMatrix& preconditionMatrix() const { return precond_; }
@@ -333,9 +242,6 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 		const typename DiscretePressureFunctionType::DiscreteFunctionSpaceType& pressure_space_;
 		PreconditionOperator precond_operator_;
 		PreconditionMatrix precond_;
-    #if STOKES_USE_ISTL
-		MatrixAdapterType adapter_;
-    #endif // STOKES_USE_ISTL
 };
 
 } //end namespace Dune

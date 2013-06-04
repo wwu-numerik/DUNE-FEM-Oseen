@@ -88,11 +88,7 @@ struct SolverCaller {
 		    // do the matlab logging stuff
 		    if ( DSC_CONFIG_GET( "save_matrices", false ) ) {
                 auto& matlabLogStream = DSC_LOG_ERROR;
-                #if STOKES_USE_ISTL
-                #   define MPRINTER printISTLMatrixMatlabStyle
-                #else
                 #   define MPRINTER printSparseRowMatrixMatlabStyle
-                #endif
                 DSC::MPRINTER( MInversMatrix->matrix(), "M_invers", matlabLogStream );
                 DSC::MPRINTER( Wmatrix->matrix(), "W", matlabLogStream );
                 DSC::MPRINTER( Omatrix->matrix(), "O", matlabLogStream );
@@ -190,16 +186,12 @@ struct SolverCaller {
 															 O, E, R, Z, W,
 															 H1rhs, H2rhs, H3rhs );
 											break;
-#if ! STOKES_USE_ISTL
+
             case Solver::FullSystem_Solver_ID:		result = FullsytemSolverType().solve(	arg, dest,
                                                              X, M_invers, Y,
                                                              O, E, R, Z, W,
                                                              H1rhs, H2rhs, H3rhs );
                                             break;
-#else
-            case Solver::FullSystem_Solver_ID:
-                throw std::runtime_error("Fullsystem solver incompatible with ISTL usage");
-#endif
             default:
                 throw std::runtime_error("invalid Solver ID selected");
 		}

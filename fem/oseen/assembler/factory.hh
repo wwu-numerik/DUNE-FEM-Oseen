@@ -3,25 +3,15 @@
 
 #include <dune/common/static_assert.hh>
 
-//#if STOKES_USE_ISTL
-//#   include <dune/fem/oseen/assembler/mod_istlmatrix.hh>
-//#   define STOKES_MATRIX_OBJECT ModifiedISTLMatrixObject
-//#   include <dune/fem/operator/2order/dgmatrixtraits.hh>
-//#   include <dune/fem/oseen/assembler/bcrstraits.hh>
-//#   define STOKES_MATRIX_OBJECT_TRAITS Dune::Stokes::Assembler::ModifiedDGMatrixTraits
-//#else
-#   define STOKES_MATRIX_OBJECT SparseRowMatrixObject
-    template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
-    struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
-        struct StencilType {
-            template < typename T >
-            static int nonZerosEstimate( const T& rangeSpace ) {
-                return rangeSpace.mapper().maxNumDofs() * 1.5f;
-            }
-        };
+template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
+struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
+    struct StencilType {
+        template < typename T >
+        static int nonZerosEstimate( const T& rangeSpace ) {
+            return rangeSpace.mapper().maxNumDofs() * 1.5f;
+        }
     };
-#   define STOKES_MATRIX_OBJECT_TRAITS MatrixTraits
-//#endif
+};
 
 
 #define MK_FUNC_NAME(name) Discrete ## name ## FunctionSpaceType
@@ -37,7 +27,6 @@
     template < class FactoryType > \
     struct IntegratorSelector< FactoryType, typename FactoryType:: Name ## matrixType> \
     { typedef typename FactoryType:: Name ## matrixIntegratorType Type; }
-
 
 
 
@@ -114,8 +103,8 @@ public:
 
     template < class T, class R >
     struct MatrixObject {
-        typedef STOKES_MATRIX_OBJECT_TRAITS<T,R> Traits;
-        typedef STOKES_MATRIX_OBJECT<  T, R, Traits >Type;
+        typedef MatrixTraits<T,R> Traits;
+        typedef SparseRowMatrixObject<  T, R, Traits >Type;
     };
     TYPEDEF_MATRIX_AND_INTEGRATOR( M, Sigma, Sigma );
     TYPEDEF_MATRIX_AND_INTEGRATOR( W, Sigma, Velocity );

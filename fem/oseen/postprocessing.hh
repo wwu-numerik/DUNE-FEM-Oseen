@@ -7,6 +7,8 @@
 #ifndef POSTPROCESSING_HH
 #define POSTPROCESSING_HH
 
+#include <cmake_config.h>
+
 #include <dune/fem/operator/projection/l2projection.hh>
 #include <dune/fem/io/file/vtkio.hh>
 #include <dune/fem/io/file/datawriter.hh>

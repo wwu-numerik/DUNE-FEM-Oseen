@@ -1,7 +1,7 @@
 #ifndef DUNE_OSEEN_SOLVER_INTERFACE_HH
 #define DUNE_OSEEN_SOLVER_INTERFACE_HH
 
-#include "solver_defines.hh"
+#include <cmake_config.h>
 
 #include <dune/fem/function/common/discretefunction.hh>
 #include <dune/fem/operator/matrix/spmatrix.hh>
@@ -15,12 +15,6 @@
 
 #include <cmath>
 #include <boost/utility.hpp>
-
-#if STOKES_USE_ISTL
-#   define STOKES_MATRIX_ACCESS assert(matrix_pointer_);*(matrix_pointer_)
-#else
-#   define STOKES_MATRIX_ACCESS assert(matrix_pointer_);matrix_pointer_->matrix()
-#endif
 
 namespace Dune {
 //! utility struct used to expose runtime statistics
@@ -73,72 +67,43 @@ class MatrixWrapper : boost::noncopyable {
 		    matrix_pointer_->multOEM( f, ret );
 		}
 
-#if HAVE_DUNE_ISTL
-        template <class ArgBlockType, class DestBlockType, class ArgAllocatorType, class DestAllocatorType>
-        void apply(const Dune::BlockVector<ArgBlockType,ArgAllocatorType> &f,
-                 Dune::BlockVector<DestBlockType,DestAllocatorType> &ret) const
-        {
-            matrix_pointer_->multOEM( f, ret );
-        }
-#endif
 		//! return diagonal of (this * A * B)
 		template <class DiscrecteFunctionType, class OtherMatrixType_A, class OtherMatrixType_B>
 		void getDiag(const OtherMatrixType_A& A, const OtherMatrixType_B& B, DiscrecteFunctionType& rhs) const
 		{
-            #if STOKES_USE_ISTL
-                assert( false );
-		    #else
-                matrix_pointer_->matrix().getDiag( A.matrix(), B.matrix(), rhs );
-		    #endif
+            matrix_pointer_->matrix().getDiag( A.matrix(), B.matrix(), rhs );
 		}
 
 		//! return diagonal of (this * A)
 		template <class DiscrecteFunctionType, class OtherMatrixType_A>
 		void getDiag(const OtherMatrixType_A& A, DiscrecteFunctionType& rhs) const
 		{
-            #if STOKES_USE_ISTL
-                assert( false );
-		    #else
-                matrix_pointer_->matrix().getDiag( A, rhs );
-		    #endif
+            matrix_pointer_->matrix().getDiag( A, rhs );
 		}
 
 		template <class DiscrecteFunctionType>
 		void addDiag(DiscrecteFunctionType& rhs) const
 		{
-            #if STOKES_USE_ISTL
-                assert( false );
-		    #else
-                matrix_pointer_->matrix().addDiag( rhs );
-		    #endif
+            matrix_pointer_->matrix().addDiag( rhs );
 		}
-
-#if HAVE_DUNE_ISTL
-        template <class ArgBlockType, class DestBlockType, class ArgDType, class DestDType>
-        void applyAdd(const Dune::BlockVector<ArgBlockType, ArgDType>& x,
-                 Dune::BlockVector<DestBlockType, DestDType>& ret ) const
-		{
-            matrix_pointer_->applyAdd( x, ret );
-		}
-#endif
 
 		//! same as apply A * x = ret, used by OEM-Solvers
 		template <class VECtype, class VECtypeR >
 		void multOEM(const VECtype* x, VECtypeR* ret) const
 		{
-            STOKES_MATRIX_ACCESS.multOEM( x, ret );
+            assert(matrix_pointer_);matrix_pointer_->matrix().multOEM( x, ret );
 		}
 		template <class VECtype, class VECtypeR>
 		void multOEM_t(const VECtype* x, VECtypeR* ret) const
 		{
-            STOKES_MATRIX_ACCESS.multOEM_t( x, ret );
+            assert(matrix_pointer_);matrix_pointer_->matrix().multOEM_t( x, ret );
 		}
 
 		//! calculates ret += A * x
 		template <class VECtype, class VECtypeR>
 		void multOEMAdd(const VECtype* x, VECtypeR* ret) const
 		{
-            STOKES_MATRIX_ACCESS.multOEMAdd( x, ret );
+            assert(matrix_pointer_);matrix_pointer_->matrix().multOEMAdd( x, ret );
 		}
 
         template <class ArgDofStorageType, class DestDofStorageType, class ArgRangeFieldType, class DestRangeFieldType>
@@ -148,29 +113,9 @@ class MatrixWrapper : boost::noncopyable {
             matrix_pointer_->multOEMAdd( x, ret );
         }
 
-#if HAVE_DUNE_ISTL
-        template <class ArgDofStorageType, class DestDofStorageType>
-        void multOEMAdd(const Dune::BlockVector<ArgDofStorageType> &x,
-                 Dune::BlockVector<DestDofStorageType> &ret) const
-        {
-            matrix_pointer_->multOEMAdd( x, ret );
-        }
-
-        template <class ArgDofStorageType, class DestDofStorageType>
-        void multOEM(const Dune::BlockVector<ArgDofStorageType> &x,
-                 Dune::BlockVector<DestDofStorageType> &ret) const
-        {
-            matrix_pointer_->multOEM( x, ret );
-        }
-#endif
-
 		double operator ()(const size_t i, const size_t j ) const
 		{
-            #if STOKES_USE_ISTL
-                return matrix_pointer_->operator()(i,j);
-            #else
-                return  matrix_pointer_->matrix()(int(i),int(j));
-            #endif
+            return  matrix_pointer_->matrix()(int(i),int(j));
 		}
 
 		size_t rows() const
