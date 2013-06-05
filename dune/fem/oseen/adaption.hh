@@ -35,7 +35,7 @@ class DiscreteOseenFunctionWrapperAdaptionManager
 			RestrictProlongPairType;
         typedef boost::shared_ptr< RestrictProlongPairType >
             RestrictProlongPairPointerType;
-        typedef Stuff::Fem::RestrictProlongOperatorSet<RestrictProlongPairPointerType>
+        typedef Dune::Stuff::Fem::RestrictProlongOperatorSet<RestrictProlongPairPointerType>
 			RestrictProlongOperatorSetType;
 
 		typedef Dune::AdaptationManager< GridType, RestrictProlongOperatorSetType >

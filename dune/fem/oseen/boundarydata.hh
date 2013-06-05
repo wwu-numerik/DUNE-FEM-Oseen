@@ -24,6 +24,7 @@ struct DefaultDirichletDataTraits {
 
 //! \todo RENE needs to doc me and move me to stuff
 namespace Stuff {
+
 class BoundaryIdMapping {
     public:
 	enum BoundaryType {
@@ -196,7 +197,7 @@ class InstationaryBoundaryFluxFunction :
 	}
 };
 
-}// namespace Stuff
+}// namespace DSC
 
 //! \todo RENE needs to doc me and move me to stuff
 template < class FunctionSpaceImp, class GridPartType >

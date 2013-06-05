@@ -12,7 +12,7 @@
 #ifdef SOLVER_NAMESPACE
 	namespace SOLVER_NAMESPACE {
 #else
-	namespace Stuff {
+    namespace Stuff {
 #endif
 
 

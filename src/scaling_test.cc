@@ -171,7 +171,7 @@ int main( int argc, char** argv )
 
     int err = 0;
 
-	profiler().Reset( 1 );
+	DSC_PROFILER.reset( 1 );
 	RunInfoVector rf;
 	Dune::StabilizationCoefficients st = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
 	st.FactorFromParams( "C11" );
@@ -179,9 +179,9 @@ int main( int argc, char** argv )
 	st.FactorFromParams( "D11" );
 	st.FactorFromParams( "D12" );
 	rf.push_back(singleRun( mpicomm, DSC_CONFIG_GET( "minref", 0 ), st ) );
-	profiler().Output( mpicomm, rf );
+	DSC_PROFILER.Output( mpicomm, rf );
 
-    Logger().Dbg() << "\nRun from: " << commit_string << std::endl;
+    DSC_LOG_DEBUG << "\nRun from: " << commit_string << std::endl;
     return err;
   }
 
@@ -207,9 +207,9 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
                     int refine_level_factor,
 					Dune::StabilizationCoefficients& stabil_coeff )
 {
-    profiler().StartTiming( "SingleRun" );
+    DSC_PROFILER.StartTiming( "SingleRun" );
     Logging::LogStream& infoStream = DSC_LOG_INFO;
-    Logging::LogStream& debugStream = Logger().Dbg();
+    Logging::LogStream& debugStream = DSC_LOG_DEBUG;
     RunInfo info;
 
     debugStream << "\nsingleRun( ";
@@ -323,10 +323,10 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 								dummyFunctions.discreteVelocity(),
 								false );
 
-    profiler().StartTiming( "Pass -- APPLY" );
+    DSC_PROFILER.StartTiming( "Pass -- APPLY" );
 	stokesPass.apply( computedSolutions, computedSolutions );
-    profiler().StopTiming( "Pass -- APPLY" );
-    info.run_time = profiler().GetTiming( "Pass -- APPLY" );
+    DSC_PROFILER.StopTiming( "Pass -- APPLY" );
+    info.run_time = DSC_PROFILER.getTiming( "Pass -- APPLY" );
     stokesPass.getRuninfo( info );
 
     /* ********************************************************************** *
@@ -335,7 +335,7 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
     infoStream << "\n- postprocesing" << std::endl;
 
 
-    profiler().StartTiming( "Problem/Postprocessing" );
+    DSC_PROFILER.StartTiming( "Problem/Postprocessing" );
 
 #if defined (AORTA_PROBLEM) || defined (COCKBURN_PROBLEM) || defined (GENERALIZED_STOKES_PROBLEM) //bool tpl-param toggles ana-solution output in post-proc
 	typedef Problem< gridDim, DiscreteOseenFunctionWrapperType, true, AnalyticalDirichletDataType >
@@ -373,8 +373,8 @@ RunInfo singleRun(  CollectiveCommunication& mpicomm,
 
 	info.problemIdentifier = StokesProblem::ProblemIdentifier;
 
-    profiler().StopTiming( "Problem/Postprocessing" );
-    profiler().StopTiming( "SingleRun" );
+    DSC_PROFILER.StopTiming( "Problem/Postprocessing" );
+    DSC_PROFILER.StopTiming( "SingleRun" );
 
     firstRun = false;
 
@@ -393,7 +393,7 @@ void eocCheck( const RunInfoVector& runInfos )
 		last = *it;
 	}
 	if ( ups ) {
-		Logger().Err() 	<< 	"----------------------------------------------------------\n"
+		DSC_LOG_ERROR 	<< 	"----------------------------------------------------------\n"
 						<<	"-                                                        -\n"
 						<<	"-                  negative EOC                          -\n"
 						<<	"-                                                        -\n"

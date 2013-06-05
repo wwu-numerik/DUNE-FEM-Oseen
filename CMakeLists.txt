@@ -152,12 +152,12 @@ SET( INNER_CG_SOLVERTYPE "OEM${INNER_SOLVER}Op" )
 
 CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/cmake_config.h )
 
-ADD_DUNE_MODULES(common istl grid fem geometry localfunctions stuff)
+ADD_DUNE_MODULES(common istl grid fem geometry localfunctions stuff spgrid)
 
 LINK_DIRECTORIES( "/usr/lib" "${GRAPE_PATH}" ${CCGNU_LIBRARY_DIRS} )
 
 FILE( GLOB header "src/*.hh" )
-FILE( GLOB_RECURSE oseen "fem/oseen/*.hh" )
+FILE( GLOB_RECURSE oseen "dune/fem/oseen/*.hh" )
 
 set( COMMON_LIBS "dunestuff" "dunecommon" "dunegeometry"  "dunefem" "dunegrid"  
     ${BLAS_LIB} ${ALULIBS} ${UGLIBS}  ${ParaLIBS} ${CCGNU_LIBRARIES}  ${BOOST_LIBS})

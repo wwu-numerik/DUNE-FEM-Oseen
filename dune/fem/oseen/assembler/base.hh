@@ -180,7 +180,7 @@ namespace Assembler {
 		//! just to avoid overly long argument lists
 		struct InfoContainerVolume {
 			const typename Traits::EntityType& entity;
-			const typename Traits::EntityType::Geometry& geometry;
+            const typename Traits::EntityType::Geometry geometry;
 
 			const SigmaBaseFunctionSetType
 					sigma_basefunction_set_element;
@@ -224,8 +224,8 @@ namespace Assembler {
 			virtual ~InfoContainerVolume() {}
 		};
 		struct InfoContainerFace : public InfoContainerVolume {
-			const typename Traits::IntersectionIteratorType::Intersection& intersection;
-            const typename Traits::IntersectionIteratorType::Intersection::Geometry& intersectionGeometry;
+            const typename Traits::IntersectionIteratorType::Intersection& intersection;
+            const typename Traits::IntersectionIteratorType::Intersection::Geometry intersectionGeometry;
 			const typename Traits::FaceQuadratureType faceQuadratureElement;
 			const double lengthOfIntersection;
 			const StabilizationCoefficients& stabil_coeff;
@@ -394,22 +394,12 @@ namespace Assembler {
 		void apply ( IntegratorTuple& integrator_tuple ) const
 		{
 			DSC::Profiler::ScopedTiming assembler_time("assembler");
-			typedef typename Traits::GridPartType::GridType::LeafGridView
-				GridView;
-			typedef typename GridView::template Codim<0>::
-					template Partition<Dune::All_Partition>::Iterator
-				LeafIterator;
+            const auto& gridView = grid_part_.grid().leafView();
 
-			const GridView gridView = grid_part_.grid().leafView();
-
-			const LeafIterator endit = gridView.template end<0,Dune::All_Partition>();
-            for ( LeafIterator entityIt = gridView.template begin<0,Dune::All_Partition>();
-				 entityIt!=endit;
-                 ++entityIt)
+            for ( const auto& entity : DSC::viewRange(gridView))
 			{
-				const typename Traits::EntityType& entity = *entityIt;
-				InfoContainerVolume info( *this, entity, discrete_model_,grid_part_ );
-				ForEachIntegrator<ApplyVolume,InfoContainerVolume>( integrator_tuple, info );
+                const InfoContainerVolume e_info( *this, entity, discrete_model_,grid_part_ );
+                ForEachIntegrator<ApplyVolume,InfoContainerVolume>( integrator_tuple, e_info );
 
 				// walk the intersections
 				const typename Traits::IntersectionIteratorType intItEnd = gridView.iend( entity );
@@ -424,13 +414,13 @@ namespace Assembler {
 					{
 						//! DO NOT TRY TO DEREF outside() DIRECTLY
                         const typename Traits::IntersectionIteratorType::Intersection::EntityPointer neighbourPtr = intersection.outside();
-						InfoContainerInteriorFace info( *this, entity, *neighbourPtr, intersection, discrete_model_,grid_part_ );
-						ForEachIntegrator<ApplyInteriorFace,InfoContainerInteriorFace>( integrator_tuple, info );
+                        const InfoContainerInteriorFace i_info( *this, entity, *neighbourPtr, intersection, discrete_model_,grid_part_ );
+                        ForEachIntegrator<ApplyInteriorFace,InfoContainerInteriorFace>( integrator_tuple, i_info );
 					}
 					else if ( !intersection.neighbor() && intersection.boundary() )
 					{
-						InfoContainerFace info( *this, entity, intersection, discrete_model_, grid_part_ );
-						ForEachIntegrator<ApplyBoundaryFace,InfoContainerFace>( integrator_tuple, info );
+                        const InfoContainerFace o_info( *this, entity, intersection, discrete_model_, grid_part_ );
+                        ForEachIntegrator<ApplyBoundaryFace,InfoContainerFace>( integrator_tuple, o_info );
 					}
 				}
 			}

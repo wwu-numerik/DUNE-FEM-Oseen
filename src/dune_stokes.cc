@@ -135,17 +135,11 @@ int main( int argc, char** argv )
     if ( argc < 2 ) {
         std::cerr << "\nUsage: " << argv[0] << " parameterfile \n" << "\n\t --- OR --- \n";
         std::cerr << "\nUsage: " << argv[0] << " paramfile:"<<"file" << " more-opts:val ..." << std::endl;
-        std::cerr << "\nUsage: " << argv[0] << " -d paramfile "<< "\n\t(for displaying solutions in grape) "<< std::endl;
-//        DSC_CONFIG.PrintParameterSpecs( std::cerr );
         std::cerr << std::endl;
         return 2;
     }
-#if USE_GRPAE_VISUALISATION
-    if ( !strcmp( argv[1], "-d" ) || !strcmp( argv[1], "-r" ) ) {
-        return display( argc, argv );
-    }
-#endif
-    DSC_CONFIG.readCommandLine( argc, argv );
+
+    DSC_CONFIG.readCommandLine(argc, argv);
 
     // LOG_NONE = 1, LOG_ERR = 2, LOG_INFO = 4,LOG_DEBUG = 8,LOG_CONSOLE = 16,LOG_FILE = 32
     //--> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_CONSOLE | LOG_FILE = 62
