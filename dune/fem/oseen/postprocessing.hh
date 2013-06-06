@@ -182,15 +182,6 @@ class PostProcessor
 
             vtk_write( wrapper.discretePressure() );
             vtk_write( wrapper.discreteVelocity() );
-
-            typedef Dune::tuple< const DiscreteVelocityFunctionType*, const DiscretePressureFunctionType* >
-                IOTupleType;
-            IOTupleType dataTup ( &wrapper.discreteVelocity(), &wrapper.discretePressure() );
-
-            typedef Dune::DataWriter< GridType, IOTupleType >
-                DataWriterType;
-            DataWriterType datawriter ( grid, dataTup );
-            datawriter.writeData( 0, "" );
 #ifndef NLOG
 			entityColoration();
 #endif
