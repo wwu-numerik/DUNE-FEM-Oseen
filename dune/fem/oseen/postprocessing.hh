@@ -176,7 +176,7 @@ class PostProcessor
         }
 
 		//! used by both PostProcessor::save modes, outputs solutions (in grape/vtk form), but no errors or analytical functions
-        void save_common( const GridType& grid, const DiscreteOseenFunctionWrapperType& wrapper, int refine_level )
+        void save_common( const GridType& /*grid*/, const DiscreteOseenFunctionWrapperType& wrapper, int refine_level )
         {
             current_refine_level_ = refine_level;
 

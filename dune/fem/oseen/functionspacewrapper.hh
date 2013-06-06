@@ -511,7 +511,6 @@ class DiscreteOseenFunctionWrapper
             #if ENABLE_ADAPTIVE
                 , adaptionManager_ ( gridPart_in.grid(), *this )
             #endif
-            , vtkWriter_( gridPart_in )
         {}
 
         /**
@@ -529,7 +528,6 @@ class DiscreteOseenFunctionWrapper
             #if ENABLE_ADAPTIVE
                 , adaptionManager_ ( pressure_in.space().gridPart().grid(), *this )
             #endif
-            , vtkWriter_( pressure_in.space().gridPart() )
         {}
 
         /**
@@ -683,28 +681,29 @@ class DiscreteOseenFunctionWrapper
 		//! write both wrapped functions to "path/{pressure,velocity}.name()+postfix+.vtk"
 		void writeVTK( const std::string& path, const std::string postfix = std::string() )
 		{
+            typename Traits::VtkWriterType vtkWriter(velocity_.space().gridPart());
             if ( DiscreteVelocityFunctionType::FunctionSpaceType::DimRange > 1 ){
-                vtkWriter_.addVectorVertexData( velocity_ );
-                vtkWriter_.addVectorCellData( velocity_ );
+                vtkWriter.addVectorVertexData( velocity_ );
+                vtkWriter.addVectorCellData( velocity_ );
             }
             else {
-                vtkWriter_.addVertexData( velocity_ );
-                vtkWriter_.addCellData( velocity_ );
+                vtkWriter.addVertexData( velocity_ );
+                vtkWriter.addCellData( velocity_ );
             }
 
-            vtkWriter_.write( getPath( velocity_, path, postfix ) );
-            vtkWriter_.clear();
+            vtkWriter.write( getPath( velocity_, path, postfix ) );
+            vtkWriter.clear();
 
             if ( DiscretePressureFunctionType::FunctionSpaceType::DimRange > 1 ){
-                vtkWriter_.addVectorVertexData( pressure_ );
-                vtkWriter_.addVectorCellData( pressure_ );
+                vtkWriter.addVectorVertexData( pressure_ );
+                vtkWriter.addVectorCellData( pressure_ );
             }
             else {
-                vtkWriter_.addVertexData( pressure_ );
-                vtkWriter_.addCellData( pressure_ );
+                vtkWriter.addVertexData( pressure_ );
+                vtkWriter.addCellData( pressure_ );
             }
-            vtkWriter_.write( getPath( pressure_, path, postfix ) );
-            vtkWriter_.clear();
+            vtkWriter.write( getPath( pressure_, path, postfix ) );
+            vtkWriter.clear();
 		}
 
 		typename Traits::FunctionTupleType& functionTuple() const
@@ -761,7 +760,6 @@ class DiscreteOseenFunctionWrapper
     #if ENABLE_ADAPTIVE
 		AdaptionManagerType adaptionManager_;
     #endif
-        typename Traits::VtkWriterType vtkWriter_;
 
 		// we can uncomment this if the adpation manager copy-problem is resolved
 		//DiscreteOseenFunctionWrapper( const DiscreteOseenFunctionWrapper& );

@@ -7,7 +7,7 @@
 #define DUNE_OSEEN_SOLVER_CGHELPER_HH
 
 #include <cmake_config.h>
-
+#include <dune/fem/oseen/oemsolver/oemsolver.hh>
 #include <dune/fem/oseen/solver/new_bicgstab.hh>
 #include <dune/stuff/common/print.hh>
 #include <dune/stuff/common/misc.hh>

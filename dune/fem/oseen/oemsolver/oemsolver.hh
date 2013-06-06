@@ -4,11 +4,10 @@
 //- system includes
 #include <utility>
 
-#ifdef USE_BFG_CG_SCHEME
-    //< iteration no , < absLimit, residuum > >
-    typedef std::pair<int,std::pair<double,double> >
-        IterationInfo;
-#endif
+#include <cmake_config.h>
+
+#include <dune/stuff/common/debug.hh>
+
 //- Dune includes
 #include <dune/common/typetraits.hh>
 #include <dune/fem/operator/common/operator.hh>
