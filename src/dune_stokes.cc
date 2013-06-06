@@ -82,9 +82,9 @@ typedef std::vector<std::string>
             the set of coefficients to be used in the run. Default is used in all run types but StabRun().
 
 **/
-DSC::RunInfo singleRun(  CollectiveCommunication& mpicomm,
+DSC::RunInfo singleRun(CollectiveCommunication& mpicomm,
                     int refine_level_factor,
-					Dune::StabilizationCoefficients& stabil_coeff );
+                    const Dune::StabilizationCoefficients &stabil_coeff );
 
 //! multiple runs with bfg tau set in [bfg-tau-start : bfg-tau-inc : bfg-tau-stop] and everything else on default
 void BfgRun     ( CollectiveCommunication& mpicomm );
@@ -281,9 +281,6 @@ void AccuracyRun( CollectiveCommunication& mpicomm )
 
     int ref = DSC_CONFIG_GET( "minref", 0 );
 
-    // setting this to true will give each run a unique logilfe name
-    bool per_run_log_target = DSC_CONFIG_GET( "per-run-log-target", true );
-
 	int numruns = int( std::pow( accurracy_steps, 2.0 ) );
     DSC_PROFILER.reset( numruns );
     for ( int i = 0; i < accurracy_steps; ++i ) {
@@ -411,7 +408,7 @@ void BfgRun( CollectiveCommunication& mpicomm )
     //first up a non-bfg run for reference
     const int refine_level_factor = DSC_CONFIG_GET( "minref", 0 );
     DSC_CONFIG.set( "do-bfg", false );
-	Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
+    const Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
 	DSC::RunInfo nobfg_info = singleRun( mpicomm, refine_level_factor, stab_coeff );
 	nobfg_info.bfg_tau =  std::numeric_limits<double>::quiet_NaN();
 
@@ -438,7 +435,6 @@ void BfgRun( CollectiveCommunication& mpicomm )
 
     for ( double tau = start_tau; tau < stop_tau; tau += tau_inc ) {
         DSC_CONFIG.set( "bfg-tau", tau );
-		Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
 		DSC::RunInfo info = singleRun( mpicomm, refine_level_factor, stab_coeff );
         run_infos.push_back( info );
         bfg_output.setErrors( idx,info.L2Errors );
@@ -452,12 +448,12 @@ void BfgRun( CollectiveCommunication& mpicomm )
 
 DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
                     int refine_level_factor,
-					Dune::StabilizationCoefficients& stabil_coeff )
+                    const Dune::StabilizationCoefficients& stabil_coeff )
 {
     DSC_PROFILER.startTiming( "SingleRun" );
     auto& infoStream = DSC_LOG_INFO;
     auto& debugStream = DSC_LOG_DEBUG;
-	stabil_coeff.Add( "E12", 0.0 );
+//	stabil_coeff.Add( "E12", 0.0 );
 	DSC::RunInfo info;
 
     debugStream << "\nsingleRun( ";
@@ -634,10 +630,10 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 
 		PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );
 
-		if ( DSC_CONFIG_GET( "save_solutions", true ) )
-			postProcessor.save( *gridPtr, computedSolutions, refine_level );
-		else
-			postProcessor.calcError( computedSolutions );
+        if ( DSC_CONFIG_GET( "save_solutions", true ) )
+            postProcessor.save( *gridPtr, computedSolutions, refine_level );
+        else
+            postProcessor.calcError( computedSolutions );
 		info.L2Errors = postProcessor.getError();
 	}
 	typedef Dune::StabilizationCoefficients::ValueType
@@ -789,87 +785,6 @@ CoeffVector getC_power_Permutations(){
     return coeff_vector;
 }
 
-#if USE_GRPAE_VISUALISATION
-using namespace Dune;
-
-typedef Dune::AdaptiveLeafGridPart< GridType >
-        GridPartType;
-    const int gridDim = GridType::dimensionworld;
-    const int polOrder = POLORDER;
-
-	// model traits
-	#if defined( AORTA_PROBLEM )
-	typedef Dune::DiscreteOseenModelDefaultTraits<
-					GridPartType,
-					Force,
-					Dune::GeometryBasedBoundaryFunctionTraits<VariableDirichletData>,
-					gridDim,
-					polOrder,
-					VELOCITY_POLORDER,
-					PRESSURE_POLORDER >
-		StokesModelTraitsImp;
-	#else
-	typedef Dune::DiscreteOseenModelDefaultTraits<
-					GridPartType,
-					Force,
-					SimpleDirichletDataTraits,
-					gridDim,
-					polOrder,
-					VELOCITY_POLORDER,
-					PRESSURE_POLORDER >
-		StokesModelTraitsImp;
-	#endif
-
-
-typedef Dune::tuple< StokesModelTraitsImp::DiscreteOseenFunctionWrapperType::DiscreteVelocityFunctionType*, StokesModelTraitsImp::DiscreteOseenFunctionWrapperType::DiscretePressureFunctionType* >
-				IOTupleType;
-
-typedef IOTupleType GR_InputType;
-
-template <class GrapeDispType,
-          class GR_GridType,
-          class DestinationType>
-void postProcessing(const GrapeDispType& disp,
-                    const GR_GridType& grid,
-                    const double time,
-                    const double timestep,
-                    const DestinationType& Uh)
-{
-}
-
-///begin grape
-// include grape visualization
-#include <dune/grid/io/visual/grapedatadisplay.hh>
-#include <dune/grid/io/visual/combinedgrapedisplay.hh>
-
-// include data reading
-#include <dune/fem/io/visual/grape/datadisp/printhelp.cc>
-#include <dune/fem/io/visual/grape/datadisp/readiotupledata.cc>
-#include <dune/fem/io/visual/grape/datadisp/readioparams.cc>
-#include <dune/fem/io/parameter.hh>
-#include <dune/fem/function/common/discretefunctionadapter.hh>
-///end grape
-
-int display ( int argc, char** argv )
-{
-//    printf("usage: %s paramfile:paramfile <i_start> <i_end>", funcName);
-    Parameter::append( argv[2] );
-
-    if ( !strcmp( argv[1], "-d" ) ) {
-        int argc_ = 3;
-        char* argv_[3] = { argv[0], "0", "0" };
-        return readParameterList( argc_, argv_ );
-    }
-    else if ( !strcmp( argv[1], "-r" ) ) {
-        int argc_ = 5;
-        char* argv_[5] = { argv[0], "0", "0", "-replay", "manager.replay" };
-        return readParameterList( argc_, argv_ );
-    }
-
-    return -1;
-}
-
-#endif //USE_GRPAE_VISUALISATION
 
 /** Copyright (c) 2012, Felix Albrecht, Rene Milk      
  * All rights reserved.

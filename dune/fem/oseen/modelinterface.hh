@@ -1672,21 +1672,21 @@ class DiscreteOseenModelDefault : public DiscreteOseenModelInterface< DiscreteOs
          *  \param[in]  viscosity
          *          viscosity of the fluid
          **/
-        DiscreteOseenModelDefault( const StabilizationCoefficients stab_coeff,
-                                    const AnalyticalForceType force,
-                                    const AnalyticalDirichletDataType dirichletData,
-                                    const double viscosity = 1.0,
-									const double alpha = 0.0,
-								   const double convection_scaling = 1.0,
-								   const double pressure_gradient_scaling = 1.0
+        DiscreteOseenModelDefault( const StabilizationCoefficients stab_coeff_in,
+                                    const AnalyticalForceType force_in,
+                                    const AnalyticalDirichletDataType dirichletData_in,
+                                    const double viscosity_in = 1.0,
+                                    const double alpha_in = 0.0,
+                                   const double convection_scaling_in = 1.0,
+                                   const double pressure_gradient_scaling_in = 1.0
 								   )
-            : viscosity_( viscosity ),
-            alpha_( alpha ),
-			convection_scaling_( convection_scaling ),
-            pressure_gradient_scaling_( pressure_gradient_scaling ),
-            stabil_coeff_( stab_coeff ),
-            force_( force ),
-			dirichletData_( dirichletData )
+            : viscosity_( viscosity_in ),
+            alpha_( alpha_in ),
+            convection_scaling_( convection_scaling_in ),
+            pressure_gradient_scaling_( pressure_gradient_scaling_in ),
+            stabil_coeff_( stab_coeff_in ),
+            force_( force_in ),
+            dirichletData_( dirichletData_in )
         {
 //            if ( !isGeneralized() ) {
 //                if ( ( alpha_ < 0.0 ) || ( alpha_ > 0.0 ) ) {

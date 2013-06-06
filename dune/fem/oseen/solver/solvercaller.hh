@@ -28,12 +28,12 @@ template<class OseenPassType, template <class S> class ReconstructionPolicyType 
 struct SolverCaller {
 	//! alternative solver implementation
     typedef NestedCgSaddlepointInverseOperator< OseenPassType >
-		NestedCgSolverType;
+        NestedCgSolverType;
 	//! type of the used solver
     typedef SaddlepointInverseOperator< OseenPassType >
 		SaddlepointSolverType;
     typedef BiCgStabSaddlepointInverseOperator< OseenPassType >
-		BiCgSaddlepointSolverType;
+        BiCgSaddlepointSolverType;
 	//! this is used for reduced (no pressure, incompress. condition) oseen pass
     typedef ReducedInverseOperator< OseenPassType >
 		ReducedSolverType;
@@ -105,27 +105,6 @@ struct SolverCaller {
 
 		    }
 
-		//            // log local matrices
-		//            DSC::GridWalk<GridPartType> gw( gridPart_ );
-		//            typedef Logging::MatlabLogStream
-		//                FunctorStream;
-		//            FunctorStream& functorStream = matlabLogStream;
-		//            DSC::GridWalk<DiscreteVelocityFunctionSpaceType> gw( velocitySpace_ );
-		//            DSC::LocalMatrixPrintFunctor< EmatrixType,FunctorStream> f_E ( Ematrix, functorStream, "E" );
-		//            DSC::LocalMatrixPrintFunctor< WmatrixType,FunctorStream> f_W ( Wmatrix, functorStream, "W" );
-		//            DSC::LocalMatrixPrintFunctor< XmatrixType,FunctorStream> f_X ( Xmatrix, functorStream, "X" );
-		//            DSC::LocalMatrixPrintFunctor< YmatrixType,FunctorStream> f_Y ( Ymatrix, functorStream, "Y" );
-		//            DSC::LocalMatrixPrintFunctor< ZmatrixType,FunctorStream> f_Z ( Zmatrix, functorStream, "Z" );
-		//            DSC::LocalMatrixPrintFunctor< RmatrixType,FunctorStream> f_R ( Rmatrix, functorStream, "R" );
-		//                gw( f_W );
-		//                gw( f_X );
-		//                gw( f_Y );
-		//                gw( f_Z );
-		//                gw( f_E );
-		//                gw( f_R );
-		// do profiling
-
-
 		    if ( DSC_CONFIG_GET( "outputMatrixPlots", false ) ) {
                 DSC::matrixToGnuplotFile( Ematrix->matrix(),       std::string( "mat_E.gnuplot")       );
                 DSC::matrixToGnuplotFile( Wmatrix->matrix(),       std::string( "mat_W.gnuplot")       );
@@ -166,21 +145,21 @@ struct SolverCaller {
 		}
 
 		switch ( solverID ) {
-			case Solver::BiCg_Saddlepoint_Solver_ID:result = BiCgSaddlepointSolverType().solve(	arg, dest,
-															 X, M_invers, Y,
-															 O, E, R, Z, W,
-															 H1rhs, H2rhs, H3rhs );
-											break;
-			case Solver::NestedCG_Solver_ID:		result = NestedCgSolverType().solve(	arg, dest,
-															 X, M_invers, Y,
-															 O, E, R, Z, W,
-															 H1rhs, H2rhs, H3rhs );
-											break;
-			case Solver::Reduced_Solver_ID:			result = ReducedSolverType().solve(	arg, dest,
-															 X, M_invers, Y,
-															 O, E, R, Z, W,
-															 H1rhs, H2rhs, H3rhs );
-											break;
+            case Solver::BiCg_Saddlepoint_Solver_ID:result = BiCgSaddlepointSolverType().solve(	arg, dest,
+                                                             X, M_invers, Y,
+                                                             O, E, R, Z, W,
+                                                             H1rhs, H2rhs, H3rhs );
+                                            break;
+            case Solver::NestedCG_Solver_ID:		result = NestedCgSolverType().solve(	arg, dest,
+                                                             X, M_invers, Y,
+                                                             O, E, R, Z, W,
+                                                             H1rhs, H2rhs, H3rhs );
+                                            break;
+            case Solver::Reduced_Solver_ID:			result = ReducedSolverType().solve(	arg, dest,
+                                                             X, M_invers, Y,
+                                                             O, E, R, Z, W,
+                                                             H1rhs, H2rhs, H3rhs );
+                                            break;
 			case Solver::SaddlePoint_Solver_ID:		result = SaddlepointSolverType().solve(	arg, dest,
 															 X, M_invers, Y,
 															 O, E, R, Z, W,

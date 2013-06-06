@@ -157,7 +157,7 @@ ADD_DUNE_MODULES(common istl grid fem geometry localfunctions stuff spgrid)
 LINK_DIRECTORIES( "/usr/lib" "${GRAPE_PATH}" ${CCGNU_LIBRARY_DIRS} )
 
 FILE( GLOB header "src/*.hh" )
-FILE( GLOB_RECURSE oseen "dune/fem/oseen/*.hh" )
+FILE( GLOB_RECURSE oseen "dune/fem/oseen/*.h*" )
 
 set( COMMON_LIBS "dunestuff" "dunecommon" "dunegeometry"  "dunefem" "dunegrid"  
     ${BLAS_LIB} ${ALULIBS} ${UGLIBS}  ${ParaLIBS} ${CCGNU_LIBRARIES}  ${BOOST_LIBS})

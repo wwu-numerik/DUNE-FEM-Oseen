@@ -24,16 +24,16 @@ public:
 	typedef std::pair < int , double >
 		ReturnValueType;
 
-	NewBicgStab(	const OperatorType& op,
+    NewBicgStab(const OperatorType& op,
 				const double relLimit,
 				const double absLimit,
 				const unsigned int max_iter,
-				const unsigned int solverVerbosity_ )
+                const unsigned int solverVerbosity )
 		: operator_(op),
 		  relLimit_(relLimit),
 		  absLimit_(absLimit),
 		  max_iter_(max_iter),
-		  solverVerbosity_(solverVerbosity_)
+          solverVerbosity_(solverVerbosity)
 	{}
 
 	//! for bfg interface compliance

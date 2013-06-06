@@ -159,10 +159,10 @@ class DiscreteOseenFunctionSpaceWrapper
          *  \brief  constructor
          *  \todo   doc
          **/
-        DiscreteOseenFunctionSpaceWrapper( GridPartType& gridPart )
-            : BaseType( gridPart ),
-            velocitySpace_( gridPart ),
-            pressureSpace_( gridPart )
+        DiscreteOseenFunctionSpaceWrapper( GridPartType& gridPart_in )
+            : BaseType( gridPart_in ),
+            velocitySpace_( gridPart_in ),
+            pressureSpace_( gridPart_in )
         {}
 
         /**
@@ -441,7 +441,7 @@ class DiscreteOseenFunctionWrapperTraits
         typedef DiscretePressureFunctionImp
             DiscretePressureFunctionType;
 
-		typedef VTKIO < typename DiscretePressureFunctionType::DiscreteFunctionSpaceType::GridPartType >
+        typedef SubsamplingVTKIO < typename DiscretePressureFunctionType::DiscreteFunctionSpaceType::GridPartType >
 			VtkWriterType;
 
         typedef Dune::tuple<const DiscreteVelocityFunctionType*,const DiscretePressureFunctionType*>
@@ -502,16 +502,16 @@ class DiscreteOseenFunctionWrapper
          *  \brief  constructor
          *  \todo   doc
          **/
-        DiscreteOseenFunctionWrapper(  const std::string name,
-                                        DiscreteFunctionSpaceType& space,
-										GridPartType& gridPart )
-            : space_( space ),
-            velocity_( name + std::string("_velocity"), space.discreteVelocitySpace() ),
-			pressure_( name + std::string("_pressure"), space.discretePressureSpace() ),
+        DiscreteOseenFunctionWrapper(  const std::string name_in,
+                                        DiscreteFunctionSpaceType& space_in,
+                                        GridPartType& gridPart_in )
+            : space_( space_in )
+            , velocity_( name_in + std::string("_velocity"), space_in.discreteVelocitySpace() )
+            , pressure_( name_in + std::string("_pressure"), space_in.discretePressureSpace() )
             #if ENABLE_ADAPTIVE
-				adaptionManager_ ( gridPart.grid(), *this ),
+                , adaptionManager_ ( gridPart_in.grid(), *this )
             #endif
-			vtkWriter_( gridPart )
+            , vtkWriter_( gridPart_in )
         {}
 
         /**
@@ -520,16 +520,16 @@ class DiscreteOseenFunctionWrapper
          *              wraps existing velocity and pressure
          *  \attention  by copying
          **/
-		DiscreteOseenFunctionWrapper(  DiscreteFunctionSpaceType& space,
-                                        DiscreteVelocityFunctionType& velocity,
-                                        DiscretePressureFunctionType& pressure )
-            : space_( space ),
-            velocity_( velocity ),
-			pressure_( pressure ),
+        DiscreteOseenFunctionWrapper(  DiscreteFunctionSpaceType& space_in,
+                                        DiscreteVelocityFunctionType& velocity_in,
+                                        DiscretePressureFunctionType& pressure_in )
+            : space_( space_in )
+            , velocity_( velocity_in )
+            , pressure_( pressure_in )
             #if ENABLE_ADAPTIVE
-				adaptionManager_ ( pressure.space().gridPart().grid(), *this ),
+                , adaptionManager_ ( pressure_in.space().gridPart().grid(), *this )
             #endif
-			vtkWriter_( pressure.space().gridPart() )
+            , vtkWriter_( pressure_in.space().gridPart() )
         {}
 
         /**
@@ -675,36 +675,36 @@ class DiscreteOseenFunctionWrapper
 
 		void writeVTK( const std::string& path, const int number_postfix )
 		{
-			std::stringstream s;
-			s << std::setfill('0') << std::setw(6) << number_postfix;
-			writeVTK( path, s.str() );
+            std::stringstream s;
+            s << std::setfill('0') << std::setw(6) << number_postfix;
+            writeVTK( path, s.str() );
 		}
 
 		//! write both wrapped functions to "path/{pressure,velocity}.name()+postfix+.vtk"
 		void writeVTK( const std::string& path, const std::string postfix = std::string() )
 		{
-			if ( DiscreteVelocityFunctionType::FunctionSpaceType::DimRange > 1 ){
-				vtkWriter_.addVectorVertexData( velocity_ );
-				vtkWriter_.addVectorCellData( velocity_ );
-			}
-			else {
-				vtkWriter_.addVertexData( velocity_ );
-				vtkWriter_.addCellData( velocity_ );
-			}
+            if ( DiscreteVelocityFunctionType::FunctionSpaceType::DimRange > 1 ){
+                vtkWriter_.addVectorVertexData( velocity_ );
+                vtkWriter_.addVectorCellData( velocity_ );
+            }
+            else {
+                vtkWriter_.addVertexData( velocity_ );
+                vtkWriter_.addCellData( velocity_ );
+            }
 
-			vtkWriter_.write( getPath( velocity_, path, postfix ) );
-			vtkWriter_.clear();
+            vtkWriter_.write( getPath( velocity_, path, postfix ) );
+            vtkWriter_.clear();
 
-			if ( DiscretePressureFunctionType::FunctionSpaceType::DimRange > 1 ){
-				vtkWriter_.addVectorVertexData( pressure_ );
-				vtkWriter_.addVectorCellData( pressure_ );
-			}
-			else {
-				vtkWriter_.addVertexData( pressure_ );
-				vtkWriter_.addCellData( pressure_ );
-			}
-			vtkWriter_.write( getPath( pressure_, path, postfix ) );
-			vtkWriter_.clear();
+            if ( DiscretePressureFunctionType::FunctionSpaceType::DimRange > 1 ){
+                vtkWriter_.addVectorVertexData( pressure_ );
+                vtkWriter_.addVectorCellData( pressure_ );
+            }
+            else {
+                vtkWriter_.addVertexData( pressure_ );
+                vtkWriter_.addCellData( pressure_ );
+            }
+            vtkWriter_.write( getPath( pressure_, path, postfix ) );
+            vtkWriter_.clear();
 		}
 
 		typename Traits::FunctionTupleType& functionTuple() const
@@ -761,7 +761,7 @@ class DiscreteOseenFunctionWrapper
     #if ENABLE_ADAPTIVE
 		AdaptionManagerType adaptionManager_;
     #endif
-		typename Traits::VtkWriterType vtkWriter_;
+        typename Traits::VtkWriterType vtkWriter_;
 
 		// we can uncomment this if the adpation manager copy-problem is resolved
 		//DiscreteOseenFunctionWrapper( const DiscreteOseenFunctionWrapper& );

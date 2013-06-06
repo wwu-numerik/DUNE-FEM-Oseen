@@ -99,14 +99,8 @@ namespace Assembler {
                                                       const PointType &x,
                                                       const JacobianRangeType &psi ) const
         {
-          typedef typename EntityType :: Geometry GeometryType;
-          typedef FieldMatrix< typename GeometryType :: ctype,
-                               GeometryType :: mydimension,
-                               GeometryType :: mydimension >
-            GeometryJacobianType;
-
-          const GeometryType &geometry = entity.geometry();
-          const GeometryJacobianType &jacobianInverseTransposed
+          const auto& geometry = entity.geometry();
+          const auto& jacobianInverseTransposed
             = geometry.jacobianInverseTransposed( coordinate( x ) );
 
           JacobianRangeType gradPhi;

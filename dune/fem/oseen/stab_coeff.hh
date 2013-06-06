@@ -84,7 +84,7 @@ class StabilizationCoefficients {
 		}
 
 		template < class Stream >
-		void print( Stream& stream ) {
+        void print( Stream& stream ) const{
 			if ( this->Equals( getDefaultStabilizationCoefficients() ) )
 				stream << "default stabilisation coefficients used " ;
 			else {
@@ -104,7 +104,7 @@ class StabilizationCoefficients {
 			return ret;
 		}
 
-		bool Equals( const StabilizationCoefficients& other ) {
+        bool Equals( const StabilizationCoefficients& other ) const {
 			if ( map_.size() != other.map_.size() )
 				return false;
 			return std::equal( map_.begin(), map_.end(), other.map_.begin() );

@@ -58,7 +58,7 @@ class PostProcessor
         typedef typename GridPartType::GridType
             GridType;
 
-        typedef Dune::VTKIO<GridPartType>
+        typedef Dune::SubsamplingVTKIO<GridPartType>
             VTKWriterType;
 
 		typedef typename OseenPassType::Traits::DiscreteVelocityFunctionType
@@ -73,7 +73,7 @@ class PostProcessor
 
 
         PostProcessor( const DiscreteOseenFunctionSpaceWrapperType& wrapper, const ProblemType& prob )
-            : //pass_( pass ),
+            :
             problem_( prob ),
             spaceWrapper_( wrapper ),
             gridPart_( wrapper.gridPart() ),
@@ -92,10 +92,6 @@ class PostProcessor
             datadir_( DSC_CONFIG_GET( "fem.io.datadir", std::string("data") ) + "/" )
         {
             DSC::testCreateDirectory( datadir_ );
-        }
-
-        ~PostProcessor()
-        {
         }
 
 		/** \brief analytical data is L2 projected
@@ -126,14 +122,14 @@ class PostProcessor
 		//! output function that 'knows' function output mode; assembles filename
         template <class Function>
         void vtk_write( const Function& f ) {
-			if ( Function::FunctionSpaceType::DimRange > 1 ) {
+            if ( Function::FunctionSpaceType::DimRange > 1 ) {
                 vtkWriter_.addVectorVertexData( f );
-				vtkWriter_.addVectorCellData( f );
-			}
-			else {
+                vtkWriter_.addVectorCellData( f );
+            }
+            else {
                 vtkWriter_.addVertexData( f );
-				vtkWriter_.addCellData( f );
-			}
+                vtkWriter_.addCellData( f );
+            }
 
             std::stringstream path;
             if ( DSC_CONFIG_GET( "per-run-output", false ) )
@@ -188,8 +184,8 @@ class PostProcessor
             vtk_write( wrapper.discreteVelocity() );
 
             typedef Dune::tuple< const DiscreteVelocityFunctionType*, const DiscretePressureFunctionType* >
-				IOTupleType;
-			IOTupleType dataTup ( &wrapper.discreteVelocity(), &wrapper.discretePressure() );
+                IOTupleType;
+            IOTupleType dataTup ( &wrapper.discreteVelocity(), &wrapper.discretePressure() );
 
             typedef Dune::DataWriter< GridType, IOTupleType >
                 DataWriterType;
