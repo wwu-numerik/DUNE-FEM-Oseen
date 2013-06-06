@@ -107,11 +107,11 @@ public:
         typedef SparseRowMatrixObject<  T, R, Traits >Type;
     };
     TYPEDEF_MATRIX_AND_INTEGRATOR( M, Sigma, Sigma );
-    TYPEDEF_MATRIX_AND_INTEGRATOR( W, Velocity, Sigma );
-    TYPEDEF_MATRIX_AND_INTEGRATOR( X, Sigma, Velocity  );
+    TYPEDEF_MATRIX_AND_INTEGRATOR( W, Sigma, Velocity );
+    TYPEDEF_MATRIX_AND_INTEGRATOR( X, Velocity, Sigma );
     TYPEDEF_MATRIX_AND_INTEGRATOR( Y, Velocity, Velocity );
-    TYPEDEF_MATRIX_AND_INTEGRATOR( Z, Pressure, Velocity );
-    TYPEDEF_MATRIX_AND_INTEGRATOR( E, Velocity, Pressure );
+    TYPEDEF_MATRIX_AND_INTEGRATOR( Z, Velocity, Pressure );
+    TYPEDEF_MATRIX_AND_INTEGRATOR( E, Pressure, Velocity );
     TYPEDEF_MATRIX_AND_INTEGRATOR( R, Pressure, Pressure );
     static const bool verbose_ = true;
 

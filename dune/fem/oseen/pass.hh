@@ -87,16 +87,16 @@ class OseenPass
             auto MInversMatrix = Factory::matrix( sigmaSpace_, sigmaSpace_ );
             ASSERT_EQ( MInversMatrix->matrix().rows(), MInversMatrix->matrix().cols() );
             // W\in R^{M\times L}
-            auto Xmatrix = Factory::matrix( sigmaSpace_, velocitySpace_ );
+            auto Wmatrix = Factory::matrix( sigmaSpace_, velocitySpace_ );
             // X\in R^{L\times M}
-            auto Wmatrix = Factory::matrix( velocitySpace_, sigmaSpace_ );
+            auto Xmatrix = Factory::matrix( velocitySpace_, sigmaSpace_ );
             // O,Y\in R^{L\times L}
             auto Ymatrix = Factory::matrix( velocitySpace_, velocitySpace_ );
             auto Omatrix = Factory::matrix( velocitySpace_, velocitySpace_ );
             // Z\in R^{L\times K}
-            auto Ematrix = Factory::matrix( velocitySpace_, pressureSpace_ );
+            auto Zmatrix = Factory::matrix( velocitySpace_, pressureSpace_ );
             // E\in R^{K\times L}
-            auto Zmatrix = Factory::matrix( pressureSpace_, velocitySpace_ );
+            auto Ematrix = Factory::matrix( pressureSpace_, velocitySpace_ );
             // R\in R^{K\times K}
             auto Rmatrix = Factory::matrix( pressureSpace_, pressureSpace_ );
             // H_{1}\in R^{M}
@@ -191,7 +191,7 @@ class OseenPass
 			int numberOfInnerIntersections = 0;
             infoStream << "this is OseenPass::apply()" << std::endl;
 
-            // do an empty grid walk to get information
+			// do an empty grid walk to get informations
 			double maxGridWidth( 0.0 );
 			typename Traits::EntityIteratorType entityItEndLog = velocitySpace_.end();
 			for (   typename Traits::EntityIteratorType entityItLog = velocitySpace_.begin();

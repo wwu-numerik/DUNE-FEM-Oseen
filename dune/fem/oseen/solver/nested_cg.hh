@@ -33,6 +33,13 @@ namespace Dune {
 		  VelocityDiscreteFunctionType;
 
 	public:
+	  /** \todo Please doc me!
+	   * \brief Constructor:
+	  *
+		**/
+	  NestedCgSaddlepointInverseOperator()
+	  {}
+
 	  /** takes raw matrices from pass
 	  */
 	  template <  class X_MatrixType,
@@ -43,7 +50,9 @@ namespace Dune {
 				  class R_MatrixType,
 				  class Z_MatrixType,
 				  class W_MatrixType,
-                  class DiscreteSigmaFunctionType>
+				  class DiscreteSigmaFunctionType,
+				  class DiscreteVelocityFunctionType,
+				  class DiscretePressureFunctionType  >
 	  SaddlepointInverseOperatorInfo solve( const DomainType& /*arg*/,
 				  RangeType& dest,
 				  X_MatrixType& x_mat,
@@ -55,15 +64,15 @@ namespace Dune {
 				  Z_MatrixType& z_mat,
 				  W_MatrixType& w_mat,
 				  const DiscreteSigmaFunctionType& rhs1,
-                  const VelocityDiscreteFunctionType& rhs2,
-                  const PressureDiscreteFunctionType& rhs3 ) const
+				  const DiscreteVelocityFunctionType& rhs2,
+				  const DiscretePressureFunctionType& rhs3 ) const
 	  {
 		  typedef InnerCGSolverWrapper< W_MatrixType,
 								  M_invers_MatrixType,
 								  X_MatrixType,
 								  Y_MatrixType,
 								  DiscreteSigmaFunctionType,
-                                  VelocityDiscreteFunctionType >
+								  DiscreteVelocityFunctionType >
 			  InnerCGSolverWrapperType;
 
 	#ifdef USE_BFG_CG_SCHEME
@@ -76,19 +85,19 @@ namespace Dune {
 											  R_MatrixType,
 											  Z_MatrixType,
 											  M_invers_MatrixType,
-                                              VelocityDiscreteFunctionType,
-                                              PressureDiscreteFunctionType >
+											  DiscreteVelocityFunctionType,
+											  DiscretePressureFunctionType >
 				  Sk_Operator;
 
-          typedef SOLVER_NAMESPACE::OUTER_CG_SOLVERTYPE< PressureDiscreteFunctionType, Sk_Operator >
+		  typedef SOLVER_NAMESPACE::OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
 				  Sk_Solver;
 	#ifdef USE_BFG_CG_SCHEME
 		  typedef typename Sk_Solver::ReturnValueType
 				  SolverReturnType;
 	#endif
 		  //get some refs for more readability
-          auto& pressure = dest.discretePressure();
-          auto& velocity = dest.discreteVelocity();
+		  PressureDiscreteFunctionType& pressure = dest.discretePressure();
+		  VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
           auto& logDebug = DSC_LOG_DEBUG;
 //		  Logging::LogStream& logError = DSC_LOG_ERROR;
           auto& logInfo = DSC_LOG_INFO;
@@ -99,15 +108,15 @@ namespace Dune {
 		  const double absLimit = DSC_CONFIG_GET( "absLimit", 1e-3 );
 		  const bool solverVerbosity = DSC_CONFIG_GET( "solverVerbosity", 0 );
 
-          PressureDiscreteFunctionType schur_f ( "schur_f", rhs3.space() );
-          VelocityDiscreteFunctionType f_func( "f_func", velocity.space() );
+		  DiscretePressureFunctionType schur_f ( "schur_f", rhs3.space() );
+		  DiscreteVelocityFunctionType f_func( "f_func", velocity.space() );
 		  {
 			  logInfo << "Begin NestedCgSaddlepointInverseOperator\n "
 					  << " \n\tbegin calc schur_f,f_func " << std::endl;
 			  logDebug.resume();
 
 			  DiscreteSigmaFunctionType m_tmp ( "m_tom", rhs1.space() );
-              VelocityDiscreteFunctionType tmp_f ( "tmp_f", f_func.space() );
+			  DiscreteVelocityFunctionType tmp_f ( "tmp_f", f_func.space() );
 			  // f_func =  ( -X *  M_inv * rhs1 + rhs2 )
 			  m_inv_mat.apply( rhs1, m_tmp );
 			  x_mat.apply( m_tmp, tmp_f );
@@ -150,7 +159,7 @@ namespace Dune {
 
 		  logInfo << "\n\tend  S*p=schur_f" << std::endl;
 
-          VelocityDiscreteFunctionType Zp_temp ( "Zp_temp", velocity.space() );
+		  DiscreteVelocityFunctionType Zp_temp ( "Zp_temp", velocity.space() );
 		  // velocity = A^-1 * ( ( -1 * ( Z * pressure ) ) + f_func )
 		  z_mat.apply( pressure, Zp_temp );
 		  Zp_temp *= -1.0;
@@ -164,6 +173,7 @@ namespace Dune {
 	  }
 
 	};
+
 
 } //end namespace Dune
 
