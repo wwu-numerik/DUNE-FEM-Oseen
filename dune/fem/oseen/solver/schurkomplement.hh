@@ -32,19 +32,19 @@ class PreconditionOperatorDefault {
         mutable typename SchurkomplementOperatorType::DiscreteVelocityFunctionType velo_tmp;
         mutable typename SchurkomplementOperatorType::DiscreteVelocityFunctionType velo_tmp2;
 
-        const typename SchurkomplementOperatorType::Z_MatrixType::WrappedMatrixObjectType::DomainSpaceType& pressure_space_;
-        const typename SchurkomplementOperatorType::E_MatrixType::WrappedMatrixObjectType::DomainSpaceType& velocity_space_;
+        const typename SchurkomplementOperatorType::DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& velocity_space_;
+        const typename SchurkomplementOperatorType::DiscretePressureFunctionType::DiscreteFunctionSpaceType& pressure_space_;
 
     public:
 
         PreconditionOperatorDefault( const typename SchurkomplementOperatorType::A_SolverType& a_solver,
                            const SchurkomplementOperatorType& sk_op,
-                           const typename SchurkomplementOperatorType::E_MatrixType::WrappedMatrixObjectType::DomainSpaceType& velocity_space,
-                           const typename SchurkomplementOperatorType::Z_MatrixType::WrappedMatrixObjectType::DomainSpaceType& pressure_space)
+                                     const typename SchurkomplementOperatorType::DiscreteVelocityFunctionType::DiscreteFunctionSpaceType& velocity_space,
+                                     const typename SchurkomplementOperatorType::DiscretePressureFunctionType::DiscreteFunctionSpaceType& pressure_space)
             : sk_op_( sk_op),
             a_precond_( a_solver.getOperator().preconditionMatrix() ),
-            velo_tmp( "sdeio", pressure_space ),
-            velo_tmp2( "2sdeio", pressure_space ),
+            velo_tmp( "sdeio", velocity_space ),
+            velo_tmp2( "2sdeio", velocity_space ),
             pressure_space_(pressure_space),
             velocity_space_(velocity_space)
         {}
@@ -70,8 +70,8 @@ class PreconditionOperatorDefault {
 
         double ddotOEM(const double*v, const double* w) const
         {
-            typename SchurkomplementOperatorType::DiscretePressureFunctionType V( "ddot_V2", velocity_space_, v );
-            typename SchurkomplementOperatorType::DiscretePressureFunctionType W( "ddot_W1", velocity_space_, w );
+            typename SchurkomplementOperatorType::DiscretePressureFunctionType V( "ddot_V2", pressure_space_, v );
+            typename SchurkomplementOperatorType::DiscretePressureFunctionType W( "ddot_W1", pressure_space_, w );
             return V.scalarProductDofs( W );
         }
 };
@@ -117,7 +117,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 
         typedef DSFe::OperatorBasedPreconditioner< PreconditionOperator,
 													SOLVER_NAMESPACE::OUTER_CG_SOLVERTYPE,
-													DiscretePressureFunctionType>
+                                                    DiscreteVelocityFunctionType>
 			PreconditionMatrix;
 		typedef DiscretePressureFunctionType RowDiscreteFunctionType;
 		typedef DiscretePressureFunctionType ColDiscreteFunctionType;
@@ -144,8 +144,8 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
             do_bfg( DSC_CONFIG_GET( "do-bfg", true ) ),
             total_inner_iterations( 0 ),
 			pressure_space_(pressure_space),
-            precond_operator_( a_solver, *this, pressure_space, velocity_space),
-            precond_( precond_operator_, pressure_space )
+            precond_operator_( a_solver, *this, velocity_space, pressure_space),
+            precond_( precond_operator_, velocity_space)
 	{}
 
     double ddotOEM(const double*v, const double* w) const
@@ -167,7 +167,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 			tmp2.clear();//don't remove w/o result testing
 			assert( !DSFe::FunctionContainsNanOrInf( tmp1 ) );
 #ifdef USE_BFG_CG_SCHEME
-			auto info = DSC_LOG_INFO;
+            auto& info = DSC_LOG_INFO;
 			const int solverVerbosity = DSC_CONFIG_GET( "solverVerbosity", 0 );
             ReturnValueType cg_info;
             a_solver_.apply( tmp1, tmp2, cg_info );
