@@ -43,8 +43,6 @@
 	#define BOOST_HAS_RVALUE_REFS 1
 #endif
 
-#define USE_BFG_CG_SCHEME 1
-
 // OEMBICGSQOp will NOT compile
 #ifndef INNER_CG_SOLVERTYPE
     #define INNER_CG_SOLVERTYPE OEMCGOp
@@ -54,19 +52,14 @@
     #define OUTER_CG_SOLVERTYPE OEMCGOp
 #endif
 
-#if defined(USE_BFG_CG_SCHEME) || defined(FORCE_CUSTOM_SOLVER)
-    #include <utility>
-    //< iteration no , < absLimit, residuum > >
+
     typedef std::pair<int,std::pair<double,double> >
         IterationInfo;
     #define SOLVER_NAMESPACE DuneStokes
     #define SOLVER_INTERFACE_NAMESPACE StokesOEMSolver
-#else
-    #define SOLVER_NAMESPACE Dune
-    #define SOLVER_INTERFACE_NAMESPACE OEMSolver
-#endif
 
-#if defined(USE_PARDG_ODE_SOLVER) && defined(USE_BFG_CG_SCHEME)
+
+#if defined(USE_PARDG_ODE_SOLVER)
     #warning ("USE_PARDG_ODE_SOLVER enabled, might conflict with custom solvers")
 #endif
 

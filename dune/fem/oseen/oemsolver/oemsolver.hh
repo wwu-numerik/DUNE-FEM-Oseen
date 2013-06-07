@@ -118,29 +118,20 @@ using DuneCBlas :: dscal;
 
 //! this method is called from all solvers and is only a wrapper
 //! this method is mainly from SparseRowMatrix
-#ifdef USE_BFG_CG_SCHEME
-	template <class MatrixImp, class VectorType>
-	void mult(const MatrixImp & m, const VectorType * x, VectorType * ret, const IterationInfo& info )
-	{
-	  // call multOEM of the matrix
-	  m.multOEM(x,ret, info );
-	}
-	template <class MatrixImp, class VectorType>
-	void mult(const MatrixImp & m, const VectorType * x, VectorType * ret )
-	{
-		IterationInfo dummy;
-	  // call multOEM of the matrix
-	  m.multOEM(x,ret );
-	}
 
-#else
-	template <class MatrixImp, class VectorType>
-	void mult(const MatrixImp & m, const VectorType * x, VectorType * ret )
-	{
-	  // call multOEM of the matrix
-	  m.multOEM(x,ret );
-	}
-#endif
+template <class MatrixImp, class VectorType>
+void mult(const MatrixImp & m, const VectorType * x, VectorType * ret, const IterationInfo& info )
+{
+  // call multOEM of the matrix
+  m.multOEM(x,ret, info );
+}
+template <class MatrixImp, class VectorType>
+void mult(const MatrixImp & m, const VectorType * x, VectorType * ret )
+{
+    IterationInfo dummy;
+  // call multOEM of the matrix
+  m.multOEM(x,ret );
+}
 
 //! mult method when given pre conditioning matrix
 template <class Matrix , class PC_Matrix , bool use_pc >
@@ -152,20 +143,13 @@ struct Mult
   {
     return A.ddotOEM(x,y);
   }
-#ifdef USE_BFG_CG_SCHEME
-  typedef void mult_t(const Matrix &A,
-                      const PC_Matrix & C,
-                      const double *arg,
-                      double *dest ,
-                      double * tmp,
-                      const IterationInfo& info );
-#else
-  typedef void mult_t(const Matrix &A,
-                      const PC_Matrix & C,
-                      const double *arg,
-                      double *dest ,
-                      double * tmp);
-#endif
+
+typedef void mult_t(const Matrix &A,
+                  const PC_Matrix & C,
+                  const double *arg,
+                  double *dest ,
+                  double * tmp,
+                  const IterationInfo& info );
 
   static bool first_mult(const Matrix &A, const PC_Matrix & C,
               const double *arg, double *dest , double * tmp)
@@ -202,7 +186,6 @@ struct Mult
     }
   }
 
-#ifdef USE_BFG_CG_SCHEME
   static void mult_pc (const Matrix &A, const PC_Matrix & C,
         const double *arg, double *dest , double * tmp, const IterationInfo& info )
   {
@@ -226,32 +209,6 @@ struct Mult
       C.precondition(tmp,dest);
     }
   }
-#else
-
-    static void mult_pc (const Matrix &A, const PC_Matrix & C,
-        const double *arg, double *dest , double * tmp )
-  {
-    assert( tmp );
-
-    // check type of preconditioning
-    if( C.rightPrecondition() )
-    {
-      // call precondition of Matrix PC
-      C.precondition(arg,tmp);
-
-      // call mult of Matrix A
-      mult(A,tmp,dest);
-    }
-    else
-    {
-      // call mult of Matrix A
-      mult(A,arg,tmp);
-
-      // call precondition of Matrix PC
-      C.precondition(tmp,dest);
-    }
-  }
-#endif
 };
 
 //! mult method when no pre conditioning matrix
@@ -264,19 +221,13 @@ struct Mult<Matrix,Matrix,false>
   {
 	return A.ddotOEM(x,y);
   }
-#ifdef USE_BFG_CG_SCHEME
+
   typedef void mult_t(const Matrix &A,
                       const Matrix &C,
                       const double *arg,
                       double *dest ,
                       const IterationInfo& info );
-#else
-  typedef void mult_t(const Matrix &A,
-                      const Matrix &C,
-                      const double *arg,
-                      double *dest ,
-                      double * tmp);
-#endif
+
 
   static bool first_mult(const Matrix &A, const Matrix & UNUSED_UNLESS_DEBUG(C),
 			  const double *arg, double *dest , double * UNUSED_UNLESS_DEBUG(tmp) )
@@ -287,12 +238,8 @@ struct Mult<Matrix,Matrix,false>
     assert( &A == &C );
 
     // call mult of Matrix A
-	#ifdef USE_BFG_CG_SCHEME
-		IterationInfo dummy;
-		mult(A,arg,dest,dummy);
-	#else
-		StokesOEMSolver::mult(A,arg,dest);
-	#endif
+    IterationInfo dummy;
+    mult(A,arg,dest,dummy);
 
     // first mult like right precon
     return true;
@@ -304,31 +251,17 @@ struct Mult<Matrix,Matrix,false>
     // do nothing here
   }
 
-#ifdef USE_BFG_CG_SCHEME
-  static void mult_pc(const Matrix &A, const Matrix & UNUSED_UNLESS_DEBUG(C), const double *arg ,
-					  double *dest , double * UNUSED_UNLESS_DEBUG(tmp), const IterationInfo& info )
-  {
-    // tmp has to be 0
-    assert( tmp == 0 );
-    // C is just a fake
-    assert( &A == &C );
+static void mult_pc(const Matrix &A, const Matrix & UNUSED_UNLESS_DEBUG(C), const double *arg ,
+                  double *dest , double * UNUSED_UNLESS_DEBUG(tmp), const IterationInfo& info )
+{
+// tmp has to be 0
+assert( tmp == 0 );
+// C is just a fake
+assert( &A == &C );
 
-    // call mult of Matrix A
-    mult(A,arg,dest,info);
-  }
-#else
-  static void mult_pc(const Matrix &A, const Matrix & C, const double *arg ,
-                      double *dest , double * tmp )
-  {
-    // tmp has to be 0
-    assert( tmp == 0 );
-    // C is just a fake
-    assert( &A == &C );
-
-    // call mult of Matrix A
-	StokesOEMSolver::mult(A,arg,dest);
-  }
-#endif
+// call mult of Matrix A
+mult(A,arg,dest,info);
+}
 
 };
 

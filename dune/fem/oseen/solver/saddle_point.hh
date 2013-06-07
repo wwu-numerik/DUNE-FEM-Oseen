@@ -89,10 +89,8 @@ namespace Dune {
 			const int maxIter = DSC_CONFIG_GET( "maxIter", 500 );
 			const bool use_velocity_reconstruct = DSC_CONFIG_GET( "use_velocity_reconstruct", true );
 
-	#ifdef USE_BFG_CG_SCHEME
 			const double tau = DSC_CONFIG_GET( "bfg-tau", 0.1 );
 			const bool do_bfg = DSC_CONFIG_GET( "do-bfg", true );
-	#endif
 			logInfo.resume();
 			logInfo << "Begin SaddlePointInverseOperator " << std::endl;
 
@@ -132,7 +130,7 @@ namespace Dune {
 									DiscreteSigmaFunctionType,
 									DiscreteVelocityFunctionType >
 				InnerCGSolverWrapperType;
-	#ifdef USE_BFG_CG_SCHEME
+
 			typedef typename InnerCGSolverWrapperType::ReturnValueType
 				ReturnValueType;
 			ReturnValueType a_solver_info;
@@ -140,9 +138,7 @@ namespace Dune {
 			//the bfg scheme uses the outer acc. as a base
 			double current_inner_accuracy = do_bfg ? tau * outer_absLimit : inner_absLimit;
 			double max_inner_accuracy = current_inner_accuracy;
-	#else
-			double current_inner_accuracy = inner_absLimit;
-	#endif
+
 			InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
 														   o_mat, rhs1.space(),rhs2.space(), relLimit,
 														   current_inner_accuracy, solverVerbosity > 3 );
@@ -150,11 +146,10 @@ namespace Dune {
 	/*****************************************************************************************/
 
 			int iteration = 0;
-		#ifdef USE_BFG_CG_SCHEME
 			int total_inner_iterations = 0;
 			int min_inner_iterations = std::numeric_limits<int>::max();
 			int max_inner_iterations = 0;
-		#endif
+
 			const int max_adaptions = DSC_CONFIG_GET( "max_adaptions", 2 ) ;
 			int current_adaption = 0;
 			double delta; //norm of residuum
@@ -202,41 +197,30 @@ namespace Dune {
 					current_adaption++;
 					iteration = 2;//do not execute first step in next iter again
 					outer_absLimit /= 0.01;
-	#ifdef USE_BFG_CG_SCHEME
 					current_inner_accuracy /= 0.01;
 					innerCGSolverWrapper.setAbsoluteLimit( current_inner_accuracy );
-	#endif
 					logInfo << "\n\t\t Outer CG solver reset, tolerance lowered" << std::endl;
-
 				}
 
-	#ifdef USE_BFG_CG_SCHEME
-					if ( do_bfg ) {
-						//the form from the precond. paper
-						current_inner_accuracy = tau * std::min( 1. , outer_absLimit / std::min ( delta , 1.0 ) );
-						innerCGSolverWrapper.setAbsoluteLimit( current_inner_accuracy );
-						max_inner_accuracy = std::max( max_inner_accuracy, current_inner_accuracy );
-						if( solverVerbosity > 1 )
-							logInfo << "\t\t\t set inner limit to: " << current_inner_accuracy << "\n";
-					}
-	#endif
+                if ( do_bfg ) {
+                    //the form from the precond. paper
+                    current_inner_accuracy = tau * std::min( 1. , outer_absLimit / std::min ( delta , 1.0 ) );
+                    innerCGSolverWrapper.setAbsoluteLimit( current_inner_accuracy );
+                    max_inner_accuracy = std::max( max_inner_accuracy, current_inner_accuracy );
+                    if( solverVerbosity > 1 )
+                        logInfo << "\t\t\t set inner limit to: " << current_inner_accuracy << "\n";
+                }
 				// xi = A^{-1} ( B * d )
 				tmp1.clear();
 				b_mat.apply( d, tmp1 );
 
-	#ifdef USE_BFG_CG_SCHEME
 				innerCGSolverWrapper.apply( tmp1, xi, a_solver_info );
-	#else
-				innerCGSolverWrapper.apply( tmp1, xi );
-	#endif
 
-	#ifdef USE_BFG_CG_SCHEME
 				if( solverVerbosity > 1 )
 					logInfo << "\t\t inner iterations: " << a_solver_info.first << std::endl;
 				total_inner_iterations += a_solver_info.first;
 				min_inner_iterations = std::min( min_inner_iterations, a_solver_info.first );
 				max_inner_iterations = std::max( max_inner_iterations, a_solver_info.first );
-	#endif
 
 				// h = B_t * xi  + C * d
 				b_t_mat.apply( xi, h );
@@ -277,21 +261,16 @@ namespace Dune {
 			}
 
 			logInfo << "End SaddlePointInverseOperator " << std::endl;
-
 			SaddlepointInverseOperatorInfo info; //left blank in case of no bfg
-	#ifdef USE_BFG_CG_SCHEME
 			const double avg_inner_iterations = total_inner_iterations / (double)iteration;
 			if( solverVerbosity > 0 )
 				logInfo << "\n #avg inner iter | #outer iter: "
 						<<  avg_inner_iterations << " | " << iteration << std::endl;
-
 			info.iterations_inner_avg = avg_inner_iterations;
 			info.iterations_inner_min = min_inner_iterations;
 			info.iterations_inner_max = max_inner_iterations;
 			info.iterations_outer_total = iteration;
 			info.max_inner_accuracy = max_inner_accuracy;
-	#endif
-			// ***************************
 			return info;
 		} //end SaddlepointInverseOperator::solve
 

@@ -95,21 +95,16 @@ gmres_algo2 (const CommunicatorType & comm,
     // global sum 
     nrm2b = comm.sum ( nrm2b );
 
-	#ifdef USE_BFG_CG_SCHEME
-	  IterationInfo info;
-	#endif
+    IterationInfo info;
 
     io=0;
     do  
     { // "aussere Iteration
       ++io;
-#ifdef USE_BFG_CG_SCHEME
-        info.first = io;
-        info.second = std::pair<double,double>(0.0,std::abs(y[j]));
-		MultType::mult_pc(A,C,x,r,tmp, info);
-#else
-		MultType::mult_pc(A,C,x,r,tmp);
-#endif
+      info.first = io;
+      info.second = std::pair<double,double>(0.0,std::abs(y[j]));
+      MultType::mult_pc(A,C,x,r,tmp, info);
+
       daxpy(n,-1.,b,1,r,1);
       beta = dnrm2(n,r,1);
 
@@ -125,11 +120,8 @@ gmres_algo2 (const CommunicatorType & comm,
       do 
       { // innere Iteration j=0,...,m-1
         u0j=uij;
-#ifdef USE_BFG_CG_SCHEME
+
         MultType::mult_pc(A,C,v[j],v[j+1],tmp,info);
-#else
-		MultType::mult_pc(A,C,v[j],v[j+1],tmp);
-#endif
         dgemv(DuneCBlas::Transpose,n,j+1,1.,V,n,v[j+1],1,0.,U+u0j,1);
 
         // global sum 
@@ -145,9 +137,9 @@ gmres_algo2 (const CommunicatorType & comm,
         
         for ( register int i=0; i<j; ++i ) 
         { // rotiere neue Spalte
-          double tmp = c[i]*U[uij]-s[i]*U[uij+1];
+          double dtmp = c[i]*U[uij]-s[i]*U[uij+1];
           U[uij+1]   = s[i]*U[uij]+c[i]*U[uij+1];
-          U[uij]     = tmp;
+          U[uij]     = dtmp;
           ++uij;
         }
         

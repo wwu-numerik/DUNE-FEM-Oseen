@@ -110,9 +110,9 @@ bicgstab_algo2( const CommunicatorType & comm,
 
   double err=eps*eps;
   double bb = 0.0;
-#ifdef USE_BFG_CG_SCHEME
+
   IterationInfo info;
-#endif
+
   bool rightPreCon = MultType :: first_mult(A,C,x,r,tmp);
   // if pc matrix, recalc rhs
   if( usePC && (!rightPreCon) )
@@ -147,13 +147,10 @@ bicgstab_algo2( const CommunicatorType & comm,
   while( rTr>err )
   {
     // do multiply
-#ifdef USE_BFG_CG_SCHEME
     info.first = its+1;
     info.second = std::pair<double,double>(eps,sqrt(rTr));
     MultType :: mult_pc(A,C,d,Ad,tmp,info);
-#else
-    MultType :: mult_pc(A,C,d,Ad,tmp);
-#endif
+
     rtTmp = ddot(N,rT,1,Ad,1);
 
     // communicate rTAd
@@ -169,11 +166,7 @@ bicgstab_algo2( const CommunicatorType & comm,
     daxpy(N,-alpha,Ad,1,s,1);
 
     // do multiply
-#ifdef USE_BFG_CG_SCHEME
     MultType :: mult_pc(A,C,s,t,tmp,info);
-#else
-    MultType :: mult_pc(A,C,s,t,tmp);
-#endif
 
     daxpy(N,1.,t,1,u,1);
     dscal(N,alpha,u,1);

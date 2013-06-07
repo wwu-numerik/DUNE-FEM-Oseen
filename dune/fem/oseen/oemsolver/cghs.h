@@ -82,15 +82,9 @@ cghs_algo2( const CommunicatorType & comm,
   
   double err= eps * eps * MultType :: ddot(A,b,b);
 
-#ifdef USE_BFG_CG_SCHEME
   IterationInfo info;
-#endif
   // apply first multiplication 
-  #ifdef USE_BFG_CG_SCHEME
-	MultType :: mult_pc(A,C,x,g,tmp, info);
-#else
-	MultType :: mult_pc(A,C,x,g,tmp);
-#endif
+  MultType :: mult_pc(A,C,x,g,tmp, info);
     
   daxpy(N,-1.,b,1,g,1);
   dscal(N,-1.,g,1);
@@ -101,13 +95,9 @@ cghs_algo2( const CommunicatorType & comm,
   while ( gg >err )
   {
     // apply multiplication
-#ifdef USE_BFG_CG_SCHEME
-        info.first = its+1;
-		info.second = std::pair<double,double>(eps,sqrt(gg));
-        MultType :: mult_pc(A,C,r,p,tmp,info);
-#else
-        MultType :: mult_pc(A,C,r,p,tmp);
-#endif
+    info.first = its+1;
+    info.second = std::pair<double,double>(eps,sqrt(gg));
+    MultType :: mult_pc(A,C,r,p,tmp,info);
 
     rho = MultType :: ddot(A,p,p);
     sig = MultType :: ddot(A,r,p);

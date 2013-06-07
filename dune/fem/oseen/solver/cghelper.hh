@@ -66,14 +66,13 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
                 DSC::setMatrixDiag( PreconditionMatrixBaseType::matrix(), precondition_diagonal );
 			}
 
-	#ifdef USE_BFG_CG_SCHEME
 			template <class VECtype>
             void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& /*info*/ ) const
 			{
 				multOEM(x,ret);
 			}
-	#endif
-			template <class VecType>
+
+            template <class VecType>
 			void multOEM( const VecType* tmp, VecType* dest ) const
 			{
 				precondition(tmp,dest);
@@ -127,13 +126,11 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
         o_mat_.multOEMAdd( x, ret );
     }
 
-#ifdef USE_BFG_CG_SCHEME
     template <class VECtype>
 	void multOEM(const VECtype* x, VECtype*  ret, const IterationInfo& /*info*/ ) const
     {
         multOEM(x,ret);
     }
-#endif
 
     double ddotOEM(const double*v, const double* w) const
 	{
@@ -203,10 +200,8 @@ class InnerCGSolverWrapper {
 
 		typedef SOLVER_NAMESPACE::INNER_CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
             CG_SolverType;
-		#ifdef USE_BFG_CG_SCHEME
-			typedef typename CG_SolverType::ReturnValueType
-				ReturnValueType;
-		#endif
+        typedef typename CG_SolverType::ReturnValueType
+            ReturnValueType;
 
 		InnerCGSolverWrapper( const WMatType& w_mat,
                 const MMatType& m_mat,
@@ -234,12 +229,10 @@ class InnerCGSolverWrapper {
 		/** \brief this signature is called if the CG solver uses non-standard third arg to expose runtime info
 			\see SaddlepointInverseOperator (when compiled with BFG scheme support)
 			**/
-	#ifdef USE_BFG_CG_SCHEME
 		void apply ( const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest, ReturnValueType& ret )
 		{
 			cg_solver.apply(arg,dest, ret);
 		}
-	#endif
 
 		//! the standard function call
         void apply ( const DiscreteVelocityFunctionType& arg, DiscreteVelocityFunctionType& dest )
@@ -248,8 +241,6 @@ class InnerCGSolverWrapper {
         }
         //! the standard function call
 
-
-#ifdef USE_BFG_CG_SCHEME
 		/** - needed when using the BFG scheme
 			- only works with modified Dune Solvers exposing a setAbsoluteLimit of their own
 			**/
@@ -257,7 +248,7 @@ class InnerCGSolverWrapper {
         {
             cg_solver.setAbsoluteLimit( abs );
         }
-#endif
+
 		const A_OperatorType& getOperator() const { return a_op_;}
 
     private:

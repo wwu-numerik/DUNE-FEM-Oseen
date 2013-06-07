@@ -26,9 +26,6 @@ namespace Solver {
 
 template<class OseenPassType, template <class S> class ReconstructionPolicyType = BruteForceReconstruction >
 struct SolverCaller {
-	//! alternative solver implementation
-    typedef NestedCgSaddlepointInverseOperator< OseenPassType >
-        NestedCgSolverType;
 	//! type of the used solver
     typedef SaddlepointInverseOperator< OseenPassType >
 		SaddlepointSolverType;
@@ -37,8 +34,7 @@ struct SolverCaller {
 	//! this is used for reduced (no pressure, incompress. condition) oseen pass
     typedef ReducedInverseOperator< OseenPassType >
 		ReducedSolverType;
-    typedef DirectKrylovSolver< OseenPassType >
-		FullsytemSolverType;
+
 
 	template <  class DomainType,
 				class RangeType,
@@ -150,11 +146,7 @@ struct SolverCaller {
                                                              O, E, R, Z, W,
                                                              H1rhs, H2rhs, H3rhs );
                                             break;
-            case Solver::NestedCG_Solver_ID:		result = NestedCgSolverType().solve(	arg, dest,
-                                                             X, M_invers, Y,
-                                                             O, E, R, Z, W,
-                                                             H1rhs, H2rhs, H3rhs );
-                                            break;
+
             case Solver::Reduced_Solver_ID:			result = ReducedSolverType().solve(	arg, dest,
                                                              X, M_invers, Y,
                                                              O, E, R, Z, W,
@@ -166,11 +158,6 @@ struct SolverCaller {
 															 H1rhs, H2rhs, H3rhs );
 											break;
 
-            case Solver::FullSystem_Solver_ID:		result = FullsytemSolverType().solve(	arg, dest,
-                                                             X, M_invers, Y,
-                                                             O, E, R, Z, W,
-                                                             H1rhs, H2rhs, H3rhs );
-                                            break;
             default:
                 throw std::runtime_error("invalid Solver ID selected");
 		}

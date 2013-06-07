@@ -14,12 +14,6 @@
 #include <cmath>
 #include <dune/fem/gridpart/common/gridpart.hh>
 #include <dune/fem/misc/mpimanager.hh>
-
-
-#include <dune/grid/utility/gridtype.hh>
-typedef Dune::GridSelector::GridType
-    GridType;
-
 #include <dune/fem/solver/oemsolver/oemsolver.hh>
 #include <dune/fem/space/dgspace.hh>
 #include <dune/fem/gridpart/adaptiveleafgridpart.hh>
@@ -32,18 +26,19 @@ typedef Dune::GridSelector::GridType
 #include <dune/fem/oseen/pass.hh>
 #include <dune/fem/oseen/boundarydata.hh>
 #include <dune/fem/oseen/runinfo.hh>
+#include <dune/fem/oseen/tex.hh>
+#include <dune/fem/oseen/postprocessing.hh>
+#include <dune/fem/oseen/problems.hh>
 
 #include <dune/stuff/common/print.hh>
 #include <dune/stuff/common/misc.hh>
 #include <dune/stuff/common/logging.hh>
 #include <dune/stuff/common/parameter/configcontainer.hh>
-#include <dune/fem/oseen/postprocessing.hh>
 #include <dune/stuff/common/profiler.hh>
 #include <dune/stuff/common/signals.hh>
-#include <dune/fem/oseen/tex.hh>
-
-#include <dune/fem/oseen/problems.hh>
 #include <dune/stuff/fem/femeoc.hh>
+
+#include <dune/grid/utility/gridtype.hh>
 
 #include "analyticaldata.hh"
 #include "velocity.hh"
@@ -53,6 +48,9 @@ typedef Dune::GridSelector::GridType
 #ifndef COMMIT
     #define COMMIT "undefined"
 #endif
+
+typedef Dune::GridSelector::GridType
+    GridType;
 
 static const std::string commit_string (COMMIT);
 
@@ -192,7 +190,6 @@ void RefineRun( CollectiveCommunication& mpicomm )
 	DSC::dumpRunInfoVectorToFile( run_infos );
 	eocCheck( run_infos );
 }
-
 
 DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
                     int refine_level_factor,

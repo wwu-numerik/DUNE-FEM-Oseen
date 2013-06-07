@@ -141,7 +141,7 @@ namespace Dune
     }
 
     //! reserve memory corresponnding to size of spaces
-    inline void reserve(bool verbose = false )
+    inline void reserve(bool /*verbose*/ = false )
     {
       if( sequence_ != domainSpace_.sequence() )
       {
@@ -150,17 +150,9 @@ namespace Dune
         if( (domainSpace_.begin() != domainSpace_.end())
             && (rangeSpace_.begin() != rangeSpace_.end()) )
 #endif
-        {
-          
-          if( verbose )
-          {
-            int rowMaxNumbers = domainSpace_.baseFunctionSet(*(domainSpace_.begin())).size();
-            int colMaxNumbers = rangeSpace_.baseFunctionSet(*(domainSpace_.begin())).size();
-          }
-
+        {        
           // upper estimate for number of non-zeros 
           const int nonZeros = std::max( StencilType :: nonZerosEstimate( rangeSpace_ ), matrix_.numNonZeros() );
-
           matrix_.reserve( domainSpace_.size(), rangeSpace_.size(), nonZeros, 0.0 );
         }
         sequence_ = domainSpace_.sequence();

@@ -75,10 +75,8 @@ namespace Dune {
 								  DiscreteVelocityFunctionType >
 			  InnerCGSolverWrapperType;
 
-	#ifdef USE_BFG_CG_SCHEME
 		  typedef typename InnerCGSolverWrapperType::ReturnValueType
 				  InnerCGSolverWrapperReturnType;
-	#endif
 
 		  typedef SchurkomplementOperator<    InnerCGSolverWrapperType,
 											  E_MatrixType,
@@ -91,10 +89,9 @@ namespace Dune {
 
 		  typedef SOLVER_NAMESPACE::OUTER_CG_SOLVERTYPE< DiscretePressureFunctionType, Sk_Operator >
 				  Sk_Solver;
-	#ifdef USE_BFG_CG_SCHEME
 		  typedef typename Sk_Solver::ReturnValueType
 				  SolverReturnType;
-	#endif
+
 		  //get some refs for more readability
 		  PressureDiscreteFunctionType& pressure = dest.discretePressure();
 		  VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
@@ -128,12 +125,9 @@ namespace Dune {
 			  // schur_f := -1 * ( ( E * A^-1 * f_func ) - rhs3 )
 			  InnerCGSolverWrapperType innerCGSolverWrapper(w_mat,m_inv_mat,x_mat,y_mat,o_mat,rhs1.space(),f_func.space(),relLimit,absLimit,solverVerbosity);
 			  assert( !DSFe::FunctionContainsNanOrInf( f_func ) );
-	  #ifdef USE_BFG_CG_SCHEME
 			  InnerCGSolverWrapperReturnType a_ret;
 			  innerCGSolverWrapper.apply( f_func, tmp_f, a_ret );
-	  #else
-			  innerCGSolverWrapper.apply( f_func, tmp_f );
-	  #endif
+
 			  e_mat.apply( tmp_f, schur_f );
 			  schur_f -= rhs3;
 			  schur_f *= -1;
@@ -148,14 +142,10 @@ namespace Dune {
 		  Sk_Solver sk_solver( sk_op, relLimit, absLimit, 2000, solverVerbosity );
 
 		  // p = S^-1 * schur_f = ( E * A^-1 * Z + rhs3 )^-1 * schur_f
-  #ifdef USE_BFG_CG_SCHEME
 		  SolverReturnType ret;
 		  sk_solver.apply( schur_f, pressure, ret );
 		  long total_inner = sk_op.getTotalInnerIterations();
 		  logInfo << "\n\t\t #avg inner iter | #outer iter: " << total_inner / (double)ret.first << " | " << ret.first << std::endl;
-  #else
-		  sk_solver.apply( schur_f, pressure );
-  #endif
 
 		  logInfo << "\n\tend  S*p=schur_f" << std::endl;
 

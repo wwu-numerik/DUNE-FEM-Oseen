@@ -71,13 +71,11 @@ namespace Dune {
 				c_mat_.multOEMAdd( x + numDofs_velocity, ret + numDofs_velocity );
 			}
 
-		#ifdef USE_BFG_CG_SCHEME
 			template <class VECtype>
             void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& /*info*/ ) const
 			{
 				multOEM(x,ret);
 			}
-		#endif
 
 			ThisType& systemMatrix ()
 			{

@@ -7,7 +7,7 @@
 #include "cmake_config.h"
 
 #include <cstdio>
-#if defined(USE_PARDG_ODE_SOLVER) && defined(USE_BFG_CG_SCHEME)
+#if defined(USE_PARDG_ODE_SOLVER)
 	#warning ("USE_PARDG_ODE_SOLVER enabled, might conflict with custom solvers")
 #endif
 

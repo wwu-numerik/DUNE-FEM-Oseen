@@ -49,13 +49,12 @@ class PreconditionOperatorDefault {
             velocity_space_(velocity_space)
         {}
 
-#ifdef USE_BFG_CG_SCHEME
         template <class VECtype>
         void multOEM(const VECtype* x, VECtype* ret, const IterationInfo& ) const
         {
             multOEM(x,ret);
         }
-#endif
+
         template <class VECtype>
         void multOEM(const VECtype* x, VECtype* ret) const
         {
@@ -122,10 +121,8 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 		typedef DiscretePressureFunctionType RowDiscreteFunctionType;
 		typedef DiscretePressureFunctionType ColDiscreteFunctionType;
 
-#ifdef USE_BFG_CG_SCHEME
         typedef typename A_SolverType::ReturnValueType
                 ReturnValueType;
-#endif
 
         SchurkomplementOperator( A_SolverType& a_solver,
 								const E_MatrixType& e_mat,
@@ -166,25 +163,21 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 
 			tmp2.clear();//don't remove w/o result testing
 			assert( !DSFe::FunctionContainsNanOrInf( tmp1 ) );
-#ifdef USE_BFG_CG_SCHEME
+
             auto& info = DSC_LOG_INFO;
 			const int solverVerbosity = DSC_CONFIG_GET( "solverVerbosity", 0 );
             ReturnValueType cg_info;
             a_solver_.apply( tmp1, tmp2, cg_info );
             if ( solverVerbosity > 1 )
                 info << "\t\t\t\t\t inner iterations: " << cg_info.first << std::endl;
-
             total_inner_iterations += cg_info.first;
-#else
-			a_solver_.apply( tmp1, tmp2 );
-#endif
+
 			assert( !DSFe::FunctionContainsNanOrInf( tmp2 ) );
 			tmp2 *= -1;
 			e_mat_.multOEM( tmp2.leakPointer(), ret );
 			assert( !DSFe::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
 			r_mat_.multOEMAdd( x, ret );
 			assert( !DSFe::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
-//			ret[0] = x[0];
         }
 
 	void apply( const DiscretePressureFunctionType& arg, DiscretePressureFunctionType& ret ) const
@@ -196,26 +189,24 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 	    assert( !DSFe::FunctionContainsNanOrInf( ret ) );
 	}
 
-#ifdef USE_BFG_CG_SCHEME
-        template <class VECtype>
-        void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& info ) const
-        {
-            if ( do_bfg ) {
-                static const double tau = DSC_CONFIG_GET( "bfg-tau", 0.1 );
-                double limit = info.second.first;
-                const double residuum = fabs(info.second.second);
-                const int n = info.first;
+    template <class VECtype>
+    void multOEM(const VECtype *x, VECtype * ret, const IterationInfo& info ) const
+    {
+        if ( do_bfg ) {
+            static const double tau = DSC_CONFIG_GET( "bfg-tau", 0.1 );
+            double limit = info.second.first;
+            const double residuum = fabs(info.second.second);
+            const int n = info.first;
 
-                if ( n == 0 )
-                    limit = DSC_CONFIG_GET( "absLimit", 10e-12 );
-                limit = tau * std::min( 1. , limit / std::min ( std::pow( residuum, n ) , 1.0 ) );
+            if ( n == 0 )
+                limit = DSC_CONFIG_GET( "absLimit", 10e-12 );
+            limit = tau * std::min( 1. , limit / std::min ( std::pow( residuum, n ) , 1.0 ) );
 
-                a_solver_.setAbsoluteLimit( limit );
-                DSC_LOG_INFO << "\t\t\t Set inner error limit to: "<< limit << std::endl;
-            }
-            multOEM( x, ret );
+            a_solver_.setAbsoluteLimit( limit );
+            DSC_LOG_INFO << "\t\t\t Set inner error limit to: "<< limit << std::endl;
         }
-#endif
+        multOEM( x, ret );
+    }
 
     ThisType& systemMatrix () { return *this; }
     const ThisType& systemMatrix () const { return *this; }

@@ -81,10 +81,9 @@ namespace Dune {
 			const int solverVerbosity = DSC_CONFIG_GET( "solverVerbosity", 0 );
 			const int maxIter = DSC_CONFIG_GET( "maxIter", 500 );
 
-	#ifdef USE_BFG_CG_SCHEME
 			const double tau = DSC_CONFIG_GET( "bfg-tau", 0.1 );
 			const bool do_bfg = DSC_CONFIG_GET( "do-bfg", true );
-	#endif
+
 			logInfo.resume();
 			logInfo << cg_name << ": Begin BICG SaddlePointInverseOperator " << std::endl;
 
@@ -100,16 +99,14 @@ namespace Dune {
 									DiscreteSigmaFunctionType,
 									DiscreteVelocityFunctionType >
 				InnerCGSolverWrapperType;
-	#ifdef USE_BFG_CG_SCHEME
+
 			typedef typename InnerCGSolverWrapperType::ReturnValueType
 				ReturnValueType;
 			ReturnValueType a_solver_info;
 
 			//the bfg scheme uses the outer acc. as a base
 			double current_inner_accuracy = do_bfg ? tau * outer_absLimit : inner_absLimit;
-	#else
-			double current_inner_accuracy = inner_absLimit;
-	#endif
+
 			InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
 														   o_mat, rhs1_orig.space(),rhs2_orig.space(), relLimit,
 														   current_inner_accuracy, solverVerbosity > 5 );
