@@ -375,9 +375,9 @@ protected:
     //! constructor taking entity and spaces for using mapToGlobal
     //! class RowSpaceType, class ColSpaceType> 
     inline LocalMatrix( const MatrixObjectType &matrixObject,
-                        const DomainSpaceType &domainSpace,
-                        const RangeSpaceType &rangeSpace )
-    : BaseType( domainSpace, rangeSpace),
+                        const DomainSpaceType &domainSpace_in,
+                        const RangeSpaceType &rangeSpace_in )
+    : BaseType( domainSpace_in, rangeSpace_in),
       matrix_( matrixObject.matrix() )
     {
     }
@@ -391,43 +391,14 @@ protected:
     {
       // initialize base functions sets 
       BaseType :: init ( rowEntity , colEntity );
-        
-      row_.resize( domainSpace_.baseFunctionSet( rowEntity ).numBaseFunctions() );
-      col_.resize( rangeSpace_.baseFunctionSet( colEntity ).numBaseFunctions() );
 
-      // Martin: shouldn't domainSpace and rangeSpace be flipped, here?
-      typedef typename DomainSpaceType::MapperType::DofMapIteratorType DomainMapIterator;
-      const DomainMapIterator dmend = domainSpace_.mapper().end( rowEntity );
-      for( DomainMapIterator dmit = domainSpace_.mapper().begin( rowEntity ); dmit != dmend; ++dmit )
-      {
-        assert( dmit.global() == domainSpace_.mapToGlobal( rowEntity, dmit.local() ) );
-        row_[ dmit.local() ] = dmit.global();
-      }
-
-      typedef typename RangeSpaceType::MapperType::DofMapIteratorType RangeMapIterator;
-      const RangeMapIterator rmend = rangeSpace_.mapper().end( colEntity );
-      for( RangeMapIterator rmit = rangeSpace_.mapper().begin( colEntity ); rmit != rmend; ++rmit )
-      {
-        assert( rmit.global() == rangeSpace_.mapToGlobal( colEntity, rmit.local() ) );
-        col_[ rmit.local() ] = rmit.global();
-      }
-
-#if 0
-      const size_t rows = row_.size();
-      for( size_t i = 0; i < rows; ++i )
-        row_[ i ] = domainSpace_.mapToGlobal( rowEntity, i );
-      
-      const size_t cols = col_.size();
-      for( size_t i = 0; i < cols; ++i )
-        col_[ i ] = rangeSpace_.mapToGlobal( colEntity, i );
-#endif
       // rows are determined by the range space
-      row_.resize( domainSpace_.mapper().numDofs( colEntity ) );
-      domainSpace_.mapper().mapEach( colEntity, Fem::AssignFunctor< std::vector< int > >( row_ ) );
+      row_.resize( domainSpace_.mapper().numDofs( rowEntity ) );
+      domainSpace_.mapper().mapEach( rowEntity, Fem::AssignFunctor< std::vector< int > >( row_ ) );
 
       // columns are determind by the domain space
-      col_.resize( rangeSpace_.mapper().numDofs( rowEntity ) );
-      rangeSpace_.mapper().mapEach( rowEntity, Fem::AssignFunctor< std::vector< int > >( col_ ) );
+      col_.resize( rangeSpace_.mapper().numDofs( colEntity ) );
+      rangeSpace_.mapper().mapEach( colEntity, Fem::AssignFunctor< std::vector< int > >( col_ ) );
     }
 
     //! return number of rows 
