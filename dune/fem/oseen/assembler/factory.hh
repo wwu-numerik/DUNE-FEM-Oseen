@@ -2,6 +2,7 @@
 #define DUNE_OSEEN_INTEGRATORS_FACTORY_HH
 
 #include <dune/common/static_assert.hh>
+#include <dune/fem/oseen/assembler/ported_matrixobject.hh>
 
 template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
 struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp> {
@@ -18,7 +19,7 @@ struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp
 #define TYPEDEF_MATRIX_AND_INTEGRATOR( Name, Row, Col ) \
     typedef typename MatrixObject< MK_FUNC_NAME(Row), MK_FUNC_NAME(Col) >::Type \
         Name ## matrixInternalType; \
-    typedef Dune::shared_ptr< Name ## matrixInternalType > \
+    typedef std::shared_ptr< Name ## matrixInternalType > \
         Name ## matrixType ; \
     typedef Oseen::Assembler:: Name < Name ## matrixType, StokesTraitsType > \
         Name ## matrixIntegratorType
@@ -104,7 +105,7 @@ public:
     template < class T, class R >
     struct MatrixObject {
         typedef MatrixTraits<T,R> Traits;
-        typedef SparseRowMatrixObject<  T, R, Traits >Type;
+        typedef PortedSparseRowMatrixObject<  T, R, Traits >Type;
     };
     TYPEDEF_MATRIX_AND_INTEGRATOR( M, Sigma, Sigma );
     TYPEDEF_MATRIX_AND_INTEGRATOR( W, Sigma, Velocity );
@@ -163,7 +164,7 @@ public:
             typedef ColSpace ColType;
         typedef typename MatrixObject< RowType, ColType >::Type
             InternalMatrixType;
-        typedef Dune::shared_ptr<InternalMatrixType>
+        typedef std::shared_ptr<InternalMatrixType>
             PointerType;
     };
     template < class F, class G >

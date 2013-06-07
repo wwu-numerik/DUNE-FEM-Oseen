@@ -167,7 +167,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 			tmp2.clear();//don't remove w/o result testing
 			assert( !DSFe::FunctionContainsNanOrInf( tmp1 ) );
 #ifdef USE_BFG_CG_SCHEME
-			auto info = DSC_LOG_INFO;
+            auto& info = DSC_LOG_INFO;
 			const int solverVerbosity = DSC_CONFIG_GET( "solverVerbosity", 0 );
             ReturnValueType cg_info;
             a_solver_.apply( tmp1, tmp2, cg_info );

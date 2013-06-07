@@ -4,7 +4,7 @@
 #include <cmake_config.h>
 
 #include <dune/fem/function/common/discretefunction.hh>
-#include <dune/fem/operator/matrix/spmatrix.hh>
+#include <dune/fem/oseen/assembler/ported_matrixobject.hh>
 #include <dune/fem/oseen/solver/cghelper.hh>
 
 #include <dune/stuff/common/parameter/configcontainer.hh>

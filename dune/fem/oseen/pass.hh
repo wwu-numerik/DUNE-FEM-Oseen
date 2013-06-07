@@ -8,7 +8,7 @@
 #include <cmake_config.h>
 
 #include <dune/fem/pass/pass.hh>
-#include <dune/fem/operator/matrix/spmatrix.hh>
+#include <dune/fem/oseen/assembler/ported_matrixobject.hh>
 #include <dune/fem/space/dgspace.hh>
 
 #include <dune/fem/oseen/defaulttraits.hh>
