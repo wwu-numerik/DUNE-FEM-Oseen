@@ -541,9 +541,10 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
     if ( !firstRun ) {
         Dune::Estimator<DiscreteOseenFunctionWrapperType::DiscretePressureFunctionType>
             estimator ( computedSolutions.discretePressure() );
-		for ( int i = refine_level - last_refine_level; i > 0; --i ) {
-			estimator.mark( 0.0 /*dummy*/ ); //simpler would be to use real weights in mark(), but alas, that doesn't work as advertised
-			computedSolutions.adapt();
+        for ( int i = refine_level - last_refine_level; i > 0; --i )
+        {
+            estimator.mark( 1.0 /*dummy*/ ); //simpler would be to use real weights in mark(), but alas, that doesn't work as advertised
+            computedSolutions.adapt();
         }
 
         if ( DSC_CONFIG_GET( "clear_u" , true ) )
