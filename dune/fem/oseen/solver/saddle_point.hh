@@ -71,14 +71,6 @@ namespace Dune {
             auto& logDebug = DSC_LOG_DEBUG;
             auto& logInfo = DSC_LOG_INFO;
 
-			if ( DSC_CONFIG_GET( "disableSolver", false ) ) {
-				logInfo.resume();
-				logInfo << "solving disabled via parameter file" << std::endl;
-				return SaddlepointInverseOperatorInfo();
-			}
-			static const int save_interval = DSC_CONFIG_GET( "save_interval", -1 );
-			static const std::string path = DSC_CONFIG_GET("fem.io.datadir", std::string("data") ) + std::string("/intermediate/");
-			DSC::testCreateDirectory( path );
 
 			// relative min. error at which cg-solvers will abort
 			const double relLimit = DSC_CONFIG_GET( "relLimit", 1e-4 );
@@ -96,17 +88,17 @@ namespace Dune {
 
 			logDebug.resume();
 			//get some refs for more readability
-			PressureDiscreteFunctionType& pressure = dest.discretePressure();
-			VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
+            auto& pressure = dest.discretePressure();
+            auto& velocity = dest.discreteVelocity();
 
-			X_MatrixType& x_mat      = Xmatrix;
-			M_invers_matrixType& m_inv_mat  = Mmatrix;
-			Y_MatrixType& y_mat      = Ymatrix;
-			Y_MatrixType& o_mat      = Omatrix;
-			E_MatrixType& b_t_mat = Ematrix; //! renamed
-			R_MatrixType& c_mat      = Rmatrix; //! renamed
-			Z_MatrixType& b_mat      = Zmatrix; //! renamed
-			W_MatrixType& w_mat      = Wmatrix;
+            const auto& x_mat      = Xmatrix;
+            const auto& m_inv_mat  = Mmatrix;
+            const auto& y_mat      = Ymatrix;
+            const auto& o_mat      = Omatrix;
+            const auto& b_t_mat = Ematrix; //! renamed
+            const auto& c_mat      = Rmatrix; //! renamed
+            const auto& b_mat      = Zmatrix; //! renamed
+            const auto& w_mat      = Wmatrix;
 
 	/*** making our matrices kuhnibert compatible ****/
 			//rhs1 = M^{-1} * rhs1
@@ -136,8 +128,8 @@ namespace Dune {
 			ReturnValueType a_solver_info;
 
 			//the bfg scheme uses the outer acc. as a base
-			double current_inner_accuracy = do_bfg ? tau * outer_absLimit : inner_absLimit;
-			double max_inner_accuracy = current_inner_accuracy;
+            const double current_inner_accuracy = do_bfg ? tau * outer_absLimit : inner_absLimit;
+            const double max_inner_accuracy = current_inner_accuracy;
 
 			InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
 														   o_mat, rhs1.space(),rhs2.space(), relLimit,
@@ -247,8 +239,6 @@ namespace Dune {
 
 				if( solverVerbosity > 2 )
 					logInfo << "\t" << iteration << " SPcg-Iterationen  " << iteration << " Residuum:" << delta << std::endl;
-				if ( save_interval > 0 && iteration % save_interval == 0 )
-					dest.writeVTK( path, iteration );
 			}
 
 			if ( use_velocity_reconstruct ) {

@@ -1,9 +1,7 @@
 #ifndef DUNE_OSEEN_SOLVERCALLER_HH
 #define DUNE_OSEEN_SOLVERCALLER_HH
 
-#include <dune/fem/oseen/solver/nested_cg.hh>
 #include <dune/fem/oseen/solver/reduced.hh>
-#include <dune/fem/oseen/solver/fullsystem.hh>
 #include <dune/fem/oseen/solver/saddle_point.hh>
 #include <dune/fem/oseen/solver/bicg_saddle_point.hh>
 #include <dune/fem/oseen/solver/reconstruction.hh>
@@ -16,10 +14,8 @@ namespace Oseen {
 
 namespace Solver {
     enum SolverID {
-        NestedCG_Solver_ID			= 0,
         SaddlePoint_Solver_ID		= 1,
         Reduced_Solver_ID			= 2,
-        FullSystem_Solver_ID		= 3,
         BiCg_Saddlepoint_Solver_ID	= 4
     };
 }
@@ -124,10 +120,7 @@ struct SolverCaller {
                 assert( !DSFe::FunctionContainsNanOrInf( H1rhs ) );
                 assert( !DSFe::FunctionContainsNanOrInf( H2rhs ) );
                 assert( !DSFe::FunctionContainsNanOrInf( H3rhs ) );
-//			    assert( !DSFe::FunctionContainsNanOrInf( H2_O_rhs ) );
-	    //				Zmatrix.matrix().scale( -1 );
-	    //				assert( areTransposed( Zmatrix.matrix(), Ematrix.matrix() ));
-	    //				Zmatrix.matrix().scale( -1 );
+                assert( !DSFe::FunctionContainsNanOrInf( H2_O_rhs ) );
 		    }
 		}
         #endif

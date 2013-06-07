@@ -154,7 +154,7 @@ namespace Dune {
 			pressure.clear();
 			bicg.apply( schur_f, pressure );
 			//pressure mw correction
-            double meanPressure_discrete = DSFe::meanValue( pressure, pressure.space() );
+            const double meanPressure_discrete = DSFe::meanValue( pressure, pressure.space() );
 			typedef typename OseenPassType::Traits::DiscreteModelType::Traits::PressureFunctionSpaceType
 					PressureFunctionSpaceType;
 			PressureFunctionSpaceType pressureFunctionSpace;
