@@ -2,6 +2,7 @@
 #define DUNE_OSEEN_INTEGRATORS_FACTORY_HH
 
 #include <dune/common/static_assert.hh>
+#include <dune/stuff/common/memory.hh>
 #include <dune/fem/oseen/assembler/ported_matrixobject.hh>
 
 template <class RowSpaceImp, class ColSpaceImp = RowSpaceImp>
@@ -18,15 +19,15 @@ struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp
 #define MK_FUNC_NAME(name) Discrete ## name ## FunctionSpaceType
 #define TYPEDEF_MATRIX_AND_INTEGRATOR( Name, Row, Col ) \
     typedef typename MatrixObject< MK_FUNC_NAME(Row), MK_FUNC_NAME(Col) >::Type \
-        Name ## matrixInternalType; \
-    typedef std::shared_ptr< Name ## matrixInternalType > \
-        Name ## matrixType ; \
+        Name ## matrixType; \
+    typedef std::unique_ptr< Name ## matrixType > \
+        Name ##  matrixInternalType; \
     typedef Oseen::Assembler:: Name < Name ## matrixType, StokesTraitsType > \
         Name ## matrixIntegratorType
 
 #define SPECIALIZE_IntegratorSelector(Name) \
     template < class FactoryType > \
-    struct IntegratorSelector< FactoryType, typename FactoryType:: Name ## matrixType> \
+    struct IntegratorSelector< FactoryType, typename FactoryType:: Name ## matrixInternalType> \
     { typedef typename FactoryType:: Name ## matrixIntegratorType Type; }
 
 
@@ -35,7 +36,7 @@ namespace Dune { namespace Oseen { namespace Assembler {
 
 //! A Static map of Matrix-/DiscreteFunctionType onto IntegratorType
 template < class FactoryType, class MatrixType>
-struct IntegratorSelector {typedef double Type;};
+struct IntegratorSelector {typedef std::false_type Type;};
 SPECIALIZE_IntegratorSelector(M);
 SPECIALIZE_IntegratorSelector(W);
 SPECIALIZE_IntegratorSelector(X);
@@ -68,20 +69,20 @@ struct DiscreteFunctionSelector {};
 
 template < class FactoryType >
 struct DiscreteFunctionSelector< FactoryType, typename FactoryType::DiscreteSigmaFunctionSpaceType >
-{ typedef typename FactoryType::DiscreteSigmaFunctionType Type; };
+{ typedef std::unique_ptr<typename FactoryType::DiscreteSigmaFunctionType> Type; };
 
 template < class FactoryType >
 struct DiscreteFunctionSelector< FactoryType, typename FactoryType::DiscreteVelocityFunctionSpaceType >
-{ typedef typename FactoryType::DiscreteVelocityFunctionType Type; };
+{ typedef std::unique_ptr<typename FactoryType::DiscreteVelocityFunctionType> Type; };
 
 template < class FactoryType >
 struct DiscreteFunctionSelector< FactoryType, typename FactoryType::DiscretePressureFunctionSpaceType >
-{ typedef typename FactoryType::DiscretePressureFunctionType Type; };
+{ typedef std::unique_ptr<typename FactoryType::DiscretePressureFunctionType> Type; };
 
 template < class FactoryType, class DiscreteFunctionSpaceType >
 //! this specialization is needed incase function types are equal
 struct DiscreteFunctionSelector< FactoryType, DiscreteFunctionSpaceType, false >
-{ typedef typename FactoryType::DiscretePressureFunctionType Type; };
+{ typedef std::unique_ptr<typename FactoryType::DiscretePressureFunctionType> Type; };
 
 //!
 template < class StokesTraitsType >
@@ -164,7 +165,7 @@ public:
             typedef ColSpace ColType;
         typedef typename MatrixObject< RowType, ColType >::Type
             InternalMatrixType;
-        typedef std::shared_ptr<InternalMatrixType>
+        typedef std::unique_ptr<InternalMatrixType>
             PointerType;
     };
     template < class F, class G >
@@ -180,26 +181,27 @@ public:
     static typename DiscreteFunctionSelector< ThisType, DiscreteFunctionSpaceType, DiscreteFunctionSpaceType::dimensionworld != 1 >::Type
         rhs( const std::string name, const DiscreteFunctionSpaceType& space )
     {
+        auto f = DSC::make_unique<
         typename DiscreteFunctionSelector< ThisType,
                     DiscreteFunctionSpaceType,
                     DiscreteFunctionSpaceType::dimensionworld != 1 >
-            ::Type f( name, space );
-        f.clear();
+            ::Type::element_type>( name, space );
+        f->clear();
         return f;
     }
 
     template < class F >
-    static typename IntegratorSelector< ThisType, F >::Type integrator( F& f )
+    static typename IntegratorSelector< ThisType, typename F::element_type >::Type integrator( F& f )
     {
-        return typename IntegratorSelector< ThisType, F >::Type( f );
+        return typename IntegratorSelector< ThisType, typename F::element_type >::Type( f );
     }
     //more magic so I don't need two func names please
-    static OmatrixIntegratorType integratorO( YmatrixType& g,
+    static OmatrixIntegratorType integratorO( YmatrixInternalType& g,
                                                           const DiscreteVelocityFunctionType& f )
     {
         return OmatrixIntegratorType( g, f );
     }
-    static H2_O_IntegratorType integratorO( DiscreteVelocityFunctionType& g,
+    static H2_O_IntegratorType integratorO( const std::unique_ptr<DiscreteVelocityFunctionType>& g,
                                                           const DiscreteVelocityFunctionType& f )
     {
         return H2_O_IntegratorType( g, f );

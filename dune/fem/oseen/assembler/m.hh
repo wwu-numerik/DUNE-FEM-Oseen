@@ -8,11 +8,9 @@ namespace Dune {
 namespace Oseen {
 namespace Assembler {
 
-    template < class MatrixPointerType, class Traits >
+    template < class MatrixObjectType, class Traits >
 	class M
 	{
-        typedef typename MatrixPointerType::element_type
-            MatrixObjectType;
 		typedef typename Traits::ElementCoordinateType
 			ElementCoordinateType;
 		typedef typename Traits::SigmaRangeType
@@ -29,20 +27,20 @@ namespace Assembler {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-		typedef DSFe::LocalMatrixProxy<MatrixPointerType>
+        typedef DSFe::LocalMatrixProxy<MatrixObjectType>
 			LocalMatrixProxyType;
 
-        MatrixPointerType& matrix_pointer_;
+        MatrixObjectType& matrix_object_;
 		public:
-            M( MatrixPointerType& matrix_object	)
-				:matrix_pointer_(matrix_object)
+            M( MatrixObjectType& matrix_object	)
+                :matrix_object_(matrix_object)
 			{}
 
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
 				//using the proxy here would be potentially fatal because of the inversion
-                LocalMatrixProxyType local_matrix ( matrix_pointer_, info.entity, info.entity, info.eps );
+                LocalMatrixProxyType local_matrix ( matrix_object_, info.entity, info.entity, info.eps );
                 ASSERT_EQ( int(local_matrix.rows()), info.numSigmaBaseFunctionsElement );
                 ASSERT_EQ( int(local_matrix.cols()), info.numSigmaBaseFunctionsElement );
 

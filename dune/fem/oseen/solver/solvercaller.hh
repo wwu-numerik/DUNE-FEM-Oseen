@@ -52,102 +52,38 @@ struct SolverCaller {
                 DataContainerType* rhs_datacontainer,
                 RangeType& dest,
 				const DomainType& arg,
-				const XmatrixObjectType& Xmatrix,
-				const MInversMatrixObjectType& MInversMatrix,
-				const YmatrixObjectType& Ymatrix,
-				const OmatrixObjectType& Omatrix,
-				const EmatrixObjectType& Ematrix,
-				const RmatrixObjectType& Rmatrix,
-				const ZmatrixObjectType& Zmatrix,
-				const WmatrixObjectType& Wmatrix,
+                const XmatrixObjectType& X,
+                const MInversMatrixObjectType& M_invers,
+                const YmatrixObjectType& Y,
+                const OmatrixObjectType& O,
+                const EmatrixObjectType& E,
+                const RmatrixObjectType& R,
+                const ZmatrixObjectType& Z,
+                const WmatrixObjectType& W,
 				const DiscreteSigmaFunctionType& H1rhs,
 				const DiscreteVelocityFunctionType& H2rhs,
 				const DiscretePressureFunctionType& H3rhs,
 				const DiscreteVelocityFunctionType& beta )
 	{
 		DSC::Profiler::ScopedTiming solver_time("solver");
-		MatrixWrapper<MInversMatrixObjectType> M_invers(MInversMatrix, "M");
-		MatrixWrapper<WmatrixObjectType> W(Wmatrix, "W");
-		MatrixWrapper<XmatrixObjectType> X(Xmatrix, "X");
-		MatrixWrapper<YmatrixObjectType> Y(Ymatrix, "Y");
-		MatrixWrapper<OmatrixObjectType> O(Omatrix, "O");
-		MatrixWrapper<ZmatrixObjectType> Z(Zmatrix, "Z");
-		MatrixWrapper<EmatrixObjectType> E(Ematrix, "E");
-		MatrixWrapper<RmatrixObjectType> R(Rmatrix, "R");
-
-        #ifndef NDEBUG
-		{
-		    // do the matlab logging stuff
-		    if ( DSC_CONFIG_GET( "save_matrices", false ) ) {
-                auto& matlabLogStream = DSC_LOG_ERROR;
-                #   define MPRINTER printSparseRowMatrixMatlabStyle
-                DSC::MPRINTER( MInversMatrix->matrix(), "M_invers", matlabLogStream );
-                DSC::MPRINTER( Wmatrix->matrix(), "W", matlabLogStream );
-                DSC::MPRINTER( Omatrix->matrix(), "O", matlabLogStream );
-                DSC::MPRINTER( Xmatrix->matrix(), "X", matlabLogStream );
-                DSC::MPRINTER( Ymatrix->matrix(), "Y", matlabLogStream );
-                DSC::MPRINTER( Zmatrix->matrix(), "Z", matlabLogStream );
-                DSC::MPRINTER( Ematrix->matrix(), "E", matlabLogStream );
-                DSC::MPRINTER( Rmatrix->matrix(), "R", matlabLogStream );
-                DSC::printDiscreteFunctionMatlabStyle( H1rhs, "H1", matlabLogStream );
-                DSC::printDiscreteFunctionMatlabStyle( H2rhs, "H2", matlabLogStream );
-                DSC::printDiscreteFunctionMatlabStyle( H3rhs, "H3", matlabLogStream );
-                matlabLogStream.flush();
-                #undef MPRINTER
-
-		    }
-
-		    if ( DSC_CONFIG_GET( "outputMatrixPlots", false ) ) {
-                DSC::matrixToGnuplotFile( Ematrix->matrix(),       std::string( "mat_E.gnuplot")       );
-                DSC::matrixToGnuplotFile( Wmatrix->matrix(),       std::string( "mat_W.gnuplot")       );
-                DSC::matrixToGnuplotFile( Xmatrix->matrix(),       std::string( "mat_X.gnuplot")       );
-                DSC::matrixToGnuplotFile( Ymatrix->matrix(),       std::string( "mat_Y.gnuplot")       );
-                DSC::matrixToGnuplotFile( Zmatrix->matrix(),       std::string( "mat_Z.gnuplot")       );
-                DSC::matrixToGnuplotFile( Rmatrix->matrix(),       std::string( "mat_R.gnuplot")       );
-                DSC::matrixToGnuplotFile( MInversMatrix->matrix(), std::string( "mat_M.gnuplot")   );
-		    }
-
-		    if ( DSC_CONFIG_GET( "paranoid_checks", false ) )
-		    {//paranoid checks
-                assert( !DSFe::MatrixContainsNanOrInf( Omatrix->matrix() ) );
-                assert( !DSFe::MatrixContainsNanOrInf( Ematrix->matrix() ) );
-                assert( !DSFe::MatrixContainsNanOrInf( Wmatrix->matrix() ) );
-                assert( !DSFe::MatrixContainsNanOrInf( Xmatrix->matrix() ) );
-                assert( !DSFe::MatrixContainsNanOrInf( Ymatrix->matrix() ) );
-                assert( !DSFe::MatrixContainsNanOrInf( Zmatrix->matrix() ) );
-                assert( !DSFe::MatrixContainsNanOrInf( Rmatrix->matrix() ) );
-                assert( !DSFe::MatrixContainsNanOrInf( MInversMatrix->matrix() ) );
-                assert( !DSFe::FunctionContainsNanOrInf( H1rhs ) );
-                assert( !DSFe::FunctionContainsNanOrInf( H2rhs ) );
-                assert( !DSFe::FunctionContainsNanOrInf( H3rhs ) );
-                assert( !DSFe::FunctionContainsNanOrInf( H2_O_rhs ) );
-		    }
-		}
-        #endif
 
 		SaddlepointInverseOperatorInfo result;
 
-		if ( DSC_CONFIG_GET( "disableSolver", false ) ) {
-			DSC_LOG_ERROR.resume();
-			DSC_LOG_ERROR << "solving disabled via parameter file" << std::endl;
-			return result;
-		}
-
 		switch ( solverID ) {
             case Solver::BiCg_Saddlepoint_Solver_ID:result = BiCgSaddlepointSolverType().solve(	arg, dest,
-                                                             X, M_invers, Y,
-                                                             O, E, R, Z, W,
+                                                             *X, *M_invers, *Y,
+                                                             *O, *E, *R, *Z, *W,
                                                              H1rhs, H2rhs, H3rhs );
                                             break;
 
             case Solver::Reduced_Solver_ID:			result = ReducedSolverType().solve(	arg, dest,
-                                                             X, M_invers, Y,
-                                                             O, E, R, Z, W,
+                                                                                        *X, *M_invers, *Y,
+                                                                                        *O, *E, *R, *Z, *W,
                                                              H1rhs, H2rhs, H3rhs );
                                             break;
 			case Solver::SaddlePoint_Solver_ID:		result = SaddlepointSolverType().solve(	arg, dest,
-															 X, M_invers, Y,
-															 O, E, R, Z, W,
+                                                                                            *X, *M_invers, *Y,
+                                                                                            *O, *E, *R, *Z, *W,
 															 H1rhs, H2rhs, H3rhs );
 											break;
 
@@ -187,18 +123,12 @@ struct SolverCallerProxy {
             SmartSolverCallerType;
 
         //Select which solver we want to use
-        typename Oseen::Solver::SolverID solver_ID = do_oseen_discretization
+        auto solver_ID = do_oseen_discretization
                 ? Oseen::Solver::BiCg_Saddlepoint_Solver_ID
                 : Oseen::Solver::SaddlePoint_Solver_ID;
 
-        if( !use_reduced_solver ) {
-            if ( DSC_CONFIG_GET( "use_nested_cg_solver", false ) )
-                solver_ID = Oseen::Solver::NestedCG_Solver_ID;
-            else if ( DSC_CONFIG_GET( "use_full_solver", false ) )
-                solver_ID = Oseen::Solver::FullSystem_Solver_ID;
-        }
-        else
-            solver_ID = Oseen::Solver::Reduced_Solver_ID;
+        if(use_reduced_solver)
+              solver_ID = Oseen::Solver::Reduced_Solver_ID;
 
         if ( DSC_CONFIG_GET( "smart_reconstruction", false ) )
             return SmartSolverCallerType::solve(solver_ID,

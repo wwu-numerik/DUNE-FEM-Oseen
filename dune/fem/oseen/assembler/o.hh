@@ -8,7 +8,7 @@ namespace Dune {
 namespace Oseen {
 namespace Assembler {
 
-	template < class MatrixPointerType, class Traits, class BetaFunctionType  >
+	template < class MatrixObjectType, class Traits, class BetaFunctionType  >
 	class O
 	{
 		typedef typename Traits::ElementCoordinateType
@@ -27,14 +27,14 @@ namespace Assembler {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-        typedef DSFe::LocalMatrixProxy<MatrixPointerType>
+        typedef DSFe::LocalMatrixProxy<MatrixObjectType>
 			LocalMatrixProxyType;
 
-		MatrixPointerType& matrix_pointer_;
+		MatrixObjectType& matrix_object_;
 		const BetaFunctionType& beta_;
 		public:
-			O( MatrixPointerType& matrix_object, const BetaFunctionType& beta)
-				:matrix_pointer_(matrix_object),
+			O( MatrixObjectType& matrix_object, const BetaFunctionType& beta)
+				:matrix_object_(matrix_object),
 				beta_(beta)
 			{}
 
@@ -47,7 +47,7 @@ namespace Assembler {
 			template < class InfoContainerVolumeType >
 			void applyVolume_alt1( const InfoContainerVolumeType& info )
 			{
-				LocalMatrixProxyType localOmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localOmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
 						beta_.localFunction( info.entity );
 				for ( int i = 0; (i < info.numVelocityBaseFunctionsElement ) ; ++i ) {
@@ -92,8 +92,8 @@ namespace Assembler {
 			void applyVolume_alt2( const InfoContainerVolumeType& info )
 			{
 //				return;
-				typename MatrixPointerType::element_type::LocalMatrixType
-						localOmatrixElement = matrix_pointer_->localMatrix( info.entity, info.entity );
+				typename MatrixObjectType::element_type::LocalMatrixType
+						localOmatrixElement = matrix_object_->localMatrix( info.entity, info.entity );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
 						beta_.localFunction( info.entity );
 				for ( int i = 0; (i < info.numVelocityBaseFunctionsElement ) ; ++i ) {
@@ -154,8 +154,8 @@ namespace Assembler {
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
 //				return;
-				LocalMatrixProxyType localOmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
-				LocalMatrixProxyType localOmatrixNeighbour( matrix_pointer_, info.neighbour, info.entity, info.eps );
+				LocalMatrixProxyType localOmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localOmatrixNeighbour( matrix_object_, info.neighbour, info.entity, info.eps );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType&
 						beta_lf = beta_.localFunction( info.entity );
 //				const unsigned int inside_entity_id = beta_.space().gridPart().indexSet().index( info.entity );
@@ -258,7 +258,7 @@ namespace Assembler {
 			void applyBoundaryFace( const InfoContainerFaceType& info )
 			{
 //				return;
-				LocalMatrixProxyType localOmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localOmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType&
 						beta_lf = beta_.localFunction( info.entity );
 				// (O)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}} STUFF n_{t}ds											// O's boundary integral

@@ -8,7 +8,7 @@ namespace Dune {
 namespace Oseen {
 namespace Assembler {
 
-	template < class MatrixPointerType, class Traits >
+	template < class MatrixObjectType, class Traits >
 	class Y
 	{
 		typedef typename Traits::ElementCoordinateType
@@ -27,20 +27,20 @@ namespace Assembler {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-		typedef DSFe::LocalMatrixProxy<MatrixPointerType>
+		typedef DSFe::LocalMatrixProxy<MatrixObjectType>
 			LocalMatrixProxyType;
 
-		MatrixPointerType& matrix_pointer_;
+		MatrixObjectType& matrix_object_;
 		public:
-			Y( MatrixPointerType& matrix_object	)
-				:matrix_pointer_(matrix_object)
+			Y( MatrixObjectType& matrix_object	)
+				:matrix_object_(matrix_object)
 			{}
 
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				typename MatrixPointerType::element_type::LocalMatrixType
-						localYmatrixElement = matrix_pointer_->localMatrix( info.entity, info.entity );
+				typename MatrixObjectType::element_type::LocalMatrixType
+						localYmatrixElement = matrix_object_->localMatrix( info.entity, info.entity );
 //                if ( info.discrete_model.isGeneralized() )
 				{
 				for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
@@ -80,8 +80,8 @@ namespace Assembler {
 			template < class InfoContainerInteriorFaceType >
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
-				LocalMatrixProxyType localYmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
-				LocalMatrixProxyType localYmatrixNeighbour( matrix_pointer_, info.neighbour, info.entity, info.eps );
+				LocalMatrixProxyType localYmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localYmatrixNeighbour( matrix_object_, info.neighbour, info.entity, info.eps );
 				// (Y)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U{+}}(v{j})\cdot n_{t}ds // Y's element surface integral
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}ds // Y's neighbour surface integral
 				//                                                                                                         // see also "Y's boundary integral" below
@@ -149,7 +149,7 @@ namespace Assembler {
 			template < class InfoContainerFaceType >
 			void applyBoundaryFace( const InfoContainerFaceType& info )
 			{
-				LocalMatrixProxyType localYmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localYmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				// (Y)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{U^{+}}(v_{j})\cdot n_{t}ds // Y's boundary integral
 				//                                                                                                           // see also "Y's element surface integral" and "Y's neighbour surface integral" above
 //                        if ( info.discrete_model.hasSigmaFlux() ) {

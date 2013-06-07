@@ -7,7 +7,7 @@
 namespace Dune {
 namespace Oseen {
 namespace Assembler {
-    template < class MatrixPointerType, class Traits >
+    template < class MatrixObjectType, class Traits >
 	class W
 	{
 		typedef typename Traits::ElementCoordinateType
@@ -26,19 +26,19 @@ namespace Assembler {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-		typedef DSFe::LocalMatrixProxy<MatrixPointerType>
+		typedef DSFe::LocalMatrixProxy<MatrixObjectType>
 			LocalMatrixProxyType;
 
-        MatrixPointerType& matrix_pointer_;
+        MatrixObjectType& matrix_object_;
         public:
-			W( MatrixPointerType& matrix_object	)
-				:matrix_pointer_(matrix_object)
+			W( MatrixObjectType& matrix_object	)
+				:matrix_object_(matrix_object)
 			{}
 
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				LocalMatrixProxyType local_matrix( matrix_pointer_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType local_matrix( matrix_object_, info.entity, info.entity, info.eps );
 				const double viscosity = info.discrete_model.viscosity();
                 ASSERT_EQ( int(local_matrix.rows()), info.numSigmaBaseFunctionsElement );
                 ASSERT_EQ( int(local_matrix.cols()), info.numVelocityBaseFunctionsElement );
@@ -81,8 +81,8 @@ namespace Assembler {
 			template < class InfoContainerFaceType >
 			void applyInteriorFace( const InfoContainerFaceType& info )
 			{
-				LocalMatrixProxyType localWmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
-				LocalMatrixProxyType localWmatrixNeighbour( matrix_pointer_, info.neighbour, info.entity, info.eps );
+				LocalMatrixProxyType localWmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localWmatrixNeighbour( matrix_object_, info.neighbour, info.entity, info.eps );
 
 				//                                                                                                               // we will call this one
 				// (W)_{i,j} += \int_{\varepsilon\in \Epsilon_{I}^{T}}-\hat{u}_{\sigma}^{U^{+}}(v_{j})\cdot\tau_{i}\cdot n_{T}ds // W's element surface integral
@@ -148,7 +148,7 @@ namespace Assembler {
 	template < class T, class R > const std::string W<T,R>::name = "W";
 
 
-    template < class MatrixPointerType, class Traits >
+    template < class MatrixObjectType, class Traits >
     class Dummy
     {
         typedef typename Traits::ElementCoordinateType
@@ -169,10 +169,10 @@ namespace Assembler {
             LocalIntersectionCoordinateType;
 
 
-        MatrixPointerType& matrix_pointer_;
+        MatrixObjectType& matrix_object_;
         public:
-            Dummy( MatrixPointerType& matrix_object	)
-                :matrix_pointer_(matrix_object)
+            Dummy( MatrixObjectType& matrix_object	)
+                :matrix_object_(matrix_object)
             {}
 
             template < class InfoContainerVolumeType >
@@ -182,17 +182,17 @@ namespace Assembler {
             template < class InfoContainerInteriorFaceType >
             void applyInteriorFace( const InfoContainerInteriorFaceType& info )
             {
-                typename MatrixPointerType::element_type::LocalMatrixType
-                        localWmatrixElement = matrix_pointer_->localMatrix( info.entity, info.entity );
-                typename MatrixPointerType::element_type::LocalMatrixType
-                        localWmatrixNeighbour = matrix_pointer_->localMatrix( info.neighbour, info.entity );
+                typename MatrixObjectType::element_type::LocalMatrixType
+                        localWmatrixElement = matrix_object_->localMatrix( info.entity, info.entity );
+                typename MatrixObjectType::element_type::LocalMatrixType
+                        localWmatrixNeighbour = matrix_object_->localMatrix( info.neighbour, info.entity );
             }
 
             template < class InfoContainerFaceType >
             void applyBoundaryFace( const InfoContainerFaceType& info )
             {
-                typename MatrixPointerType::element_type::LocalMatrixType
-                        localWmatrixElement = matrix_pointer_->localMatrix( info.entity, info.entity );
+                typename MatrixObjectType::element_type::LocalMatrixType
+                        localWmatrixElement = matrix_object_->localMatrix( info.entity, info.entity );
             }
     };
 

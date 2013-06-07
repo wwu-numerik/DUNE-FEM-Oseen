@@ -15,6 +15,7 @@
 #include <dune/fem/oseen/datacontainer.hh>
 #include <dune/fem/oseen/solver/solvercaller.hh>
 #include <dune/fem/oseen/assembler/all.hh>
+#include <dune/fem/oseen/assembler/factory.hh>
 #include <dune/fem/oseen/runinfo.hh>
 
 #include <dune/stuff/fem/customprojection.hh>
@@ -117,7 +118,7 @@ class OseenPass
             auto h1_integrator = Factory::integrator( H1rhs );
             auto h2_integrator = Factory::integrator( H2rhs );
             auto h2_o_integrator = Factory::integratorO( H2_O_rhs, beta_ );
-            H2rhs += H2_O_rhs;
+            *H2rhs += H2_O_rhs;
             auto h3_integrator = Factory::integrator( H3rhs );
             DSC_PROFILER.stopTiming("Pass_init");
 
@@ -127,7 +128,7 @@ class OseenPass
                 Oseen::Assembler::Coordinator< Traits, typename Factory::OseenIntegratorTuple >
                         coordinator ( discreteModel_, gridPart_, velocitySpace_, pressureSpace_, sigmaSpace_  );
 
-                typename Factory::OseenIntegratorTuple tuple(	m_integrator, w_integrator, x_integrator, y_integrator,
+                auto tuple = std::make_tuple(	m_integrator, w_integrator, x_integrator, y_integrator,
                                         o_integrator, z_integrator, e_integrator, r_integrator,
                                         h1_integrator, h2_integrator,h2_o_integrator, h3_integrator );
                 coordinator.apply( tuple );

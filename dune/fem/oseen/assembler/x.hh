@@ -8,7 +8,7 @@ namespace Dune {
 namespace Oseen {
 namespace Assembler {
 
-	template < class MatrixPointerType, class Traits >
+	template < class MatrixObjectType, class Traits >
 	class X
 	{
 		typedef typename Traits::ElementCoordinateType
@@ -27,19 +27,19 @@ namespace Assembler {
 			SigmaJacobianRangeType;
 		typedef typename Traits::LocalIntersectionCoordinateType
 			LocalIntersectionCoordinateType;
-		typedef DSFe::LocalMatrixProxy<MatrixPointerType>
+		typedef DSFe::LocalMatrixProxy<MatrixObjectType>
 			LocalMatrixProxyType;
 
-		MatrixPointerType& matrix_pointer_;
+		MatrixObjectType& matrix_object_;
 		public:
-			X( MatrixPointerType& matrix_object	)
-				:matrix_pointer_(matrix_object)
+			X( MatrixObjectType& matrix_object	)
+				:matrix_object_(matrix_object)
 			{}
 
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				LocalMatrixProxyType localXmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localXmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				// (X)_{i,j} += \mu\int_{T}\tau_{j}:\nabla v_{i} dx // X's volume integral
 				//                                                  // see also "X's entitity surface integral", "X's neighbour surface integral" and "X's boundary integral" below
 				for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
@@ -69,8 +69,8 @@ namespace Assembler {
 			template < class InfoContainerInteriorFaceType >
 			void applyInteriorFace( const InfoContainerInteriorFaceType& info )
 			{
-				LocalMatrixProxyType localXmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
-				LocalMatrixProxyType localXmatrixNeighbour( matrix_pointer_, info.entity, info.neighbour, info.eps );
+				LocalMatrixProxyType localXmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localXmatrixNeighbour( matrix_object_, info.entity, info.neighbour, info.eps );
 				// (X)_{i,j} += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}ds // X's element sourface integral
 				//           += \int_{\varepsilon\in\Epsilon_{I}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{-}}(\tau_{j})\cdot n_{t}ds // X's neighbour sourface integral
 				//                                                                                                                   // see also "X's boundary integral" below
@@ -139,7 +139,7 @@ namespace Assembler {
 			template < class InfoContainerFaceType >
 			void applyBoundaryFace( const InfoContainerFaceType& info )
 			{
-				LocalMatrixProxyType localXmatrixElement( matrix_pointer_, info.entity, info.entity, info.eps );
+				LocalMatrixProxyType localXmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				// (X)_{i,j} += \int_{\varepsilon\in\Epsilon_{D}^{T}}-\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}ds // X's boundary integral
 				//                                                                                                                   // see also "X's volume integral", "X's element surface integral" and "X's neighbour surface integral" above
 //                        if ( info.discrete_model.hasSigmaFlux() ) {
