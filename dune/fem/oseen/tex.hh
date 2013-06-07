@@ -30,7 +30,7 @@ class TexOutputBase
 		Strings headers_;
 
 	public:
-		TexOutputBase( const Info& info, Strings& headers )
+        TexOutputBase( const Info& info, const Strings& headers )
 			: info_(info),
 			current_h_(1.0),
 			headers_(headers)
@@ -83,11 +83,11 @@ class EocOutput : public TexOutputBase<DSC::RunInfo>
 		BaseType;
 
 	public:
-        EocOutput( const DSC::RunInfo& info, BaseType::Strings& headers )
+        EocOutput( const DSC::RunInfo& info, const BaseType::Strings& headers )
 			: BaseType( info, headers )
 		{}
 
-		EocOutput( BaseType::Strings& headers )
+        EocOutput( const BaseType::Strings& headers )
             : BaseType( DSC::RunInfo(), headers )
 		{}
 
@@ -173,11 +173,11 @@ class RefineOutput : public EocOutput
 		BaseType;
 
 	public:
-        RefineOutput ( const DSC::RunInfo& info, BaseType::Strings& headers )
+        RefineOutput ( const DSC::RunInfo& info, const BaseType::Strings& headers )
 			: BaseType( info, headers )
 		{}
 
-		RefineOutput ( BaseType::Strings& headers )
+        RefineOutput ( const BaseType::Strings& headers )
             : BaseType( DSC::RunInfo(), headers )
 		{}
 
@@ -205,11 +205,11 @@ class BfgOutput : public TexOutputBase<DSC::RunInfo>
     DSC::RunInfo reference_;
 
 	public:
-        BfgOutput( const DSC::RunInfo& info, BaseType::Strings& headers )
+        BfgOutput( const DSC::RunInfo& info, const BaseType::Strings& headers )
 			: BaseType( info, headers )
 		{}
 
-        BfgOutput( BaseType::Strings& headers, DSC::RunInfo reference )
+        BfgOutput( const BaseType::Strings& headers, DSC::RunInfo reference )
             : BaseType( DSC::RunInfo(), headers ),
 			reference_(reference)
 		{}
@@ -291,7 +291,7 @@ class AccurracyOutput : public TexOutputBase<DSC::RunInfo>
 		BaseType;
 
 	public:
-		AccurracyOutput( BaseType::Strings& headers )
+        AccurracyOutput( const BaseType::Strings& headers )
             : BaseType( DSC::RunInfo(), headers )
 		{}
 
@@ -367,7 +367,7 @@ class AccurracyOutputOuter : public TexOutputBase<DSC::RunInfo>
 		BaseType;
 
 	public:
-		AccurracyOutputOuter( BaseType::Strings& headers )
+        AccurracyOutputOuter( const BaseType::Strings& headers )
             : BaseType( DSC::RunInfo(), headers )
 		{}
 

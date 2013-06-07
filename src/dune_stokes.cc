@@ -62,14 +62,9 @@ static const std::string commit_string (COMMIT);
         typedef Dune::CollectiveCommunication< double > CollectiveCommunication;
 #endif
 
-//! return type of getXXX_Permutations()
-typedef std::vector<Dune::StabilizationCoefficients>
-    CoeffVector;
-
 //! the strings used for column headers in tex output
 typedef std::vector<std::string>
     ColumnHeaders;
-
 
 /** \brief one single application of the discretisation and solver
 
@@ -80,32 +75,13 @@ typedef std::vector<std::string>
             to get the used refine level for the constructed grid
     \param  stabil_coeff
             the set of coefficients to be used in the run. Default is used in all run types but StabRun().
-
 **/
 DSC::RunInfo singleRun(CollectiveCommunication& mpicomm,
                     int refine_level_factor,
                     const Dune::StabilizationCoefficients &stabil_coeff );
 
-//! multiple runs with bfg tau set in [bfg-tau-start : bfg-tau-inc : bfg-tau-stop] and everything else on default
-void BfgRun     ( CollectiveCommunication& mpicomm );
 //! multiple runs with refine level in [minref*refineStepsForHalf : maxref*refineStepsForHalf] and everything else on default
 void RefineRun  ( CollectiveCommunication& mpicomm );
-//! LOTS of runs where any combination of stabilisation coefficients getXXX_Permutations() yields is used ( currently hardcoded to getC_power_Permutations )
-void StabRun    ( CollectiveCommunication& mpicomm );
-//! multiple runs with  set in [accuracy_start :  *=accuracy_factor : accuracy_stop] and everything else on default
-void AccuracyRun( CollectiveCommunication& mpicomm );
-//! multiple runs with  set in [accuracy_start :  *=accuracy_factor : accuracy_stop] and everything else on default (only outer acc is varied)
-void AccuracyRunOuter( CollectiveCommunication& mpicomm );
-
-//! display last computed pressure/velo with grape
-int display( int argc, char** argv );
-
-//! brute force all permutations
-CoeffVector getAll_Permutations();
-//! get only permutations for C_11 and C_12
-CoeffVector getC_Permutations();
-//! get only the permutations in power for C_11 and C_12
-CoeffVector getC_power_Permutations();
 
 //! output alert for neg. EOC
 void eocCheck( const DSC::RunInfoVector& runInfos );
@@ -122,20 +98,17 @@ void eocCheck( const DSC::RunInfoVector& runInfos );
  **/
 int main( int argc, char** argv )
 {
-    DSC::installSignalHandler();
+  DSC::installSignalHandler();
   try{
-
 	Dune::MPIManager::initialize(argc, argv);
-	//assert( Dune::Capabilities::isParallel< GridType >::v );
-    CollectiveCommunication mpicomm;//Dune::MPIManager::helper().getCommunicator() );
+    CollectiveCommunication mpicomm;// = Dune::MPIManager::helper().getCommunicator();
 
     /* ********************************************************************** *
      * initialize all the stuff we need                                       *
      * ********************************************************************** */
     if ( argc < 2 ) {
         std::cerr << "\nUsage: " << argv[0] << " parameterfile \n" << "\n\t --- OR --- \n";
-        std::cerr << "\nUsage: " << argv[0] << " paramfile:"<<"file" << " more-opts:val ..." << std::endl;
-        std::cerr << std::endl;
+        std::cerr << "\nUsage: " << argv[0] << " paramfile:"<<"file" << " more-opts:val ..." << std::endl << std::endl;
         return 2;
     }
 
@@ -144,56 +117,19 @@ int main( int argc, char** argv )
     // LOG_NONE = 1, LOG_ERR = 2, LOG_INFO = 4,LOG_DEBUG = 8,LOG_CONSOLE = 16,LOG_FILE = 32
     //--> LOG_ERR | LOG_INFO | LOG_DEBUG | LOG_CONSOLE | LOG_FILE = 62
     const bool useLogger = false;
-    DSC_LOG.create( DSC_CONFIG_GETB( "loglevel",         62,                         useLogger ),
+    DSC_LOG.create( DSC_CONFIG_GETB( "loglevel",         62,                          useLogger ),
                      DSC_CONFIG_GETB( "logfile",          std::string("dune_stokes"), useLogger ),
                      DSC_CONFIG_GETB( "fem.io.datadir",   std::string(),              useLogger )
                     );
 
-    int err = 0;
-
-	const int runtype = DSC_CONFIG_GET( "runtype", 5 );
-    switch ( runtype ) {
-        case 1: {
-            StabRun( mpicomm );
-            break;
-        }
-        default:
-        case 0: {
-            RefineRun( mpicomm );
-            break;
-        }
-        case 2: {
-            BfgRun( mpicomm );
-            break;
-        }
-        case 3: {
-            AccuracyRun( mpicomm );
-            break;
-        }
-        case 4: {
-            AccuracyRunOuter( mpicomm );
-            break;
-        }
-        case 5: {
-            DSC_PROFILER.reset( 1 );
-			DSC::RunInfoVector rf;
-			Dune::StabilizationCoefficients st = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
-			st.FactorFromParams( "C11" );
-			st.FactorFromParams( "C12" );
-			st.FactorFromParams( "D11" );
-			st.FactorFromParams( "D12" );
-			rf.push_back(singleRun( mpicomm, DSC_CONFIG_GET( "minref", 0 ), st ) );
-            DSC_PROFILER.outputTimings();
-			DSC::dumpRunInfoVectorToFile( rf );
-            break;
-        }
-    } // end case
-
+    if (DSC_CONFIG_GET( "runtype", 5 ) == 5)
+    {
+        const auto minref = DSC_CONFIG_GET( "minref", 0 );
+        DSC_CONFIG.set("maxref", minref);
+    }
+    RefineRun( mpicomm );
     DSC_LOG_ERROR << "\nRun from: " << commit_string << std::endl;
-    return err;
   }
-
-
 
   catch (Dune::Exception &e){
     std::cerr << "Dune reported error: " << e << std::endl;
@@ -209,6 +145,7 @@ int main( int argc, char** argv )
   catch (...){
     std::cerr << "Unknown exception thrown!" << std::endl;
   }
+  return 0;
 }
 
 void RefineRun( CollectiveCommunication& mpicomm )
@@ -218,16 +155,14 @@ void RefineRun( CollectiveCommunication& mpicomm )
 #endif
     DSC_LOG_INFO << "starting refine run " << std::endl;
     // column headers for eoc table output
-    const std::string errheaders[] = { "h", "el't","Laufzeit (s)","Geschwindigkeit", "Druck" };
-    const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
-    ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
+    const ColumnHeaders errorColumnHeaders = { "h", "el't","Laufzeit (s)","Geschwindigkeit", "Druck" };
 	DSC::RunInfoVector run_infos;
     auto& eoc_output = DSFe::FemEoc::instance( );
 	eoc_output.initialize( DSC_CONFIG_GET("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
-    size_t idx = eoc_output.addEntry( errorColumnHeaders );
+    const size_t idx = eoc_output.addEntry( errorColumnHeaders );
     DSC::RefineOutput eoc_texwriter( errorColumnHeaders );
 
-    int minref = DSC_CONFIG_GET( "minref", 0 );
+    const int minref = DSC_CONFIG_GET( "minref", 0 );
 	// ensures maxref>=minref
 	const int maxref = DSC::clamp( DSC_CONFIG_GET( "maxref", 0 ), minref, DSC_CONFIG_GET( "maxref", 0 ) );
 
@@ -258,193 +193,6 @@ void RefineRun( CollectiveCommunication& mpicomm )
 	eocCheck( run_infos );
 }
 
-void AccuracyRun( CollectiveCommunication& mpicomm )
-{
-    DSC_LOG_INFO << "starting accurracy run " << std::endl;
-    // column headers for eoc table output
-    const std::string errheaders[] = { "h", "el't","Laufzeit (s)","\\o{} Iter. (innen)","Genauigkeit (innen)","\\# Iter. (aussen)","Genauigkeit (aussen)","Geschwindigkeit", "Druck" };
-    const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
-    ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
-	DSC::RunInfoVector run_infos;
-    auto& eoc_output = DSFe::FemEoc::instance( );
-	eoc_output.initialize( DSC_CONFIG_GET("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
-    size_t idx = eoc_output.addEntry( errorColumnHeaders );
-    DSC::AccurracyOutput  eoc_texwriter( errorColumnHeaders );
-
-    double  accurracy_start  = DSC_CONFIG_GET( "accurracy_start", 10e-3 );
-    int     accurracy_steps  = DSC_CONFIG_GET( "accurracy_steps", 5 );
-    double  accurracy_factor = DSC_CONFIG_GET( "accurracy_factor", 10e-3 );
-
-    DSC_LOG_DEBUG << " accurracy_start: " <<  accurracy_start
-            << " accurracy_steps: " <<  accurracy_steps
-            << " accurracy_factor: " <<  accurracy_factor << std::endl;
-
-    int ref = DSC_CONFIG_GET( "minref", 0 );
-
-	int numruns = int( std::pow( accurracy_steps, 2.0 ) );
-    DSC_PROFILER.reset( numruns );
-    for ( int i = 0; i < accurracy_steps; ++i ) {
-        for ( int j = 0; j < accurracy_steps; ++j ) {
-
-            double inner_acc = accurracy_start * std::pow( accurracy_factor, double( j ) );
-            double outer_acc = accurracy_start * std::pow( accurracy_factor, double( i ) );
-            DSC_CONFIG.set( "absLimit", outer_acc );
-            DSC_CONFIG.set( "inner_absLimit", inner_acc );
-			Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
-			DSC::RunInfo info = singleRun( mpicomm, ref, stab_coeff );
-            run_infos.push_back( info );
-            eoc_output.setErrors( idx,info.L2Errors );
-            eoc_texwriter.setInfo( info );
-            numruns--;
-            eoc_output.write( eoc_texwriter, !numruns );
-            DSC_PROFILER.nextRun(); //finish this run
-
-            DSC_LOG_INFO << numruns << " runs remaining" << std::endl;
-        }
-    }
-    DSC_PROFILER.outputTimings();
-	DSC::dumpRunInfoVectorToFile( run_infos );
-}
-
-void AccuracyRunOuter( CollectiveCommunication& mpicomm )
-{
-    DSC_LOG_INFO << "starting accurracyOuter run " << std::endl;
-    // column headers for eoc table output
-    const std::string errheaders[] = { "h", "el't","Laufzeit (s)","\\o{} Iter. (innen)","\\# Iter. (aussen)","Genauigkeit (aussen)","Geschwindigkeit", "Druck" };
-    const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
-    ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
-	DSC::RunInfoVector run_infos;
-    auto& eoc_output = DSFe::FemEoc::instance( );
-	eoc_output.initialize( DSC_CONFIG_GET("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
-    size_t idx = eoc_output.addEntry( errorColumnHeaders );
-    DSC::AccurracyOutputOuter  eoc_texwriter( errorColumnHeaders );
-
-    double  accurracy_start  = DSC_CONFIG_GET( "accurracy_start", 10e-3 );
-    int     accurracy_steps  = DSC_CONFIG_GET( "accurracy_steps", 5 );
-    double  accurracy_factor = DSC_CONFIG_GET( "accurracy_factor", 10e-3 );
-
-    DSC_LOG_DEBUG << " accurracy_start: " <<  accurracy_start
-            << " accurracy_steps: " <<  accurracy_steps
-            << " accurracy_factor: " <<  accurracy_factor << std::endl;
-
-    int ref = DSC_CONFIG_GET( "minref", 0 );
-
-    // setting this to true will give each run a unique logilfe name
-    bool per_run_log_target = DSC_CONFIG_GET( "per-run-log-target", true );
-
-    int numruns = accurracy_steps;
-    DSC_PROFILER.reset( numruns );
-    for ( int i = 0; i < accurracy_steps; ++i ) {
-        if ( per_run_log_target )
-            DSC_LOG.setPrefix( "dune_stokes_ref_"+DSC::toString(ref) );
-
-        double outer_acc = accurracy_start * std::pow( accurracy_factor, double( i ) );
-        double inner_acc = outer_acc;
-        DSC_CONFIG.set( "absLimit", outer_acc );
-        DSC_CONFIG.set( "inner_absLimit", inner_acc );
-		Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
-		DSC::RunInfo info = singleRun( mpicomm, ref, stab_coeff );
-        run_infos.push_back( info );
-        eoc_output.setErrors( idx,info.L2Errors );
-        eoc_texwriter.setInfo( info );
-        numruns--;
-        eoc_output.write( eoc_texwriter, !numruns );
-        DSC_PROFILER.nextRun(); //finish this run
-
-        DSC_LOG_INFO << numruns << " runs remaining" << std::endl;
-    }
-    DSC_PROFILER.outputTimings();
-	DSC::dumpRunInfoVectorToFile( run_infos );
-}
-
-void StabRun( CollectiveCommunication& mpicomm )
-{
-    DSC_LOG_INFO << "starting stab run " << std::endl;
-    // column headers for eoc table output
-    const std::string errheaders[] = { "h", "el't","Laufzeit (s)","C11","C12","D11","D12","Geschwindigkeit", "Druck" };
-    const unsigned int num_errheaders = sizeof ( errheaders ) / sizeof ( errheaders[0] );
-    ColumnHeaders errorColumnHeaders ( errheaders, errheaders + num_errheaders ) ;
-	DSC::RunInfoVector run_infos;
-    auto& eoc_output = DSFe::FemEoc::instance( );
-	eoc_output.initialize( DSC_CONFIG_GET("fem.io.datadir", std::string("data") ),"eoc-file", "eoc-desc", "eoc-template.tex" );
-    size_t idx = eoc_output.addEntry( errorColumnHeaders );
-    DSC::EocOutput eoc_texwriter( errorColumnHeaders );
-
-    int ref = DSC_CONFIG_GET( "minref", 0 );
-
-	// setting this to true will give each run a unique logfile name
-    bool per_run_log_target = DSC_CONFIG_GET( "per-run-log-target", true );
-
-    CoeffVector coeff_vector = getC_power_Permutations();
-
-    DSC_LOG_INFO.resume();
-    DSC_LOG_INFO << "beginning " << coeff_vector.size() << " runs" << std::endl ;
-    DSC_PROFILER.reset( coeff_vector.size() );
-	CoeffVector::iterator it = coeff_vector.begin();
-	for ( unsigned i = 0; it != coeff_vector.end(); ++it,++i ) {
-		DSC::RunInfo info = singleRun( mpicomm, ref, *it );
-        run_infos.push_back( info );
-
-        //push errors to eoc-outputter class
-        eoc_output.setErrors( idx,info.L2Errors );
-        eoc_texwriter.setInfo( info );
-
-        //the writer needs to know if it should close the table etc.
-        eoc_output.write( eoc_texwriter, ( (it+1) == coeff_vector.end() ) );
-
-        DSC_PROFILER.nextRun(); //finish this run
-		if ( per_run_log_target )
-            DSC_LOG.setPrefix( "dune_stokes_permutation_"+DSC::toString(i) );
-    }
-    DSC_LOG_INFO.resume();
-    DSC_LOG_INFO << "completed " << coeff_vector.size() << " runs" << std::endl ;
-
-    DSC_PROFILER.outputTimings();
-	DSC::dumpRunInfoVectorToFile( run_infos );
-}
-
-void BfgRun( CollectiveCommunication& mpicomm )
-{
-    //first up a non-bfg run for reference
-    const int refine_level_factor = DSC_CONFIG_GET( "minref", 0 );
-    DSC_CONFIG.set( "do-bfg", false );
-    const Dune::StabilizationCoefficients stab_coeff = Dune::StabilizationCoefficients::getDefaultStabilizationCoefficients();
-	DSC::RunInfo nobfg_info = singleRun( mpicomm, refine_level_factor, stab_coeff );
-	nobfg_info.bfg_tau =  std::numeric_limits<double>::quiet_NaN();
-
-	DSC::RunInfoVector run_infos;
-    const std::string bfgheaders[] = { "h", "el't","Laufzeit (s)","$\\tau$","\\o{} Iter. (i)","min \\# Iter. (i)","max \\# Iter. (i)","\\# Iter. (a)","min. Genau. (i)","Geschwindigkeit", "Druck" };
-    const unsigned int num_bfgheaders = sizeof ( bfgheaders ) / sizeof ( bfgheaders[0] );
-    ColumnHeaders bfgColumnHeaders ( bfgheaders, bfgheaders + num_bfgheaders ) ;
-    run_infos.push_back( nobfg_info );
-
-    auto& bfg_output = DSFe::FemEoc::instance( );
-	bfg_output.initialize( DSC_CONFIG_GET("fem.io.datadir", std::string("data") ),"eoc-file", "bfg-desc", "eoc-template.tex" );
-    size_t idx = bfg_output.addEntry( bfgColumnHeaders );
-    DSC::BfgOutput bfg_texwriter( bfgColumnHeaders, nobfg_info );
-    bfg_output.setErrors( idx,nobfg_info.L2Errors );
-    bfg_texwriter.setInfo( nobfg_info );
-    bfg_output.write( bfg_texwriter, false );
-    DSC_CONFIG.set( "do-bfg", true );
-
-    const double start_tau = DSC_CONFIG_GET( "bfg-tau-start", 0.01 ) ;
-    const double stop_tau = DSC_CONFIG_GET( "bfg-tau-stop", 0.4 ) ;
-    const double tau_inc = DSC_CONFIG_GET( "bfg-tau-inc", 0.025 ) ;
-
-    DSC_PROFILER.reset( int( ( stop_tau - start_tau ) / tau_inc + 1 ) );
-
-    for ( double tau = start_tau; tau < stop_tau; tau += tau_inc ) {
-        DSC_CONFIG.set( "bfg-tau", tau );
-		DSC::RunInfo info = singleRun( mpicomm, refine_level_factor, stab_coeff );
-        run_infos.push_back( info );
-        bfg_output.setErrors( idx,info.L2Errors );
-        bfg_texwriter.setInfo( info );
-        bfg_output.write( bfg_texwriter, !( tau + tau_inc < stop_tau ) );
-        DSC_PROFILER.nextRun(); //finish this run
-    }
-    DSC_PROFILER.outputTimings();
-	DSC::dumpRunInfoVectorToFile( run_infos );
-}
 
 DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
                     int refine_level_factor,
@@ -469,7 +217,8 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
     static bool firstRun = true;
     int refine_level = ( refine_level_factor  ) * Dune::DGFGridInfo< GridType >::refineStepsForHalf();
 	static int last_refine_level = refine_level;
-    if ( firstRun && refine_level_factor > 0 ) { //since we have a couple of local statics, only do this once, further refinement done in estimator
+    if ( firstRun && refine_level_factor > 0 ) {
+        //since we have a couple of local statics, only do this once, further refinement done in estimator
         gridPtr->globalRefine( refine_level );
     }
 
@@ -485,8 +234,6 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
     debugStream << "  - viscosity: " << viscosity << std::endl;
 	const double alpha = DSC_CONFIG_GET( "alpha", 0.0 );
 	info.alpha = alpha;
-
-    // analytical data
 
     // model traits
 	#if 0 //defined( AORTA_PROBLEM )
@@ -543,10 +290,10 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
             estimator ( computedSolutions.discretePressure() );
         for ( int i = refine_level - last_refine_level; i > 0; --i )
         {
-            estimator.mark( 1.0 /*dummy*/ ); //simpler would be to use real weights in mark(), but alas, that doesn't work as advertised
+            //simpler would be to use real weights in mark(), but alas, that doesn't work as advertised
+            estimator.mark( 1.0 /*dummy*/ );
             computedSolutions.adapt();
         }
-
         if ( DSC_CONFIG_GET( "clear_u" , true ) )
             computedSolutions.discreteVelocity().clear();
         if ( DSC_CONFIG_GET( "clear_p" , true ) )
@@ -575,12 +322,10 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 	{
 		typedef StokesProblems::Container< gridDim, DiscreteOseenFunctionWrapperType>
 			ProblemType;
-	//	ProblemType problem( viscosity , computedSolutions, analyticalDirichletData );
-
+        ProblemType problem( viscosity , computedSolutions, analyticalDirichletData );
 		typedef PostProcessor< OseenPassType, ProblemType >
 			PostProcessorType;
-
-	//	PostProcessorType ( discreteStokesFunctionSpaceWrapper, problem ).save( *gridPtr, computedSolutions, refine_level );
+        PostProcessorType ( discreteStokesFunctionSpaceWrapper, problem ).save( *gridPtr, computedSolutions, refine_level );
 	}
 
     StokesModelImpType stokesModel( stabil_coeff,
@@ -686,106 +431,6 @@ void eocCheck( const DSC::RunInfoVector& runInfos )
 						<< std::endl;
 	}
 }
-
-CoeffVector getAll_Permutations() {
-        // the min andmax exponent that will be used in stabilizing terms
-    // ie c11 = ( h_^minpow ) .. ( h^maxpow )
-    // pow = -2 is interpreted as 0
-    // in non-variation context minpow is used for c12 exp and maxpow for d12,
-    //      c11 and D11 are set to zero
-    int maxpow = DSC_CONFIG_GET( "maxpow", -1 );
-    int minpow = DSC_CONFIG_GET( "minpow", 1 );
-    double minfactor = DSC_CONFIG_GET( "minfactor", 0.0 );
-    double maxfactor = DSC_CONFIG_GET( "maxfactor", 2.0 );
-    double incfactor = DSC_CONFIG_GET( "incfactor", 0.5 );
-
-    CoeffVector coeff_vector;
-    for ( int c11_pow = minpow; c11_pow <= maxpow; ++c11_pow ) {
-        for ( double c11_factor = minfactor; c11_factor <= maxfactor; c11_factor+=incfactor ) {
-            for ( int c12_pow = minpow; c12_pow <= maxpow; ++c12_pow ) {
-                for ( double c12_factor = minfactor; c12_factor <= maxfactor; c12_factor+=incfactor ) {
-                    for ( int d11_pow = minpow; d11_pow <= maxpow; ++d11_pow ) {
-                        for ( double d11_factor = minfactor; d11_factor <= maxfactor; d11_factor+=incfactor ) {
-                            for ( int d12_pow = minpow; d12_pow <= maxpow; ++d12_pow ) {
-                                for ( double d12_factor = minfactor; d12_factor <= maxfactor; d12_factor+=incfactor ) {
-                                    Dune::StabilizationCoefficients c ( c11_pow, c12_pow, d11_pow, d12_pow,
-                                                                        c11_factor, c12_factor, d11_factor, d12_factor );
-                                    coeff_vector.push_back( c );
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return coeff_vector;
-}
-
-CoeffVector getC_Permutations(){
-        // the min andmax exponent that will be used in stabilizing terms
-    // ie c11 = ( h_^minpow ) .. ( h^maxpow )
-    // pow = -2 is interpreted as 0
-    // in non-variation context minpow is used for c12 exp and maxpow for d12,
-    //      c11 and D11 are set to zero
-    int maxpow = DSC_CONFIG_GET( "maxpow", -1 );
-    int minpow = DSC_CONFIG_GET( "minpow", 1 );
-    double minfactor = DSC_CONFIG_GET( "minfactor", 0.0 );
-    double maxfactor = DSC_CONFIG_GET( "maxfactor", 2.0 );
-    double incfactor = DSC_CONFIG_GET( "incfactor", 0.5 );
-
-    typedef Dune::StabilizationCoefficients::ValueType::first_type
-        PowerType;
-    typedef Dune::StabilizationCoefficients::ValueType::second_type
-        FactorType;
-
-    const PowerType invalid_power = Dune::StabilizationCoefficients::invalid_power;
-    const FactorType invalid_factor = Dune::StabilizationCoefficients::invalid_factor;
-
-    CoeffVector coeff_vector;
-    for ( PowerType c11_pow = minpow; c11_pow <= maxpow; ++c11_pow ) {
-        for ( FactorType c11_factor = minfactor; c11_factor <= maxfactor; c11_factor+=incfactor ) {
-            for ( PowerType c12_pow = minpow; c12_pow <= maxpow; ++c12_pow ) {
-                for ( FactorType c12_factor = minfactor; c12_factor <= maxfactor; c12_factor+=incfactor ) {
-                    Dune::StabilizationCoefficients c ( c11_pow, c12_pow, invalid_power, invalid_power,
-                                                        c11_factor, c12_factor, invalid_factor, invalid_factor );
-                    coeff_vector.push_back( c );
-                }
-            }
-        }
-    }
-    return coeff_vector;
-}
-
-CoeffVector getC_power_Permutations(){
-        // the min andmax exponent that will be used in stabilizing terms
-    // ie c11 = ( h_^minpow ) .. ( h^maxpow )
-    // pow = -2 is interpreted as 0
-    // in non-variation context minpow is used for c12 exp and maxpow for d12,
-    //      c11 and D11 are set to zero
-    int maxpow = DSC_CONFIG_GET( "maxpow", -1 );
-    int minpow = DSC_CONFIG_GET( "minpow", 1 );
-    double minfactor = DSC_CONFIG_GET( "minfactor", 0.0 );
-
-    typedef Dune::StabilizationCoefficients::ValueType::first_type
-        PowerType;
-    typedef Dune::StabilizationCoefficients::ValueType::second_type
-        FactorType;
-
-    const PowerType invalid_power = Dune::StabilizationCoefficients::invalid_power;
-    const FactorType invalid_factor = Dune::StabilizationCoefficients::invalid_factor;
-
-    CoeffVector coeff_vector;
-    for ( PowerType c11_pow = minpow; c11_pow <= maxpow; ++c11_pow ) {
-            for ( PowerType c12_pow = minpow; c12_pow <= maxpow; ++c12_pow ) {
-             Dune::StabilizationCoefficients c ( c11_pow, c12_pow, invalid_power, invalid_power,
-                                                minfactor, minfactor, invalid_factor, invalid_factor );
-            coeff_vector.push_back( c );
-        }
-    }
-    return coeff_vector;
-}
-
 
 /** Copyright (c) 2012, Felix Albrecht, Rene Milk      
  * All rights reserved.
