@@ -94,14 +94,6 @@ class Velocity : public Dune::Fem::Function < typename TraitsImp::FunctionSpaceT
         {}
 
         /**
-         *  \brief  destructor
-         *
-         *  doing nothing
-         **/
-        ~Velocity()
-        {}
-
-        /**
          *  \brief  evaluates the velocity
          *
          *  \param  arg

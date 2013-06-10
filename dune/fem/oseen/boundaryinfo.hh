@@ -61,37 +61,33 @@ class BoundaryInfo
         BoundaryInfo(const GridPartType& gridpart)
             : gridpart_(gridpart)
         {
-            EntityIteratorType e_it = gridpart_.template begin<0>();
+            auto e_it = gridpart_.template begin<0>();
             for( ; e_it != gridpart_.template end<0>(); ++e_it ) {
-                const EntityType& e = *e_it;
-                IntersectionIteratorType intItEnd = gridpart_.iend( *e_it );
-				for (   IntersectionIteratorType intIt = gridpart_.ibegin( *e_it );
+                const auto& e = *e_it;
+                auto intItEnd = gridpart_.iend( *e_it );
+                for (   auto intIt = gridpart_.ibegin( *e_it );
 						intIt != intItEnd;
 						++intIt ) {
 					if ( intIt.boundary() ) {
                         const int id = intIt->boundaryId();
-                        const IntersectionGeometryGlobalType& globalGeo = intIt.geometry();
+                        const auto& globalGeo = intIt.geometry();
                         for ( int i = 0; i < globalGeo.corners(); ++i ) {
-                            const CoordType& c = globalGeo[i];
+                            const auto& c = globalGeo[i];
                             boundaryCoordList_[id].push_back( c );
-                            globalPointList_.push_back( GlobalListElementType(c,id) );
+                            globalPointList_.emplace_back(c,id);
                         }
 					}
 				}
             }
             assert( boundaryCoordList_.size() > 0 );
             DSC_LOG_INFO << "num BIDs: " << boundaryCoordList_.size() << '\n';
-            for (   typename BoundaryCoordListType::const_iterator b_it = boundaryCoordList_.begin();
-                    b_it != boundaryCoordList_.end();
-                    ++b_it ) {
+            for (   auto b_it : boundaryCoordList_) {
                 CoordDistanceMapType c_dists;
-                const typename BoundaryCoordListType::key_type current_boundary_id = b_it->first;
+                const auto current_boundary_id = b_it.first;
                 DSC_LOG_INFO << "num points for BID: " << current_boundary_id << " : " << b_it->second.size() << '\n';
-                for (   typename CoordListType::const_iterator it = b_it->second.begin();
-                        it != b_it->second.end();
-                        ++it ) {
-                    int idx_in_globallist = DSC::getIdx( globalPointList_, GlobalListElementType( *it, current_boundary_id ) );
-                    c_dists[idx_in_globallist] = getDisctances( b_it->second, *it );
+                for (   auto it : b_it.second ) {
+                    const auto idx_in_globallist = DSC::getIdx( globalPointList_, GlobalListElementType( it, current_boundary_id ) );
+                    c_dists[idx_in_globallist] = getDisctances( b_it.second, it );
                 }
                 assert( c_dists.size() > 0 );
                 VariancesMapType m;

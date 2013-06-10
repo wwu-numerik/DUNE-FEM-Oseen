@@ -73,14 +73,6 @@ class Pressure : public Dune::Fem::Function < typename PressureTraitsImp::Functi
         {}
 
         /**
-         *  \brief  destructor
-         *
-         *  doing nothing
-         **/
-        ~Pressure()
-        {}
-
-        /**
          *  \brief  evaluates the pressure
          *
          *  \param  arg
