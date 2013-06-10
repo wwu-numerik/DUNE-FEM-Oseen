@@ -44,7 +44,6 @@
 #include "analyticaldata.hh"
 #include "velocity.hh"
 #include "pressure.hh"
-#include "estimator.hh"
 
 #ifndef COMMIT
     #define COMMIT "undefined"
@@ -277,12 +276,11 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 							discreteStokesFunctionSpaceWrapper,
 							gridPart );
     if ( !firstRun ) {
-        Dune::Estimator<DiscreteOseenFunctionWrapperType::DiscretePressureFunctionType>
-            estimator ( computedSolutions.discretePressure() );
         for ( int i = refine_level - last_refine_level; i > 0; --i )
         {
             //simpler would be to use real weights in mark(), but alas, that doesn't work as advertised
-            estimator.mark( 1.0 /*dummy*/ );
+            for(const auto& entity :computedSolutions.discretePressure().space())
+                gridPart.grid().mark(1, entity);
             computedSolutions.adapt();
         }
         if ( DSC_CONFIG_GET( "clear_u" , true ) )
@@ -290,6 +288,7 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
         if ( DSC_CONFIG_GET( "clear_p" , true ) )
             computedSolutions.discretePressure().clear();
     }
+    gridPart.grid().loadBalance();
 
 	last_refine_level = refine_level;
 
