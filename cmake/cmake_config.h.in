@@ -52,21 +52,13 @@
     #define OUTER_CG_SOLVERTYPE OEMCGOp
 #endif
 
-
     typedef std::pair<int,std::pair<double,double> >
         IterationInfo;
-    #define SOLVER_NAMESPACE DuneStokes
-    #define SOLVER_INTERFACE_NAMESPACE StokesOEMSolver
-
 
 #if defined(USE_PARDG_ODE_SOLVER)
     #warning ("USE_PARDG_ODE_SOLVER enabled, might conflict with custom solvers")
 #endif
 
-//the adaption manager might be troublesome with certain gridparts/spaces, so we needed a easy way to disable it
-#ifndef ENABLE_ADAPTIVE
-    #define ENABLE_ADAPTIVE 1
-#endif
 
 #if defined(UGGRID) && defined(DEBUG)
     #warning ("UGGRID in debug mode is likely to produce a segfault")

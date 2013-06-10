@@ -6,6 +6,7 @@
 
 namespace Dune {
 
+struct ReconstructionTools {
 template < class DiscreteVelocityFunctionRangeType >
 struct ConvectiveTerm : public DiscreteVelocityFunctionRangeType {
 	template < class DiscreteSigmaFunctionRangeType >
@@ -78,7 +79,7 @@ void getPressureGradient( MatrixObjectType& matrix_object, const DiscretePressur
 		}
 	}
 }
-
+};
 
 template < class DiscreteModelType >
 struct BruteForceReconstruction {
@@ -136,7 +137,7 @@ struct BruteForceReconstruction {
 					beta_eval;
 				beta_local.evaluate( quad[qP], beta_eval );
 
-				ConvectiveTerm< typename DiscreteVelocityFunctionType::RangeType >
+                ReconstructionTools::ConvectiveTerm< typename DiscreteVelocityFunctionType::RangeType >
 				        c(beta_eval,sigma_eval);
 
 				// do projection

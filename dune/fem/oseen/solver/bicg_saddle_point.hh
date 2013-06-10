@@ -1,7 +1,6 @@
 #ifndef DUNE_OSEEN_SOLVERS_BICG_SADDLE_POINT_HH
 #define DUNE_OSEEN_SOLVERS_BICG_SADDLE_POINT_HH
 
-#include <dune/fem/oseen/solver/solver_interface.hh>
 #include <dune/fem/oseen/solver/schurkomplement.hh>
 #include <dune/stuff/fem/customprojection.hh>
 #include <dune/stuff/fem/functions/integrals.hh>
@@ -39,8 +38,6 @@ namespace Dune {
 
 
 	  public:
-		BiCgStabSaddlepointInverseOperator()
-		{}
 
 		/** takes raw matrices and right hand sides from pass as input, executes nested cg algorithm and outputs solution
 		*/
@@ -92,22 +89,22 @@ namespace Dune {
 			PressureDiscreteFunctionType& pressure = dest.discretePressure();
 			VelocityDiscreteFunctionType& velocity = dest.discreteVelocity();
 
-			typedef InnerCGSolverWrapper< W_MatrixType,
+            typedef A_InverseOperator< W_MatrixType,
 									M_invers_matrixType,
 									X_MatrixType,
 									Y_MatrixType,
 									DiscreteSigmaFunctionType,
 									DiscreteVelocityFunctionType >
-				InnerCGSolverWrapperType;
+                A_InverseOperatorType;
 
-			typedef typename InnerCGSolverWrapperType::ReturnValueType
+            typedef typename A_InverseOperatorType::ReturnValueType
 				ReturnValueType;
 			ReturnValueType a_solver_info;
 
 			//the bfg scheme uses the outer acc. as a base
 			double current_inner_accuracy = do_bfg ? tau * outer_absLimit : inner_absLimit;
 
-			InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
+            A_InverseOperatorType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
 														   o_mat, rhs1_orig.space(),rhs2_orig.space(), relLimit,
 														   current_inner_accuracy, solverVerbosity > 5 );
 
@@ -128,7 +125,7 @@ namespace Dune {
 
 			PressureDiscreteFunctionType schur_f( "schur_f", pressure.space() );
 
-			typedef SchurkomplementOperator<    InnerCGSolverWrapperType,
+            typedef SchurkomplementOperator<    A_InverseOperatorType,
 												E_MatrixType,
 												R_MatrixType,
 												Z_MatrixType,
@@ -149,7 +146,7 @@ namespace Dune {
 			if ( solverVerbosity > 3 )
 				DSC::printFunctionMinMax( logDebug, schur_f );
 
-			SOLVER_NAMESPACE::NewBicgStab< PressureDiscreteFunctionType,Sk_Operator >
+            Dune::NewBicgStab< PressureDiscreteFunctionType,Sk_Operator >
 					bicg( sk_op, relLimit, outer_absLimit, maxIter, solverVerbosity );
 			pressure.clear();
 			bicg.apply( schur_f, pressure );
@@ -158,9 +155,8 @@ namespace Dune {
 			typedef typename OseenPassType::Traits::DiscreteModelType::Traits::PressureFunctionSpaceType
 					PressureFunctionSpaceType;
 			PressureFunctionSpaceType pressureFunctionSpace;
-            DSFe::ConstantFunction<PressureFunctionSpaceType> vol(pressureFunctionSpace, meanPressure_discrete );
-            DSFe::BetterL2Projection
-				::project( 0.0, vol, tmp2 );
+            const DSFe::ConstantFunction<PressureFunctionSpaceType> vol(pressureFunctionSpace, meanPressure_discrete );
+            DSFe::BetterL2Projection::project( 0.0, vol, tmp2 );
 			pressure -= tmp2;
 
 

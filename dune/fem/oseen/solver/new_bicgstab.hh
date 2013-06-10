@@ -9,13 +9,7 @@
 #include <utility>
 #include <boost/format.hpp>
 
-#ifdef SOLVER_NAMESPACE
-	namespace SOLVER_NAMESPACE {
-#else
-    namespace Stuff {
-#endif
-
-
+namespace Dune {
 
 template < class PressureDiscreteFunctionType, class OperatorType >
 class NewBicgStab {
@@ -153,8 +147,8 @@ public:
 	const unsigned int max_iter_;
 	const unsigned int solverVerbosity_;
 };
-} //namespace
 
+} //namespace Dune
 
 #endif // DUNE_OSEEN_NEW_BICGSTAB_HH
 

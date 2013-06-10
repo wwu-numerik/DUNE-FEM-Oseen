@@ -9,9 +9,25 @@
 #include <dune/stuff/fem/functions/analytical.hh>
 #include <dune/stuff/common/parameter/configcontainer.hh>
 
-#include "schurkomplement_adapter.hh"
+#include <dune/fem/oseen/oemsolver/preconditioning.hh>
+#include <dune/fem/oseen/oemsolver/oemsolver.hh>
 
 namespace Dune {
+
+//! utility struct used to expose runtime statistics
+struct SaddlepointInverseOperatorInfo {
+    double iterations_inner_avg;
+    int iterations_inner_min;
+    int iterations_inner_max;
+    int iterations_outer_total;
+    double max_inner_accuracy;
+
+    SaddlepointInverseOperatorInfo()
+        :iterations_inner_avg(-1.0f),iterations_inner_min(-1),
+        iterations_inner_max(-1),iterations_outer_total(-1),
+        max_inner_accuracy(-1.0f)
+    {}
+};
 
 template < class SchurkomplementOperatorType >
 class PreconditionOperatorDefault {
@@ -85,9 +101,9 @@ template <  class A_SolverImp,
 			class M_invers_MatrixType,
             class DiscreteVelocityFunctionImp ,
             class DiscretePressureFunctionImp>
-class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::PreconditionInterface
+class SchurkomplementOperator //: public StokesOEMSolver::PreconditionInterface
 {
-    public:
+
         typedef DiscreteVelocityFunctionImp DiscreteVelocityFunctionType;
         typedef DiscretePressureFunctionImp DiscretePressureFunctionType;
         typedef A_SolverImp A_SolverType;
@@ -101,21 +117,19 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 											DiscreteVelocityFunctionType,
 											DiscretePressureFunctionType>
 				ThisType;
-		typedef SchurkomplementOperatorAdapter< ThisType >
-		    MatrixAdapterType;
 		typedef typename A_SolverType::A_OperatorType::PreconditionMatrix
 		    A_PreconditionMatrix;
         typedef DSC::IdentityMatrixObject<R_MatrixType>
 		    PreconditionMatrixBaseType;
         typedef PreconditionOperatorDefault< ThisType >
             PreconditionOperator;
-		//if shit goes south wrt precond working check if this doesn't need to be OEmSolver instead of SOLVER_INTERFACE_NAMESPACE
-		friend class Conversion<ThisType,SOLVER_INTERFACE_NAMESPACE::PreconditionInterface>;
+        //if shit goes south wrt precond working check if this doesn't need to be OEmSolver instead of StokesOEMSolver
+        friend class Conversion<ThisType,StokesOEMSolver::PreconditionInterface>;
         friend class PreconditionOperatorDefault< ThisType >;
 
 
         typedef DSFe::OperatorBasedPreconditioner< PreconditionOperator,
-													SOLVER_NAMESPACE::OUTER_CG_SOLVERTYPE,
+                                                    DuneStokes::OUTER_CG_SOLVERTYPE,
 													DiscretePressureFunctionType>
 			PreconditionMatrix;
 		typedef DiscretePressureFunctionType RowDiscreteFunctionType;
@@ -123,7 +137,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 
         typedef typename A_SolverType::ReturnValueType
                 ReturnValueType;
-
+public:
         SchurkomplementOperator( A_SolverType& a_solver,
 								const E_MatrixType& e_mat,
 								const R_MatrixType& r_mat,

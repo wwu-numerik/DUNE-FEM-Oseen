@@ -21,7 +21,7 @@ namespace Dune {
 
 
 /** \brief Operator to wrap Matrix-vector multiplication in inner CG algorithms
-	\see InnerCGSolverWrapper
+    \see A_InverseOperator
 	\see SchurkomplementOperator
     multOEM method evaluates matrix vector multiplication\n
 	\f$ A := -1 \cdot X  M^{-1} W x  + Yx \f$\n
@@ -32,9 +32,9 @@ template <  class WMatType,
             class YMatType,
             class DiscreteSigmaFunctionType,
 			class DiscreteVelocityFunctionType>
-class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterface
+class MatrixA_Operator : public StokesOEMSolver::PreconditionInterface
 {
-	public:
+
 	typedef MatrixA_Operator<   WMatType,
 					MMatType,
 					XMatType,
@@ -43,14 +43,15 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 					DiscreteVelocityFunctionType>
 				ThisType;
 
-	// if shit goes south wrt precond working check if this doesn't need to be OEmSolver instead of SOLVER_INTERFACE_NAMESPACE
-	friend class Conversion<ThisType,SOLVER_INTERFACE_NAMESPACE::PreconditionInterface>;
+    // if shit goes south wrt precond working check if this doesn't need to be OEmSolver instead of StokesOEMSolver
+    friend class Conversion<ThisType,StokesOEMSolver::PreconditionInterface>;
     typedef DSC::IdentityMatrixObject<YMatType>
 		PreconditionMatrixBaseType;
 
 	typedef DiscreteVelocityFunctionType RowDiscreteFunctionType;
 	typedef DiscreteVelocityFunctionType ColDiscreteFunctionType;
 
+    public:
 	class PreconditionMatrix : public PreconditionMatrixBaseType {
 		const ThisType& a_operator_;
 
@@ -87,8 +88,7 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 			bool rightPrecondition() const { return false; }
 	};
 
-    public:
-		/** The operator needs the
+        /** The operator needs the
 
 
         **/
@@ -188,7 +188,7 @@ template <  class WMatType,
             class YMatType,
             class DiscreteSigmaFunctionType,
             class DiscreteVelocityFunctionType >
-class InnerCGSolverWrapper {
+class A_InverseOperator {
     public:
         typedef MatrixA_Operator<   WMatType,
                                     MMatType,
@@ -198,12 +198,12 @@ class InnerCGSolverWrapper {
 									DiscreteVelocityFunctionType>
                 A_OperatorType;
 
-		typedef SOLVER_NAMESPACE::INNER_CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
+        typedef DuneStokes::INNER_CG_SOLVERTYPE< DiscreteVelocityFunctionType, A_OperatorType >
             CG_SolverType;
         typedef typename CG_SolverType::ReturnValueType
             ReturnValueType;
 
-		InnerCGSolverWrapper( const WMatType& w_mat,
+        A_InverseOperator( const WMatType& w_mat,
                 const MMatType& m_mat,
                 const XMatType& x_mat,
                 const YMatType& y_mat,

@@ -148,9 +148,6 @@ int main( int argc, char** argv )
 
 void RefineRun( CollectiveCommunication& mpicomm )
 {
-#if !(ENABLE_ADAPTIVE)
-	throw std::runtime_error("refine runs don't work with adaptation disabled");
-#endif
     DSC_LOG_INFO << "starting refine run " << std::endl;
     // column headers for eoc table output
     const ColumnHeaders errorColumnHeaders = { "h", "el't","Laufzeit (s)","Geschwindigkeit", "Druck" };
@@ -281,7 +278,6 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 		dummyFunctions(  "dummy_",
 							discreteStokesFunctionSpaceWrapper,
 							gridPart );
-#if ENABLE_ADAPTIVE
     if ( !firstRun ) {
         Dune::Estimator<DiscreteOseenFunctionWrapperType::DiscretePressureFunctionType>
             estimator ( computedSolutions.discretePressure() );
@@ -296,7 +292,7 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
         if ( DSC_CONFIG_GET( "clear_p" , true ) )
             computedSolutions.discretePressure().clear();
     }
-#endif
+
 	last_refine_level = refine_level;
 
 	info.codim0 = gridPtr->size( 0 );

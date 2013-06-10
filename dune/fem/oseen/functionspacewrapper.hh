@@ -487,16 +487,13 @@ class DiscreteOseenFunctionWrapper
 		typedef typename GridPartType::GridType
 			GridType;
 
-//the adaption manager, etc. is not really tested for all gridparts/spaces so we need to be able to disable it
-#if ENABLE_ADAPTIVE
+
     protected:
 
 		typedef DiscreteOseenFunctionWrapperAdaptionManager< ThisType >
             AdaptionManagerType;
 
     public:
-#endif
-
 
         /**
          *  \brief  constructor
@@ -508,9 +505,7 @@ class DiscreteOseenFunctionWrapper
             : space_( space_in )
             , velocity_( name_in + std::string("_velocity"), space_in.discreteVelocitySpace() )
             , pressure_( name_in + std::string("_pressure"), space_in.discretePressureSpace() )
-            #if ENABLE_ADAPTIVE
-                , adaptionManager_ ( gridPart_in.grid(), *this )
-            #endif
+            , adaptionManager_ ( gridPart_in.grid(), *this )
         {}
 
         /**
@@ -525,16 +520,7 @@ class DiscreteOseenFunctionWrapper
             : space_( space_in )
             , velocity_( velocity_in )
             , pressure_( pressure_in )
-            #if ENABLE_ADAPTIVE
-                , adaptionManager_ ( pressure_in.space().gridPart().grid(), *this )
-            #endif
-        {}
-
-        /**
-         *  \brief  destructor
-         *  \todo   doc
-         **/
-		virtual ~DiscreteOseenFunctionWrapper()
+            , adaptionManager_ ( pressure_in.space().gridPart().grid(), *this )
         {}
 
         /**
@@ -578,22 +564,10 @@ class DiscreteOseenFunctionWrapper
             return velocity_.name();
         }
 
-//        //! obtain a local function for an entity (read-only)
-//        template< class EntityType >
-//        inline const LocalFunctionType localFunction( const EntityType& entity ) const
-//        {
-//            return velocity_.localFunction( entity );
-//        }
-//
-//        //! obtain a local function for an entity
-//        template< class EntityType >
-//        inline LocalFunctionType localFunction( const EntityType& entity )
-//        {
-//            return velocity_.localFunction( entity );
-//        }
-
 		//! get the grid from velo space (we're assuming same grid for both functions everywhere anyways)
-		const typename DiscreteFunctionSpaceType::GridType& grid() const { return velocity_.space().grid(); }
+        const typename DiscreteFunctionSpaceType::GridType& grid() const {
+            return velocity_.space().grid();
+        }
 
         /**
          *  \brief  set all degrees of freedom to zero
@@ -664,11 +638,7 @@ class DiscreteOseenFunctionWrapper
          **/
         void adapt()
         {
-            #if ENABLE_ADAPTIVE
-                adaptionManager_.adapt();
-            #else
-                //output warning
-            #endif
+            adaptionManager_.adapt();
         }
 
 		void writeVTK( const std::string& path, const int number_postfix )
@@ -755,11 +725,7 @@ class DiscreteOseenFunctionWrapper
 		DiscreteFunctionSpaceType& space_;
         DiscreteVelocityFunctionType velocity_;
         DiscretePressureFunctionType pressure_;
-
-        //declaration order is important here, do not change
-    #if ENABLE_ADAPTIVE
 		AdaptionManagerType adaptionManager_;
-    #endif
 
 		// we can uncomment this if the adpation manager copy-problem is resolved
 		//DiscreteOseenFunctionWrapper( const DiscreteOseenFunctionWrapper& );

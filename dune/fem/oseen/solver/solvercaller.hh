@@ -4,12 +4,12 @@
 #include <dune/fem/oseen/solver/reduced.hh>
 #include <dune/fem/oseen/solver/saddle_point.hh>
 #include <dune/fem/oseen/solver/bicg_saddle_point.hh>
+#include <dune/fem/oseen/solver/new_bicgstab.hh>
 #include <dune/fem/oseen/solver/reconstruction.hh>
 #include <dune/stuff/common/profiler.hh>
 #include <dune/stuff/common/logging.hh>
 
 namespace Dune {
-
 namespace Oseen {
 
 namespace Solver {
@@ -20,7 +20,10 @@ namespace Solver {
     };
 }
 
-template<class OseenPassType, template <class S> class ReconstructionPolicyType = BruteForceReconstruction >
+template<class OseenPassType >
+class SolverCallerProxy {
+
+template<template <class S> class ReconstructionPolicyType = BruteForceReconstruction >
 struct SolverCaller {
 	//! type of the used solver
     typedef SaddlepointInverseOperator< OseenPassType >
@@ -106,21 +109,16 @@ struct SolverCaller {
 	}
 };
 
-template<class OseenPassType >
-struct SolverCallerProxy {
+public:
     template < class RangeType, class ContainerType, class... Args >
     static SaddlepointInverseOperatorInfo call( const bool do_oseen_discretization,
                                                 ContainerType* container,
                                                 RangeType& dest,
                                                 const Args&... args )
     {
-        //this lets us switch between standalone oseen and reduced oseen in  thete scheme easily
+        //this lets us switch between standalone oseen and reduced oseen in NVS theta scheme easily
         const bool use_reduced_solver = (do_oseen_discretization && DSC_CONFIG_GET( "reduced_oseen_solver", false ))
                 || DSC_CONFIG_GET( "parabolic", false );
-        typedef Oseen::SolverCaller< OseenPassType>
-            SolverCallerType;
-        typedef Oseen::SolverCaller< OseenPassType, SmartReconstruction >
-            SmartSolverCallerType;
 
         //Select which solver we want to use
         auto solver_ID = do_oseen_discretization
@@ -131,13 +129,13 @@ struct SolverCallerProxy {
               solver_ID = Oseen::Solver::Reduced_Solver_ID;
 
         if ( DSC_CONFIG_GET( "smart_reconstruction", false ) )
-            return SmartSolverCallerType::solve(solver_ID,
+            return SolverCaller<>::solve(solver_ID,
                                                 do_oseen_discretization,
                                                 container,
                                                 dest,
                                                 args...);
         else
-            return SolverCallerType::solve(solver_ID,
+            return SolverCaller<SmartReconstruction>::solve(solver_ID,
                                            do_oseen_discretization,
                                            container,
                                            dest,

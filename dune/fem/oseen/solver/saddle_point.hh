@@ -1,7 +1,7 @@
 #ifndef DUNE_OSEEN_SOLVERS_SADDLE_POINT_HH
 #define DUNE_OSEEN_SOLVERS_SADDLE_POINT_HH
 
-#include <dune/fem/oseen/solver/solver_interface.hh>
+#include <dune/fem/oseen/solver/schurkomplement.hh>
 
 namespace Dune {
 
@@ -37,9 +37,6 @@ namespace Dune {
 
 
 	  public:
-		SaddlepointInverseOperator()
-		{}
-
 		/** takes raw matrices and right hand sides from pass as input, executes nested cg algorithm and outputs solution
 		*/
 		template <  class X_MatrixType,
@@ -115,15 +112,15 @@ namespace Dune {
 			rhs2 -= v_tmp;
 	/***********/
 
-			typedef InnerCGSolverWrapper< W_MatrixType,
+            typedef A_InverseOperator< W_MatrixType,
 									M_invers_matrixType,
 									X_MatrixType,
 									Y_MatrixType,
 									DiscreteSigmaFunctionType,
 									DiscreteVelocityFunctionType >
-				InnerCGSolverWrapperType;
+                A_InverseOperatorType;
 
-			typedef typename InnerCGSolverWrapperType::ReturnValueType
+            typedef typename A_InverseOperatorType::ReturnValueType
 				ReturnValueType;
 			ReturnValueType a_solver_info;
 
@@ -131,7 +128,7 @@ namespace Dune {
             double current_inner_accuracy = do_bfg ? tau * outer_absLimit : inner_absLimit;
             double max_inner_accuracy = current_inner_accuracy;
 
-			InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
+            A_InverseOperatorType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
 														   o_mat, rhs1.space(),rhs2.space(), relLimit,
 														   current_inner_accuracy, solverVerbosity > 3 );
 

@@ -1,7 +1,8 @@
 #ifndef DUNE_OSEEN_SOLVERS_REDUCED_HH
 #define DUNE_OSEEN_SOLVERS_REDUCED_HH
 
-#include <dune/fem/oseen/solver/solver_interface.hh>
+#include <dune/fem/oseen/solver/schurkomplement.hh>
+#include <dune/fem/oseen/solver/cghelper.hh>
 
 namespace Dune {
 
@@ -102,14 +103,14 @@ namespace Dune {
 			F *= -1;
 			F += rhs2;
 
-			typedef InnerCGSolverWrapper< W_MatrixType,
+			typedef A_InverseOperator< W_MatrixType,
 									M_invers_matrixType,
 									X_MatrixType,
 									Y_MatrixType,
 									DiscreteSigmaFunctionType,
 									DiscreteVelocityFunctionType >
-				InnerCGSolverWrapperType;
-			InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
+				A_InverseOperatorType;
+			A_InverseOperatorType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
 														   o_mat, rhs1.space(), rhs2.space(), relLimit,
 														  inner_absLimit, solverVerbosity  );
 			innerCGSolverWrapper.apply(F,velocity);
