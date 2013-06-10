@@ -45,14 +45,10 @@ namespace Assembler {
 				for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
 					for ( int j = 0; j < info.numVelocityBaseFunctionsElement; ++j ) {
 						double Y_i_j = 0.0;
-						// sum over all quadrature points
-						for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++quad ) {
-							// get x
-							const ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
-							// get the integration factor
-							const double elementVolume = info.geometry.integrationElement( x );
-							// get the quadrature weight
-							const double integrationWeight = info.volumeQuadratureElement.weight( quad );
+                        for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++quad ) {
+                            const auto x = info.volumeQuadratureElement.point( quad );
+                            const double elementVolume = info.geometry.integrationElement( x );
+                            const double integrationWeight = info.volumeQuadratureElement.weight( quad );
 							// compute \tau_{j}:\nabla v_{i}
 							VelocityRangeType v_i( 0.0 );
 							info.velocity_basefunction_set_element.evaluate( i, x, v_i );
@@ -63,16 +59,10 @@ namespace Assembler {
 								* integrationWeight
 								* info.alpha
 								* v_i_times_v_j;
-						} // done sum over quadrature points
-						// if small, should be zero
-						if ( fabs( Y_i_j ) < info.eps ) {
-							Y_i_j = 0.0;
-						}
-						else
-							// add to matrix
-							localYmatrixElement.add( i, j, Y_i_j );
+                        }
+                        localYmatrixElement.add( i, j, Y_i_j );
 					}
-				} // done computing Y's volume integral
+                }
 				}
 			}
 
@@ -86,20 +76,14 @@ namespace Assembler {
 				//                                                                                                         // see also "Y's boundary integral" below
 //                        if ( info.discrete_model.hasSigmaFlux() ) {
 					for ( int j = 0; j < info.numVelocityBaseFunctionsElement; ++j ) {
-						// compute Y's element surface integral
-						for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
+                        for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
 							double Y_i_j = 0.0;
-							// sum over all quadrature points
-							for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
-								// get x codim<0> and codim<1> coordinates
-								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
-								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
-								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
-								// get the quadrature weight
-								const double integrationWeight = info.faceQuadratureElement.weight( quad );
+                            for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
+                                const auto x = info.faceQuadratureElement.point( quad );
+								const auto xLocal = info.faceQuadratureElement.localPoint( quad );
+                                const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+                                const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{U{+}}(v{j})\cdot n_{t}
-//								const VelocityRangeType /*outerNormal*/ = info.intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_j( 0.0 );
 								info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 								VelocityRangeType v_i( 0.0 );
@@ -109,24 +93,19 @@ namespace Assembler {
 									* elementVolume
 									* integrationWeight
 									* v_i_times_v_j;
-							} // done sum over all quadrature points
+                            }
 							localYmatrixElement.add( i, j, Y_i_j );
-						} // done computing Y's element surface integral
+                        }
 						// compute Y's neighbour surface integral
 						for ( int i = 0; i < info.numVelocityBaseFunctionsNeighbour; ++i ) {
 							double Y_i_j = 0.0;
-							// sum over all quadrature points
-							for ( size_t quad = 0; quad < info.faceQuadratureNeighbour.nop(); ++quad ) {
-								// get x codim<0> and codim<1> coordinates
-								const ElementCoordinateType xInside = info.faceQuadratureElement.point( quad );
-								const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
-								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureNeighbour.localPoint( quad );
-								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
-								// get the quadrature weight
-								const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
+                            for ( size_t quad = 0; quad < info.faceQuadratureNeighbour.nop(); ++quad ) {
+                                const auto xInside = info.faceQuadratureElement.point( quad );
+								const auto xOutside = info.faceQuadratureNeighbour.point( quad );
+								const auto xLocal = info.faceQuadratureNeighbour.localPoint( quad );
+                                const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+                                const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{U{-}}(v{j})\cdot n_{t}
-//								const VelocityRangeType /*outerNormal*/ = info.intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_i( 0.0 );
 								info.velocity_basefunction_set_neighbour.evaluate( i, xOutside, v_i );
 								VelocityRangeType v_j( 0.0 );
@@ -137,10 +116,10 @@ namespace Assembler {
 									* elementVolume
 									* integrationWeight
 									* v_i_times_v_j;
-							} // done sum over all quadrature points
+                            }
 							localYmatrixNeighbour.add( i, j, Y_i_j );
-						} // done computing Y's neighbour surface integral
-					} // done computing Y's surface integrals
+                        }
+                    }
 //                        }
 
 			}
@@ -155,17 +134,12 @@ namespace Assembler {
 					for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
 						for ( int j = 0; j < info.numVelocityBaseFunctionsElement; ++j ) {
 							double Y_i_j = 0.0;
-							// sum over all quadrature points
-							for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
-								// get x codim<0> and codim<1> coordinates
-								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
-								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
-								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
-								// get the quadrature weight
-								const double integrationWeight = info.faceQuadratureElement.weight( quad );
+                            for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
+                                const auto x = info.faceQuadratureElement.point( quad );
+								const auto xLocal = info.faceQuadratureElement.localPoint( quad );
+                                const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+                                const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{U^{+}}(v_{j})\cdot n_{t}
-//                                const VelocityRangeType /*outerNormal*/ = info.intersection.unitOuterNormal( xLocal );
 								VelocityRangeType v_j( 0.0 );
 								info.velocity_basefunction_set_element.evaluate( j, x, v_j );
 								VelocityRangeType v_i( 0.0 );
@@ -175,10 +149,10 @@ namespace Assembler {
 									* elementVolume
 									* integrationWeight
 									* v_i_times_v_j;
-							} // done sum over all quadrature points
+                            }
 							localYmatrixElement.add( i, j, Y_i_j );
 						}
-					} // done computing Y's boundary integral
+                    }
 //                        }
 
 			}

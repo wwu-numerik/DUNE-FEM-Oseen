@@ -39,23 +39,16 @@ namespace Assembler {
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				//using the proxy here would be potentially fatal because of the inversion
                 LocalMatrixProxyType local_matrix ( matrix_object_, info.entity, info.entity, info.eps );
-                ASSERT_EQ( int(local_matrix.rows()), info.numSigmaBaseFunctionsElement );
-                ASSERT_EQ( int(local_matrix.cols()), info.numSigmaBaseFunctionsElement );
 
 				// (M^{-1})_{i,j} = (\int_{T}\tau_{j}:\tau_{i}dx)^{-1} // Minvs' volume integral
 				for ( int i = 0; i < info.numSigmaBaseFunctionsElement; ++i ) {
 					for ( int j = 0; j < info.numSigmaBaseFunctionsElement; ++j ) {
 						double M_i_j = 0.0;
-						// sum over all quadrature points
-						for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++quad ) {
-							// get x
-							const ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
-							// get the integration factor
-							const double elementVolume = info.geometry.integrationElement( x );
-							// get the quadrature weight
-							const double integrationWeight = info.volumeQuadratureElement.weight( quad );
+                        for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++quad ) {
+                            const ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
+                            const double elementVolume = info.geometry.integrationElement( x );
+                            const double integrationWeight = info.volumeQuadratureElement.weight( quad );
 							// compute \tau_{i}:\tau_{j}
 							SigmaRangeType tau_i( 0.0 );
 							SigmaRangeType tau_j( 0.0 );
@@ -66,18 +59,13 @@ namespace Assembler {
 							M_i_j += elementVolume
 								* integrationWeight
 								* tau_i_times_tau_j;
-						} // done sum over quadrature points
-						// if small, should be zero
-						if ( fabs( M_i_j ) < info.eps ) {
-							M_i_j = 0.0;
-						} // else invert
-						else {
-							M_i_j = 1.0 / M_i_j;
-							// add to matrix
-                            local_matrix.add( i, j, M_i_j );
-						}
+                        }
+
+                        if ( info.eps < fabs( M_i_j ) ) {
+                            local_matrix.add( i, j, 1.0f / M_i_j );
+                        }
 					}
-				} // done computing Minvs' volume integral
+                }
 			}
 
 			template < class InfoContainerInteriorFaceType >
@@ -87,6 +75,7 @@ namespace Assembler {
 			template < class InfoContainerFaceType >
 			void applyBoundaryFace( const InfoContainerFaceType& )
 			{}
+
 			static const std::string name;
 	};
 

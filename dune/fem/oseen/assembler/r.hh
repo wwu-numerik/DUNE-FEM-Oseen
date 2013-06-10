@@ -50,20 +50,14 @@ namespace Assembler {
 				//                                                                                                // see also "R's boundary integral" below
 //                        if ( info.discrete_model.hasVelocityPressureFlux() ) {
 					for ( int j = 0; j < info.numPressureBaseFunctionsElement; ++j ) {
-						// compute R's element surface integral
-						for ( int i = 0; i < info.numPressureBaseFunctionsElement; ++i ) {
+                        for ( int i = 0; i < info.numPressureBaseFunctionsElement; ++i ) {
 							double R_i_j = 0.0;
-							// sum over all quadrature points
-							for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
-								// get x codim<0> and codim<1> coordinates
-								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
-								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
-								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
-								// get the quadrature weight
-								const double integrationWeight = info.faceQuadratureElement.weight( quad );
+                            for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
+                                const auto x = info.faceQuadratureElement.point( quad );
+								const auto xLocal = info.faceQuadratureElement.localPoint( quad );
+                                const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+                                const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute \hat{u}_{p}^{P^{+}}(q_{j})\cdot n_{T}q_{i}
-//								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 								PressureRangeType q_i( 0.0 );
 								info.pressure_basefunction_set_element.evaluate( i, x, q_i );
 								PressureRangeType q_j( 0.0 );
@@ -73,24 +67,19 @@ namespace Assembler {
 									* elementVolume
 									* integrationWeight
 									* q_i_times_q_j;
-							} // done sum over all quadrature points
+                            }
 							localRmatrixElement.add( i, j, R_i_j );
-						} // done computing R's element surface integral
-						// compute R's neighbour surface integral
+                        }
+
 						for ( int i = 0; i < info.numPressureBaseFunctionsNeighbour; ++i ) {
 							double R_i_j = 0.0;
-							// sum over all quadrature points
 							for ( size_t quad = 0; quad < info.faceQuadratureNeighbour.nop(); ++quad ) {
-								// get x codim<0> and codim<1> coordinates
-								const ElementCoordinateType xInside = info.faceQuadratureElement.point( quad );
-								const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
-								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureNeighbour.localPoint( quad );
-								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
-								// get the quadrature weight
-								const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
+                                const auto xInside = info.faceQuadratureElement.point( quad );
+								const auto xOutside = info.faceQuadratureNeighbour.point( quad );
+								const auto xLocal = info.faceQuadratureNeighbour.localPoint( quad );
+                                const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+                                const double integrationWeight = info.faceQuadratureNeighbour.weight( quad );
 								// compute \hat{u}_{p}^{P^{-}}(q_{j})\cdot n_{T}q_{i}
-//								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 								PressureRangeType q_j( 0.0 );
 								info.pressure_basefunction_set_neighbour.evaluate( j, xOutside, q_j );
 								PressureRangeType q_i( 0.0 );
@@ -101,10 +90,10 @@ namespace Assembler {
 									* elementVolume
 									* integrationWeight
 									* q_i_times_q_j;
-							} // done sum over all quadrature points
+                            }
 							localRmatrixNeighbour.add( i, j, R_i_j );
-						} // done computing R's neighbour surface integral
-					} // done computing R's surface integrals
+                        }
+                    }
 //                        }
 			}
 

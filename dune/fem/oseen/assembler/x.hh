@@ -45,14 +45,10 @@ namespace Assembler {
 				for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
 					for ( int j = 0; j < info.numSigmaBaseFunctionsElement; ++j ) {
 						double X_i_j = 0.0;
-						// sum over all quadrature points
-						for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++quad ) {
-							// get x
-							const ElementCoordinateType x = info.volumeQuadratureElement.point( quad );
-							// get the integration factor
-							const double elementVolume = info.geometry.integrationElement( x );
-							// get the quadrature weight
-							const double integrationWeight = info.volumeQuadratureElement.weight( quad );
+                        for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++quad ) {
+                            const auto x = info.volumeQuadratureElement.point( quad );
+                            const double elementVolume = info.geometry.integrationElement( x );
+                            const double integrationWeight = info.volumeQuadratureElement.weight( quad );
 							// compute \tau_{j}:\nabla v_{i}
 							SigmaRangeType tau_j( 0.0 );
 							info.sigma_basefunction_set_element.evaluate( j, x, tau_j );
@@ -60,10 +56,10 @@ namespace Assembler {
 							X_i_j += elementVolume
 								* integrationWeight
 								* gradient_of_v_i_times_tau_j;
-						} // done sum over quadrature points
+                        }
 						localXmatrixElement.add( i, j, X_i_j );
 					}
-				} // done computing X's volume integral
+                }
 			}
 
 			template < class InfoContainerInteriorFaceType >
@@ -76,16 +72,13 @@ namespace Assembler {
 				//                                                                                                                   // see also "X's boundary integral" below
 				//                                                                                                                   // and "X's volume integral" above
 //                        if ( info.discrete_model.hasSigmaFlux() ) {
-				// sum over all quadrature points
+
 				for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
-					// get x in codim<0> and codim<1> coordinates
-					const ElementCoordinateType xInside = info.faceQuadratureElement.point( quad );
-					const ElementCoordinateType xOutside = info.faceQuadratureNeighbour.point( quad );
-					const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
-					// get the integration factor
-					const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
-					// get the quadrature weight
-					const double integrationWeight = info.faceQuadratureElement.weight( quad );
+                    const auto xInside = info.faceQuadratureElement.point( quad );
+					const auto xOutside = info.faceQuadratureNeighbour.point( quad );
+					const auto xLocal = info.faceQuadratureElement.localPoint( quad );
+                    const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+                    const double integrationWeight = info.faceQuadratureElement.weight( quad );
 					// compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
 					const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 					typename Traits::C12 c_12( outerNormal, info.discrete_model.getStabilizationCoefficients() );
@@ -110,9 +103,8 @@ namespace Assembler {
 							const double X_i_j = -elementVolume
 								* integrationWeight
 								* v_i_times_flux_times_normal;
-							// add to matrix
 							localXmatrixElement.add( i, j, X_i_j );
-						} // done computing X's element sourface integral
+                        }
 						// compute X's neighbour sourface integral
 						info.sigma_basefunction_set_element.evaluate( j, xOutside, tau_j );
 						tau_j.mv( outerNormal, tau_j_times_normal );
@@ -130,8 +122,8 @@ namespace Assembler {
 								* integrationWeight
 								* v_i_times_flux_times_normal;
 							localXmatrixNeighbour.add( i, j, X_i_j );
-						} // done computing X's neighbour sourface integral
-					} // done computing X's sourface integrals
+                        }
+                    }
 				}
 			}
 			//                        }
@@ -146,15 +138,11 @@ namespace Assembler {
 					for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {
 						for ( int j = 0; j < info.numSigmaBaseFunctionsElement; ++j ) {
 							double X_i_j = 0.0;
-							// sum over all quadrature points
-							for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
-								// get x codim<0> and codim<1> coordinates
-								const ElementCoordinateType x = info.faceQuadratureElement.point( quad );
-								const LocalIntersectionCoordinateType xLocal = info.faceQuadratureElement.localPoint( quad );
-								// get the integration factor
-								const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
-								// get the quadrature weight
-								const double integrationWeight = info.faceQuadratureElement.weight( quad );
+                            for ( size_t quad = 0; quad < info.faceQuadratureElement.nop(); ++quad ) {
+                                const auto x = info.faceQuadratureElement.point( quad );
+								const auto xLocal = info.faceQuadratureElement.localPoint( quad );
+                                const double elementVolume = info.intersectionGeometry.integrationElement( xLocal );
+                                const double integrationWeight = info.faceQuadratureElement.weight( quad );
 								// compute -\mu v_{i}\cdot\hat{\sigma}^{\sigma^{+}}(\tau_{j})\cdot n_{t}
 								const VelocityRangeType outerNormal = info.intersection.unitOuterNormal( xLocal );
 								SigmaRangeType tau_j( 0.0 );
@@ -168,10 +156,10 @@ namespace Assembler {
 									* elementVolume
 									* integrationWeight
 									* v_i_times_tau_times_normal;
-							} // done sum over all quadrature points
+                            }
 							localXmatrixElement.add( i, j, X_i_j );
 						}
-					} // done computing X's boundary integral
+                    }
 			}
 			static const std::string name;
 	};
