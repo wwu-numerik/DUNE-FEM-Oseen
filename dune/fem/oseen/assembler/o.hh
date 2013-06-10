@@ -91,9 +91,7 @@ namespace Assembler {
 			template < class InfoContainerVolumeType >
 			void applyVolume_alt2( const InfoContainerVolumeType& info )
 			{
-//				return;
-				typename MatrixObjectType::element_type::LocalMatrixType
-						localOmatrixElement = matrix_object_->localMatrix( info.entity, info.entity );
+                LocalMatrixProxyType localOmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				const typename Traits::DiscreteVelocityFunctionType::LocalFunctionType& beta_lf =
 						beta_.localFunction( info.entity );
 				for ( int i = 0; (i < info.numVelocityBaseFunctionsElement ) ; ++i ) {

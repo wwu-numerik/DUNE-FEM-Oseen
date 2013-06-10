@@ -114,7 +114,7 @@ namespace Dune {
 	/*****************************************************************************************/
 
 			// F = rhs2 - X M^{-1} * rhs1
-			const double m_scale = m_inv_mat(0,0);
+            const double m_scale = m_inv_mat.matrix()(0u,0u);
 			DiscreteSigmaFunctionType rhs1 = rhs1_orig;
 			VelocityDiscreteFunctionType v_tmp ( "v_tmp", velocity.space() );
 			x_mat.apply( rhs1, v_tmp );

@@ -39,8 +39,7 @@ namespace Assembler {
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				typename MatrixObjectType::element_type::LocalMatrixType
-						localZmatrixElement = matrix_object_->localMatrix( info.entity, info.entity );
+                LocalMatrixProxyType localZmatrixElement( matrix_object_, info.entity, info.entity, info.eps );
 				// (Z)_{i,j} += -\int_{T}q_{j}(\nabla\cdot v_{i})dx // Z's volume integral
 				//                                                  // see also "Z's entitity surface integral", "Z's neighbour surface integral" and "Z's boundary integral" below
 				for ( size_t quad = 0; quad < info.volumeQuadratureElement.nop(); ++ quad ) {

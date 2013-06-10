@@ -122,8 +122,8 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 
         sig_tmp2 *= ( -1 );
         x_mat_.multOEM( sig_tmp2.leakPointer(), ret );
-        y_mat_.multOEMAdd( x, ret );
-        o_mat_.multOEMAdd( x, ret );
+        y_mat_.matrix().multOEMAdd( x, ret );
+        o_mat_.matrix().multOEMAdd( x, ret );
     }
 
     template <class VECtype>
@@ -158,10 +158,10 @@ class MatrixA_Operator : public SOLVER_INTERFACE_NAMESPACE::PreconditionInterfac
 	template <class DiscFuncType>
 	void getDiag(DiscFuncType &precondition_diagonal_) const
 	{
-		x_mat_.getDiag( m_mat_, w_mat_, precondition_diagonal_);
+        x_mat_.matrix().getDiag( m_mat_.matrix(), w_mat_.matrix(), precondition_diagonal_);
 		precondition_diagonal_ *= -1;
-		y_mat_.addDiag( precondition_diagonal_ );
-		o_mat_.addDiag( precondition_diagonal_ );
+        y_mat_.matrix().addDiag( precondition_diagonal_ );
+        o_mat_.matrix().addDiag( precondition_diagonal_ );
 	}
 
 	protected:

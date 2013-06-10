@@ -39,8 +39,7 @@ namespace Assembler {
 			template < class InfoContainerVolumeType >
 			void applyVolume( const InfoContainerVolumeType& info )
 			{
-				typename MatrixObjectType::element_type::LocalMatrixType
-						localYmatrixElement = matrix_object_->localMatrix( info.entity, info.entity );
+                LocalMatrixProxyType localYmatrixElement(matrix_object_, info.entity, info.entity, info.eps);
 //                if ( info.discrete_model.isGeneralized() )
 				{
 				for ( int i = 0; i < info.numVelocityBaseFunctionsElement; ++i ) {

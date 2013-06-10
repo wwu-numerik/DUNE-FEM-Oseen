@@ -103,8 +103,8 @@ namespace Dune {
 	/*** making our matrices kuhnibert compatible ****/
 			//rhs1 = M^{-1} * rhs1
 			//B_t = -B_t
-			const double m_scale = m_inv_mat(0,0);
-			b_t_mat.scale( -1 ); //since B_t = -E
+            const double m_scale = m_inv_mat.matrix()(0,0);
+            b_t_mat.matrix().scale( -1 ); //since B_t = -E
 			DiscreteSigmaFunctionType rhs1 = rhs1_orig;
 			rhs1 *=  m_scale;
 
@@ -128,8 +128,8 @@ namespace Dune {
 			ReturnValueType a_solver_info;
 
 			//the bfg scheme uses the outer acc. as a base
-            const double current_inner_accuracy = do_bfg ? tau * outer_absLimit : inner_absLimit;
-            const double max_inner_accuracy = current_inner_accuracy;
+            double current_inner_accuracy = do_bfg ? tau * outer_absLimit : inner_absLimit;
+            double max_inner_accuracy = current_inner_accuracy;
 
 			InnerCGSolverWrapperType innerCGSolverWrapper( w_mat, m_inv_mat, x_mat, y_mat,
 														   o_mat, rhs1.space(),rhs2.space(), relLimit,

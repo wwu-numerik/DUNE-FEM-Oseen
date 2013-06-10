@@ -71,19 +71,19 @@ struct SolverCaller {
 
 		switch ( solverID ) {
             case Solver::BiCg_Saddlepoint_Solver_ID:result = BiCgSaddlepointSolverType().solve(	arg, dest,
-                                                             *X, *M_invers, *Y,
-                                                             *O, *E, *R, *Z, *W,
+                                                             X, M_invers, Y,
+                                                             O, E, R, Z, W,
                                                              H1rhs, H2rhs, H3rhs );
                                             break;
 
             case Solver::Reduced_Solver_ID:			result = ReducedSolverType().solve(	arg, dest,
-                                                                                        *X, *M_invers, *Y,
-                                                                                        *O, *E, *R, *Z, *W,
+                                                                                        X, M_invers, Y,
+                                                                                        O, E, R, Z, W,
                                                              H1rhs, H2rhs, H3rhs );
                                             break;
 			case Solver::SaddlePoint_Solver_ID:		result = SaddlepointSolverType().solve(	arg, dest,
-                                                                                            *X, *M_invers, *Y,
-                                                                                            *O, *E, *R, *Z, *W,
+                                                                                            X, M_invers, Y,
+                                                                                            O, E, R, Z, W,
 															 H1rhs, H2rhs, H3rhs );
 											break;
 

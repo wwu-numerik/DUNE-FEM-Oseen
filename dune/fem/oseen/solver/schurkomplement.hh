@@ -32,15 +32,15 @@ class PreconditionOperatorDefault {
         mutable typename SchurkomplementOperatorType::DiscreteVelocityFunctionType velo_tmp;
         mutable typename SchurkomplementOperatorType::DiscreteVelocityFunctionType velo_tmp2;
 
-        const typename SchurkomplementOperatorType::Z_MatrixType::WrappedMatrixObjectType::DomainSpaceType& pressure_space_;
-        const typename SchurkomplementOperatorType::E_MatrixType::WrappedMatrixObjectType::DomainSpaceType& velocity_space_;
+        const typename SchurkomplementOperatorType::Z_MatrixType::DomainSpaceType& pressure_space_;
+        const typename SchurkomplementOperatorType::E_MatrixType::DomainSpaceType& velocity_space_;
 
     public:
 
         PreconditionOperatorDefault( const typename SchurkomplementOperatorType::A_SolverType& a_solver,
                            const SchurkomplementOperatorType& sk_op,
-                           const typename SchurkomplementOperatorType::E_MatrixType::WrappedMatrixObjectType::DomainSpaceType& velocity_space,
-                           const typename SchurkomplementOperatorType::Z_MatrixType::WrappedMatrixObjectType::DomainSpaceType& pressure_space)
+                           const typename SchurkomplementOperatorType::E_MatrixType::DomainSpaceType& velocity_space,
+                           const typename SchurkomplementOperatorType::Z_MatrixType::DomainSpaceType& pressure_space)
             : sk_op_( sk_op),
             a_precond_( a_solver.getOperator().preconditionMatrix() ),
             velo_tmp( "sdeio", pressure_space ),
@@ -105,7 +105,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 		    MatrixAdapterType;
 		typedef typename A_SolverType::A_OperatorType::PreconditionMatrix
 		    A_PreconditionMatrix;
-        typedef DSC::IdentityMatrixObject<typename R_MatrixType::WrappedMatrixObjectType>
+        typedef DSC::IdentityMatrixObject<R_MatrixType>
 		    PreconditionMatrixBaseType;
         typedef PreconditionOperatorDefault< ThisType >
             PreconditionOperator;
@@ -176,7 +176,7 @@ class SchurkomplementOperator //: public SOLVER_INTERFACE_NAMESPACE::Preconditio
 			tmp2 *= -1;
 			e_mat_.multOEM( tmp2.leakPointer(), ret );
 			assert( !DSFe::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
-			r_mat_.multOEMAdd( x, ret );
+            r_mat_.matrix().multOEMAdd( x, ret );
 			assert( !DSFe::FunctionContainsNanOrInf( ret, pressure_space_.size() ) );
         }
 

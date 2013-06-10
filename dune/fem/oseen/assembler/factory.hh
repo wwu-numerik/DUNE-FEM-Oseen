@@ -34,34 +34,6 @@ struct MatrixTraits : public Dune::SparseRowMatrixTraits<RowSpaceImp,ColSpaceImp
 
 namespace Dune { namespace Oseen { namespace Assembler {
 
-//! A Static map of Matrix-/DiscreteFunctionType onto IntegratorType
-template < class FactoryType, class MatrixType>
-struct IntegratorSelector {typedef std::false_type Type;};
-SPECIALIZE_IntegratorSelector(M);
-SPECIALIZE_IntegratorSelector(W);
-SPECIALIZE_IntegratorSelector(X);
-SPECIALIZE_IntegratorSelector(Y);
-SPECIALIZE_IntegratorSelector(Z);
-SPECIALIZE_IntegratorSelector(E);
-SPECIALIZE_IntegratorSelector(R);
-
-//template < class FactoryType > //O mapping doesn't work because of the extra  arg
-//struct IntegratorSelector< FactoryType, typename FactoryType::OmatrixType>
-//{ typedef typename FactoryType::OmatrixTypeIntegratorType Type; };
-
-template < class FactoryType >
-struct IntegratorSelector< FactoryType, typename FactoryType::DiscreteSigmaFunctionType>
-{ typedef typename FactoryType::H1_IntegratorType Type; };
-
-template < class FactoryType >
-struct IntegratorSelector< FactoryType, typename FactoryType::DiscreteVelocityFunctionType>
-{ typedef typename FactoryType::H2_IntegratorType Type; };
-//template < class FactoryType >//H2_O does not work because of extra arg
-//struct IntegratorSelector< FactoryType, typename FactoryType::DiscreteVelocityFunctionType>
-//{ typedef typename FactoryType::H2_IntegratorType Type; };
-template < class FactoryType >
-struct IntegratorSelector< FactoryType, typename FactoryType::DiscretePressureFunctionType>
-{ typedef typename FactoryType::H3_IntegratorType Type; };
 
 //! A static map of DiscreteFunctionSpace onto DiscreteFunction
 template < class FactoryType, class DiscreteFunctionSpaceType, bool = true >
@@ -159,9 +131,7 @@ public:
     template < class RowSpace, class ColSpace >
     struct magic {
         //! more magic on the inside to avoid ambiguous DiscretefunctionSelector instantiation in 1D
-//        typedef typename DiscreteFunctionSelector< ThisType, RowSpace, RowSpace::dimensionworld != 1 >::Type
             typedef RowSpace RowType;
-//        typedef typename DiscreteFunctionSelector< ThisType, ColSpace, RowSpace::dimensionworld != 1 >::Type
             typedef ColSpace ColType;
         typedef typename MatrixObject< RowType, ColType >::Type
             InternalMatrixType;
@@ -188,23 +158,6 @@ public:
             ::Type::element_type>( name, space );
         f->clear();
         return f;
-    }
-
-    template < class F >
-    static typename IntegratorSelector< ThisType, typename F::element_type >::Type integrator( F& f )
-    {
-        return typename IntegratorSelector< ThisType, typename F::element_type >::Type( f );
-    }
-    //more magic so I don't need two func names please
-    static OmatrixIntegratorType integratorO( YmatrixInternalType& g,
-                                                          const DiscreteVelocityFunctionType& f )
-    {
-        return OmatrixIntegratorType( g, f );
-    }
-    static H2_O_IntegratorType integratorO( const std::unique_ptr<DiscreteVelocityFunctionType>& g,
-                                                          const DiscreteVelocityFunctionType& f )
-    {
-        return H2_O_IntegratorType( g, f );
     }
 };
 

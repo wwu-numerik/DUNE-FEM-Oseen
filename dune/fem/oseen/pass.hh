@@ -107,19 +107,19 @@ class OseenPass
             auto H2_O_rhs = Factory::rhs( "H2_O", velocitySpace_ );
             // H_{3}\in R^{K}
             auto H3rhs = Factory::rhs( "H3", pressureSpace_ );
-            auto m_integrator = Factory::integrator( MInversMatrix );
-            auto w_integrator = Factory::integrator( Wmatrix );
-            auto x_integrator = Factory::integrator( Xmatrix );
-            auto y_integrator = Factory::integrator( Ymatrix );
-            auto o_integrator = Factory::integratorO( Omatrix, beta_ );
-            auto z_integrator = Factory::integrator( Zmatrix );
-            auto e_integrator = Factory::integrator( Ematrix );
-            auto r_integrator = Factory::integrator( Rmatrix );
-            auto h1_integrator = Factory::integrator( H1rhs );
-            auto h2_integrator = Factory::integrator( H2rhs );
-            auto h2_o_integrator = Factory::integratorO( H2_O_rhs, beta_ );
-            *H2rhs += H2_O_rhs;
-            auto h3_integrator = Factory::integrator( H3rhs );
+            auto m_integrator = typename Factory::MmatrixIntegratorType(*MInversMatrix);
+            auto w_integrator = typename Factory::WmatrixIntegratorType(*Wmatrix);
+            auto x_integrator = typename Factory::XmatrixIntegratorType(*Xmatrix);
+            auto y_integrator = typename Factory::YmatrixIntegratorType(*Ymatrix);
+            auto o_integrator = typename Factory::OmatrixIntegratorType(*Omatrix, beta_);
+            auto z_integrator = typename Factory::ZmatrixIntegratorType(*Zmatrix);
+            auto e_integrator = typename Factory::EmatrixIntegratorType(*Ematrix);
+            auto r_integrator = typename Factory::RmatrixIntegratorType(*Rmatrix);
+            auto h1_integrator = typename Factory::H1_IntegratorType(*H1rhs);
+            auto h2_integrator = typename Factory::H2_IntegratorType(*H2rhs);
+            auto h2_o_integrator = typename Factory::H2_O_IntegratorType(*H2_O_rhs, beta_);
+            *H2rhs += *H2_O_rhs;
+            auto h3_integrator = typename Factory::H3_IntegratorType(*H3rhs);
             DSC_PROFILER.stopTiming("Pass_init");
 
 #ifndef STOKES_CONV_ONLY
@@ -153,8 +153,8 @@ class OseenPass
             // do the actual lgs solving
             DSC_LOG_INFO << "Solving system with " << dest.discreteVelocity().size() << " + " << dest.discretePressure().size() << " unknowns" << std::endl;
             info_ = Oseen::SolverCallerProxy< ThisType >::call( do_oseen_discretization_, rhs_datacontainer, dest,
-                                            arg, Xmatrix, MInversMatrix, Ymatrix, Omatrix, Ematrix,
-                                            Rmatrix, Zmatrix, Wmatrix, H1rhs, H2rhs, H3rhs, beta_ );
+                                            arg, *Xmatrix, *MInversMatrix, *Ymatrix, *Omatrix, *Ematrix,
+                                            *Rmatrix, *Zmatrix, *Wmatrix, *H1rhs, *H2rhs, *H3rhs, beta_ );
         } // end of apply
 
 		void getRuninfo( DSC::RunInfo& info )

@@ -180,20 +180,12 @@ namespace Assembler {
             {}
 
             template < class InfoContainerInteriorFaceType >
-            void applyInteriorFace( const InfoContainerInteriorFaceType& info )
-            {
-                typename MatrixObjectType::element_type::LocalMatrixType
-                        localWmatrixElement = matrix_object_->localMatrix( info.entity, info.entity );
-                typename MatrixObjectType::element_type::LocalMatrixType
-                        localWmatrixNeighbour = matrix_object_->localMatrix( info.neighbour, info.entity );
-            }
+            void applyInteriorFace( const InfoContainerInteriorFaceType& /*info*/ )
+            {}
 
             template < class InfoContainerFaceType >
-            void applyBoundaryFace( const InfoContainerFaceType& info )
-            {
-                typename MatrixObjectType::element_type::LocalMatrixType
-                        localWmatrixElement = matrix_object_->localMatrix( info.entity, info.entity );
-            }
+            void applyBoundaryFace( const InfoContainerFaceType& /*info*/ )
+            {}
     };
 
 } // end namespace Assembler
