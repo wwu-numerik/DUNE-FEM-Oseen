@@ -22,7 +22,8 @@
 #include <dune/fem/misc/gridwidth.hh>
 
 #include <dune/fem/oseen/functionspacewrapper.hh>
-#include <dune/fem/oseen/modelinterface.hh>
+#include <dune/fem/oseen/modeldefault.hh>
+
 #include <dune/fem/oseen/pass.hh>
 #include <dune/fem/oseen/boundarydata.hh>
 #include <dune/fem/oseen/runinfo.hh>
@@ -256,9 +257,6 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
     typedef Dune::DiscreteOseenModelDefault< StokesModelTraitsImp >
         StokesModelImpType;
 
-    // treat as interface
-    typedef Dune::DiscreteOseenModelInterface< StokesModelTraitsImp >
-        StokesModelType;
 
     // function wrapper for the solutions
     typedef StokesModelTraitsImp::DiscreteOseenFunctionSpaceWrapperType

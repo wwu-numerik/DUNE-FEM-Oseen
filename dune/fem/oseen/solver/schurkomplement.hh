@@ -8,6 +8,7 @@
 #include <dune/stuff/common/logging.hh>
 #include <dune/stuff/fem/functions/analytical.hh>
 #include <dune/stuff/common/parameter/configcontainer.hh>
+#include <dune/stuff/fem/functions/checks.hh>
 
 #include <dune/fem/oseen/oemsolver/preconditioning.hh>
 #include <dune/fem/oseen/oemsolver/oemsolver.hh>
