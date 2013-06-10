@@ -32,9 +32,6 @@ class Force : public Dune::Fem::Function < FunctionSpaceImp , Force < FunctionSp
 			  scaling_factor_( scaling_factor )
 		{}
 
-		~Force()
-		{}
-
         inline void evaluate( const DomainType& /*arg*/, RangeType& ret ) const
 		{
 			dune_static_assert( dim_ == 2  , "__CLASS__ Wrong world dim");
@@ -81,10 +78,7 @@ class DirichletData : public Dune::Fem::Function < FunctionSpaceImp, DirichletDa
             : BaseType(  )
 		{}
 
-		 ~DirichletData()
-		 {}
-
-		template < class IntersectionType >
+        template < class IntersectionType >
 		void evaluate( const DomainType& arg, RangeType& ret, const IntersectionType& /*intersection*/ ) const
 		{
 			ret[0] = std::pow(disc_time,3.0)* arg[1] * arg[1];
@@ -112,9 +106,6 @@ class Velocity : public Dune::Fem::Function < FunctionSpaceImp , Velocity < Func
 
         Velocity( const FunctionSpaceImp& /*f_space*/ )
             : BaseType(  )
-		{}
-
-		~Velocity()
 		{}
 
 		inline void evaluate( const DomainType& arg, RangeType& ret ) const
@@ -155,14 +146,6 @@ class Pressure : public Dune::Fem::Function < FunctionSpaceImp , Pressure < Func
 		 **/
         Pressure( const FunctionSpaceImp& /*f_space*/ )
             : BaseType(  )
-		{}
-
-		/**
-		 *  \brief  destructor
-		 *
-		 *  doing nothing
-		 **/
-		~Pressure()
 		{}
 
 		inline void evaluate( const DomainType& arg, RangeType& ret ) const

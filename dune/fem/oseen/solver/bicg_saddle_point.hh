@@ -159,7 +159,6 @@ namespace Dune {
             DSFe::BetterL2Projection::project( 0.0, vol, tmp2 );
 			pressure -= tmp2;
 
-
 			// u = A^{-1} ( F - B * p^0 )
 			v_tmp.assign(F);
 			z_mat.apply( pressure, tmp1 );
