@@ -14,21 +14,21 @@ namespace Dune {
 		Dune solver. The outer iteration is a implementation of the BICGStab algorithm as described in\n
 		van der Vorst: "Iterative Methods for Large Linear Systems" (2000)
 	**/
-	template < class OseenPassImp >
+    template < class OseenLDGMethodImp >
 	class BiCgStabSaddlepointInverseOperator
 	{
 	  private:
 
-		typedef OseenPassImp
-			OseenPassType;
+        typedef OseenLDGMethodImp
+            OseenLDGMethodType;
 
-		typedef typename OseenPassType::Traits::DiscreteOseenFunctionWrapperType
+        typedef typename OseenLDGMethodType::Traits::DiscreteOseenFunctionWrapperType
 			DiscreteOseenFunctionWrapperType;
 
-		typedef typename OseenPassType::DomainType
+        typedef typename OseenLDGMethodType::DomainType
 			DomainType;
 
-		typedef typename OseenPassType::RangeType
+        typedef typename OseenLDGMethodType::RangeType
 			RangeType;
 
 		typedef typename DiscreteOseenFunctionWrapperType::DiscretePressureFunctionType
@@ -152,7 +152,7 @@ namespace Dune {
 			bicg.apply( schur_f, pressure );
 			//pressure mw correction
             const double meanPressure_discrete = DSFe::meanValue( pressure, pressure.space() );
-			typedef typename OseenPassType::Traits::DiscreteModelType::Traits::PressureFunctionSpaceType
+            typedef typename OseenLDGMethodType::Traits::DiscreteModelType::Traits::PressureFunctionSpaceType
 					PressureFunctionSpaceType;
 			PressureFunctionSpaceType pressureFunctionSpace;
             const DSFe::ConstantFunction<PressureFunctionSpaceType> vol(pressureFunctionSpace, meanPressure_discrete );

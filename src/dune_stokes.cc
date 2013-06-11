@@ -24,7 +24,7 @@
 #include <dune/fem/oseen/functionspacewrapper.hh>
 #include <dune/fem/oseen/modeldefault.hh>
 
-#include <dune/fem/oseen/pass.hh>
+#include <dune/fem/oseen/ldg_method.hh>
 #include <dune/fem/oseen/boundarydata.hh>
 #include <dune/fem/oseen/runinfo.hh>
 #include <dune/fem/oseen/tex.hh>
@@ -40,10 +40,6 @@
 #include <dune/stuff/fem/femeoc.hh>
 
 #include <dune/grid/utility/gridtype.hh>
-
-#include "analyticaldata.hh"
-#include "velocity.hh"
-#include "pressure.hh"
 
 #ifndef COMMIT
     #define COMMIT "undefined"
@@ -299,21 +295,21 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 
     typedef StokesModelTraitsImp::AnalyticalForceType
         AnalyticalForceType;
-	AnalyticalForceType analyticalForce( viscosity, discreteStokesFunctionSpaceWrapper.discreteVelocitySpace(), alpha );
+    AnalyticalForceType analyticalForce( viscosity, alpha );
 
     typedef StokesModelTraitsImp::AnalyticalDirichletDataType
         AnalyticalDirichletDataType;
 	AnalyticalDirichletDataType analyticalDirichletData =
 			StokesModelTraitsImp::AnalyticalDirichletDataTraitsImplementation::getInstance( discreteStokesFunctionSpaceWrapper );
 
-    typedef Dune::OseenPass< StokesModelImpType >
-	    OseenPassType;
+    typedef Dune::OseenLDGMethod< StokesModelImpType >
+        OseenLDGMethodType;
 
 	{
 		typedef StokesProblems::Container< gridDim, DiscreteOseenFunctionWrapperType>
 			ProblemType;
-        ProblemType problem( viscosity , computedSolutions, analyticalDirichletData );
-		typedef PostProcessor< OseenPassType, ProblemType >
+        ProblemType problem( viscosity , analyticalDirichletData );
+        typedef PostProcessor< OseenLDGMethodType, ProblemType >
 			PostProcessorType;
         PostProcessorType ( discreteStokesFunctionSpaceWrapper, problem ).save( *gridPtr, computedSolutions, refine_level );
 	}
@@ -332,22 +328,21 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
     infoStream << "\n- starting pass" << std::endl;
 
 
-    OseenPassType stokesPass(  stokesModel,
+    OseenLDGMethodType oseenLDG(  stokesModel,
                                 gridPart,
 								discreteStokesFunctionSpaceWrapper,
 								dummyFunctions.discreteVelocity(),
 								false );
 
     PROBLEM_NAMESPACE::SetupCheck check;
-    if ( !check( gridPart, stokesPass, stokesModel, computedSolutions ) )
+    if ( !check( gridPart, oseenLDG, stokesModel, computedSolutions ) )
         DUNE_THROW( Dune::InvalidStateException, check.error() );
     DSC_PROFILER.startTiming( "Pass -- APPLY" );
-	stokesPass.printInfo();
     auto last_wrapper ( computedSolutions );
-    stokesPass.apply( last_wrapper, computedSolutions);
+    oseenLDG.apply( last_wrapper, computedSolutions);
     DSC_PROFILER.stopTiming( "Pass -- APPLY" );
     info.run_time = DSC_PROFILER.getTiming( "Pass -- APPLY" );
-    stokesPass.getRuninfo( info );
+    oseenLDG.getRuninfo( info );
 
     /* ********************************************************************** *
      * Problem postprocessing
@@ -359,9 +354,9 @@ DSC::RunInfo singleRun(  CollectiveCommunication& /*mpicomm*/,
 	{
 		typedef StokesProblems::Container< gridDim, DiscreteOseenFunctionWrapperType>
 			ProblemType;
-		ProblemType problem( viscosity , computedSolutions, analyticalDirichletData );
+        ProblemType problem( viscosity , analyticalDirichletData );
 
-		typedef PostProcessor< OseenPassType, ProblemType >
+        typedef PostProcessor< OseenLDGMethodType, ProblemType >
 			PostProcessorType;
 
 		PostProcessorType postProcessor( discreteStokesFunctionSpaceWrapper, problem );

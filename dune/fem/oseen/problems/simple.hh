@@ -25,7 +25,7 @@ class Force : public Dune::Fem::Function < FunctionSpaceImp , Force < FunctionSp
 		typedef typename BaseType::RangeType
 			RangeType;
 
-        Force( const double viscosity, const FunctionSpaceImp& /*space*/, const double alpha = 0.0, const double scaling_factor = 1.0 )
+        Force( const double viscosity, const double alpha = 0.0, const double scaling_factor = 1.0 )
             : BaseType (  ),
 			  viscosity_( viscosity ),
 			  alpha_( alpha ),
@@ -97,13 +97,6 @@ class Velocity : public Dune::Fem::Function < FunctionSpaceImp , Velocity < Func
 			ret[0] = 1;
 		}
 
-		RangeType operator () ( const DomainType& arg)
-		{
-			RangeType ret;
-			evaluate( arg, ret );
-			return ret;
-		}
-
 	private:
 		static const int dim_ = FunctionSpaceImp::dimDomain;
 };
@@ -133,13 +126,6 @@ class Pressure : public Dune::Fem::Function < FunctionSpaceImp , Pressure < Func
 		inline void evaluate( const DomainType& arg, RangeType& ret ) const
 		{
 			ret[0] = -arg[0];
-		}
-
-		RangeType operator () ( const DomainType& arg)
-		{
-			RangeType ret;
-			evaluate( arg, ret );
-			return ret;
 		}
 
 	private:

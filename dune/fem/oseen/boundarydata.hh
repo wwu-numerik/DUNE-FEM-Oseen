@@ -16,8 +16,8 @@ struct DefaultDirichletDataTraits {
 			AnalyticalDirichletDataType;
 
 		template <class DiscreteOseenFunctionWrapper >
-		static AnalyticalDirichletDataType getInstance( const DiscreteOseenFunctionWrapper& wrapper ) {
-			return 	AnalyticalDirichletDataType( wrapper.discreteVelocitySpace() );
+        static AnalyticalDirichletDataType getInstance( const DiscreteOseenFunctionWrapper& ) {
+            return 	AnalyticalDirichletDataType();
 		}
 	};
 };

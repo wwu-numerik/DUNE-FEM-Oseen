@@ -20,18 +20,18 @@ namespace Solver {
     };
 }
 
-template<class OseenPassType >
+template<class OseenLDGMethodType >
 class SolverCallerProxy {
 
 template<template <class S> class ReconstructionPolicyType = BruteForceReconstruction >
 struct SolverCaller {
 	//! type of the used solver
-    typedef SaddlepointInverseOperator< OseenPassType >
+    typedef SaddlepointInverseOperator< OseenLDGMethodType >
 		SaddlepointSolverType;
-    typedef BiCgStabSaddlepointInverseOperator< OseenPassType >
+    typedef BiCgStabSaddlepointInverseOperator< OseenLDGMethodType >
         BiCgSaddlepointSolverType;
 	//! this is used for reduced (no pressure, incompress. condition) oseen pass
-    typedef ReducedInverseOperator< OseenPassType >
+    typedef ReducedInverseOperator< OseenLDGMethodType >
 		ReducedSolverType;
 
 
@@ -95,7 +95,7 @@ struct SolverCaller {
 		}
 		if ( rhs_datacontainer ) {
 			rhs_datacontainer->clear();
-            ReconstructionPolicyType<typename OseenPassType::DiscreteModelType>
+            ReconstructionPolicyType<typename OseenLDGMethodType::DiscreteModelType>
 					::reconstruct(	*rhs_datacontainer, dest, beta,
 									X, M_invers, Y,
 									O, E, R, Z, W,

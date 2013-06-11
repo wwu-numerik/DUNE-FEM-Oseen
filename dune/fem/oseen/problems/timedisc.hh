@@ -25,9 +25,8 @@ class Force : public Dune::Fem::Function < FunctionSpaceImp , Force < FunctionSp
 		typedef typename BaseType::RangeType
 			RangeType;
 
-        Force( const double viscosity, const FunctionSpaceImp& /*space*/, const double alpha = 0.0, const double scaling_factor = 1.0 )
-            : BaseType (  ),
-			  viscosity_( viscosity ),
+        Force( const double viscosity, const double alpha = 0.0, const double scaling_factor = 1.0 )
+            : viscosity_( viscosity ),
 			  alpha_( alpha ),
 			  scaling_factor_( scaling_factor )
 		{}
@@ -74,10 +73,6 @@ class DirichletData : public Dune::Fem::Function < FunctionSpaceImp, DirichletDa
 		typedef typename BaseType::RangeType
 			RangeType;
 
-        DirichletData( const FunctionSpaceImp& /*space*/ )
-            : BaseType(  )
-		{}
-
         template < class IntersectionType >
 		void evaluate( const DomainType& arg, RangeType& ret, const IntersectionType& /*intersection*/ ) const
 		{
@@ -104,22 +99,11 @@ class Velocity : public Dune::Fem::Function < FunctionSpaceImp , Velocity < Func
 		typedef typename BaseType::RangeType
 			RangeType;
 
-        Velocity( const FunctionSpaceImp& /*f_space*/ )
-            : BaseType(  )
-		{}
-
-		inline void evaluate( const DomainType& arg, RangeType& ret ) const
+        inline void evaluate( const DomainType& arg, RangeType& ret ) const
 		{
 			dune_static_assert( dim_ == 2  , "Wrong world dim");
 			ret[0] = std::pow(disc_time,3.0)* arg[1] * arg[1];
 			ret[1] = std::pow(disc_time,2.0)* arg[0];
-		}
-
-		RangeType operator () ( const DomainType& arg)
-		{
-			RangeType ret;
-			evaluate( arg, ret );
-			return ret;
 		}
 
 	private:
@@ -139,25 +123,9 @@ class Pressure : public Dune::Fem::Function < FunctionSpaceImp , Pressure < Func
 		typedef typename BaseType::RangeType
 			RangeType;
 
-		/**
-		 *  \brief constructor
-		 *
-		 *  doing nothing besides Base init
-		 **/
-        Pressure( const FunctionSpaceImp& /*f_space*/ )
-            : BaseType(  )
-		{}
-
 		inline void evaluate( const DomainType& arg, RangeType& ret ) const
 		{
 			ret = disc_time * arg[0] + arg[1] - ( ( disc_time + 1) / 2.0 );
-		}
-
-		RangeType operator () ( const DomainType& arg)
-		{
-			RangeType ret;
-			evaluate( arg, ret );
-			return ret;
 		}
 
 	private:

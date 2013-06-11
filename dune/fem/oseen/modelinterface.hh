@@ -42,7 +42,7 @@ namespace Dune
  *          to combine the velocity and the pressure itself into one discrete
  *          function.
  *          The assembling of the system matrices and right hand sides takes
- *          place in the Dune::OseenPass. This class also solves for the
+ *          place in the Dune::OseenLDGMethod. This class also solves for the
  *          velocity and the pressure (which have to be wrapped inside a
  *          Dune::DiscreteOseenFunctionWrapper).
  *          The problem-dependent data (force terms, boundary data, fluxes,
@@ -51,7 +51,7 @@ namespace Dune
  *          (see Dune::DiscreteOseenModelDefault for example).
  *
  *          A discrete model implementation of the user should be derived from
- *          this interface class to be compatible with the Dune::OseenPass.
+ *          this interface class to be compatible with the Dune::OseenLDGMethod.
  *          In the LDG context a weak discrete formulation of a stokes problem
  *          enforces
  *          \f$

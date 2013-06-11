@@ -30,18 +30,18 @@
 #include <tuple>
 
 //! Error and vtk output wrapper class for Stokes problem/pass
-template <  class OseenPassImp, class ProblemImp >
+template <  class OseenLDGMethodImp, class ProblemImp >
 class PostProcessor
 {
     public:
         typedef ProblemImp
             ProblemType;
 
-        typedef OseenPassImp
-            OseenPassType;
-		typedef typename OseenPassType::Traits::DiscreteOseenFunctionSpaceWrapperType
+        typedef OseenLDGMethodImp
+            OseenLDGMethodType;
+		typedef typename OseenLDGMethodType::Traits::DiscreteOseenFunctionSpaceWrapperType
             DiscreteOseenFunctionSpaceWrapperType;
-		typedef typename OseenPassType::Traits::DiscreteOseenFunctionWrapperType
+		typedef typename OseenLDGMethodType::Traits::DiscreteOseenFunctionWrapperType
             DiscreteOseenFunctionWrapperType;
 
         typedef typename ProblemType::VelocityType
@@ -53,7 +53,7 @@ class PostProcessor
         typedef typename ProblemType::DirichletDataType
             DirichletDataType;
 
-		typedef typename OseenPassType::Traits::GridPartType
+		typedef typename OseenLDGMethodType::Traits::GridPartType
             GridPartType;
         typedef typename GridPartType::GridType
             GridType;
@@ -61,14 +61,14 @@ class PostProcessor
         typedef Dune::SubsamplingVTKIO<GridPartType>
             VTKWriterType;
 
-		typedef typename OseenPassType::Traits::DiscreteVelocityFunctionType
+		typedef typename OseenLDGMethodType::Traits::DiscreteVelocityFunctionType
             DiscreteVelocityFunctionType;
-		typedef typename OseenPassType::Traits::DiscreteVelocityFunctionSpaceType
+		typedef typename OseenLDGMethodType::Traits::DiscreteVelocityFunctionSpaceType
             DiscreteVelocityFunctionSpaceType;
 
-		typedef typename OseenPassType::Traits::DiscretePressureFunctionType
+		typedef typename OseenLDGMethodType::Traits::DiscretePressureFunctionType
             DiscretePressureFunctionType;
-		typedef typename OseenPassType::Traits::DiscretePressureFunctionSpaceType
+		typedef typename OseenLDGMethodType::Traits::DiscretePressureFunctionSpaceType
             DiscretePressureFunctionSpaceType;
 
 

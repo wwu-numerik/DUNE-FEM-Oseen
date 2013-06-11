@@ -32,15 +32,15 @@
 namespace Dune {
 
 /**
- *  \brief  OseenPass
+ *  \brief  OseenLDGMethod
  *  \todo   doc
  **/
 template <  class DiscreteModelImp,
 		  template <class> class TraitsImp = StokesTraits >
-class OseenPass
+class OseenLDGMethod
 {
     public:
-        typedef OseenPass< DiscreteModelImp, TraitsImp >
+        typedef OseenLDGMethod< DiscreteModelImp, TraitsImp >
             ThisType;
         typedef DiscreteModelImp
             DiscreteModelType;
@@ -52,7 +52,7 @@ class OseenPass
             RangeType;
 
         //!
-        OseenPass( DiscreteModelType discreteModel,
+        OseenLDGMethod( DiscreteModelType discreteModel,
 					typename Traits::GridPartType& gridPart,
                     const typename Traits::DiscreteOseenFunctionSpaceWrapperType& spaceWrapper,
                     const typename Traits::DiscreteVelocityFunctionType beta,
@@ -177,68 +177,6 @@ class OseenPass
 		const bool do_oseen_discretization_;
         SaddlepointInverseOperatorInfo info_;
 
-	public:
-		void printInfo() const
-		{
-#ifndef NLOG
-            auto& infoStream = DSC_LOG_INFO;
-			infoStream << boost::format( "pressure_gradient/convection scaling: %e | %e\npass viscosity: %e\n")
-								% discreteModel_.pressure_gradient_scaling()
-								% discreteModel_.convection_scaling()
-								% discreteModel_.viscosity();
-			int numberOfEntities = 0;
-			int numberOfIntersections = 0;
-			int numberOfBoundaryIntersections = 0;
-			int numberOfInnerIntersections = 0;
-            infoStream << "this is OseenPass::apply()" << std::endl;
-
-			// do an empty grid walk to get informations
-			double maxGridWidth( 0.0 );
-			typename Traits::EntityIteratorType entityItEndLog = velocitySpace_.end();
-			for (   typename Traits::EntityIteratorType entityItLog = velocitySpace_.begin();
-					entityItLog != entityItEndLog;
-					++entityItLog ) {
-				const typename Traits::EntityType& entity = *entityItLog;
-				// count entities
-				++numberOfEntities;
-				// walk the intersections
-				typename Traits::IntersectionIteratorType intItEnd = gridPart_.iend( entity );
-				for (   typename Traits::IntersectionIteratorType intIt = gridPart_.ibegin( entity );
-						intIt != intItEnd;
-						++intIt ) {
-					// count intersections
-					++numberOfIntersections;
-                    maxGridWidth = std::max(intIt->geometry().volume(), maxGridWidth );
-					// if we are inside the grid
-					if ( intIt->neighbor() && !intIt->boundary() ) {
-						// count inner intersections
-						++numberOfInnerIntersections;
-					}
-					// if we are on the boundary of the grid
-					if ( !intIt->neighbor() && intIt->boundary() ) {
-						// count boundary intersections
-						++numberOfBoundaryIntersections;
-					}
-				}
-			}
-			if ( numberOfEntities > 19 ) {
-				infoStream << "found " << numberOfEntities << " entities," << std::endl;
-				infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
-				infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
-				infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
-				infoStream << "      maxGridWidth is " << maxGridWidth << std::endl;
-				infoStream << "- starting gridwalk" << std::endl;
-			} else {
-				infoStream << "found " << numberOfEntities << " entities," << std::endl;
-				infoStream << "found " << numberOfIntersections << " intersections," << std::endl;
-				infoStream << "      " << numberOfInnerIntersections << " intersections inside and" << std::endl;
-				infoStream << "      " << numberOfBoundaryIntersections << " intersections on the boundary." << std::endl;
-				infoStream << "      maxGridWidth is " << maxGridWidth << std::endl;
-				infoStream << "- starting gridwalk" << std::endl;
-			}
-			infoStream.suspend();
-#endif
-		}
 };
 
 } // namespace Dune

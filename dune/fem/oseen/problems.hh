@@ -64,10 +64,8 @@ namespace StokesProblems {
 		 *
 		 *  \param  viscosity   viscosity \f$\mu\f$ of the fluid
 		 **/
-		Container( const double viscosity, const DiscreteFunctionWrapperType& funcWrapper, const DirichletDataType& dirichlet )
-			: velocity_( funcWrapper.discreteVelocity().space() ),
-			  pressure_ ( funcWrapper.discretePressure().space() ),
-			  force_( viscosity, funcWrapper.discreteVelocity().space() ),
+        Container( const double viscosity, const DirichletDataType& dirichlet )
+            : force_(viscosity),
 			  dirichletData_( dirichlet )
 		{
 		}

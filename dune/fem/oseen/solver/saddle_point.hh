@@ -13,21 +13,21 @@ namespace Dune {
 		Optionally the BFG scheme as described in YADDA is uesd to control the inner solver tolerance.
 		/todo get references in doxygen right
 	**/
-	template < class OseenPassImp >
+	template < class OseenLDGMethodImp >
 	class SaddlepointInverseOperator
 	{
 	  private:
 
-		typedef OseenPassImp
-			OseenPassType;
+		typedef OseenLDGMethodImp
+			OseenLDGMethodType;
 
-		typedef typename OseenPassType::Traits::DiscreteOseenFunctionWrapperType
+		typedef typename OseenLDGMethodType::Traits::DiscreteOseenFunctionWrapperType
 			DiscreteOseenFunctionWrapperType;
 
-		typedef typename OseenPassType::DomainType
+		typedef typename OseenLDGMethodType::DomainType
 			DomainType;
 
-		typedef typename OseenPassType::RangeType
+		typedef typename OseenLDGMethodType::RangeType
 			RangeType;
 
 		typedef typename DiscreteOseenFunctionWrapperType::DiscretePressureFunctionType
