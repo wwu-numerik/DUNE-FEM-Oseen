@@ -1,4 +1,5 @@
 Module: dune-fem-oseen
-Version: 0.4.1
+Version: 0.5.0
 Maintainer: rene.milk@uni-muenster.de
-Depends: dune-common (>= 2.1) dune-grid (>= 2.1) dune-istl (>= 2.1) dune-fem (>= 1.2) dune-stuff (>= 0.3)
+Suggests: dune-spgrid
+Depends: dune-common (>= 2.2) dune-grid (>= 2.2) dune-fem (>= 1.3) dune-stuff (>= 0.3)
